@@ -32,74 +32,73 @@ class ClientGui;
 class MenuWidget;
 class UserInfoClient;
 
-class FolderItemWidget : public QWidget
-{
-    Q_OBJECT
+class FolderItemWidget : public QWidget {
+        Q_OBJECT
 
-public:
-    explicit FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
+    public:
+        explicit FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-    inline int syncDbId() const { return _syncDbId; }
-    void updateItem(const SyncInfoClient &syncInfo);
-    void setUpdateWidgetVisible(bool visible);
-    void setUpdateWidgetLabelVisible(bool visible);
-    void setSupportVfs(bool value);
-    void setSmartSyncActivated(bool value);
-    void closeFolderView();
+        inline int syncDbId() const { return _syncDbId; }
+        void updateItem(const SyncInfoClient &syncInfo);
+        void setUpdateWidgetVisible(bool visible);
+        void setUpdateWidgetLabelVisible(bool visible);
+        void setSupportVfs(bool value);
+        void setSmartSyncActivated(bool value);
+        void closeFolderView();
 
-signals:
-    void runSync(int syncDbId);
-    void pauseSync(int syncDbId);
-    void resumeSync(int syncDbId);
-    void unSync(int syncDbId);
-    void displayFolderDetail(int syncDbId, bool display);
-    void displayFolderDetailCanceled();
-    void openFolder(const QString &filePath);
-    void cancelUpdate(int syncDbId);
-    void validateUpdate(int syncDbId);
-    void triggerLiteSyncChanged(int syncDbId, bool activate);
+    signals:
+        void runSync(int syncDbId);
+        void pauseSync(int syncDbId);
+        void resumeSync(int syncDbId);
+        void unSync(int syncDbId);
+        void displayFolderDetail(int syncDbId, bool display);
+        void displayFolderDetailCanceled();
+        void openFolder(const QString &filePath);
+        void cancelUpdate(int syncDbId);
+        void validateUpdate(int syncDbId);
+        void triggerLiteSyncChanged(int syncDbId, bool activate);
 
-private:
-    std::shared_ptr<ClientGui> _gui;
-    const int _syncDbId;
-    CustomToolButton *_expandButton;
-    CustomToolButton *_menuButton;
-    QLabel *_statusIconLabel;
-    QLabel *_nameLabel;
-    CustomLabel *_smartSyncIconLabel;
-    QWidget *_updateWidget;
-    bool _isExpanded;
-    bool _smartSyncAvailable;
-    bool _smartSyncActivated;
-    QLabel *_synchroLabel;
-    QLabel *_saveLabel;
-    QPushButton *_cancelButton;
-    QPushButton *_validateButton;
-    std::unique_ptr<MenuWidget> _menu;
+    private:
+        std::shared_ptr<ClientGui> _gui;
+        const int _syncDbId;
+        CustomToolButton *_expandButton;
+        CustomToolButton *_menuButton;
+        QLabel *_statusIconLabel;
+        QLabel *_nameLabel;
+        CustomLabel *_smartSyncIconLabel;
+        QWidget *_updateWidget;
+        bool _isExpanded;
+        bool _smartSyncAvailable;
+        bool _smartSyncActivated;
+        QLabel *_synchroLabel;
+        QLabel *_saveLabel;
+        QPushButton *_cancelButton;
+        QPushButton *_validateButton;
+        std::unique_ptr<MenuWidget> _menu;
 
-    void showEvent(QShowEvent *) override;
+        void showEvent(QShowEvent *) override;
 
-    void setExpandButton();
-    bool checkInfoMaps() const noexcept;
+        void setExpandButton();
+        bool checkInfoMaps() const noexcept;
 
-    SyncInfoClient *getSyncInfoClient() const noexcept;
-    const UserInfoClient *getUserInfoClient() const noexcept;
-    void setToolTipsEnabled(bool enabled) noexcept;
+        SyncInfoClient *getSyncInfoClient() const noexcept;
+        const UserInfoClient *getUserInfoClient() const noexcept;
+        void setToolTipsEnabled(bool enabled) noexcept;
 
-private slots:
-    void onMenuButtonClicked();
-    void onExpandButtonClicked();
-    void onCancelButtonClicked();
-    void onValidateButtonClicked();
-    void onOpenFolder(const QString &link);
-    void onSyncTriggered();
-    void onPauseTriggered();
-    void onResumeTriggered();
-    void onUnsyncTriggered();
-    void onDisplayFolderDetailCanceled();
-    void onActivateLitesyncTriggered();
-    void onDeactivateLitesyncTriggered();
-    void retranslateUi();
+    private slots:
+        void onMenuButtonClicked();
+        void onExpandButtonClicked();
+        void onCancelButtonClicked();
+        void onValidateButtonClicked();
+        void onOpenFolder(const QString &link);
+        void onSyncTriggered();
+        void onPauseTriggered();
+        void onResumeTriggered();
+        void onUnsyncTriggered();
+        void onDisplayFolderDetailCanceled();
+        void onActivateLitesyncTriggered();
+        void onDeactivateLitesyncTriggered();
+        void retranslateUi();
 };
 
-}
+}  // namespace KDC

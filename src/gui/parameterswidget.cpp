@@ -23,13 +23,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace KDC {
 
-ParametersWidget::ParametersWidget(QWidget *parent)
-    : GuiUtility::LargeWidgetWithCustomToolTip(parent)
-{
-}
+ParametersWidget::ParametersWidget(QWidget *parent) : GuiUtility::LargeWidgetWithCustomToolTip(parent) {}
 
-void ParametersWidget::setEnabled(bool val)
-{
+void ParametersWidget::setEnabled(bool val) {
     // Disable all parent CustomDialog
     QWidget *nextParent = parentWidget();
     while (nextParent) {
@@ -43,4 +39,4 @@ void ParametersWidget::setEnabled(bool val)
     }
 }
 
-}
+}  // namespace KDC

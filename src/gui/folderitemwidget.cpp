@@ -43,23 +43,16 @@ static const int folderPathMaxSize = 50;
 
 Q_LOGGING_CATEGORY(lcFolderItemWidget, "gui.folderitemwidget", QtInfoMsg)
 
-enum MenuAction : char {
-    LiteSyncOn,
-    LiteSyncOff,
-    Pause,
-    Remove,
-    Resume
-};
+enum MenuAction : char { LiteSyncOn, LiteSyncOff, Pause, Remove, Resume };
 
-QString menuIconPath(MenuAction action)
-{
+QString menuIconPath(MenuAction action) {
     static const QString actionIconsPath = ":/client/resources/icons/actions/";
-    static const std::unordered_map<MenuAction, QString> iconPathsMap {
-        { LiteSyncOn, actionIconsPath + "litesync-on.svg" },
-        { LiteSyncOff, actionIconsPath + "litesync-off.svg" },
-        { Pause, actionIconsPath + "pause.svg" },
-        { Remove, actionIconsPath + "delete.svg" },
-        { Resume, actionIconsPath + "start.svg" },
+    static const std::unordered_map<MenuAction, QString> iconPathsMap{
+        {LiteSyncOn, actionIconsPath + "litesync-on.svg"},
+        {LiteSyncOff, actionIconsPath + "litesync-off.svg"},
+        {Pause, actionIconsPath + "pause.svg"},
+        {Remove, actionIconsPath + "delete.svg"},
+        {Resume, actionIconsPath + "start.svg"},
     };
 
     return iconPathsMap.at(action);
@@ -67,23 +60,22 @@ QString menuIconPath(MenuAction action)
 
 
 FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : QWidget(parent)
-    , _gui(gui)
-    , _syncDbId(syncDbId)
-    , _expandButton(nullptr)
-    , _menuButton(nullptr)
-    , _statusIconLabel(nullptr)
-    , _nameLabel(nullptr)
-    , _smartSyncIconLabel(nullptr)
-    , _updateWidget(nullptr)
-    , _isExpanded(false)
-    , _smartSyncAvailable(false)
-    , _synchroLabel(nullptr)
-    , _saveLabel(nullptr)
-    , _cancelButton(nullptr)
-    , _validateButton(nullptr)
-    , _menu(nullptr)
-{
+    : QWidget(parent),
+      _gui(gui),
+      _syncDbId(syncDbId),
+      _expandButton(nullptr),
+      _menuButton(nullptr),
+      _statusIconLabel(nullptr),
+      _nameLabel(nullptr),
+      _smartSyncIconLabel(nullptr),
+      _updateWidget(nullptr),
+      _isExpanded(false),
+      _smartSyncAvailable(false),
+      _synchroLabel(nullptr),
+      _saveLabel(nullptr),
+      _cancelButton(nullptr),
+      _validateButton(nullptr),
+      _menu(nullptr) {
     QHBoxLayout *mainLayout = new QHBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(hSpacing);
@@ -196,13 +188,11 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
         if (path.size() > folderPathMaxSize) {
             path = path.left(folderPathMaxSize) + "...";
         }
-        _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>")
-                                   .arg(CommonUtility::linkStyle, path));
+        _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path));
     }
 }
 
-void FolderItemWidget::updateItem(const SyncInfoClient &syncInfo)
-{
+void FolderItemWidget::updateItem(const SyncInfoClient &syncInfo) {
     const auto userInfoClient = getUserInfoClient();
     if (!userInfoClient) {
         return;
@@ -217,43 +207,41 @@ void FolderItemWidget::updateItem(const SyncInfoClient &syncInfo)
     statusInfo._disconnected = !userInfoClient->connected();
     statusInfo._status = syncInfo.status();
     _statusIconLabel->setPixmap(
-        QIcon(KDC::GuiUtility::getDriveStatusIconPath(statusInfo))
-            .pixmap(QSize(statusIconSize, statusIconSize)));
+        QIcon(KDC::GuiUtility::getDriveStatusIconPath(statusInfo)).pixmap(QSize(statusIconSize, statusIconSize)));
 }
 
-void FolderItemWidget::setUpdateWidgetVisible(bool visible)
-{
+void FolderItemWidget::setUpdateWidgetVisible(bool visible) {
     _updateWidget->setVisible(visible);
 }
 
-void FolderItemWidget::setUpdateWidgetLabelVisible(bool visible)
-{
+void FolderItemWidget::setUpdateWidgetLabelVisible(bool visible) {
     _saveLabel->setVisible(visible);
 }
 
-void FolderItemWidget::setSupportVfs(bool value)
-{
+void FolderItemWidget::setSupportVfs(bool value) {
     _smartSyncAvailable = value;
     _smartSyncIconLabel->setVisible(value);
 }
 
-void FolderItemWidget::setSmartSyncActivated(bool value)
-{
+void FolderItemWidget::setSmartSyncActivated(bool value) {
     _smartSyncActivated = value;
 
-    static const QPixmap liteSynOnPixmap = KDC::GuiUtility::getIconWithColor(menuIconPath(LiteSyncOn), QColor(16, 117, 187)).pixmap(QSize(18, 18));
-    static const QPixmap liteSynOffPixmap = KDC::GuiUtility::getIconWithColor(menuIconPath(LiteSyncOff), QColor(159, 159, 159)).pixmap(QSize(18, 18));
+    static const QPixmap liteSynOnPixmap =
+        KDC::GuiUtility::getIconWithColor(menuIconPath(LiteSyncOn), QColor(16, 117, 187)).pixmap(QSize(18, 18));
+    static const QPixmap liteSynOffPixmap =
+        KDC::GuiUtility::getIconWithColor(menuIconPath(LiteSyncOff), QColor(159, 159, 159)).pixmap(QSize(18, 18));
 
     _smartSyncIconLabel->setPixmap(value ? liteSynOnPixmap : liteSynOffPixmap);
 
-    static const QString liteSyncActivated = tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
-    static const QString liteSyncDeactivated = tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.");
+    static const QString liteSyncActivated =
+        tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
+    static const QString liteSyncDeactivated =
+        tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.");
 
     _smartSyncIconLabel->setToolTip(value ? liteSyncActivated : liteSyncDeactivated);
 }
 
-void FolderItemWidget::showEvent(QShowEvent *)
-{
+void FolderItemWidget::showEvent(QShowEvent *) {
     retranslateUi();
 
     _isExpanded = false;
@@ -261,8 +249,7 @@ void FolderItemWidget::showEvent(QShowEvent *)
     emit displayFolderDetail(_syncDbId, _isExpanded);
 }
 
-void FolderItemWidget::setExpandButton()
-{
+void FolderItemWidget::setExpandButton() {
     _expandButton->hide();
     if (_isExpanded) {
         _expandButton->setIconPath(":/client/resources/icons/actions/chevron-down.svg");
@@ -272,16 +259,14 @@ void FolderItemWidget::setExpandButton()
     _expandButton->show();
 }
 
-void FolderItemWidget::closeFolderView()
-{
+void FolderItemWidget::closeFolderView() {
     //    _isExpanded = false;
     //    setExpandButton();
     //    emit displayFolderDetail(_syncDbId, _isExpanded);
 }
 
 
-SyncInfoClient *FolderItemWidget::getSyncInfoClient() const noexcept
-{
+SyncInfoClient *FolderItemWidget::getSyncInfoClient() const noexcept {
     const auto &syncInfoMapIt = _gui->syncInfoMap().find(_syncDbId);
     if (syncInfoMapIt == _gui->syncInfoMap().end()) {
         qCWarning(lcFolderItemWidget) << "Sync not found in sync map for syncDbId=" << _syncDbId;
@@ -292,8 +277,7 @@ SyncInfoClient *FolderItemWidget::getSyncInfoClient() const noexcept
 }
 
 
-const UserInfoClient *FolderItemWidget::getUserInfoClient() const noexcept
-{
+const UserInfoClient *FolderItemWidget::getUserInfoClient() const noexcept {
     const auto syncInfoClient = getSyncInfoClient();
     if (!syncInfoClient) {
         return nullptr;
@@ -307,7 +291,8 @@ const UserInfoClient *FolderItemWidget::getUserInfoClient() const noexcept
 
     const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfoMapIt->second.accountDbId());
     if (accountInfoMapIt == _gui->accountInfoMap().end()) {
-        qCWarning(lcFolderItemWidget()) << "Account not found in accountInfoMap for accountDbId=" << driveInfoMapIt->second.accountDbId();
+        qCWarning(lcFolderItemWidget()) << "Account not found in accountInfoMap for accountDbId="
+                                        << driveInfoMapIt->second.accountDbId();
         return nullptr;
     }
 
@@ -320,8 +305,7 @@ const UserInfoClient *FolderItemWidget::getUserInfoClient() const noexcept
     return &(userInfoMapIt->second);
 }
 
-void FolderItemWidget::onMenuButtonClicked()
-{
+void FolderItemWidget::onMenuButtonClicked() {
     const auto syncInfoClient = getSyncInfoClient();
     if (!syncInfoClient) {
         return;
@@ -391,25 +375,21 @@ void FolderItemWidget::onMenuButtonClicked()
     _menu->exec(QWidget::mapToGlobal(_menuButton->geometry().center()));
 }
 
-void FolderItemWidget::onExpandButtonClicked()
-{
+void FolderItemWidget::onExpandButtonClicked() {
     _isExpanded = !_isExpanded;
     setExpandButton();
     emit displayFolderDetail(_syncDbId, _isExpanded);
 }
 
-void FolderItemWidget::onCancelButtonClicked()
-{
+void FolderItemWidget::onCancelButtonClicked() {
     emit cancelUpdate(_syncDbId);
 }
 
-void FolderItemWidget::onValidateButtonClicked()
-{
+void FolderItemWidget::onValidateButtonClicked() {
     emit validateUpdate(_syncDbId);
 }
 
-void FolderItemWidget::onOpenFolder(const QString &link)
-{
+void FolderItemWidget::onOpenFolder(const QString &link) {
     Q_UNUSED(link)
 
     auto syncInfoClient = getSyncInfoClient();
@@ -420,23 +400,19 @@ void FolderItemWidget::onOpenFolder(const QString &link)
     emit openFolder(syncInfoClient->localPath());
 }
 
-void FolderItemWidget::onSyncTriggered()
-{
+void FolderItemWidget::onSyncTriggered() {
     emit runSync(_syncDbId);
 }
 
-void FolderItemWidget::onPauseTriggered()
-{
+void FolderItemWidget::onPauseTriggered() {
     emit pauseSync(_syncDbId);
 }
 
-void FolderItemWidget::onResumeTriggered()
-{
+void FolderItemWidget::onResumeTriggered() {
     emit resumeSync(_syncDbId);
 }
 
-void FolderItemWidget::onUnsyncTriggered()
-{
+void FolderItemWidget::onUnsyncTriggered() {
     auto syncInfoClient = getSyncInfoClient();
     if (syncInfoClient) {
         syncInfoClient->setIsBeingDeleted(true);
@@ -444,37 +420,33 @@ void FolderItemWidget::onUnsyncTriggered()
     emit unSync(_syncDbId);
 }
 
-void FolderItemWidget::onDisplayFolderDetailCanceled()
-{
+void FolderItemWidget::onDisplayFolderDetailCanceled() {
     _isExpanded = false;
     setExpandButton();
 }
 
-void FolderItemWidget::onActivateLitesyncTriggered()
-{
+void FolderItemWidget::onActivateLitesyncTriggered() {
     emit triggerLiteSyncChanged(_syncDbId, true);
 }
 
-void FolderItemWidget::onDeactivateLitesyncTriggered()
-{
+void FolderItemWidget::onDeactivateLitesyncTriggered() {
     emit triggerLiteSyncChanged(_syncDbId, false);
 }
 
-void FolderItemWidget::setToolTipsEnabled(bool enabled) noexcept
-{
+void FolderItemWidget::setToolTipsEnabled(bool enabled) noexcept {
     if (enabled) {
         _menuButton->setToolTip(tr("More actions"));
-        _smartSyncIconLabel->setToolTip(_smartSyncActivated
-                ? tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.")
-                : tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer."));
+        _smartSyncIconLabel->setToolTip(
+            _smartSyncActivated ? tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your "
+                                     "computer's storage space.")
+                                : tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer."));
     } else {
         _menuButton->setToolTip("");
         _smartSyncIconLabel->setToolTip("");
     }
 }
 
-void FolderItemWidget::retranslateUi()
-{
+void FolderItemWidget::retranslateUi() {
     auto syncInfoClient = getSyncInfoClient();
     if (!syncInfoClient) {
         return;
@@ -486,17 +458,20 @@ void FolderItemWidget::retranslateUi()
     if (path.size() > folderPathMaxSize) {
         path = path.left(folderPathMaxSize) + "...";
     }
-    _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>")
-                               .arg(CommonUtility::linkStyle, path));
+    _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path));
 
     if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
-        _saveLabel->setText(tr("Unselected folders will be moved to your computer's recycle bin. Folders synced to kDrive will remain available online."));
+        _saveLabel->setText(
+            tr("Unselected folders will be moved to your computer's recycle bin. Folders synced to kDrive will remain available "
+               "online."));
     } else {
-        _saveLabel->setText(tr("Unselected folders will be <b>permanently</b> deleted from the computer. Folders synced to kDrive will remain available online."));
+        _saveLabel->setText(
+            tr("Unselected folders will be <b>permanently</b> deleted from the computer. Folders synced to kDrive will remain "
+               "available online."));
     }
 
     _cancelButton->setText(tr("Cancel"));
     _validateButton->setText(tr("VALIDATE"));
 }
 
-}
+}  // namespace KDC

@@ -23,15 +23,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace KDC {
 
-class ParametersWidget : public GuiUtility::LargeWidgetWithCustomToolTip
-{
-    Q_OBJECT
+class ParametersWidget : public GuiUtility::LargeWidgetWithCustomToolTip {
+        Q_OBJECT
 
-public:
-    explicit ParametersWidget(QWidget *parent);
+    public:
+        explicit ParametersWidget(QWidget *parent);
 
-public slots:
-    void setEnabled(bool);
+    public slots:
+        void setEnabled(bool);
 };
 
-}
+}  // namespace KDC

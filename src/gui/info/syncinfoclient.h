@@ -23,46 +23,47 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace KDC {
 
-class SyncInfoClient : public SyncInfo
-{
-public:
-    SyncInfoClient();
-    SyncInfoClient(const SyncInfo &syncInfo);
+class SyncInfoClient : public SyncInfo {
+    public:
+        SyncInfoClient();
+        SyncInfoClient(const SyncInfo &syncInfo);
 
-    inline void setPaused(bool paused) noexcept { _paused = paused; }
-    inline bool paused() const noexcept { return _paused; }
-    inline void setStatus(SyncStatus status) noexcept { _status = status; }
-    inline SyncStatus status() const noexcept { return _status; }
-    inline void setStep(SyncStep step) noexcept { _step = step; }
-    inline SyncStep step() const noexcept { return _step; }
-    inline void setUnresolvedConflicts(bool unresolvedConflicts) noexcept { _unresolvedConflicts = unresolvedConflicts; }
-    inline bool unresolvedConflicts() const noexcept { return _unresolvedConflicts; }
-    inline void setCurrentFile(qint64 currentFile) noexcept { _currentFile = currentFile; }
-    inline qint64 currentFile() const noexcept { return _currentFile; }
-    inline void setTotalFiles(qint64 totalFiles) { _totalFiles = totalFiles; }
-    inline qint64 totalFiles() const noexcept { return _totalFiles; }
-    inline void setCompletedSize(qint64 completedSize) noexcept { _completedSize = completedSize; }
-    inline qint64 completedSize() const noexcept { return _completedSize; }
-    inline void setTotalSize(qint64 totalSize) noexcept { _totalSize = totalSize; }
-    inline qint64 totalSize() const noexcept { return _totalSize; }
-    inline void setEstimatedRemainingTime(qint64 estimatedRemainingTime) noexcept { _estimatedRemainingTime = estimatedRemainingTime; }
-    inline qint64 estimatedRemainingTime() const noexcept { return _estimatedRemainingTime; }
-    inline void setIsBeingDeleted(bool isDeletionOnGoing) noexcept { _isBeingDeleted = isDeletionOnGoing; }
-    inline bool isBeingDeleted() const noexcept { return _isBeingDeleted; }
+        inline void setPaused(bool paused) noexcept { _paused = paused; }
+        inline bool paused() const noexcept { return _paused; }
+        inline void setStatus(SyncStatus status) noexcept { _status = status; }
+        inline SyncStatus status() const noexcept { return _status; }
+        inline void setStep(SyncStep step) noexcept { _step = step; }
+        inline SyncStep step() const noexcept { return _step; }
+        inline void setUnresolvedConflicts(bool unresolvedConflicts) noexcept { _unresolvedConflicts = unresolvedConflicts; }
+        inline bool unresolvedConflicts() const noexcept { return _unresolvedConflicts; }
+        inline void setCurrentFile(qint64 currentFile) noexcept { _currentFile = currentFile; }
+        inline qint64 currentFile() const noexcept { return _currentFile; }
+        inline void setTotalFiles(qint64 totalFiles) { _totalFiles = totalFiles; }
+        inline qint64 totalFiles() const noexcept { return _totalFiles; }
+        inline void setCompletedSize(qint64 completedSize) noexcept { _completedSize = completedSize; }
+        inline qint64 completedSize() const noexcept { return _completedSize; }
+        inline void setTotalSize(qint64 totalSize) noexcept { _totalSize = totalSize; }
+        inline qint64 totalSize() const noexcept { return _totalSize; }
+        inline void setEstimatedRemainingTime(qint64 estimatedRemainingTime) noexcept {
+            _estimatedRemainingTime = estimatedRemainingTime;
+        }
+        inline qint64 estimatedRemainingTime() const noexcept { return _estimatedRemainingTime; }
+        inline void setIsBeingDeleted(bool isDeletionOnGoing) noexcept { _isBeingDeleted = isDeletionOnGoing; }
+        inline bool isBeingDeleted() const noexcept { return _isBeingDeleted; }
 
-    QString name() const;
+        QString name() const;
 
-private:
-    bool _paused;
-    SyncStatus _status;
-    SyncStep _step;
-    bool _unresolvedConflicts;
-    qint64 _currentFile;
-    qint64 _totalFiles;
-    qint64 _completedSize;
-    qint64 _totalSize;
-    qint64 _estimatedRemainingTime;
-    bool _isBeingDeleted;
+    private:
+        bool _paused;
+        SyncStatus _status;
+        SyncStep _step;
+        bool _unresolvedConflicts;
+        qint64 _currentFile;
+        qint64 _totalFiles;
+        qint64 _completedSize;
+        qint64 _totalSize;
+        qint64 _estimatedRemainingTime;
+        bool _isBeingDeleted;
 };
 
-}
+}  // namespace KDC

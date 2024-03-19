@@ -25,52 +25,46 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace KDC {
 
-static int defaultToolTipDuration = 3000; // ms
+static int defaultToolTipDuration = 3000;  // ms
 
 CustomToolButton::CustomToolButton(QWidget *parent)
-    : QToolButton(parent)
-    , _withMenu(false)
-    , _baseIconSize(QSize())
-    , _iconPath(QString())
-    , _iconColor(QColor())
-    , _iconColorHover(QColor())
-    , _toolTipText(QString())
-    , _toolTipDuration(defaultToolTipDuration)
-    , _hover(false)
-    , _customToolTip(nullptr)
-{
+    : QToolButton(parent),
+      _withMenu(false),
+      _baseIconSize(QSize()),
+      _iconPath(QString()),
+      _iconColor(QColor()),
+      _iconColorHover(QColor()),
+      _toolTipText(QString()),
+      _toolTipDuration(defaultToolTipDuration),
+      _hover(false),
+      _customToolTip(nullptr) {
     connect(this, &CustomToolButton::baseIconSizeChanged, this, &CustomToolButton::onBaseIconSizeChanged);
     connect(this, &CustomToolButton::iconColorChanged, this, &CustomToolButton::onIconColorChanged);
     connect(this, &CustomToolButton::clicked, this, &CustomToolButton::onClicked);
 }
 
-void CustomToolButton::setWithMenu(bool withMenu)
-{
+void CustomToolButton::setWithMenu(bool withMenu) {
     _withMenu = withMenu;
     applyIconSizeAndColor();
 }
 
 
-void CustomToolButton::onBaseIconSizeChanged()
-{
+void CustomToolButton::onBaseIconSizeChanged() {
     applyIconSizeAndColor();
 }
 
-void CustomToolButton::onIconColorChanged()
-{
+void CustomToolButton::onIconColorChanged() {
     applyIconSizeAndColor();
 }
 
-void CustomToolButton::onClicked(bool checked)
-{
+void CustomToolButton::onClicked(bool checked) {
     Q_UNUSED(checked)
 
     // Remove hover
     QApplication::sendEvent(this, new QEvent(QEvent::Leave));
 }
 
-bool CustomToolButton::event(QEvent *event)
-{
+bool CustomToolButton::event(QEvent *event) {
     if (event->type() == QEvent::ToolTip) {
         if (!_toolTipText.isEmpty()) {
             if (!_customToolTip) {
@@ -87,15 +81,13 @@ bool CustomToolButton::event(QEvent *event)
     return QToolButton::event(event);
 }
 
-void CustomToolButton::enterEvent(QEnterEvent *event)
-{
+void CustomToolButton::enterEvent(QEnterEvent *event) {
     setHover(true);
 
     QToolButton::enterEvent(event);
 }
 
-void CustomToolButton::leaveEvent(QEvent *event)
-{
+void CustomToolButton::leaveEvent(QEvent *event) {
     setHover(false);
 
     if (_customToolTip) {
@@ -106,13 +98,11 @@ void CustomToolButton::leaveEvent(QEvent *event)
     QToolButton::leaveEvent(event);
 }
 
-void CustomToolButton::applyIconSizeAndColor()
-{
+void CustomToolButton::applyIconSizeAndColor() {
     QColor color = _hover ? _iconColorHover : _iconColor;
 
     if (_baseIconSize != QSize()) {
-        setIconSize(QSize(_withMenu ? 2 * _baseIconSize.width() : _baseIconSize.width(),
-            _baseIconSize.height()));
+        setIconSize(QSize(_withMenu ? 2 * _baseIconSize.width() : _baseIconSize.width(), _baseIconSize.height()));
     }
 
     if (!_iconPath.isEmpty() && color.isValid()) {
@@ -124,12 +114,11 @@ void CustomToolButton::applyIconSizeAndColor()
     }
 }
 
-void CustomToolButton::setHover(bool hover)
-{
+void CustomToolButton::setHover(bool hover) {
     if (isEnabled()) {
         _hover = hover;
         applyIconSizeAndColor();
     }
 }
 
-}
+}  // namespace KDC

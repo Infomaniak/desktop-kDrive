@@ -23,19 +23,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace KDC {
 
-static int defaultToolTipDuration = 3000; // ms
+static int defaultToolTipDuration = 3000;  // ms
 
 CustomRadioButton::CustomRadioButton(QWidget *parent)
-    : QRadioButton(parent)
-    , _toolTipText(QString())
-    , _toolTipDuration(defaultToolTipDuration)
-    , _customToolTip(nullptr)
-{
+    : QRadioButton(parent), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _customToolTip(nullptr) {
     connect(this, &QRadioButton::clicked, this, &CustomRadioButton::onClicked);
 }
 
-bool CustomRadioButton::event(QEvent *event)
-{
+bool CustomRadioButton::event(QEvent *event) {
     if (event->type() == QEvent::ToolTip) {
         if (!_toolTipText.isEmpty()) {
             if (!_customToolTip) {
@@ -52,8 +47,7 @@ bool CustomRadioButton::event(QEvent *event)
     return QRadioButton::event(event);
 }
 
-void CustomRadioButton::leaveEvent(QEvent *event)
-{
+void CustomRadioButton::leaveEvent(QEvent *event) {
     if (_customToolTip) {
         _customToolTip->close();
         _customToolTip = nullptr;
@@ -62,12 +56,11 @@ void CustomRadioButton::leaveEvent(QEvent *event)
     QRadioButton::leaveEvent(event);
 }
 
-void CustomRadioButton::onClicked(bool checked)
-{
+void CustomRadioButton::onClicked(bool checked) {
     Q_UNUSED(checked)
 
     // Remove hover
     QApplication::sendEvent(this, new QEvent(QEvent::Leave));
 }
 
-}
+}  // namespace KDC

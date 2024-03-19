@@ -35,26 +35,16 @@ namespace KDC {
 class CustomToolTip;
 
 namespace GuiUtility {
-    static const QString learnMoreLink = QString("learnMoreLink");
-    static const QString clickHereLink = QString("clickHereLink");
-    static const QString clickHereLink2 = QString("clickHereLink2");
-    static const QString loginLink = QString("loginLink");
+static const QString learnMoreLink = QString("learnMoreLink");
+static const QString clickHereLink = QString("clickHereLink");
+static const QString clickHereLink2 = QString("clickHereLink2");
+static const QString loginLink = QString("loginLink");
 
-    enum systrayPosition {
-        Top = 0,
-        Bottom,
-        Left,
-        Right
-    };
+enum systrayPosition { Top = 0, Bottom, Left, Right };
 
-    enum WizardAction {
-        OpenFolder = 0,
-        OpenParameters,
-        AddDrive
-    };
+enum WizardAction { OpenFolder = 0, OpenParameters, AddDrive };
 
-    struct StatusInfo
-    {
+struct StatusInfo {
         bool _unresolvedConflicts = false;
         KDC::SyncStatus _status = KDC::SyncStatusUndefined;
         qint64 _syncedFiles = 0;
@@ -64,75 +54,68 @@ namespace GuiUtility {
         bool _oneSyncInPropagationStep = false;
         bool _liteSyncActivated = false;
         bool _disconnected = false;
-    };
+};
 
-    /** Open an url in the browser.
-     *
-     * If launching the browser fails, display a message.
-     */
-    bool openBrowser(const QUrl &url, QWidget *errorWidgetParent);
+/** Open an url in the browser.
+ *
+ * If launching the browser fails, display a message.
+ */
+bool openBrowser(const QUrl &url, QWidget *errorWidgetParent);
 
-    /** Start composing a new email message.
-     *
-     * If launching the email program fails, display a message.
-     */
-    bool openEmailComposer(const QString &subject, const QString &body,
-        QWidget *errorWidgetParent);
+/** Start composing a new email message.
+ *
+ * If launching the email program fails, display a message.
+ */
+bool openEmailComposer(const QString &subject, const QString &body, QWidget *errorWidgetParent);
 
-    QPixmap getAvatarFromImage(const QImage &image);
-    QIcon getIconWithColor(const QString &path, const QColor &color = QColor());
-    QIcon getIconMenuWithColor(const QString &path, const QColor &color = QColor());
+QPixmap getAvatarFromImage(const QImage &image);
+QIcon getIconWithColor(const QString &path, const QColor &color = QColor());
+QIcon getIconMenuWithColor(const QString &path, const QColor &color = QColor());
 
-    systrayPosition getSystrayPosition(QScreen *screen);
-    bool isPointInSystray(QScreen *screen, const QPoint &point);
+systrayPosition getSystrayPosition(QScreen *screen);
+bool isPointInSystray(QScreen *screen, const QPoint &point);
 
-    bool isDarkTheme();
-    void setStyle(QApplication *app);
-    void setStyle(QApplication *app, bool isDarkTheme);
+bool isDarkTheme();
+void setStyle(QApplication *app);
+void setStyle(QApplication *app, bool isDarkTheme);
 
-    QString getFileStatusIconPath(KDC::SyncFileStatus status);
-    QString getSyncStatusIconPath(StatusInfo &statusInfo);
-    QString getSyncStatusText(StatusInfo &statusInfo);
-    QString getDriveStatusIconPath(StatusInfo &statusInfo);
-    bool getPauseActionAvailable(KDC::SyncStatus status);
-    bool getResumeActionAvailable(KDC::SyncStatus status);
-    QColor getShadowColor(bool dialog = false);
-    QUrl getUrlFromLocalPath(const QString &path);
-    int getQFontWeightFromQSSFontWeight(int weight);
-    qint64 folderSize(const QString &dirPath);
-    qint64 folderDiskSize(const QString &dirPath);
-    bool openFolder(const QString &path);
-    QWidget *getTopLevelWidget(QWidget *widget);
-    void forceUpdate(QWidget *widget);
-    void invalidateLayout(QLayout *layout);
+QString getFileStatusIconPath(KDC::SyncFileStatus status);
+QString getSyncStatusIconPath(StatusInfo &statusInfo);
+QString getSyncStatusText(StatusInfo &statusInfo);
+QString getDriveStatusIconPath(StatusInfo &statusInfo);
+bool getPauseActionAvailable(KDC::SyncStatus status);
+bool getResumeActionAvailable(KDC::SyncStatus status);
+QColor getShadowColor(bool dialog = false);
+QUrl getUrlFromLocalPath(const QString &path);
+int getQFontWeightFromQSSFontWeight(int weight);
+qint64 folderSize(const QString &dirPath);
+qint64 folderDiskSize(const QString &dirPath);
+bool openFolder(const QString &path);
+QWidget *getTopLevelWidget(QWidget *widget);
+void forceUpdate(QWidget *widget);
+void invalidateLayout(QLayout *layout);
 
 #ifdef Q_OS_LINUX
-    bool getLinuxDesktopType(QString &type, QString &version);
+bool getLinuxDesktopType(QString &type, QString &version);
 #endif
-    template <class C>
-    void setEnabledRecursively(C *root, bool enabled)
-    {
-        root->setEnabled(enabled);
-        for (auto *child : root->template findChildren<QLayout *>()) {
-            setEnabledRecursively(child, enabled);
-        }
-        for (auto *child : root->template findChildren<QWidget *>()) {
-            if (!enabled)
-                child->setToolTip("");
-            setEnabledRecursively(child, enabled);
-        }
+template <class C>
+void setEnabledRecursively(C *root, bool enabled) {
+    root->setEnabled(enabled);
+    for (auto *child : root->template findChildren<QLayout *>()) {
+        setEnabledRecursively(child, enabled);
     }
+    for (auto *child : root->template findChildren<QWidget *>()) {
+        if (!enabled) child->setToolTip("");
+        setEnabledRecursively(child, enabled);
+    }
+}
 
-    class WidgetWithCustomToolTip : public QWidget
-    {
+class WidgetWithCustomToolTip : public QWidget {
         Q_OBJECT
 
     public:
         explicit WidgetWithCustomToolTip(QWidget *parent);
-        void setCustomToolTipText(const QString &text)
-        {
-            _customToolTipText = text;
-        }
+        void setCustomToolTipText(const QString &text) { _customToolTipText = text; }
 
     private:
         virtual QPoint customToolTipPosition(QHelpEvent *event);
@@ -142,10 +125,9 @@ namespace GuiUtility {
         QString _customToolTipText;
         virtual bool event(QEvent *event) override;
         virtual void leaveEvent(QEvent *event) override;
-    };
+};
 
-    class LargeWidgetWithCustomToolTip : public WidgetWithCustomToolTip
-    {
+class LargeWidgetWithCustomToolTip : public WidgetWithCustomToolTip {
         Q_OBJECT
 
     public:
@@ -153,9 +135,9 @@ namespace GuiUtility {
 
     private:
         virtual QPoint customToolTipPosition(QHelpEvent *event) override;
-    };
-}
+};
+}  // namespace GuiUtility
 
-}
+}  // namespace KDC
 
 #endif

@@ -25,36 +25,31 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 namespace KDC {
 
 SyncInfoClient::SyncInfoClient()
-    : SyncInfo()
-    , _paused(false)
-    , _status(SyncStatus::SyncStatusUndefined)
-    , _unresolvedConflicts(false)
-    , _currentFile(0)
-    , _totalFiles(0)
-    , _completedSize(0)
-    , _totalSize(0)
-    , _estimatedRemainingTime(0)
-    , _isBeingDeleted(false)
-{
-}
+    : SyncInfo(),
+      _paused(false),
+      _status(SyncStatus::SyncStatusUndefined),
+      _unresolvedConflicts(false),
+      _currentFile(0),
+      _totalFiles(0),
+      _completedSize(0),
+      _totalSize(0),
+      _estimatedRemainingTime(0),
+      _isBeingDeleted(false) {}
 
 SyncInfoClient::SyncInfoClient(const SyncInfo &syncInfo)
-    : SyncInfo(syncInfo)
-    , _paused(false)
-    , _status(SyncStatus::SyncStatusUndefined)
-    , _unresolvedConflicts(false)
-    , _currentFile(0)
-    , _totalFiles(0)
-    , _completedSize(0)
-    , _totalSize(0)
-    , _estimatedRemainingTime(0)
-    , _isBeingDeleted(false)
-{
-}
+    : SyncInfo(syncInfo),
+      _paused(false),
+      _status(SyncStatus::SyncStatusUndefined),
+      _unresolvedConflicts(false),
+      _currentFile(0),
+      _totalFiles(0),
+      _completedSize(0),
+      _totalSize(0),
+      _estimatedRemainingTime(0),
+      _isBeingDeleted(false) {}
 
-QString SyncInfoClient::name() const
-{
+QString SyncInfoClient::name() const {
     return CommonUtility::getRelativePathFromHome(_localPath);
 }
 
-}
+}  // namespace KDC

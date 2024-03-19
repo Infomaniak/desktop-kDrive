@@ -41,11 +41,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #define EXECUTE_ERROR_MSG "C/S function call timeout or error!"
 
-typedef enum {
-    REQUEST = 0,
-    REPLY,
-    SIGNAL
-} MsgType;
+typedef enum { REQUEST = 0, REPLY, SIGNAL } MsgType;
 
 typedef enum {
     REQUEST_NUM_LOGIN_REQUESTTOKEN = 1,
@@ -163,44 +159,35 @@ typedef enum {
     SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS
 } SignalNum;
 
-struct ArgsReader
-{
-    template <class... Args>
-    ArgsReader(Args... args)
-        : stream(&params, QIODevice::WriteOnly)
-    {
-        read(args...);
-    }
-    template <class T>
-    void read(const T p)
-    {
-        stream << p;
-    }
-    template <class T, class... Args>
-    void read(const T p, Args... args)
-    {
-        stream << p;
-        read(args...);
-    }
-    operator QByteArray() const { return params; }
-    QByteArray params;
-    QDataStream stream;
+struct ArgsReader {
+        template <class... Args>
+        ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
+            read(args...);
+        }
+        template <class T>
+        void read(const T p) {
+            stream << p;
+        }
+        template <class T, class... Args>
+        void read(const T p, Args... args) {
+            stream << p;
+            read(args...);
+        }
+        operator QByteArray() const { return params; }
+        QByteArray params;
+        QDataStream stream;
 };
 
-struct ArgsWriter
-{
-    ArgsWriter(const QByteArray &results)
-        : stream { QDataStream(results) } {};
-    template <class T>
-    void write(T &r)
-    {
-        stream >> r;
-    }
-    template <class T, class... Args>
-    void write(T &r, Args... args)
-    {
-        stream >> r;
-        extract(args...);
-    }
-    QDataStream stream;
+struct ArgsWriter {
+        ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
+        template <class T>
+        void write(T &r) {
+            stream >> r;
+        }
+        template <class T, class... Args>
+        void write(T &r, Args... args) {
+            stream >> r;
+            extract(args...);
+        }
+        QDataStream stream;
 };

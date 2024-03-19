@@ -23,19 +23,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace KDC {
 
-static int defaultToolTipDuration = 3000; // ms
+static int defaultToolTipDuration = 3000;  // ms
 
 CustomCheckBox::CustomCheckBox(QWidget *parent)
-    : QCheckBox(parent)
-    , _toolTipText(QString())
-    , _toolTipDuration(defaultToolTipDuration)
-    , _customToolTip(nullptr)
-{
+    : QCheckBox(parent), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _customToolTip(nullptr) {
     connect(this, &QCheckBox::clicked, this, &CustomCheckBox::onClicked);
 }
 
-bool CustomCheckBox::event(QEvent *event)
-{
+bool CustomCheckBox::event(QEvent *event) {
     if (event->type() == QEvent::ToolTip) {
         if (!_toolTipText.isEmpty()) {
             if (!_customToolTip) {
@@ -52,8 +47,7 @@ bool CustomCheckBox::event(QEvent *event)
     return QCheckBox::event(event);
 }
 
-void CustomCheckBox::leaveEvent(QEvent *event)
-{
+void CustomCheckBox::leaveEvent(QEvent *event) {
     if (_customToolTip) {
         _customToolTip->close();
         _customToolTip = nullptr;
@@ -62,12 +56,11 @@ void CustomCheckBox::leaveEvent(QEvent *event)
     QCheckBox::leaveEvent(event);
 }
 
-void CustomCheckBox::onClicked(bool checked)
-{
+void CustomCheckBox::onClicked(bool checked) {
     Q_UNUSED(checked)
 
     // Remove hover
     QApplication::sendEvent(this, new QEvent(QEvent::Leave));
 }
 
-}
+}  // namespace KDC

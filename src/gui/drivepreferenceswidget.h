@@ -41,96 +41,90 @@ namespace KDC {
 class CustomPushButton;
 class ClientGui;
 
-class DrivePreferencesWidget : public ParametersWidget
-{
-    Q_OBJECT
+class DrivePreferencesWidget : public ParametersWidget {
+        Q_OBJECT
 
-public:
-    explicit DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
+    public:
+        explicit DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
-    void setDrive(int driveDbId, bool unresolvedErrors);
-    void reset();
-    void showErrorBanner(bool unresolvedErrors);
-    void refreshStatus();
+        void setDrive(int driveDbId, bool unresolvedErrors);
+        void reset();
+        void showErrorBanner(bool unresolvedErrors);
+        void refreshStatus();
 
-signals:
-    void displayErrors(int driveDbId);
-    void errorAdded();
-    void openFolder(const QString &filePath);
-    void removeDrive(int driveDbId);
-    void newBigFolderDiscovered(int syncDbId, const QString &path);
-    void undecidedListsCleared();
-    void runSync(int syncDbId);
-    void pauseSync(int syncDbId);
-    void resumeSync(int syncDbId);
+    signals:
+        void displayErrors(int driveDbId);
+        void errorAdded();
+        void openFolder(const QString &filePath);
+        void removeDrive(int driveDbId);
+        void newBigFolderDiscovered(int syncDbId, const QString &path);
+        void undecidedListsCleared();
+        void runSync(int syncDbId);
+        void pauseSync(int syncDbId);
+        void resumeSync(int syncDbId);
 
-private:
-    enum AddFolderStep {
-        SelectLocalFolder = 0,
-        SelectServerBaseFolder,
-        SelectServerFolders,
-        Confirm
-    };
+    private:
+        enum AddFolderStep { SelectLocalFolder = 0, SelectServerBaseFolder, SelectServerFolders, Confirm };
 
-    std::shared_ptr<ClientGui> _gui;
-    int _driveDbId;
-    int _userDbId;
+        std::shared_ptr<ClientGui> _gui;
+        int _driveDbId;
+        int _userDbId;
 
-    QVBoxLayout *_mainVBox;
-    ActionWidget *_displayErrorsWidget;
-    ActionWidget *_displayBigFoldersWarningWidget;
-    QLabel *_userAvatarLabel;
-    QLabel *_userNameLabel;
-    QLabel *_userMailLabel;
-    CustomSwitch *_notificationsSwitch;
-    int _foldersBeginIndex;
-    QLabel *_foldersLabel;
-    CustomPushButton *_addLocalFolderButton;
-    QLabel *_notificationsLabel;
-    QLabel *_notificationsTitleLabel;
-    QLabel *_notificationsDescriptionLabel;
-    QLabel *_connectedWithLabel;
-    CustomToolButton *_removeDriveButton;
-    bool _updatingFoldersBlocs;
+        QVBoxLayout *_mainVBox;
+        ActionWidget *_displayErrorsWidget;
+        ActionWidget *_displayBigFoldersWarningWidget;
+        QLabel *_userAvatarLabel;
+        QLabel *_userNameLabel;
+        QLabel *_userMailLabel;
+        CustomSwitch *_notificationsSwitch;
+        int _foldersBeginIndex;
+        QLabel *_foldersLabel;
+        CustomPushButton *_addLocalFolderButton;
+        QLabel *_notificationsLabel;
+        QLabel *_notificationsTitleLabel;
+        QLabel *_notificationsDescriptionLabel;
+        QLabel *_connectedWithLabel;
+        CustomToolButton *_removeDriveButton;
+        bool _updatingFoldersBlocs;
 
-    void showEvent(QShowEvent *event) override;
+        void showEvent(QShowEvent *event) override;
 
-    bool existUndecidedSet();
-    void updateUserInfo();
-    void askEnableSmartSync(const std::function<void(bool enable)> &callback);
-    void askDisableSmartSync(const std::function<void(bool enable, bool diskSpaceWarning)> &callback, int syncDbId);
-    bool switchVfsOn(int syncDbId);
-    bool switchVfsOff(int syncDbId, bool diskSpaceWarning);
-    void resetFoldersBlocs();
-    void updateFoldersBlocs();
-    void refreshFoldersBlocs();
-    FolderTreeItemWidget *blocTreeItemWidget(PreferencesBlocWidget *folderBloc);
-    FolderItemWidget *blocItemWidget(PreferencesBlocWidget *folderBloc);
-    QFrame *blocSeparatorFrame(PreferencesBlocWidget *folderBloc);
-    bool addSync(const QString &localFolderPath, bool smartSync, const QString &serverFolderPath,
-        const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet);
-    bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
+        bool existUndecidedSet();
+        void updateUserInfo();
+        void askEnableSmartSync(const std::function<void(bool enable)> &callback);
+        void askDisableSmartSync(const std::function<void(bool enable, bool diskSpaceWarning)> &callback, int syncDbId);
+        bool switchVfsOn(int syncDbId);
+        bool switchVfsOff(int syncDbId, bool diskSpaceWarning);
+        void resetFoldersBlocs();
+        void updateFoldersBlocs();
+        void refreshFoldersBlocs();
+        FolderTreeItemWidget *blocTreeItemWidget(PreferencesBlocWidget *folderBloc);
+        FolderItemWidget *blocItemWidget(PreferencesBlocWidget *folderBloc);
+        QFrame *blocSeparatorFrame(PreferencesBlocWidget *folderBloc);
+        bool addSync(const QString &localFolderPath, bool smartSync, const QString &serverFolderPath,
+                     const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet);
+        bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
 
-private slots:
-    void onErrorsWidgetClicked();
-    void onBigFoldersWarningWidgetClicked();
-    void onAddLocalFolder(bool checked = false);
-    void onSmartSyncSwitchSyncChanged(int syncDbId, bool activate);
-    void onNotificationsSwitchClicked(bool checked = false);
-    void onErrorAdded();
-    void onRemoveDrive(bool checked = false);
-    void onUnsyncTriggered(int syncDbId);
-    void onDisplayFolderDetail(int syncDbId, bool display);
-    void onOpenFolder(const QString &filePath);
-    void onSubfoldersLoaded(bool error, bool empty);
-    void onNeedToSave(bool isFolderItemBlackListed);
-    void onCancelUpdate(int syncDbId);
-    void onValidateUpdate(int syncDbId);
-    void onNewBigFolderDiscovered(int syncDbId, const QString &path);
-    void onUndecidedListsCleared();
-    void retranslateUi();
-    void onVfsConversionCompleted(int syncDbId);
-    void onDriveBeingRemoved();
+    private slots:
+        void onErrorsWidgetClicked();
+        void onBigFoldersWarningWidgetClicked();
+        void onAddLocalFolder(bool checked = false);
+        void onSmartSyncSwitchSyncChanged(int syncDbId, bool activate);
+        void onNotificationsSwitchClicked(bool checked = false);
+        void onErrorAdded();
+        void onRemoveDrive(bool checked = false);
+        void onUnsyncTriggered(int syncDbId);
+        void onDisplayFolderDetail(int syncDbId, bool display);
+        void onOpenFolder(const QString &filePath);
+        void onSubfoldersLoaded(bool error, bool empty);
+        void onNeedToSave(bool isFolderItemBlackListed);
+        void onCancelUpdate(int syncDbId);
+        void onValidateUpdate(int syncDbId);
+        void onNewBigFolderDiscovered(int syncDbId, const QString &path);
+        void onUndecidedListsCleared();
+        void retranslateUi();
+        void onVfsConversionCompleted(int syncDbId);
+        void onDriveBeingRemoved();
 };
 
-}
+}  // namespace KDC
