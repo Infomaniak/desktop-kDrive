@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/actions/help</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icons/actions/help" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M12,0 C5.372583,0 0,5.372583 0,12 C0,18.627417 5.372583,24 12,24 C18.627417,24 24,18.627417 24,12 C23.9928352,5.37555305 18.624447,0.00716484761 12,0 Z M12,19 C11.1715729,19 10.5,18.3284271 10.5,17.5 C10.5,16.6715729 11.1715729,16 12,16 C12.8284271,16 13.5,16.6715729 13.5,17.5 C13.5,18.3284271 12.8284271,19 12,19 Z M13.6,12.92 C13.2354119,13.0791192 12.9998071,13.4392018 13,13.837 C13,14.3892847 12.5522847,14.837 12,14.837 C11.4477153,14.837 11,14.3892847 11,13.837 C10.9998192,12.6439685 11.7065685,11.5642126 12.8,11.087 C13.7156182,10.6873913 14.1959287,9.6734215 13.9251126,8.71180697 C13.6542964,7.75019245 12.7154246,7.13590206 11.7258343,7.27285063 C10.736244,7.4097992 9.99948542,8.25597866 10,9.255 C10,9.80728475 9.55228475,10.255 9,10.255 C8.44771525,10.255 8,9.80728475 8,9.255 C8,7.25721037 9.47396908,5.5657212 11.45299,5.29251846 C13.4320109,5.01931572 15.3091634,6.24818022 15.8504064,8.17125573 C16.3916494,10.0943312 15.4310044,12.1218841 13.6,12.921 L13.6,12.92 Z" id="path" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>

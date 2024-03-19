@@ -1,0 +1,88 @@
+set( APPLICATION_NAME       "kDrive" )
+set( APPLICATION_SHORTNAME  "kDrive" )
+set( APPLICATION_EXECUTABLE "kDrive" )
+set( APPLICATION_CLIENT_EXECUTABLE "kDrive_client" )
+set( APPLICATION_DOMAIN     "infomaniak.com" )
+set( APPLICATION_VENDOR     "Infomaniak Network SA" )
+
+set( APPLICATION_UPDATE_URL "https://www.infomaniak.com/drive/update/desktopclient" CACHE STRING "URL for updater" FORCE )
+if("$ENV{KDRIVE_PREPROD_UPDATE}" STREQUAL "1")
+    message(STATUS "Environment variable KDRIVE_PREPROD_UPDATE is defined")
+    set( APPLICATION_STORAGE_URL "https://download.storage.infomaniak.com/drive/desktopclient_preprod/kDrive" )
+else()
+    message(STATUS "Environment variable KDRIVE_PREPROD_UPDATE is NOT defined")
+    set( APPLICATION_STORAGE_URL "https://download.storage.infomaniak.com/drive/desktopclient/kDrive" )
+endif()
+
+set( APPLICATION_HELP_URL "https://support.infomaniak.com/" CACHE STRING "URL for the help menu" )
+set( APPLICATION_CONFLICT_HELP_URL "https://www.infomaniak.com/en/support/faq/2403/resolve-a-kdrive-sync-conflict" )
+
+if( APPLE )
+    set( APPLICATION_ICON_NAME  "kdrive-mac" )
+    set( MINIMUM_SYSTEM_VERSION "10.15" )
+else()
+    set( APPLICATION_ICON_NAME  "kdrive-win" )
+endif()
+set( APPLICATION_VIRTUALFILE_SUFFIX "kdrive" CACHE STRING "Virtual file suffix (not including the .)")
+set( APPLICATION_DOWNLOAD_URL "https://kdrive.infomaniak.com/app/drive/sync" CACHE STRING "App download URL" )
+set( APPLICATION_TRASH_URL "https://kdrive.infomaniak.com/app/drive/%s/trash" CACHE STRING "App trash URL" )
+set( APPLICATION_THUMBNAIL_URL "index.php/apps/files/api/v1/thumbnail/%1/%1/%2" CACHE STRING "App thumbnail URL" )
+set( APPLICATION_PREVIEW_URL "https://kdrive.infomaniak.com/app/drive/%1/redirect/%2" CACHE STRING "App preview URL" )
+
+if("$ENV{KDRIVE_DEBUG}" STREQUAL "1")
+    message( STATUS "Environment variable KDRIVE_DEBUG defined, using preprod URL" )
+    set( GLOBAL_API_V2_URL "https://api.preprod.dev.infomaniak.ch/2" )
+    set( KDRIVE_API_V2_URL "https://api.kdrive.preprod.dev.infomaniak.ch/2" )
+    set( NOTIFY_KDRIVE_V2_URL "https://notify.kdrive.preprod.dev.infomaniak.ch/2" )
+    set( LOGIN_URL "https://login.preprod.dev.infomaniak.ch" )
+else()
+    message( STATUS "Environment variable KDRIVE_DEBUG not defined, using prod URL" )
+    set( GLOBAL_API_V2_URL "https://api.infomaniak.com/2" )
+    set( KDRIVE_API_V2_URL "https://api.kdrive.infomaniak.com/2" )
+    set( NOTIFY_KDRIVE_V2_URL "https://notify.kdrive.infomaniak.com/2" )
+    set( LOGIN_URL "https://login.infomaniak.com" )
+endif()
+set( TEST_DIR "${CMAKE_SOURCE_DIR}/test" )
+
+
+set ( CLIENT_ID "5EA39279-FF64-4BB8-A872-4A40B5786317" CACHE STRING "App client ID" )
+set ( REDIRECT_URI "kdrive://auth-desktop" CACHE STRING "Redirect URI" )
+
+set( LINUX_PACKAGE_SHORTNAME "infomaniakdrive" )
+
+set( APPLICATION_REV_DOMAIN "com.infomaniak.drive.desktopclient" )
+set( MAC_INSTALLER_BACKGROUND_FILE "${CMAKE_SOURCE_DIR}/admin/osx/installer-assets/installer-background.png" CACHE STRING "The MacOSX installer background image")
+set( MAC_INSTALLER_INTRODUCTION_FILE "${CMAKE_SOURCE_DIR}/admin/osx/installer-assets/Introduction.rtfd")
+set( MAC_INSTALLER_DELETE_SCRIPT "${CMAKE_SOURCE_DIR}/admin/osx/installer-assets/deleteExistingApp.sh")
+
+set( SOCKETAPI_TEAM_IDENTIFIER_PREFIX "864VDCS2QY." )
+set( WIN_SETUP_BITMAP_PATH "${CMAKE_SOURCE_DIR}/admin/win/nsi" )
+
+set( APPLICATION_LICENSE    "${KDRIVE_THEME_DIR}/license.txt" )
+
+option( WITH_CRASHREPORTER "Build crashreporter" OFF )  # Temporarily disabled
+set( CRASHREPORTER_SUBMIT_URL "https://www.infomaniak.com/report/drive/crash" CACHE STRING "URL for crash reporter" )
+set( CRASHREPORTER_ICON ":/infomaniak.png" )
+
+set( DEBUGREPORTER_SUBMIT_URL "https://www.infomaniak.com/report/drive/logs" CACHE STRING "URL for debug reporter" )
+
+if( APPLE )
+    set( LEARNMORE_LITESYNC_URL "https://faq.infomaniak.com/2608" CACHE STRING "URL for Lite Sync FAQ" )
+    set( LEARNMORE_LITESYNC_COMPATIBILITY_URL "https://faq.infomaniak.com/2608" CACHE STRING "URL for Lite Sync compatibility FAQ" )
+else()
+    set( LEARNMORE_LITESYNC_URL "https://faq.infomaniak.com/2562" CACHE STRING "URL for Lite Sync FAQ" )
+    set( LEARNMORE_LITESYNC_COMPATIBILITY_URL "https://faq.infomaniak.com/2523" CACHE STRING "URL for Lite Sync compatibility FAQ" )
+endif()
+
+# Sentry
+set( SENTRY_SERVER_DSN "https://af2cd6793efb2b73683ff24abebed911@sentry-desktop.infomaniak.com/2" )
+set( SENTRY_CLIENT_DSN "https://1435053ba7740a09682093f424dfaf79@sentry-desktop.infomaniak.com/3" )
+set( SENTRY_SERVER_DB_PATH ".sentry-native_server" )
+set( SENTRY_CLIENT_DB_PATH ".sentry-native_client" )
+if( APPLE )
+    set( SENTRY_CRASHPAD_HANDLER_NAME "crashpad_handler" )
+elseif( WIN32 )
+    set( SENTRY_CRASHPAD_HANDLER_NAME "crashpad_handler.exe" )
+else()
+    set( SENTRY_CRASHPAD_HANDLER_NAME "crashpad_handler" )
+endif()

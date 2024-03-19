@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/actions/notifications</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icons/actions/notifications" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M14.236,20.9999962 C14.3634237,20.999298 14.4706428,21.0952763 14.484,21.222 C14.4948971,21.3142625 14.5002401,21.4070965 14.5000077,21.4999962 C14.5000077,22.8807119 13.3807119,23.9999962 11.9999923,23.9999962 C10.6192881,23.9999962 9.49999226,22.8807119 9.49999226,21.4999962 C9.4997599,21.4070965 9.50510286,21.3142625 9.516,21.222 C9.53023206,21.0957258 9.63692653,21.0002171 9.764,20.9999962 L9.764,20.9999962 Z M12,0 C12.8284271,0 13.5,0.671572875 13.5,1.5 L13.5,1.5 L13.5,2.636 C14.3310825,2.78453427 15.1244135,3.0965642 15.834,3.554 C18.3078455,5.29553783 19.756259,8.15115278 19.7,11.176 L19.7,11.176 L19.7,11.944 C19.7036425,14.4905544 20.301495,17.001124 21.446,19.276 C21.5240637,19.4299179 21.5162503,19.6142282 21.4253553,19.7619834 C21.3344604,19.9097386 21.1734747,20 21,20 L21,20 L3,20 C2.82681393,19.999648 2.66614301,19.9097002 2.57530828,19.7622466 C2.48447355,19.6147929 2.47641212,19.4308343 2.554,19.276 C3.69850503,17.001124 4.29635751,14.4905544 4.3,11.944 L4.3,11.944 L4.3,11.176 C4.25454818,8.37554247 5.48727888,5.70689585 7.649,3.926 C8.486173,3.28286824 9.46275079,2.84544634 10.5,2.649 L10.5,2.649 L10.5,1.5 C10.5,0.671572875 11.1715729,0 12,0 Z" id="path" fill="#000000"></path>
+    </g>
+</svg>

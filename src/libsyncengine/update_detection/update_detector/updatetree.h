@@ -1,0 +1,78 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "node.h"
+#include "syncpal/sharedobject.h"
+#include "db/dbnode.h"
+#include "libcommon/utility/types.h"
+
+#include <vector>
+#include <chrono>
+#include <unordered_map>
+
+
+namespace KDC {
+
+class UpdateTree : public SharedObject {
+    public:
+        UpdateTree(const ReplicaSide side, const DbNode &dbNode);
+        ~UpdateTree();
+
+        void insertNode(std::shared_ptr<Node> node);
+        void deleteNode(std::shared_ptr<Node> node);
+        void deleteNode(const NodeId &id);
+        inline const ReplicaSide &side() const { return _side; }
+        inline std::shared_ptr<Node> rootNode() { return _rootNode; }
+        inline std::unordered_map<NodeId, std::shared_ptr<Node>> &nodes() { return _nodes; }
+        inline std::unordered_map<NodeId, NodeId> &previousIdSet() { return _previousIdSet; }
+        std::shared_ptr<Node> getNodeByPath(const SyncPath &path);
+        std::shared_ptr<Node> getNodeById(const NodeId &nodeId);
+        bool exists(const NodeId &id);
+
+        /** Checks if ancestorItem is an ancestor of item.
+         * @return true indicates that ancestorItem is an ancestor of item
+         */
+        bool isAncestor(const NodeId &nodeId, const NodeId &ancestorNodeId) const;
+
+        void markAllNodesUnprocessed();
+        void init();
+
+        inline bool inconsistencyCheckDone() const { return _inconsistencyCheckDone; }
+        inline void setInconsistencyCheckDone() { _inconsistencyCheckDone = true; }
+
+        inline void setRootFolderId(const NodeId &nodeId) { _rootNode->setId(std::make_optional<NodeId>(nodeId)); }
+
+    private:
+        std::unordered_map<NodeId, std::shared_ptr<Node>> _nodes;
+        std::shared_ptr<Node> _rootNode;
+        ReplicaSide _side;
+
+        // key : previousID, value : newID
+        std::unordered_map<NodeId, NodeId> _previousIdSet;
+
+        bool _inconsistencyCheckDone = false;
+
+        void clear();
+
+        friend class TestUpdateTree;
+        friend class TestUpdateTreeWorker;
+};
+
+}  // namespace KDC

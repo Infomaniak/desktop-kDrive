@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/actions/drive</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icons/actions/drive" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M21.5,13.251 C22.6034291,13.2537483 23.4972517,14.1475709 23.5,15.251 L23.5,15.251 L23.5,19.251 C23.4967052,20.3542019 22.6032019,21.2477052 21.5,21.251 L21.5,21.251 L2.5,21.251 C1.39702511,21.2471597 0.503840286,20.3539749 0.5,19.251 L0.5,19.251 L0.5,15.251 C0.503294801,14.1477981 1.39679813,13.2542948 2.5,13.251 L2.5,13.251 Z M20.5,17.5 L3.5,17.5 C3.08578644,17.5 2.75,17.8357864 2.75,18.25 C2.75,18.6642136 3.08578644,19 3.5,19 L3.5,19 L20.5,19 C20.9142136,19 21.25,18.6642136 21.25,18.25 C21.25,17.8357864 20.9142136,17.5 20.5,17.5 L20.5,17.5 Z M20,14.251 C19.4477153,14.251 19,14.6987153 19,15.251 C19,15.8032847 19.4477153,16.251 20,16.251 C20.5522847,16.251 21,15.8032847 21,15.251 C21,14.6987153 20.5522847,14.251 20,14.251 Z M18.5,2.751 C19.892493,2.79196848 21.0999461,3.72562457 21.49,5.063 L21.49,5.063 L23.18,11.736 C23.2038943,11.8281216 23.1731887,11.9258057 23.1008852,11.9876889 C23.0285818,12.0495722 22.9273284,12.0648294 22.84,12.027 C22.4166486,11.8451548 21.9607538,11.751254 21.5,11.751 L21.5,11.751 L2.5,11.751 C2.03924624,11.751254 1.58335139,11.8451548 1.16,12.027 C1.07267155,12.0648294 0.971418178,12.0495722 0.899114756,11.9876889 C0.826811334,11.9258057 0.796105741,11.8281216 0.82,11.736 L0.82,11.736 L2.511,5.063 C2.90094001,3.72596687 4.1078803,2.79239512 5.5,2.751 L5.5,2.751 Z" id="path" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icons/theme/black/state-ok</title>
+    <defs>
+        <path d="M6.10416667,2.50000809 C6.41157966,2.49862658 6.69322243,2.67421801 6.83108333,2.95321569 L6.83108333,2.95321569 L7.34404167,3.99821432 C7.38995944,4.09125795 7.48367163,4.15001063 7.58616667,4.15001413 L7.58616667,4.15001413 L13.6875,4.15001413 C14.1362314,4.15001413 14.5,4.51937872 14.5,4.97501305 L14.5,4.97501305 L14.5,12.675003 C14.5,13.1306373 14.1362314,13.5000081 13.6875,13.5000081 L13.6875,13.5000081 L2.3125,13.5000081 C1.86376864,13.5000081 1.5,13.1306373 1.5,12.675003 L1.5,12.675003 L1.5,3.3250152 C1.5,2.86938088 1.86376864,2.50000809 2.3125,2.50000809 L2.3125,2.50000809 Z M7.33163214,4.85714962 L5.15625,4.85714962 L5.15625,11.9285742 L7.33163214,11.9285742 L7.33163214,10.5972555 L8.13171259,9.87371278 L9.25600865,11.9285742 L11.65625,11.9285742 L9.54884855,8.60027751 L11.5412058,6.80589146 L8.92133447,6.80589146 L7.33163214,8.50380515 L7.33163214,4.85714962 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/theme/black/state-ok" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Combined-Shape" fill="#000000" xlink:href="#path-1"></use>
+    </g>
+</svg>

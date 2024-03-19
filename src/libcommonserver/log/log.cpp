@@ -1,0 +1,112 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "log.h"
+#include "customrollingfileappender.h"
+#include "utility/utility.h"
+
+#include <log4cplus/initializer.h>
+#include <log4cplus/fileappender.h>
+#include <log4cplus/loggingmacros.h>
+
+#include <codecvt>
+
+#define LOGGER_INSTANCE_NAME L"Main"
+#define LOGGER_APP_RF_NAME L"RollingFileAppender"
+#define LOGGER_APP_RF_PATTERN L"%D{%Y-%m-%d %H:%M:%S:%q} [%-0.-1p] (%t) %b:%L - %m%n"
+#define LOGGER_APP_RF_MAX_FILE_SIZE 500  // MB
+#define LOGGER_APP_RF_MAX_BACKUP_IDX 4
+#define LOGGER_APP_PURGE_AFTER_HOURS 24
+
+namespace KDC {
+
+std::shared_ptr<Log> Log::_instance = nullptr;
+
+Log::~Log() {
+    log4cplus::Logger::shutdown();
+}
+
+std::shared_ptr<Log> Log::instance(const log4cplus::tstring &filePath) {
+    if (_instance == nullptr) {
+        if (filePath.empty()) {
+            throw std::runtime_error("Log must be initialized!");
+        } else {
+            _instance = std::shared_ptr<Log>(new Log(filePath));
+        }
+    }
+
+    return _instance;
+}
+
+bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
+    if (useLog) {
+        // Set log level
+        switch (logLevel) {
+            case LogLevelDebug:
+                _logger.setLogLevel(log4cplus::DEBUG_LOG_LEVEL);
+                break;
+            case LogLevelInfo:
+                _logger.setLogLevel(log4cplus::INFO_LOG_LEVEL);
+                break;
+            case LogLevelWarning:
+                _logger.setLogLevel(log4cplus::WARN_LOG_LEVEL);
+                break;
+            case LogLevelError:
+                _logger.setLogLevel(log4cplus::ERROR_LOG_LEVEL);
+                break;
+            case LogLevelFatal:
+                _logger.setLogLevel(log4cplus::FATAL_LOG_LEVEL);
+                break;
+        }
+    } else {
+        _logger.setLogLevel(log4cplus::OFF_LOG_LEVEL);
+    }
+
+    // Set purge duration
+    log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(LOGGER_APP_RF_NAME);
+    static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get())->setExpire(purgeOldLogs ? LOGGER_APP_PURGE_AFTER_HOURS : 0);
+
+    return true;
+}
+
+Log::Log(const log4cplus::tstring &filePath) {
+    // Instantiate an appender object
+    CustomRollingFileAppender *rfAppender = new CustomRollingFileAppender(filePath, LOGGER_APP_RF_MAX_FILE_SIZE * 1024 * 1024,
+                                                                          LOGGER_APP_RF_MAX_BACKUP_IDX, true, true);
+
+    // Unicode management
+    std::locale loc(std::locale(), new std::codecvt_utf8<wchar_t>);
+    rfAppender->imbue(loc);
+
+    log4cplus::SharedAppenderPtr appender(std::move(rfAppender));
+    appender->setName(LOGGER_APP_RF_NAME);
+
+    // Instantiate a layout object && attach the layout object to the appender
+    appender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(LOGGER_APP_RF_PATTERN)));
+
+    // Instantiate a logger object
+    _logger = log4cplus::Logger::getInstance(LOGGER_INSTANCE_NAME);
+    _logger.setLogLevel(log4cplus::TRACE_LOG_LEVEL);
+
+    // Attach the appender object to the logger
+    _logger.addAppender(appender);
+
+    LOG_INFO(_logger, "Logger initialization done");
+}
+
+}  // namespace KDC

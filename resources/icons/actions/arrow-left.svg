@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/actions/arrow-left</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M9.62437766,18.7132747 C9.88500244,18.9692476 10.0247158,19.2985746 10.0247158,19.6600411 C10.0247158,20.0215076 9.88500244,20.3508346 9.65890153,20.5705641 C9.52098525,20.7253694 9.35003975,20.8423866 9.15422809,20.9132401 C8.99530756,20.9707447 8.82935172,21 8.66040534,21 C8.49145895,21 8.32550312,20.9707447 8.16658258,20.9132401 C7.97077093,20.8423866 7.79982543,20.7253694 7.69687004,20.6072364 L0.400338104,13.4525923 C0.13877065,13.1956936 0,12.8640455 0,12.5 C0,12.1359545 0.13877065,11.8043064 0.400338104,11.5474077 L7.69643167,4.39319379 C7.95705611,4.13721995 8.29236935,4 8.66040534,4 C9.0284409,4 9.36375289,4.13721959 9.62437766,4.39319248 C9.88500244,4.64916536 10.0247158,4.97849238 10.0247158,5.33995888 C10.0247158,5.70142538 9.88500244,6.03075239 9.62437766,6.28672528 L4.66842908,11.1542152 L22.623826,11.1542152 C22.997175,11.1542152 23.3371525,11.2895838 23.5996619,11.5474077 C23.8621713,11.8052316 24,12.1391408 24,12.5058259 C24,12.8672924 23.8602867,13.1966194 23.5996619,13.4525923 C23.3371525,13.7104162 22.997175,13.8457848 22.623826,13.8457848 L4.66842908,13.8457848 L9.62437766,18.7132747 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/actions/arrow-left" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="left-arrow" fill="#000000" xlink:href="#path-1"></use>
+    </g>
+</svg>

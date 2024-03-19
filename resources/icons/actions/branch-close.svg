@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="10px" height="10px" viewBox="0 0 10 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>branch-close</title>
+    <defs>
+        <path d="M8.11593774,4.98839621 C8.11627824,5.26410549 7.99785738,5.52660508 7.790937,5.70881288 L3.14427034,9.79672954 C2.8240241,10.0654501 2.34782316,10.0293666 2.07172476,9.71545893 C1.79562635,9.40155123 1.8206211,8.92463969 2.12802034,8.64131288 L6.19135367,5.06672954 C6.21391815,5.04695073 6.22685751,5.01840217 6.22685751,4.98839621 C6.22685751,4.95839026 6.21391815,4.9298417 6.19135367,4.91006288 L2.12802034,1.33547954 C1.8206211,1.05215273 1.79562635,0.575241195 2.07172476,0.261333495 C2.34782316,-0.0525742051 2.8240241,-0.0886576546 3.14427034,0.180062877 L7.78927034,4.26672954 C7.9966916,4.44924933 8.11567464,4.71210473 8.11593774,4.98839621 Z" id="path-1"></path>
+    </defs>
+    <g id="branch-close" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="icon" fill="#666666" xlink:href="#path-1"></use>
+    </g>
+</svg>

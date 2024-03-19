@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icons/theme/colored/state-ok</title>
+    <g id="icons/theme/colored/state-ok" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(1.500000, 2.500000)">
+            <path d="M12.1875,1.65000696 L6.08616667,1.65000696 C5.98367163,1.65000347 5.88995944,1.59125076 5.84404167,1.49820707 L5.33108333,0.453207851 C5.19322243,0.174210015 4.91157966,-0.00138150897 4.60416667,0 L0.8125,0 C0.363768641,0 0,0.369372995 0,0.825007574 L0,10.1750006 C0,10.6306352 0.363768641,11 0.8125,11 L12.1875,11 C12.6362314,11 13,10.6306352 13,10.1750006 L13,2.47500635 C13,2.01937177 12.6362314,1.65000696 12.1875,1.65000696 Z" id="icon" fill="#3EBF4D"></path>
+            <polygon id="k" fill="#FFFFFF" fill-rule="nonzero" points="5.83163214 9.75 5.83163214 8.37329468 6.63171259 7.62508527 7.75600865 9.75 10.15625 9.75 8.04884855 6.3082367 10.0412058 4.45267735 7.42133447 4.45267735 5.83163214 6.20847544 5.83163214 2.4375 3.65625 2.4375 3.65625 9.75"></polygon>
+        </g>
+    </g>
+</svg>

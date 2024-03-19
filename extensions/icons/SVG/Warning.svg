@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="131px" height="131px" viewBox="0 0 131 131" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 56.3 (81716) - https://sketch.com -->
+    <title>SVG/Warning</title>
+    <desc>Created with Sketch.</desc>
+    <g id="SVG/Warning" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Rectangle" x="0" y="0" width="131" height="131"></rect>
+        <g id="alert-circle" transform="translate(93.000000, 93.000000)">
+            <path d="M17.476049,0.00391057667 C12.800437,0.0804555395 8.34276315,1.99395525 5.06665132,5.33076485 C1.75455986,8.62828225 -0.0736771583,13.1312305 0.00227549515,17.804324 C-0.00315667557,22.3686085 1.80829234,26.7473649 5.0366886,29.973846 C8.26508486,33.2003271 12.6449154,35.0091775 17.2091959,35.0010643 L17.5212536,35.0010643 C27.2595423,34.9008438 35.0787218,26.9361882 34.9994018,17.1977071 L34.9994018,17.1977071 C35.0102719,12.5768468 33.1567927,8.146949 29.858474,4.91066076 C26.5601553,1.67437252 22.0958702,-0.0946776921 17.476049,0.00391057667 Z" id="Shape" fill="#FF8500"></path>
+            <g id="Group" transform="translate(13.125000, 4.375000)" fill="#FFFFFF">
+                <path d="M0.549420296,23.590844 C0.51226894,22.5803459 0.883087759,21.5973668 1.57840215,20.8631839 C2.27371654,20.129001 3.23509283,19.7053145 4.24611671,19.6875 L4.31499925,19.6875 C6.40704074,19.6915223 8.12239665,21.3471842 8.20048485,23.4377717 C8.23834289,24.448461 7.86776039,25.4318428 7.17229661,26.1661835 C6.47683283,26.9005241 5.51504161,27.3239965 4.50378844,27.3411158 L4.4349059,27.3411158 C2.34392895,27.3344673 0.630095314,25.6802747 0.549420296,23.590844 Z" id="Path" fill-rule="nonzero"></path>
+                <rect id="Rectangle" x="1.09375" y="0" width="6.5625" height="17.5" rx="3.28125"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

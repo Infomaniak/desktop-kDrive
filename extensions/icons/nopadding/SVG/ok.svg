@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="124px" height="124px" viewBox="0 0 124 124" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 56.3 (81716) - https://sketch.com -->
+    <title>SVG/ok</title>
+    <desc>Created with Sketch.</desc>
+    <g id="SVG/ok" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons/icon-16px">
+            <g id="Icons/1---interface-essential/navigation-menu-vertical">
+                <circle style="fill:#3EBF4D" id="circle9" r="61" cy="62" cx="62" />
+                <path d="M65.518143,92.6921801 C64.049006,94.6413798 61.8582984,95.9185485 59.4382739,96.2367056 C57.0182493,96.5548627 54.571874,95.8873244 52.6155463,94.3577581 L27.359501,74.165322 C23.4600087,71.0447296 22.8285856,65.3538266 25.949178,61.4543343 C29.0697704,57.554842 34.7606734,56.9234189 38.6597838,60.0437058 L56.5708496,74.3734373 L86.2465767,34.1056294 C88.0928125,31.3351725 91.3121802,29.8034476 94.6264978,30.1185937 C97.9408154,30.4337398 100.813808,32.5447645 102.104814,35.61353 C103.383124,38.6521192 102.905605,42.14288 100.864921,44.7252543 L65.518143,92.6921801 Z" id="Path" fill="#FFFFFF" fill-rule="nonzero"></path>
+            </g>
+        </g>
+    </g>
+</svg>

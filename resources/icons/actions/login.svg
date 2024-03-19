@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61.2 (89653) - https://sketch.com -->
+    <title>login</title>
+    <desc>Created with Sketch.</desc>
+    <g id="login" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M21,0.5 L10.5,0.5 C9.3954305,0.5 8.5,1.3954305 8.5,2.5 L8.5,5.5 C8.5,6.05228475 8.94771525,6.5 9.5,6.5 C10.0522847,6.5 10.5,6.05228475 10.5,5.5 L10.5,3 C10.5,2.72385763 10.7238576,2.5 11,2.5 L20.5,2.5 C20.7761424,2.5 21,2.72385763 21,3 L21,21 C21,21.2761424 20.7761424,21.5 20.5,21.5 L11,21.5 C10.7238576,21.5 10.5,21.2761424 10.5,21 L10.5,18.5 C10.5,17.9477153 10.0522847,17.5 9.5,17.5 C8.94771525,17.5 8.5,17.9477153 8.5,18.5 L8.5,21.5 C8.5,22.6045695 9.3954305,23.5 10.5,23.5 L21,23.5 C22.1045695,23.5 23,22.6045695 23,21.5 L23,2.5 C23,1.3954305 22.1045695,0.5 21,0.5 Z" id="Path" fill="#000000" fill-rule="nonzero"></path>
+        <path d="M18,14 C18.8284271,14 19.5,13.3284271 19.5,12.5 C19.5,11.6715729 18.8284271,11 18,11 L9,11 L9,8.5 C9.00005521,8.13111315 8.79702155,7.79215395 8.47176504,7.61812603 C8.14650853,7.44409811 7.75185866,7.46326779 7.445,7.668 L1.445,11.668 C1.16684487,11.8534732 0.99977563,12.1656789 0.99977563,12.5 C0.99977563,12.8343211 1.16684487,13.1465268 1.445,13.332 L7.445,17.332 C7.75273572,17.534289 8.14606917,17.5534386 8.472,17.382 C8.79720549,17.2078879 9.00014807,16.8688816 9,16.5 L9,14 L18,14 Z" id="Path" fill="#000000" fill-rule="nonzero" transform="translate(10.249888, 12.499098) scale(-1, 1) translate(-10.249888, -12.499098) "></path>
+    </g>
+</svg>

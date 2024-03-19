@@ -1,0 +1,110 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+
+#include "dbnode.h"
+#include "libcommon/utility/types.h"
+#include "libcommonserver/db/db.h"
+#include "db/uploadsessiontoken.h"
+
+#include <log4cplus/loggingmacros.h>
+
+#include <filesystem>
+#include <mutex>
+#include <unordered_set>
+
+namespace KDC {
+
+class SyncDb : public Db {
+    public:
+        SyncDb(const std::string &dbPath, const std::string &version, const std::string &targetNodeId = std::string());
+
+        bool create(bool &retry) override;
+        bool prepare() override;
+        bool upgrade(const std::string &fromVersion, const std::string &toVersion) override;
+
+        bool initData();
+
+        bool insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraintError);
+        bool updateNode(const DbNode &node, bool &found);
+        bool updateNodeStatus(DbNodeId nodeId, SyncFileStatus status, bool &found);
+        bool updateNodesSyncing(bool syncing);
+        bool updateNodeSyncing(DbNodeId nodeId, bool syncing, bool &found);
+        bool deleteNode(DbNodeId nodeId, bool &found);
+        bool selectStatus(DbNodeId nodeId, SyncFileStatus &status, bool &found);
+        bool selectSyncing(DbNodeId nodeId, bool &syncing, bool &found);
+        bool clearNodes();
+
+        // Getters with replica IDs
+        bool id(ReplicaSide snapshot, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found);
+        bool id(ReplicaSide snapshot, DbNodeId dbNodeId, NodeId &nodeId, bool &found);
+        bool type(ReplicaSide snapshot, const NodeId &nodeId, NodeType &type, bool &found);
+        bool size(ReplicaSide snapshot, const NodeId &nodeId, int64_t &size, bool &found);
+        bool created(ReplicaSide snapshot, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
+        bool lastModified(ReplicaSide snapshot, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
+        bool parent(ReplicaSide snapshot, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
+        bool path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bool &found);
+        bool name(ReplicaSide snapshot, const NodeId &nodeId, SyncName &name, bool &found);
+        bool checksum(ReplicaSide snapshot, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);
+        bool ids(ReplicaSide snapshot, std::vector<NodeId> &ids, bool &found);
+        bool ids(ReplicaSide snapshot, std::unordered_set<NodeId> &ids, bool &found);
+        bool ancestor(ReplicaSide snapshot, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found);
+        bool dbId(ReplicaSide snapshot, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);
+        bool dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found);
+        bool correspondingNodeId(ReplicaSide snapshot, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
+        bool node(ReplicaSide snapshot, const NodeId &nodeId, DbNode &dbNode, bool &found);
+
+        // Getters with db IDs
+        bool dbIds(std::unordered_set<DbNodeId> &ids, bool &found);
+        bool path(DbNodeId dbNodeId, SyncPath &localPath, SyncPath &remotePath, bool &found);
+        bool node(DbNodeId dbNodeId, DbNode &dbNode, bool &found);
+        bool pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId> &ids);
+
+        bool status(ReplicaSide side, const SyncPath &path, SyncFileStatus &status, bool &found);
+        bool status(ReplicaSide side, const NodeId &nodeId, SyncFileStatus &status, bool &found);
+        bool setStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus status, bool &found);
+        bool setStatus(ReplicaSide side, const NodeId &nodeId, SyncFileStatus status, bool &found);
+        bool syncing(ReplicaSide side, const SyncPath &path, bool &syncing, bool &found);
+        bool setSyncing(ReplicaSide side, const SyncPath &path, bool syncing, bool &found);
+
+        bool updateAllSyncNodes(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet);
+        bool selectAllSyncNodes(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet);
+
+        bool selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyColon);
+        bool deleteNodesWithNullParentNodeId();
+
+        bool insertUploadSessionToken(const UploadSessionToken &uploadSessionToken, int64_t &uploadSessionTokenDbId);
+        bool deleteUploadSessionTokenByDbId(int64_t dbId, bool &found);
+        bool selectAllUploadSessionTokens(std::vector<UploadSessionToken> &uploadSessionTokenList);
+        bool deleteAllUploadSessionToken();
+
+        static DbNode driveRootNode() { return _driveRootNode; }
+        DbNode rootNode() { return _rootNode; }
+
+        bool setTargetNodeId(const std::string &targetNodeId, bool &found);
+
+    private:
+        static DbNode _driveRootNode;
+        DbNode _rootNode;
+
+        bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
+        bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
+};
+
+}  // namespace KDC

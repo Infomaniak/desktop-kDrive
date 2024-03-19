@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="124px" height="124px" viewBox="0 0 124 124" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 56.3 (81716) - https://sketch.com -->
+    <title>SVG/error</title>
+    <desc>Created with Sketch.</desc>
+    <g id="SVG/error" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons/icon-16px">
+            <g id="Icons/1---interface-essential/navigation-menu-vertical">
+                <circle style="fill:#FB472E" id="circle9" r="61" cy="62" cx="62" />
+                <path d="M31.267355,37.7299881 C32.0948071,34.5687553 34.5635886,32.0999738 37.7248214,31.2725217 C40.8860542,30.4450696 44.2477768,31.3877177 46.4707054,33.6901279 L61.9974574,49.2168858 L77.4769249,33.7381585 C79.7470565,31.3877177 83.1087791,30.4450696 86.2700119,31.2725217 C89.4312447,32.0999738 91.9000262,34.5687553 92.7274783,37.7299881 C93.5549304,40.8912209 92.6122823,44.2529435 90.3098721,46.4758721 L74.7831142,62.002624 L90.2618415,77.4820915 C92.6122823,79.7522232 93.5549304,83.1139458 92.7274783,86.2751786 C91.9000262,89.4364114 89.4312447,91.9051929 86.2700119,92.732645 C83.1087791,93.5600971 79.7470565,92.617449 77.5241279,90.3150388 L61.9973762,74.7882811 L46.4226749,90.3622418 C42.8749158,93.7887822 37.235575,93.7397778 33.7478986,90.2521014 C30.2602222,86.764425 30.2112178,81.1250842 33.6849612,77.5292946 L49.2116754,62.0025863 L33.7054817,46.4963926 C31.3752055,44.226654 30.4431387,40.8788586 31.267355,37.7299881 Z" id="Path" fill="#FFFFFF"></path>
+            </g>
+        </g>
+    </g>
+</svg>

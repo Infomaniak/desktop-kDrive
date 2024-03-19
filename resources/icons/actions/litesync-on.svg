@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="18px" height="18px" viewBox="0 0 18 18" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icons/lite-sync/litesync-on</title>
+    <g id="icons/lite-sync/litesync-on" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M8.37883738,2.00491917 C5.52371887,2.12584914 3.24327957,4.46125216 3.24327957,7.32900433 L3.24747211,7.48306998 L3.10343466,7.52313596 C1.30869846,8.05922981 0,9.7115303 0,11.6699967 C0,14.0636083 1.95422969,16 4.36021505,16 L12.9677419,16 C15.7451656,16 18,13.7654388 18,11.003996 L17.9948171,10.7751684 C17.8916461,8.50232807 16.2593054,6.62681974 14.0972713,6.13439284 L13.8306693,6.08190821 L13.814104,6.00959345 C13.2212184,3.69399339 11.1048911,2 8.61155914,2 L8.37883738,2.00491917 Z M8.61155914,4 C10.3808885,4 11.8434042,5.35280415 11.9704315,7.08128507 L12.0385358,8.00799201 L12.9677419,8.00799201 C14.6443618,8.00799201 16,9.35159634 16,11.003996 C16,12.6568056 14.6446194,14 12.9677419,14 L4.36021505,14 C3.05471466,14 2,12.9549127 2,11.6699967 C2,10.3851986 3.05527074,9.33999334 4.36290323,9.33999334 L5.63173676,9.33999334 L5.33521236,8.10629491 C5.27435332,7.85308913 5.24327957,7.59313334 5.24327957,7.32900433 C5.24327957,5.49237853 6.74919783,4 8.61155914,4 Z" id="Stroke-1" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>

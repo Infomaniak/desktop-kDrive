@@ -1,0 +1,38 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Class = "NSMenuItem"; title = "kDrive Uninstaller"; ObjectID = "1Xt-HY-uBw"; */
+"1Xt-HY-uBw.title" = "kDrive Uninstaller";
+
+/* Class = "NSMenuItem"; title = "Quit kDrive Uninstaller"; ObjectID = "4sb-4s-VLi"; */
+"4sb-4s-VLi.title" = "Quitter kDrive Uninstaller";
+
+/* Class = "NSMenuItem"; title = "Services"; ObjectID = "NMo-om-nkz"; */
+"NMo-om-nkz.title" = "Services";
+
+/* Class = "NSMenuItem"; title = "Hide kDrive Uninstaller"; ObjectID = "Olw-nP-bQN"; */
+"Olw-nP-bQN.title" = "Cacher kDrive Uninstaller";
+
+/* Class = "NSMenuItem"; title = "Hide Others"; ObjectID = "Vdr-fp-XzO"; */
+"Vdr-fp-XzO.title" = "Cacher les autres";
+
+/* Class = "NSMenu"; title = "Services"; ObjectID = "hz9-B4-Xy5"; */
+"hz9-B4-Xy5.title" = "Services";
+
+/* Class = "NSMenu"; title = "kDrive Uninstaller"; ObjectID = "uQy-DD-JDr"; */
+"uQy-DD-JDr.title" = "kDrive Uninstaller";

@@ -1,0 +1,164 @@
+<RCC>
+    <qresource prefix="/client">
+        <file>resources/bell.png</file>
+        <file>resources/delete.png</file>
+        <file>resources/fonts/SuisseIntl-Black.otf</file>
+        <file>resources/fonts/SuisseIntl-BlackItalic.otf</file>
+        <file>resources/fonts/SuisseIntl-Bold.otf</file>
+        <file>resources/fonts/SuisseIntl-BoldItalic.otf</file>
+        <file>resources/fonts/SuisseIntl-Book.otf</file>
+        <file>resources/fonts/SuisseIntl-BookItalic.otf</file>
+        <file>resources/fonts/SuisseIntl-Light.otf</file>
+        <file>resources/fonts/SuisseIntl-LightItalic.otf</file>
+        <file>resources/fonts/SuisseIntl-Medium.otf</file>
+        <file>resources/fonts/SuisseIntl-MediumItalic.otf</file>
+        <file>resources/fonts/SuisseIntl-Regular.otf</file>
+        <file>resources/fonts/SuisseIntl-RegularItalic.otf</file>
+        <file>resources/fonts/SuisseIntl-SemiBold.otf</file>
+        <file>resources/fonts/SuisseIntl-SemiBoldItalic.otf</file>
+        <file>resources/fonts/SuisseIntl-Thin.otf</file>
+        <file>resources/fonts/SuisseIntl-ThinItalic.otf</file>
+        <file>resources/fonts/SuisseIntl-UltraLight.otf</file>
+        <file>resources/fonts/SuisseIntl-UltraLightItalic.otf</file>
+        <file>resources/icons/actions/add.svg</file>
+        <file>resources/icons/actions/arrow-left.svg</file>
+        <file>resources/icons/actions/arrow-right.svg</file>
+        <file>resources/icons/actions/branch-close.svg</file>
+        <file>resources/icons/actions/branch-open.svg</file>
+        <file>resources/icons/actions/check.svg</file>
+        <file>resources/icons/actions/checkbox-checked.svg</file>
+        <file>resources/icons/actions/checkbox-indeterminate.svg</file>
+        <file>resources/icons/actions/checkbox-unchecked.svg</file>
+        <file>resources/icons/actions/chevron-down.svg</file>
+        <file>resources/icons/actions/chevron-left.svg</file>
+        <file>resources/icons/actions/chevron-right.svg</file>
+        <file>resources/icons/actions/chevron-up.svg</file>
+        <file>resources/icons/actions/close.svg</file>
+        <file>resources/icons/actions/dark-branch-close.svg</file>
+        <file>resources/icons/actions/dark-branch-open.svg</file>
+        <file>resources/icons/actions/dark-down-arrow.svg</file>
+        <file>resources/icons/actions/dark-switch-disable.svg</file>
+        <file>resources/icons/actions/dark-switch-off.svg</file>
+        <file>resources/icons/actions/delete.svg</file>
+        <file>resources/icons/actions/down-arrow.svg</file>
+        <file>resources/icons/actions/download.svg</file>
+        <file>resources/icons/actions/drive.svg</file>
+        <file>resources/icons/actions/edit.svg</file>
+        <file>resources/icons/actions/error-sync.svg</file>
+        <file>resources/icons/actions/favorite.svg</file>
+        <file>resources/icons/actions/folder-add.svg</file>
+        <file>resources/icons/actions/folder-computer.svg</file>
+        <file>resources/icons/actions/folder-folder-drive.svg</file>
+        <file>resources/icons/actions/folder-select.svg</file>
+        <file>resources/icons/actions/folder.svg</file>
+        <file>resources/icons/actions/help.svg</file>
+        <file>resources/icons/actions/icon-folder-empty.svg</file>
+        <file>resources/icons/actions/information.svg</file>
+        <file>resources/icons/actions/link.svg</file>
+        <file>resources/icons/actions/litesync-off.svg</file>
+        <file>resources/icons/actions/litesync-on.svg</file>
+        <file>resources/icons/actions/lock.png</file>
+        <file>resources/icons/actions/login.svg</file>
+        <file>resources/icons/actions/logout.svg</file>
+        <file>resources/icons/actions/menu.svg</file>
+        <file>resources/icons/actions/more.svg</file>
+        <file>resources/icons/actions/notification-off.svg</file>
+        <file>resources/icons/actions/notifications.svg</file>
+        <file>resources/icons/actions/parameters.svg</file>
+        <file>resources/icons/actions/pause.svg</file>
+        <file>resources/icons/actions/radio-checked.svg</file>
+        <file>resources/icons/actions/radio-unchecked.svg</file>
+        <file>resources/icons/actions/share.svg</file>
+        <file>resources/icons/actions/start.svg</file>
+        <file>resources/icons/actions/step-1.svg</file>
+        <file>resources/icons/actions/step-2.svg</file>
+        <file>resources/icons/actions/step-3.svg</file>
+        <file>resources/icons/actions/step-4.svg</file>
+        <file>resources/icons/actions/switch-disable.svg</file>
+        <file>resources/icons/actions/switch-off.svg</file>
+        <file>resources/icons/actions/switch-on.svg</file>
+        <file>resources/icons/actions/sync-circle.svg</file>
+        <file>resources/icons/actions/sync.svg</file>
+        <file>resources/icons/actions/upload.svg</file>
+        <file>resources/icons/actions/view.svg</file>
+        <file>resources/icons/actions/warning.svg</file>
+        <file>resources/icons/actions/webview.svg</file>
+        <file>resources/icons/document types/file-application.svg</file>
+        <file>resources/icons/document types/file-audio.svg</file>
+        <file>resources/icons/document types/file-code.svg</file>
+        <file>resources/icons/document types/file-default.svg</file>
+        <file>resources/icons/document types/file-image.svg</file>
+        <file>resources/icons/document types/file-pdf.svg</file>
+        <file>resources/icons/document types/file-presentation.svg</file>
+        <file>resources/icons/document types/file-sheets.svg</file>
+        <file>resources/icons/document types/file-text.svg</file>
+        <file>resources/icons/document types/file-video.svg</file>
+        <file>resources/icons/document types/file-zip.svg</file>
+        <file>resources/icons/document types/folder-common-documents.svg</file>
+        <file>resources/icons/document types/folder-disable.svg</file>
+        <file>resources/icons/document types/folder.svg</file>
+        <file>resources/icons/mac/dark/close-hover.svg</file>
+        <file>resources/icons/mac/dark/close.svg</file>
+        <file>resources/icons/mac/dark/unactive.svg</file>
+        <file>resources/icons/mac/white/close-hover.svg</file>
+        <file>resources/icons/mac/white/unactive.svg</file>
+        <file>resources/icons/statuts/error-sync.svg</file>
+        <file>resources/icons/statuts/pause.svg</file>
+        <file>resources/icons/statuts/success.svg</file>
+        <file>resources/icons/statuts/sync-slow.svg</file>
+        <file>resources/icons/statuts/sync.svg</file>
+        <file>resources/icons/statuts/warning.svg</file>
+        <file>resources/icons/theme/mac/black/state-error.svg</file>
+        <file>resources/icons/theme/mac/black/state-information.svg</file>
+        <file>resources/icons/theme/mac/black/state-ok.svg</file>
+        <file>resources/icons/theme/mac/black/state-pause.svg</file>
+        <file>resources/icons/theme/mac/black/state-sync.svg</file>
+        <file>resources/icons/theme/mac/black/state-warning.svg</file>
+        <file>resources/icons/theme/mac/colored/state-error.svg</file>
+        <file>resources/icons/theme/mac/colored/state-information.svg</file>
+        <file>resources/icons/theme/mac/colored/state-ok.svg</file>
+        <file>resources/icons/theme/mac/colored/state-pause.svg</file>
+        <file>resources/icons/theme/mac/colored/state-sync.svg</file>
+        <file>resources/icons/theme/mac/colored/state-warning.svg</file>
+        <file>resources/icons/theme/mac/white/state-error.svg</file>
+        <file>resources/icons/theme/mac/white/state-information.svg</file>
+        <file>resources/icons/theme/mac/white/state-ok.svg</file>
+        <file>resources/icons/theme/mac/white/state-pause.svg</file>
+        <file>resources/icons/theme/mac/white/state-sync.svg</file>
+        <file>resources/icons/theme/mac/white/state-warning.svg</file>
+        <file>resources/icons/theme/windows/black/state-error.svg</file>
+        <file>resources/icons/theme/windows/black/state-information.svg</file>
+        <file>resources/icons/theme/windows/black/state-ok.svg</file>
+        <file>resources/icons/theme/windows/black/state-pause.svg</file>
+        <file>resources/icons/theme/windows/black/state-sync.svg</file>
+        <file>resources/icons/theme/windows/black/state-warning.svg</file>
+        <file>resources/icons/theme/windows/colored/state-error.svg</file>
+        <file>resources/icons/theme/windows/colored/state-information.svg</file>
+        <file>resources/icons/theme/windows/colored/state-ok.svg</file>
+        <file>resources/icons/theme/windows/colored/state-pause.svg</file>
+        <file>resources/icons/theme/windows/colored/state-sync.svg</file>
+        <file>resources/icons/theme/windows/colored/state-warning.svg</file>
+        <file>resources/icons/theme/windows/white/state-error.svg</file>
+        <file>resources/icons/theme/windows/white/state-information.svg</file>
+        <file>resources/icons/theme/windows/white/state-ok.svg</file>
+        <file>resources/icons/theme/windows/white/state-pause.svg</file>
+        <file>resources/icons/theme/windows/white/state-sync.svg</file>
+        <file>resources/icons/theme/windows/white/state-warning.svg</file>
+        <file>resources/icons/windows/dark/close.svg</file>
+        <file>resources/icons/windows/white/close.svg</file>
+        <file>resources/logos/kdrive-text-only.svg</file>
+        <file>resources/logos/kdrive-without-text.svg</file>
+        <file>resources/logos/kdrive.svg</file>
+        <file>resources/pictures/en-full-disk-access.svg</file>
+        <file>resources/pictures/en-security.svg</file>
+        <file>resources/pictures/fr-full-disk-access.svg</file>
+        <file>resources/pictures/fr-security.svg</file>
+        <file>resources/pictures/full-access-disk.svg</file>
+        <file>resources/pictures/img-kDrive2x.png</file>
+        <file>resources/pictures/lite-sync.svg</file>
+        <file>resources/pictures/lock-allow-kdrive.svg</file>
+        <file>resources/styles/stylesheetblack.qss</file>
+        <file>resources/styles/stylesheetwhite.qss</file>
+        <file>resources/icons/actions/light-down-arrow.svg</file>
+    </qresource>
+</RCC>

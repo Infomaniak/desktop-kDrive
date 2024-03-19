@@ -1,0 +1,511 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4685D0D025FF5DC200E3880A /* xpcService.m in Sources */ = {isa = PBXBuildFile; fileRef = 4685D0CC25FF5DC200E3880A /* xpcService.m */; };
+		4685D0D125FF5DC200E3880A /* xpcServiceProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = 4685D0CE25FF5DC200E3880A /* xpcServiceProxy.m */; };
+		468D44DB265D29D100B18C70 /* libbsm.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 468D44DA265D29D100B18C70 /* libbsm.tbd */; };
+		46BB2CB125B5998000CCC772 /* libEndpointSecurity.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 46BB2CB025B5998000CCC772 /* libEndpointSecurity.tbd */; };
+		46BB2CB425B5998000CCC772 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 46BB2CB325B5998000CCC772 /* main.m */; };
+		46E2166825B829FB008A6905 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 46E2166725B829FB008A6905 /* main.m */; };
+		46E2167125B82B6E008A6905 /* com.infomaniak.drive.desktopclient.LiteSyncExt.systemextension in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = 46BB2CAE25B5998000CCC772 /* com.infomaniak.drive.desktopclient.LiteSyncExt.systemextension */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		46E2168225B83042008A6905 /* SystemExtensions.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 46E2168125B83042008A6905 /* SystemExtensions.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		46E2167225B82B6E008A6905 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46BB2C5125B5974200CCC772 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 46BB2CAD25B5998000CCC772;
+			remoteInfo = kDriveLiteSyncExt;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		46E2167425B82B6E008A6905 /* Embed System Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(SYSTEM_EXTENSIONS_FOLDER_PATH)";
+			dstSubfolderSpec = 16;
+			files = (
+				46E2167125B82B6E008A6905 /* com.infomaniak.drive.desktopclient.LiteSyncExt.systemextension in Embed System Extensions */,
+			);
+			name = "Embed System Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		4675B55C260C87850039645E /* xpcLiteSyncExtensionProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpcLiteSyncExtensionProtocol.h; sourceTree = "<group>"; };
+		4685D0CC25FF5DC200E3880A /* xpcService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xpcService.m; sourceTree = "<group>"; };
+		4685D0CD25FF5DC200E3880A /* xpcServiceProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpcServiceProxy.h; sourceTree = "<group>"; };
+		4685D0CE25FF5DC200E3880A /* xpcServiceProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = xpcServiceProxy.m; sourceTree = "<group>"; };
+		4685D0CF25FF5DC200E3880A /* xpcService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = xpcService.h; sourceTree = "<group>"; };
+		468CB9E6263FF5FB0076FD53 /* fileAttributes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fileAttributes.h; sourceTree = "<group>"; };
+		468D44DA265D29D100B18C70 /* libbsm.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libbsm.tbd; path = usr/lib/libbsm.tbd; sourceTree = SDKROOT; };
+		46993C842611D5D200C6F93F /* xpcLiteSyncExtensionRemoteProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xpcLiteSyncExtensionRemoteProtocol.h; sourceTree = "<group>"; };
+		46BB2CAE25B5998000CCC772 /* com.infomaniak.drive.desktopclient.LiteSyncExt.systemextension */ = {isa = PBXFileReference; explicitFileType = "wrapper.system-extension"; includeInIndex = 0; path = com.infomaniak.drive.desktopclient.LiteSyncExt.systemextension; sourceTree = BUILT_PRODUCTS_DIR; };
+		46BB2CB025B5998000CCC772 /* libEndpointSecurity.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libEndpointSecurity.tbd; path = usr/lib/libEndpointSecurity.tbd; sourceTree = SDKROOT; };
+		46BB2CB325B5998000CCC772 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		46BB2CB525B5998000CCC772 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		46BB2CB625B5998000CCC772 /* Extension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Extension.entitlements; sourceTree = "<group>"; };
+		46E2165C25B829F9008A6905 /* kDrive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = kDrive.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		46E2166625B829FB008A6905 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		46E2166725B829FB008A6905 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		46E2166925B829FB008A6905 /* kDriveLiteSync.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = kDriveLiteSync.entitlements; sourceTree = "<group>"; };
+		46E2168125B83042008A6905 /* SystemExtensions.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemExtensions.framework; path = System/Library/Frameworks/SystemExtensions.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		46BB2CAB25B5998000CCC772 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				468D44DB265D29D100B18C70 /* libbsm.tbd in Frameworks */,
+				46BB2CB125B5998000CCC772 /* libEndpointSecurity.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46E2165925B829F9008A6905 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46E2168225B83042008A6905 /* SystemExtensions.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		46BB2C5025B5974200CCC772 = {
+			isa = PBXGroup;
+			children = (
+				46BB2CB225B5998000CCC772 /* Extension */,
+				46E2165D25B829F9008A6905 /* kDrive */,
+				46BB2CAF25B5998000CCC772 /* Frameworks */,
+				46BB2C5A25B5974200CCC772 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		46BB2C5A25B5974200CCC772 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				46BB2CAE25B5998000CCC772 /* com.infomaniak.drive.desktopclient.LiteSyncExt.systemextension */,
+				46E2165C25B829F9008A6905 /* kDrive.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		46BB2CAF25B5998000CCC772 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				468D44DA265D29D100B18C70 /* libbsm.tbd */,
+				46E2168125B83042008A6905 /* SystemExtensions.framework */,
+				46BB2CB025B5998000CCC772 /* libEndpointSecurity.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		46BB2CB225B5998000CCC772 /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				46BB2CB325B5998000CCC772 /* main.m */,
+				4685D0CF25FF5DC200E3880A /* xpcService.h */,
+				4685D0CC25FF5DC200E3880A /* xpcService.m */,
+				4685D0CD25FF5DC200E3880A /* xpcServiceProxy.h */,
+				4685D0CE25FF5DC200E3880A /* xpcServiceProxy.m */,
+				4675B55C260C87850039645E /* xpcLiteSyncExtensionProtocol.h */,
+				468CB9E6263FF5FB0076FD53 /* fileAttributes.h */,
+				46BB2CB525B5998000CCC772 /* Info.plist */,
+				46BB2CB625B5998000CCC772 /* Extension.entitlements */,
+			);
+			path = Extension;
+			sourceTree = "<group>";
+		};
+		46E2165D25B829F9008A6905 /* kDrive */ = {
+			isa = PBXGroup;
+			children = (
+				46E2166725B829FB008A6905 /* main.m */,
+				46993C842611D5D200C6F93F /* xpcLiteSyncExtensionRemoteProtocol.h */,
+				46E2166625B829FB008A6905 /* Info.plist */,
+				46E2166925B829FB008A6905 /* kDriveLiteSync.entitlements */,
+			);
+			path = kDrive;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		46BB2CAD25B5998000CCC772 /* Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 46BB2CB725B5998000CCC772 /* Build configuration list for PBXNativeTarget "Extension" */;
+			buildPhases = (
+				46BB2CAA25B5998000CCC772 /* Sources */,
+				46BB2CAB25B5998000CCC772 /* Frameworks */,
+				46BB2CAC25B5998000CCC772 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Extension;
+			productName = kDriveLiteSyncExt;
+			productReference = 46BB2CAE25B5998000CCC772 /* com.infomaniak.drive.desktopclient.LiteSyncExt.systemextension */;
+			productType = "com.apple.product-type.system-extension";
+		};
+		46E2165B25B829F9008A6905 /* kDrive */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 46E2166A25B829FB008A6905 /* Build configuration list for PBXNativeTarget "kDrive" */;
+			buildPhases = (
+				46E2165825B829F9008A6905 /* Sources */,
+				46E2165925B829F9008A6905 /* Frameworks */,
+				46E2167425B82B6E008A6905 /* Embed System Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				46E2167325B82B6E008A6905 /* PBXTargetDependency */,
+			);
+			name = kDrive;
+			productName = kDriveLiteSync;
+			productReference = 46E2165C25B829F9008A6905 /* kDrive.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		46BB2C5125B5974200CCC772 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1230;
+				TargetAttributes = {
+					46BB2CAD25B5998000CCC772 = {
+						CreatedOnToolsVersion = 12.3;
+					};
+					46E2165B25B829F9008A6905 = {
+						CreatedOnToolsVersion = 12.3;
+					};
+				};
+			};
+			buildConfigurationList = 46BB2C5425B5974200CCC772 /* Build configuration list for PBXProject "kDriveLiteSync" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 46BB2C5025B5974200CCC772;
+			productRefGroup = 46BB2C5A25B5974200CCC772 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				46BB2CAD25B5998000CCC772 /* Extension */,
+				46E2165B25B829F9008A6905 /* kDrive */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		46BB2CAC25B5998000CCC772 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		46BB2CAA25B5998000CCC772 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4685D0D125FF5DC200E3880A /* xpcServiceProxy.m in Sources */,
+				4685D0D025FF5DC200E3880A /* xpcService.m in Sources */,
+				46BB2CB425B5998000CCC772 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		46E2165825B829F9008A6905 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				46E2166825B829FB008A6905 /* main.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		46E2167325B82B6E008A6905 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 46BB2CAD25B5998000CCC772 /* Extension */;
+			targetProxy = 46E2167225B82B6E008A6905 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		46BB2C5E25B5974200CCC772 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		46BB2C5F25B5974200CCC772 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		46BB2CB825B5998000CCC772 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Extension/Extension.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 864VDCS2QY;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 864VDCS2QY;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/Extension/Info.plist";
+				KD_APPLICATION_NAME = kDrive;
+				KD_APPLICATION_VERSION = 3.3.5;
+				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.LiteSyncExt;
+				PRODUCT_NAME = "$(inherited)";
+				PROVISIONING_PROFILE_SPECIFIER = kDriveLiteSyncExtension;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = kDriveLiteSyncExtension;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		46BB2CB925B5998000CCC772 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Extension/Extension.entitlements;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 864VDCS2QY;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 864VDCS2QY;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/Extension/Info.plist";
+				KD_APPLICATION_NAME = kDrive;
+				KD_APPLICATION_VERSION = 3.3.5;
+				KD_TEAM_IDENTIFIER_PREFIX = 864VDCS2QY.;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient.LiteSyncExt;
+				PRODUCT_NAME = "$(inherited)";
+				PROVISIONING_PROFILE_SPECIFIER = "kDriveLiteSyncExtension dist";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "kDriveLiteSyncExtension dist";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		46E2166B25B829FB008A6905 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = kDrive/kDriveLiteSync.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 864VDCS2QY;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 864VDCS2QY;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = kDrive/Info.plist;
+				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
+				KD_APPLICATION_VERSION = 3.3.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = kDriveLiteSync;
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = kDriveLiteSync;
+			};
+			name = Debug;
+		};
+		46E2166C25B829FB008A6905 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = kDrive/kDriveLiteSync.entitlements;
+				CODE_SIGN_IDENTITY = "Developer ID Application";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 864VDCS2QY;
+				"DEVELOPMENT_TEAM[sdk=macosx*]" = 864VDCS2QY;
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = kDrive/Info.plist;
+				KD_APPLICATION_DOMAIN = com.infomaniak.drive.desktopclient;
+				KD_APPLICATION_VERSION = 3.3.5;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = "$(KD_APPLICATION_VERSION)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.infomaniak.drive.desktopclient;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "kDriveLiteSync dist";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = "kDriveLiteSync dist";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		46BB2C5425B5974200CCC772 /* Build configuration list for PBXProject "kDriveLiteSync" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46BB2C5E25B5974200CCC772 /* Debug */,
+				46BB2C5F25B5974200CCC772 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		46BB2CB725B5998000CCC772 /* Build configuration list for PBXNativeTarget "Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46BB2CB825B5998000CCC772 /* Debug */,
+				46BB2CB925B5998000CCC772 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		46E2166A25B829FB008A6905 /* Build configuration list for PBXNativeTarget "kDrive" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				46E2166B25B829FB008A6905 /* Debug */,
+				46E2166C25B829FB008A6905 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 46BB2C5125B5974200CCC772 /* Project object */;
+}

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="25px" viewBox="0 0 24 25" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/document types/folder-common-documents</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M8.5,1.99998511 C9.06753168,1.99747328 9.58748755,2.31673083 9.842,2.824 L9.842,2.824 L10.789,4.724 C10.8737713,4.89317046 11.0467784,4.99998511 11.236,5 L11.236,5 L22.5,5 C23.3284271,5 24,5.67157288 24,6.5 L24,6.5 L24,20.5 C24,21.3284271 23.3284271,22 22.5,22 L22.5,22 L1.5,22 C0.671572875,22 0,21.3284271 0,20.5 L0,20.5 L0,3.5 C0,2.67157288 0.671572875,1.99998511 1.5,1.99998511 L1.5,1.99998511 Z M14.25,14.5 C13.8457591,14.5001358 13.4442725,14.5665154 13.0615,14.6965 C12.9799036,14.7237374 12.9180417,14.7910123 12.8977283,14.8746019 C12.8774149,14.9581916 12.9015035,15.0463536 12.9615,15.108 C13.7868267,15.9455662 14.2496366,17.0741254 14.25,18.25 C14.25,18.3880712 14.3619288,18.5 14.5,18.5 L14.5,18.5 L17.75,18.5 L17.8073227,18.4933973 C17.9177666,18.4674868 18,18.3683467 18,18.25 C17.9977954,16.1798461 16.3201539,14.5022046 14.25,14.5 Z M9.75,14.5 C7.67893219,14.5 6,16.1789322 6,18.25 C6,18.3880712 6.11192881,18.5 6.25,18.5 L6.25,18.5 L13.25,18.5 L13.3073227,18.4933973 C13.4177666,18.4674868 13.5,18.3683467 13.5,18.25 C13.5,16.1789322 11.8210678,14.5 9.75,14.5 Z M14.25,9.5 C13.6272898,9.50143189 13.0306064,9.74996004 12.591,10.191 C12.5134099,10.2664955 12.4932273,10.3833528 12.541,10.4805 C12.7598932,10.9128034 12.8742927,11.3904384 12.875,11.875 C12.8750679,12.3593606 12.7615273,12.8369849 12.5435,13.2695 C12.4957273,13.3666472 12.5159099,13.4835045 12.5935,13.559 C13.0324938,13.9994291 13.6281569,14.2479067 14.25,14.25 C15.5616763,14.25 16.625,13.1866763 16.625,11.875 C16.625,10.5633237 15.5616763,9.5 14.25,9.5 Z M9.75,9.5 C8.43832372,9.5 7.375,10.5633237 7.375,11.875 C7.375,13.1866763 8.43832372,14.25 9.75,14.25 C11.0616763,14.25 12.125,13.1866763 12.125,11.875 C12.125,10.5633237 11.0616763,9.5 9.75,9.5 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/document-types/folder-common-documents" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(0.000000, 0.000000)">
+        <g id="Icons/icon-24px">
+            <g id="Icons/Drive/folder-users">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <use id="Combined-Shape" fill="#5287FF" fill-rule="nonzero" xlink:href="#path-1"></use>
+            </g>
+        </g>
+    </g>
+</svg>

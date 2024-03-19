@@ -1,0 +1,1012 @@
+; registry stuff
+!define regkey "Software\@{company}\@{productname}"
+!define uninstkey "Software\Microsoft\Windows\CurrentVersion\Uninstall\@{productname}"
+!define longpathkey "SYSTEM\CurrentControlSet\Control\FileSystem"
+
+!define APPLICATION_SHORTNAME "@APPLICATION_EXECUTABLE@"
+!define APPLICATION_NAME "@APPLICATION_NAME@"
+!define APPLICATION_VENDOR "@APPLICATION_VENDOR@"
+!define APPLICATION_SERVER_EXECUTABLE "@APPLICATION_EXECUTABLE@.exe"
+!define APPLICATION_CMD_EXECUTABLE "@APPLICATION_EXECUTABLE@cmd.exe"
+!define APPLICATION_CLIENT_EXECUTABLE "@APPLICATION_EXECUTABLE@_client.exe"
+!define APPLICATION_DOMAIN "@APPLICATION_DOMAIN@"
+!define APPLICATION_LICENSE "@APPLICATION_LICENSE@"
+!define APPLICATION_VIRTUALFILE_SUFFIX "@APPLICATION_VIRTUALFILE_SUFFIX@"
+!define APPLICATION_VIRTUALFILE_FILECLASS "@APPLICATION_EXECUTABLE@.@APPLICATION_VIRTUALFILE_SUFFIX@"
+
+!define CRASHREPORTER_EXECUTABLE "@CRASHREPORTER_EXECUTABLE@"
+
+;-----------------------------------------------------------------------------
+; Some installer script options (comment-out options not required)
+;-----------------------------------------------------------------------------
+!if "${APPLICATION_LICENSE}" != ""
+  !define OPTION_LICENSE_AGREEMENT
+!endif
+!define OPTION_UAC_PLUGIN_ENHANCED
+!define OPTION_SECTION_SC_SHELL_EXT
+!define OPTION_SECTION_SC_START_MENU
+!define OPTION_SECTION_SC_DESKTOP
+;!define OPTION_SECTION_SC_QUICK_LAUNCH
+!define OPTION_FINISHPAGE
+!define OPTION_FINISHPAGE_LAUNCHER
+;!define OPTION_FINISHPAGE_RELEASE_NOTES
+
+;-----------------------------------------------------------------------------
+; Some paths.
+;-----------------------------------------------------------------------------
+!define BUILD_PATH "@CMAKE_BINARY_DIR@"
+!define SOURCE_PATH "@CMAKE_SOURCE_DIR@"
+
+!define CSYNC_LIBRARY_DIR "@CSYNC_LIBRARY_DIR@"
+!define CSYNC_CONFIG_DIR "@CSYNC_CONFIG_DIR@"
+
+!define NSI_PATH "${SOURCE_PATH}\admin\win\nsi"
+
+;-----------------------------------------------------------------------------
+; Installer version
+;-----------------------------------------------------------------------------
+
+!define VER_MAJOR "@KDRIVE_VERSION_MAJOR@"
+!define VER_MINOR "@KDRIVE_VERSION_MINOR@"
+!define VER_PATCH "@KDRIVE_VERSION_PATCH@"
+!define VER_BUILD "@KDRIVE_VERSION_BUILD@"
+!define VERSION "@KDRIVE_VERSION@"
+
+!define VFS_APPX_DIRECTORY "@{extpath}\FileExplorerExtensionPackage\\AppPackages\\FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_Test"
+!define VFS_APPX_BUNDLE "FileExplorerExtensionPackage_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_x64_arm64.msixbundle"
+!define VFS_PACKAGE_NAME "Infomaniak.kDrive.Extension"
+
+Var InstallRunIfSilent
+Var NoAutomaticUpdates
+;Var RemoveAllFiles
+
+;-----------------------------------------------------------------------------
+; Installer build timestamp.
+;-----------------------------------------------------------------------------
+!define /date BUILD_TIME "built on %Y/%m/%d at %I:%M %p"
+
+;-----------------------------------------------------------------------------
+; Initial installer setup and definitions.
+;-----------------------------------------------------------------------------
+Name "@{productname}"
+Caption "@{productname} @{version}"
+BrandingText "${APPLICATION_NAME} ${VERSION} -- ${BUILD_TIME}"
+OutFile "@{setupname}"
+InstallDir "$PROGRAMFILES\${APPLICATION_NAME}"
+InstallDirRegKey HKCU "${regkey}" ""
+InstType Standard
+InstType Full
+InstType Minimal
+CRCCheck On
+RequestExecutionLevel user ;Now using the UAC plugin.
+
+;-----------------------------------------------------------------------------
+; Include some required header files.
+;-----------------------------------------------------------------------------
+@{nsis_include_internal}
+@{nsis_include}
+!include LogicLib.nsh ;Used by APPDATA uninstaller.
+!include MUI2.nsh ;Used by APPDATA uninstaller.
+!include InstallOptions.nsh ;Required by MUI2 to support old MUI_INSTALLOPTIONS.
+!include Memento.nsh ;Remember user selections.
+!include WinVer.nsh ;Windows version detection.
+!include WordFunc.nsh  ;Used by VersionCompare macro function.
+!include FileFunc.nsh  ;Used to read out parameters
+!include UAC.nsh ;Used by the UAC elevation to install as user or admin.
+!include nsProcess.nsh ;Used to kill the running process
+!include Library.nsh ;Used by the COM registration for shell extensions
+!include x64.nsh ;Used to determine the right arch for the shell extensions
+
+!include ${NSI_PATH}\lib\fileassoc.nsh
+
+;-----------------------------------------------------------------------------
+; Memento selections stored in registry.
+;-----------------------------------------------------------------------------
+!define MEMENTO_REGISTRY_ROOT HKLM
+!define MEMENTO_REGISTRY_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APPLICATION_NAME}"
+
+;-----------------------------------------------------------------------------
+; Modern User Interface (MUI) definitions and setup.
+;-----------------------------------------------------------------------------
+!define MUI_ABORTWARNING
+@{installerIcon}
+!define MUI_UNICON @{icon}
+!define MUI_COMPONENTSPAGE_SMALLDESC
+; We removed this, h1 issue 191687
+;!define MUI_FINISHPAGE_LINK "${APPLICATION_DOMAIN}"
+;!define MUI_FINISHPAGE_LINK_LOCATION "http://${APPLICATION_DOMAIN}"
+!define MUI_FINISHPAGE_NOREBOOTSUPPORT
+!ifdef OPTION_FINISHPAGE_RELEASE_NOTES
+   !define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
+   !define MUI_FINISHPAGE_SHOWREADME "$INSTDIR\NOTES.txt"
+   !define MUI_FINISHPAGE_SHOWREADME_TEXT $MUI_FINISHPAGE_SHOWREADME_TEXT_STRING
+!endif
+!ifdef OPTION_FINISHPAGE_LAUNCHER
+   !define MUI_FINISHPAGE_NOAUTOCLOSE
+   !define MUI_FINISHPAGE_RUN
+   !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchApplication"
+!endif
+
+;-----------------------------------------------------------------------------
+; Page macros.
+;-----------------------------------------------------------------------------
+!insertmacro MUI_PAGE_WELCOME
+!ifdef OPTION_LICENSE_AGREEMENT
+   !insertmacro MUI_PAGE_LICENSE "${APPLICATION_LICENSE}"
+!endif
+Page custom PageReinstall PageLeaveReinstall
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!ifdef OPTION_FINISHPAGE
+   !insertmacro MUI_PAGE_FINISH
+!endif
+!insertmacro MUI_UNPAGE_CONFIRM
+;UninstPage custom un.PageCompleteUninstallation un.PageLeaveCompleteUninstallation
+!insertmacro MUI_UNPAGE_INSTFILES
+
+;-----------------------------------------------------------------------------
+; Other MUI macros.
+;-----------------------------------------------------------------------------
+!insertmacro MUI_LANGUAGE "English"
+
+!include ${NSI_PATH}\l10n\languages.nsh
+!include ${NSI_PATH}\l10n\declarations.nsh
+
+; Set version strings with english locale
+VIProductVersion "@KDRIVE_VERSION_FULL@"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "${APPLICATION_NAME}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "${APPLICATION_VENDOR}"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VERSION}"
+
+!macro SETLANG un
+   Function ${un}SetLang
+      # load the selected language file
+      !include "${NSI_PATH}\l10n\English.nsh"
+      StrCmp $LANGUAGE ${LANG_FRENCH} French 0
+      StrCmp $LANGUAGE ${LANG_GERMAN} German 0
+      StrCmp $LANGUAGE ${LANG_SPANISH} Spanish 0
+      StrCmp $LANGUAGE ${LANG_ITALIAN} Italian 0
+      Goto EndLanguageCmp
+      French:
+      !include "${NSI_PATH}\l10n\French.nsh"
+      Goto EndLanguageCmp
+      German:
+      !include "${NSI_PATH}\l10n\German.nsh"
+      Goto EndLanguageCmp
+      Spanish:
+      !include "${NSI_PATH}\l10n\Spanish.nsh"
+      Goto EndLanguageCmp
+      Italian:
+      !include "${NSI_PATH}\l10n\Italian.nsh"
+      Goto EndLanguageCmp
+      EndLanguageCmp:
+
+   FunctionEnd
+!macroend
+
+!insertmacro SETLANG ""
+!insertmacro SETLANG "un."
+
+; Usage: ${If} ${HasSection} SectionName
+!macro _HasSection _a _b _t _f
+   ReadRegDWORD $_LOGICLIB_TEMP "${MEMENTO_REGISTRY_ROOT}" "${MEMENTO_REGISTRY_KEY}" "MementoSection_${_b}"
+   IntCmpU $_LOGICLIB_TEMP 0 ${_f} ${_t}
+!macroend
+!define HasSection `"" HasSection`
+
+##############################################################################
+#                                                                            #
+#   FINISH PAGE LAUNCHER FUNCTIONS                                           #
+#                                                                            #
+##############################################################################
+
+Function LaunchApplication
+   !insertmacro UAC_AsUser_ExecShell "" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "" "" ""
+FunctionEnd
+
+##############################################################################
+#                                                                            #
+#   PROCESS HANDLING FUNCTIONS AND MACROS                                    #
+#                                                                            #
+##############################################################################
+
+!macro CheckForProcess processName gotoWhenFound gotoWhenNotFound
+   ${nsProcess::FindProcess} ${processName} $R0
+   StrCmp $R0 0 ${gotoWhenFound} ${gotoWhenNotFound}
+!macroend
+
+!macro EndProcess processName
+   DetailPrint $ConfirmEndProcess_KILLING_PROCESSES_TEXT
+   ${nsProcess::KillProcess} ${processName} $R0
+   Sleep 1500
+   StrCmp $R0 "1" process_${processName}_ended
+   DetailPrint $ConfirmEndProcess_KILL_NOT_FOUND_TEXT
+   
+   process_${processName}_ended:
+!macroend
+
+!macro CheckAndConfirmEndProcesses process1 process2
+
+ !insertmacro INSTALLOPTIONS_READ $R1 "NSIS.InstallOptionsWithButtons.ini" "Field 2" "State"
+   
+   ; Check if processes exist
+   StrCpy $R2 "N"
+   
+   !insertmacro CheckForProcess ${process1} process_${process1}_found no_process_${process1}_to_end
+   process_${process1}_found:
+      StrCpy $R2 "Y"
+   no_process_${process1}_to_end:
+   
+   !insertmacro CheckForProcess ${process2} process_${process2}_found no_process_${process2}_to_end
+   process_${process2}_found:
+      StrCpy $R2 "Y"
+   no_process_${process2}_to_end:
+   
+   StrCmp $R2 "Y" 0 end_processes_finished 
+   
+   ; Ask user
+   MessageBox MB_YESNO|MB_ICONEXCLAMATION \
+     $ConfirmEndProcess_MESSAGEBOX_TEXT \
+     /SD IDYES IDYES kill_processes IDNO end_processes_finished
+     
+   ; Kill the processes
+   kill_processes:
+      !insertmacro EndProcess ${process1}
+      !insertmacro EndProcess ${process2}
+   
+   end_processes_finished:
+   
+!macroend
+
+##############################################################################
+#                                                                            #
+#   PSEXEC MACROS                                                            #
+#                                                                            #
+##############################################################################
+
+!macro PowerShellExecMacro PSCommand
+  InitPluginsDir
+  ;Save command in a temp file
+  Push $R1
+  FileOpen $R1 $PLUGINSDIR\tempfile.ps1 w
+  FileWrite $R1 "${PSCommand}"
+  FileClose $R1
+  Pop $R1
+ 
+  !insertmacro PowerShellExecFileMacro "$PLUGINSDIR\tempfile.ps1"
+!macroend
+ 
+!macro PowerShellExecLogMacro PSCommand
+  InitPluginsDir
+  ;Save command in a temp file
+  Push $R1
+  FileOpen $R1 $PLUGINSDIR\tempfile.ps1 w
+  FileWrite $R1 "${PSCommand}"
+  FileClose $R1
+  Pop $R1
+ 
+  !insertmacro PowerShellExecFileLogMacro "$PLUGINSDIR\tempfile.ps1"
+!macroend
+ 
+!macro PowerShellExecFileMacro PSFile
+  !define PSExecID ${__LINE__}
+  Push $R0
+ 
+  nsExec::ExecToStack 'powershell -inputformat none -ExecutionPolicy RemoteSigned -File "${PSFile}"  '
+ 
+  Pop $R0 ;return value is first on stack
+  ;script output is second on stack, leave on top of it
+  IntCmp $R0 0 finish_${PSExecID}
+  SetErrorLevel 2
+ 
+finish_${PSExecID}:
+  Exch ;now $R0 on top of stack, followed by script output
+  Pop $R0
+  !undef PSExecID
+!macroend
+ 
+!macro PowerShellExecFileLogMacro PSFile
+  !define PSExecID ${__LINE__}
+  Push $R0
+ 
+  nsExec::ExecToLog 'powershell -inputformat none -ExecutionPolicy RemoteSigned -File "${PSFile}"  '
+  Pop $R0 ;return value is on stack
+  IntCmp $R0 0 finish_${PSExecID}
+  SetErrorLevel 2
+ 
+finish_${PSExecID}:
+  Pop $R0
+  !undef PSExecID
+!macroend
+ 
+!define PowerShellExec '!insertmacro PowerShellExecMacro'
+!define PowerShellExecLog '!insertmacro PowerShellExecLogMacro'
+!define PowerShellExecFile '!insertmacro PowerShellExecFileMacro'
+!define PowerShellExecFileLog '!insertmacro PowerShellExecFileLogMacro'
+
+Function UninstallFct
+   ReadRegStr $R0 HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\kDrive" "DisplayVersion"
+   !define /redef InstalledVersion $R0
+   StrCmp ${InstalledVersion} "3.5.6" uninstall_old_version 0
+   StrCmp ${InstalledVersion} "3.5.7" uninstall_old_version uninstall_old_version_done
+   uninstall_old_version:
+
+   ; Delete Vfs keys
+   SetRegView 64
+   StrCpy $0 0
+   loop2:
+      ; Look at every registered explorer SyncRootManager for HKLM and check if it was added by our application
+      EnumRegKey $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager" $0
+      StrCmp $1 "" done2
+
+      ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" ""
+      StrCmp $R0 "${APPLICATION_NAME}" deleteSyncRootManager
+      ; Increment the index when not deleting the enumerated key.
+      IntOp $0 $0 + 1
+      goto loop2
+
+      deleteSyncRootManager:
+         ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" "NamespaceCLSID"
+         StrCmp $R1 "" done2
+
+         DetailPrint "Removing SyncRootManager $1"
+         DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1"
+
+         DetailPrint "Removing Navigation Pane CLSID $R1"
+         ; Should match FolderMan::updateCloudStorageRegistry
+         DeleteRegKey HKCU "Software\Classes\CLSID\$R1"
+         DeleteRegKey HKCU "Software\Classes\\WOW6432Node\CLSID\$R1"
+         DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$R1"
+         DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" $R1
+
+         goto loop2
+   done2:
+
+   ; Go back to the 32bit registry.
+   SetRegView lastused
+
+   ;Remove reg key
+   DeleteRegKey HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\kDrive"
+
+   ;Remove extension
+   !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${InstalledVersion}.0_x64__dbrs6rk4qqhna"
+   IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
+      uninstall_x64:
+      ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
+   !undef PackageFullName_x64
+   uninstall_kdrive_ext_x64_done:
+
+   uninstall_old_version_done:
+FunctionEnd
+
+Function EnsureKDriveShutdown
+   ; Stop processes
+   !insertmacro CheckAndConfirmEndProcesses "${APPLICATION_SERVER_EXECUTABLE}" "${APPLICATION_CLIENT_EXECUTABLE}"
+
+   ;Hack - Uninstall if needed
+   Call UninstallFct
+FunctionEnd
+
+Function InstallRedistributables
+   ${If} ${RunningX64}
+      ExecWait '"$OUTDIR\vc_redist.x64.exe" /install /passive /norestart /q'
+   ${ElseIf} ${IsNativeARM64}
+      ExecWait '"$OUTDIR\vc_redist.arm64.exe" /install /passive /norestart /q'
+   ${EndIf}
+   Delete "$OUTDIR\vc_redist.x64.exe"
+   Delete "$OUTDIR\vc_redist.arm64.exe"
+FunctionEnd
+
+##############################################################################
+#                                                                            #
+#   RE-INSTALLER FUNCTIONS                                                   #
+#                                                                            #
+##############################################################################
+
+Function PageReinstall
+   ReadRegStr $R0 HKLM "${regkey}" ""
+   StrCmp $R0 "" 0 +2
+   Abort
+
+   ;Detect version
+   ReadRegDWORD $R0 HKLM "${regkey}" "VersionMajor"
+   IntCmp $R0 ${VER_MAJOR} minor_check new_version older_version
+   minor_check:
+      ReadRegDWORD $R0 HKLM "${regkey}" "VersionMinor"
+      IntCmp $R0 ${VER_MINOR} rev_check new_version older_version
+   rev_check:
+      ReadRegDWORD $R0 HKLM "${regkey}" "VersionRevision"
+      IntCmp $R0 ${VER_PATCH} build_check new_version older_version
+   build_check:
+      ReadRegDWORD $R0 HKLM "${regkey}" "VersionBuild"
+      IntCmp $R0 ${VER_BUILD} same_version new_version older_version
+
+   new_version:
+      !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptions.ini" "Field 1" "Text" $PageReinstall_NEW_Field_1
+      !insertmacro MUI_HEADER_TEXT $PageReinstall_NEW_MUI_HEADER_TEXT_TITLE $PageReinstall_NEW_MUI_HEADER_TEXT_SUBTITLE
+      StrCpy $R0 "1"
+      Goto reinst_start
+
+   older_version:
+      !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptions.ini" "Field 1" "Text" $PageReinstall_OLD_Field_1
+      !insertmacro MUI_HEADER_TEXT $PageReinstall_NEW_MUI_HEADER_TEXT_TITLE $PageReinstall_NEW_MUI_HEADER_TEXT_SUBTITLE
+      StrCpy $R0 "1"
+      Goto reinst_start
+
+   same_version:
+      !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptions.ini" "Field 1" "Text" $PageReinstall_SAME_Field_1
+      !insertmacro MUI_HEADER_TEXT $PageReinstall_NEW_MUI_HEADER_TEXT_TITLE $PageReinstall_SAME_MUI_HEADER_TEXT_SUBTITLE
+      StrCpy $R0 "2"
+
+   reinst_start:
+      !insertmacro INSTALLOPTIONS_DISPLAY "NSIS.InstallOptions.ini"
+FunctionEnd
+
+Function PageLeaveReinstall
+   ; Just quit
+   Quit
+FunctionEnd
+
+##############################################################################
+#                                                                            #
+#   UNINSTALLER CUSTOM FUNCTIONS                                             #
+#                                                                            #
+##############################################################################
+;Function un.PageCompleteUninstallation
+;   !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptionsWithButtons.ini" "Field 1" "Text" ""
+;   !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptionsWithButtons.ini" "Field 2" "Text" $PageCustomUninstall_NEW_Field_2
+;   !insertmacro INSTALLOPTIONS_WRITE "NSIS.InstallOptionsWithButtons.ini" "Field 3" "Text" $PageCustomUninstall_NEW_Field_3
+;   !insertmacro MUI_HEADER_TEXT $PageCustomUninstall_NEW_MUI_HEADER_TEXT_TITLE $PageCustomUninstall_NEW_MUI_HEADER_TEXT_SUBTITLE
+
+;   !insertmacro INSTALLOPTIONS_DISPLAY "NSIS.InstallOptionsWithButtons.ini"
+;FunctionEnd
+
+;Function un.PageLeaveCompleteUninstallation
+;   !insertmacro INSTALLOPTIONS_READ $R1 "NSIS.InstallOptionsWithButtons.ini" "Field 2" "State"
+;   StrCmp $R1 "1" 0 del_all
+;      StrCpy $RemoveAllFiles "no"
+;      Goto end_complete_uninstall
+;   del_all:
+;      StrCpy $RemoveAllFiles "yes"
+;   end_complete_uninstall:
+;
+;FunctionEnd
+
+##############################################################################
+#                                                                            #
+#   INSTALLER SECTIONS                                                       #
+#                                                                            #
+##############################################################################
+Section "${APPLICATION_NAME}" SEC_APPLICATION
+   SectionIn 1 2 3 RO
+   SetDetailsPrint listonly
+
+   SetDetailsPrint textonly
+   DetailPrint $SEC_APPLICATION_DETAILS
+   SetDetailsPrint listonly
+   SetOutPath "$INSTDIR"
+
+   File /a "@{dataPath}"
+   File /a "@{7za}"
+   File /a "@{icon}"
+   nsExec::ExecToLog '"$INSTDIR\7za.exe" x -r -y "$INSTDIR\@{dataName}" -o"$INSTDIR"'
+   Delete "$INSTDIR\7za.exe"
+   Delete "$INSTDIR\@{dataName}"
+
+   ;Add file association
+   !insertmacro APP_ASSOCIATE "${APPLICATION_VIRTUALFILE_SUFFIX}" "${APPLICATION_VIRTUALFILE_FILECLASS}" "Virtual File for Remote File" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE},0" "Download" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE} $\"%1$\""
+
+SectionEnd
+
+!ifdef OPTION_SECTION_SC_SHELL_EXT
+   ${MementoSection} $OPTION_SECTION_SC_SHELL_EXT_SECTION SEC_SHELL_EXT
+      SectionIn 1 2
+      SetDetailsPrint textonly
+      DetailPrint $OPTION_SECTION_SC_SHELL_EXT_DetailPrint
+      Call InstallRedistributables
+      CreateDirectory "$INSTDIR\shellext"
+      !define LIBRARY_COM
+      !define LIBRARY_SHELL_EXTENSION
+      !define LIBRARY_IGNORE_VERSION
+      ${If} ${RunningX64}
+         !define LIBRARY_X64
+         !insertmacro InstallLib REGDLL NOTSHARED REBOOT_PROTECTED "${BUILD_PATH}\extensions\windows\standard\KDOverlays\KDOverlays.dll" "$INSTDIR\shellext\KDOverlays.dll" "$INSTDIR\shellext"
+         !insertmacro InstallLib REGDLL NOTSHARED REBOOT_PROTECTED "${BUILD_PATH}\extensions\windows\standard\KDContextMenu\KDContextMenu.dll" "$INSTDIR\shellext\KDContextMenu.dll" "$INSTDIR\shellext"
+         !undef LIBRARY_X64
+      ${Else}
+         !insertmacro InstallLib REGDLL NOTSHARED REBOOT_PROTECTED "${BUILD_PATH}\extensions\windows\standard\KDOverlays\KDOverlays.dll" "$INSTDIR\shellext\KDOverlays.dll" "$INSTDIR\shellext"
+         !insertmacro InstallLib REGDLL NOTSHARED REBOOT_PROTECTED "${BUILD_PATH}\extensions\windows\standard\KDContextMenu\KDContextMenu.dll" "$INSTDIR\shellext\KDContextMenu.dll" "$INSTDIR\shellext"
+      ${Endif}
+      !undef LIBRARY_COM
+      !undef LIBRARY_SHELL_EXTENSION
+      !undef LIBRARY_IGNORE_VERSION
+      
+      ;Lite Sync extension
+      ${PowerShellExec} "Get-AppxPackage -Name Microsoft.DesktopAppInstaller | Measure-Object | Select-Object -expand Count"
+      Pop $R0
+      IntCmp $R0 1 install_lite_sync_extension
+      MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND $InstallMsiexec_MESSAGEBOX_TEXT
+      Goto end_install_lite_sync_extension
+      
+      install_lite_sync_extension:
+      CreateDirectory "$INSTDIR\shellext\AppX"
+      SetOutPath "$INSTDIR\shellext\AppX"
+      File /nonfatal /a /r "${VFS_APPX_DIRECTORY}\"
+      ${PowerShellExecLog} "Add-AppxPackage -Path '${VFS_APPX_BUNDLE}'"
+      end_install_lite_sync_extension:
+      
+   ${MementoSectionEnd}
+!endif
+
+SectionGroup $SectionGroup_Shortcuts
+
+!ifdef OPTION_SECTION_SC_START_MENU
+   ${MementoSection} $OPTION_SECTION_SC_START_MENU_SECTION SEC_START_MENU
+      SectionIn 1 2 3
+      SetDetailsPrint textonly
+      DetailPrint $OPTION_SECTION_SC_START_MENU_DetailPrint
+      SetDetailsPrint listonly
+      SetShellVarContext all
+      CreateShortCut "$SMPROGRAMS\${APPLICATION_NAME}.lnk" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}"
+      SetShellVarContext current
+   ${MementoSectionEnd}
+!endif
+
+!ifdef OPTION_SECTION_SC_DESKTOP
+   ${MementoSection} $OPTION_SECTION_SC_DESKTOP_SECTION SEC_DESKTOP
+      SectionIn 1 2
+      SetDetailsPrint textonly
+      DetailPrint $OPTION_SECTION_SC_DESKTOP_DetailPrint
+      SetDetailsPrint listonly
+      SetShellVarContext all
+      CreateShortCut "$DESKTOP\${APPLICATION_NAME}.lnk" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}"
+      SetShellVarContext current
+   ${MementoSectionEnd}
+!endif
+
+!ifdef OPTION_SECTION_SC_QUICK_LAUNCH
+   ${MementoSection} $OPTION_SECTION_SC_QUICK_LAUNCH_SECTION SEC_QUICK_LAUNCH
+      SectionIn 1 2
+      SetDetailsPrint textonly
+      DetailPrint $OPTION_SECTION_SC_QUICK_LAUNCH_DetailPrint
+      SetShellVarContext all
+      SetDetailsPrint listonly
+      CreateShortCut "$QUICKLAUNCH\${APPLICATION_NAME}.lnk" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" "" "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}"
+      SetShellVarContext current
+   ${MementoSectionEnd}
+!endif
+
+SectionGroupEnd
+
+${MementoSectionDone}
+
+; Installer section descriptions
+;--------------------------------
+!insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_APPLICATION} $OPTION_SECTION_SC_APPLICATION_Desc
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_START_MENU} $OPTION_SECTION_SC_START_MENU_Desc
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_DESKTOP} $OPTION_SECTION_SC_DESKTOP_Desc
+!insertmacro MUI_DESCRIPTION_TEXT ${SEC_QUICK_LAUNCH} $OPTION_SECTION_SC_QUICK_LAUNCH_Desc
+!insertmacro MUI_FUNCTION_DESCRIPTION_END
+
+
+Section -post
+
+   ;Uninstaller file.
+   SetDetailsPrint textonly
+   DetailPrint $UNINSTALLER_FILE_Detail
+   SetDetailsPrint listonly
+   WriteUninstaller $INSTDIR\uninstall.exe
+
+   ;Registry keys required for installer version handling and uninstaller.
+   SetDetailsPrint textonly
+   DetailPrint $UNINSTALLER_REGISTRY_Detail
+   SetDetailsPrint listonly
+
+   ;Version numbers used to detect existing installation version for comparison.
+   WriteRegStr HKLM "${regkey}" "" $INSTDIR
+   WriteRegDWORD HKLM "${regkey}" "VersionMajor" "${VER_MAJOR}"
+   WriteRegDWORD HKLM "${regkey}" "VersionMinor" "${VER_MINOR}"
+   WriteRegDWORD HKLM "${regkey}" "VersionRevision" "${VER_PATCH}"
+   WriteRegDWORD HKLM "${regkey}" "VersionBuild" "${VER_BUILD}"
+
+   ;Add or Remove Programs entry.
+   WriteRegExpandStr ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "UninstallString" '"$INSTDIR\Uninstall.exe"'
+   WriteRegExpandStr ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "InstallLocation" "$INSTDIR"
+   WriteRegStr ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "DisplayName" "${APPLICATION_NAME}"
+   WriteRegStr ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "Publisher" "${APPLICATION_VENDOR}"
+   WriteRegStr ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "DisplayIcon" "$INSTDIR\Uninstall.exe,0"
+   WriteRegStr ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "DisplayVersion" "${VERSION}"
+   WriteRegDWORD ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "VersionMajor" "${VER_MAJOR}"
+   WriteRegDWORD ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "VersionMinor" "${VER_MINOR}.${VER_PATCH}.${VER_BUILD}"
+   WriteRegStr ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "URLInfoAbout" "http://${APPLICATION_DOMAIN}/"
+   WriteRegStr ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "HelpLink" "http://${APPLICATION_DOMAIN}/"
+   WriteRegDWORD ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "NoModify" "1"
+   WriteRegDWORD ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "NoRepair" "1"
+
+
+   SetDetailsPrint textonly
+   DetailPrint $UNINSTALLER_FINISHED_Detail
+
+   ;Remove V2 Uninstaller registry entry if it exists
+   DeleteRegKey HKLM "SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Infomaniak Drive"
+
+   ;Force long paths if needed
+   ReadRegStr $R0 HKLM "${longpathkey}" "LongPathsEnabled"
+   StrCmp $R0 "0x00000001" SkipEnableLongPaths
+   DetailPrint "Enable long paths"
+   WriteRegDWORD HKLM "${longpathkey}" "LongPathsEnabled" "0x00000001"
+   SkipEnableLongPaths:
+SectionEnd
+
+##############################################################################
+#                                                                            #
+#   UNINSTALLER SECTION                                                      #
+#                                                                            #
+##############################################################################
+
+Function un.EnsureKDriveShutdown
+   ; Stop processes
+   !insertmacro CheckAndConfirmEndProcesses "${APPLICATION_SERVER_EXECUTABLE}" "${APPLICATION_CLIENT_EXECUTABLE}"
+FunctionEnd
+
+Function un.UninstallFct
+   IfFileExists "$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" kdrive_installed
+      MessageBox MB_YESNO $UNINSTALL_MESSAGEBOX /SD IDYES IDYES kdrive_installed
+      Abort $UNINSTALL_ABORT
+   kdrive_installed:
+
+   ; Delete Navigation Pane entries added for Windows 10.
+   ; On 64bit Windows, the client will be writing to the 64bit registry.
+   ${If} ${RunningX64}
+      SetRegView 64
+   ${EndIf}
+   StrCpy $0 0
+   loop:
+      ; Look at every registered explorer namespace for HKCU and check if it was added by our application
+      ; (we write to a custom "ApplicationName" value there).
+      EnumRegKey $1 HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace" $0
+      StrCmp $1 "" done
+
+      ReadRegStr $R0 HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$1" "ApplicationName"
+      StrCmp $R0 "${APPLICATION_NAME}" deleteClsid
+      ; Increment the index when not deleting the enumerated key.
+      IntOp $0 $0 + 1
+      goto loop
+
+      deleteClsid:
+         DetailPrint "Removing Navigation Pane CLSID $1"
+         ; Should match FolderMan::updateCloudStorageRegistry
+         DeleteRegKey HKCU "Software\Classes\CLSID\$1"
+         DeleteRegKey HKCU "Software\Classes\\WOW6432Node\CLSID\$1"
+         DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$1"
+         DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" $1
+         goto loop
+   done:
+
+   ; Delete Vfs keys
+   StrCpy $0 0
+   loop2:
+      ; Look at every registered explorer SyncRootManager for HKLM and check if it was added by our application
+      EnumRegKey $1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager" $0
+      StrCmp $1 "" done2
+
+      ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" ""
+      StrCmp $R0 "${APPLICATION_NAME}" deleteSyncRootManager
+      ; Increment the index when not deleting the enumerated key.
+      IntOp $0 $0 + 1
+      goto loop2
+
+      deleteSyncRootManager:
+         ReadRegStr $R1 HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1" "NamespaceCLSID"
+         StrCmp $R1 "" done2
+
+         DetailPrint "Removing SyncRootManager $1"
+         DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Explorer\SyncRootManager\$1"
+
+         DetailPrint "Removing Navigation Pane CLSID $R1"
+         ; Should match FolderMan::updateCloudStorageRegistry
+         DeleteRegKey HKCU "Software\Classes\CLSID\$R1"
+         DeleteRegKey HKCU "Software\Classes\\WOW6432Node\CLSID\$R1"
+         DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\$R1"
+         DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" $R1
+
+         goto loop2
+   done2:
+
+   ; Go back to the 32bit registry.
+   SetRegView lastused
+
+   ;Delete registry keys.
+   DeleteRegValue HKLM "${regkey}" "VersionBuild"
+   DeleteRegValue HKLM "${regkey}" "VersionMajor"
+   DeleteRegValue HKLM "${regkey}" "VersionMinor"
+   DeleteRegValue HKLM "${regkey}" "VersionRevision"
+   DeleteRegValue HKLM "${regkey}" ""
+   DeleteRegKey HKLM "${regkey}"
+
+   DeleteRegKey HKCR "${APPLICATION_NAME}"
+
+   ;Remove file association
+   !insertmacro APP_UNASSOCIATE "${APPLICATION_VIRTUALFILE_SUFFIX}" "${APPLICATION_VIRTUALFILE_FILECLASS}"
+
+   ;Shell extension
+   !ifdef OPTION_SECTION_SC_SHELL_EXT
+      !define LIBRARY_COM
+      !define LIBRARY_SHELL_EXTENSION
+      !define LIBRARY_IGNORE_VERSION
+      ${If} ${HasSection} SEC_SHELL_EXT
+        DetailPrint "Uninstalling x64 overlay DLLs"
+        !define LIBRARY_X64
+        !insertmacro UnInstallLib REGDLL NOTSHARED REBOOT_PROTECTED "$INSTDIR\shellext\KDContextMenu.dll"
+        !insertmacro UnInstallLib REGDLL NOTSHARED REBOOT_PROTECTED "$INSTDIR\shellext\KDOverlays.dll"
+        !undef LIBRARY_X64
+        DetailPrint "Uninstalling x86 overlay DLLs"
+        !insertmacro UnInstallLib REGDLL NOTSHARED REBOOT_PROTECTED "$INSTDIR\shellext\KDContextMenu.dll"
+        !insertmacro UnInstallLib REGDLL NOTSHARED REBOOT_PROTECTED "$INSTDIR\shellext\KDOverlays.dll"
+      ${EndIf}
+      !undef LIBRARY_COM
+      !undef LIBRARY_SHELL_EXTENSION
+      !undef LIBRARY_IGNORE_VERSION
+   !endif
+
+   ;Start menu shortcut
+   SetShellVarContext all
+
+   ${If} ${FileExists} "$SMPROGRAMS\${APPLICATION_NAME}.lnk"
+         Delete "$SMPROGRAMS\${APPLICATION_NAME}.lnk"
+   ${EndIf}
+
+   ;Desktop shortcut.
+   ${If} ${FileExists} "$DESKTOP\${APPLICATION_NAME}.lnk"
+      Delete "$DESKTOP\${APPLICATION_NAME}.lnk"
+   ${EndIf}
+
+   ;Quick Launch shortcut.
+   ${If} ${FileExists} "$QUICKLAUNCH\${APPLICATION_NAME}.lnk"
+      Delete "$QUICKLAUNCH\${APPLICATION_NAME}.lnk"
+   ${EndIf}
+
+   SetShellVarContext current
+
+   ${If} ${Silent}
+      ;DetailPrint "Clearing node DB table..."
+
+      ;Clear node DB table
+      ;ExecWait '"$INSTDIR\${APPLICATION_SERVER_EXECUTABLE}" --clearSyncNodes'
+   ${else}
+      DetailPrint "Removing all files..."
+
+      ;Remove configuration directory
+      IfFileExists "$LOCALAPPDATA\kDrive\*.*" del_config_dir del_config_dir_end
+         del_config_dir:
+         RMDir /r /REBOOTOK "$LOCALAPPDATA\kDrive"
+      del_config_dir_end:
+
+      ;Remove credentials
+      System::Call 'ADVAPI32::CredEnumerate(t "com.infomaniak.drive.desktopclient*", i0, *i0r1, *p0r2)i.r0'
+      ${If} $0 <> 0
+         ${IfThen} $1 U> 0 ${|} IntOp $1 $1 - 1 ${|}
+         ${ForEach} $3 0 $1 + 1
+            IntOp $4 $3 * ${NSIS_PTR_SIZE}
+            System::Call '*$2(&i$4, p.r4)'
+            System::Call '*$4(i, i.r5, p.r6)'
+            System::Call 'ADVAPI32::CredDelete(t)(pr6, ir5, i0)'
+         ${Next}
+         System::Call 'ADVAPI32::CredFree(pr2)'
+      ${EndIf}
+   ${EndIf}
+
+   ;Remove all the Program Files.
+   RMDir /r $INSTDIR
+
+   ;Uninstall extension
+   ;${If} ${RunningX64}
+      !define PackageFullName_x64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_x64__@{AUMID}"
+      IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_x64}\*.*" uninstall_x64 uninstall_kdrive_ext_x64_done
+         uninstall_x64:
+         DetailPrint $UNINSTALL_EXTENSION
+         ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_x64}"
+      !undef PackageFullName_x64
+      uninstall_kdrive_ext_x64_done:
+   ;${ElseIf} ${IsNativeARM64}
+      !define PackageFullName_arm64 "${VFS_PACKAGE_NAME}_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.0_arm64__@{AUMID}"
+      IfFileExists "C:\Program Files\WindowsApps\${PackageFullName_arm64}\*.*" uninstall_arm64 uninstall_kdrive_ext_arm64_done
+         uninstall_arm64:
+         DetailPrint $UNINSTALL_EXTENSION
+         ${PowerShellExecLog} "Remove-AppxPackage ${PackageFullName_arm64}"
+      !undef PackageFullName_arm64
+      uninstall_kdrive_ext_arm64_done:
+   ;${EndIf}
+   ;uninstall_kdrive_ext_done:
+
+;@{uninstallFiles}
+;@{uninstallDirs}
+
+   DeleteRegKey ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}"
+
+   SetDetailsPrint textonly
+   DetailPrint $UNINSTALLER_FINISHED_Detail
+FunctionEnd
+
+Section Uninstall
+   Call un.UninstallFct
+SectionEnd
+
+##############################################################################
+#                                                                            #
+#   NSIS Installer Event Handler Functions                                   #
+#                                                                            #
+##############################################################################
+
+Function .onInit
+   ; Check Windows version
+   ${IfNot} ${AtLeastWin8}
+      MessageBox MB_OK $INIT_WRONG_VERSION
+      Quit
+   ${EndIf}
+   
+   SetOutPath $INSTDIR
+
+   ${GetParameters} $R0
+   ${GetOptions} $R0 "/launch" $R0
+   ${IfNot} ${Errors}
+      StrCpy $InstallRunIfSilent "yes"
+   ${EndIf}
+
+   ${GetParameters} $R0
+   ${GetOptions} $R0 "/noautoupdate" $R0
+   ${IfNot} ${Errors}
+      StrCpy $NoAutomaticUpdates "yes"
+   ${EndIf}
+
+
+   !insertmacro INSTALLOPTIONS_EXTRACT "NSIS.InstallOptions.ini"
+
+   ; uncomment this line if you want to see the language selection
+   ;!insertmacro MUI_LANGDLL_DISPLAY
+
+   Call SetLang
+
+!ifdef OPTION_SECTION_SC_QUICK_LAUNCH
+   ; Remove Quick Launch option from Windows 7, as no longer applicable - usually.
+   ${IfNot} ${AtMostWinVista}
+      SectionSetText ${SEC_QUICK_LAUNCH} $INIT_NO_QUICK_LAUNCH
+      SectionSetFlags ${SEC_QUICK_LAUNCH} ${SF_RO}
+      SectionSetInstTypes ${SEC_QUICK_LAUNCH} 0
+   ${EndIf}
+!endif
+
+   ; Unselect item and adjust text
+   ${If} ${FileExists} "$DESKTOP\${APPLICATION_NAME}.lnk"
+      SectionSetText ${SEC_DESKTOP} $INIT_NO_DESKTOP
+      Push $0
+      SectionSetFlags ${SEC_DESKTOP} 0
+      SectionSetInstTypes ${SEC_DESKTOP} 0
+      Pop $0
+   ${EndIf}
+
+   ${MementoSectionRestore}
+
+   UAC_TryAgain:
+      !insertmacro UAC_RunElevated
+      ${Switch} $0
+      ${Case} 0
+          ${IfThen} $1 = 1 ${|} Quit ${|} ;we are the outer process, the inner process has done its work, we are done
+          ${IfThen} $3 <> 0 ${|} ${Break} ${|} ;we are admin, let the show go on
+          ${If} $1 = 3 ;RunAs completed successfully, but with a non-admin user
+             MessageBox mb_YesNo|mb_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND $UAC_INSTALLER_REQUIRE_ADMIN /SD IDNO IDYES UAC_TryAgain IDNO 0
+          ${EndIf}
+          ;fall-through and die
+      ${Case} 1223
+         MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND $UAC_INSTALLER_REQUIRE_ADMIN
+         Quit
+      ${Case} 1062
+         MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND $UAC_ERROR_LOGON_SERVICE
+         Quit
+      ${Default}
+         MessageBox MB_ICONSTOP "$UAC_ERROR_ELEVATE $0"
+         Abort
+         Quit
+      ${EndSwitch}
+
+   ;Prevent multiple instances.
+   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPLICATION_SHORTNAME}Installer") i .r1 ?e'
+   Pop $R0
+   StrCmp $R0 0 +3
+      MessageBox MB_OK|MB_ICONEXCLAMATION $INIT_INSTALLER_RUNNING
+      Abort
+
+   ;Use available InstallLocation when possible. This is useful in the uninstaller
+   ;via re-install, which would otherwise use a default location - a bug.
+   ReadRegStr $R0 ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "InstallLocation"
+   StrCmp $R0 "" SkipSetInstDir
+   StrCpy $INSTDIR $R0
+   SkipSetInstDir:
+
+   ;Shutdown ${APPLICATION_NAME} in case Add/Remove re-installer option used.
+   Call EnsureKDriveShutdown
+
+   ReadRegStr $R0 ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "InstallLocation"
+   ${If} ${Silent}
+   ${AndIf} $R0 != ""
+       ExecWait '"$R0\Uninstall.exe" /S _?=$R0'
+   ${EndIf}
+FunctionEnd
+
+Function .onInstSuccess
+   ${MementoSectionSave}
+
+   ${If} $NoAutomaticUpdates == "yes"
+      WriteRegDWORD HKLM "${regkey}" "skipUpdateCheck" "1"
+   ${EndIf}
+
+   ; TODO: Only needed to when updating from 2.1.{0,1}. Remove in due time.
+   Delete /REBOOTOK $INSTDIR\bearer\qgenericbearer.dll
+   Delete /REBOOTOK $INSTDIR\bearer\qnativewifibearer.dll
+   RMDir /REBOOTOK $INSTDIR\bearer
+
+   DeleteRegKey SHCTX "${uninstkey}"
+   DeleteRegKey SHCTX "${regkey}"
+   ;Do not add the desktop shortcut anymore on app update
+   WriteRegDWORD ${MEMENTO_REGISTRY_ROOT} "${MEMENTO_REGISTRY_KEY}" "MementoSection_SEC_DESKTOP" "0"
+
+   ${If} ${Silent}
+   ${AndIf} $InstallRunIfSilent == "yes"
+     Call LaunchApplication
+   ${EndIf}
+FunctionEnd
+
+Function .onInstFailed
+FunctionEnd
+
+##############################################################################
+#                                                                            #
+#   NSIS Uninstaller Event Handler Functions                                 #
+#                                                                            #
+##############################################################################
+
+Function un.onInit
+   !insertmacro INSTALLOPTIONS_EXTRACT "NSIS.InstallOptionsWithButtons.ini"
+   
+   Call un.SetLang
+   
+   UAC_TryAgain:
+      !insertmacro UAC_RunElevated
+      ${Switch} $0
+      ${Case} 0
+          ${IfThen} $1 = 1 ${|} Quit ${|} ;we are the outer process, the inner process has done its work, we are done
+          ${IfThen} $3 <> 0 ${|} ${Break} ${|} ;we are admin, let the show go on
+          ${If} $1 = 3 ;RunAs completed successfully, but with a non-admin user
+             MessageBox mb_YesNo|mb_ICONEXCLAMATION|MB_TOPMOST|MB_SETFOREGROUND $UAC_UNINSTALLER_REQUIRE_ADMIN /SD IDNO IDYES UAC_TryAgain IDNO 0
+          ${EndIf}
+          ;fall-through and die
+      ${Case} 1223
+         MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND $UAC_UNINSTALLER_REQUIRE_ADMIN
+         Quit
+      ${Case} 1062
+         MessageBox MB_ICONSTOP|MB_TOPMOST|MB_SETFOREGROUND $UAC_ERROR_LOGON_SERVICE
+         Quit
+      ${Default}
+         MessageBox MB_ICONSTOP "$UAC_ERROR_ELEVATE $0"
+         Abort
+         Quit
+      ${EndSwitch}
+
+   ;Prevent multiple instances.
+   System::Call 'kernel32::CreateMutexA(i 0, i 0, t "${APPLICATION_SHORTNAME}Uninstaller") i .r1 ?e'
+   Pop $R0
+   StrCmp $R0 0 +3
+      MessageBox MB_OK|MB_ICONEXCLAMATION $INIT_UNINSTALLER_RUNNING
+      Abort
+
+   ;Shutdown ${APPLICATION_NAME} in order to remove locked files.
+   Call un.EnsureKDriveShutdown
+FunctionEnd
+
+Function un.onUnInstSuccess
+FunctionEnd
+
+Function un.onUnInstFailed
+FunctionEnd

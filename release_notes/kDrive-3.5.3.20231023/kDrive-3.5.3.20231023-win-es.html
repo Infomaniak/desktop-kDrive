@@ -1,0 +1,39 @@
+<!--
+  ~ Infomaniak kDrive - Desktop
+  ~ Copyright (C) 2023-2024 Infomaniak Network SA
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Notas de la versi&oacute;n - kDrive 3.5.3</h1>
+<h2><b>Correcci&oacute;n de errores</b></h2>
+<ul>
+    <li>Manejar elementos con fecha de creaci&oacute;n o modificaci&oacute;n nula</li>
+    <li>Problema de sincronizaci&oacute;n cuando se excluyen demasiadas carpetas</li>
+    <li>Problema de sincronizaci&oacute;n cuando un elemento se elimina localmente y luego se vuelve a crear con el mismo nombre y may&uacute;sculas y min&uacute;sculas diferentes mientras la sincronizaci&oacute;n no est&aacute; en progreso</li>
+    <li>El conflicto entre mover y eliminar se resolvi&oacute; incorrectamente en algunos casos</li>
+    <li>El ciclo Mover-Mover provoca un bloqueo</li>
+    <li>El archivo db-wal se hace cada vez m&aacute;s grande</li>
+    <li>Error gen&eacute;rico al sincronizar en un disco externo inaccesible</li>
+    <li>La sincronizaci&oacute;n se detiene despu&eacute;s de un problema de creaci&oacute;n de carpeta (car&aacute;cter no admitido)</li>
+    <li>Problema de sincronizaci&oacute;n para elementos sin atributos A o D</li>
+    <li>Bucle de sincronizaci&oacute;n despu&eacute;s de la resoluci&oacute;n de un conflicto que involucra un movimiento</li>
+    <li>Problema de sincronizaci&oacute;n cuando hay demasiados eventos del sistema de archivos</li>
+    <li>Se detectaron autorizaciones de archivos incorrectas en algunos casos</li>
+</ul>
+</body>
+</html>

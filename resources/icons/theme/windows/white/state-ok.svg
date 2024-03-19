@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icons/theme/white/state-ok</title>
+    <defs>
+        <path d="M5.66666667,1 C6.04502112,0.998241716 6.39165837,1.22172184 6.56133333,1.57680999 L6.56133333,1.57680999 L7.19266667,2.906809 C7.24918085,3.02522823 7.36451894,3.10000441 7.49066667,3.10000886 L7.49066667,3.10000886 L15,3.10000886 C15.5522847,3.10000886 16,3.57010952 16,4.15000808 L16,4.15000808 L16,13.9500008 C16,14.5298993 15.5522847,15 15,15 L15,15 L1,15 C0.44771525,15 0,14.5298993 0,13.9500008 L0,13.9500008 L0,2.05000964 C0,1.47011108 0.44771525,1 1,1 L1,1 Z M7.1773934,4 L4.5,4 L4.5,13 L7.1773934,13 L7.1773934,11.3055935 L8.1621078,10.3847203 L9.5458568,13 L12.5,13 L9.90627514,8.76398363 L12.3584071,6.48021828 L9.13395012,6.48021828 L7.1773934,8.64120055 L7.1773934,4 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/theme/white/state-ok" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Combined-Shape" fill="#FFFFFF" xlink:href="#path-1"></use>
+    </g>
+</svg>

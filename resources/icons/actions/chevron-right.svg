@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/actions/chevron-right</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M19.9662506,11.9721509 C19.9670678,12.6338532 19.6828577,13.2638522 19.1862488,13.7011509 L8.0342488,23.5121509 C7.26565785,24.1570802 6.1227756,24.0704799 5.46013942,23.3171014 C4.79750325,22.5637229 4.85749064,21.4191353 5.5952488,20.7391509 L15.3472488,12.1601509 C15.4014036,12.1126817 15.432458,12.0441652 15.432458,11.9721509 C15.432458,11.9001366 15.4014036,11.8316201 15.3472488,11.7841509 L5.5952488,3.20515091 C4.85749064,2.52516655 4.79750325,1.38057887 5.46013942,0.627200388 C6.1227756,-0.126178092 7.26565785,-0.212778371 8.0342488,0.432150906 L19.1822488,10.2401509 C19.6800598,10.6781984 19.9656191,11.3090513 19.9662506,11.9721509 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/actions/chevron-right" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="path" fill="#000000" xlink:href="#path-1"></use>
+    </g>
+</svg>

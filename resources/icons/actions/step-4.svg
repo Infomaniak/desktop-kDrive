@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="28px" height="28px" viewBox="0 0 28 28" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>4</title>
+    <g id="Assistant" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Drive---App-Desktop---Autorisations" transform="translate(-347.000000, -738.000000)">
+            <g id="app" transform="translate(307.000000, 260.000000)">
+                <g id="Group-4-Copy" transform="translate(40.000000, 411.000000)">
+                    <g id="4" transform="translate(0.000000, 67.000000)">
+                        <circle id="Oval" fill="#0098FF" cx="14" cy="14" r="14"></circle>
+                        <path d="M18.06,16.494 L18.06,15.29 L16.198,15.29 L16.198,8.85 L14.896,8.85 L9.87,15.29 L9.87,16.494 L14.91,16.494 L14.91,19 L16.198,19 L16.198,16.494 L18.06,16.494 Z M11.284,15.29 L14.91,10.6 L14.91,15.29 L11.284,15.29 Z" id="Shape" fill="#FFFFFF" fill-rule="nonzero"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

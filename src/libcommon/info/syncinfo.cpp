@@ -1,0 +1,77 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "syncinfo.h"
+
+namespace KDC {
+
+SyncInfo::SyncInfo(int dbId, int driveDbId, const QString &localPath, const QString &targetPath, const QString &targetNodeId,
+                   bool supportVfs, VirtualFileMode virtualFileMode, const QString &navigationPaneClsid)
+    : _dbId(dbId),
+      _driveDbId(driveDbId),
+      _localPath(localPath),
+      _targetPath(targetPath),
+      _targetNodeId(targetNodeId),
+      _supportVfs(supportVfs),
+      _virtualFileMode(virtualFileMode),
+      _navigationPaneClsid(navigationPaneClsid) {}
+
+SyncInfo::SyncInfo()
+    : _dbId(0),
+      _driveDbId(0),
+      _localPath(QString()),
+      _targetPath(QString()),
+      _targetNodeId(QString()),
+      _supportVfs(false),
+      _virtualFileMode(VirtualFileModeOff),
+      _navigationPaneClsid(QString()) {}
+
+QDataStream &operator>>(QDataStream &in, SyncInfo &info) {
+    in >> info._dbId >> info._driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
+        info._virtualFileMode >> info._navigationPaneClsid;
+    return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const SyncInfo &info) {
+    out << info._dbId << info._driveDbId << info._localPath << info._targetPath << info._targetNodeId << info._supportVfs
+        << info._virtualFileMode << info._navigationPaneClsid;
+    return out;
+}
+
+QDataStream &operator<<(QDataStream &out, const QList<SyncInfo> &list) {
+    int count = list.size();
+    out << count;
+    for (int i = 0; i < list.size(); i++) {
+        SyncInfo info = list[i];
+        out << info;
+    }
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, QList<SyncInfo> &list) {
+    int count = 0;
+    in >> count;
+    for (int i = 0; i < count; i++) {
+        SyncInfo *info = new SyncInfo();
+        in >> *info;
+        list.push_back(*info);
+    }
+    return in;
+}
+
+}  // namespace KDC

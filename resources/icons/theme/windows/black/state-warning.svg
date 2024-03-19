@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icons/theme/black/state-sync</title>
+    <defs>
+        <path d="M5.66666667,1 C6.04502112,0.998241716 6.39165837,1.22172184 6.56133333,1.57680999 L6.56133333,1.57680999 L7.19266667,2.906809 C7.24918085,3.02522823 7.36451894,3.10000441 7.49066667,3.10000886 L7.49066667,3.10000886 L15,3.10000886 C15.5522847,3.10000886 16,3.57010952 16,4.15000808 L16,4.15000808 L16,13.9500008 C16,14.5298993 15.5522847,15 15,15 L15,15 L1,15 C0.44771525,15 0,14.5298993 0,13.9500008 L0,13.9500008 L0,2.05000964 C0,1.47011108 0.44771525,1 1,1 L1,1 Z M7.9764895,11 L7.94949879,11 C7.5533425,11.0069828 7.17663995,11.1730558 6.90419023,11.4608347 C6.63174051,11.7486135 6.48644007,12.1339134 6.50099734,12.53 C6.53260878,13.3489975 7.20415175,13.997394 8.02347333,14 L8.02347333,14 L8.05046404,14 C8.44671018,13.9932897 8.82357531,13.8273006 9.09608357,13.5394599 C9.36859183,13.2516192 9.51379966,12.8661615 9.49896549,12.47 C9.46836767,11.6505491 8.79622821,11.0015766 7.9764895,11 L7.9764895,11 Z M8.05986126,4.5 L7.94013874,4.5 C7.14477208,4.5 6.5,5.14477208 6.5,5.94013874 L6.5,5.94013874 L6.5,8.82041622 C6.5,9.61578288 7.14477208,10.260555 7.94013874,10.260555 L7.94013874,10.260555 L8.05986126,10.260555 C8.85522792,10.260555 9.5,9.61578288 9.5,8.82041622 L9.5,8.82041622 L9.5,5.94013874 C9.5,5.14477208 8.85522792,4.5 8.05986126,4.5 L8.05986126,4.5 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/theme/black/state-sync" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="Combined-Shape" fill="#000000" xlink:href="#path-1"></use>
+    </g>
+</svg>

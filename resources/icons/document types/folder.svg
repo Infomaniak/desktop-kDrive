@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="25px" viewBox="0 0 24 25" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/document types/folder</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M7.08790618,1.66773021 C7.56115457,1.66563567 7.99473085,1.93185538 8.20696148,2.35485259 L8.20696148,2.35485259 L8.99663762,3.93920809 C9.06732595,4.08027448 9.21159163,4.16935128 9.36937809,4.16935657 L9.36937809,4.16935657 L18.7621046,4.16935657 C19.4529062,4.16935657 20.0129116,4.72936193 20.0129116,5.42016355 L20.0129116,5.42016355 L20.0129116,17.094362 C20.0129116,17.7851636 19.4529062,18.3451689 18.7621046,18.3451689 L18.7621046,18.3451689 L1.25080697,18.3451689 C0.560005356,18.3451689 0,17.7851636 0,17.094362 L0,17.094362 L0,2.9185496 C0,2.22774799 0.560005356,1.66773021 1.25080697,1.66773021 L1.25080697,1.66773021 Z M6.47047455,7.72212414 C5.24397394,8.94932911 4.73927508,10.7240712 5.13634288,12.4135149 C5.55771891,14.2644602 7.002074,15.7099439 8.85186971,16.131945 C9.22791225,16.2171671 9.6122625,16.26027 9.99783016,16.2604747 C11.5288397,16.2643354 12.9772096,15.5660439 13.9282214,14.3655292 C14.8792332,13.1650145 15.2280154,11.5946618 14.8746995,10.1041174 L14.8754686,10.1048869 C14.453033,8.25440312 13.0086817,6.80952147 11.1591726,6.3872263 C9.47069858,5.98993047 7.69697516,6.49491917 6.47047455,7.72212414 Z M12.9257976,9.53465579 C12.9862006,9.54299593 13.0388841,9.57995284 13.0673122,9.63392679 C13.2062651,9.88794183 13.3097747,10.1598106 13.3749526,10.4419466 C13.6926016,11.7675385 13.2052824,13.1564411 12.1291981,13.9924571 C11.0531137,14.8284731 9.587551,14.9567754 8.38271811,14.3204416 L8.38271811,14.3227502 C8.32861379,14.2938139 8.29147647,14.240869 8.28267302,14.1801206 C8.27386957,14.1193723 8.29444819,14.0580538 8.33811025,14.0149332 L12.7619791,9.58929332 C12.8050118,9.54640239 12.8656516,9.52617753 12.9257976,9.53465579 Z M11.6306315,8.19719064 C11.6847359,8.22612696 11.7218732,8.27907189 11.7306766,8.33982023 C11.7394801,8.40056858 11.7189015,8.46188713 11.6752394,8.50500771 L7.25060147,12.9291085 C7.20756871,12.9719994 7.14692896,12.9922243 7.08678296,12.983746 C7.026475,12.9751645 6.97389085,12.9382773 6.94526838,12.884475 C6.23513643,11.5388669 6.48430975,9.8872874 7.55977483,8.81138133 C8.63523991,7.73547527 10.2859124,7.48642999 11.6306315,8.19719064 Z" id="path-1"></path>
+        <path d="M22.5,5 L11.236,5 C11.0467784,4.99998511 10.8737713,4.89317046 10.789,4.724 L9.842,2.824 C9.58748755,2.31673083 9.06753168,1.99747328 8.5,1.99998511 L1.5,1.99998511 C0.671572875,1.99998511 0,2.67157288 0,3.5 L0,20.5 C0,21.3284271 0.671572875,22 1.5,22 L22.5,22 C23.3284271,22 24,21.3284271 24,20.5 L24,6.5 C24,5.67157288 23.3284271,5 22.5,5 Z" id="path-3"></path>
+    </defs>
+    <g id="icons/document-types/folder" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(0.000000, 0.000000)">
+        <g id="Icons/icon-24px" transform="translate(2.000000, 2.000000)">
+            <g id="Icons/Drive/folder-block" transform="translate(-0.006456, 0.493544)">
+                <mask id="mask-2" fill="white">
+                    <use xlink:href="#path-1"></use>
+                </mask>
+                <use id="Combined-Shape" fill="#9F9F9F" fill-rule="evenodd" xlink:href="#path-1"></use>
+            </g>
+        </g>
+        <g id="Icons/icon-20px">
+            <g id="Icons/Drive/folder-empty-1">
+                <mask id="mask-4" fill="white">
+                    <use xlink:href="#path-3"></use>
+                </mask>
+                <use id="icon" fill="#666666" fill-rule="evenodd" xlink:href="#path-3"></use>
+            </g>
+        </g>
+    </g>
+</svg>

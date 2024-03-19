@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/actions/error-sync</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M12,24 C18.627417,24 24,18.627417 24,12 C24,5.372583 18.627417,0 12,0 C5.372583,0 0,5.372583 0,12 C0.00747569045,18.624318 5.37568201,23.9925243 12,24 Z M6.83478261,8.31130435 C6.56352356,8.0493136 6.45473468,7.66134481 6.55022905,7.2965141 C6.64572343,6.93168339 6.93063991,6.64676691 7.29547062,6.55127253 C7.66030133,6.45577816 8.04827012,6.56456704 8.31026087,6.83582609 L11.8153043,10.3408696 C11.9171138,10.4423611 12.0818427,10.4423611 12.1836522,10.3408696 L15.6886957,6.83582609 C15.9506864,6.56456704 16.3386552,6.45577816 16.7034859,6.55127253 C17.0683166,6.64676691 17.3532331,6.93168339 17.4487275,7.2965141 C17.5442218,7.66134481 17.435433,8.0493136 17.1641739,8.31130435 L13.6591304,11.8163478 C13.5576389,11.9181573 13.5576389,12.0828862 13.6591304,12.1846957 L17.1641739,15.6897391 C17.435433,15.9517299 17.5442218,16.3396987 17.4487275,16.7045294 C17.3532331,17.0693601 17.0683166,17.3542766 16.7034859,17.4497709 C16.3386552,17.5452653 15.9506864,17.4364764 15.6886957,17.1652174 L12.1836522,13.6601739 C12.0818427,13.5586824 11.9171138,13.5586824 11.8153043,13.6601739 L8.31026087,17.1652174 C7.90082203,17.5606667 7.24999849,17.5550112 6.84749366,17.1525063 C6.44498883,16.7500015 6.43933335,16.099178 6.83478261,15.6897391 L10.3398261,12.1846957 C10.4413176,12.0828862 10.4413176,11.9181573 10.3398261,11.8163478 L6.83478261,8.31130435 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/actions/error-sync" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="icon" fill="#000000" xlink:href="#path-1"></use>
+    </g>
+</svg>

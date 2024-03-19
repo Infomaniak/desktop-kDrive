@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/statuts/warning</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M23.7585363,20.9178488 L13.8739209,2.12809549 L13.8739209,2.12809549 C13.5087977,1.43454865 12.7871566,1 12.0005288,1 C11.2139009,1 10.4922599,1.43454865 10.1271366,2.12809549 L0.241463659,20.9178488 C-0.10198303,21.5705127 -0.0776715386,22.3544041 0.30556585,22.9847379 C0.688803239,23.6150716 1.37519775,24 2.11538455,24 L21.8846154,24 C22.6248022,24 23.3111968,23.6150716 23.6944341,22.9847379 C24.0776715,22.3544041 24.101983,21.5705127 23.7585363,20.9178488 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/statuts/warning" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="icon" fill="#FB472E" xlink:href="#path-1"></use>
+        <path d="M10.9424826,8.73135166 C10.9424826,8.14999064 11.4159492,7.67870442 12,7.67870442 C12.5840508,7.67870442 13.0575174,8.14999064 13.0575174,8.73135166 L13.0575174,15.0472351 C13.0575174,15.6285962 12.5840508,16.0998824 12,16.0998824 C11.4159492,16.0998824 10.9424826,15.6285962 10.9424826,15.0472351 L10.9424826,8.73135166 Z" id="Path" fill="#FFFFFF" mask="url(#mask-2)"></path>
+        <path d="M12.0528759,20.8473215 L12.0232654,20.8473215 C11.1567099,20.8445559 10.4466124,20.1618777 10.4137239,19.29993 C10.3983255,18.8831698 10.5518927,18.4777444 10.8398835,18.1748461 C11.1278744,17.8719478 11.5261078,17.6970093 11.9450091,17.6893797 L11.9746196,17.6893797 C12.8410332,17.6904081 13.552233,18.3718551 13.5862761,19.2336132 C13.6028461,19.6513468 13.4494806,20.0580813 13.1608754,20.3618014 C12.8722703,20.6655215 12.4728142,20.8405612 12.0528759,20.8473215 Z" id="Path" fill="#FFFFFF" mask="url(#mask-2)"></path>
+    </g>
+</svg>

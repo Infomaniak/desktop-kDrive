@@ -1,0 +1,15 @@
+log4cplus.threadPoolSize=2
+log4cplus.rootLogger=ALL, MyFileAppender, MyConsoleAppender
+log4cplus.logger.app=ALL, MyFileAppender
+log4cplus.additivity.app=FALSE
+
+log4cplus.appender.MyConsoleAppender=log4cplus::ConsoleAppender
+log4cplus.appender.MyConsoleAppender.layout=log4cplus::PatternLayout
+#log4cplus.appender.MyConsoleAppender.layout.ConversionPattern=%D{%Y-%m-%d %H:%M:%S:%q} [%-0.-1p] (%i) %-l - %-0.-100m%n
+log4cplus.appender.MyConsoleAppender.layout.ConversionPattern=%d{%m/%d/%y %H:%M:%S} [%t] %-5p %c{2} %%%x%% - %m [%l]%n
+
+log4cplus.appender.MyFileAppender=log4cplus::RollingFileAppender
+log4cplus.appender.MyFileAppender.File=kdrive.log
+log4cplus.appender.MyFileAppender.MaxFileSize=10MB
+log4cplus.appender.MyFileAppender.MaxBackupIndex=3
+log4cplus.appender.MyFileAppender.layout=log4cplus::TTCCLayout

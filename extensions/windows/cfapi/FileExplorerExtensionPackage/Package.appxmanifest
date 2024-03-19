@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop3="http://schemas.microsoft.com/appx/manifest/desktop/windows10/3"
+  xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  IgnorableNamespaces="uap mp rescap desktop3 desktop4">
+
+  <Identity
+    Name="Infomaniak.kDrive.Extension"
+    Publisher="CN=Infomaniak Network SA, O=Infomaniak Network SA, S=Genève, C=CH, OID.2.5.4.15=Private Organization, OID.1.3.6.1.4.1.311.60.2.1.3=CH, SERIALNUMBER=CHE-103.167.648"
+    Version="3.5.9.0" />
+
+  <Properties>
+    <DisplayName>kDrive Windows Explorer Extension Package</DisplayName>
+    <PublisherDisplayName>Infomaniak Network SA</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.14393.0" MaxVersionTested="10.0.14393.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="x-generate"/>
+  </Resources>
+
+  <Applications>
+    <Application Id="App"
+      Executable="$targetnametoken$.exe"
+      EntryPoint="$targetentrypoint$">
+      <uap:VisualElements
+        DisplayName="kDrive Windows Explorer Extension Package"
+        Description="kDrive Windows Explorer Extension Package"
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png"  Square71x71Logo="Images\SmallTile.png" Square310x310Logo="Images\LargeTile.png"/>
+        <uap:SplashScreen Image="Images\SplashScreen.png" />
+      </uap:VisualElements>
+      <Extensions>
+        <desktop3:Extension Category="windows.cloudFiles">
+          <desktop3:CloudFiles>
+            <desktop3:CustomStateHandler Clsid="D19AA847-DAAE-45C0-9F53-702179617F42"/>
+            <desktop3:ThumbnailProviderHandler Clsid="6C7A1B02-8DB8-495F-B9B0-C4AB26B6284D"/>
+            <desktop3:ExtendedPropertyHandler Clsid="20000000-0000-0000-0000-000000000001"/>
+            <desktop3:BannersHandler Clsid="20000000-0000-0000-0000-000000000001"/>
+            <desktop3:CloudFilesContextMenus>
+              <desktop3:Verb Id="Command1" Clsid="A18E9226-E817-4958-BD21-D6967DBD1921" />
+            </desktop3:CloudFilesContextMenus>
+          </desktop3:CloudFiles>
+        </desktop3:Extension>
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:ExeServer DisplayName="Cloud File Provider Thumbnail Handler" Executable="FileExplorerExtension\fileexplorerextension.exe">
+              <com:Class Id="6C7A1B02-8DB8-495F-B9B0-C4AB26B6284D" />
+            </com:ExeServer>
+            <com:ExeServer DisplayName="Cloud File Provider Command Handler" Executable="FileExplorerExtension\fileexplorerextension.exe">
+              <com:Class Id="A18E9226-E817-4958-BD21-D6967DBD1921" />
+            </com:ExeServer>
+            <com:ExeServer DisplayName="Cloud File Provider Custom State Handler" Executable="FileExplorerExtension\fileexplorerextension.exe">
+              <com:Class Id="D19AA847-DAAE-45C0-9F53-702179617F42" />
+            </com:ExeServer>
+          </com:ComServer>
+        </com:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <Capability Name="internetClient" />
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

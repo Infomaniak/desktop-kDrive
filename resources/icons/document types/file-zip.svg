@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/document types/file-zip</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icons/document-types/file-zip" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons/Drive/zip-file" transform="translate(0.000000, -0.000000)" fill="#607D8B">
+            <g id="zip-file" transform="translate(2.000000, 0.000000)">
+                <path d="M13.586,0 C13.8511948,0 14.1055073,0.105450625 14.293,0.293 L14.293,0.293 L19.707,5.707 C19.8945494,5.89449273 20,6.14880519 20,6.414 L20,6.414 L20,22 C20,23.1045695 19.1045695,24 18,24 L18,24 L2,24 C0.8954305,24 0,23.1045695 0,22 L0,22 L0,2 C0,0.8954305 0.8954305,0 2,0 L2,0 Z M12.965,2 L9.012,2 L9.486,5.034 L9.486,5.05 C9.55453436,5.61115012 9.38067693,6.17491374 9.008,6.6 L9.005,6.6 C8.63170667,7.02562078 8.09312799,7.26976673 7.527,7.27 C6.95142312,7.28500352 6.39795633,7.04808681 6.01150197,6.6212767 C5.6250476,6.19446658 5.44408802,5.62026397 5.516,5.049 L5.994,2 L2.5,2 C2.25454011,2 2.05039163,2.17687516 2.00805567,2.41012437 L2,2.5 L2,21.5 C2,21.7761424 2.22385763,22 2.5,22 L2.5,22 L17.5,22 C17.7761424,22 18,21.7761424 18,21.5 L18,21.5 L18,7.035 C18,6.90264755 17.947469,6.77570554 17.854,6.682 L17.854,6.682 L13.318,2.146 C13.2242945,2.05253105 13.0973525,2 12.965,2 L12.965,2 Z M7.5,18.5 C8.05228475,18.5 8.5,18.9477153 8.5,19.5 C8.5,20.0522847 8.05228475,20.5 7.5,20.5 C6.94771525,20.5 6.5,20.0522847 6.5,19.5 C6.5,18.9477153 6.94771525,18.5 7.5,18.5 Z M7.505,14 C8.05728475,14 8.505,14.4477153 8.505,15 C8.505,15.5522847 8.05728475,16 7.505,16 C6.95271525,16 6.505,15.5522847 6.505,15 C6.505,14.4477153 6.95271525,14 7.505,14 Z M7.505,9.5 C8.05728475,9.5 8.505,9.94771525 8.505,10.5 C8.505,11.0522847 8.05728475,11.5 7.505,11.5 C6.95271525,11.5 6.505,11.0522847 6.505,10.5 C6.505,9.94771525 6.95271525,9.5 7.505,9.5 Z" id="icon" fill-rule="nonzero"></path>
+            </g>
+        </g>
+    </g>
+</svg>

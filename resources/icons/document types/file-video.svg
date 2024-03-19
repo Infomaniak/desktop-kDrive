@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/document types/file-video</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icons/document-types/file-video" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Icons/Drive/video-file-play-alternate" transform="translate(0.000000, -0.000000)" fill="#00BCD4">
+            <g id="video-file-play-alternate" transform="translate(2.000000, 0.000000)">
+                <path d="M13.586,0 C13.8511948,0 14.1055073,0.105450625 14.293,0.293 L14.293,0.293 L19.707,5.707 C19.8945494,5.89449273 20,6.14880519 20,6.414 L20,6.414 L20,22 C20,23.1045695 19.1045695,24 18,24 L18,24 L2,24 C0.8954305,24 0,23.1045695 0,22 L0,22 L0,2 C0,0.8954305 0.8954305,0 2,0 L2,0 Z M12.965,2 L2.5,2 C2.22385763,2 2,2.22385763 2,2.5 L2,2.5 L2,21.5 C2,21.7761424 2.22385763,22 2.5,22 L2.5,22 L17.5,22 C17.7761424,22 18,21.7761424 18,21.5 L18,21.5 L18,7.035 C18,6.90264755 17.947469,6.77570554 17.854,6.682 L17.854,6.682 L13.318,2.146 C13.2242945,2.05253105 13.0973525,2 12.965,2 L12.965,2 Z M6.534,8.124 C6.86692841,7.95419161 7.26201254,7.95867695 7.591,8.136 L7.591,8.136 L14.991,12.181 C15.3009508,12.334688 15.4985053,12.6522454 15.4985053,13 C15.4985053,13.3477546 15.3009508,13.665312 14.989,13.819 L14.989,13.819 L7.589,17.864 C7.25988002,18.0408095 6.86504923,18.0452919 6.532,17.876 C6.21233384,17.7212773 6.00670467,17.4000783 6,17.045 L6,17.045 L6,8.955 C6.00708065,8.59947272 6.21355588,8.27816014 6.534,8.124 Z" id="icon"></path>
+            </g>
+        </g>
+    </g>
+</svg>

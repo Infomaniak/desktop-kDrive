@@ -1,0 +1,150 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "excludelistpropagator.h"
+#include "requests/exclusiontemplatecache.h"
+#include "requests/parameterscache.h"
+#include "libcommon/utility/utility.h"
+
+namespace KDC {
+
+ExcludeListPropagator::ExcludeListPropagator(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {
+    LOG_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator created " << jobId());
+}
+
+ExcludeListPropagator::~ExcludeListPropagator() {
+    LOG_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator destroyed " << jobId());
+}
+
+void ExcludeListPropagator::runJob() {
+    LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator started " << jobId());
+
+    ExitCode exitCode = checkItems();
+    if (exitCode != ExitCodeOk) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ExcludeListPropagator::checkItems");
+        _exitCode = exitCode;
+    }
+
+    LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "ExcludeListPropagator ended");
+    _exitCode = ExitCodeOk;
+}
+
+int ExcludeListPropagator::syncDbId() const {
+    return _syncPal->syncDbId();
+}
+
+ExitCode ExcludeListPropagator::checkItems() {
+    ExitCode exitCode = ExitCodeOk;
+    std::error_code ec;
+    try {
+        for (auto dirIt = std::filesystem::recursive_directory_iterator(
+                 _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
+             dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+            if (isAborted()) {
+                LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "ExcludeListPropagator aborted " << jobId());
+                return ExitCodeOk;
+            }
+
+            if (ec) {
+                LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "Error in checkItems " << ec.message().c_str());
+                continue;
+            }
+
+#ifdef _WIN32
+            // skip_permission_denied doesn't work on Windows
+            try {
+                bool dummy = dirIt->exists();
+                (void)(dummy);
+            } catch (std::filesystem::filesystem_error &) {
+                dirIt.disable_recursion_pending();
+                continue;
+            }
+#endif
+
+            if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore path=" << Path2WStr(dirIt->path()).c_str()
+                                                                                << L" because size > "
+                                                                                << CommonUtility::maxPathLength());
+                dirIt.disable_recursion_pending();
+                continue;
+            }
+
+            SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, dirIt->path());
+            bool isWarning = false;
+            bool isHidden = false;
+            IoError ioError = IoErrorSuccess;
+            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
+                                                                                       isWarning, isHidden, ioError);
+            if (!success) {
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                                                                    << Utility::formatIoError(dirIt->path(), ioError).c_str());
+                exitCode = ExitCodeSystemError;
+            } else if (isHidden) {
+                if (isWarning) {
+                    NodeId localNodeId = _syncPal->_localSnapshot->itemId(relativePath);
+                    NodeType localNodeType = _syncPal->_localSnapshot->type(localNodeId);
+                    Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictTypeNone,
+                                InconsistencyTypeNone, CancelTypeExcludedByTemplate);
+                    _syncPal->addError(error);
+                }
+                // Find dbId from the entry path
+                DbNodeId dbNodeId;
+                bool found;
+                if (!_syncPal->_syncDb->dbId(ReplicaSideLocal, relativePath, dbNodeId, found)) {
+                    LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                                      L"Error in SyncDb::dbId for path=" << Path2WStr(relativePath).c_str());
+                    exitCode = ExitCodeDbError;
+                    break;
+                }
+                if (!found) {
+                    continue;
+                }
+
+                // Remove node (and childs by cascade) from DB
+                if (ParametersCache::instance()->parameters().extendedLog()) {
+                    LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node "
+                                                                         << Path2WStr(relativePath).c_str()
+                                                                         << L" from DB because it is excluded from sync");
+                }
+
+                if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
+                    LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                                      L"Error in SyncDb::deleteNode for path=" << Path2WStr(relativePath).c_str());
+                    exitCode = ExitCodeDbError;
+                    break;
+                }
+                if (!found) {
+                    LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Failed to delete node ID for dbNodeId=" << dbNodeId);
+                    exitCode = ExitCodeDataError;
+                    break;
+                }
+            }
+        }
+    } catch (std::filesystem::filesystem_error &e) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
+                         "Error catched in ExcludeListPropagator::checkItems: " << e.code() << " - " << e.what());
+        exitCode = ExitCodeSystemError;
+    } catch (...) {
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error catched in ExcludeListPropagator::checkItems");
+        exitCode = ExitCodeSystemError;
+    }
+
+    return exitCode;
+}
+
+}  // namespace KDC

@@ -1,0 +1,69 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "getavatarjob.h"
+#include "jobs/network/networkjobsparams.h"
+
+#include <Poco/DOM/DOMParser.h>
+#include <Poco/DOM/Document.h>
+#include <Poco/DOM/AutoPtr.h>
+#include <Poco/SharedPtr.h>
+
+namespace KDC {
+
+GetAvatarJob::GetAvatarJob(std::string url) : _avatarUrl(url), _avatar(nullptr) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+}
+
+std::string GetAvatarJob::getUrl() {
+    return _avatarUrl;
+}
+
+std::string GetAvatarJob::getContentType(bool &canceled) {
+    canceled = false;
+    return std::string();
+}
+
+bool GetAvatarJob::handleError(std::istream &is, const Poco::URI &uri) {
+    std::string src;
+    getStringFromStream(is, src);
+
+    Poco::XML::DOMParser parser;
+    Poco::AutoPtr<Poco::XML::Document> pDoc = parser.parseString(src);
+    Poco::XML::Node *pNode = pDoc->getNodeByPath(errorCodePathKey);
+    if (pNode != nullptr) {
+        _errorCode = pNode->innerText();
+        LOG_WARN(_logger, "Error in request : " << uri.toString().c_str() << ". Error code : " << _errorCode.c_str());
+    } else {
+        LOG_WARN(_logger, "Unknown error in request : " << uri.toString().c_str());
+    }
+
+    _exitCause = ExitCauseApiErr;
+    _exitCode = ExitCodeBackError;
+
+    return false;
+}
+
+bool GetAvatarJob::handleResponse(std::istream &is) {
+    _avatar = std::shared_ptr<std::vector<char>>(
+        new std::vector<char>(std::istreambuf_iterator<char>(is), (std::istreambuf_iterator<char>())));
+
+    return true;
+}
+
+}  // namespace KDC

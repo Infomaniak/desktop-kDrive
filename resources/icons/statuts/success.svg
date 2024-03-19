@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/statuts/success</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M12,0 C5.372583,0 0,5.372583 0,12 C0,18.627417 5.372583,24 12,24 C18.627417,24 24,18.627417 24,12 C23.9922852,5.37578119 18.6242188,0.0077147623 12,0 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/statuts/success" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="icon" fill="#3EBF4D" xlink:href="#path-1"></use>
+        <path d="M18.927,8.2 L12.082,17.489 C11.9187536,17.7055896 11.6753283,17.8475051 11.4064219,17.8828578 C11.1375155,17.9182105 10.8656811,17.8440355 10.652,17.677 L5.764,13.769 C5.33266561,13.423822 5.26282203,12.7943344 5.608,12.363 C5.95317797,11.9316656 6.58266561,11.861822 7.014,12.207 L11.09,15.468 L17.317,7.017 C17.521192,6.71059002 17.8772511,6.54118265 18.2438115,6.57603752 C18.610372,6.61089239 18.9281223,6.84436978 19.0709064,7.18377241 C19.2136904,7.52317505 19.158405,7.91358568 18.927,8.2 Z" id="Path" fill="#FFFFFF" mask="url(#mask-2)"></path>
+    </g>
+</svg>

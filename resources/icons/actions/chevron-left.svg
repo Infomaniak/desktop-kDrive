@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/actions/chevron-left</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M19,11.9721509 C19.0008172,12.6338532 18.7166071,13.2638522 18.2199982,13.7011509 L7.06799823,23.5121509 C6.29940728,24.1570802 5.15652503,24.0704799 4.49388885,23.3171014 C3.83125268,22.5637229 3.89124007,21.4191353 4.62899823,20.7391509 L14.3809982,12.1601509 C14.435153,12.1126817 14.4662075,12.0441652 14.4662075,11.9721509 C14.4662075,11.9001366 14.435153,11.8316201 14.3809982,11.7841509 L4.62899823,3.20515091 C3.89124007,2.52516655 3.83125268,1.38057887 4.49388885,0.627200388 C5.15652503,-0.126178092 6.29940728,-0.212778371 7.06799823,0.432150906 L18.2159982,10.2401509 C18.7138093,10.6781984 18.9993686,11.3090513 19,11.9721509 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/actions/chevron-left" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="path" fill="#000000" transform="translate(11.516875, 11.972151) scale(-1, 1) translate(-11.516875, -11.972151) " xlink:href="#path-1"></use>
+    </g>
+</svg>

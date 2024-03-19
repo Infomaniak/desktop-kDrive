@@ -1,0 +1,141 @@
+{
+	"Linux":
+		[
+			{ 
+				"version": "3.3.3",
+				"dl_link": "kDrive-3.3.3.20220317.AppImage",
+				"rn_link": 
+					{
+						"en": "kDrive-3.3.3.20220317-linux.html",
+						"fr": "kDrive-3.3.3.20220317-linux-fr.html",
+						"es": "kDrive-3.3.3.20220317-linux-es.html",
+						"de": "kDrive-3.3.3.20220317-linux-de.html",
+						"it": "kDrive-3.3.3.20220317-linux-it.html"
+					},
+				"os_min": "glibc 2.31",
+				"architecture": "x86_64 (Intel)",
+				"lite_sync_min":
+					{
+						"available": "N",
+						"file_system": "N/A",
+						"os_min": "N/A",
+						"architecture": "N/A"
+					}
+			},
+			{ 
+				"version": "3.3.2",
+				"dl_link": "kDrive-3.3.2.20220222.AppImage",
+				"rn_link": 
+					{
+						"en": "kDrive-3.3.3.20220322.html",
+						"fr": "kDrive-3.3.3.20220322.html",
+						"es": "kDrive-3.3.3.20220322.html",
+						"de": "kDrive-3.3.3.20220322.html",
+						"it": "kDrive-3.3.3.20220322.html"
+					},
+				"os_min": "glibc 2.27",
+				"architecture": "x86_64 (Intel)",
+				"lite_sync_min": 
+					{
+						"available": "N",
+						"file_system": "N/A",
+						"os_min": "N/A",
+						"architecture": "N/A"
+					}
+			}
+		],
+	"Windows":
+		[
+			{ 
+				"version": "3.3.3",
+				"dl_link": "kDrive-3.3.3.20220317.exe",
+				"dl_link": "kDrive-3.3.2.20220222.AppImage",
+				"rn_link": 
+					{
+						"en": "kDrive-3.3.3.20220317-win.html",
+						"fr": "kDrive-3.3.3.20220317-win-fr.html",
+						"es": "kDrive-3.3.3.20220317-win-es.html",
+						"de": "kDrive-3.3.3.20220317-win-de.html",
+						"it": "kDrive-3.3.3.20220317-win-it.html"
+					},
+				"os_min": "Windows 10",
+				"architecture": "x86_64 (Intel)",
+				"lite_sync_min": 
+					{
+						"available": "Y",
+						"file_system": "NTFS",
+						"os_min": "Windows 10 1709 - Windows 11",
+						"architecture": "idem app"
+					}
+			},
+			{ 
+				"version": "3.3.2",
+				"dl_link": "kDrive-3.3.2.20220222.exe",
+				"dl_link": "kDrive-3.3.2.20220222.AppImage",
+				"rn_link": 
+					{
+						"en": "kDrive-3.3.3.20220322.html",
+						"fr": "kDrive-3.3.3.20220322.html",
+						"es": "kDrive-3.3.3.20220322.html",
+						"de": "kDrive-3.3.3.20220322.html",
+						"it": "kDrive-3.3.3.20220322.html"
+					},
+				"os_min	": "Windows 10",
+				"architecture": "x86_64 (Intel)",
+				"lite_sync_min": 
+					{
+						"available": "Y",
+						"file_system": "NTFS",
+						"os_min": "Windows 10 1709 - Windows 11",
+						"architecture": "idem app"
+					}
+			}
+		],
+	"macOS":
+		[
+			{ 
+				"version": "3.3.3",
+				"dl_link": "kDrive-3.3.3.20220317.pkg",
+				"rn_link": 
+					{
+						"en": "kDrive-3.3.3.20220317.html",
+						"fr": "kDrive-3.3.3.20220317-fr.html",
+						"es": "kDrive-3.3.3.20220317-es.html",
+						"de": "kDrive-3.3.3.20220317-de.html",
+						"it": "kDrive-3.3.3.20220317-it.html"
+					},
+				"os_min": "macOS 10.14",
+				"architecture": "x86_64 (Intel) - arm64 (Apple Silicon)",
+				"lite_sync_min": 
+					{
+						"available": "Y",
+						"file_system": "APFS",
+						"os_min": "idem app",
+						"architecture": "idem app"
+					}
+			},
+			{ 
+				"version": "3.3.2",
+				"dl_link": "kDrive-3.3.2.20220222.pkg",
+				"dl_link": "kDrive-3.3.2.20220222.AppImage",
+				"rn_link": 
+					{
+						"en": "kDrive-3.3.3.20220322.html",
+						"fr": "kDrive-3.3.3.20220322.html",
+						"es": "kDrive-3.3.3.20220322.html",
+						"de": "kDrive-3.3.3.20220322.html",
+						"it": "kDrive-3.3.3.20220322.html"
+					},
+				"os_min": "macOS 10.13",
+				"architecture": "x86_64 (Intel) - arm64 (Apple Silicon) + Rosetta 2)",
+				"lite_sync_min": 
+					{
+						"available": "Y",
+						"file_system": "APFS",
+						"os_min": "idem app",
+						"architecture": "idem app"
+					}
+			}
+		]
+}
+

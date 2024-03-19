@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 63.1 (92452) - https://sketch.com -->
+    <title>icons/actions/light-down-arrow</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M12.1036156,5 C12.7144177,4.99924565 13.2959553,5.26159341 13.6996156,5.72000163 L22.7559233,16.0123093 C23.1751453,16.4671498 23.3151249,17.1133752 23.1216958,17.7009227 C22.9282666,18.2884703 22.4317757,18.7251603 21.8243444,18.8420118 C21.2169132,18.9588632 20.593841,18.7375434 20.196231,18.2636939 L12.2771541,9.26369394 C12.2333364,9.21370494 12.1700904,9.18503927 12.1036156,9.18503927 C12.0371409,9.18503927 11.9738949,9.21370494 11.9300772,9.26369394 L4.01100026,18.2655401 C3.61339034,18.7393896 2.99031811,18.9607094 2.38288688,18.8438579 C1.77545564,18.7270065 1.27896467,18.2903164 1.08553553,17.7027689 C0.892106388,17.1152213 1.03208598,16.468996 1.45130795,16.0141555 L10.5048464,5.72369394 C10.9091979,5.26417606 11.4915237,5.00058286 12.1036156,5 Z" id="path-1"></path>
+    </defs>
+    <g id="icons/actions/light-down-arrow" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="path" fill="#FFFFFF" transform="translate(12.103616, 11.937299) scale(1, -1) translate(-12.103616, -11.937299) " xlink:href="#path-1"></use>
+    </g>
+</svg>

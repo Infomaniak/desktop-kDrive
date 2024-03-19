@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="124px" height="124px" viewBox="0 0 124 124" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 56.3 (81716) - https://sketch.com -->
+    <title>SVG/attention</title>
+    <desc>Created with Sketch.</desc>
+    <g id="SVG/attention" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="alert-circle">
+            <circle style="fill:#FF8500" id="circle9" r="61" cy="62" cx="62" />
+            <g id="Group" transform="translate(48.437500, 15.500000)" fill="#FFFFFF">
+                <path d="M0.00901761902,83.5789903 C-0.122604327,79.9989399 1.19115377,76.5163852 3.65455333,73.91528 C6.11795288,71.3141749 9.52397175,69.8131142 13.1058849,69.75 L13.3499259,69.75 C20.7617301,69.7642503 26.838991,75.6300242 27.1156463,83.036677 C27.249772,86.6174047 25.9368511,90.1013861 23.4729223,92.70305 C21.0089935,95.304714 17.6015046,96.8050162 14.018779,96.8656673 L13.774738,96.8656673 C6.36670543,96.8421128 0.294837683,90.9815445 0.00901761902,83.5789903 Z" id="Path" fill-rule="nonzero"></path>
+                <rect id="Rectangle" x="1.9375" y="0" width="23.25" height="62" rx="11.625"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

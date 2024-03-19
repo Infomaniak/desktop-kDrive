@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="10px" height="10px" viewBox="0 0 10 10" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>branch-open</title>
+    <defs>
+        <path d="M4.99650652,2.11 C5.2510074,2.10968569 5.4933147,2.21899726 5.66150652,2.41000068 L9.43496806,6.69846222 C9.60964388,6.8879791 9.66796871,7.15723966 9.58737324,7.40205114 C9.50677776,7.64686262 9.29990652,7.82881681 9.04681017,7.87750491 C8.79371383,7.92619302 8.5341004,7.83397642 8.3684296,7.63653914 L5.06881421,3.88653914 C5.05055684,3.86571039 5.02420432,3.85376636 4.99650652,3.85376636 C4.96880871,3.85376636 4.9424562,3.86571039 4.92419883,3.88653914 L1.62458344,7.63730837 C1.45891264,7.83474565 1.19929921,7.92696225 0.946202865,7.87827414 C0.693106518,7.82958604 0.48623528,7.64763185 0.405639804,7.40282037 C0.325044328,7.15800889 0.383369156,6.88874833 0.558044981,6.69923145 L4.33035267,2.41153914 C4.49883248,2.22007336 4.74146823,2.11024286 4.99650652,2.11 Z" id="path-1"></path>
+    </defs>
+    <g id="branch-open" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <mask id="mask-2" fill="white">
+            <use xlink:href="#path-1"></use>
+        </mask>
+        <use id="icon" fill="#666666" transform="translate(4.996507, 5.000541) scale(1, -1) translate(-4.996507, -5.000541) " xlink:href="#path-1"></use>
+    </g>
+</svg>

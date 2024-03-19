@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icons/theme/colored/state-pause</title>
+    <g id="icons/theme/colored/state-pause" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(1.500000, 2.500000)">
+            <path d="M12.1875,1.65000696 L6.08616667,1.65000696 C5.98367163,1.65000347 5.88995944,1.59125076 5.84404167,1.49820707 L5.33108333,0.453207851 C5.19322243,0.174210015 4.91157966,-0.00138150897 4.60416667,0 L0.8125,0 C0.363768641,0 0,0.369372995 0,0.825007574 L0,10.1750006 C0,10.6306352 0.363768641,11 0.8125,11 L12.1875,11 C12.6362314,11 13,10.6306352 13,10.1750006 L13,2.47500635 C13,2.01937177 12.6362314,1.65000696 12.1875,1.65000696 Z" id="icon" fill="#9F9F9F"></path>
+            <path d="M4.96750003,3.25 C5.36514503,3.25 5.6875,3.57235497 5.6875,3.96999997 L5.6875,9.03000003 C5.6875,9.42764503 5.36514503,9.75 4.96750003,9.75 L3.96999997,9.75 C3.57235497,9.75 3.25,9.42764503 3.25,9.03000003 L3.25,3.96999997 C3.25,3.57235497 3.57235497,3.25 3.96999997,3.25 L4.96750003,3.25 Z M9.03000003,3.25 C9.42764503,3.25 9.75,3.57235497 9.75,3.96999997 L9.75,9.03000003 C9.75,9.42764503 9.42764503,9.75 9.03000003,9.75 L8.03249997,9.75 C7.63485497,9.75 7.3125,9.42764503 7.3125,9.03000003 L7.3125,3.96999997 C7.3125,3.57235497 7.63485497,3.25 8.03249997,3.25 L9.03000003,3.25 Z" id="Combined-Shape" fill="#FFFFFF" fill-rule="nonzero"></path>
+        </g>
+    </g>
+</svg>

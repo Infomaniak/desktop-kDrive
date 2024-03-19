@@ -1,0 +1,248 @@
+project(server)
+
+find_package(Qt6 REQUIRED COMPONENTS Network Xml Svg)
+find_package(sentry REQUIRED)
+
+set(CMAKE_AUTOMOC TRUE)
+set(CMAKE_AUTOUIC TRUE)
+set(CMAKE_AUTORCC TRUE)
+
+add_definitions(-DUNICODE)
+add_definitions(-D_UNICODE)
+
+if(UNIX AND NOT APPLE)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIE")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIE")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pie")
+endif()
+
+if(WIN32)
+    # Set stack size
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /STACK:0x4000000")
+    # Set no manifest
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
+endif()
+
+add_subdirectory(vfs)
+
+# Sources
+set(KDRIVE_RC_SRC ../../client.qrc)
+if (EXISTS "${KDRIVE_THEME_DIR}/theme.qrc")
+    list(APPEND KDRIVE_RC_SRC ${KDRIVE_THEME_DIR}/theme.qrc)
+    set(theme_dir ${KDRIVE_THEME_DIR}/theme)
+else()
+    list(APPEND KDRIVE_RC_SRC ../../theme.qrc)
+    set(theme_dir ${CMAKE_SOURCE_DIR}/theme)
+endif()
+
+set(server_SRCS
+    ../libcommon/updater.h ../libcommon/updater.cpp
+    ../libcommonserver/commserver.h ../libcommonserver/commserver.cpp
+    ../libcommonserver/vfs.h ../libcommonserver/vfs.cpp
+    ../libcommonserver/plugin.h ../libcommonserver/plugin.cpp
+    navigationpanehelper.h navigationpanehelper.cpp
+    socketapi.h socketapi.cpp
+    socketlistener.h socketlistener.cpp
+    appserver.h appserver.cpp
+    migration/migrationparams.h migration/migrationparams.cpp
+    app_resources.rc
+)
+
+set(updater_SRCS
+    updater/kdcupdater.cpp
+    updater/updateinfo.cpp
+    updater/updaterserver.cpp
+)
+
+IF( APPLE )
+    list(APPEND server_SRCS socketapisocket_mac.mm)
+    set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
+    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+    if(SPARKLE_FOUND)
+        # Define this, we need to check in updater.cpp
+        add_definitions(-DHAVE_SPARKLE)
+        list(APPEND updater_SRCS updater/sparkleupdater_mac.mm updater/sparkleupdater.h)
+        list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
+
+        # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
+        # as its logic is tightly tailored around Qt6 frameworks
+        install(DIRECTORY "${SPARKLE_LIBRARY}"
+                DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
+   endif()
+ENDIF()
+
+set(3rdparty_SRC
+    ../3rdparty/QProgressIndicator/QProgressIndicator.cpp
+    ../3rdparty/qtlockedfile/qtlockedfile.cpp
+    ../3rdparty/qtsingleapplication/qtlocalpeer.cpp
+    ../3rdparty/qtsingleapplication/qtsingleapplication.cpp
+    ../3rdparty/qtsingleapplication/qtsinglecoreapplication.cpp
+)
+
+if(WIN32)
+    list(APPEND 3rdparty_SRC ../3rdparty/qtlockedfile/qtlockedfile_win.cpp )
+else()
+    list(APPEND 3rdparty_SRC ../3rdparty/qtlockedfile/qtlockedfile_unix.cpp)
+endif()
+
+IF( WIN32 )
+    configure_file(
+      ${CMAKE_CURRENT_SOURCE_DIR}/version.rc.in
+      ${CMAKE_CURRENT_BINARY_DIR}/version.rc
+      @ONLY)
+    set(server_version ${CMAKE_CURRENT_BINARY_DIR}/version.rc)
+ENDIF()
+
+set( final_src
+    ${KDRIVE_RC_SRC}
+    ${server_SRCS}
+    ${server_UI_SRCS}
+    ${server_version}
+    ${3rdparty_SRC}
+    ${3rdparty_MOC}
+)
+
+# Target
+
+# add executable icon on windows and osx
+
+# UPSTREAM our ECMAddAppIcon.cmake then require that version here
+# find_package(ECM 1.7.0 REQUIRED NO_MODULE)
+# list(APPEND CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+include(ECMAddAppIcon)
+
+file(GLOB_RECURSE KDRIVE_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon*")
+if(APPLE)
+    file(GLOB_RECURSE KDRIVE_SIDEBAR_ICONS "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-sidebar*")
+    MESSAGE(STATUS "KDRIVE_SIDEBAR_ICONS: ${APPLICATION_ICON_NAME}: ${KDRIVE_SIDEBAR_ICONS}")
+endif()
+ecm_add_app_icon(final_src ICONS "${KDRIVE_ICONS}" SIDEBAR_ICONS "${KDRIVE_SIDEBAR_ICONS}" OUTFILE_BASENAME "${APPLICATION_ICON_NAME}")
+
+if(NOT BUILD_KDRIVE_OSX_BUNDLE)
+    if(NOT WIN32)
+        file(GLOB _icons "${theme_dir}/colored/*-${APPLICATION_ICON_NAME}-icon.png")
+        foreach(_file ${_icons})
+            string(REPLACE "${theme_dir}/colored/" "" _res ${_file})
+            string(REPLACE "-${APPLICATION_ICON_NAME}-icon.png" "" _res ${_res})
+            install(FILES ${_file} RENAME ${APPLICATION_ICON_NAME}.png DESTINATION ${DATADIR}/icons/hicolor/${_res}x${_res}/apps)
+        endforeach(_file)
+    endif()
+
+    # we may not add MACOSX_BUNDLE here, if not building one
+    add_executable(${APPLICATION_EXECUTABLE} WIN32 mainserver.cpp ${final_src})
+else()
+    # we must add MACOSX_BUNDLE only if building a bundle
+    add_executable(${APPLICATION_EXECUTABLE} WIN32 MACOSX_BUNDLE mainserver.cpp ${final_src})
+
+    get_target_property(_qmake Qt6::qmake LOCATION)
+    execute_process(COMMAND ${_qmake} -query QT_INSTALL_TRANSLATIONS
+        OUTPUT_VARIABLE QT_TRANSLATIONS_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
+endif()
+
+set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+    MACOSX_BUNDLE TRUE
+)
+
+# Includes
+if (WIN32)
+    target_include_directories(${APPLICATION_EXECUTABLE} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+        ${CMAKE_CURRENT_BINARY_DIR}
+        "C:/Program Files (x86)/log4cplus/include")
+else()
+    target_include_directories(${APPLICATION_EXECUTABLE} PRIVATE
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/QProgressIndicator
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtlockedfile
+        ${CMAKE_SOURCE_DIR}/src/3rdparty/qtsingleapplication
+        ${CMAKE_CURRENT_BINARY_DIR})
+endif()
+
+# Link
+add_library(updater STATIC ${updater_SRCS})
+
+target_include_directories(updater PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(updater
+    Qt6::Network Qt6::Xml
+    ${updater_DEPS}
+    ${libparms_NAME}
+    ${libcommonserver_NAME}
+    ${libsyncengine_NAME})
+
+target_link_libraries(${APPLICATION_EXECUTABLE}
+    Qt6::Network Qt6::Svg
+    sentry::sentry
+    ${libcommon_NAME}
+    ${libcommonserver_NAME}
+    ${libsyncengine_NAME}
+    updater)
+
+## handle DBUS for Fdo notifications
+if( UNIX AND NOT APPLE )
+    find_package(Qt6 COMPONENTS DBus)
+    target_link_libraries(${APPLICATION_EXECUTABLE} Qt6::DBus)
+    target_compile_definitions(${APPLICATION_EXECUTABLE} PRIVATE "USE_FDO_NOTIFICATIONS")
+
+    # For migrationparams
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBSECRET IMPORTED_TARGET libsecret-1)
+    target_link_libraries(${APPLICATION_EXECUTABLE} PkgConfig::LIBSECRET)
+endif()
+
+if (APPLE)
+    find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
+    target_link_libraries(${APPLICATION_EXECUTABLE} ${SERVICE_MANAGEMENT_LIBRARY})
+endif()
+
+if(WITH_CRASHREPORTER)
+    target_link_libraries(${APPLICATION_EXECUTABLE} crashreporter-handler)
+
+    if(UNIX AND NOT MAC)
+        find_package(Threads REQUIRED)
+        target_link_libraries( ${APPLICATION_EXECUTABLE} ${CMAKE_THREAD_LIBS_INIT})
+    endif()
+endif()
+
+if(ZLIB_FOUND)
+    target_link_libraries("${APPLICATION_EXECUTABLE}" ZLIB::ZLIB)
+endif(ZLIB_FOUND)
+
+# application.cpp still uses QDesktopServices::storageLocation
+target_compile_definitions(${APPLICATION_EXECUTABLE} PRIVATE "QT_DISABLE_DEPRECATED_BEFORE=0")
+
+# Install
+install(TARGETS ${APPLICATION_EXECUTABLE}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        BUNDLE  DESTINATION "."
+)
+
+if(NOT BUILD_KDRIVE_OSX_BUNDLE AND NOT WIN32)
+    find_package(ECM 1.2.0 CONFIG)
+    set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+    find_package(SharedMimeInfo)
+    if(SharedMimeInfo_FOUND)
+        update_xdg_mimetypes( ${DATADIR}/mime/packages )
+    endif(SharedMimeInfo_FOUND)
+endif()
+
+if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
+    get_target_property (QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
+
+    install(CODE "
+        message(STATUS \"Deploying (Qt) dependencies and fixing library paths for kDrive... \")
+        execute_process(COMMAND \"${QTDIR}/bin/macdeployqt\" \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -executable=$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
+        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path/. -add_rpath @executable_path/../Frameworks \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+        execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+        " COMPONENT RUNTIME)
+endif()

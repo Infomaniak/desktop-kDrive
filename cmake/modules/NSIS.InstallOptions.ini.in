@@ -1,0 +1,11 @@
+[Settings]
+NumFields=1
+NextButtonText="Finish"
+CancelShow=false
+
+[Field 1]
+Type=Label
+Left=0
+Right=-1
+Top=0
+Bottom=24

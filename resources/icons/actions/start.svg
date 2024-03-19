@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  - Infomaniak kDrive - Desktop
+  - Copyright (C) 2023-2024 Infomaniak Network SA
+  -
+  - This program is free software: you can redistribute it and/or modify
+  - it under the terms of the GNU General Public License as published by
+  - the Free Software Foundation, either version 3 of the License, or
+  - (at your option) any later version.
+  -
+  - This program is distributed in the hope that it will be useful,
+  - but WITHOUT ANY WARRANTY; without even the implied warranty of
+  - MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  - GNU General Public License for more details.
+  -
+  - You should have received a copy of the GNU General Public License
+  - along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>icons/actions/start</title>
+    <desc>Created with Sketch.</desc>
+    <g id="icons/actions/start" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M12,0 C5.372583,0 0,5.372583 0,12 C0,18.627417 5.372583,24 12,24 C18.627417,24 24,18.627417 24,12 C23.9928352,5.37555305 18.624447,0.00716484761 12,0 Z M16.828,12.894 L9.447,16.584 L9.447,16.584 C9.13709754,16.7388588 8.76912081,16.7222854 8.47439433,16.5401945 C8.17966784,16.3581037 8.00018496,16.0364401 8,15.69 L8,8.308 C8,7.96166958 8.17922042,7.6400018 8.47370612,7.45773022 C8.76819182,7.27545864 9.13602286,7.25853663 9.446,7.413 L16.829,11.1 C17.1699796,11.2687462 17.3856686,11.6163605 17.3854566,11.9968106 C17.3852443,12.3772608 17.1691676,12.7246343 16.828,12.893 L16.828,12.894 Z" id="Shape" fill="#000000" fill-rule="nonzero"></path>
+    </g>
+</svg>

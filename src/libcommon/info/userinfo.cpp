@@ -1,0 +1,59 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "userinfo.h"
+
+namespace KDC {
+
+UserInfo::UserInfo(int dbId, const QString &name, const QString &email, const QImage &avatar, bool connected)
+    : _dbId(dbId), _name(name), _email(email), _avatar(avatar), _connected(connected) {}
+
+UserInfo::UserInfo() : _dbId(0), _name(QString()), _email(QString()), _avatar(QImage()), _connected(false) {}
+
+QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {
+    in >> userInfo._dbId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected;
+    return in;
+}
+
+QDataStream &operator<<(QDataStream &out, const UserInfo &userInfo) {
+    out << userInfo._dbId << userInfo._name << userInfo._email << userInfo._avatar << userInfo._connected;
+    return out;
+}
+
+QDataStream &operator<<(QDataStream &out, const QList<UserInfo> &list) {
+    int count = list.size();
+    out << count;
+    for (int i = 0; i < list.size(); i++) {
+        UserInfo userInfo = list[i];
+        out << userInfo;
+    }
+    return out;
+}
+
+QDataStream &operator>>(QDataStream &in, QList<UserInfo> &list) {
+    int count = 0;
+    in >> count;
+    for (int i = 0; i < count; i++) {
+        UserInfo *userInfo = new UserInfo();
+        in >> *userInfo;
+        list.push_back(*userInfo);
+    }
+    return in;
+}
+
+}  // namespace KDC

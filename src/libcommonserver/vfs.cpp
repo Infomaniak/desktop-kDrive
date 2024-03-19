@@ -1,0 +1,262 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "vfs.h"
+#include "plugin.h"
+#include "version.h"
+#include "utility/types.h"
+#include "libcommonserver/utility/utility.h"  // Path2WStr
+#include "libcommonserver/io/iohelper.h"
+
+#include <QOperatingSystemVersion>
+#include <QPluginLoader>
+#include <QDir>
+#include <QFileInfo>
+
+#define MIN_WINDOWS10_MICROVERSION_FOR_CFAPI 16299  // Windows 10 version 1709
+
+using namespace KDC;
+
+Vfs::Vfs(VfsSetupParams &vfsSetupParams, QObject *parent)
+    : QObject(parent), _vfsSetupParams(vfsSetupParams), _extendedLog(false), _started(false) {}
+
+Vfs::~Vfs() {}
+
+QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
+    // Note: Strings are used for config and must be stable
+    switch (virtualFileMode) {
+        case KDC::VirtualFileModeOff:
+            return QStringLiteral("off");
+        case KDC::VirtualFileModeSuffix:
+            return QStringLiteral("suffix");
+        case KDC::VirtualFileModeWin:
+            return QStringLiteral("wincfapi");
+        case KDC::VirtualFileModeMac:
+            return QStringLiteral("mac");
+    }
+    return QStringLiteral("off");
+}
+
+KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {
+    // Note: Strings are used for config and must be stable
+    if (str == "off") {
+        return KDC::VirtualFileModeOff;
+    } else if (str == "suffix") {
+        return KDC::VirtualFileModeSuffix;
+    } else if (str == "wincfapi") {
+        return KDC::VirtualFileModeWin;
+    } else if (str == "mac") {
+        return KDC::VirtualFileModeMac;
+    }
+
+    return {};
+}
+
+bool Vfs::start(bool &installationDone, bool &activationDone, bool &connectionDone) {
+    if (!_started) {
+        _started = startImpl(installationDone, activationDone, connectionDone);
+        return _started;
+    }
+
+    return true;
+}
+
+void Vfs::stop(bool unregister) {
+    if (_started) {
+        stopImpl(unregister);
+        _started = false;
+    }
+}
+
+void Vfs::effectivePinState(const QString &relativePath, KDC::PinState &effPinState) {
+    const KDC::PinState basePinState = pinState(relativePath);
+    if (!basePinState) {
+        effPinState = {};
+        return;
+    }
+
+    // Check if all pin states are identical
+    QDir dir(relativePath);
+    for (const QString &entry :
+         dir.entryList(QStringList(), QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot)) {
+        QString entryPath = QDir::cleanPath(relativePath + QDir::separator() + entry);
+        const KDC::PinState entryPinState = pinState(entryPath);
+        if (entryPinState != basePinState) {
+            effPinState = KDC::PinStateInherited;
+            return;
+        }
+    }
+
+    effPinState = basePinState;
+}
+
+VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
+
+VfsOff::~VfsOff() {}
+
+bool VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
+    KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
+    bool exists = false;
+    KDC::IoError ioError = KDC::IoErrorSuccess;
+    if (!KDC::IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << KDC::Utility::formatIoError(fullPath, ioError).c_str());
+        return false;
+    }
+
+    if (!exists) {
+        LOGW_DEBUG(logger(), L"Item does not exist anymore - path=" << Path2WStr(fullPath).c_str());
+        return true;
+    }
+
+    // Update Finder
+    LOGW_DEBUG(logger(), L"Send status to the Finder extension for file/directory " << Path2WStr(fullPath).c_str());
+    QString status = isSyncing ? "SYNC" : "OK";
+    _vfsSetupParams._executeCommand(QString("STATUS:%1:%2").arg(status, path).toStdString().c_str());
+
+    return true;
+}
+
+bool VfsOff::startImpl(bool &, bool &, bool &) {
+    return true;
+}
+
+static QString modeToPluginName(KDC::VirtualFileMode virtualFileMode) {
+    if (virtualFileMode == KDC::VirtualFileModeSuffix) return "suffix";
+    if (virtualFileMode == KDC::VirtualFileModeWin) return "win";
+    if (virtualFileMode == KDC::VirtualFileModeMac) return "mac";
+    return QString();
+}
+
+bool KDC::isVfsPluginAvailable(KDC::VirtualFileMode virtualFileMode, QString &error) {
+    if (virtualFileMode == KDC::VirtualFileModeOff) return true;
+
+    if (virtualFileMode == KDC::VirtualFileModeSuffix) {
+        return false;
+    }
+
+    if (virtualFileMode == KDC::VirtualFileModeWin) {
+        if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::Windows &&
+            QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10 &&
+            QOperatingSystemVersion::current().microVersion() >= MIN_WINDOWS10_MICROVERSION_FOR_CFAPI) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    if (virtualFileMode == KDC::VirtualFileModeMac) {
+        if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
+            QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSCatalina) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    auto name = modeToPluginName(virtualFileMode);
+    if (name.isEmpty()) return false;
+    auto pluginPath = pluginFileName("vfs", name);
+    QPluginLoader loader(pluginPath);
+
+    auto basemeta = loader.metaData();
+    if (basemeta.isEmpty() || !basemeta.contains("IID")) {
+        error = "Plugin doesn't exist:" + pluginPath;
+        return false;
+    }
+    if (basemeta["IID"].toString() != "org.kdrive.PluginFactory") {
+        error = "Plugin has wrong IID:" + pluginPath + " - " + basemeta["IID"].toString();
+        return false;
+    }
+
+    auto metadata = basemeta["MetaData"].toObject();
+    if (metadata["type"].toString() != "vfs") {
+        error = "Plugin has wrong type:" + pluginPath + " - " + metadata["type"].toString();
+        return false;
+    }
+    if (metadata["version"].toString() != KDRIVE_VERSION_STRING) {
+        error = "Plugin has wrong type:" + pluginPath + " - " + metadata["version"].toString();
+        return false;
+    }
+
+    // Attempting to load the plugin is essential as it could have dependencies that
+    // can't be resolved and thus not be available after all.
+    if (!loader.load()) {
+        error = "Plugin failed to load:" + pluginPath + " - " + loader.errorString();
+        return false;
+    }
+
+    return true;
+}
+
+KDC::VirtualFileMode KDC::bestAvailableVfsMode() {
+    QString error;
+    if (isVfsPluginAvailable(KDC::VirtualFileModeWin, error)) {
+        return KDC::VirtualFileModeWin;
+    } else if (isVfsPluginAvailable(KDC::VirtualFileModeMac, error)) {
+        return KDC::VirtualFileModeMac;
+    } else if (isVfsPluginAvailable(KDC::VirtualFileModeSuffix, error)) {
+        return KDC::VirtualFileModeSuffix;
+    }
+    return KDC::VirtualFileModeOff;
+}
+
+std::unique_ptr<Vfs> KDC::createVfsFromPlugin(KDC::VirtualFileMode virtualFileMode, VfsSetupParams &vfsSetupParams,
+                                              QString &error) {
+    if (virtualFileMode == KDC::VirtualFileModeOff) {
+        return std::unique_ptr<Vfs>(new VfsOff(vfsSetupParams));
+    }
+
+    auto name = modeToPluginName(virtualFileMode);
+    if (name.isEmpty()) {
+        return nullptr;
+    }
+
+    auto pluginPath = pluginFileName("vfs", name);
+
+    if (!isVfsPluginAvailable(virtualFileMode, error)) {
+        return nullptr;
+    }
+
+    QPluginLoader loader(pluginPath);
+    auto plugin = loader.instance();
+    if (!plugin) {
+        error = "Could not load plugin:" + pluginPath + " - " + loader.errorString();
+        return nullptr;
+    }
+
+    auto factory = qobject_cast<PluginFactory *>(plugin);
+    if (!factory) {
+        error = "Plugin: " + pluginPath + " does not implement PluginFactory";
+        return nullptr;
+    }
+
+    std::unique_ptr<Vfs> vfs;
+    try {
+        vfs = std::unique_ptr<Vfs>(qobject_cast<Vfs *>(factory->create(vfsSetupParams)));
+    } catch (std::exception const &) {
+        error = "Error creating VFS instance from plugin: " + pluginPath;
+        return nullptr;
+    }
+
+    if (!vfs) {
+        error = "Error creating VFS instance from plugin: " + pluginPath;
+        return nullptr;
+    }
+
+    return vfs;
+}
