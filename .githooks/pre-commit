@@ -1,9 +1,9 @@
 #!/bin/sh
 #
 # A hook script to format the source files about to be committed with clang-format.
-# Called by "git commit" with no arguments.  The hook should
-# exit with non-zero status after issuing an appropriate message if
-# it wants to stop the commit.
+# Called by "git commit" with no arguments.  
+# The hook exit with non-zero status after issuing an appropriate message if
+# the formatting operation failed.
 #
 
 echo "The pre-commit hook for automated formatting is activated. Use '--no-verify' to by-pass it." 
@@ -14,12 +14,13 @@ staged_files=`git diff --name-only --cached`
 for file in ${staged_files}
 do
 	# Source file filtering is based on file extensions.
-	if [ -f "$file" ] && [[ "$file" =~ ^.*\.(ino|cpp|cc|c|h|hpp|hh|mm)$ ]]; then
+	if [ -f "${file}" ] && [[ "${file}" =~ ^.*\.(ino|cpp|cc|c|h|hpp|hh|mm)$ ]]; then
 		clang-format -i ${file} --style="file:${GIT_DIR}/../.clang-format"
+		git add ${file}
 		formatting_exit_code=$?
 		if [ ${formatting_exit_code} -ne 0 ]; then
 			echo "The program clang-format issued an error on file ${file}. Commit aborted."
-			exit $formatting_exit_code
+			exit ${formatting_exit_code}
 		fi
 	fi
 done
