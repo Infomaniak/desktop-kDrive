@@ -1,20 +1,21 @@
 /*
- * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+Infomaniak Drive
+Copyright (C) 2021 christophe.larchier@infomaniak.com
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
 #include "appclient.h"
 #include "guiutility.h"
@@ -59,26 +60,32 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcAppClient, "gui.appclient", QtInfoMsg)
 
-static const QList<QString> fontFiles = QList<QString>() << QString(":/client/resources/fonts/SuisseIntl-Thin.otf")
-                                                         << QString(":/client/resources/fonts/SuisseIntl-UltraLight.otf")
-                                                         << QString(":/client/resources/fonts/SuisseIntl-Light.otf")
-                                                         << QString(":/client/resources/fonts/SuisseIntl-Regular.otf")
-                                                         << QString(":/client/resources/fonts/SuisseIntl-Medium.otf")
-                                                         << QString(":/client/resources/fonts/SuisseIntl-SemiBold.otf")
-                                                         << QString(":/client/resources/fonts/SuisseIntl-Bold.otf")
-                                                         << QString(":/client/resources/fonts/SuisseIntl-Black.otf");
+static const QList<QString> fontFiles =
+    QList<QString>()
+    << QString(":/client/resources/fonts/SuisseIntl-Thin.otf")
+    << QString(":/client/resources/fonts/SuisseIntl-UltraLight.otf")
+    << QString(":/client/resources/fonts/SuisseIntl-Light.otf")
+    << QString(":/client/resources/fonts/SuisseIntl-Regular.otf")
+    << QString(":/client/resources/fonts/SuisseIntl-Medium.otf")
+    << QString(":/client/resources/fonts/SuisseIntl-SemiBold.otf")
+    << QString(":/client/resources/fonts/SuisseIntl-Bold.otf")
+    << QString(":/client/resources/fonts/SuisseIntl-Black.otf");
 // static const QString defaultFontFamily("Suisse Int'l");
 
 AppClient::AppClient(int &argc, char **argv)
-    : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv),
-      _gui(nullptr),
-      _theme(Theme::instance()),
-      _logExpire(0),
-      _logFlush(false),
-      _logDebug(false),
-      _debugMode(false) {
+    : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv)
+    , _gui(nullptr)
+    , _theme(Theme::instance())
+    , _logExpire(0)
+    , _logFlush(false)
+    , _logDebug(false)
+    , _debugMode(false)
+{
 #ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppClient", "Start"));
+    sentry_capture_event(sentry_value_new_message_event(
+        SENTRY_LEVEL_INFO,
+        "AppClient",
+        "Start"));
 #endif
 
     _startedAt.start();
@@ -209,8 +216,7 @@ AppClient::AppClient(int &argc, char **argv)
     connect(this, &QCoreApplication::aboutToQuit, this, &AppClient::onCleanup);
 
 #ifdef Q_OS_WIN
-    ExitCode exitCode =
-        GuiRequests::setShowInExplorerNavigationPane(ParametersCache::instance()->parametersInfo().showShortcuts());
+    ExitCode exitCode = GuiRequests::setShowInExplorerNavigationPane(ParametersCache::instance()->parametersInfo().showShortcuts());
     if (exitCode != ExitCodeOk) {
         qCWarning(lcAppClient) << "Error in Requests::setShowInExplorerNavigationPane";
     }
@@ -232,251 +238,270 @@ AppClient::AppClient(int &argc, char **argv)
     }
 }
 
-AppClient::~AppClient() {}
+AppClient::~AppClient()
+{
+}
 
-void AppClient::showSynthesisDialog() {
+void AppClient::showSynthesisDialog()
+{
     _gui->showSynthesisDialog();
 }
 
-void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params) {
+void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params)
+{
     QDataStream paramsStream(params);
 
     qCDebug(lcAppClient) << "Sgnl rcvd" << id << num;
 
     switch (num) {
-        case SIGNAL_NUM_USER_ADDED: {
-            UserInfo userInfo;
-            paramsStream >> userInfo;
+    case SIGNAL_NUM_USER_ADDED: {
+        UserInfo userInfo;
+        paramsStream >> userInfo;
 
-            emit userAdded(userInfo);
-            break;
-        }
-        case SIGNAL_NUM_USER_UPDATED: {
-            UserInfo userInfo;
-            paramsStream >> userInfo;
+        emit userAdded(userInfo);
+        break;
+    }
+    case SIGNAL_NUM_USER_UPDATED: {
+        UserInfo userInfo;
+        paramsStream >> userInfo;
 
-            emit userUpdated(userInfo);
-            break;
-        }
-        case SIGNAL_NUM_USER_STATUSCHANGED: {
-            int userDbId;
-            bool connected;
-            QString connexionError;
-            paramsStream >> userDbId;
-            paramsStream >> connected;
-            paramsStream >> connexionError;
+        emit userUpdated(userInfo);
+        break;
+    }
+    case SIGNAL_NUM_USER_STATUSCHANGED: {
+        int userDbId;
+        bool connected;
+        QString connexionError;
+        paramsStream >> userDbId;
+        paramsStream >> connected;
+        paramsStream >> connexionError;
 
-            emit userStatusChanged(userDbId, connected, connexionError);
-            break;
-        }
-        case SIGNAL_NUM_USER_REMOVED: {
-            int userDbId;
-            paramsStream >> userDbId;
+        emit userStatusChanged(userDbId, connected, connexionError);
+        break;
+    }
+    case SIGNAL_NUM_USER_REMOVED: {
+        int userDbId;
+        paramsStream >> userDbId;
 
-            emit userRemoved(userDbId);
-            break;
-        }
-        case SIGNAL_NUM_ACCOUNT_ADDED: {
-            AccountInfo accountInfo;
-            paramsStream >> accountInfo;
+        emit userRemoved(userDbId);
+        break;
+    }
+    case SIGNAL_NUM_ACCOUNT_ADDED: {
+        AccountInfo accountInfo;
+        paramsStream >> accountInfo;
 
-            emit accountAdded(accountInfo);
-            break;
-        }
-        case SIGNAL_NUM_ACCOUNT_UPDATED: {
-            AccountInfo accountInfo;
-            paramsStream >> accountInfo;
+        emit accountAdded(accountInfo);
+        break;
+    }
+    case SIGNAL_NUM_ACCOUNT_UPDATED: {
+        AccountInfo accountInfo;
+        paramsStream >> accountInfo;
 
-            emit accountUpdated(accountInfo);
-            break;
-        }
-        case SIGNAL_NUM_ACCOUNT_REMOVED: {
-            int accountDbId;
-            paramsStream >> accountDbId;
+        emit accountUpdated(accountInfo);
+        break;
+    }
+    case SIGNAL_NUM_ACCOUNT_REMOVED: {
+        int accountDbId;
+        paramsStream >> accountDbId;
 
-            emit accountRemoved(accountDbId);
-            break;
-        }
-        case SIGNAL_NUM_DRIVE_ADDED: {
-            DriveInfo driveInfo;
-            paramsStream >> driveInfo;
+        emit accountRemoved(accountDbId);
+        break;
+    }
+    case SIGNAL_NUM_DRIVE_ADDED: {
+        DriveInfo driveInfo;
+        paramsStream >> driveInfo;
 
-            emit driveAdded(driveInfo);
-            break;
-        }
-        case SIGNAL_NUM_DRIVE_UPDATED: {
-            DriveInfo driveInfo;
-            paramsStream >> driveInfo;
+        emit driveAdded(driveInfo);
+        break;
+    }
+    case SIGNAL_NUM_DRIVE_UPDATED: {
+        DriveInfo driveInfo;
+        paramsStream >> driveInfo;
 
-            emit driveUpdated(driveInfo);
-            break;
-        }
-        case SIGNAL_NUM_DRIVE_QUOTAUPDATED: {
-            int driveDbId;
-            qint64 total;
-            qint64 used;
-            paramsStream >> driveDbId;
-            paramsStream >> total;
-            paramsStream >> used;
+        emit driveUpdated(driveInfo);
+        break;
+    }
+    case SIGNAL_NUM_DRIVE_QUOTAUPDATED: {
+        int driveDbId;
+        qint64 total;
+        qint64 used;
+        paramsStream >> driveDbId;
+        paramsStream >> total;
+        paramsStream >> used;
 
-            emit driveQuotaUpdated(driveDbId, total, used);
-            break;
-        }
-        case SIGNAL_NUM_DRIVE_REMOVED: {
-            int driveDbId;
-            paramsStream >> driveDbId;
+        emit driveQuotaUpdated(driveDbId, total, used);
+        break;
+    }
+    case SIGNAL_NUM_DRIVE_REMOVED: {
+        int driveDbId;
+        paramsStream >> driveDbId;
 
-            emit driveRemoved(driveDbId);
-            break;
-        }
-        case SIGNAL_NUM_SYNC_ADDED: {
-            SyncInfo syncInfo;
-            paramsStream >> syncInfo;
+        emit driveRemoved(driveDbId);
+        break;
+    }
+    case SIGNAL_NUM_DRIVE_DELETE_FAILED: {
+        int driveDbId;
+        paramsStream >> driveDbId;
 
-            emit syncAdded(syncInfo);
-            break;
-        }
-        case SIGNAL_NUM_SYNC_UPDATED: {
-            SyncInfo syncInfo;
-            paramsStream >> syncInfo;
+        emit driveDeletionFailed(driveDbId);
+        break;
+    }
+    case SIGNAL_NUM_SYNC_ADDED: {
+        SyncInfo syncInfo;
+        paramsStream >> syncInfo;
 
-            emit syncUpdated(syncInfo);
-            break;
-        }
-        case SIGNAL_NUM_SYNC_REMOVED: {
-            int syncDbId;
-            paramsStream >> syncDbId;
+        emit syncAdded(syncInfo);
+        break;
+    }
+    case SIGNAL_NUM_SYNC_UPDATED: {
+        SyncInfo syncInfo;
+        paramsStream >> syncInfo;
 
-            emit syncRemoved(syncDbId);
-            break;
-        }
-        case SIGNAL_NUM_SYNC_PROGRESSINFO: {
-            int syncDbId;
-            SyncStatus status;
-            SyncStep step;
-            qint64 currentFile;
-            qint64 totalFiles;
-            qint64 completedSize;
-            qint64 totalSize;
-            qint64 estimatedRemainingTime;
-            paramsStream >> syncDbId;
-            paramsStream >> status;
-            paramsStream >> step;
-            paramsStream >> currentFile;
-            paramsStream >> totalFiles;
-            paramsStream >> completedSize;
-            paramsStream >> totalSize;
-            paramsStream >> estimatedRemainingTime;
+        emit syncUpdated(syncInfo);
+        break;
+    }
+    case SIGNAL_NUM_SYNC_REMOVED: {
+        int syncDbId;
+        paramsStream >> syncDbId;
 
-            emit syncProgressInfo(syncDbId, status, step, currentFile, totalFiles, completedSize, totalSize,
-                                  estimatedRemainingTime);
-            break;
-        }
-        case SIGNAL_NUM_SYNC_COMPLETEDITEM: {
-            int syncDbId;
-            SyncFileItemInfo itemInfo;
-            paramsStream >> syncDbId;
-            paramsStream >> itemInfo;
+        emit syncRemoved(syncDbId);
+        break;
+    }
+    case SIGNAL_NUM_SYNC_PROGRESSINFO: {
+        int syncDbId;
+        SyncStatus status;
+        SyncStep step;
+        qint64 currentFile;
+        qint64 totalFiles;
+        qint64 completedSize;
+        qint64 totalSize;
+        qint64 estimatedRemainingTime;
+        paramsStream >> syncDbId;
+        paramsStream >> status;
+        paramsStream >> step;
+        paramsStream >> currentFile;
+        paramsStream >> totalFiles;
+        paramsStream >> completedSize;
+        paramsStream >> totalSize;
+        paramsStream >> estimatedRemainingTime;
 
-            emit itemCompleted(syncDbId, itemInfo);
-            break;
-        }
-        case SIGNAL_NUM_SYNC_VFS_CONVERSION_COMPLETED: {
-            int syncDbId;
-            paramsStream >> syncDbId;
+        emit syncProgressInfo(syncDbId, status, step, currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime);
+        break;
+    }
+    case SIGNAL_NUM_SYNC_COMPLETEDITEM: {
+        int syncDbId;
+        SyncFileItemInfo itemInfo;
+        paramsStream >> syncDbId;
+        paramsStream >> itemInfo;
 
-            emit vfsConversionCompleted(syncDbId);
-            break;
-        }
-        case SIGNAL_NUM_NODE_FOLDER_SIZE_COMPLETED: {
-            QString nodeId;
-            qint64 size;
-            paramsStream >> nodeId;
-            paramsStream >> size;
+        emit itemCompleted(syncDbId, itemInfo);
+        break;
+    }
+    case SIGNAL_NUM_SYNC_VFS_CONVERSION_COMPLETED: {
+        int syncDbId;
+        paramsStream >> syncDbId;
 
-            emit folderSizeCompleted(nodeId, size);
-            break;
-        }
-        case SIGNAL_NUM_NODE_FIX_CONFLICTED_FILES_COMPLETED: {
-            int syncDbId = 0;
-            QVariant var;
-            paramsStream >> syncDbId;
-            paramsStream >> var;
+        emit vfsConversionCompleted(syncDbId);
+        break;
+    }
+    case SIGNAL_NUM_SYNC_DELETE_FAILED: {
+        int syncDbId;
+        paramsStream >> syncDbId;
 
-            uint64_t nbErrors = var.toULongLong();
+        emit syncDeletionFailed(syncDbId);
+        break;
+    }
+    case SIGNAL_NUM_NODE_FOLDER_SIZE_COMPLETED: {
+        QString nodeId;
+        qint64 size;
+        paramsStream >> nodeId;
+        paramsStream >> size;
 
-            emit fixConflictingFilesCompleted(syncDbId, nbErrors);
-            break;
-        }
-        case SIGNAL_NUM_UTILITY_SHOW_NOTIFICATION: {
-            QString title;
-            QString message;
-            paramsStream >> title;
-            paramsStream >> message;
+        emit folderSizeCompleted(nodeId, size);
+        break;
+    }
+    case SIGNAL_NUM_NODE_FIX_CONFLICTED_FILES_COMPLETED: {
+        int syncDbId = 0;
+        QVariant var;
+        paramsStream >> syncDbId;
+        paramsStream >> var;
 
-            emit showNotification(title, message);
-            break;
-        }
-        case SIGNAL_NUM_UTILITY_NEW_BIG_FOLDER: {
-            int syncDbId;
-            QString path;
-            paramsStream >> syncDbId;
-            paramsStream >> path;
+        uint64_t nbErrors = var.toULongLong();
 
-            emit newBigFolder(syncDbId, path);
-            break;
-        }
-        case SIGNAL_NUM_UTILITY_ERROR_ADDED: {
-            bool serverLevel;
-            ExitCode exitCode;
-            int syncDbId;
-            paramsStream >> serverLevel;
-            paramsStream >> exitCode;
-            paramsStream >> syncDbId;
+        emit fixConflictingFilesCompleted(syncDbId, nbErrors);
+        break;
+    }
+    case SIGNAL_NUM_UTILITY_SHOW_NOTIFICATION: {
+        QString title;
+        QString message;
+        paramsStream >> title;
+        paramsStream >> message;
 
-            emit errorAdded(serverLevel, exitCode, syncDbId);
-            break;
-        }
-        case SIGNAL_NUM_UTILITY_ERRORS_CLEARED: {
-            int syncDbId;
-            paramsStream >> syncDbId;
+        emit showNotification(title, message);
+        break;
+    }
+    case SIGNAL_NUM_UTILITY_NEW_BIG_FOLDER: {
+        int syncDbId;
+        QString path;
+        paramsStream >> syncDbId;
+        paramsStream >> path;
 
-            emit errorsCleared(syncDbId);
-            break;
-        }
-        case SIGNAL_NUM_UPDATER_SHOW_DIALOG: {
-            QString targetVersion;
-            QString targetVersionString;
-            QString clientVersion;
-            paramsStream >> targetVersion;
-            paramsStream >> targetVersionString;
-            paramsStream >> clientVersion;
+        emit newBigFolder(syncDbId, path);
+        break;
+    }
+    case SIGNAL_NUM_UTILITY_ERROR_ADDED: {
+        bool serverLevel;
+        ExitCode exitCode;
+        int syncDbId;
+        paramsStream >> serverLevel;
+        paramsStream >> exitCode;
+        paramsStream >> syncDbId;
 
-            UpdaterClient::instance()->showWindowsUpdaterDialog(targetVersion, targetVersionString, clientVersion);
-            break;
-        }
-        case SIGNAL_NUM_UTILITY_SHOW_SETTINGS: {
-            emit showParametersDialog();
-            break;
-        }
-        case SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS: {
-            emit showSynthesisDialog();
-            break;
-        }
-        default: {
-            qCDebug(lcAppClient) << "Signal not implemented!";
-            break;
-        }
+        emit errorAdded(serverLevel, exitCode, syncDbId);
+        break;
+    }
+    case SIGNAL_NUM_UTILITY_ERRORS_CLEARED: {
+        int syncDbId;
+        paramsStream >> syncDbId;
+
+        emit errorsCleared(syncDbId);
+        break;
+    }
+    case SIGNAL_NUM_UPDATER_SHOW_DIALOG: {
+        QString targetVersion;
+        QString targetVersionString;
+        QString clientVersion;
+        paramsStream >> targetVersion;
+        paramsStream >> targetVersionString;
+        paramsStream >> clientVersion;
+
+        UpdaterClient::instance()->showWindowsUpdaterDialog(targetVersion, targetVersionString, clientVersion);
+        break;
+    }
+    case SIGNAL_NUM_UTILITY_SHOW_SETTINGS: {
+        emit showParametersDialog();
+        break;
+    }
+    case SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS: {
+        emit showSynthesisDialog();
+        break;
+    }
+    default: {
+        qCDebug(lcAppClient) << "Signal not implemented!";
+        break;
+    }
     }
 }
 
-void AppClient::onLogTooBig() {
+void AppClient::onLogTooBig()
+{
     auto logger = KDC::Logger::instance();
     qCDebug(lcAppClient()) << "Log too big, archiving current log and creating a new one.";
     logger->enterNextLogFile();
 }
 
-void AppClient::onQuit() {
+void AppClient::onQuit()
+{
     if (CommClient::isConnected()) {
         QByteArray results;
         if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_QUIT, QByteArray(), results)) {
@@ -487,23 +512,28 @@ void AppClient::onQuit() {
     quit();
 }
 
-void AppClient::onCleanup() {
+void AppClient::onCleanup()
+{
     _gui->onShutdown();
 }
 
-void AppClient::onCrash() {
+void AppClient::onCrash()
+{
     KDC::CommonUtility::crash();
 }
 
-void AppClient::onCrashEnforce() {
+void AppClient::onCrashEnforce()
+{
     ENFORCE(1 == 0);
 }
 
-void AppClient::onCrashFatal() {
+void AppClient::onCrashFatal()
+{
     qFatal("la Qt fatale");
 }
 
-void AppClient::onWizardDone(int res) {
+void AppClient::onWizardDone(int res)
+{
     if (res == QDialog::Accepted) {
         // If one account is configured: enable autostart
         ExitCode exitCode;
@@ -528,7 +558,8 @@ void AppClient::onWizardDone(int res) {
     }
 }
 
-void AppClient::setupLogging() {
+void AppClient::setupLogging()
+{
     // might be called from second instance
     auto logger = KDC::Logger::instance();
     logger->setIsCLientLog(true);
@@ -543,7 +574,8 @@ void AppClient::setupLogging() {
 
     if (ParametersCache::instance()->parametersInfo().useLog()) {
         // Don't override other configured logging
-        if (logger->isLoggingToFile()) return;
+        if (logger->isLoggingToFile())
+            return;
 
         logger->setupTemporaryFolderLogDir();
         if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
@@ -559,25 +591,21 @@ void AppClient::setupLogging() {
     connect(logger, &KDC::Logger::logTooBig, this, &AppClient::onLogTooBig);
     connect(logger, &KDC::Logger::showNotification, this, &AppClient::showNotification);
 
-    qCInfo(lcAppClient) << QString::fromLatin1("################## %1 locale:[%2] ui_lang:[%3] version:[%4] os:[%5]")
-                               .arg(_theme->appClientName())
-                               .arg(QLocale::system().name())
-                               .arg(property("ui_lang").toString())
-                               .arg(_theme->version())
-                               .arg(KDC::CommonUtility::platformName());
+    qCInfo(lcAppClient) << QString::fromLatin1("################## %1 locale:[%2] ui_lang:[%3] version:[%4] os:[%5]").arg(_theme->appClientName()).arg(QLocale::system().name()).arg(property("ui_lang").toString()).arg(_theme->version()).arg(KDC::CommonUtility::platformName());
 }
 
-void AppClient::onUseMonoIconsChanged(bool) {
+void AppClient::onUseMonoIconsChanged(bool)
+{
     _gui->computeOverallSyncStatus();
 }
 
-void AppClient::onParseMessage(const QString &msg, QObject *) {
+void AppClient::onParseMessage(const QString &msg, QObject *)
+{
     if (msg.startsWith(QLatin1String("MSG_SHOWSETTINGS"))) {
         qCInfo(lcAppClient) << "Running for" << _startedAt.elapsed() / 1000.0 << "sec";
         if (_startedAt.elapsed() < 10 * 1000) {
             // This call is mirrored with the one in int main()
-            qCWarning(lcAppClient)
-                << "Ignoring MSG_SHOWSETTINGS, possibly double-invocation of client via session restore and auto start";
+            qCWarning(lcAppClient) << "Ignoring MSG_SHOWSETTINGS, possibly double-invocation of client via session restore and auto start";
             return;
         }
         showParametersDialog();
@@ -585,15 +613,15 @@ void AppClient::onParseMessage(const QString &msg, QObject *) {
         qCInfo(lcAppClient) << "Running for" << _startedAt.elapsed() / 1000.0 << "sec";
         if (_startedAt.elapsed() < 10 * 1000) {
             // This call is mirrored with the one in int main()
-            qCWarning(lcAppClient)
-                << "Ignoring MSG_SHOWSETTINGS, possibly double-invocation of client via session restore and auto start";
+            qCWarning(lcAppClient) << "Ignoring MSG_SHOWSETTINGS, possibly double-invocation of client via session restore and auto start";
             return;
         }
         showSynthesisDialog();
     }
 }
 
-bool AppClient::parseOptions(const QStringList &options) {
+bool AppClient::parseOptions(const QStringList &options)
+{
     if (options.size() != 2) {
         return false;
     }
@@ -609,31 +637,38 @@ bool AppClient::parseOptions(const QStringList &options) {
     return true;
 }
 
-bool AppClient::debugMode() {
+bool AppClient::debugMode()
+{
     return _debugMode;
 }
 
-void AppClient::showParametersDialog() {
+void AppClient::showParametersDialog()
+{
     _gui->onShowParametersDialog();
 }
 
-void AppClient::updateSystrayIcon() {
+void AppClient::updateSystrayIcon()
+{
     if (_theme && _theme->systrayUseMonoIcons()) {
         onUseMonoIconsChanged(_theme->systrayUseMonoIcons());
     }
 }
 
-void AppClient::askUserToLoginAgain(int userDbId, QString userEmail, bool invalidTokenError) {
-    CustomMessageBox msgBox(QMessageBox::Information, tr("The user %1 is not connected. Please log in again.").arg(userEmail),
-                            QMessageBox::Ok);
+void AppClient::askUserToLoginAgain(int userDbId, QString userEmail, bool invalidTokenError)
+{
+    CustomMessageBox msgBox(
+        QMessageBox::Information,
+        tr("The user %1 is not connected. Please log in again.").arg(userEmail),
+        QMessageBox::Ok);
     msgBox.exec();
 
     _gui->openLoginDialog(userDbId, invalidTokenError);
 }
 
-void AppClient::onTryTrayAgain() {
+void AppClient::onTryTrayAgain()
+{
     qCInfo(lcAppClient) << "Trying tray icon, tray available:" << QSystemTrayIcon::isSystemTrayAvailable();
     _gui->hideAndShowTray();
 }
 
-}  // namespace KDC
+} // namespace KDC

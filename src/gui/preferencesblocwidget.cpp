@@ -1,20 +1,21 @@
 /*
- * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+Infomaniak Drive
+Copyright (C) 2020 christophe.larchier@infomaniak.com
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
 #include "preferencesblocwidget.h"
 #include "guiutility.h"
@@ -39,7 +40,12 @@ static const int shadowBlurRadius = 20;
 Q_LOGGING_CATEGORY(lcPreferencesBlocWidget, "gui.preferencesblocwidget", QtInfoMsg)
 
 PreferencesBlocWidget::PreferencesBlocWidget(QWidget *parent)
-    : QWidget(parent), _backgroundColor(QColor()), _actionIconColor(QColor()), _actionIconSize(QSize()), _layout(nullptr) {
+    : GuiUtility::LargeWidgetWithCustomToolTip(parent)
+    , _backgroundColor(QColor())
+    , _actionIconColor(QColor())
+    , _actionIconSize(QSize())
+    , _layout(nullptr)
+{
     setContentsMargins(0, 0, 0, 0);
 
     _layout = new QVBoxLayout();
@@ -57,7 +63,8 @@ PreferencesBlocWidget::PreferencesBlocWidget(QWidget *parent)
     connect(this, &PreferencesBlocWidget::actionIconSizeChanged, this, &PreferencesBlocWidget::onActionIconSizeChanged);
 }
 
-QBoxLayout *PreferencesBlocWidget::addLayout(QBoxLayout::Direction direction, bool noMargins) {
+QBoxLayout *PreferencesBlocWidget::addLayout(QBoxLayout::Direction direction, bool noMargins)
+{
     QBoxLayout *layout = new QBoxLayout(direction);
     if (!noMargins) {
         layout->setContentsMargins(boxHMargin, boxVMargin, boxHMargin, boxVMargin);
@@ -72,7 +79,8 @@ QBoxLayout *PreferencesBlocWidget::addLayout(QBoxLayout::Direction direction, bo
     return layout;
 }
 
-ClickableWidget *PreferencesBlocWidget::addActionWidget(QVBoxLayout **vLayout, bool noMargins) {
+ClickableWidget *PreferencesBlocWidget::addActionWidget(QVBoxLayout **vLayout, bool noMargins)
+{
     ClickableWidget *widget = new ClickableWidget(this);
     widget->setContentsMargins(0, 0, 0, 0);
     _layout->addWidget(widget);
@@ -97,7 +105,8 @@ ClickableWidget *PreferencesBlocWidget::addActionWidget(QVBoxLayout **vLayout, b
     return widget;
 }
 
-QFrame *PreferencesBlocWidget::addSeparator() {
+QFrame *PreferencesBlocWidget::addSeparator()
+{
     QFrame *line = new QFrame(this);
     line->setObjectName("line");
     line->setFrameShape(QFrame::HLine);
@@ -107,7 +116,8 @@ QFrame *PreferencesBlocWidget::addSeparator() {
     return line;
 }
 
-void PreferencesBlocWidget::paintEvent(QPaintEvent *event) {
+void PreferencesBlocWidget::paintEvent(QPaintEvent *event)
+{
     Q_UNUSED(event);
 
     // Shadow
@@ -130,7 +140,8 @@ void PreferencesBlocWidget::paintEvent(QPaintEvent *event) {
     painter.drawPath(painterPath);
 }
 
-void PreferencesBlocWidget::setActionIcon() {
+void PreferencesBlocWidget::setActionIcon()
+{
     QList<QLabel *> allActionIconLabels = findChildren<QLabel *>("actionIconLabel");
     for (QLabel *actionIconLabel : allActionIconLabels) {
         actionIconLabel->setPixmap(
@@ -139,12 +150,14 @@ void PreferencesBlocWidget::setActionIcon() {
     }
 }
 
-void PreferencesBlocWidget::onActionIconColorChanged() {
+void PreferencesBlocWidget::onActionIconColorChanged()
+{
     setActionIcon();
 }
 
-void PreferencesBlocWidget::onActionIconSizeChanged() {
+void PreferencesBlocWidget::onActionIconSizeChanged()
+{
     setActionIcon();
 }
 
-}  // namespace KDC
+}

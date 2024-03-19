@@ -1,22 +1,26 @@
 /*
- * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+Infomaniak Drive
+Copyright (C) 2020 christophe.larchier@infomaniak.com
+
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
 #pragma once
+
+#include <QDataStream>
+#include <QIODevice>
 
 #define COMM_SHORT_TIMEOUT 1000
 #define COMM_AVERAGE_TIMEOUT 10000
@@ -37,7 +41,11 @@
 
 #define EXECUTE_ERROR_MSG "C/S function call timeout or error!"
 
-typedef enum { REQUEST = 0, REPLY, SIGNAL } MsgType;
+typedef enum {
+    REQUEST = 0,
+    REPLY,
+    SIGNAL
+} MsgType;
 
 typedef enum {
     REQUEST_NUM_LOGIN_REQUESTTOKEN = 1,
@@ -132,6 +140,7 @@ typedef enum {
     SIGNAL_NUM_DRIVE_UPDATED,
     SIGNAL_NUM_DRIVE_QUOTAUPDATED,
     SIGNAL_NUM_DRIVE_REMOVED,
+    SIGNAL_NUM_DRIVE_DELETE_FAILED,
     // Sync
     SIGNAL_NUM_SYNC_ADDED,
     SIGNAL_NUM_SYNC_UPDATED,
@@ -139,6 +148,7 @@ typedef enum {
     SIGNAL_NUM_SYNC_PROGRESSINFO,
     SIGNAL_NUM_SYNC_COMPLETEDITEM,
     SIGNAL_NUM_SYNC_VFS_CONVERSION_COMPLETED,
+    SIGNAL_NUM_SYNC_DELETE_FAILED,
     // Node
     SIGNAL_NUM_NODE_FOLDER_SIZE_COMPLETED,
     SIGNAL_NUM_NODE_FIX_CONFLICTED_FILES_COMPLETED,
@@ -152,3 +162,45 @@ typedef enum {
     SIGNAL_NUM_UTILITY_SHOW_SETTINGS,
     SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS
 } SignalNum;
+
+struct ArgsReader
+{
+    template <class... Args>
+    ArgsReader(Args... args)
+        : stream(&params, QIODevice::WriteOnly)
+    {
+        read(args...);
+    }
+    template <class T>
+    void read(const T p)
+    {
+        stream << p;
+    }
+    template <class T, class... Args>
+    void read(const T p, Args... args)
+    {
+        stream << p;
+        read(args...);
+    }
+    operator QByteArray() const { return params; }
+    QByteArray params;
+    QDataStream stream;
+};
+
+struct ArgsWriter
+{
+    ArgsWriter(const QByteArray &results)
+        : stream { QDataStream(results) } {};
+    template <class T>
+    void write(T &r)
+    {
+        stream >> r;
+    }
+    template <class T, class... Args>
+    void write(T &r, Args... args)
+    {
+        stream >> r;
+        extract(args...);
+    }
+    QDataStream stream;
+};

@@ -1,23 +1,18 @@
 /*
- * Infomaniak kDrive - Desktop
- * Copyright (C) 2023-2024 Infomaniak Network SA
+ * Copyright (C) by Christian Kamm <mail@ckamm.de>
  *
- * This program is free software: you can redistribute it and/or modify
+ * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
+ * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+ * for more details.
  */
 
 #include "guiutility.h"
-#include "libcommon/asserts.h"
 #include "common/utility.h"
 #include "appclient.h"
 #include "parameterscache.h"
@@ -76,14 +71,17 @@ static bool darkTheme = false;
 
 Q_LOGGING_CATEGORY(lcGuiUtility, "gui.guiutility", QtInfoMsg)
 
-bool GuiUtility::openBrowser(const QUrl &url, QWidget *errorWidgetParent) {
+bool GuiUtility::openBrowser(const QUrl &url, QWidget *errorWidgetParent)
+{
     if (!QDesktopServices::openUrl(url)) {
         if (errorWidgetParent) {
-            QMessageBox::warning(errorWidgetParent, QCoreApplication::translate("utility", "Could not open browser"),
-                                 QCoreApplication::translate("utility",
-                                                             "There was an error when launching the browser to go to "
-                                                             "URL %1. Maybe no default browser is configured?")
-                                     .arg(url.toString()));
+            QMessageBox::warning(
+                errorWidgetParent,
+                QCoreApplication::translate("utility", "Could not open browser"),
+                QCoreApplication::translate("utility",
+                    "There was an error when launching the browser to go to "
+                    "URL %1. Maybe no default browser is configured?")
+                    .arg(url.toString()));
         }
         qCWarning(lcGuiUtility) << "QDesktopServices::openUrl failed for" << url;
         return false;
@@ -91,19 +89,23 @@ bool GuiUtility::openBrowser(const QUrl &url, QWidget *errorWidgetParent) {
     return true;
 }
 
-bool GuiUtility::openEmailComposer(const QString &subject, const QString &body, QWidget *errorWidgetParent) {
+bool GuiUtility::openEmailComposer(const QString &subject, const QString &body, QWidget *errorWidgetParent)
+{
     QUrl url(QLatin1String("mailto:"));
     QUrlQuery query;
-    query.setQueryItems({{QLatin1String("subject"), subject}, {QLatin1String("body"), body}});
+    query.setQueryItems({ { QLatin1String("subject"), subject },
+        { QLatin1String("body"), body } });
     url.setQuery(query);
 
     if (!QDesktopServices::openUrl(url)) {
         if (errorWidgetParent) {
-            QMessageBox::warning(errorWidgetParent, QCoreApplication::translate("utility", "Could not open email client"),
-                                 QCoreApplication::translate("utility",
-                                                             "There was an error when launching the email client to "
-                                                             "create a new message. Maybe no default email client is "
-                                                             "configured?"));
+            QMessageBox::warning(
+                errorWidgetParent,
+                QCoreApplication::translate("utility", "Could not open email client"),
+                QCoreApplication::translate("utility",
+                    "There was an error when launching the email client to "
+                    "create a new message. Maybe no default email client is "
+                    "configured?"));
         }
         qCWarning(lcGuiUtility) << "QDesktopServices::openUrl failed for" << url;
         return false;
@@ -111,7 +113,8 @@ bool GuiUtility::openEmailComposer(const QString &subject, const QString &body, 
     return true;
 }
 
-QIcon GuiUtility::getIconWithColor(const QString &path, const QColor &color) {
+QIcon GuiUtility::getIconWithColor(const QString &path, const QColor &color)
+{
     QGraphicsSvgItem *item = new QGraphicsSvgItem(path);
 
     if (color.isValid()) {
@@ -137,7 +140,8 @@ QIcon GuiUtility::getIconWithColor(const QString &path, const QColor &color) {
     return icon;
 }
 
-GuiUtility::systrayPosition GuiUtility::getSystrayPosition(QScreen *screen) {
+GuiUtility::systrayPosition GuiUtility::getSystrayPosition(QScreen *screen)
+{
     QRect displayRect = screen->geometry();
     QRect desktopRect = screen->availableGeometry();
     if (desktopRect.height() < displayRect.height()) {
@@ -155,7 +159,8 @@ GuiUtility::systrayPosition GuiUtility::getSystrayPosition(QScreen *screen) {
     }
 }
 
-bool GuiUtility::isPointInSystray(QScreen *screen, const QPoint &point) {
+bool GuiUtility::isPointInSystray(QScreen *screen, const QPoint &point)
+{
     QRect displayRect = screen->geometry();
     QRect desktopRect = screen->availableGeometry();
     if (desktopRect.height() < displayRect.height()) {
@@ -177,7 +182,8 @@ bool GuiUtility::isPointInSystray(QScreen *screen, const QPoint &point) {
     }
 }
 
-QIcon GuiUtility::getIconMenuWithColor(const QString &path, const QColor &color) {
+QIcon GuiUtility::getIconMenuWithColor(const QString &path, const QColor &color)
+{
     QGraphicsSvgItem *item = new QGraphicsSvgItem(path);
     QGraphicsSvgItem *itemMenu = new QGraphicsSvgItem(":/client/resources/icons/actions/chevron-down.svg");
 
@@ -216,11 +222,13 @@ QIcon GuiUtility::getIconMenuWithColor(const QString &path, const QColor &color)
     return icon;
 }
 
-void GuiUtility::setStyle(QApplication *app) {
+void GuiUtility::setStyle(QApplication *app)
+{
     setStyle(app, isDarkTheme());
 }
 
-void GuiUtility::setStyle(QApplication *app, bool isDarkTheme) {
+void GuiUtility::setStyle(QApplication *app, bool isDarkTheme)
+{
     // Load style sheet
     darkTheme = isDarkTheme;
     QFile ssFile(darkTheme ? styleSheetBlackFile : styleSheetWhiteFile);
@@ -249,66 +257,69 @@ void GuiUtility::setStyle(QApplication *app, bool isDarkTheme) {
     }
 }
 
-QString GuiUtility::getFileStatusIconPath(::KDC::SyncFileStatus status) {
+QString GuiUtility::getFileStatusIconPath(::KDC::SyncFileStatus status)
+{
     QString path;
     switch (status) {
-        case ::KDC::SyncFileStatusUnknown:
-            path = QString();
-            break;
-        case ::KDC::SyncFileStatusError:
-            path = QString(":/client/resources/icons/statuts/error-sync.svg");
-            break;
-        case ::KDC::SyncFileStatusSuccess:
-        case ::KDC::SyncFileStatusInconsistency:
-            path = QString(":/client/resources/icons/statuts/success.svg");
-            break;
-        case ::KDC::SyncFileStatusConflict:
-        case ::KDC::SyncFileStatusIgnored:
-            path = QString(":/client/resources/icons/statuts/warning.svg");
-            break;
-        case ::KDC::SyncFileStatusSyncing:
-            path = QString(":/client/resources/icons/statuts/sync.svg");
-            break;
+    case ::KDC::SyncFileStatusUnknown:
+        path = QString();
+        break;
+    case ::KDC::SyncFileStatusError:
+        path = QString(":/client/resources/icons/statuts/error-sync.svg");
+        break;
+    case ::KDC::SyncFileStatusSuccess:
+    case ::KDC::SyncFileStatusInconsistency:
+        path = QString(":/client/resources/icons/statuts/success.svg");
+        break;
+    case ::KDC::SyncFileStatusConflict:
+    case ::KDC::SyncFileStatusIgnored:
+        path = QString(":/client/resources/icons/statuts/warning.svg");
+        break;
+    case ::KDC::SyncFileStatusSyncing:
+        path = QString(":/client/resources/icons/statuts/sync.svg");
+        break;
     }
 
     return path;
 }
 
-QString GuiUtility::getSyncStatusIconPath(StatusInfo &statusInfo) {
+QString GuiUtility::getSyncStatusIconPath(StatusInfo &statusInfo)
+{
     QString path;
 
     if (statusInfo._disconnected) {
         path = QString(":/client/resources/icons/statuts/pause.svg");
     } else {
         switch (statusInfo._status) {
-            case KDC::SyncStatusUndefined:
-                path = QString(":/client/resources/icons/statuts/warning.svg");
-                break;
-            case KDC::SyncStatusStarting:
-            case KDC::SyncStatusRunning:
-                path = QString(":/client/resources/icons/statuts/sync.svg");
-                break;
-            case KDC::SyncStatusIdle:
-                path = QString(":/client/resources/icons/statuts/success.svg");
-                break;
-            case KDC::SyncStatusError:
-                path = QString(":/client/resources/icons/statuts/error-sync.svg");
-                break;
-            case KDC::SyncStatusPauseAsked:
-            case KDC::SyncStatusPaused:
-            case KDC::SyncStatusStopAsked:
-            case KDC::SyncStatusStoped:
-                path = QString(":/client/resources/icons/statuts/pause.svg");
-                break;
-            default:
-                break;
+        case KDC::SyncStatusUndefined:
+            path = QString(":/client/resources/icons/statuts/warning.svg");
+            break;
+        case KDC::SyncStatusStarting:
+        case KDC::SyncStatusRunning:
+            path = QString(":/client/resources/icons/statuts/sync.svg");
+            break;
+        case KDC::SyncStatusIdle:
+            path = QString(":/client/resources/icons/statuts/success.svg");
+            break;
+        case KDC::SyncStatusError:
+            path = QString(":/client/resources/icons/statuts/error-sync.svg");
+            break;
+        case KDC::SyncStatusPauseAsked:
+        case KDC::SyncStatusPaused:
+        case KDC::SyncStatusStopAsked:
+        case KDC::SyncStatusStoped:
+            path = QString(":/client/resources/icons/statuts/pause.svg");
+            break;
+        default:
+            break;
         }
     }
 
     return path;
 }
 
-QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
+QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo)
+{
     QString text;
     if (statusInfo._disconnected) {
         text = QCoreApplication::translate("utility", "You are not connected anymore. <a style=\"%1\" href=\"%2\">Log in</a>")
@@ -316,69 +327,72 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                    .arg(loginLink);
     } else {
         switch (statusInfo._status) {
-            case KDC::SyncStatusUndefined:
-                text =
-                    QCoreApplication::translate("utility", "No folder to synchronize\nYou can add one from the kDrive settings.");
-                break;
-            case KDC::SyncStatusStarting:
-            case KDC::SyncStatusRunning:
-                if (statusInfo._totalFiles > 0) {
-                    if (statusInfo._liteSyncActivated) {
-                        text = QCoreApplication::translate("utility", "Sync in progress (%1 of %2)")
-                                   .arg(statusInfo._syncedFiles)
-                                   .arg(statusInfo._totalFiles);
-                    } else {
-                        text = QCoreApplication::translate("utility", "Sync in progress (%1 of %2)\n%3 left...")
-                                   .arg(statusInfo._syncedFiles)
-                                   .arg(statusInfo._totalFiles)
-                                   .arg(KDC::CommonGuiUtility::durationToDescriptiveString1(statusInfo._estimatedRemainingTime));
-                    }
-                } else if (statusInfo._oneSyncInPropagationStep) {
-                    text = QCoreApplication::translate("utility", "Sync in progress (Step %1/%2).")
-                               .arg(statusInfo._syncStep)
-                               .arg(KDC::SyncStepDone);
-                } else if (statusInfo._status == KDC::SyncStatusStarting) {
-                    text = QCoreApplication::translate("utility", "Synchronization starting");
+        case KDC::SyncStatusUndefined:
+            text = QCoreApplication::translate("utility", "No folder to synchronize\nYou can add one from the kDrive settings.");
+            break;
+        case KDC::SyncStatusStarting:
+        case KDC::SyncStatusRunning:
+            if (statusInfo._totalFiles > 0) {
+                if (statusInfo._liteSyncActivated) {
+                    text = QCoreApplication::translate("utility", "Sync in progress (%1 of %2)")
+                               .arg(statusInfo._syncedFiles)
+                               .arg(statusInfo._totalFiles);
                 } else {
-                    text = QCoreApplication::translate("utility", "Sync in progress.");
+                    text = QCoreApplication::translate("utility", "Sync in progress (%1 of %2)\n%3 left...")
+                               .arg(statusInfo._syncedFiles)
+                               .arg(statusInfo._totalFiles)
+                               .arg(KDC::CommonGuiUtility::durationToDescriptiveString1(statusInfo._estimatedRemainingTime));
                 }
-                break;
-            case KDC::SyncStatusIdle:
-                if (statusInfo._unresolvedConflicts) {
-                    text = QCoreApplication::translate("utility", "You are up to date, unresolved conflicts.");
-                } else {
-                    text = QCoreApplication::translate("utility", "You are up to date!");
-                }
-                break;
-            case KDC::SyncStatusError:
-                text = QCoreApplication::translate(
-                           "utility", "Some files couldn't be synchronized. <a style=\"%1\" href=\"%2\">Learn more</a>")
-                           .arg(KDC::CommonUtility::linkStyle)
-                           .arg(learnMoreLink);
-                break;
-            case KDC::SyncStatusPauseAsked:
-            case KDC::SyncStatusStopAsked:
-                text = QCoreApplication::translate("utility", "Synchronization pausing ...");
-                break;
-            case KDC::SyncStatusPaused:
-            case KDC::SyncStatusStoped:
-                text = QCoreApplication::translate("utility", "Synchronization paused.");
-                break;
-            default:
-                break;
+            } else if (statusInfo._oneSyncInPropagationStep) {
+                text = QCoreApplication::translate("utility", "Sync in progress (Step %1/%2).")
+                           .arg(statusInfo._syncStep)
+                           .arg(KDC::SyncStepDone);
+            } else if (statusInfo._status == KDC::SyncStatusStarting) {
+                text = QCoreApplication::translate("utility", "Synchronization starting");
+            } else {
+                text = QCoreApplication::translate("utility", "Sync in progress.");
+            }
+            break;
+        case KDC::SyncStatusIdle:
+            if (statusInfo._unresolvedConflicts) {
+                text = QCoreApplication::translate("utility", "You are up to date, unresolved conflicts.");
+            } else {
+                text = QCoreApplication::translate("utility", "You are up to date!");
+            }
+            break;
+        case KDC::SyncStatusError:
+            text = QCoreApplication::translate("utility", "Some files couldn't be synchronized. <a style=\"%1\" href=\"%2\">Learn more</a>")
+                       .arg(KDC::CommonUtility::linkStyle)
+                       .arg(learnMoreLink);
+            break;
+        case KDC::SyncStatusPauseAsked:
+        case KDC::SyncStatusStopAsked:
+            text = QCoreApplication::translate("utility", "Synchronization pausing ...");
+            break;
+        case KDC::SyncStatusPaused:
+        case KDC::SyncStatusStoped:
+            text = QCoreApplication::translate("utility", "Synchronization paused.");
+            break;
+        default:
+            break;
         }
     }
 
     return text;
 }
 
-QString GuiUtility::getDriveStatusIconPath(StatusInfo &statusInfo) {
+QString GuiUtility::getDriveStatusIconPath(StatusInfo &statusInfo)
+{
     return getSyncStatusIconPath(statusInfo);
 }
 
-bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
-    if (status == KDC::SyncStatusPauseAsked || status == KDC::SyncStatusPaused || status == KDC::SyncStatusStopAsked ||
-        status == KDC::SyncStatusStoped || status == KDC::SyncStatusError) {
+bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status)
+{
+    if (status == KDC::SyncStatusPauseAsked
+        || status == KDC::SyncStatusPaused
+        || status == KDC::SyncStatusStopAsked
+        || status == KDC::SyncStatusStoped
+        || status == KDC::SyncStatusError) {
         // Pause
         return false;
     } else {
@@ -386,9 +400,13 @@ bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
     }
 }
 
-bool GuiUtility::getResumeActionAvailable(KDC::SyncStatus status) {
-    if (status == KDC::SyncStatusPauseAsked || status == KDC::SyncStatusPaused || status == KDC::SyncStatusStopAsked ||
-        status == KDC::SyncStatusStoped || status == KDC::SyncStatusError) {
+bool GuiUtility::getResumeActionAvailable(KDC::SyncStatus status)
+{
+    if (status == KDC::SyncStatusPauseAsked
+        || status == KDC::SyncStatusPaused
+        || status == KDC::SyncStatusStopAsked
+        || status == KDC::SyncStatusStoped
+        || status == KDC::SyncStatusError) {
         // Pause
         return true;
     }
@@ -396,7 +414,8 @@ bool GuiUtility::getResumeActionAvailable(KDC::SyncStatus status) {
     return false;
 }
 
-QPixmap GuiUtility::getAvatarFromImage(const QImage &image) {
+QPixmap GuiUtility::getAvatarFromImage(const QImage &image)
+{
     QPixmap originalPixmap = QPixmap::fromImage(image);
 
     // Draw mask
@@ -415,12 +434,15 @@ QPixmap GuiUtility::getAvatarFromImage(const QImage &image) {
     return originalPixmap;
 }
 
-QColor GuiUtility::getShadowColor(bool dialog) {
-    return darkTheme ? (dialog ? styleSheetBlackDialogShadowColor : styleSheetBlackWidgetShadowColor)
-                     : (dialog ? styleSheetWhiteDialogShadowColor : styleSheetWhiteWidgetShadowColor);
+QColor GuiUtility::getShadowColor(bool dialog)
+{
+    return darkTheme
+        ? (dialog ? styleSheetBlackDialogShadowColor : styleSheetBlackWidgetShadowColor)
+        : (dialog ? styleSheetWhiteDialogShadowColor : styleSheetWhiteWidgetShadowColor);
 }
 
-bool GuiUtility::isDarkTheme() {
+bool GuiUtility::isDarkTheme()
+{
     bool darkTheme = false;
     if (KDC::OldUtility::isMac()) {
         darkTheme = KDC::CommonUtility::hasDarkSystray();
@@ -431,7 +453,8 @@ bool GuiUtility::isDarkTheme() {
     return darkTheme;
 }
 
-QUrl GuiUtility::getUrlFromLocalPath(const QString &path) {
+QUrl GuiUtility::getUrlFromLocalPath(const QString &path)
+{
     QUrl url = QUrl();
     if (!path.isEmpty()) {
 #ifndef Q_OS_WIN
@@ -448,12 +471,14 @@ QUrl GuiUtility::getUrlFromLocalPath(const QString &path) {
     return url;
 }
 
-int GuiUtility::getQFontWeightFromQSSFontWeight(int weight) {
+int GuiUtility::getQFontWeightFromQSSFontWeight(int weight)
+{
     // QFont::Weight[0, 99] = font-weight[100, 900] / 9
     return weight / 9;
 }
 
-qint64 GuiUtility::folderSize(const QString &dirPath) {
+qint64 GuiUtility::folderSize(const QString &dirPath)
+{
     QDirIterator it(dirPath, QDirIterator::Subdirectories);
     qint64 total = 0;
     while (it.hasNext()) {
@@ -464,7 +489,8 @@ qint64 GuiUtility::folderSize(const QString &dirPath) {
     return total;
 }
 
-qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
+qint64 GuiUtility::folderDiskSize(const QString &dirPath)
+{
     qint64 total = 0;
 
 #ifdef _WIN32
@@ -481,7 +507,8 @@ qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
     return total;
 }
 
-bool GuiUtility::openFolder(const QString &dirPath) {
+bool GuiUtility::openFolder(const QString &dirPath)
+{
     if (!dirPath.isEmpty()) {
         QFileInfo fileInfo(dirPath);
         if (fileInfo.exists()) {
@@ -507,7 +534,8 @@ bool GuiUtility::openFolder(const QString &dirPath) {
     return true;
 }
 
-QWidget *GuiUtility::getTopLevelWidget(QWidget *widget) {
+QWidget *GuiUtility::getTopLevelWidget(QWidget *widget)
+{
     QWidget *topLevelWidget = widget;
     while (topLevelWidget->parentWidget() != nullptr) {
         topLevelWidget = topLevelWidget->parentWidget();
@@ -515,7 +543,8 @@ QWidget *GuiUtility::getTopLevelWidget(QWidget *widget) {
     return topLevelWidget;
 }
 
-void GuiUtility::forceUpdate(QWidget *widget) {
+void GuiUtility::forceUpdate(QWidget *widget)
+{
     // Update all child widgets.
     for (int i = 0; i < widget->children().size(); i++) {
         QObject *child = widget->children()[i];
@@ -530,7 +559,8 @@ void GuiUtility::forceUpdate(QWidget *widget) {
     }
 }
 
-void GuiUtility::invalidateLayout(QLayout *layout) {
+void GuiUtility::invalidateLayout(QLayout *layout)
+{
     // Recompute the given layout and all its child layouts.
     for (int i = 0; i < layout->count(); i++) {
         QLayoutItem *item = layout->itemAt(i);
@@ -545,7 +575,8 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
 }
 
 #ifdef Q_OS_LINUX
-bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
+bool GuiUtility::getLinuxDesktopType(QString &type, QString &version)
+{
     type = QProcessEnvironment::systemEnvironment().value("XDG_CURRENT_DESKTOP");
     if (type.contains("GNOME")) {
         QProcess process;
@@ -566,4 +597,56 @@ bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
 }
 #endif
 
-}  // namespace KDC
+GuiUtility::WidgetWithCustomToolTip::WidgetWithCustomToolTip(QWidget *parent)
+    : QWidget(parent)
+    , _customToolTip { nullptr }
+{
+}
+
+// Place the tooltip at the bottom middle of the widget.
+QPoint GuiUtility::WidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event)
+{
+    Q_UNUSED(event);
+    const QRect widgetRect = geometry();
+
+    return parentWidget()->mapToGlobal((widgetRect.bottomLeft() + widgetRect.bottomRight()) / 2.0);
+}
+
+bool GuiUtility::WidgetWithCustomToolTip::event(QEvent *event)
+{
+    static const int defaultToolTipDuration = 3000; // ms
+
+    if (event->type() == QEvent::ToolTip) {
+        if (!_customToolTipText.isEmpty()) {
+            const QPoint position = customToolTipPosition(static_cast<QHelpEvent *>(event));
+            delete _customToolTip;
+            _customToolTip = new CustomToolTip(_customToolTipText, position, defaultToolTipDuration, this);
+            _customToolTip->show();
+            event->ignore();
+
+            return true;
+        }
+    }
+
+    return QWidget::event(event);
+}
+
+void GuiUtility::WidgetWithCustomToolTip::leaveEvent(QEvent *event)
+{
+    delete _customToolTip;
+    _customToolTip = nullptr;
+
+    QWidget::leaveEvent(event);
+}
+
+GuiUtility::LargeWidgetWithCustomToolTip::LargeWidgetWithCustomToolTip(QWidget *parent)
+    : WidgetWithCustomToolTip(parent)
+{
+}
+
+// Place the tooltip at mouse pointer position.
+QPoint GuiUtility::LargeWidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event)
+{
+    return mapToGlobal(event->pos());
+}
+} // namespace KDC
