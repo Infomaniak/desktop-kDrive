@@ -113,33 +113,6 @@ void setEnabledRecursively(C *root, bool enabled) {
         setEnabledRecursively(child, enabled);
     }
 }
-
-class WidgetWithCustomToolTip : public QWidget {
-        Q_OBJECT
-
-    public:
-        explicit WidgetWithCustomToolTip(QWidget *parent);
-        void setCustomToolTipText(const QString &text) { _customToolTipText = text; }
-
-    private:
-        virtual QPoint customToolTipPosition(QHelpEvent *event);
-
-    protected:
-        CustomToolTip *_customToolTip;
-        QString _customToolTipText;
-        virtual bool event(QEvent *event) override;
-        virtual void leaveEvent(QEvent *event) override;
-};
-
-class LargeWidgetWithCustomToolTip : public WidgetWithCustomToolTip {
-        Q_OBJECT
-
-    public:
-        explicit LargeWidgetWithCustomToolTip(QWidget *parent);
-
-    private:
-        virtual QPoint customToolTipPosition(QHelpEvent *event) override;
-};
 }  // namespace GuiUtility
 
 }  // namespace KDC

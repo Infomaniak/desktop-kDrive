@@ -18,6 +18,7 @@
 
 #include "preferencesblocwidget.h"
 #include "guiutility.h"
+#include "widgetwithcustomtooltip.h"
 
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
@@ -39,7 +40,7 @@ static const int shadowBlurRadius = 20;
 Q_LOGGING_CATEGORY(lcPreferencesBlocWidget, "gui.preferencesblocwidget", QtInfoMsg)
 
 PreferencesBlocWidget::PreferencesBlocWidget(QWidget *parent)
-    : GuiUtility::LargeWidgetWithCustomToolTip(parent),
+    : LargeWidgetWithCustomToolTip(parent),
       _backgroundColor(QColor()),
       _actionIconColor(QColor()),
       _actionIconSize(QSize()),

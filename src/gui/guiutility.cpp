@@ -564,46 +564,4 @@ bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
     return true;
 }
 #endif
-
-GuiUtility::WidgetWithCustomToolTip::WidgetWithCustomToolTip(QWidget *parent) : QWidget(parent), _customToolTip{nullptr} {}
-
-// Place the tooltip at the bottom middle of the widget.
-QPoint GuiUtility::WidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event) {
-    Q_UNUSED(event);
-    const QRect widgetRect = geometry();
-
-    return parentWidget()->mapToGlobal((widgetRect.bottomLeft() + widgetRect.bottomRight()) / 2.0);
-}
-
-bool GuiUtility::WidgetWithCustomToolTip::event(QEvent *event) {
-    static const int defaultToolTipDuration = 3000;  // ms
-
-    if (event->type() == QEvent::ToolTip) {
-        if (!_customToolTipText.isEmpty()) {
-            const QPoint position = customToolTipPosition(static_cast<QHelpEvent *>(event));
-            delete _customToolTip;
-            _customToolTip = new CustomToolTip(_customToolTipText, position, defaultToolTipDuration, this);
-            _customToolTip->show();
-            event->ignore();
-
-            return true;
-        }
-    }
-
-    return QWidget::event(event);
-}
-
-void GuiUtility::WidgetWithCustomToolTip::leaveEvent(QEvent *event) {
-    delete _customToolTip;
-    _customToolTip = nullptr;
-
-    QWidget::leaveEvent(event);
-}
-
-GuiUtility::LargeWidgetWithCustomToolTip::LargeWidgetWithCustomToolTip(QWidget *parent) : WidgetWithCustomToolTip(parent) {}
-
-// Place the tooltip at mouse pointer position.
-QPoint GuiUtility::LargeWidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event) {
-    return mapToGlobal(event->pos());
-}
 }  // namespace KDC

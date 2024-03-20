@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include "guiutility.h"
+#include "widgetwithcustomtooltip.h"
 
 namespace KDC {
 
-class ParametersWidget : public GuiUtility::LargeWidgetWithCustomToolTip {
+class ParametersWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
 
     public:

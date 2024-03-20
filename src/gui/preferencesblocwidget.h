@@ -19,7 +19,7 @@
 #pragma once
 
 #include "clickablewidget.h"
-#include "guiutility.h"
+#include "widgetwithcustomtooltip.h"
 
 #include <QBoxLayout>
 #include <QColor>
@@ -32,7 +32,7 @@ namespace KDC {
 
 class CustomToolTip;
 
-class PreferencesBlocWidget : public GuiUtility::LargeWidgetWithCustomToolTip {
+class PreferencesBlocWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
 
         Q_PROPERTY(QColor background_color READ backgroundColor WRITE setBackgroundColor)
