@@ -58,38 +58,21 @@ std::string AbstractLoginJob::getContentType(bool &canceled) {
     return "application/x-www-form-urlencoded";
 }
 
-bool AbstractLoginJob::handleResponse(std::istream &is) {
-    std::string str(std::istreambuf_iterator<char>(is), {});
+bool AbstractLoginJob::handleResponse(std::istream &inputStream) {
+    std::string str(std::istreambuf_iterator<char>(inputStream), {});
     _apiToken = ApiToken(str);
 
     return true;
 }
 
-bool AbstractLoginJob::handleError(std::istream &is, const Poco::URI &uri) {
+bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &uri) {
     Poco::JSON::Parser jsonParser;
     Poco::JSON::Object::Ptr jsonError;
     try {
-        jsonError = jsonParser.parse(is).extract<Poco::JSON::Object::Ptr>();
+        jsonError = jsonParser.parse(inputStream).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
         LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
-
-        // Try to parse as string
-        std::stringstream errorStream;
-        errorStream << "Reply " << jobId();
-
-        std::string str(std::istreambuf_iterator<char>(is), {});
-        if (!str.empty()) {
-            errorStream << ", error: " << str.c_str();
-        }
-
-        errorStream << ", content type: " << _resHttp.getContentType().c_str();
-        errorStream << ", reason: " << _resHttp.getReason().c_str();
-
-        std::string errorStr = errorStream.str();
-#ifdef NDEBUG
-        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Login error", errorStr.c_str()));
-#endif
-        LOG_WARN(_logger, "Login error: " << errorStr.c_str());
+        Utility::logGenericServerError("Login error", inputStream, _resHttp);
 
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseApiErr;

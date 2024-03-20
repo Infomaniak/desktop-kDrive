@@ -32,6 +32,7 @@
 #include <list>
 
 #include <Poco/DOM/Document.h>
+#include <Poco/Net/HTTPResponse.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -69,6 +70,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
         static std::wstring formatIoError(const SyncPath &path, IoError ioError);
         static std::wstring formatSyncPath(const SyncPath &path);
+
+        static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+        static void logGenericServerError(const std::string &errorTitle, std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
 #ifdef _WIN32
         static bool isNtfs(const SyncPath &dirPath);

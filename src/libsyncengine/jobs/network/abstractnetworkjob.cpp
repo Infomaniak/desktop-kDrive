@@ -447,15 +447,17 @@ bool AbstractNetworkJob::receiveResponse(Poco::Net::HTTPSClientSession &session,
     return res;
 }
 
-bool AbstractNetworkJob::followRedirect(std::istream &is) {
+bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
     // Extract redirect URL
-    Poco::XML::InputSource inputSrc(is);
+    Poco::XML::InputSource inputSrc(inputStream);
     Poco::XML::DOMParser parser;
     Poco::AutoPtr<Poco::XML::Document> pDoc;
     try {
         pDoc = parser.parse(&inputSrc);
     } catch (Poco::Exception &exc) {
         LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+        Utility::logGenericServerError("Redirection error", inputStream, _resHttp);
+
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseApiErr;
         return false;
