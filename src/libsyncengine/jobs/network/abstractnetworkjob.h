@@ -72,7 +72,7 @@ class AbstractNetworkJob : public AbstractJob {
         std::string _data;
         HTTPResponse _resHttp;
         int _customTimeout = 0;
-        int _trials = 2;  // By defaut try again once if exception is thrown
+        int _trials = 2;  // By default try again once if exception is thrown
 
     private:
         struct TimeoutHelper {
