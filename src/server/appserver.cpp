@@ -718,6 +718,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_DRIVE_DEFAULTCOLOR: {
+            static const QColor driveDefaultColor(0x9F9F9F);
+
             resultStream << ExitCodeOk;
             resultStream << driveDefaultColor;
             break;
@@ -3749,10 +3751,10 @@ void AppServer::sendSyncDeletionFailed(int syncDbId) {
 
 void AppServer::sendDriveDeletionFailed(int driveDbId) {
     int id = 0;
-    const ArgsReader params(driveDbId)
+    const ArgsReader params(driveDbId);
 
-        CommServer::instance()
-            ->sendSignal(SIGNAL_NUM_DRIVE_DELETE_FAILED, params, id);
+    CommServer::instance()
+        ->sendSignal(SIGNAL_NUM_DRIVE_DELETE_FAILED, params, id);
 }
 
 

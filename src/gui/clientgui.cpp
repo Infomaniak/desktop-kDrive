@@ -1196,7 +1196,7 @@ void ClientGui::onRemoveDrive(int driveDbId) {
     msgBox.setDefaultButton(QMessageBox::No);
 
     if (msgBox.exec() == QMessageBox::Yes) {
-        emit driveBeingRemoved();
+        emit driveBeingRemoved();  // Lock drive-related GUI actions.
         try {
             ExitCode exitCode = GuiRequests::deleteDrive(driveDbId);
             if (exitCode != ExitCodeOk) {
@@ -1267,18 +1267,17 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
 }
 
 void ClientGui::onRemoveSync(int syncDbId) {
-    ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
+    const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
     if (exitCode != ExitCodeOk) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteSync for syncDbId=" << syncDbId;
-        return;
     }
 }
 
 void ClientGui::onSyncDeletionFailed(int syncDbId) {
     // Unlock sync GUI actions.
-    auto it = _syncInfoMap.find(syncDbId);
-    assert(it != _syncInfoMap.cend());
-    it->second.setIsBeingDeleted(false);
+    auto _syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    assert(_syncInfoMapIt != _syncInfoMap.cend());
+    _syncInfoMapIt->second.setIsBeingDeleted(false);
 
     emit syncListRefreshed();
     emit refreshStatusNeeded();

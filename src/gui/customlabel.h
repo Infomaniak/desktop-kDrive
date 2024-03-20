@@ -30,7 +30,7 @@ class CustomLabel : public QLabel {
     public:
         explicit CustomLabel(QWidget *parent = nullptr);
 
-        inline void setToolTip(const QString &text) { _toolTipText = text; }
+        void setToolTip(const QString &text) { _toolTipText = text; }
 
     private:
         QString _toolTipText;

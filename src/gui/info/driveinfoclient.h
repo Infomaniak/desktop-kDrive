@@ -99,7 +99,7 @@ class DriveInfoClient : public DriveInfo {
         qint64 _used;
         int _unresolvedErrorsCount;
         int _autoresolvedErrorsCount;
-        bool _isBeingDeleted;
+        bool _isBeingDeleted{false};
 
         // Synthesispopover attributes
         SynthesisStackedWidget _stackedWidgetIndex;

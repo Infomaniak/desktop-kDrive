@@ -21,6 +21,7 @@
 #include "clickablewidget.h"
 #include "widgetwithcustomtooltip.h"
 
+
 #include <QBoxLayout>
 #include <QColor>
 #include <QLabel>
@@ -45,6 +46,8 @@ class PreferencesBlocWidget : public LargeWidgetWithCustomToolTip {
         QBoxLayout *addLayout(QBoxLayout::Direction direction, bool noMargins = false);
         ClickableWidget *addActionWidget(QVBoxLayout **vLayout, bool noMargins = false);
         QFrame *addSeparator();
+        void setToolTipsEnabled(bool enabled);
+        void updateBloc();
 
     signals:
         void actionIconColorChanged();

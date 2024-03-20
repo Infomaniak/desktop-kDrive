@@ -175,7 +175,7 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
             return;
         }
 
-        updateItem(*syncInfoClient);
+        updateItem();
         setExpandButton();
         QString name = syncInfoClient->name();
         if (name.size() > folderNameMaxSize) {
@@ -191,20 +191,35 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
     }
 }
 
-void FolderItemWidget::updateItem(const SyncInfoClient &syncInfo) {
+bool FolderItemWidget::isBeingDeleted() const noexcept {
+    const auto syncInfoClient = getSyncInfoClient();
+    if (!syncInfoClient || syncInfoClient->isBeingDeleted()) return true;
+
+    const auto driveInfoClient = getDriveInfoClient();
+    if (!driveInfoClient || driveInfoClient->isBeingDeleted()) return true;
+
+    return false;
+}
+
+void FolderItemWidget::updateItem() {
     const auto userInfoClient = getUserInfoClient();
     if (!userInfoClient) {
         return;
     }
 
     // Lock GUI if a synchronization is being deleted
-    const bool enabled = !syncInfo.isBeingDeleted();
+    const bool enabled = !isBeingDeleted();
     GuiUtility::setEnabledRecursively(this, enabled);
     setToolTipsEnabled(enabled);
+    if (!enabled) {
+        _isExpanded = false;
+        setExpandButton();
+    }
 
     KDC::GuiUtility::StatusInfo statusInfo;
     statusInfo._disconnected = !userInfoClient->connected();
-    statusInfo._status = syncInfo.status();
+    const auto syncInfoClient = getSyncInfoClient();
+    statusInfo._status = syncInfoClient->status();
     _statusIconLabel->setPixmap(
         QIcon(KDC::GuiUtility::getDriveStatusIconPath(statusInfo)).pixmap(QSize(statusIconSize, statusIconSize)));
 }
@@ -276,7 +291,7 @@ SyncInfoClient *FolderItemWidget::getSyncInfoClient() const noexcept {
 }
 
 
-const UserInfoClient *FolderItemWidget::getUserInfoClient() const noexcept {
+DriveInfoClient *FolderItemWidget::getDriveInfoClient() const noexcept {
     const auto syncInfoClient = getSyncInfoClient();
     if (!syncInfoClient) {
         return nullptr;
@@ -288,10 +303,25 @@ const UserInfoClient *FolderItemWidget::getUserInfoClient() const noexcept {
         return nullptr;
     }
 
-    const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfoMapIt->second.accountDbId());
+    return &(driveInfoMapIt->second);
+}
+
+
+const UserInfoClient *FolderItemWidget::getUserInfoClient() const noexcept {
+    const auto syncInfoClient = getSyncInfoClient();
+    if (!syncInfoClient) {
+        return nullptr;
+    }
+
+    const auto &driveInfoClient = getDriveInfoClient();
+    if (!driveInfoClient) {
+        return nullptr;
+    }
+
+    const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfoClient->accountDbId());
     if (accountInfoMapIt == _gui->accountInfoMap().end()) {
         qCWarning(lcFolderItemWidget()) << "Account not found in accountInfoMap for accountDbId="
-                                        << driveInfoMapIt->second.accountDbId();
+                                        << driveInfoClient->accountDbId();
         return nullptr;
     }
 
@@ -451,7 +481,7 @@ void FolderItemWidget::retranslateUi() {
         return;
     }
 
-    setToolTipsEnabled(!syncInfoClient->isBeingDeleted());
+    setToolTipsEnabled(!isBeingDeleted());
 
     QString path = syncInfoClient->localPath();
     if (path.size() > folderPathMaxSize) {

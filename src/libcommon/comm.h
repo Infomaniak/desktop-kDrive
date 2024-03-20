@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <QColor>
 #include <QDataStream>
 #include <QIODevice>
 
@@ -41,8 +42,6 @@
 #define EXECUTE_ERROR_MSG "C/S function call timeout or error!"
 
 typedef enum { REQUEST = 0, REPLY, SIGNAL } MsgType;
-
-static const QColor driveDefaultColor(0x9F9F9F);
 
 typedef enum {
     REQUEST_NUM_LOGIN_REQUESTTOKEN = 1,

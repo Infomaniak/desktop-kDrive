@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "preferencesblocwidget.h"
 #include "guiutility.h"
-#include "widgetwithcustomtooltip.h"
+#include "folderitemwidget.h"
+#include "info/syncinfoclient.h"
+#include "preferencesblocwidget.h"
 
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
@@ -150,6 +151,27 @@ void PreferencesBlocWidget::onActionIconColorChanged() {
 
 void PreferencesBlocWidget::onActionIconSizeChanged() {
     setActionIcon();
+}
+
+void PreferencesBlocWidget::updateBloc() {
+    if (auto folderItemWidget = findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
+        if (!folderItemWidget->isBeingDeleted() && !isEnabled()) {
+            // Re-enable the folder bloc if the synchronization deletion failed.
+            setCustomToolTipText("");
+            setEnabled(true);
+        }
+        folderItemWidget->updateItem();
+    } else {
+        qCDebug(lcPreferencesBlocWidget) << "Empty folder bloc!";
+    }
+}
+
+void PreferencesBlocWidget::setToolTipsEnabled(bool enabled) {
+    if (auto folderItemWidget = findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
+        folderItemWidget->setToolTipsEnabled(enabled);
+    } else {
+        qCDebug(lcPreferencesBlocWidget) << "Empty folder bloc!";
+    }
 }
 
 }  // namespace KDC

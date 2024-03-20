@@ -291,36 +291,21 @@ void DrivePreferencesWidget::showErrorBanner(bool unresolvedErrors) {
 }
 
 void DrivePreferencesWidget::refreshStatus() {
-    if (_driveDbId) {
-        const auto driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId);
-        if (driveInfoMapIt != _gui->driveInfoMap().cend()) {
-            const auto &driveInfo = driveInfoMapIt->second;
-            if (!driveInfo.isBeingDeleted() && !isEnabled()) {
-                // Re-enable the drive preferences widget if the drive deletion failed.
-                setCustomToolTipText("");
-                GuiUtility::setEnabledRecursively(this, true);
-            }
-        }
+    if (!_driveDbId) return;
 
-        const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-        for (PreferencesBlocWidget *folderBloc : folderBlocList) {
-            FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
-            if (folderItemWidget) {
-                const auto syncInfoMapIt = _gui->syncInfoMap().find(folderItemWidget->syncDbId());
-                if (syncInfoMapIt != _gui->syncInfoMap().cend()) {
-                    // Update folder widget
-                    const auto &syncInfo = syncInfoMapIt->second;
-                    if (!syncInfo.isBeingDeleted() && !folderBloc->isEnabled()) {
-                        // Re-enable the folder bloc if the synchronization deletion failed.
-                        folderBloc->setCustomToolTipText("");
-                        folderBloc->setEnabled(true);
-                    }
-                    folderItemWidget->updateItem(syncInfo);
-                }
-            } else {
-                qCDebug(lcDrivePreferencesWidget) << "Empty folder bloc!";
-            }
+    const auto driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId);
+    if (driveInfoMapIt != _gui->driveInfoMap().cend()) {
+        const auto &driveInfo = driveInfoMapIt->second;
+        if (!driveInfo.isBeingDeleted() && !isEnabled()) {
+            // Re-enable the drive preferences widget if the drive deletion failed.
+            setCustomToolTipText("");
+            GuiUtility::setEnabledRecursively(this, true);
         }
+    }
+
+    const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
+    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+        folderBloc->updateBloc();
     }
 }
 
@@ -556,19 +541,18 @@ void DrivePreferencesWidget::updateFoldersBlocs() {
 
     if (_driveDbId) {
         int foldersNextBeginIndex = _foldersBeginIndex;
-        QList<int> syncDbIdList = QList<int>();
-        QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
+        QList<int> syncDbIdList;
+        const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
         for (PreferencesBlocWidget *folderBloc : folderBlocList) {
-            FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
-            if (folderItemWidget) {
-                auto syncInfoMapIt = _gui->syncInfoMap().find(folderItemWidget->syncDbId());
-                if (syncInfoMapIt == _gui->syncInfoMap().end() || syncInfoMapIt->second.driveDbId() != _driveDbId) {
+            if (FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
+                auto syncInfoClient = folderItemWidget->getSyncInfoClient();
+                if (!syncInfoClient || syncInfoClient->driveDbId() != _driveDbId) {
                     // Delete bloc when folder doesn't exist anymore or doesn't belong to the current drive
                     folderBloc->deleteLater();
                 } else {
                     // Update folder widget
-                    folderItemWidget->updateItem(syncInfoMapIt->second);
-                    syncDbIdList << syncInfoMapIt->first;
+                    folderItemWidget->updateItem();
+                    syncDbIdList << folderItemWidget->syncDbId();
                     int index = _mainVBox->indexOf(folderBloc) + 1;
                     if (foldersNextBeginIndex < index) {
                         foldersNextBeginIndex = index;
@@ -1070,11 +1054,19 @@ void DrivePreferencesWidget::onRemoveDrive(bool checked) {
 }
 
 void DrivePreferencesWidget::onDriveBeingRemoved() {
+    const auto driveInfoIt = _gui->driveInfoMap().find(_driveDbId);
+    assert(driveInfoIt != _gui->driveInfoMap().cend());
+    driveInfoIt->second.setIsBeingDeleted(true);
+
     // Lock all GUI drive-related actions during drive deletion.
     GuiUtility::setEnabledRecursively<QLayout>(_mainVBox, false);
     for (auto *child : findChildren<QWidget *>()) {
-        child->setToolTip("");
         GuiUtility::setEnabledRecursively<QWidget>(child, false);
+    }
+
+    const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
+    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+        folderBloc->setToolTipsEnabled(false);
     }
 
     setCustomToolTipText(tr("This drive is being deleted."));

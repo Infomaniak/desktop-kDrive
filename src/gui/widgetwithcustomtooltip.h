@@ -23,6 +23,7 @@
 #include <QString>
 #include <QWidget>
 
+class Event;
 class QHelpEvent;
 class QLayout;
 
