@@ -1041,14 +1041,13 @@ void DrivePreferencesWidget::onErrorAdded() {
 }
 
 void DrivePreferencesWidget::onRemoveDrive(bool checked) {
-    Q_UNUSED(checked);
+    Q_UNUSED(checked)
 
     const auto driveInfoIt = _gui->driveInfoMap().find(_driveDbId);
     if (driveInfoIt == _gui->driveInfoMap().end()) {
         qCWarning(lcDrivePreferencesWidget()) << "Drive not found in drive map for driveDbId=" << _driveDbId;
         return;
     }
-
 
     emit removeDrive(driveInfoIt->second.dbId());
 }

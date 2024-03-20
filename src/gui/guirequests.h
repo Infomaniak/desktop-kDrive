@@ -121,8 +121,6 @@ struct GuiRequests {
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);
         static ExitCode setLaunchOnStartup(bool enabled);
-        static ExitCode isSyncDeletionOnGoing(
-            int syncDbId);  // Asks the server wether the synchronization `syncDbId` is being deleted.
 };
 
 }  // namespace KDC
