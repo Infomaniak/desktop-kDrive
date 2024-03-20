@@ -86,9 +86,9 @@ bool AbstractLoginJob::handleError(std::istream &is, const Poco::URI &uri) {
         errorStream << ", reason: " << _resHttp.getReason().c_str();
 
         std::string errorStr = errorStream.str();
-        // #ifdef NDEBUG
+#ifdef NDEBUG
         sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Login error", errorStr.c_str()));
-        // #endif
+#endif
         LOG_WARN(_logger, "Login error: " << errorStr.c_str());
 
         _exitCode = ExitCodeBackError;
