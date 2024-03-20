@@ -71,7 +71,26 @@ bool AbstractLoginJob::handleError(std::istream &is, const Poco::URI &uri) {
     try {
         jsonError = jsonParser.parse(is).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
-        LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+        LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+
+        // Try to parse as string
+        std::stringstream errorStream;
+        errorStream << "Reply " << jobId();
+
+        std::string str(std::istreambuf_iterator<char>(is), {});
+        if (!str.empty()) {
+            errorStream << ", error: " << str.c_str();
+        }
+
+        errorStream << ", content type: " << _resHttp.getContentType().c_str();
+        errorStream << ", reason: " << _resHttp.getReason().c_str();
+
+        std::string errorStr = errorStream.str();
+        // #ifdef NDEBUG
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Login error", errorStr.c_str()));
+        // #endif
+        LOG_WARN(_logger, "Login error: " << errorStr.c_str());
+
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseApiErr;
         return false;
