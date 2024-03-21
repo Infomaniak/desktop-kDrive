@@ -75,8 +75,6 @@
 
 namespace KDC {
 
-creatingerror
-
 SyncPath CommonUtility::_workingDirPath = "";
 
 static const QString englishCode = "en";
