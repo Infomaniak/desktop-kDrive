@@ -32,9 +32,6 @@
 #include <log4cplus/logger.h>
 #include <log4cplus/loggingmacros.h>
 
-using namespace Poco;
-using namespace Poco::Net;
-
 namespace KDC {
 
 class AbstractJob;
@@ -44,7 +41,7 @@ class AbstractNetworkJob : public AbstractJob {
         AbstractNetworkJob();
 
         bool hasHttpError();
-        inline HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
+        inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         virtual void abort() override;
 
     protected:
@@ -70,9 +67,9 @@ class AbstractNetworkJob : public AbstractJob {
 
         std::string _httpMethod;
         std::string _data;
-        HTTPResponse _resHttp;
+        Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;
-        int _trials = 2;  // By defaut try again once if exception is thrown
+        int _trials = 2;  // By default, try again once if exception is thrown
 
     private:
         struct TimeoutHelper {
@@ -109,9 +106,9 @@ class AbstractNetworkJob : public AbstractJob {
         Poco::Net::HTTPSClientSession *_session = nullptr;
         std::mutex _mutexSession;
 
-        Poco::Net::HTTPSClientSession createSession(const URI &uri);
-        bool sendRequest(Poco::Net::HTTPSClientSession &session, const URI &uri);
-        bool receiveResponse(Poco::Net::HTTPSClientSession &session, const URI &uri);
+        Poco::Net::HTTPSClientSession createSession(const Poco::URI &uri);
+        bool sendRequest(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
+        bool receiveResponse(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
         bool followRedirect(std::istream &is);
         bool processSocketError(Poco::Net::HTTPSClientSession &session, int err = 0);
         bool ioOrLogicalErrorOccurred(std::ios &stream);

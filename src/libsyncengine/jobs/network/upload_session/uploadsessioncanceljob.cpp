@@ -32,8 +32,8 @@ std::string UploadSessionCancelJob::getSpecificUrl() {
     return str;
 }
 
-bool UploadSessionCancelJob::handleError(std::istream &is, const URI &uri) {
-    if (_resHttp.getStatus() == HTTPResponse::HTTP_BAD_REQUEST) {
+bool UploadSessionCancelJob::handleError(std::istream &is, const Poco::URI &uri) {
+    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_BAD_REQUEST) {
         _exitCode = ExitCodeBackError;
         return false;
     }
