@@ -536,22 +536,23 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
     QList<int> syncDbIdList;
     const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
     for (PreferencesBlocWidget *folderBloc : folderBlocList) {
-        if (FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
-            auto syncInfoClient = folderItemWidget->getSyncInfoClient();
-            if (!syncInfoClient || syncInfoClient->driveDbId() != _driveDbId) {
-                // Delete bloc when folder doesn't exist anymore or doesn't belong to the current drive
-                folderBloc->deleteLater();
-            } else {
-                // Update folder widget
-                folderItemWidget->updateItem();
-                syncDbIdList << folderItemWidget->syncDbId();
-                int index = _mainVBox->indexOf(folderBloc) + 1;
-                if (foldersNextBeginIndex < index) {
-                    foldersNextBeginIndex = index;
-                }
-            }
-        } else {
+        FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
+        if (!folderItemWidget) {
             qCDebug(lcDrivePreferencesWidget) << "Empty folder bloc!";
+            continue;
+        }
+        if (auto syncInfoClient = folderItemWidget->getSyncInfoClient();
+            !syncInfoClient || syncInfoClient->driveDbId() != _driveDbId) {
+            // Delete bloc when folder doesn't exist anymore or doesn't belong to the current drive
+            folderBloc->deleteLater();
+        } else {
+            // Update folder widget
+            folderItemWidget->updateItem();
+            syncDbIdList << folderItemWidget->syncDbId();
+            const int index = _mainVBox->indexOf(folderBloc) + 1;
+            if (foldersNextBeginIndex < index) {
+                foldersNextBeginIndex = index;
+            }
         }
     }
 
