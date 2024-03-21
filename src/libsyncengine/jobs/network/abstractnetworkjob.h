@@ -109,9 +109,9 @@ class AbstractNetworkJob : public AbstractJob {
         Poco::Net::HTTPSClientSession *_session = nullptr;
         std::mutex _mutexSession;
 
-        Poco::Net::HTTPSClientSession createSession(const URI &uri);
-        bool sendRequest(Poco::Net::HTTPSClientSession &session, const URI &uri);
-        bool receiveResponse(Poco::Net::HTTPSClientSession &session, const URI &uri);
+        Poco::Net::HTTPSClientSession createSession(const Poco::URI &uri);
+        bool sendRequest(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
+        bool receiveResponse(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
         bool followRedirect(std::istream &inputStream);
         bool processSocketError(Poco::Net::HTTPSClientSession &session, int err = 0);
         bool ioOrLogicalErrorOccurred(std::ios &stream);
