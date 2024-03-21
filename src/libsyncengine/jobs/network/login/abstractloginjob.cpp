@@ -58,20 +58,22 @@ std::string AbstractLoginJob::getContentType(bool &canceled) {
     return "application/x-www-form-urlencoded";
 }
 
-bool AbstractLoginJob::handleResponse(std::istream &is) {
-    std::string str(std::istreambuf_iterator<char>(is), {});
+bool AbstractLoginJob::handleResponse(std::istream &inputStream) {
+    std::string str(std::istreambuf_iterator<char>(inputStream), {});
     _apiToken = ApiToken(str);
 
     return true;
 }
 
-bool AbstractLoginJob::handleError(std::istream &is, const Poco::URI &uri) {
+bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &uri) {
     Poco::JSON::Parser jsonParser;
     Poco::JSON::Object::Ptr jsonError;
     try {
-        jsonError = jsonParser.parse(is).extract<Poco::JSON::Object::Ptr>();
+        jsonError = jsonParser.parse(inputStream).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
-        LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+        LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+        Utility::logGenericServerError("Login error", inputStream, _resHttp);
+
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseApiErr;
         return false;

@@ -199,6 +199,8 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
         } catch (Poco::Exception &exc) {
             LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON error: "
                                          << Utility::s2ws(exc.displayText()).c_str());
+            Utility::logGenericServerError("Request error", ss, _resHttp);
+
             _exitCode = ExitCodeBackError;
             _exitCause = ExitCauseApiErr;
             return false;
@@ -368,6 +370,7 @@ bool AbstractTokenNetworkJob::handleJsonResponse(std::string &str) {
         _jsonRes = jsonParser.parse(str).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
         LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseApiErr;
         return false;

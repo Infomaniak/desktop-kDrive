@@ -48,18 +48,18 @@ class AbstractNetworkJob : public AbstractJob {
         virtual void runJob() noexcept override;
         virtual void addRawHeader(const std::string &key, const std::string &value) final;
 
-        virtual bool handleResponse(std::istream &is) = 0;
+        virtual bool handleResponse(std::istream &inputStream) = 0;
         /**
          * Return true if the error has been automatically resolved (e.g.: token expired)
          * Otherwise return false
          */
-        virtual bool handleError(std::istream &is, const Poco::URI &uri) = 0;
+        virtual bool handleError(std::istream &inputStream, const Poco::URI &uri) = 0;
 
         virtual std::string getSpecificUrl() = 0;
         virtual std::string getUrl() = 0;
 
-        void unzip(std::istream &is, std::stringstream &ss);
-        void getStringFromStream(std::istream &is, std::string &res);
+        void unzip(std::istream &inputStream, std::stringstream &ss);
+        void getStringFromStream(std::istream &inputStream, std::string &res);
 
         const std::string errorText(Poco::Exception const &e) const;
 
@@ -106,10 +106,10 @@ class AbstractNetworkJob : public AbstractJob {
         Poco::Net::HTTPSClientSession *_session = nullptr;
         std::mutex _mutexSession;
 
-        Poco::Net::HTTPSClientSession createSession(const Poco::URI &uri);
-        bool sendRequest(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
-        bool receiveResponse(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
-        bool followRedirect(std::istream &is);
+        Poco::Net::HTTPSClientSession createSession(const URI &uri);
+        bool sendRequest(Poco::Net::HTTPSClientSession &session, const URI &uri);
+        bool receiveResponse(Poco::Net::HTTPSClientSession &session, const URI &uri);
+        bool followRedirect(std::istream &inputStream);
         bool processSocketError(Poco::Net::HTTPSClientSession &session, int err = 0);
         bool ioOrLogicalErrorOccurred(std::ios &stream);
 

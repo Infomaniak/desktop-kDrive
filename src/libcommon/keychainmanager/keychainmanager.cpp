@@ -49,7 +49,7 @@ KeyChainManager::KeyChainManager(bool testing) : _testing(testing), _testingMap(
 bool KeyChainManager::writeDummyTest() {
     // First, we check that we can write into the keychain
     if (!KeyChainManager::instance()->writeToken(dummyKeychainKey, dummyData)) {
-        std::string error = "Test writting into the keychain failed. Token not refreshed.";
+        std::string error = "Test writing into the keychain failed. Token not refreshed.";
         LOG_WARN(Log::instance()->getLogger(), error.c_str());
 #ifdef NDEBUG
         sentry_capture_event(
@@ -76,7 +76,7 @@ bool KeyChainManager::writeToken(const std::string &keychainKey, const std::stri
     keychain::setPassword(PACKAGE, SERVICE, keychainKey, rawData, error);
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Failed to save authentification info to keychain: " << error.code << " - " << error.message.c_str());
+                  "Failed to save authentication info to keychain: " << error.code << " - " << error.message.c_str());
 
 #ifdef NDEBUG
         sentry_capture_event(
@@ -148,7 +148,7 @@ bool KeyChainManager::deleteToken(const std::string &keychainKey) {
     keychain::deletePassword(PACKAGE, SERVICE, keychainKey, error);
     if (error) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(),
-                  "Failed to delete authentification info to keychain: " << error.code << " - " << error.message.c_str());
+                  "Failed to delete authentication info to keychain: " << error.code << " - " << error.message.c_str());
 
 #ifdef NDEBUG
         sentry_capture_event(

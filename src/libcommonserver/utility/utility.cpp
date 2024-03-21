@@ -253,6 +253,35 @@ std::wstring Utility::formatIoError(const SyncPath &path, IoError ioError) {
     return ss.str();
 }
 
+std::string Utility::formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse) {
+    std::stringstream errorStream;
+    errorStream << "Error in reply";
+
+    // Try to parse as string
+    if (std::string str(std::istreambuf_iterator<char>(inputStream), {}); !str.empty()) {
+        errorStream << ", error: " << str.c_str();
+    }
+
+    errorStream << ", content type: " << httpResponse.getContentType().c_str();
+    errorStream << ", reason: " << httpResponse.getReason().c_str();
+
+    std::string encoding = httpResponse.get("Content-Encoding", "");
+    if (!encoding.empty()) {
+        errorStream << ", encoding: " << encoding.c_str();
+    }
+
+    return errorStream.str();   // str() return a copy of the underlying string
+}
+
+void Utility::logGenericServerError(const std::string &errorTitle, std::istream &inputStream,
+                                    const Poco::Net::HTTPResponse &httpResponse) {
+    std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
+#ifdef NDEBUG
+    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, errorTitle.c_str(), errorMsg.c_str()));
+#endif
+    LOG_WARN(_logger, errorTitle.c_str() << ": " << errorMsg.c_str());
+}
+
 #ifdef _WIN32
 static std::unordered_map<std::string, bool> rootFsTypeMap;
 
