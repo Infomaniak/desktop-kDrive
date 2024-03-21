@@ -1,0 +1,23 @@
+name: MacOS desktop CI
+
+on:
+  pull_request:
+
+concurrency:
+  group: macos
+  cancel-in-progress: true
+
+jobs:
+  instrumentation-tests:
+    # Testing to run on current draft PR
+    if: github.event.pull_request.draft = true
+    runs-on: [ self-hosted, tests ]
+
+		steps:
+			- name: Checkout the code
+        uses: actions/checkout@v4.1.1
+        with:
+          submodules: recursive
+
+      - name: Test pwd
+        run : pwd
