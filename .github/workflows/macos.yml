@@ -14,9 +14,9 @@ jobs:
 
     steps:
       - name: Checkout the code
-      - uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v4.1.1
         with:
           submodules: recursive
 
       - name: Test pwd
-      - run : pwd
+        run : pwd
