@@ -78,7 +78,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, bool returnJso
     : AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, returnJson) {}
 
 bool AbstractTokenNetworkJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) {
-    if (getStatusCode() == HTTPResponse::HTTP_OK) {
+    if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
         return false;
     }
 
@@ -96,7 +96,7 @@ ExitCause AbstractTokenNetworkJob::getExitCause() {
         if (!_errorCode.empty()) {
             return ExitCauseApiErr;
         } else {
-            if (getStatusCode() == HTTPResponse::HTTP_FORBIDDEN) {
+            if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
                 return ExitCauseHttpErrForbidden;
             } else {
                 return ExitCauseHttpErr;
@@ -143,7 +143,7 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
 }
 
 bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == HTTPResponse::HTTP_UNAUTHORIZED) {
+    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED) {
         // There is no longer any refresh of the token since v3.5.6
         // This code is only used when updating from a version < v3.5.6
         std::string token = loadToken();
@@ -173,7 +173,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
         }
     }
 
-    if (_resHttp.getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
+    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseNotFound;
         return false;

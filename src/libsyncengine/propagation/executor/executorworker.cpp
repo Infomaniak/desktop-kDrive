@@ -1666,8 +1666,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         return true;
     } else if (job->exitCode() != ExitCodeOk) {
         auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
-        if (networkJob && (networkJob->getStatusCode() == HTTPResponse::HTTP_FORBIDDEN ||
-                           networkJob->getStatusCode() == HTTPResponse::HTTP_CONFLICT)) {
+        if (networkJob && (networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+                           networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT)) {
             handleForbiddenAction(syncOp, relativeLocalPath);
         } else if (job->exitCode() == ExitCodeSystemError &&
                    (job->exitCause() == ExitCauseFileAccessError || job->exitCause() == ExitCauseMoveToTrashFailed)) {

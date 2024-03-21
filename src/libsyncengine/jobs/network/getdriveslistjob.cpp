@@ -24,7 +24,7 @@ GetDrivesListJob::GetDrivesListJob(int userDbId) : AbstractTokenNetworkJob(ApiDr
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
-void GetDrivesListJob::setQueryParameters(URI &uri, bool &canceled) {
+void GetDrivesListJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     uri.addQueryParameter("roles[]", "admin");
     uri.addQueryParameter("roles[]", "user");
     canceled = false;

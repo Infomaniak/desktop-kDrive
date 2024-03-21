@@ -1521,12 +1521,13 @@ ExitCode ServerRequests::loadDriveInfo(Drive &drive, Account &account, bool &upd
         return exitCode;
     }
 
-    HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
-    if (httpStatus == HTTPResponse::HTTPStatus::HTTP_FORBIDDEN || httpStatus == HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
+    Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
+    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN ||
+        httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to get drive info for driveDbId=" << drive.dbId());
         drive.setAccessDenied(true);
         return ExitCodeOk;
-    } else if (httpStatus != HTTPResponse::HTTPStatus::HTTP_OK) {
+    } else if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Network error in GetInfoDriveJob::runSynchronously for driveDbId=" << drive.dbId());
         return ExitCodeNetworkError;
@@ -1625,12 +1626,12 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
         return exitCode;
     }
 
-    HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
-    if (httpStatus == HTTPResponse::HTTPStatus::HTTP_FORBIDDEN || httpStatus == HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
+    Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
+    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN || httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Unable to get thumbnail for driveDbId=" << driveDbId << " and nodeId=" << nodeId.c_str());
         return ExitCodeDataError;
-    } else if (httpStatus != HTTPResponse::HTTPStatus::HTTP_OK) {
+    } else if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         LOG_WARN(Log::instance()->getLogger(), "Network error in GetThumbnailJob::runSynchronously for driveDbId="
                                                    << driveDbId << " and nodeId=" << nodeId.c_str());
         return ExitCodeNetworkError;
@@ -1665,11 +1666,11 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
         return exitCode;
     }
 
-    HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
-    if (httpStatus == HTTPResponse::HTTPStatus::HTTP_FORBIDDEN || httpStatus == HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
+    Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
+    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN || httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to get user info for userId=" << user.userId());
         return ExitCodeDataError;
-    } else if (httpStatus != HTTPResponse::HTTPStatus::HTTP_OK) {
+    } else if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
         LOG_WARN(Log::instance()->getLogger(), "Network error in GetInfoUserJob::runSynchronously for userId=" << user.userId());
         return ExitCodeNetworkError;
     }
