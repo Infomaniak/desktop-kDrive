@@ -9,7 +9,7 @@ concurrency:
 
 jobs:
   test-building:
-    if: github.event.pull_request.draft == true
+    if: github.event.pull_request.draft == false
     runs-on: [ self-hosted, tests ]
 
     steps:
