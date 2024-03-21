@@ -42,16 +42,16 @@ static const int folderPathMaxSize = 50;
 
 Q_LOGGING_CATEGORY(lcFolderItemWidget, "gui.folderitemwidget", QtInfoMsg)
 
-enum MenuAction : char { LiteSyncOn, LiteSyncOff, Pause, Remove, Resume };
+enum class MenuAction : char { LiteSyncOn, LiteSyncOff, Pause, Remove, Resume };
 
 QString menuIconPath(MenuAction action) {
     static const QString actionIconsPath = ":/client/resources/icons/actions/";
     static const std::unordered_map<MenuAction, QString> iconPathsMap{
-        {LiteSyncOn, actionIconsPath + "litesync-on.svg"},
-        {LiteSyncOff, actionIconsPath + "litesync-off.svg"},
-        {Pause, actionIconsPath + "pause.svg"},
-        {Remove, actionIconsPath + "delete.svg"},
-        {Resume, actionIconsPath + "start.svg"},
+        {MenuAction::LiteSyncOn, actionIconsPath + "litesync-on.svg"},
+        {MenuAction::LiteSyncOff, actionIconsPath + "litesync-off.svg"},
+        {MenuAction::Pause, actionIconsPath + "pause.svg"},
+        {MenuAction::Remove, actionIconsPath + "delete.svg"},
+        {MenuAction::Resume, actionIconsPath + "start.svg"},
     };
 
     return iconPathsMap.at(action);
@@ -59,22 +59,7 @@ QString menuIconPath(MenuAction action) {
 
 
 FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : QWidget(parent),
-      _gui(gui),
-      _syncDbId(syncDbId),
-      _expandButton(nullptr),
-      _menuButton(nullptr),
-      _statusIconLabel(nullptr),
-      _nameLabel(nullptr),
-      _smartSyncIconLabel(nullptr),
-      _updateWidget(nullptr),
-      _isExpanded(false),
-      _smartSyncAvailable(false),
-      _synchroLabel(nullptr),
-      _saveLabel(nullptr),
-      _cancelButton(nullptr),
-      _validateButton(nullptr),
-      _menu(nullptr) {
+    : QWidget(parent), _gui(gui), _syncDbId(syncDbId) {
     QHBoxLayout *mainLayout = new QHBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(hSpacing);
@@ -192,11 +177,8 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
 }
 
 bool FolderItemWidget::isBeingDeleted() const noexcept {
-    const auto syncInfoClient = getSyncInfoClient();
-    if (!syncInfoClient || syncInfoClient->isBeingDeleted()) return true;
-
-    const auto driveInfoClient = getDriveInfoClient();
-    if (!driveInfoClient || driveInfoClient->isBeingDeleted()) return true;
+    if (const auto syncInfoClient = getSyncInfoClient(); !syncInfoClient || syncInfoClient->isBeingDeleted()) return true;
+    if (const auto driveInfoClient = getDriveInfoClient(); !driveInfoClient || driveInfoClient->isBeingDeleted()) return true;
 
     return false;
 }
@@ -241,9 +223,9 @@ void FolderItemWidget::setSmartSyncActivated(bool value) {
     _smartSyncActivated = value;
 
     static const QPixmap liteSynOnPixmap =
-        KDC::GuiUtility::getIconWithColor(menuIconPath(LiteSyncOn), QColor(16, 117, 187)).pixmap(QSize(18, 18));
+        KDC::GuiUtility::getIconWithColor(menuIconPath(MenuAction::LiteSyncOn), QColor(16, 117, 187)).pixmap(QSize(18, 18));
     static const QPixmap liteSynOffPixmap =
-        KDC::GuiUtility::getIconWithColor(menuIconPath(LiteSyncOff), QColor(159, 159, 159)).pixmap(QSize(18, 18));
+        KDC::GuiUtility::getIconWithColor(menuIconPath(MenuAction::LiteSyncOff), QColor(159, 159, 159)).pixmap(QSize(18, 18));
 
     _smartSyncIconLabel->setPixmap(value ? liteSynOnPixmap : liteSynOffPixmap);
 
@@ -308,12 +290,11 @@ DriveInfoClient *FolderItemWidget::getDriveInfoClient() const noexcept {
 
 
 const UserInfoClient *FolderItemWidget::getUserInfoClient() const noexcept {
-    const auto syncInfoClient = getSyncInfoClient();
-    if (!syncInfoClient) {
+    if (const auto syncInfoClient = getSyncInfoClient(); !syncInfoClient) {
         return nullptr;
     }
 
-    const auto &driveInfoClient = getDriveInfoClient();
+    const auto driveInfoClient = getDriveInfoClient();
     if (!driveInfoClient) {
         return nullptr;
     }
@@ -356,7 +337,7 @@ void FolderItemWidget::onMenuButtonClicked() {
 #else
                 tr("Activate Lite Sync (Beta)"));
 #endif
-            activateLitesyncMenuItemWidget->setLeftIcon(menuIconPath(LiteSyncOn));
+            activateLitesyncMenuItemWidget->setLeftIcon(menuIconPath(MenuAction::LiteSyncOn));
             activateLitesyncAction->setDefaultWidget(activateLitesyncMenuItemWidget);
             activateLitesyncAction->setDisabled(!userInfoClient->connected());
             connect(activateLitesyncAction, &QWidgetAction::triggered, this, &FolderItemWidget::onActivateLitesyncTriggered);
@@ -364,7 +345,7 @@ void FolderItemWidget::onMenuButtonClicked() {
         } else {
             QWidgetAction *deactivateLitesyncAction = new QWidgetAction(this);
             MenuItemWidget *deactivateLitesyncMenuItemWidget = new MenuItemWidget(tr("Deactivate Lite Sync"));
-            deactivateLitesyncMenuItemWidget->setLeftIcon(menuIconPath(LiteSyncOff));
+            deactivateLitesyncMenuItemWidget->setLeftIcon(menuIconPath(MenuAction::LiteSyncOff));
             deactivateLitesyncAction->setDefaultWidget(deactivateLitesyncMenuItemWidget);
             deactivateLitesyncAction->setDisabled(!userInfoClient->connected());
             connect(deactivateLitesyncAction, &QWidgetAction::triggered, this, &FolderItemWidget::onDeactivateLitesyncTriggered);
@@ -375,7 +356,7 @@ void FolderItemWidget::onMenuButtonClicked() {
     if (KDC::GuiUtility::getPauseActionAvailable(syncInfoClient->status())) {
         QWidgetAction *pauseAction = new QWidgetAction(this);
         MenuItemWidget *pauseMenuItemWidget = new MenuItemWidget(tr("Pause synchronization"));
-        pauseMenuItemWidget->setLeftIcon(menuIconPath(Pause));
+        pauseMenuItemWidget->setLeftIcon(menuIconPath(MenuAction::Pause));
         pauseAction->setDefaultWidget(pauseMenuItemWidget);
         pauseAction->setDisabled(!userInfoClient->connected());
         connect(pauseAction, &QWidgetAction::triggered, this, &FolderItemWidget::onPauseTriggered);
@@ -385,7 +366,7 @@ void FolderItemWidget::onMenuButtonClicked() {
     if (KDC::GuiUtility::getResumeActionAvailable(syncInfoClient->status())) {
         QWidgetAction *resumeAction = new QWidgetAction(this);
         MenuItemWidget *resumeMenuItemWidget = new MenuItemWidget(tr("Resume synchronization"));
-        resumeMenuItemWidget->setLeftIcon(menuIconPath(Resume));
+        resumeMenuItemWidget->setLeftIcon(menuIconPath(MenuAction::Resume));
         resumeAction->setDefaultWidget(resumeMenuItemWidget);
         resumeAction->setDisabled(!userInfoClient->connected());
         connect(resumeAction, &QWidgetAction::triggered, this, &FolderItemWidget::onResumeTriggered);
@@ -396,7 +377,7 @@ void FolderItemWidget::onMenuButtonClicked() {
 
     QWidgetAction *unsyncAction = new QWidgetAction(this);
     MenuItemWidget *unsyncMenuItemWidget = new MenuItemWidget(tr("Remove synchronization"));
-    unsyncMenuItemWidget->setLeftIcon(menuIconPath(Remove));
+    unsyncMenuItemWidget->setLeftIcon(menuIconPath(MenuAction::Remove));
     unsyncAction->setDefaultWidget(unsyncMenuItemWidget);
     connect(unsyncAction, &QWidgetAction::triggered, this, &FolderItemWidget::onUnsyncTriggered);
     _menu->addAction(unsyncAction);
@@ -442,8 +423,7 @@ void FolderItemWidget::onResumeTriggered() {
 }
 
 void FolderItemWidget::onUnsyncTriggered() {
-    auto syncInfoClient = getSyncInfoClient();
-    if (syncInfoClient) {
+    if (auto syncInfoClient = getSyncInfoClient(); syncInfoClient) {
         syncInfoClient->setIsBeingDeleted(true);
     }
     emit unSync(_syncDbId);

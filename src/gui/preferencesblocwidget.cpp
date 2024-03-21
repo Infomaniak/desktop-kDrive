@@ -18,7 +18,7 @@
 
 #include "guiutility.h"
 #include "folderitemwidget.h"
-#include "info/syncinfoclient.h"
+#include "guiutility.h"
 #include "preferencesblocwidget.h"
 
 #include <QFrame>
@@ -40,12 +40,7 @@ static const int shadowBlurRadius = 20;
 
 Q_LOGGING_CATEGORY(lcPreferencesBlocWidget, "gui.preferencesblocwidget", QtInfoMsg)
 
-PreferencesBlocWidget::PreferencesBlocWidget(QWidget *parent)
-    : LargeWidgetWithCustomToolTip(parent),
-      _backgroundColor(QColor()),
-      _actionIconColor(QColor()),
-      _actionIconSize(QSize()),
-      _layout(nullptr) {
+PreferencesBlocWidget::PreferencesBlocWidget(QWidget *parent) : LargeWidgetWithCustomToolTip(parent) {
     setContentsMargins(0, 0, 0, 0);
 
     _layout = new QVBoxLayout();
@@ -166,11 +161,21 @@ void PreferencesBlocWidget::updateBloc() {
     }
 }
 
-void PreferencesBlocWidget::setToolTipsEnabled(bool enabled) {
+void PreferencesBlocWidget::setToolTipsEnabled(bool enabled) const {
     if (auto folderItemWidget = findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
         folderItemWidget->setToolTipsEnabled(enabled);
     } else {
         qCDebug(lcPreferencesBlocWidget) << "Empty folder bloc!";
+    }
+}
+
+void PreferencesBlocWidget::setEnabledRecursively(bool enabled) {
+    GuiUtility::setEnabledRecursively(this, enabled);
+    setToolTipsEnabled(enabled);
+    if (enabled) {
+        setCustomToolTipText("");
+    } else {
+        setCustomToolTipText(tr("This synchronization is being deleted."));
     }
 }
 

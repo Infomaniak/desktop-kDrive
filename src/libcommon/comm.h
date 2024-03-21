@@ -161,7 +161,7 @@ typedef enum {
 
 struct ArgsReader {
         template <class... Args>
-        ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
+        explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
             read(args...);
         }
         template <class T>
@@ -173,13 +173,13 @@ struct ArgsReader {
             stream << p;
             read(args...);
         }
-        operator QByteArray() const { return params; }
+        explicit operator QByteArray() const { return params; }
         QByteArray params;
         QDataStream stream;
 };
 
 struct ArgsWriter {
-        ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
+        explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
         template <class T>
         void write(T &r) {
             stream >> r;

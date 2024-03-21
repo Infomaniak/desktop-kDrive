@@ -375,6 +375,23 @@ void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
         stopSyncTask(syncDbId);
     }
 }
+
+void AppServer::deleteAccount(int accountDbId) {
+    std::vector<Drive> driveList;
+    if (!ParmsDb::instance()->selectAllDrives(accountDbId, driveList)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
+        addError(Error(ERRID, ExitCodeDbError, ExitCauseUnknown));
+    } else if (driveList.empty()) {
+        ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
+        if (exitCode == ExitCodeOk) {
+            sendAccountRemoved(accountDbId);
+        } else {
+            LOG_WARN(_logger, "Error in Requests::deleteAccount : " << exitCode);
+            addError(Error(ERRID, exitCode, ExitCauseUnknown));
+        }
+    }
+}
+
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
@@ -768,9 +785,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 AppServer::stopAllSyncsTask(syncDbIdList);
 
                 // Delete drive from DB
-                // ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
-                ExitCode exitCode = ExitCodeUnknown;
-
+                const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
                 if (exitCode == ExitCodeOk) {
                     sendDriveRemoved(driveDbId);
                 } else {
@@ -779,20 +794,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     sendDriveDeletionFailed(driveDbId);
                 }
 
-                // Delete the account if not used anymore
-                std::vector<Drive> driveList;
-                if (!ParmsDb::instance()->selectAllDrives(accountDbId, driveList)) {
-                    LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
-                    addError(Error(ERRID, ExitCodeDbError, ExitCauseUnknown));
-                } else if (driveList.empty()) {
-                    exitCode = ServerRequests::deleteAccount(accountDbId);
-                    if (exitCode == ExitCodeOk) {
-                        sendAccountRemoved(accountDbId);
-                    } else {
-                        LOG_WARN(_logger, "Error in Requests::deleteAccount : " << exitCode);
-                        addError(Error(ERRID, exitCode, ExitCauseUnknown));
-                    }
-                }
+                deleteAccount(accountDbId);
             });
 
             break;
@@ -3743,7 +3745,7 @@ void AppServer::sendSyncRemoved(int syncDbId) {
 
 void AppServer::sendSyncDeletionFailed(int syncDbId) {
     int id = 0;
-    const ArgsReader params(syncDbId);
+    const auto params = QByteArray(ArgsReader(syncDbId));
 
     CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_DELETE_FAILED, params, id);
 }
@@ -3751,7 +3753,7 @@ void AppServer::sendSyncDeletionFailed(int syncDbId) {
 
 void AppServer::sendDriveDeletionFailed(int driveDbId) {
     int id = 0;
-    const ArgsReader params(driveDbId);
+    const auto params = QByteArray(ArgsReader(driveDbId));
 
     CommServer::instance()
         ->sendSignal(SIGNAL_NUM_DRIVE_DELETE_FAILED, params, id);

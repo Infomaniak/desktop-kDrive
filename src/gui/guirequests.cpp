@@ -720,7 +720,7 @@ ExitCode GuiRequests::startSyncs(int userDbId) {
 }
 
 ExitCode GuiRequests::deleteSync(int syncDbId) {
-    const ArgsReader params(syncDbId);
+    const auto params = QByteArray(ArgsReader(syncDbId));
 
     QByteArray results;
     if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_DELETE, params, results, COMM_LONG_TIMEOUT)) {

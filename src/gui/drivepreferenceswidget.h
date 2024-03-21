@@ -103,6 +103,7 @@ class DrivePreferencesWidget : public ParametersWidget {
         bool addSync(const QString &localFolderPath, bool smartSync, const QString &serverFolderPath,
                      const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet);
         bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
+        void updateGuardedFoldersBlocs();
 
     private slots:
         void onErrorsWidgetClicked();

@@ -16,16 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "customtooltip.h"
 #include "widgetwithcustomtooltip.h"
 
 namespace KDC {
 
-WidgetWithCustomToolTip::WidgetWithCustomToolTip(QWidget *parent) : QWidget(parent), _customToolTip{nullptr} {}
+WidgetWithCustomToolTip::WidgetWithCustomToolTip(QWidget *parent) : QWidget(parent) {}
 
 // Place the tooltip at the bottom middle of the widget.
 QPoint WidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event) {
-    Q_UNUSED(event);
+    Q_UNUSED(event)
     const QRect widgetRect = geometry();
 
     return parentWidget()->mapToGlobal((widgetRect.bottomLeft() + widgetRect.bottomRight()) / 2.0);
@@ -34,25 +33,20 @@ QPoint WidgetWithCustomToolTip::customToolTipPosition(QHelpEvent *event) {
 bool WidgetWithCustomToolTip::event(QEvent *event) {
     static const int defaultToolTipDuration = 3000;  // ms
 
-    if (event->type() == QEvent::ToolTip) {
-        if (!_customToolTipText.isEmpty()) {
-            const QPoint position = customToolTipPosition(static_cast<QHelpEvent *>(event));
-            delete _customToolTip;
-            _customToolTip = new CustomToolTip(_customToolTipText, position, defaultToolTipDuration, this);
-            _customToolTip->show();
-            event->ignore();
+    if (event->type() == QEvent::ToolTip && !_customToolTipText.isEmpty()) {
+        const QPoint position = customToolTipPosition(static_cast<QHelpEvent *>(event));
+        _customToolTip.reset(new CustomToolTip(_customToolTipText, position, defaultToolTipDuration, this));
+        _customToolTip->show();
+        event->ignore();
 
-            return true;
-        }
+        return true;
     }
 
     return QWidget::event(event);
 }
 
 void WidgetWithCustomToolTip::leaveEvent(QEvent *event) {
-    delete _customToolTip;
-    _customToolTip = nullptr;
-
+    _customToolTip.reset(nullptr);
     QWidget::leaveEvent(event);
 }
 

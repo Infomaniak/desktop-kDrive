@@ -53,16 +53,16 @@ class SyncInfoClient : public SyncInfo {
         QString name() const;
 
     private:
-        bool _paused;
-        SyncStatus _status;
+        bool _paused{false};
+        SyncStatus _status{SyncStatus::SyncStatusUndefined};
         SyncStep _step;
-        bool _unresolvedConflicts;
-        qint64 _currentFile;
-        qint64 _totalFiles;
-        qint64 _completedSize;
-        qint64 _totalSize;
-        qint64 _estimatedRemainingTime;
-        bool _isBeingDeleted;
+        bool _unresolvedConflicts{false};
+        qint64 _currentFile{0};
+        qint64 _totalFiles{0};
+        qint64 _completedSize{0};
+        qint64 _totalSize{0};
+        qint64 _estimatedRemainingTime{0};
+        bool _isBeingDeleted{false};
 };
 
 }  // namespace KDC

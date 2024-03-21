@@ -22,29 +22,9 @@
 
 namespace KDC {
 
-SyncInfoClient::SyncInfoClient()
-    : SyncInfo(),
-      _paused(false),
-      _status(SyncStatus::SyncStatusUndefined),
-      _unresolvedConflicts(false),
-      _currentFile(0),
-      _totalFiles(0),
-      _completedSize(0),
-      _totalSize(0),
-      _estimatedRemainingTime(0),
-      _isBeingDeleted(false) {}
+SyncInfoClient::SyncInfoClient() : SyncInfo() {}
 
-SyncInfoClient::SyncInfoClient(const SyncInfo &syncInfo)
-    : SyncInfo(syncInfo),
-      _paused(false),
-      _status(SyncStatus::SyncStatusUndefined),
-      _unresolvedConflicts(false),
-      _currentFile(0),
-      _totalFiles(0),
-      _completedSize(0),
-      _totalSize(0),
-      _estimatedRemainingTime(0),
-      _isBeingDeleted(false) {}
+SyncInfoClient::SyncInfoClient(const SyncInfo &syncInfo) : SyncInfo(syncInfo) {}
 
 QString SyncInfoClient::name() const {
     return CommonUtility::getRelativePathFromHome(_localPath);

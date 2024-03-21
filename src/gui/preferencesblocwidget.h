@@ -46,8 +46,9 @@ class PreferencesBlocWidget : public LargeWidgetWithCustomToolTip {
         QBoxLayout *addLayout(QBoxLayout::Direction direction, bool noMargins = false);
         ClickableWidget *addActionWidget(QVBoxLayout **vLayout, bool noMargins = false);
         QFrame *addSeparator();
-        void setToolTipsEnabled(bool enabled);
+        void setToolTipsEnabled(bool enabled) const;
         void updateBloc();
+        void setEnabledRecursively(bool enabled);
 
     signals:
         void actionIconColorChanged();
@@ -57,7 +58,7 @@ class PreferencesBlocWidget : public LargeWidgetWithCustomToolTip {
         QColor _backgroundColor;
         QColor _actionIconColor;
         QSize _actionIconSize;
-        QVBoxLayout *_layout;
+        QVBoxLayout *_layout{nullptr};
 
         void paintEvent(QPaintEvent *event) override;
 

@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "customtooltip.h"
+
 #include <QPoint>
 #include <QString>
 #include <QWidget>
@@ -29,8 +31,6 @@ class QLayout;
 
 namespace KDC {
 
-class CustomToolTip;
-
 class WidgetWithCustomToolTip : public QWidget {
         Q_OBJECT
 
@@ -40,12 +40,12 @@ class WidgetWithCustomToolTip : public QWidget {
 
     private:
         virtual QPoint customToolTipPosition(QHelpEvent *event);
+        std::unique_ptr<CustomToolTip> _customToolTip{nullptr};
+        QString _customToolTipText;
 
     protected:
-        CustomToolTip *_customToolTip;
-        QString _customToolTipText;
-        virtual bool event(QEvent *event) override;
-        virtual void leaveEvent(QEvent *event) override;
+        bool event(QEvent *event) override;
+        void leaveEvent(QEvent *event) override;
 };
 
 class LargeWidgetWithCustomToolTip : public WidgetWithCustomToolTip {
@@ -55,6 +55,6 @@ class LargeWidgetWithCustomToolTip : public WidgetWithCustomToolTip {
         explicit LargeWidgetWithCustomToolTip(QWidget *parent);
 
     private:
-        virtual QPoint customToolTipPosition(QHelpEvent *event) override;
+        QPoint customToolTipPosition(QHelpEvent *event) override;
 };
 }  // namespace KDC
