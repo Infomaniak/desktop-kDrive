@@ -162,9 +162,10 @@ void PreferencesBlocWidget::updateBloc() {
     }
 }
 
-void PreferencesBlocWidget::refreshFolders() {
-    if (auto folderTreeItemWidget = findChild<FolderTreeItemWidget *>(); folderTreeItemWidget != nullptr) {
-        if (folderTreeItemWidget->isVisible()) folderTreeItemWidget->loadSubFolders();
+void PreferencesBlocWidget::refreshFolders() const {
+    if (auto folderTreeItemWidget = findChild<FolderTreeItemWidget *>();
+        folderTreeItemWidget && folderTreeItemWidget->isVisible()) {
+        folderTreeItemWidget->loadSubFolders();
     }
 }
 

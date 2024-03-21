@@ -49,7 +49,7 @@ class PreferencesBlocWidget : public LargeWidgetWithCustomToolTip {
         void setToolTipsEnabled(bool enabled) const;
         void updateBloc();
         void setEnabledRecursively(bool enabled);
-        void refreshFolders();
+        void refreshFolders() const;
 
     signals:
         void actionIconColorChanged();
