@@ -21,7 +21,7 @@
 namespace KDC {
 
 GetInfoUserJob::GetInfoUserJob(int userDbId) : AbstractTokenNetworkJob(ApiProfile, userDbId, 0, 0, 0) {
-    _httpMethod = HTTPRequest::HTTP_GET;
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
 std::string GetInfoUserJob::getSpecificUrl() {

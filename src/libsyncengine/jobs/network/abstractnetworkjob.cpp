@@ -94,13 +94,13 @@ void AbstractNetworkJob::runJob() noexcept {
 
     assert(!_httpMethod.empty());
 
-    URI uri;
+    Poco::URI uri;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
         if (trials > 1) {
             Utility::msleep(500);  // Sleep for 0.5s
         }
 
-        uri = URI(url);
+        uri = Poco::URI(url);
         Poco::Net::HTTPSClientSession session = createSession(uri);
         {
             const std::lock_guard<std::mutex> lock(_mutexSession);
@@ -235,7 +235,7 @@ void AbstractNetworkJob::runJob() noexcept {
 }
 
 bool AbstractNetworkJob::hasHttpError() {
-    if (_resHttp.getStatus() == HTTPResponse::HTTP_OK) {
+    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
         return false;
     }
     return true;
@@ -251,7 +251,7 @@ void AbstractNetworkJob::abort() {
     AbstractJob::abort();
     const std::lock_guard<std::mutex> lock(_mutexSession);
     if (_session) {
-        SocketImpl *socketImpl = _session->socket().impl();
+        Poco::Net::SocketImpl *socketImpl = _session->socket().impl();
         if (socketImpl) {
             if (socketImpl->sockfd()) {
                 try {
@@ -279,11 +279,11 @@ void AbstractNetworkJob::getStringFromStream(std::istream &is, std::string &res)
     res = std::move(tmp);
 }
 
-HTTPSClientSession AbstractNetworkJob::createSession(const URI &uri) {
+Poco::Net::HTTPSClientSession AbstractNetworkJob::createSession(const Poco::URI &uri) {
     return Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context);
 }
 
-bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, const URI &uri) {
+bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri) {
     std::string path(uri.getPathAndQuery());
     if (path.empty()) {
         path = "/";
@@ -300,7 +300,7 @@ bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, con
         return false;
     }
 
-    HTTPRequest req(_httpMethod, path, HTTPMessage::HTTP_1_1);
+    Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
 
     // Set headers
     req.set("User-Agent", _userAgent);
@@ -364,7 +364,7 @@ bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, con
     return true;
 }
 
-bool AbstractNetworkJob::receiveResponse(Poco::Net::HTTPSClientSession &session, const URI &uri) {
+bool AbstractNetworkJob::receiveResponse(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri) {
     std::vector<std::reference_wrapper<std::istream>> stream;
     try {
         stream.push_back(session.receiveResponse(_resHttp));
@@ -386,7 +386,7 @@ bool AbstractNetworkJob::receiveResponse(Poco::Net::HTTPSClientSession &session,
 
     bool res = true;
     switch (_resHttp.getStatus()) {
-        case HTTPResponse::HTTP_OK: {
+        case Poco::Net::HTTPResponse::HTTP_OK: {
             bool ok = false;
             try {
                 ok = handleResponse(stream[0].get());
@@ -401,7 +401,7 @@ bool AbstractNetworkJob::receiveResponse(Poco::Net::HTTPSClientSession &session,
             }
             break;
         }
-        case HTTPResponse::HTTP_FOUND: {
+        case Poco::Net::HTTPResponse::HTTP_FOUND: {
             // Redirection
             if (!isAborted()) {
                 if (!followRedirect(stream[0].get())) {
@@ -414,7 +414,7 @@ bool AbstractNetworkJob::receiveResponse(Poco::Net::HTTPSClientSession &session,
             }
             break;
         }
-        case HTTPResponse::HTTP_TOO_MANY_REQUESTS: {
+        case Poco::Net::HTTPResponse::HTTP_TOO_MANY_REQUESTS: {
             // Rate limitation
             _exitCode = ExitCodeRateLimited;
         }
@@ -474,7 +474,7 @@ bool AbstractNetworkJob::followRedirect(std::istream &is) {
         return false;
     }
 
-    URI uri(redirectUrl);
+    Poco::URI uri(redirectUrl);
 
     LOG_DEBUG(_logger, "Request " << jobId() << ", following redirection: " << redirectUrl.c_str());
     // Follow redirection
@@ -491,7 +491,7 @@ bool AbstractNetworkJob::followRedirect(std::istream &is) {
         return false;
     }
     bool receiveOk = receiveResponse(session, uri);
-    if (!receiveOk && _resHttp.getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
+    if (!receiveOk && _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         // Special cases where the file exist in DB but not in storage
         return true;
     }

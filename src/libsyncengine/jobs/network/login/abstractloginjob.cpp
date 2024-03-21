@@ -32,7 +32,7 @@ AbstractLoginJob::AbstractLoginJob() {
 }
 
 bool AbstractLoginJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) {
-    if (getStatusCode() == HTTPResponse::HTTP_OK) {
+    if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
         return false;
     }
 
