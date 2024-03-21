@@ -73,8 +73,8 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
     return true;
 }
 
-bool GetFileInfoJob::handleError(std::istream &is, const URI &uri) {
-    if (_resHttp.getStatus() == HTTPResponse::HTTP_FORBIDDEN || _resHttp.getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
+bool GetFileInfoJob::handleError(std::istream &is, const Poco::URI &uri) {
+    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN || _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         // The file is not accessible or doesn't exist
         return true;
     } else {

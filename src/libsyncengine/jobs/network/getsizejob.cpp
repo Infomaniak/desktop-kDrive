@@ -48,8 +48,8 @@ bool GetSizeJob::handleResponse(std::istream &is) {
     return true;
 }
 
-bool GetSizeJob::handleError(std::istream &is, const URI &uri) {
-    if (_resHttp.getStatus() == HTTPResponse::HTTP_FORBIDDEN) {
+bool GetSizeJob::handleError(std::istream &is, const Poco::URI &uri) {
+    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
         // Access to the directory is forbidden
         return true;
     } else {
