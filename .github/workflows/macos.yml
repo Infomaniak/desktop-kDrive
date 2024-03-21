@@ -19,4 +19,4 @@ jobs:
           submodules: recursive
 
       - name: Build App
-        run : ./infomaniak-build-drive/macos/build-ci.sh
+        run : ./infomaniak-build-tools/macos/build-ci.sh
