@@ -1,7 +1,8 @@
 name: MacOS desktop CI
 
 on:
-  pull_request: [ready_for_review]
+  pull_request: 
+    types: [review_requested, ready_for_review]
 
 concurrency:
   group: macos
