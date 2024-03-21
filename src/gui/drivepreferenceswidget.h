@@ -66,25 +66,25 @@ class DrivePreferencesWidget : public ParametersWidget {
         enum AddFolderStep { SelectLocalFolder = 0, SelectServerBaseFolder, SelectServerFolders, Confirm };
 
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId;
-        int _userDbId;
+        int _driveDbId{0};
+        int _userDbId{0};
 
-        QVBoxLayout *_mainVBox;
-        ActionWidget *_displayErrorsWidget;
-        ActionWidget *_displayBigFoldersWarningWidget;
-        QLabel *_userAvatarLabel;
-        QLabel *_userNameLabel;
-        QLabel *_userMailLabel;
-        CustomSwitch *_notificationsSwitch;
-        int _foldersBeginIndex;
-        QLabel *_foldersLabel;
-        CustomPushButton *_addLocalFolderButton;
-        QLabel *_notificationsLabel;
-        QLabel *_notificationsTitleLabel;
-        QLabel *_notificationsDescriptionLabel;
-        QLabel *_connectedWithLabel;
-        CustomToolButton *_removeDriveButton;
-        bool _updatingFoldersBlocs;
+        QVBoxLayout *_mainVBox{nullptr};
+        ActionWidget *_displayErrorsWidget{nullptr};
+        ActionWidget *_displayBigFoldersWarningWidget{nullptr};
+        QLabel *_userAvatarLabel{nullptr};
+        QLabel *_userNameLabel{nullptr};
+        QLabel *_userMailLabel{nullptr};
+        CustomSwitch *_notificationsSwitch{nullptr};
+        int _foldersBeginIndex{0};
+        QLabel *_foldersLabel{nullptr};
+        CustomPushButton *_addLocalFolderButton{nullptr};
+        QLabel *_notificationsLabel{nullptr};
+        QLabel *_notificationsTitleLabel{nullptr};
+        QLabel *_notificationsDescriptionLabel{nullptr};
+        QLabel *_connectedWithLabel{nullptr};
+        CustomToolButton *_removeDriveButton{nullptr};
+        bool _updatingFoldersBlocs{false};
 
         void showEvent(QShowEvent *event) override;
 

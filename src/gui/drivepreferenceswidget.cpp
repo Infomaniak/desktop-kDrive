@@ -57,26 +57,7 @@ static const QString folderBlocName("folderBloc");
 Q_LOGGING_CATEGORY(lcDrivePreferencesWidget, "gui.drivepreferenceswidget", QtInfoMsg)
 
 DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : ParametersWidget(parent),
-      _gui(gui),
-      _driveDbId(0),
-      _userDbId(0),
-      _mainVBox(nullptr),
-      _displayErrorsWidget(nullptr),
-      _displayBigFoldersWarningWidget(nullptr),
-      _userAvatarLabel(nullptr),
-      _userNameLabel(nullptr),
-      _userMailLabel(nullptr),
-      _notificationsSwitch(nullptr),
-      _foldersBeginIndex(0),
-      _foldersLabel(nullptr),
-      _addLocalFolderButton(nullptr),
-      _notificationsLabel(nullptr),
-      _notificationsTitleLabel(nullptr),
-      _notificationsDescriptionLabel(nullptr),
-      _connectedWithLabel(nullptr),
-      _removeDriveButton(nullptr),
-      _updatingFoldersBlocs(false) {
+    : ParametersWidget(parent), _gui(gui) {
     setContentsMargins(0, 0, 0, 0);
 
     /*
@@ -295,8 +276,8 @@ void DrivePreferencesWidget::refreshStatus() {
 
     if (const auto driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId); driveInfoMapIt != _gui->driveInfoMap().cend()) {
         const auto &driveInfo = driveInfoMapIt->second;
-        if (!driveInfo.isBeingDeleted() && !isEnabled()) {
-            // Re-enable the drive preferences widget if the drive deletion failed.
+        if (!_mainVBox->isEnabled() && !driveInfo.isBeingDeleted()) {
+            // Re-enable the drive preferences widget after a deletion attempt.
             setCustomToolTipText("");
             GuiUtility::setEnabledRecursively(this, true);
         }
@@ -306,14 +287,17 @@ void DrivePreferencesWidget::refreshStatus() {
     for (PreferencesBlocWidget *folderBloc : folderBlocList) {
         folderBloc->updateBloc();
     }
+
+    // Hack to trigger a repaint of the _mMainVBox children.
+    _notificationsLabel->setVisible(false);
+    _notificationsLabel->setVisible(true);
 }
 
 void DrivePreferencesWidget::showEvent(QShowEvent *event) {
     _gui->activateLoadInfo();
     QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
     for (PreferencesBlocWidget *folderBloc : folderBlocList) {
-        FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
-        if (folderItemWidget) {
+        if (auto folderItemWidget = folderBloc->findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
             folderItemWidget->closeFolderView();
         }
     }
@@ -618,10 +602,7 @@ void DrivePreferencesWidget::updateFoldersBlocs() {
 void DrivePreferencesWidget::refreshFoldersBlocs() {
     const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
     for (PreferencesBlocWidget *folderBloc : folderBlocList) {
-        FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget(folderBloc);
-        if (treeItemWidget && treeItemWidget->isVisible()) {
-            treeItemWidget->loadSubFolders();
-        }
+        folderBloc->refreshFolders();
     }
 }
 

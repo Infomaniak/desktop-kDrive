@@ -18,6 +18,7 @@
 
 #include "guiutility.h"
 #include "folderitemwidget.h"
+#include "foldertreeitemwidget.h"
 #include "guiutility.h"
 #include "preferencesblocwidget.h"
 
@@ -158,6 +159,12 @@ void PreferencesBlocWidget::updateBloc() {
         folderItemWidget->updateItem();
     } else {
         qCDebug(lcPreferencesBlocWidget) << "Empty folder bloc!";
+    }
+}
+
+void PreferencesBlocWidget::refreshFolders() {
+    if (auto folderTreeItemWidget = findChild<FolderTreeItemWidget *>(); folderTreeItemWidget != nullptr) {
+        if (folderTreeItemWidget->isVisible()) folderTreeItemWidget->loadSubFolders();
     }
 }
 

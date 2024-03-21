@@ -1201,10 +1201,10 @@ void ClientGui::onRemoveDrive(int driveDbId) {
             ExitCode exitCode = GuiRequests::deleteDrive(driveDbId);
             if (exitCode != ExitCodeOk) {
                 qCWarning(lcClientGui()) << "Error in Requests::deleteDrive for driveDbId=" << driveDbId;
-                return;
+                onDriveDeletionFailed(driveDbId);
             }
         } catch (std::exception const &) {
-            // Do nothing
+            onDriveDeletionFailed(driveDbId);
         }
     }
 }
@@ -1221,16 +1221,14 @@ void ClientGui::onDriveDeletionFailed(int driveDbId) {
 }
 
 void ClientGui::onDriveRemoved(int driveDbId) {
-    auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
-    if (driveInfoMapIt != _driveInfoMap.end()) {
-        auto syncInfoMapIt = _syncInfoMap.begin();
-        while (syncInfoMapIt != _syncInfoMap.end()) {
-            // Erase syncs linked
+    if (auto driveInfoMapIt = _driveInfoMap.find(driveDbId); driveInfoMapIt != _driveInfoMap.end()) {
+        for (auto syncInfoMapIt = _syncInfoMap.begin(); syncInfoMapIt != _syncInfoMap.end();) {
+            // Erase linked synchronizations
             if (syncInfoMapIt->second.driveDbId() == driveDbId) {
                 syncInfoMapIt = _syncInfoMap.erase(syncInfoMapIt);
-                continue;
+            } else {
+                ++syncInfoMapIt;
             }
-            syncInfoMapIt++;
         }
 
         // Erase drive
