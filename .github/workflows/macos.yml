@@ -18,6 +18,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Unlock keychain to use the certificate
+        run : security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} login.keychain
+
       - name: Grant execute permission for building script
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
       - name: Build App
