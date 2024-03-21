@@ -258,20 +258,14 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
     errorStream << "Error in reply";
 
     // Try to parse as string
-    std::string str(std::istreambuf_iterator<char>(inputStream), {});
-    if (!str.empty()) {
+    if (std::string str(std::istreambuf_iterator<char>(inputStream), {}); !str.empty()) {
         errorStream << ", error: " << str.c_str();
     }
 
     errorStream << ", content type: " << httpResponse.getContentType().c_str();
     errorStream << ", reason: " << httpResponse.getReason().c_str();
 
-    std::string encoding = std::string();
-    try {
-        encoding = httpResponse.get("Content-Encoding");
-    } catch (...) {
-        // No Content-Encoding
-    }
+    std::string encoding = httpResponse.get("Content-Encoding", "");
     if (!encoding.empty()) {
         errorStream << ", encoding: " << encoding.c_str();
     }
