@@ -102,7 +102,7 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
     AbstractFileItemWidget::openFolder(fullPath);
 }
 
-bool GenericErrorItemWidget::openInWebview() {
+const bool GenericErrorItemWidget::openInWebview() {
     return _errorInfo.inconsistencyType() == InconsistencyTypePathLength
         || _errorInfo.inconsistencyType() == InconsistencyTypeCase
         || _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar
