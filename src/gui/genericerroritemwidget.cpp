@@ -20,6 +20,7 @@
 #include "guiutility.h"
 #include "clientgui.h"
 #include "libcommon/utility/utility.h"
+#include "custommessagebox.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -80,29 +81,33 @@ void GenericErrorItemWidget::init() {
 }
 
 void GenericErrorItemWidget::openFolder(const QString &path) {
-    if (_errorInfo.inconsistencyType() == InconsistencyTypePathLength ||
-        _errorInfo.inconsistencyType() == InconsistencyTypeCase ||
-        _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar ||
-        _errorInfo.inconsistencyType() == InconsistencyTypeReservedName ||
-        _errorInfo.inconsistencyType() == InconsistencyTypeNameLength ||
-        _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar ||
-        _errorInfo.cancelType() == CancelTypeAlreadyExistLocal ||
-        (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty())) {
+    const auto syncInfoMapIt = _gui->syncInfoMap().find(_errorInfo.syncDbId());
+    if (syncInfoMapIt == _gui->syncInfoMap().end()) {
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(path), QMessageBox::Ok, this);
+        msgBox.exec();
+        return;
+    }
+
+    if (_errorInfo.inconsistencyType() == InconsistencyTypePathLength
+        || _errorInfo.inconsistencyType() == InconsistencyTypeCase
+        || _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar
+        || _errorInfo.inconsistencyType() == InconsistencyTypeReservedName
+        || _errorInfo.inconsistencyType() == InconsistencyTypeNameLength
+        || _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar
+        || _errorInfo.cancelType() == CancelTypeAlreadyExistLocal
+        || (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty())
+        || (_errorInfo.exitCode() == ExitCodeBackError && _errorInfo.exitCause() == ExitCauseNotFound)) {
         // Open in webview instead
-        const auto &syncInfoMapIt = _gui->syncInfoMap().find(_errorInfo.syncDbId());
-        if (syncInfoMapIt != _gui->syncInfoMap().end()) {
-            const auto &driveInfoMapIt = _gui->driveInfoMap().find(syncInfoMapIt->second.driveDbId());
-            if (driveInfoMapIt == _gui->driveInfoMap().end()) {
-                //                qCDebug(lcGenericErrorItemWidget()) << "Drive not found in drive map for driveDbId=" <<
-                //                syncInfoMapIt->second.driveDbId();
-            } else {
-                _gui->onOpenWebviewItem(syncInfoMapIt->second.driveDbId(), _errorInfo.remoteNodeId());
-                return;
-            }
+        const auto &driveInfoMapIt = _gui->driveInfoMap().find(syncInfoMapIt->second.driveDbId());
+        if (driveInfoMapIt != _gui->driveInfoMap().end()) {
+            _gui->onOpenWebviewItem(syncInfoMapIt->second.driveDbId(), _errorInfo.remoteNodeId());
+            return;
         }
     }
 
-    AbstractFileItemWidget::openFolder(path);
+    // Open on local filesystem
+    QString fullPath = syncInfoMapIt->second.localPath() + "/" + path;
+    AbstractFileItemWidget::openFolder(fullPath);
 }
 
 }  // namespace KDC
