@@ -1264,7 +1264,7 @@ void DrivePreferencesWidget::retranslateUi() {
     _notificationsDescriptionLabel->setText(
         tr("A notification will be displayed as soon as a new folder has been synchronized or modified"));
     _connectedWithLabel->setText(tr("Connected with"));
-    _removeDriveButton->setToolTip(tr("Remove synchronization"));
+    _removeDriveButton->setToolTip(tr("Remove all synchronizations"));
 }
 
 
