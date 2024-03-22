@@ -96,7 +96,7 @@ class DrivePreferencesWidget : public ParametersWidget {
         bool switchVfsOff(int syncDbId, bool diskSpaceWarning);
         void resetFoldersBlocs();
         void updateFoldersBlocs();
-        void refreshFoldersBlocs();
+        void refreshFoldersBlocs() const;
         FolderTreeItemWidget *blocTreeItemWidget(PreferencesBlocWidget *folderBloc);
         FolderItemWidget *blocItemWidget(PreferencesBlocWidget *folderBloc);
         QFrame *blocSeparatorFrame(PreferencesBlocWidget *folderBloc);

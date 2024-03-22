@@ -599,9 +599,9 @@ void DrivePreferencesWidget::updateFoldersBlocs() {
     _updatingFoldersBlocs = false;
 }
 
-void DrivePreferencesWidget::refreshFoldersBlocs() {
+void DrivePreferencesWidget::refreshFoldersBlocs() const {
     const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+    for (const PreferencesBlocWidget *folderBloc : folderBlocList) {
         folderBloc->refreshFolders();
     }
 }
