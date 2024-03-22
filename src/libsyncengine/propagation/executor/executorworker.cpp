@@ -1651,7 +1651,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(),
             syncOp->affectedNode()->getPath(), syncOp->targetSide() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal);
 
-        NodeId locaNodeId, remoteNodeId;
+        NodeId locaNodeId;
+        NodeId remoteNodeId;
         if (syncOp->targetSide() == ReplicaSideLocal) {
             locaNodeId = syncOp->correspondingNode() && syncOp->correspondingNode()->id().has_value() ? syncOp->correspondingNode()->id().value() : std::string();
             remoteNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string();
