@@ -1625,6 +1625,15 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
     return !hasError;
 }
 
+bool ExecutorWorker::isManagedBackError(const ExitCause exitCause, bool &isInconsistencyIssue) {
+    isInconsistencyIssue = exitCause == ExitCauseInvalidName;
+    return exitCause == ExitCauseInvalidName
+           || exitCause == ExitCauseUploadNotTerminated
+           || exitCause == ExitCauseApiErr
+           || exitCause == ExitCauseFileTooBig
+           || exitCause == ExitCauseNotFound;
+}
+
 bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath) {
     if (job->exitCode() == ExitCodeNeedRestart) {
         // Canceled all queued jobs
@@ -1634,10 +1643,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         _syncPal->setProgressComplete(
             relativeLocalPath, SyncFileStatusSuccess);  // Not really success but the file should not appear in error in Finder
         return false;
-    } else if (job->exitCode() == ExitCodeBackError &&
-               (job->exitCause() == ExitCauseInvalidName || job->exitCause() == ExitCauseUploadNotTerminated ||
-                job->exitCause() == ExitCauseApiErr || job->exitCause() == ExitCauseFileTooBig ||
-                job->exitCause() == ExitCauseNotFound)) {
+    } else if (bool isInconsistencyIssue = false; job->exitCode() == ExitCodeBackError &&
+               isManagedBackError(job->exitCause(), isInconsistencyIssue)) {
         // The item should be temporarily blacklisted
         _executorExitCode = ExitCodeOk;
         _syncPal->blacklistTemporarily(
@@ -1656,7 +1663,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
         }
 
-        if (job->exitCause() == ExitCauseInvalidName) {
+        if (isInconsistencyIssue) {
             Error error(_syncPal->syncDbId()
                         , locaNodeId
                         , remoteNodeId
@@ -1665,10 +1672,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
                         , ConflictTypeNone
                         , InconsistencyTypeForbiddenChar);
             _syncPal->addError(error);
-        } else if (job->exitCause() == ExitCauseApiErr
-                   || job->exitCause() == ExitCauseFileTooBig
-                   || job->exitCause() == ExitCauseUploadNotTerminated
-                   || job->exitCause() == ExitCauseNotFound) {
+        } else {
             Error error(_syncPal->syncDbId()
                         , locaNodeId
                         , remoteNodeId

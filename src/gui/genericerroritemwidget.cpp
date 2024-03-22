@@ -88,15 +88,7 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
         return;
     }
 
-    if (_errorInfo.inconsistencyType() == InconsistencyTypePathLength
-        || _errorInfo.inconsistencyType() == InconsistencyTypeCase
-        || _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar
-        || _errorInfo.inconsistencyType() == InconsistencyTypeReservedName
-        || _errorInfo.inconsistencyType() == InconsistencyTypeNameLength
-        || _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar
-        || _errorInfo.cancelType() == CancelTypeAlreadyExistLocal
-        || (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty())
-        || (_errorInfo.exitCode() == ExitCodeBackError && _errorInfo.exitCause() == ExitCauseNotFound)) {
+    if (openInWebview()) {
         // Open in webview instead
         const auto &driveInfoMapIt = _gui->driveInfoMap().find(syncInfoMapIt->second.driveDbId());
         if (driveInfoMapIt != _gui->driveInfoMap().end()) {
@@ -108,6 +100,18 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
     // Open on local filesystem
     QString fullPath = syncInfoMapIt->second.localPath() + "/" + path;
     AbstractFileItemWidget::openFolder(fullPath);
+}
+
+bool GenericErrorItemWidget::openInWebview() {
+    return _errorInfo.inconsistencyType() == InconsistencyTypePathLength
+        || _errorInfo.inconsistencyType() == InconsistencyTypeCase
+        || _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar
+        || _errorInfo.inconsistencyType() == InconsistencyTypeReservedName
+        || _errorInfo.inconsistencyType() == InconsistencyTypeNameLength
+        || _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar
+        || _errorInfo.cancelType() == CancelTypeAlreadyExistLocal
+        || (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty())
+        || (_errorInfo.exitCode() == ExitCodeBackError && _errorInfo.exitCause() == ExitCauseNotFound);
 }
 
 }  // namespace KDC
