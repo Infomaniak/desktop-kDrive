@@ -15,11 +15,12 @@
     - [7za](#7za)
     - [IcoTool](#icotool)
 - [Certificate Configuration](#certificate-configuration)
-- [Build in Debug mode](#build-in-debug-mode)
-    - [Additionnal Requirements](#additionnal-requirements)
-    - [CMake Parameters](#cmake-parameters)
+- [Build in Debug](#build-in-debug)
+    - [Qt Creator](#using-qt-creator)
+        - [Additionnal Requirements](#additionnal-requirements)
+        - [CMake Parameters](#cmake-parameters)
     - [Testing the extension](#testing-the-extension)
-- [Build in Release mode](#build-in-release-mode)
+- [Build in Release](#build-in-release)
     - [Build and Packaging](#build-and-packaging)
 - [Possible build errors](#possible-build-errors)
 
@@ -32,7 +33,7 @@ If you wish to have the sources elsewhere, feel free to use the path you want.
 F:
 cd Projects
 git clone https://github.com/Infomaniak/desktop-kDrive.git
-cd kdrive && git submodule update --init --recursive
+cd desktop-kDrive && git submodule update --init --recursive
 ```
 
 # Installation Requirements
@@ -66,10 +67,13 @@ In Qt 6.2.3 Additional Libraries, select :
 - Qt Positioning
 - Qt WebChannel
 - Qt WebView
+- Qt Debug Information Files (only if you want to use a debugger)
 
 In Developer and Designer Tools (should be selected by default):
 - CMake
 - Ninja
+
+
 
 Add an environment variable named `QTDIR`, with the path of your Qt msvc folder (by default `C:\Qt\6.2.3\msvc2019_64`)  
 Add to your PATH (replace the path to Qt if needed):
@@ -240,18 +244,20 @@ Once installed, open kDriveExt.sln (in `extensions/windows/cfapi`) then :
 - Repeat the same steps using the USB certificate, in an environment variable named `KDC_PHYSICAL_AUMID`
 - Update the REGVALUE_AUMID define in `Vfs/cloudproviderregistrar.cpp` file if needed
 
-# Build in Debug mode
+# Build in Debug
 
 To build in Debug, you will need to build and deploy the Windows extension first.  
+
+## Using Qt Creator
 You can disable QML debugger from the settings to avoid some error pop-ups.
 
-## Additionnal Requirements
+### Additionnal Requirements
 
 To be able to properly debug, you will need to install `Qt Debug Information Files` from the Qt 6.2.3 section  
 If you cannot see it, you need to tick the **Archive** box and filter again
 
 
-## CMake Parameters
+### CMake Parameters
 
 Open the kDrive project in Qt Creator  
 Copy the following list in "Initial CMake Parameters" :
@@ -265,13 +271,13 @@ Copy the following list in "Initial CMake Parameters" :
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_UPDATE_URL:STRING=https://www.infomaniak.com/drive/update/desktopclient
 -DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive
--DBIN_INSTALL_DIR:PATH=F:/projects/kdrive
--DVFS_DIRECTORY:PATH=F:/Projects/kdrive/extensions/windows/cfapi/x64/Debug
+-DBIN_INSTALL_DIR:PATH=F:/projects/desktop-kDrive
+-DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
 -DCMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=/debug /INCREMENTAL
 -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 -DCMAKE_INSTALL_PREFIX:PATH=%{ActiveProject:RunConfig:Executable:Path}
 -DCRASHREPORTER_SUBMIT_URL:STRING=https://www.infomaniak.com/report/drive/crash
--DKDRIVE_THEME_DIR:STRING=F:/projects/kdrive/infomaniak
+-DKDRIVE_THEME_DIR:STRING=F:/projects/desktop-kDrive/infomaniak
 -DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins
 -DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include
 -DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib
@@ -303,7 +309,7 @@ And restart the File Explorer :
 start explorer.exe
 ```
 
-# Build in Release mode
+# Build in Release
 
 ## Build and Packaging
 
@@ -325,4 +331,4 @@ When building in Debug mode, the following error may occur when `CMAKE_INSTALL_P
 ![sentry_init Debug Error](./doc-images/Qt_Debug_Error.png)
 
 The `INSTALL_PREFIX` must not end with `bin`, and if so you will need to adjust its value  
-For example, `F:/Projects/build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug/bin ` must be changed to `F:/Projects/build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug`
+For example, `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug/bin ` must be changed to `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug`
