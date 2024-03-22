@@ -1,7 +1,7 @@
 project(libcommonserver)
 
 find_package(SQLite3 3.8.0 REQUIRED)
-find_package(Poco 1.12.5 REQUIRED Foundation JSON Util)
+find_package(Poco 1.12.5 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(log4cplus 2.1.0 REQUIRED)
 find_package(xxHash 0.8.1 REQUIRED)
@@ -84,7 +84,7 @@ endif()
 target_link_libraries(${libcommonserver_NAME}
     ${libcommon_NAME}
     ${SQLITE3_LIBRARIES}
-    Poco::Foundation Poco::JSON Poco::Util
+    Poco::Foundation Poco::Net Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto)
 
 if (WIN32)
