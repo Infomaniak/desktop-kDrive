@@ -14,8 +14,9 @@
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
 	- [Notarytool](#notarytool)
-- [Debug building in Qt](#debug-building-in-qt)
-	- [Qt Configuration](#qt-configuration)
+- [Build in Debug](#build-in-debug)
+	- [Qt Creator](#using-qt-creator)
+		- [Qt Configuration](#qt-configuration)
 - [Build in Release](#build-in-release)
 	- [Requirements](#requirements)
 	- [Build](#build)
@@ -29,7 +30,7 @@ If you wish to have the sources elsewhere, feel free to use the path you want.
 ```bash
 cd ~/Projects
 git clone https://github.com/Infomaniak/desktop-kDrive.git
-cd kdrive && git submodule update --init --recursive
+cd desktop-kDrive && git submodule update --init --recursive
 ```
 
 # Installation Requirements
@@ -205,9 +206,11 @@ Copy the previously generated password to use in the command below :
 xcrun notarytool store-credentials "notarytool" --apple-id <email address> --team-id [team-id] --password <password>
 ```
 
-#  Debug building in Qt
+# Build in Debug
 
-## Qt Configuration
+## Using Qt Creator
+
+### Qt Configuration
 
 Open the kDrive project in Qt Creator   
 In the project build settings, paste the following lines in the Initial Configuration Batch Edit (replace `<user>`)
@@ -220,9 +223,10 @@ In the project build settings, paste the following lines in the Initial Configur
 -DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
--DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
--DKDRIVE_THEME_DIR=/Users/<user>/Projects/kdrive/infomaniak
--DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-kdrive-Qt_6_2_3_for_macOS-Debug/bin
+-DAPPLICATION_CLIENT_EXECUTABLE=kdrive
+-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX=864VDCS2QY
+-DKDRIVE_THEME_DIR=/Users/<user>/Projects/desktop-kDrive/infomaniak
+-DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/bin
 -DBUILD_TESTING=OFF
 -DWITH_CRASHREPORTER=OFF
 %{CMAKE_OSX_ARCHITECTURES:DefaultFlag}
@@ -233,7 +237,7 @@ Build - Build Steps - Build :
 
 Build - Build Steps - Custom Process Step 1 :  
 `Command	: %{Qt:QT_INSTALL_BINS}/macdeployqt`  
-`Arguments	: %{buildDir}/bin/kDrive.app -no-strip`
+`Arguments	: %{buildDir}/bin/kDrive.app -no-strip -executable=%{buildDir}/bin/kDrive.app/Contents/MacOS/kDrive_client`
 
 Build - Build Steps - Custom Process Step 2 :  
 `Command	: /Users/<user name>/Projects/kdrive/admin/osx/sign_app_debug.sh`  
@@ -257,7 +261,7 @@ pip3 install bs4 lxml
 In a terminal :
 
 ```bash
-cd ~/Projects/kdrive
+cd ~/Projects/desktop-kDrive
 ```
 For a simple unsigned build :
 
@@ -266,6 +270,7 @@ infomaniak-build-tools/macos/build-drive.sh
 ```
 
 # Disabling SIP in VMWare Fusion
+
 To Debug the application, the SIP needs to be disabled, this is because the extension is not signed and notarized in Debug mode.  
 If you are debugging on a Mac device, you can follow the [official Apple documentation](https://developer.apple.com/documentation/security/disabling_and_enabling_system_integrity_protection) to disable it.  
 If you want to debug on a MacOS VM, disabling the SIP depends on the tool you are using, here is one way to disable it on VMWare Fusion :
