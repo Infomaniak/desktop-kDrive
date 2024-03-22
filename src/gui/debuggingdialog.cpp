@@ -137,7 +137,7 @@ void DebuggingDialog::initUI() {
 
     _deleteLogsCheckBox = new CustomCheckBox(this);
     _deleteLogsCheckBox->setObjectName("deleteLogsCheckBox");
-    _deleteLogsCheckBox->setText(tr("Delete logs older than %1 days").arg(ClientGui::logsPurgeRate()));
+    _deleteLogsCheckBox->setText(tr("Delete logs older than %1 days").arg(ClientGui::logsPurgeRate));
     deleteLogsHBox->addWidget(_deleteLogsCheckBox);
 
     mainLayout->addStretch();
