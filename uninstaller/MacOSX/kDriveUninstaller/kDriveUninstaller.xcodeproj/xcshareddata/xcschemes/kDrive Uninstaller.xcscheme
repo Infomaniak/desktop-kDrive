@@ -17,7 +17,7 @@
                BlueprintIdentifier = "94E0FC3A1BD7FC3600A3C537"
                BuildableName = "kDrive Uninstaller.app"
                BlueprintName = "kDrive Uninstaller"
-               ReferencedContainer = "container:kDrive Uninstaller.xcodeproj">
+               ReferencedContainer = "container:kDriveUninstaller.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,9 +47,18 @@
             BlueprintIdentifier = "94E0FC3A1BD7FC3600A3C537"
             BuildableName = "kDrive Uninstaller.app"
             BlueprintName = "kDrive Uninstaller"
-            ReferencedContainer = "container:kDrive Uninstaller.xcodeproj">
+            ReferencedContainer = "container:kDriveUninstaller.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "94E0FC3A1BD7FC3600A3C537"
+            BuildableName = "kDrive Uninstaller.app"
+            BlueprintName = "kDrive Uninstaller"
+            ReferencedContainer = "container:kDriveUninstaller.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -64,9 +73,18 @@
             BlueprintIdentifier = "94E0FC3A1BD7FC3600A3C537"
             BuildableName = "kDrive Uninstaller.app"
             BlueprintName = "kDrive Uninstaller"
-            ReferencedContainer = "container:kDrive Uninstaller.xcodeproj">
+            ReferencedContainer = "container:kDriveUninstaller.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "94E0FC3A1BD7FC3600A3C537"
+            BuildableName = "kDrive Uninstaller.app"
+            BlueprintName = "kDrive Uninstaller"
+            ReferencedContainer = "container:kDriveUninstaller.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
