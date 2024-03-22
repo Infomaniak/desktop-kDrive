@@ -24,6 +24,11 @@
 #include "bigfoldersdialog.h"
 #include "custommessagebox.h"
 #include "custompushbutton.h"
+
+#ifdef Q_OS_MAC
+#include "extensionsetupdialog.h"
+#endif
+
 #include "guiutility.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
