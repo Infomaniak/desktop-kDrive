@@ -1349,6 +1349,20 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
     return ExitCodeOk;
 }
 
+bool SyncPal::isDlOngoing(const SyncPath &localPath) {
+    if (_syncPathToDownloadJobMap.find(localPath) != _syncPathToDownloadJobMap.end()) {
+        return true;
+    }
+
+    for (const auto &syncPathToDownloadJobMapIt : _syncPathToDownloadJobMap) {
+        if (CommonUtility::isSubDir(localPath, syncPathToDownloadJobMapIt.first)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 #ifdef __APPLE__
 void SyncPal::fixFileNamesWithColon(std::shared_ptr<SyncDb> syncDb, const SyncPath &localPath) {
     if (syncDb->fromVersion().empty()) {
