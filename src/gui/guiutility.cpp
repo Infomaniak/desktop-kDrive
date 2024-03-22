@@ -485,7 +485,7 @@ bool GuiUtility::openFolder(const QString &dirPath) {
     if (!dirPath.isEmpty()) {
         QFileInfo fileInfo(dirPath);
         if (fileInfo.exists()) {
-            QUrl url = getUrlFromLocalPath(fileInfo.filePath());
+            QUrl url = getUrlFromLocalPath(fileInfo.path());
             if (url.isValid()) {
                 if (!QDesktopServices::openUrl(url)) {
                     return false;
