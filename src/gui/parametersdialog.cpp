@@ -820,8 +820,7 @@ QString ParametersDialog::getErrorMessage(ErrorInfo &errorInfo) {
                                   "The file/directory has been temporarily blacklisted.")
                             .arg(errorInfo.path());
                     } else if (errorInfo.exitCause() == ExitCauseFileTooBig) {
-                        return tr("Impossible to upload a file bigger than 100GB.<br>"
-                                  "The file \"%1\" has been temporarily blacklisted")
+                        return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.")
                             .arg(errorInfo.path());
                     } else if (errorInfo.exitCause() == ExitCauseNotFound) {
                         return tr("Impossible to download file \"%1\"").arg(errorInfo.path());
