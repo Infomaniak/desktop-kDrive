@@ -547,7 +547,7 @@ void AppClient::setupLogging() {
 
         logger->setupTemporaryFolderLogDir();
         if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
-            logger->setLogExpire(std::chrono::hours(24));
+            logger->setLogExpire(std::chrono::hours(ClientGui::logsPurgeRate() * 24));
         } else {
             logger->setLogExpire(std::chrono::hours(0));
         }
