@@ -22,7 +22,7 @@
     - [VS2019](#using-Visual-Studio-2019)
         - [Windows extension](#windows-Extension)
         - [Project setup](#project-Setup)
-        - [Cmake configuration](#cmake-Configuration)
+        - [CMake configuration](#cmake-Configuration)
         - [DLL Copy](#dll-Copy)
         - [Debugging](#debugging)
     - [Testing the extension](#testing-the-extension)
@@ -298,23 +298,23 @@ Then click "Re-configure with Initial Parameters"
 
 To build in Debug mode, you'll need to build and deploy the Windows extension first.
 
-1. Open the kDriveExt solution located at "F:\Projects\desktop-kDrive\extensions\windows\cfapi".
+1. Open the `kDriveExt` solution located at `F:\Projects\desktop-kDrive\extensions\windows\cfapi`.
 2. In the post-build events of the VFS projects, navigate to "Right click on vfs project" >> "Properties" >> "Configuration properties" >> "Build events" >> "Post-build events".
-3. Modify "F:\Projects\" to match your path. The last two paths are outputs of the global projects; keep them for later steps.
+3. Modify `F:\Projects\` to match your path. The last two paths are outputs of the global projects; keep them for later steps.
 4. Save and close the properties window.
 
-Select "Debug x64" and deploy. Repeat the same steps for "Release x64".
+Select `Debug x64` and deploy. Repeat the same steps for `Release x64`.
 
 Close the kDriveExt solution.
 
 ### Project Setup
 
-Open Visual Studio 2019 and select "Open local folder", then choose "F:\Projects\desktop-kDrive".
+Open Visual Studio 2019 and select "Open local folder", then choose `F:\Projects\desktop-kDrive`.
 
 ### CMake Configuration
 
 1. On the configuration selector, click on "Manage configurations".
-2. Create a new configuration "x64 Debug".
+2. Create a new configuration `x64 Debug`.
 3. Configure it as follows:
    - Configuration type: Debug
    - Toolset: msvc_x64_x64
@@ -341,19 +341,19 @@ Open Visual Studio 2019 and select "Open local folder", then choose "F:\Projects
     ```
    You may need to adjust paths based on your installation.
 
-Save (CTRL + S). CMake will automatically run in the output window; ensure no errors occur.
+Save (CTRL + S). CMake will automatically run in the output window; check no errors occur.
 
-### Sync-exclude.lst
-copy and rename "F:\Projects\desktop-kDrive\sync-exclude-win.lst" to "output_path\bin\sync-exclude.lst".
+### The file `Sync-exclude.lst`
+copy and rename `F:\Projects\desktop-kDrive\sync-exclude-win.lst` to `output_path\bin\sync-exclude.lst`.
 
 ### DLL Copy
 Durring the next step, you may encounter missing DLL errors. Copy the required DLLs to the /bin folder of your output directory. The DLLs are located in:
-- "C:\Program Files (x86)\Poco\bin"
-- "C:\Program Files (x86)\Gpg4win\bin"
-- "C:\Program Files (x86)\log4cplus\bin"
-- "C:\Program Files (x86)\NSIS\Bin"
-- "C:\Program Files (x86)\zlib-1.2.11"
-- "C:\Program Files\OpenSSL\bin"
+- `C:\Program Files (x86)\Poco\bin`
+- `C:\Program Files (x86)\Gpg4win\bin`
+- `C:\Program Files (x86)\log4cplus\bin`
+- `C:\Program Files (x86)\NSIS\Bin`
+- `C:\Program Files (x86)\zlib-1.2.11`
+- `C:\Program Files\OpenSSL\bin`
 
 ### Debugging
 
@@ -363,7 +363,7 @@ In the Solution Explorer, go to the available view:
 
 Select CMake targets.
 
-Right-click on the Kdrive (executable) >> Debug >> Kdrive.exe (bin\kDrive.exe).
+Right-click on the Kdrive (executable) >> Debug >> kDrive.exe (bin\kDrive.exe).
 
 Once Kdrive.exe is running, right-click on the Kdrive_client (executable) >> Debug >> Kdrive_client.exe (bin\kDrive.exe).
 
