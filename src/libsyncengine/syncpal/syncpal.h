@@ -202,7 +202,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode cancelDlDirectJobs(const std::list<SyncPath> &fileList);
         ExitCode cancelAllDlDirectJobs(bool quit);
         ExitCode cleanOldUploadSessionTokens();
-        bool isDlOngoing(const SyncPath &localPath);
+        bool isDownloadOngoing(const SyncPath &localPath);
 
         inline bool syncHasFullyCompleted() const { return _syncHasFullyCompleted; }
 
