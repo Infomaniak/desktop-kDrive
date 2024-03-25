@@ -287,6 +287,76 @@ Copy the following list in "Initial CMake Parameters" :
 
 Then click "Re-configure with Initial Parameters"
 
+## Using Visual Studio 2019
+### Windows Extension
+
+To build in Debug mode, you'll need to build and deploy the Windows extension first.
+
+1. Open the kDriveExt solution located at "F:\Projects\desktop-kDrive\extensions\windows\cfapi".
+2. In the post-build events of the VFS projects, navigate to "Right click on vfs project" >> "Properties" >> "Configuration properties" >> "Build events" >> "Post-build events".
+3. Modify "F:\Projects\" to match your path. The last two paths are outputs of the global projects; keep them for later steps.
+4. Save and close the properties window.
+
+Select "Debug x64" and deploy. Repeat the same steps for "Release x64".
+
+Close the kDriveExt solution.
+
+### Project Setup
+
+Open Visual Studio 2019 and select "Open local folder", then choose "F:\Projects\desktop-kDrive".
+
+### CMake Configuration
+
+1. On the configuration selector, click on "Manage configurations".
+2. Create a new configuration "x64 Debug".
+3. Configure it as follows:
+   - Configuration type: Debug
+   - Toolset: msvc_x64_x64
+   - Build root: The folder set in the post-build events of the kDriveExt solution.
+   - CMake command args: 
+    ```bash
+    -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client 
+    -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak 
+    -DWITH_CRASHREPORTER=OFF -DBUILD_UNIT_TESTS:BOOL=ON 
+    -DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.2.3/msvc2019_64 
+    -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY 
+    -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include" 
+    -DZLIB_LIBRARY_RELEASE:FILEPATH="C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib" 
+    -DVFS_STATIC_LIBRARY:FILEPATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib 
+    -DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug 
+    -DPocoCrypto_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoFoundation_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoJSON_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoNetSSL_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoNet_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoUtil_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoXML_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPoco_DIR:PATH="C:/Program Files (x86)/Poco/cmake"
+    ```
+   You may need to adjust paths based on your installation.
+
+Save (CTRL + S). CMake will automatically run in the output window; ensure no errors occur.
+
+### DLL Copy
+
+You may encounter missing DLL errors. Copy the required DLLs to the /bin folder of your output directory. The DLLs are located in:
+- "C:\Program Files (x86)\Poco\bin"
+- "C:\Program Files (x86)\Gpg4win\bin"
+- "C:\Program Files (x86)\log4cplus\bin"
+- "C:\Program Files (x86)\NSIS\Bin"
+- "C:\Program Files (x86)\zlib-1.2.11"
+- "C:\Program Files\OpenSSL\bin"
+
+### Debugging
+
+In the Solution Explorer, go to the available view:
+(./doc-images/VS_2019_switch_sln_to_targets.png)
+and select CMake targets.
+
+Right-click on the Kdrive (executable) >> Debug >> Kdrive.exe (bin\kDrive.exe). Once Kdrive.exe is running, right-click on the Kdrive_client (executable) >> Debug >> Kdrive_client.exe (bin\kDrive.exe).
+
+
+
 ## Testing the extension
 
 To test the extension in Debug mode, you will first need to install a [release version](https://www.infomaniak.com/en/apps/download-kdrive) of kDrive  
