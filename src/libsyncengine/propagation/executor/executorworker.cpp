@@ -1625,6 +1625,15 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
     return !hasError;
 }
 
+bool ExecutorWorker::isManagedBackError(const ExitCause exitCause, bool &isInconsistencyIssue) {
+    isInconsistencyIssue = exitCause == ExitCauseInvalidName;
+    return exitCause == ExitCauseInvalidName
+           || exitCause == ExitCauseUploadNotTerminated
+           || exitCause == ExitCauseApiErr
+           || exitCause == ExitCauseFileTooBig
+           || exitCause == ExitCauseNotFound;
+}
+
 bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath) {
     if (job->exitCode() == ExitCodeNeedRestart) {
         // Canceled all queued jobs
@@ -1634,33 +1643,50 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         _syncPal->setProgressComplete(
             relativeLocalPath, SyncFileStatusSuccess);  // Not really success but the file should not appear in error in Finder
         return false;
-    } else if (job->exitCode() == ExitCodeBackError &&
-               (job->exitCause() == ExitCauseInvalidName || job->exitCause() == ExitCauseUploadNotTerminated ||
-                job->exitCause() == ExitCauseApiErr || job->exitCause() == ExitCauseFileTooBig ||
-                job->exitCause() == ExitCauseNotFound)) {
+    } else if (bool isInconsistencyIssue = false; job->exitCode() == ExitCodeBackError &&
+               isManagedBackError(job->exitCause(), isInconsistencyIssue)) {
         // The item should be temporarily blacklisted
         _executorExitCode = ExitCodeOk;
         _syncPal->blacklistTemporarily(
             syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(),
             syncOp->affectedNode()->getPath(), syncOp->targetSide() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal);
 
+        NodeId locaNodeId;
+        NodeId remoteNodeId;
+        if (syncOp->targetSide() == ReplicaSideLocal) {
+            locaNodeId = syncOp->correspondingNode() && syncOp->correspondingNode()->id().has_value() ? syncOp->correspondingNode()->id().value() : std::string();
+            remoteNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string();
+        } else {
+            locaNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string();
+            remoteNodeId = syncOp->correspondingNode() && syncOp->correspondingNode()->id().has_value() ? syncOp->correspondingNode()->id().value() : std::string();
+        }
+
         affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
         if (syncOp->correspondingNode()) {
             targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
         }
 
-        if (job->exitCause() == ExitCauseInvalidName) {
-            Error error(_syncPal->syncDbId(),
-                        syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(), "",
-                        syncOp->affectedNode()->type(), syncOp->affectedNode()->getPath(), ConflictTypeNone,
-                        InconsistencyTypeForbiddenChar);
+        if (isInconsistencyIssue) {
+            Error error(_syncPal->syncDbId()
+                        , locaNodeId
+                        , remoteNodeId
+                        , syncOp->affectedNode()->type()
+                        , syncOp->affectedNode()->getPath()
+                        , ConflictTypeNone
+                        , InconsistencyTypeForbiddenChar);
             _syncPal->addError(error);
-        } else if (job->exitCause() == ExitCauseApiErr || job->exitCause() == ExitCauseFileTooBig ||
-                   job->exitCause() == ExitCauseUploadNotTerminated || job->exitCause() == ExitCauseNotFound) {
-            Error error(_syncPal->syncDbId(),
-                        syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(), "",
-                        syncOp->affectedNode()->type(), syncOp->affectedNode()->getPath(), ConflictTypeNone,
-                        InconsistencyTypeNone, CancelTypeNone, "", ExitCodeBackError, job->exitCause());
+        } else {
+            Error error(_syncPal->syncDbId()
+                        , locaNodeId
+                        , remoteNodeId
+                        , syncOp->affectedNode()->type()
+                        , syncOp->affectedNode()->getPath()
+                        , ConflictTypeNone
+                        , InconsistencyTypeNone
+                        , CancelTypeNone
+                        , ""
+                        , ExitCodeBackError
+                        , job->exitCause());
             _syncPal->addError(error);
         }
         return true;
