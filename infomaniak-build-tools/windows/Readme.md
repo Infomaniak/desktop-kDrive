@@ -360,7 +360,8 @@ copy and rename "F:\Projects\desktop-kDrive\sync-exclude-win.lst" to "output_pat
 
 In the Solution Explorer, go to the available view:
 ![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
-and select CMake targets.
+
+Select CMake targets.
 
 Right-click on the Kdrive (executable) >> Debug >> Kdrive.exe (bin\kDrive.exe). 
 Once Kdrive.exe is running, right-click on the Kdrive_client (executable) >> Debug >> Kdrive_client.exe (bin\kDrive.exe).
