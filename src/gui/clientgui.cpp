@@ -1233,9 +1233,17 @@ void ClientGui::onDriveRemoved(int driveDbId) {
 
         // Erase drive
         driveInfoMapIt = _driveInfoMap.erase(driveInfoMapIt);
+
+        // Handle the case of the current drive being erased
         if (_currentDriveDbId == driveDbId) {
-            // Select next drive if there is one
-            _currentDriveDbId = !_driveInfoMap.empty() ? driveInfoMapIt->first : 0;
+            // Select the next drive if there is one.
+            if (driveInfoMapIt != _driveInfoMap.cend()) {
+                _currentDriveDbId = driveInfoMapIt->first;
+            } else if (_driveInfoMap.cbegin() != _driveInfoMap.cend()) {
+                _currentDriveDbId = _driveInfoMap.cbegin()->first;
+            } else {
+                _currentDriveDbId = 0;
+            }
         }
 
         emit driveListRefreshed();
@@ -1273,9 +1281,9 @@ void ClientGui::onRemoveSync(int syncDbId) {
 
 void ClientGui::onSyncDeletionFailed(int syncDbId) {
     // Unlock sync GUI actions.
-    auto _syncInfoMapIt = _syncInfoMap.find(syncDbId);
-    assert(_syncInfoMapIt != _syncInfoMap.cend());
-    _syncInfoMapIt->second.setIsBeingDeleted(false);
+    auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    assert(syncInfoMapIt != _syncInfoMap.cend());
+    syncInfoMapIt->second.setIsBeingDeleted(false);
 
     emit syncListRefreshed();
     emit refreshStatusNeeded();

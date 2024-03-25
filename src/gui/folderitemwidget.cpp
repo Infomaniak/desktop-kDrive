@@ -155,7 +155,7 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
     connect(this, &FolderItemWidget::displayFolderDetailCanceled, this, &FolderItemWidget::onDisplayFolderDetailCanceled);
 
     if (_syncDbId) {
-        auto syncInfoClient = getSyncInfoClient();
+        const auto syncInfoClient = getSyncInfoClient();
         if (!syncInfoClient) {
             return;
         }
@@ -273,7 +273,7 @@ SyncInfoClient *FolderItemWidget::getSyncInfoClient() const noexcept {
 }
 
 
-DriveInfoClient *FolderItemWidget::getDriveInfoClient() const noexcept {
+const DriveInfoClient *FolderItemWidget::getDriveInfoClient() const noexcept {
     const auto syncInfoClient = getSyncInfoClient();
     if (!syncInfoClient) {
         return nullptr;
@@ -402,7 +402,7 @@ void FolderItemWidget::onValidateButtonClicked() {
 void FolderItemWidget::onOpenFolder(const QString &link) {
     Q_UNUSED(link)
 
-    auto syncInfoClient = getSyncInfoClient();
+    const auto syncInfoClient = getSyncInfoClient();
     if (!syncInfoClient) {
         return;
     }
@@ -456,7 +456,7 @@ void FolderItemWidget::setToolTipsEnabled(bool enabled) noexcept {
 }
 
 void FolderItemWidget::retranslateUi() {
-    auto syncInfoClient = getSyncInfoClient();
+    const auto syncInfoClient = getSyncInfoClient();
     if (!syncInfoClient) {
         return;
     }

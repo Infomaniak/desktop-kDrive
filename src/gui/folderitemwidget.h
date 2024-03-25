@@ -46,7 +46,7 @@ class FolderItemWidget : public QWidget {
         void setSmartSyncActivated(bool value);
         void closeFolderView();
         SyncInfoClient *getSyncInfoClient() const noexcept;
-        DriveInfoClient *getDriveInfoClient() const noexcept;
+        const DriveInfoClient *getDriveInfoClient() const noexcept;
         bool isBeingDeleted() const noexcept;
         void setToolTipsEnabled(bool enabled) noexcept;
 
