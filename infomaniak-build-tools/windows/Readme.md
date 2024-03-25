@@ -347,7 +347,7 @@ Save (CTRL + S). CMake will automatically run in the output window; check no err
 copy and rename `F:\Projects\desktop-kDrive\sync-exclude-win.lst` to `output_path\bin\sync-exclude.lst`.
 
 ### DLL Copy
-Durring the next step, you may encounter missing DLL errors. Copy the required DLLs to the /bin folder of your output directory. The DLLs are located in:
+During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
 - `C:\Program Files (x86)\Poco\bin`
 - `C:\Program Files (x86)\Gpg4win\bin`
 - `C:\Program Files (x86)\log4cplus\bin`
