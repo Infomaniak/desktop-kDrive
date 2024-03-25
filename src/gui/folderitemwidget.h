@@ -28,6 +28,9 @@
 namespace KDC {
 
 class ClientGui;
+class DriveInfoClient;
+class MenuWidget;
+class UserInfoClient;
 
 class FolderItemWidget : public QWidget {
         Q_OBJECT
@@ -36,12 +39,16 @@ class FolderItemWidget : public QWidget {
         explicit FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui, QWidget *parent = nullptr);
 
         inline int syncDbId() const { return _syncDbId; }
-        void updateItem(const SyncInfoClient &syncInfo);
+        void updateItem();
         void setUpdateWidgetVisible(bool visible);
         void setUpdateWidgetLabelVisible(bool visible);
         void setSupportVfs(bool value);
         void setSmartSyncActivated(bool value);
         void closeFolderView();
+        SyncInfoClient *getSyncInfoClient() const noexcept;
+        const DriveInfoClient *getDriveInfoClient() const noexcept;
+        bool isBeingDeleted() const noexcept;
+        void setToolTipsEnabled(bool enabled) noexcept;
 
     signals:
         void runSync(int syncDbId);
@@ -58,23 +65,27 @@ class FolderItemWidget : public QWidget {
     private:
         std::shared_ptr<ClientGui> _gui;
         const int _syncDbId;
-        CustomToolButton *_expandButton;
-        CustomToolButton *_menuButton;
-        QLabel *_statusIconLabel;
-        QLabel *_nameLabel;
+        CustomToolButton *_expandButton{nullptr};
+        CustomToolButton *_menuButton{nullptr};
+        QLabel *_statusIconLabel{nullptr};
+        QLabel *_nameLabel{nullptr};
         CustomLabel *_smartSyncIconLabel;
-        QWidget *_updateWidget;
-        bool _isExpanded;
-        bool _smartSyncAvailable;
-        bool _smartSyncActivated;
-        QLabel *_synchroLabel;
-        QLabel *_saveLabel;
-        QPushButton *_cancelButton;
-        QPushButton *_validateButton;
+        QWidget *_updateWidget{nullptr};
+        bool _isExpanded{false};
+        bool _smartSyncAvailable{false};
+        bool _smartSyncActivated{false};
+        QLabel *_synchroLabel{nullptr};
+        QLabel *_saveLabel{nullptr};
+        QPushButton *_cancelButton{nullptr};
+        QPushButton *_validateButton{nullptr};
+        std::unique_ptr<MenuWidget> _menu{nullptr};
 
         void showEvent(QShowEvent *) override;
 
         void setExpandButton();
+        bool checkInfoMaps() const noexcept;
+
+        const UserInfoClient *getUserInfoClient() const noexcept;
 
     private slots:
         void onMenuButtonClicked();

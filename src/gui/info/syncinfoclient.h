@@ -27,37 +27,42 @@ class SyncInfoClient : public SyncInfo {
         SyncInfoClient();
         SyncInfoClient(const SyncInfo &syncInfo);
 
-        inline void setPaused(bool paused) { _paused = paused; }
-        inline bool paused() const { return _paused; }
-        inline void setStatus(SyncStatus status) { _status = status; }
-        inline SyncStatus status() const { return _status; }
-        inline void setStep(SyncStep step) { _step = step; }
-        inline SyncStep step() const { return _step; }
-        inline void setUnresolvedConflicts(bool unresolvedConflicts) { _unresolvedConflicts = unresolvedConflicts; }
-        inline bool unresolvedConflicts() const { return _unresolvedConflicts; }
-        inline void setCurrentFile(qint64 currentFile) { _currentFile = currentFile; }
-        inline qint64 currentFile() const { return _currentFile; }
+        inline void setPaused(bool paused) noexcept { _paused = paused; }
+        inline bool paused() const noexcept { return _paused; }
+        inline void setStatus(SyncStatus status) noexcept { _status = status; }
+        inline SyncStatus status() const noexcept { return _status; }
+        inline void setStep(SyncStep step) noexcept { _step = step; }
+        inline SyncStep step() const noexcept { return _step; }
+        inline void setUnresolvedConflicts(bool unresolvedConflicts) noexcept { _unresolvedConflicts = unresolvedConflicts; }
+        inline bool unresolvedConflicts() const noexcept { return _unresolvedConflicts; }
+        inline void setCurrentFile(qint64 currentFile) noexcept { _currentFile = currentFile; }
+        inline qint64 currentFile() const noexcept { return _currentFile; }
         inline void setTotalFiles(qint64 totalFiles) { _totalFiles = totalFiles; }
-        inline qint64 totalFiles() const { return _totalFiles; }
-        inline void setCompletedSize(qint64 completedSize) { _completedSize = completedSize; }
-        inline qint64 completedSize() const { return _completedSize; }
-        inline void setTotalSize(qint64 totalSize) { _totalSize = totalSize; }
-        inline qint64 totalSize() const { return _totalSize; }
-        inline void setEstimatedRemainingTime(qint64 estimatedRemainingTime) { _estimatedRemainingTime = estimatedRemainingTime; }
-        inline qint64 estimatedRemainingTime() const { return _estimatedRemainingTime; }
+        inline qint64 totalFiles() const noexcept { return _totalFiles; }
+        inline void setCompletedSize(qint64 completedSize) noexcept { _completedSize = completedSize; }
+        inline qint64 completedSize() const noexcept { return _completedSize; }
+        inline void setTotalSize(qint64 totalSize) noexcept { _totalSize = totalSize; }
+        inline qint64 totalSize() const noexcept { return _totalSize; }
+        inline void setEstimatedRemainingTime(qint64 estimatedRemainingTime) noexcept {
+            _estimatedRemainingTime = estimatedRemainingTime;
+        }
+        inline qint64 estimatedRemainingTime() const noexcept { return _estimatedRemainingTime; }
+        inline void setIsBeingDeleted(bool isDeletionOnGoing) noexcept { _isBeingDeleted = isDeletionOnGoing; }
+        inline bool isBeingDeleted() const noexcept { return _isBeingDeleted; }
 
         QString name() const;
 
     private:
-        bool _paused;
-        SyncStatus _status;
+        bool _paused{false};
+        SyncStatus _status{SyncStatus::SyncStatusUndefined};
         SyncStep _step;
-        bool _unresolvedConflicts;
-        qint64 _currentFile;
-        qint64 _totalFiles;
-        qint64 _completedSize;
-        qint64 _totalSize;
-        qint64 _estimatedRemainingTime;
+        bool _unresolvedConflicts{false};
+        qint64 _currentFile{0};
+        qint64 _totalFiles{0};
+        qint64 _completedSize{0};
+        qint64 _totalSize{0};
+        qint64 _estimatedRemainingTime{0};
+        bool _isBeingDeleted{false};
 };
 
 }  // namespace KDC

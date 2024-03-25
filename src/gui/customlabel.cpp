@@ -45,7 +45,7 @@ bool CustomLabel::event(QEvent *event) {
 
 void CustomLabel::leaveEvent(QEvent *event) {
     if (_customToolTip) {
-        emit _customToolTip->close();
+        _customToolTip->close();
         _customToolTip = nullptr;
     }
 

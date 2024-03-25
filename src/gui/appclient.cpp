@@ -329,6 +329,13 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit driveRemoved(driveDbId);
             break;
         }
+        case SIGNAL_NUM_DRIVE_DELETE_FAILED: {
+            int driveDbId;
+            paramsStream >> driveDbId;
+
+            emit driveDeletionFailed(driveDbId);
+            break;
+        }
         case SIGNAL_NUM_SYNC_ADDED: {
             SyncInfo syncInfo;
             paramsStream >> syncInfo;
@@ -386,6 +393,13 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             paramsStream >> syncDbId;
 
             emit vfsConversionCompleted(syncDbId);
+            break;
+        }
+        case SIGNAL_NUM_SYNC_DELETE_FAILED: {
+            int syncDbId;
+            paramsStream >> syncDbId;
+
+            emit syncDeletionFailed(syncDbId);
             break;
         }
         case SIGNAL_NUM_NODE_FOLDER_SIZE_COMPLETED: {

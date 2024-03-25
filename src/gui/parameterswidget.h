@@ -18,11 +18,11 @@
 
 #pragma once
 
-#include <QWidget>
+#include "widgetwithcustomtooltip.h"
 
 namespace KDC {
 
-class ParametersWidget : public QWidget {
+class ParametersWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
 
     public:

@@ -17,7 +17,6 @@
  */
 
 #include "guiutility.h"
-#include "libcommon/asserts.h"
 #include "common/utility.h"
 #include "appclient.h"
 #include "parameterscache.h"
@@ -565,5 +564,4 @@ bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
     return true;
 }
 #endif
-
 }  // namespace KDC

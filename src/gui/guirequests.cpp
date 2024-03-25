@@ -720,18 +720,15 @@ ExitCode GuiRequests::startSyncs(int userDbId) {
 }
 
 ExitCode GuiRequests::deleteSync(int syncDbId) {
-    QByteArray params;
-    QDataStream paramsStream(&params, QIODevice::WriteOnly);
-    paramsStream << syncDbId;
+    const auto params = QByteArray(ArgsReader(syncDbId));
 
     QByteArray results;
     if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_DELETE, params, results, COMM_LONG_TIMEOUT)) {
         return ExitCodeSystemError;
     }
 
-    ExitCode exitCode;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> exitCode;
+    ExitCode exitCode = ExitCodeOk;
+    ArgsWriter(results).write(exitCode);
 
     return exitCode;
 }
