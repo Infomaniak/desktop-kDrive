@@ -23,7 +23,6 @@
 #include "parametersdialog.h"
 #include "adddrivewizard.h"
 #include "logindialog.h"
-#include "common/utility.h"
 #include "info/userinfoclient.h"
 #include "info/accountinfo.h"
 #include "info/driveinfoclient.h"
@@ -81,6 +80,9 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void errorInfoList(int driveDbId, QList<ErrorInfo> &errorInfoList);
         void resolveConflictErrors(int driveDbId, bool keepLocalVersion);
         void resolveUnsupportedCharErrors(int driveDbId);
+
+        // Delay after which the logs are purged, expressed in days.
+        static const int logsPurgeRate;
 
     signals:
         void userListRefreshed();
