@@ -102,7 +102,7 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : 
     effect->setOffset(0);
     setGraphicsEffect(effect);
 
-    // Generic error icon by defaul
+    // Generic error icon by default
     setFileTypeIcon(":/client/resources/icons/statuts/error-sync.svg");
 
     setMinimumHeight(80);
@@ -185,8 +185,7 @@ void AbstractFileItemWidget::setPath(const QString &path) {
     _driveIconLabel->setPixmap(
         KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg").pixmap(iconSize));
 
-    QFileInfo fileInfo(path);
-    QString printablePath = fileInfo.dir().path();
+    QString printablePath = "/" + path;
     if (printablePath.size() > filePathMaxSize) {
         printablePath = printablePath.left(filePathMaxSize) + "...";
     }

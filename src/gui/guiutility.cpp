@@ -485,14 +485,14 @@ bool GuiUtility::openFolder(const QString &dirPath) {
     if (!dirPath.isEmpty()) {
         QFileInfo fileInfo(dirPath);
         if (fileInfo.exists()) {
-            QUrl url = getUrlFromLocalPath(fileInfo.filePath());
+            const QUrl url = getUrlFromLocalPath(fileInfo.path());
             if (url.isValid()) {
                 if (!QDesktopServices::openUrl(url)) {
                     return false;
                 }
             }
         } else if (fileInfo.dir().exists()) {
-            QUrl url = getUrlFromLocalPath(fileInfo.dir().path());
+            const QUrl url = getUrlFromLocalPath(fileInfo.dir().path());
             if (url.isValid()) {
                 if (!QDesktopServices::openUrl(url)) {
                     return false;
