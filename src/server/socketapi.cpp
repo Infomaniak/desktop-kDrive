@@ -1112,7 +1112,7 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
             int progress = 0;
             if (!canCancelHydration && vfsMapIt->second->status(file, isPlaceholder, isHydrated, isSyncing, progress) &&
                 isSyncing) {
-                canCancelHydration = syncPalMapIt->second->isDlOngoing(QStr2Path(file));
+                canCancelHydration = syncPalMapIt->second->isDownloadOngoing(QStr2Path(file));
             }
 
             if (isSingleFile) {
@@ -1271,7 +1271,7 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
 
         for (const auto &file : qAsConst(argumentList)) {
             auto fileData = FileData::get(file);
-            if (syncPalMapIt->second->isDlOngoing(QStr2Path(fileData._relativePath))) {
+            if (syncPalMapIt->second->isDownloadOngoing(QStr2Path(fileData._relativePath))) {
                 canCancelHydration = true;
                 break;
             }

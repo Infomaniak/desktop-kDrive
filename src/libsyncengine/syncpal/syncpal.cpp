@@ -1349,13 +1349,13 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
     return ExitCodeOk;
 }
 
-bool SyncPal::isDlOngoing(const SyncPath &localPath) {
+bool SyncPal::isDownloadOngoing(const SyncPath &localPath) {
     if (_syncPathToDownloadJobMap.find(localPath) != _syncPathToDownloadJobMap.end()) {
         return true;
     }
 
-    for (const auto &syncPathToDownloadJobMapIt : _syncPathToDownloadJobMap) {
-        if (CommonUtility::isSubDir(localPath, syncPathToDownloadJobMapIt.first)) {
+    for (const auto &[path, _] : _syncPathToDownloadJobMap) {
+        if (CommonUtility::isSubDir(localPath, path)) {
             return true;
         }
     }
