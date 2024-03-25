@@ -19,6 +19,12 @@
     - [Qt Creator](#using-qt-creator)
         - [Additionnal Requirements](#additionnal-requirements)
         - [CMake Parameters](#cmake-parameters)
+    - [VS2019](#using-Visual-Studio-2019)
+    - [Windows extension](#windows-Extension)
+    - [Project setup](#project-Setup)
+    - [Cmake configuration](#cmake-Configuration)
+    - [DLL Copy](#dll-Copy)
+    - [Debugging](#debugging)
     - [Testing the extension](#testing-the-extension)
 - [Build in Release](#build-in-release)
     - [Build and Packaging](#build-and-packaging)
@@ -347,13 +353,17 @@ You may encounter missing DLL errors. Copy the required DLLs to the /bin folder 
 - "C:\Program Files (x86)\zlib-1.2.11"
 - "C:\Program Files\OpenSSL\bin"
 
+### Sync-exclude.lst
+copy and rename "F:\Projects\desktop-kDrive\sync-exclude-win.lst" to "output_path\bin\sync-exclude.lst".
+
 ### Debugging
 
 In the Solution Explorer, go to the available view:
-(./doc-images/VS_2019_switch_sln_to_targets.png)
+![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
 and select CMake targets.
 
-Right-click on the Kdrive (executable) >> Debug >> Kdrive.exe (bin\kDrive.exe). Once Kdrive.exe is running, right-click on the Kdrive_client (executable) >> Debug >> Kdrive_client.exe (bin\kDrive.exe).
+Right-click on the Kdrive (executable) >> Debug >> Kdrive.exe (bin\kDrive.exe). 
+Once Kdrive.exe is running, right-click on the Kdrive_client (executable) >> Debug >> Kdrive_client.exe (bin\kDrive.exe).
 
 
 
