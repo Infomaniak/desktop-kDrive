@@ -2,6 +2,7 @@ PROJECT( CrashReporter )
 cmake_policy(SET CMP0017 NEW)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+find_package(Poco 1.12.5 REQUIRED Foundation Net)
 
 # TODO: differentiate release channel
 # if(BUILD_RELEASE)
@@ -50,6 +51,7 @@ if(NOT BUILD_LIBRARIES_ONLY)
     target_link_libraries(${CRASHREPORTER_EXECUTABLE}
         crashreporter-gui
         Qt6::Core Qt6::Widgets
+        Poco::Foundation Poco::Net
         ${libcommon_NAME}
     )
 
