@@ -343,18 +343,17 @@ Open Visual Studio 2019 and select "Open local folder", then choose "F:\Projects
 
 Save (CTRL + S). CMake will automatically run in the output window; ensure no errors occur.
 
-### DLL Copy
+### Sync-exclude.lst
+copy and rename "F:\Projects\desktop-kDrive\sync-exclude-win.lst" to "output_path\bin\sync-exclude.lst".
 
-You may encounter missing DLL errors. Copy the required DLLs to the /bin folder of your output directory. The DLLs are located in:
+### DLL Copy
+Durring the next step, you may encounter missing DLL errors. Copy the required DLLs to the /bin folder of your output directory. The DLLs are located in:
 - "C:\Program Files (x86)\Poco\bin"
 - "C:\Program Files (x86)\Gpg4win\bin"
 - "C:\Program Files (x86)\log4cplus\bin"
 - "C:\Program Files (x86)\NSIS\Bin"
 - "C:\Program Files (x86)\zlib-1.2.11"
 - "C:\Program Files\OpenSSL\bin"
-
-### Sync-exclude.lst
-copy and rename "F:\Projects\desktop-kDrive\sync-exclude-win.lst" to "output_path\bin\sync-exclude.lst".
 
 ### Debugging
 
