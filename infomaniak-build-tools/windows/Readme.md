@@ -15,11 +15,18 @@
     - [7za](#7za)
     - [IcoTool](#icotool)
 - [Certificate Configuration](#certificate-configuration)
-- [Build in Debug mode](#build-in-debug-mode)
-    - [Additionnal Requirements](#additionnal-requirements)
-    - [CMake Parameters](#cmake-parameters)
+- [Build in Debug](#build-in-debug)
+    - [Qt Creator](#using-qt-creator)
+        - [Additionnal Requirements](#additionnal-requirements)
+        - [CMake Parameters](#cmake-parameters)
+    - [VS2019](#using-Visual-Studio-2019)
+        - [Windows extension](#windows-Extension)
+        - [Project setup](#project-Setup)
+        - [Cmake configuration](#cmake-Configuration)
+        - [DLL Copy](#dll-Copy)
+        - [Debugging](#debugging)
     - [Testing the extension](#testing-the-extension)
-- [Build in Release mode](#build-in-release-mode)
+- [Build in Release](#build-in-release)
     - [Build and Packaging](#build-and-packaging)
 - [Possible build errors](#possible-build-errors)
 
@@ -32,7 +39,7 @@ If you wish to have the sources elsewhere, feel free to use the path you want.
 F:
 cd Projects
 git clone https://github.com/Infomaniak/desktop-kDrive.git
-cd kdrive && git submodule update --init --recursive
+cd desktop-kDrive && git submodule update --init --recursive
 ```
 
 # Installation Requirements
@@ -66,10 +73,13 @@ In Qt 6.2.3 Additional Libraries, select :
 - Qt Positioning
 - Qt WebChannel
 - Qt WebView
+- Qt Debug Information Files (only if you want to use a debugger)
 
 In Developer and Designer Tools (should be selected by default):
 - CMake
 - Ninja
+
+
 
 Add an environment variable named `QTDIR`, with the path of your Qt msvc folder (by default `C:\Qt\6.2.3\msvc2019_64`)  
 Add to your PATH (replace the path to Qt if needed):
@@ -240,18 +250,20 @@ Once installed, open kDriveExt.sln (in `extensions/windows/cfapi`) then :
 - Repeat the same steps using the USB certificate, in an environment variable named `KDC_PHYSICAL_AUMID`
 - Update the REGVALUE_AUMID define in `Vfs/cloudproviderregistrar.cpp` file if needed
 
-# Build in Debug mode
+# Build in Debug
 
 To build in Debug, you will need to build and deploy the Windows extension first.  
+
+## Using Qt Creator
 You can disable QML debugger from the settings to avoid some error pop-ups.
 
-## Additionnal Requirements
+### Additionnal Requirements
 
 To be able to properly debug, you will need to install `Qt Debug Information Files` from the Qt 6.2.3 section  
 If you cannot see it, you need to tick the **Archive** box and filter again
 
 
-## CMake Parameters
+### CMake Parameters
 
 Open the kDrive project in Qt Creator  
 Copy the following list in "Initial CMake Parameters" :
@@ -265,13 +277,13 @@ Copy the following list in "Initial CMake Parameters" :
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
 -DAPPLICATION_UPDATE_URL:STRING=https://www.infomaniak.com/drive/update/desktopclient
 -DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive
--DBIN_INSTALL_DIR:PATH=F:/projects/kdrive
--DVFS_DIRECTORY:PATH=F:/Projects/kdrive/extensions/windows/cfapi/x64/Debug
+-DBIN_INSTALL_DIR:PATH=F:/projects/desktop-kDrive
+-DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
 -DCMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=/debug /INCREMENTAL
 -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 -DCMAKE_INSTALL_PREFIX:PATH=%{ActiveProject:RunConfig:Executable:Path}
 -DCRASHREPORTER_SUBMIT_URL:STRING=https://www.infomaniak.com/report/drive/crash
--DKDRIVE_THEME_DIR:STRING=F:/projects/kdrive/infomaniak
+-DKDRIVE_THEME_DIR:STRING=F:/projects/desktop-kDrive/infomaniak
 -DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins
 -DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include
 -DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib
@@ -280,6 +292,82 @@ Copy the following list in "Initial CMake Parameters" :
 ```
 
 Then click "Re-configure with Initial Parameters"
+
+## Using Visual Studio 2019
+### Windows Extension
+
+To build in Debug mode, you'll need to build and deploy the Windows extension first.
+
+1. Open the kDriveExt solution located at "F:\Projects\desktop-kDrive\extensions\windows\cfapi".
+2. In the post-build events of the VFS projects, navigate to "Right click on vfs project" >> "Properties" >> "Configuration properties" >> "Build events" >> "Post-build events".
+3. Modify "F:\Projects\" to match your path. The last two paths are outputs of the global projects; keep them for later steps.
+4. Save and close the properties window.
+
+Select "Debug x64" and deploy. Repeat the same steps for "Release x64".
+
+Close the kDriveExt solution.
+
+### Project Setup
+
+Open Visual Studio 2019 and select "Open local folder", then choose "F:\Projects\desktop-kDrive".
+
+### CMake Configuration
+
+1. On the configuration selector, click on "Manage configurations".
+2. Create a new configuration "x64 Debug".
+3. Configure it as follows:
+   - Configuration type: Debug
+   - Toolset: msvc_x64_x64
+   - Build root: The folder set in the post-build events of the kDriveExt solution.
+   - CMake command args: 
+    ```bash
+    -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client 
+    -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak 
+    -DWITH_CRASHREPORTER=OFF -DBUILD_UNIT_TESTS:BOOL=ON 
+    -DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.2.3/msvc2019_64 
+    -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY 
+    -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include" 
+    -DZLIB_LIBRARY_RELEASE:FILEPATH="C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib" 
+    -DVFS_STATIC_LIBRARY:FILEPATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug/Vfs.lib 
+    -DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug 
+    -DPocoCrypto_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoFoundation_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoJSON_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoNetSSL_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoNet_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoUtil_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPocoXML_DIR:PATH="C:/Program Files (x86)/Poco/cmake" 
+    -DPoco_DIR:PATH="C:/Program Files (x86)/Poco/cmake"
+    ```
+   You may need to adjust paths based on your installation.
+
+Save (CTRL + S). CMake will automatically run in the output window; ensure no errors occur.
+
+### Sync-exclude.lst
+copy and rename "F:\Projects\desktop-kDrive\sync-exclude-win.lst" to "output_path\bin\sync-exclude.lst".
+
+### DLL Copy
+Durring the next step, you may encounter missing DLL errors. Copy the required DLLs to the /bin folder of your output directory. The DLLs are located in:
+- "C:\Program Files (x86)\Poco\bin"
+- "C:\Program Files (x86)\Gpg4win\bin"
+- "C:\Program Files (x86)\log4cplus\bin"
+- "C:\Program Files (x86)\NSIS\Bin"
+- "C:\Program Files (x86)\zlib-1.2.11"
+- "C:\Program Files\OpenSSL\bin"
+
+### Debugging
+
+In the Solution Explorer, go to the available view:
+
+![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
+
+Select CMake targets.
+
+Right-click on the Kdrive (executable) >> Debug >> Kdrive.exe (bin\kDrive.exe).
+
+Once Kdrive.exe is running, right-click on the Kdrive_client (executable) >> Debug >> Kdrive_client.exe (bin\kDrive.exe).
+
+
 
 ## Testing the extension
 
@@ -303,7 +391,7 @@ And restart the File Explorer :
 start explorer.exe
 ```
 
-# Build in Release mode
+# Build in Release
 
 ## Build and Packaging
 
@@ -325,4 +413,4 @@ When building in Debug mode, the following error may occur when `CMAKE_INSTALL_P
 ![sentry_init Debug Error](./doc-images/Qt_Debug_Error.png)
 
 The `INSTALL_PREFIX` must not end with `bin`, and if so you will need to adjust its value  
-For example, `F:/Projects/build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug/bin ` must be changed to `F:/Projects/build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug`
+For example, `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug/bin ` must be changed to `F:/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug`
