@@ -359,6 +359,7 @@ copy and rename "F:\Projects\desktop-kDrive\sync-exclude-win.lst" to "output_pat
 ### Debugging
 
 In the Solution Explorer, go to the available view:
+
 ![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
 
 Select CMake targets.
