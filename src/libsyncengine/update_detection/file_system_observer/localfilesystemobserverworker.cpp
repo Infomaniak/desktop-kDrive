@@ -637,7 +637,9 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 continue;
             }
 
-            LOGW_SYNCPAL_INFO(_logger, L"Item \"" << Path2WStr(dirIt->path()).c_str() << L"\" found");
+            if (ParametersCache::instance()->parameters().extendedLog()) {
+                LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << Path2WStr(dirIt->path()).c_str() << L"\" found");
+            }
 
             if (stopAsked()) {
                 return ExitCodeOk;

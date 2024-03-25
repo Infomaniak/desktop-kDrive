@@ -10,10 +10,11 @@
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
     - [xxHash](#xxhash)
-- [Build in Debug mode](#build-in-debug-mode)
-    - [Configuration](#configuration)
-    - [Debugging](#debugging)
-- [Build in Release mode](#build-in-release-mode)
+- [Build in Debug](#build-in-debug)
+    - [Qt Creator](#using-qt-creator)
+        - [Configuration](#configuration)
+        - [Debugging](#debugging)
+- [Build in Release](#build-in-release)
     - [Podman Image](#podman-image)
     - [Building](#building)
 
@@ -25,7 +26,7 @@ If you wish to have the sources elsewhere, feel free to use the path you want.
 ```bash
 cd ~/Projects
 git clone https://github.com/Infomaniak/desktop-kDrive.git
-cd kdrive && git submodule update --init --recursive
+cd desktop-kDrive && git submodule update --init --recursive
 ```
 
 # Installation Requirements
@@ -152,9 +153,11 @@ cmake ..
 sudo cmake --build . --target install
 ```
 
-# Build in Debug mode
+# Build in Debug
 
-## Configuration
+## Using Qt Creator 
+
+### Configuration
 
 Open the kDrive project in your IDE   
 In the project build settings, paste the following lines in the Initial Configuration Batch Edit (replace `<user>`)
@@ -167,19 +170,19 @@ In the project build settings, paste the following lines in the Initial Configur
 -DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
--DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
--DKDRIVE_THEME_DIR=/home/<user>/Projects/kdrive/infomaniak
--DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/build-kdrive-Desktop_Qt_6_2_3_GCC_64bit-Debug/bin
+-DAPPLICATION_CLIENT_EXECUTABLE=kdrive
+-DKDRIVE_THEME_DIR=/home/<user>/Projects/desktop-kDrive/infomaniak
+-DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_GCC_64bit-Debug/bin
 -DBUILD_TESTING=OFF
 -DWITH_CRASHREPORTER=OFF
 ```
 
-## Debugging
+### Debugging
 
 The configuration and database files are stored in the `~/.config/kDrive` directory.  
 The log files will be generated in the `/tmp/kDrive-logdir` directory.
 
-# Build in Release mode
+# Build in Release
 
 Currently, the release appImage file is generated in a podman container.
 For this part, please replace `[arch]` by either `amd64` or `arm64` depending on your architecture.
