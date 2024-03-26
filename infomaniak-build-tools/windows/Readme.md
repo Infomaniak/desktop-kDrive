@@ -341,12 +341,24 @@ Open Visual Studio 2019 and select "Open local folder", then choose `F:\Projects
     ```
    You may need to adjust paths based on your installation.
 
-Save (CTRL + S). CMake will automatically run in the output window; check no errors occur.
+   - Advanced settings >> install path : Must be the same as build root.
 
-### The file `Sync-exclude.lst`
-copy and rename `F:\Projects\desktop-kDrive\sync-exclude-win.lst` to `output_path\bin\sync-exclude.lst`.
+Save (CTRL + S). CMake will automatically run in the output window; ensure no errors occur.
+
+### Install
+
+In the Solution Explorer, go to the available view:
+
+![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
+
+Select CMake targets.
+Right-click on the kDrive (executable) >> Install.
+A missing `.exe` error could appear, ignore it.
+Once done, right-click on the kDrive_client (executable) >> Install.
+
 
 ### DLL Copy
+
 Durring the next step, you may encounter missing DLL errors. Copy the required DLLs to the /bin folder of your output directory. The DLLs are located in:
 - `C:\Program Files (x86)\Poco\bin`
 - `C:\Program Files (x86)\Gpg4win\bin`
@@ -358,15 +370,11 @@ Durring the next step, you may encounter missing DLL errors. Copy the required D
 ### Debugging
 
 In the Solution Explorer, go to the available view:
-
-![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
-
 Select CMake targets.
 
-Right-click on the Kdrive (executable) >> Debug >> kDrive.exe (bin\kDrive.exe).
+Right-click on the kDrive (executable) >> Debug >> kDrive.exe (bin\kDrive.exe).
 
-Once Kdrive.exe is running, right-click on the Kdrive_client (executable) >> Debug >> Kdrive_client.exe (bin\kDrive.exe).
-
+Once kDrive.exe is running, right-click on the kDrive_client (executable) >> Debug >> kDrive_client.exe (bin\kDrive.exe).
 
 
 ## Testing the extension
