@@ -354,7 +354,7 @@ void sendTestRequest(Poco::Net::HTTPSClientSession &session, const bool resetSes
 
     std::cout << "receiving response" << std::endl;
     Poco::Net::HTTPResponse response;
-    std::istream& rs = session.receiveResponse(response);
+    session.receiveResponse(response);
 
     std::cout << "socket connected: " << connected << std::endl;
     std::cout << "session connected: " << session.connected() << std::endl;
@@ -394,8 +394,6 @@ void TestJobManager::testReuseSocket()
     CPPUNIT_ASSERT(!session.socket().impl()->initialized());
     sendTestRequest(session, true);        // Doing twice, so we can see in console that the socket is not connected anymore
     CPPUNIT_ASSERT(!session.socket().impl()->initialized());
-
-
 }
 
 }  // namespace KDC
