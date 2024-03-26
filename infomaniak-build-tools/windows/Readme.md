@@ -358,8 +358,7 @@ Once done, right-click on the kDrive_client (executable) >> Install.
 
 
 ### DLL Copy
-
-Durring the next step, you may encounter missing DLL errors. Copy the required DLLs to the /bin folder of your output directory. The DLLs are located in:
+During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
 - `C:\Program Files (x86)\Poco\bin`
 - `C:\Program Files (x86)\Gpg4win\bin`
 - `C:\Program Files (x86)\log4cplus\bin`
@@ -373,6 +372,8 @@ In the Solution Explorer, go to the available view:
 Select CMake targets.
 
 Right-click on the kDrive (executable) >> Debug >> kDrive.exe (bin\kDrive.exe).
+
+Once Kdrive.exe is running, right-click on the Kdrive_client (executable) >> Debug >> Kdrive_client.exe (bin\kDrive.exe).
 
 Once kDrive.exe is running, right-click on the kDrive_client (executable) >> Debug >> kDrive_client.exe (bin\kDrive.exe).
 
