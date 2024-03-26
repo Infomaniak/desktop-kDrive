@@ -76,6 +76,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         void driveUpdated(const DriveInfo &driveInfo);
         void driveQuotaUpdated(int driveDbId, qint64 total, qint64 used);
         void driveRemoved(int driveDbId);
+        void driveDeletionFailed(int driveDbId);
         // Sync signals
         void syncAdded(const SyncInfo &syncInfo);
         void syncUpdated(const SyncInfo &syncInfo);
@@ -84,6 +85,7 @@ class AppClient : public SharedTools::QtSingleApplication {
                               int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
         void itemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo);
         void vfsConversionCompleted(int syncDbId);
+        void syncDeletionFailed(int syncDbId);
         // Node signals
         void folderSizeCompleted(QString nodeId, qint64 size);
         void fixConflictingFilesCompleted(int syncDbId, uint64_t nbErrors);

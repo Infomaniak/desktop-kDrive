@@ -31,7 +31,13 @@
 #include <QUrl>
 #include <QWidget>
 
+class QHelpEvent;
+class QLayout;
+
 namespace KDC {
+
+class CustomToolTip;
+
 namespace GuiUtility {
 static const QString learnMoreLink = QString("learnMoreLink");
 static const QString clickHereLink = QString("clickHereLink");
@@ -96,7 +102,19 @@ void invalidateLayout(QLayout *layout);
 #ifdef Q_OS_LINUX
 bool getLinuxDesktopType(QString &type, QString &version);
 #endif
+template <class C>
+void setEnabledRecursively(C *root, bool enabled) {
+    root->setEnabled(enabled);
+    for (auto *child : root->template findChildren<QLayout *>()) {
+        setEnabledRecursively(child, enabled);
+    }
+    for (auto *child : root->template findChildren<QWidget *>()) {
+        if (!enabled) child->setToolTip("");
+        setEnabledRecursively(child, enabled);
+    }
+}
 }  // namespace GuiUtility
+
 }  // namespace KDC
 
 #endif

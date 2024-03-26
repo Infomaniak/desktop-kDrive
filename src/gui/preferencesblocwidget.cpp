@@ -16,8 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "preferencesblocwidget.h"
 #include "guiutility.h"
+#include "folderitemwidget.h"
+#include "foldertreeitemwidget.h"
+#include "guiutility.h"
+#include "preferencesblocwidget.h"
 
 #include <QFrame>
 #include <QGraphicsDropShadowEffect>
@@ -38,8 +41,7 @@ static const int shadowBlurRadius = 20;
 
 Q_LOGGING_CATEGORY(lcPreferencesBlocWidget, "gui.preferencesblocwidget", QtInfoMsg)
 
-PreferencesBlocWidget::PreferencesBlocWidget(QWidget *parent)
-    : QWidget(parent), _backgroundColor(QColor()), _actionIconColor(QColor()), _actionIconSize(QSize()), _layout(nullptr) {
+PreferencesBlocWidget::PreferencesBlocWidget(QWidget *parent) : LargeWidgetWithCustomToolTip(parent) {
     setContentsMargins(0, 0, 0, 0);
 
     _layout = new QVBoxLayout();
@@ -145,6 +147,44 @@ void PreferencesBlocWidget::onActionIconColorChanged() {
 
 void PreferencesBlocWidget::onActionIconSizeChanged() {
     setActionIcon();
+}
+
+void PreferencesBlocWidget::updateBloc() {
+    if (auto folderItemWidget = findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
+        if (!folderItemWidget->isBeingDeleted() && !isEnabled()) {
+            // Re-enable the folder bloc if the synchronization deletion failed.
+            setCustomToolTipText("");
+            setEnabled(true);
+        }
+        folderItemWidget->updateItem();
+    } else {
+        qCDebug(lcPreferencesBlocWidget) << "Empty folder bloc!";
+    }
+}
+
+void PreferencesBlocWidget::refreshFolders() const {
+    if (auto folderTreeItemWidget = findChild<FolderTreeItemWidget *>();
+        folderTreeItemWidget && folderTreeItemWidget->isVisible()) {
+        folderTreeItemWidget->loadSubFolders();
+    }
+}
+
+void PreferencesBlocWidget::setToolTipsEnabled(bool enabled) const {
+    if (auto folderItemWidget = findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
+        folderItemWidget->setToolTipsEnabled(enabled);
+    } else {
+        qCDebug(lcPreferencesBlocWidget) << "Empty folder bloc!";
+    }
+}
+
+void PreferencesBlocWidget::setEnabledRecursively(bool enabled) {
+    GuiUtility::setEnabledRecursively(this, enabled);
+    setToolTipsEnabled(enabled);
+    if (enabled) {
+        setCustomToolTipText("");
+    } else {
+        setCustomToolTipText(tr("This synchronization is being deleted."));
+    }
 }
 
 }  // namespace KDC

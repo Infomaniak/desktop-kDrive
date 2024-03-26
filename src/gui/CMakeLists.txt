@@ -134,6 +134,7 @@ set(client_SRCS
     customlabel.h customlabel.cpp
     resourcesmanagerdialog.h resourcesmanagerdialog.cpp
     fixconflictingfilesdialog.h fixconflictingfilesdialog.cpp
+    widgetwithcustomtooltip.h widgetwithcustomtooltip.cpp
 )
 
 IF( APPLE )

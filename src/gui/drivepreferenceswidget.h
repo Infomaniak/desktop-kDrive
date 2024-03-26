@@ -25,8 +25,6 @@
 #include "folderitemwidget.h"
 #include "foldertreeitemwidget.h"
 #include "parameterswidget.h"
-#include "libcommon/info/driveinfo.h"
-#include "libcommon/info/syncinfo.h"
 
 #include <QBoxLayout>
 #include <QColor>
@@ -68,25 +66,25 @@ class DrivePreferencesWidget : public ParametersWidget {
         enum AddFolderStep { SelectLocalFolder = 0, SelectServerBaseFolder, SelectServerFolders, Confirm };
 
         std::shared_ptr<ClientGui> _gui;
-        int _driveDbId;
-        int _userDbId;
+        int _driveDbId{0};
+        int _userDbId{0};
 
-        QVBoxLayout *_mainVBox;
-        ActionWidget *_displayErrorsWidget;
-        ActionWidget *_displayBigFoldersWarningWidget;
-        QLabel *_userAvatarLabel;
-        QLabel *_userNameLabel;
-        QLabel *_userMailLabel;
-        CustomSwitch *_notificationsSwitch;
-        int _foldersBeginIndex;
-        QLabel *_foldersLabel;
-        CustomPushButton *_addLocalFolderButton;
-        QLabel *_notificationsLabel;
-        QLabel *_notificationsTitleLabel;
-        QLabel *_notificationsDescriptionLabel;
-        QLabel *_connectedWithLabel;
-        CustomToolButton *_removeDriveButton;
-        bool _updatingFoldersBlocs;
+        QVBoxLayout *_mainVBox{nullptr};
+        ActionWidget *_displayErrorsWidget{nullptr};
+        ActionWidget *_displayBigFoldersWarningWidget{nullptr};
+        QLabel *_userAvatarLabel{nullptr};
+        QLabel *_userNameLabel{nullptr};
+        QLabel *_userMailLabel{nullptr};
+        CustomSwitch *_notificationsSwitch{nullptr};
+        int _foldersBeginIndex{0};
+        QLabel *_foldersLabel{nullptr};
+        CustomPushButton *_addLocalFolderButton{nullptr};
+        QLabel *_notificationsLabel{nullptr};
+        QLabel *_notificationsTitleLabel{nullptr};
+        QLabel *_notificationsDescriptionLabel{nullptr};
+        QLabel *_connectedWithLabel{nullptr};
+        CustomToolButton *_removeDriveButton{nullptr};
+        bool _updatingFoldersBlocs{false};
 
         void showEvent(QShowEvent *event) override;
 
@@ -98,13 +96,14 @@ class DrivePreferencesWidget : public ParametersWidget {
         bool switchVfsOff(int syncDbId, bool diskSpaceWarning);
         void resetFoldersBlocs();
         void updateFoldersBlocs();
-        void refreshFoldersBlocs();
+        void refreshFoldersBlocs() const;
         FolderTreeItemWidget *blocTreeItemWidget(PreferencesBlocWidget *folderBloc);
         FolderItemWidget *blocItemWidget(PreferencesBlocWidget *folderBloc);
         QFrame *blocSeparatorFrame(PreferencesBlocWidget *folderBloc);
         bool addSync(const QString &localFolderPath, bool smartSync, const QString &serverFolderPath,
                      const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet);
         bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
+        void updateGuardedFoldersBlocs();
 
     private slots:
         void onErrorsWidgetClicked();
@@ -125,6 +124,7 @@ class DrivePreferencesWidget : public ParametersWidget {
         void onUndecidedListsCleared();
         void retranslateUi();
         void onVfsConversionCompleted(int syncDbId);
+        void onDriveBeingRemoved();
 };
 
 }  // namespace KDC

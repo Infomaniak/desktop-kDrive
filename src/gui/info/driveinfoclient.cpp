@@ -17,43 +17,12 @@
  */
 
 #include "driveinfoclient.h"
-#include "../guirequests.h"
 
 namespace KDC {
 
-DriveInfoClient::DriveInfoClient()
-    : DriveInfo(),
-      _status(SyncStatusUndefined),
-      _unresolvedConflicts(false),
-      _totalSize(0),
-      _used(0),
-      _unresolvedErrorsCount(0),
-      _autoresolvedErrorsCount(0),
-      _stackedWidgetIndex(SynthesisStackedWidgetSynchronized),
-      _synchronizedListWidget(nullptr),
-      _synchronizedItemList(QVector<SynchronizedItem>()),
-      _synchronizedListStackPosition(0),
-      _favoritesListStackPosition(0),
-      _activityListStackPosition(0),
-      _errorTabWidgetStackPosition(0),
-      _lastErrorTimestamp(0) {}
+DriveInfoClient::DriveInfoClient() : DriveInfo() {}
 
-DriveInfoClient::DriveInfoClient(const DriveInfo &driveInfo)
-    : DriveInfo(driveInfo),
-      _status(SyncStatusUndefined),
-      _unresolvedConflicts(false),
-      _totalSize(0),
-      _used(0),
-      _unresolvedErrorsCount(0),
-      _autoresolvedErrorsCount(0),
-      _stackedWidgetIndex(SynthesisStackedWidgetSynchronized),
-      _synchronizedListWidget(nullptr),
-      _synchronizedItemList(QVector<SynchronizedItem>()),
-      _synchronizedListStackPosition(0),
-      _favoritesListStackPosition(0),
-      _activityListStackPosition(0),
-      _errorTabWidgetStackPosition(0),
-      _lastErrorTimestamp(0) {}
+DriveInfoClient::DriveInfoClient(const DriveInfo &driveInfo) : DriveInfo(driveInfo) {}
 
 void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
     _status = SyncStatusUndefined;

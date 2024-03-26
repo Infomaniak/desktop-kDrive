@@ -22,8 +22,6 @@
 #include "libcommonserver/utility/utility.h"
 #include "version.h"
 
-#include "version.h"
-
 #include <system_error>
 #include <sys/types.h>
 

@@ -19,6 +19,8 @@
 #pragma once
 
 #include "clickablewidget.h"
+#include "widgetwithcustomtooltip.h"
+
 
 #include <QBoxLayout>
 #include <QColor>
@@ -29,7 +31,9 @@
 
 namespace KDC {
 
-class PreferencesBlocWidget : public QWidget {
+class CustomToolTip;
+
+class PreferencesBlocWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
 
         Q_PROPERTY(QColor background_color READ backgroundColor WRITE setBackgroundColor)
@@ -42,6 +46,10 @@ class PreferencesBlocWidget : public QWidget {
         QBoxLayout *addLayout(QBoxLayout::Direction direction, bool noMargins = false);
         ClickableWidget *addActionWidget(QVBoxLayout **vLayout, bool noMargins = false);
         QFrame *addSeparator();
+        void setToolTipsEnabled(bool enabled) const;
+        void updateBloc();
+        void setEnabledRecursively(bool enabled);
+        void refreshFolders() const;
 
     signals:
         void actionIconColorChanged();
@@ -51,7 +59,7 @@ class PreferencesBlocWidget : public QWidget {
         QColor _backgroundColor;
         QColor _actionIconColor;
         QSize _actionIconSize;
-        QVBoxLayout *_layout;
+        QVBoxLayout *_layout{nullptr};
 
         void paintEvent(QPaintEvent *event) override;
 

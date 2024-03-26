@@ -21,6 +21,7 @@
 #include "common/utility.h"
 #include "updater/kdcupdater.h"
 #include "libcommonserver/vfs.h"
+#include "config.h"
 #include "migration/migrationparams.h"
 #include "updater/kdcupdater.h"
 #include "socketapi.h"
@@ -346,6 +347,51 @@ void AppServer::onCleanup() {
     _vfsMap.clear();
 }
 
+// This task can be long and block the GUI
+void AppServer::stopSyncTask(int syncDbId) {
+    // Stop sync and remove it from syncPalMap
+    ExitCode exitCode = stopSyncPal(syncDbId, false, true, true);
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(_logger, "Error in stopSyncPal : " << exitCode);
+        addError(Error(ERRID, exitCode, ExitCauseUnknown));
+    }
+
+    // Stop Vfs
+    exitCode = stopVfs(syncDbId, true);
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(_logger, "Error in stopVfs : " << exitCode);
+        addError(Error(ERRID, exitCode, ExitCauseUnknown));
+    }
+
+    ASSERT(_syncPalMap[syncDbId].use_count() == 1)
+    _syncPalMap.erase(syncDbId);
+
+    ASSERT(_vfsMap[syncDbId].use_count() == 1)
+    _vfsMap.erase(syncDbId);
+}
+
+void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
+    for (int syncDbId : syncDbIdList) {
+        stopSyncTask(syncDbId);
+    }
+}
+
+void AppServer::deleteAccount(int accountDbId) {
+    std::vector<Drive> driveList;
+    if (!ParmsDb::instance()->selectAllDrives(accountDbId, driveList)) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
+        addError(Error(ERRID, ExitCodeDbError, ExitCauseUnknown));
+    } else if (driveList.empty()) {
+        ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
+        if (exitCode == ExitCodeOk) {
+            sendAccountRemoved(accountDbId);
+        } else {
+            LOG_WARN(_logger, "Error in Requests::deleteAccount : " << exitCode);
+            addError(Error(ERRID, exitCode, ExitCauseUnknown));
+        }
+    }
+}
+
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
@@ -407,9 +453,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_USER_DELETE: {
-            int userDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> userDbId;
+            // As the actual deletion task is post-poned via a timer,
+            // this request returns immediately with `ExitCodeOk`.
+            // Errors are reported via the addError method.
+
+            resultStream << ExitCodeOk;
+
+            int userDbId = 0;
+            ArgsWriter(params).write(userDbId);
 
             // Get syncs do delete
             std::vector<int> syncDbIdList;
@@ -419,44 +470,25 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            // Stop syncs for this drive and remove them from syncPalMap
-            ExitCode exitCode;
-            for (int syncDbId : syncDbIdList) {
-                // Stop SyncPal
-                exitCode = stopSyncPal(syncDbId, false, true, true);
-                if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger, "Error in stopSyncPal : " << exitCode);
-                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
-                    resultStream << exitCode;
-                    break;
-                }
-
-                // Stop Vfs
-                exitCode = stopVfs(syncDbId, true);
-                if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger, "Error in stopVfs : " << exitCode);
-                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
-                    resultStream << exitCode;
-                    break;
-                }
-
-                ASSERT(_syncPalMap[syncDbId].use_count() == 1)
-                _syncPalMap.erase(syncDbId);
-
-                ASSERT(_vfsMap[syncDbId].use_count() == 1)
-                _vfsMap.erase(syncDbId);
+            if (syncDbIdList.empty()) {
+                // The user has no synchronizations.
+                break;
             }
 
-            // Delete user from DB
-            exitCode = ServerRequests::deleteUser(userDbId);
-            if (exitCode != ExitCodeOk) {
-                LOG_WARN(_logger, "Error in Requests::deleteUser : " << exitCode);
-                addError(Error(ERRID, exitCode, ExitCauseUnknown));
-            }
+            // Stop syncs for this user and remove them from syncPalMap.
+            QTimer::singleShot(100, [this, userDbId, syncDbIdList]() {
+                AppServer::stopAllSyncsTask(syncDbIdList);
 
-            sendUserRemoved(userDbId);
+                // Delete user from DB
+                ExitCode exitCode = ServerRequests::deleteUser(userDbId);
+                if (exitCode == ExitCodeOk) {
+                    sendUserRemoved(userDbId);
+                } else {
+                    LOG_WARN(_logger, "Error in Requests::deleteUser : " << exitCode);
+                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
+                }
+            });
 
-            resultStream << exitCode;
             break;
         }
         case REQUEST_NUM_ERROR_INFOLIST: {
@@ -703,10 +735,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_DRIVE_DEFAULTCOLOR: {
-            QColor color("#9F9F9F");
+            static const QColor driveDefaultColor(0x9F9F9F);
 
             resultStream << ExitCodeOk;
-            resultStream << color;
+            resultStream << driveDefaultColor;
             break;
         }
         case REQUEST_NUM_DRIVE_UPDATE: {
@@ -724,9 +756,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_DRIVE_DELETE: {
-            int driveDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
+            // As the actual deletion task is post-poned via a timer,
+            // this request returns immediately with `ExitCodeOk`.
+            // Errors are reported via the addError method.
+
+            resultStream << ExitCodeOk;
+
+            int driveDbId = 0;
+            ArgsWriter(params).write(driveDbId);
 
             // Get syncs do delete
             int accountDbId = -1;
@@ -738,73 +775,28 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            if (accountDbId < 0) {
-                LOG_WARN(_logger, "Failed to retrieve account DB ID from SyncPal");
-                addError(Error(ERRID, ExitCodeDataError, ExitCauseUnknown));
-                resultStream << ExitCodeDataError;
+            if (syncDbIdList.empty()) {
+                // The drive's user has no synchronizations.
+                break;
             }
 
             // Stop syncs for this drive and remove them from syncPalMap
-            ExitCode exitCode = ExitCodeUnknown;
-            for (int syncDbId : syncDbIdList) {
-                // Stop SyncPal
-                exitCode = stopSyncPal(syncDbId, false, true, true);
-                if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger, "Error in stopSyncPal : " << exitCode);
+            QTimer::singleShot(100, [this, driveDbId, accountDbId, syncDbIdList]() {
+                AppServer::stopAllSyncsTask(syncDbIdList);
+
+                // Delete drive from DB
+                const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
+                if (exitCode == ExitCodeOk) {
+                    sendDriveRemoved(driveDbId);
+                } else {
+                    LOG_WARN(_logger, "Error in Requests::deleteDrive : " << exitCode);
                     addError(Error(ERRID, exitCode, ExitCauseUnknown));
-                    resultStream << exitCode;
-                    break;
+                    sendDriveDeletionFailed(driveDbId);
                 }
 
-                // Stop Vfs
-                exitCode = stopVfs(syncDbId, true);
-                if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger, "Error in stopVfs : " << exitCode);
-                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
-                    resultStream << exitCode;
-                    break;
-                }
+                deleteAccount(accountDbId);
+            });
 
-                ASSERT(_syncPalMap[syncDbId].use_count() == 1)
-                _syncPalMap.erase(syncDbId);
-
-                ASSERT(_vfsMap[syncDbId].use_count() == 1)
-                _vfsMap.erase(syncDbId);
-            }
-
-            // Delete drive from DB
-            exitCode = ServerRequests::deleteDrive(driveDbId);
-            if (exitCode != ExitCodeOk) {
-                LOG_WARN(_logger, "Error in Requests::deleteDrive : " << exitCode);
-                addError(Error(ERRID, exitCode, ExitCauseUnknown));
-                resultStream << exitCode;
-                break;
-            }
-
-            sendDriveRemoved(driveDbId);
-
-            // Delete the account if not used anymore
-            std::vector<Drive> driveList;
-            if (!ParmsDb::instance()->selectAllDrives(accountDbId, driveList)) {
-                LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
-                addError(Error(ERRID, ExitCodeDbError, ExitCauseUnknown));
-                resultStream << ExitCodeDbError;
-                break;
-            }
-
-            if (driveList.size() == 0) {
-                exitCode = ServerRequests::deleteAccount(accountDbId);
-                if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger, "Error in Requests::deleteAccount : " << exitCode);
-                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
-                    resultStream << exitCode;
-                    break;
-                }
-
-                sendAccountRemoved(accountDbId);
-            }
-
-            resultStream << exitCode;
             break;
         }
         case REQUEST_NUM_SYNC_INFOLIST: {
@@ -1169,40 +1161,31 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_SYNC_DELETE: {
-            int syncDbId;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
+            // Although the return code is always `ExitCodeOk` because of fake asynchronicity via QTimer,
+            // the post-poned task records errors through calls to `addError` and use a dedicated client-server signal
+            // for deletion failure.
+            resultStream << ExitCodeOk;
 
-            // Stop sync and remove it from syncPalMap
-            ExitCode exitCode = stopSyncPal(syncDbId, false, true, true);
-            if (exitCode != ExitCodeOk) {
-                LOG_WARN(_logger, "Error in stopSyncPal : " << exitCode);
-                addError(Error(ERRID, exitCode, ExitCauseUnknown));
-            }
+            int syncDbId = 0;
+            ArgsWriter(params).write(syncDbId);
 
-            // Stop Vfs
-            exitCode = stopVfs(syncDbId, true);
-            if (exitCode != ExitCodeOk) {
-                LOG_WARN(_logger, "Error in stopVfs : " << exitCode);
-                addError(Error(ERRID, exitCode, ExitCauseUnknown));
-            }
+            QTimer::singleShot(100, [this, syncDbId]() {
+                AppServer::stopSyncTask(syncDbId);  // This task can be long, hence blocking, on Windows.
 
-            ASSERT(_syncPalMap[syncDbId].use_count() == 1)
-            _syncPalMap.erase(syncDbId);
+                // Delete sync from DB
+                const ExitCode exitCode = ServerRequests::deleteSync(syncDbId);
 
-            ASSERT(_vfsMap[syncDbId].use_count() == 1)
-            _vfsMap.erase(syncDbId);
+                if (exitCode == ExitCodeOk) {
+                    // Let the client remove the sync-related GUI elements.
+                    sendSyncRemoved(syncDbId);
+                } else {
+                    LOG_WARN(_logger, "Error in Requests::deleteSync : " << exitCode);
+                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
+                    // Let the client unlock the sync-related GUI elements.
+                    sendSyncDeletionFailed(syncDbId);
+                }
+            });
 
-            // Delete sync from DB
-            exitCode = ServerRequests::deleteSync(syncDbId);
-            if (exitCode != ExitCodeOk) {
-                LOG_WARN(_logger, "Error in Requests::deleteSync : " << exitCode);
-                addError(Error(ERRID, exitCode, ExitCauseUnknown));
-            }
-
-            sendSyncRemoved(syncDbId);
-
-            resultStream << exitCode;
             break;
         }
         case REQUEST_NUM_SYNC_GETPUBLICLINKURL: {
@@ -3759,6 +3742,23 @@ void AppServer::sendSyncRemoved(int syncDbId) {
 
     CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_REMOVED, params, id);
 }
+
+void AppServer::sendSyncDeletionFailed(int syncDbId) {
+    int id = 0;
+    const auto params = QByteArray(ArgsReader(syncDbId));
+
+    CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_DELETE_FAILED, params, id);
+}
+
+
+void AppServer::sendDriveDeletionFailed(int driveDbId) {
+    int id = 0;
+    const auto params = QByteArray(ArgsReader(driveDbId));
+
+    CommServer::instance()
+        ->sendSignal(SIGNAL_NUM_DRIVE_DELETE_FAILED, params, id);
+}
+
 
 void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
     int id;

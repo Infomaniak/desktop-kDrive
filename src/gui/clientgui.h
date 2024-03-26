@@ -58,10 +58,12 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         inline int generalErrorsCount() const { return _generalErrorsCounter; }
         inline int hasGeneralErrors() const { return _generalErrorsCounter > 0; }
         const QString folderPath(int syncDbId, const QString &filePath) const;
-        inline const std::map<int, UserInfoClient> &userInfoMap() { return _userInfoMap; }
-        inline const std::map<int, AccountInfo> &accountInfoMap() { return _accountInfoMap; }
-        inline std::map<int, DriveInfoClient> &driveInfoMap() { return _driveInfoMap; }
-        inline const std::map<int, SyncInfoClient> &syncInfoMap() { return _syncInfoMap; }
+        inline const std::map<int, UserInfoClient> &userInfoMap() const noexcept { return _userInfoMap; }
+        inline const std::map<int, AccountInfo> &accountInfoMap() const noexcept { return _accountInfoMap; }
+        inline const std::map<int, DriveInfoClient> &driveInfoMap() const noexcept { return _driveInfoMap; }
+        inline std::map<int, DriveInfoClient> &driveInfoMap() noexcept { return _driveInfoMap; }
+        inline const std::map<int, SyncInfoClient> &syncInfoMap() const noexcept { return _syncInfoMap; }
+        inline std::map<int, SyncInfoClient> &syncInfoMap() noexcept { return _syncInfoMap; }
         bool setCurrentUserDbId(int userDbId);
         inline int currentUserDbId() const { return _currentUserDbId; }
         bool setCurrentAccountDbId(int accountDbId);
@@ -99,6 +101,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void errorsCleared(int syncDbId);
         void refreshStatusNeeded();
         void folderSizeCompleted(QString nodeId, qint64 size);
+        void driveBeingRemoved();
 
     public slots:
         // void onManageRightAndSharingItem(int syncDbId, const QString &filePath);
@@ -147,6 +150,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void executeSyncAction(ActionType type, int syncDbId);
         void refreshErrorList(int driveDbId);
 
+
     private slots:
         void onShowTrayMessage(const QString &title, const QString &msg);
         void onUpdateSystray();
@@ -180,11 +184,13 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used);
         void onRemoveDrive(int driveDbId);
         void onDriveRemoved(int driveDbId);
+        void onDriveDeletionFailed(int driveDbId);
         // Sync slots
         void onSyncAdded(const SyncInfo &syncInfo);
         void onSyncUpdated(const SyncInfo &syncInfo);
         void onRemoveSync(int syncDbId);
         void onSyncRemoved(int syncDbId);
+        void onSyncDeletionFailed(int syncDbId);
         void onProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                             int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
         void onExecuteSyncAction(ActionType type, ActionTarget target, int dbId);

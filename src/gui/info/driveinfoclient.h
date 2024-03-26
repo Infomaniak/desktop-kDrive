@@ -84,31 +84,34 @@ class DriveInfoClient : public DriveInfo {
         }
         inline qint64 lastErrorTimestamp() const { return _lastErrorTimestamp; }
         inline void setLastErrorTimestamp(int newLastErrorTimestamp) { _lastErrorTimestamp = newLastErrorTimestamp; }
+        inline bool isBeingDeleted() const noexcept { return _isBeingDeleted; };
+        inline void setIsBeingDeleted(bool isDeletionOnGoing) noexcept { _isBeingDeleted = isDeletionOnGoing; }
 
         void updateStatus(std::map<int, SyncInfoClient> &syncInfoMap);
         QString folderPath(std::shared_ptr<std::map<int, SyncInfoClient>> syncInfoMap, int syncDbId,
                            const QString &filePath) const;
 
     private:
-        SyncStatus _status;
-        bool _unresolvedConflicts;
+        SyncStatus _status{SyncStatusUndefined};
+        bool _unresolvedConflicts{false};
 
-        qint64 _totalSize;
-        qint64 _used;
-        int _unresolvedErrorsCount;
-        int _autoresolvedErrorsCount;
+        qint64 _totalSize{0};
+        qint64 _used{0};
+        int _unresolvedErrorsCount{0};
+        int _autoresolvedErrorsCount{0};
+        bool _isBeingDeleted{false};
 
         // Synthesispopover attributes
-        SynthesisStackedWidget _stackedWidgetIndex;
-        QListWidget *_synchronizedListWidget;
+        SynthesisStackedWidget _stackedWidgetIndex{SynthesisStackedWidgetSynchronized};
+        QListWidget *_synchronizedListWidget{nullptr};
         QVector<SynchronizedItem> _synchronizedItemList;
-        int _synchronizedListStackPosition;
-        int _favoritesListStackPosition;
-        int _activityListStackPosition;
+        int _synchronizedListStackPosition{0};
+        int _favoritesListStackPosition{0};
+        int _activityListStackPosition{0};
 
         // Parametersdialog attributes
-        int _errorTabWidgetStackPosition;
-        qint64 _lastErrorTimestamp;
+        int _errorTabWidgetStackPosition{0};
+        qint64 _lastErrorTimestamp{0};
 };
 
 }  // namespace KDC

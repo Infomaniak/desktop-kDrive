@@ -17,12 +17,11 @@
  */
 
 #include "parameterswidget.h"
-
 #include "customdialog.h"
 
 namespace KDC {
 
-ParametersWidget::ParametersWidget(QWidget *parent) : QWidget(parent) {}
+ParametersWidget::ParametersWidget(QWidget *parent) : LargeWidgetWithCustomToolTip(parent) {}
 
 void ParametersWidget::setEnabled(bool val) {
     // Disable all parent CustomDialog

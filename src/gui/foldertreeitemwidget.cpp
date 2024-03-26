@@ -42,9 +42,9 @@ static const int nodeIdRole = Qt::UserRole + 1;
 // 2nd column roles
 static const int sizeRole = Qt::UserRole;
 
-const QColor FolderTreeItemWidget::_folderIconColor = QColor("#9F9F9F");
+const QColor FolderTreeItemWidget::_folderIconColor = QColor(0x9F9F9F);
 const QSize FolderTreeItemWidget::_folderIconSize = QSize(20, 20);
-const QColor FolderTreeItemWidget::_sizeTextColor = QColor("#939393");
+const QColor FolderTreeItemWidget::_sizeTextColor = QColor(0x939393);
 
 Q_LOGGING_CATEGORY(lcFolderTreeItemWidget, "gui.foldertreeitemwidget", QtInfoMsg)
 
@@ -588,7 +588,6 @@ void FolderTreeItemWidget::onItemChanged(QTreeWidgetItem *item, int col) {
         return;
     }
 
-    const QString nodeId = item->data(TreeWidgetColumn::Folder, nodeIdRole).toString();
     const Qt::CheckState checkState = item->checkState(TreeWidgetColumn::Folder);
     QTreeWidgetItem *parent = item->parent();
 
