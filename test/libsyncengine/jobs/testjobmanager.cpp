@@ -336,4 +336,66 @@ void TestJobManager::testJobPriority3() {
     // Don't know how to test it but logs looks good...
 }
 
+static const Poco::URI testUri("https://api.kdrive.infomaniak.com/2/drive/102489/files/56850/directory");
+void sendTestRequest(Poco::Net::HTTPSClientSession &session, const bool resetSession) {
+    bool connected = session.socket().impl()->initialized();
+    std::cout << "socket connected: " << connected << std::endl;
+    std::cout << "session connected: " << session.connected() << std::endl;
+
+    std::cout << "sending request" << std::endl;
+    Poco::Net::HTTPRequest request(Poco::Net::HTTPRequest::HTTP_GET, testUri.toString(), Poco::Net::HTTPMessage::HTTP_1_1);
+    request.setContentLength(0);
+    session.sendRequest(request);
+
+    connected = session.socket().impl()->initialized();
+    std::cout << "socket connected: " << connected << std::endl;
+    std::cout << "socket address: " << session.socket().address().toString().c_str() << std::endl;
+    std::cout << "session connected: " << session.connected() << std::endl;
+
+    std::cout << "receiving response" << std::endl;
+    Poco::Net::HTTPResponse response;
+    std::istream& rs = session.receiveResponse(response);
+
+    std::cout << "socket connected: " << connected << std::endl;
+    std::cout << "session connected: " << session.connected() << std::endl;
+
+    if (resetSession) {
+        std::cout << "reset session" << std::endl;
+        session.reset();
+    }
+    std::cout << "*********************" << std::endl;
+}
+
+void TestJobManager::testReuseSocket()
+{
+    Poco::Net::Context::Ptr context = new Poco::Net::Context(
+        Poco::Net::Context::TLS_CLIENT_USE, "", "", "",
+        Poco::Net::Context::VERIFY_NONE);
+    context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
+    context->enableSessionCache(true);
+
+    // Session
+    Poco::Net::HTTPSClientSession session(testUri.getHost(), testUri.getPort(), context);
+    session.setKeepAlive(true);
+
+    std::cout << "***** Test keep connection ***** " << std::endl;
+    sendTestRequest(session, false);
+    CPPUNIT_ASSERT(session.socket().impl()->initialized());
+    sendTestRequest(session, false);        // Doing twice, so we can see in console that the socket is still connected
+    CPPUNIT_ASSERT(session.socket().impl()->initialized());
+
+    std::cout << "***** Test with new connection ***** " << std::endl;
+    Poco::Net::HTTPSClientSession session1(testUri.getHost(), testUri.getPort(), context);
+    sendTestRequest(session1, false);
+    CPPUNIT_ASSERT(session1.socket().impl() != session.socket().impl());
+
+    std::cout << "***** Test reset connection ***** " << std::endl;
+    sendTestRequest(session, true);
+    CPPUNIT_ASSERT(!session.socket().impl()->initialized());
+    sendTestRequest(session, true);        // Doing twice, so we can see in console that the socket is not connected anymore
+    CPPUNIT_ASSERT(!session.socket().impl()->initialized());
+
+
+}
+
 }  // namespace KDC
