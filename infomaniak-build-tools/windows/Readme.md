@@ -334,7 +334,7 @@ Open Visual Studio 2019 and select `Open local folder`. Then choose `F:\Projects
     ```
    You may need to adjust paths based on your installation.
 
- - Advanced settings >> install path : Must be the same as build root.
+ - Check that `Advanced settings >> install path` is the same as the build root.
 
 Save (CTRL + S). CMake will automatically run in the output window. 
 Make sure no error occurred.
