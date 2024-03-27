@@ -126,7 +126,7 @@ F:
 cd Projects
 git clone git://git.openssl.org/openssl.git
 cd openssl
-git checkout openssl-3.1
+git checkout tags/openssl-3.2.1
 ```
 
 Then follow their [installation instructions](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) for Windows  
@@ -143,7 +143,7 @@ F:
 cd Projects
 git clone -b master https://github.com/pocoproject/poco.git
 cd poco
-git checkout poco-1.12.5
+git checkout tags/poco-1.12.5-release
 mkdir cmake-build
 cd cmake-build
 cmake -G "Visual Studio 16 2019" .. -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" -DOPENSSL_INCLUDE_DIR="C:\Program Files\OpenSSL\include" -DOPENSSL_CRYPTO_LIBRARY=libcrypto.lib -DOPENSSL_SSL_LIBRARY=libssl.lib
