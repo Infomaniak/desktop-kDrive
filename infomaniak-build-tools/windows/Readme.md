@@ -22,7 +22,7 @@
     - [VS2019](#using-Visual-Studio-2019)
         - [Windows extension](#windows-Extension)
         - [Project setup](#project-Setup)
-        - [Cmake configuration](#cmake-Configuration)
+        - [CMake configuration](#cmake-Configuration)
         - [DLL Copy](#dll-Copy)
         - [Debugging](#debugging)
     - [Testing the extension](#testing-the-extension)
@@ -296,7 +296,7 @@ To build in Debug mode, you'll need to build and deploy the Windows extension fi
 4. Modify `F:\Projects\` to match your actual path. The last two paths are outputs of the global projects; keep them for later steps.
 5. Save and close the properties window.
 
-Select "Debug x64" and deploy. Repeat the same steps for "Release x64".
+Select `Debug x64` and deploy. Repeat the same steps for `Release x64`.
 
 Close the `kDriveExt` solution.
 
@@ -304,10 +304,11 @@ Close the `kDriveExt` solution.
 
 Open Visual Studio 2019 and select `Open local folder`. Then choose `F:\Projects\desktop-kDrive`.
 
+
 ### CMake Configuration
 
 1. On the configuration selector, click on "Manage configurations".
-2. Create a new configuration "x64 Debug".
+2. Create a new configuration `x64 Debug`.
 3. Configure it as follows:
    - Configuration type: Debug
    - Toolset: msvc_x64_x64
@@ -333,34 +334,41 @@ Open Visual Studio 2019 and select `Open local folder`. Then choose `F:\Projects
     -DPoco_DIR:PATH="C:/Program Files (x86)/Poco/cmake"
     ```
    You may need to adjust paths based on your installation.
+   
+   - Advanced settings >> install path : Must be the same as build root.
 
-Save (CTRL + S). CMake will automatically run in the output window. 
-Make sure no error occurred.
+Save (CTRL + S). CMake will automatically run in the output window; ensure no errors occur.
 
-### The `sync-exclude.lst` file
-Copy and rename `F:\Projects\desktop-kDrive\sync-exclude-win.lst` to `output_path\bin\sync-exclude.lst`.
-
-### DLL Copy
-Durring the next step, you may encounter missing DLL errors. Copy the required DLLs to the `bin` folder of your output directory. The DLLs are located in:
-- `C:\Program Files (x86)\Poco\bin`
-- `C:\Program Files (x86)\Gpg4win\bin`
-- `C:\Program Files (x86)\log4cplus\bin`
-- `C:\Program Files (x86)\NSIS\Bin`
-- `C:\Program Files (x86)\zlib-1.2.11`
-- `C:\Program Files\OpenSSL\bin`
-
-### Debugging
+### Install
 
 In the Solution Explorer, go to the available view:
 
 ![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
 
 Select CMake targets.
+Right-click on the kDrive (executable) >> Install.
+Once done, right-click on the kDrive_client (executable) >> Install.
+
+
+### DLL Copy
+During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
+- `C:\Program Files (x86)\Poco\bin`
+- `C:\Program Files (x86)\log4cplus\bin`
+- `C:\Program Files (x86)\NSIS\Bin`
+- `C:\Program Files (x86)\zlib-1.2.11`
+- `C:\Program Files\OpenSSL\bin`
+- 
+
+### Debugging
+
+In the Solution Explorer, go to the available view:
+Select CMake targets.
 
 Right-click on the kDrive executable: `Debug >> kDrive.exe`.
 
 Once `kDrive.exe` is running, right-click on the client executable: `Debug >> kDrive_client.exe`.
 
+Once kDrive.exe is running, right-click on the kDrive_client (executable) >> Debug >> kDrive_client.exe (bin\kDrive.exe).
 
 
 ## Testing the extension
