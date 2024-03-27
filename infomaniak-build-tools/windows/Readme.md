@@ -33,7 +33,7 @@
 # kDrive files
 
 The folder `F:\Projects` will be used for the installation of sources and dependencies.  
-Feel free to use the any directory that suits you.
+Feel free to use any directory that suits you.
 
 ```bash
 mkdir F:\Projects 
@@ -48,7 +48,7 @@ Once Visual Studio 2019 is installed, all commands should to be run using the `x
 
 ## Visual Studio 2019
 
-When installing Visual Studio 2019, select the following components:
+When installing `Visual Studio 2019`, select the following components:
 
 - Desktop development with C++
 - Universal Windows Platform Development
@@ -63,19 +63,19 @@ When installing Visual Studio 2019, select the following components:
 ## Qt 6.2.3
 
 From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), tick the **Archive** box to see earlier Qt versions.  
-In Qt 6.2.3, select:
+In `Qt 6.2.3`, select:
 - MSVC 2019 64-bit
 - Sources
 - Qt 5 Compatibility Module
 
-In Qt 6.2.3 Additional Libraries, select :
+In `Qt 6.2.3 Additional Libraries`, select :
 - Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
 - Qt WebView
 - Qt Debug Information Files (only if you want to use a debugger)
 
-In Developer and Designer Tools (should be selected by default):
+In `Developer and Designer Tools` (should be selected by default):
 - CMake
 - Ninja
 
@@ -124,13 +124,13 @@ git checkout openssl-3.1
 ```
 
 Then follow their [installation instructions](https://github.com/openssl/openssl/blob/master/NOTES-WINDOWS.md) for Windows. 
-(Note that installing `NASM` is not required.)
+Note that installing `NASM` is not required.
 
 ## Poco
 
 **/ ! \\ Poco installation requires [OpenSSL](#openssl) to be installed / ! \\**
 
-Clone and build Poco:
+Clone and build `Poco`:
 
 ```bash
 cd F:\Projects
@@ -142,12 +142,12 @@ cd cmake-build
 cmake -G "Visual Studio 16 2019" .. -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" -DOPENSSL_INCLUDE_DIR="C:\Program Files\OpenSSL\include" -DOPENSSL_CRYPTO_LIBRARY=libcrypto.lib -DOPENSSL_SSL_LIBRARY=libssl.lib
 ```
 
-Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\OpenSSL-Win64\lib` to the Additional Library Directories for the following projects:
+Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\OpenSSL-Win64\lib` to the `Additional Library Directories` for the following projects:
 - Crypto
 - JWT
 - NetSSL
 
-While still in the `cmake-build` directory:
+While still in the `cmake-build` directory, issue the following commands:
 
 ```bash
 cmake --build . --target install --config Debug
@@ -180,10 +180,10 @@ git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 ```
 
 Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure as follows:
-- Select all projects then right click > properties.
-- Select « All configurations » and « All plateforms »,  then add « _ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH » in « C/C++>Preprocessor>Preprocessor Definitions »
-- In the 'Build' menu, select 'Batch Build...'
-- Select all projects in x64 version and click build.
+- Select all projects then right click to access `Properties`.
+- Select `All configurations` and `All plateforms`,  then add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH` in `C/C++ >> Preprocessor >> Preprocessor Definitions`.
+- In the `Build` menu, select `Batch Build...`.
+- Select all projects in `x64` version and click on `build`.
 
 
 ## Zlib
@@ -213,13 +213,12 @@ inside it.
 ## NSIS
 
 Download and install [NSIS v3.03](https://sourceforge.net/projects/nsis/files/NSIS%203/3.03/nsis-3.03-setup.exe/download)  
-Add the NSIS path to the `PATH` environment variable.
+Add the `NSIS` path to the `PATH` environment variable.
 You will need the following NSIS Plugins:
-- LogicLib
-- nsProcess
-- UAC
-- x64
-
+- `LogicLib`
+- `nsProcess`
+- `UAC`
+- `x64`
 
 ## 7za
 
@@ -244,16 +243,15 @@ Once installed, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDrive
 
 # Build in Debug
 
-To build in Debug, you will need to build and deploy the Windows extension first.  
+To build in `Debug`mode, you will need to build and deploy the Windows extension first.  
 
 ## Using Qt Creator
 You can disable QML debugger from the settings to avoid some error pop-ups.
 
 ### Additionnal Requirements
 
-To be able to properly debug, you will need to install `Qt Debug Information Files` from the `Qt 6.2.3` Section.
+To be able to properly debug, you will need to install the `Qt Debug Information Files` from the [`Qt 6.2.3` Section](#qt-6.2.3).
 If you cannot see it, you need to tick the **Archive** box and filter again.
-
 
 ### CMake Parameters
 
@@ -335,19 +333,20 @@ Open Visual Studio 2019 and select `Open local folder`. Then choose `F:\Projects
     ```
    You may need to adjust paths based on your installation.
    
-   - Advanced settings >> install path : Must be the same as build root.
+   - Check that `Advanced settings >> install path` is the the build root path.
 
-Save (CTRL + S). CMake will automatically run in the output window; ensure no errors occur.
+Save (CTRL + S). `CMake` will automatically run in the output window. 
+Make sure no errors occur.
 
 ### Install
 
-In the Solution Explorer, go to the available view:
+In the `Solution Explorer`, go to the available view:
 
 ![VS2019 switch view button](./doc-images/VS_2019_switch_sln_to_targets.png)
 
-Select CMake targets.
-Right-click on the kDrive (executable) >> Install.
-Once done, right-click on the kDrive_client (executable) >> Install.
+Select `CMake` targets.
+Right-click on the `kDrive` executable and then on `Install`.
+Once done, right-click on the `kDrive_client` executable and then on `Install`.
 
 
 ### DLL Copy
@@ -361,20 +360,20 @@ During the next step, you may encounter missing DLL errors. If so, copy the requ
 
 ### Debugging
 
-In the Solution Explorer, go to the available view:
+In the `Solution Explorer`, go to the available view:
 Select CMake targets.
 
-Right-click on the kDrive executable: `Debug >> kDrive.exe`.
+Right-click on the `kDrive executable`: `Debug >> kDrive.exe`.
 
 Once `kDrive.exe` is running, right-click on the client executable: `Debug >> kDrive_client.exe`.
 
-Once kDrive.exe is running, right-click on the kDrive_client (executable) >> Debug >> kDrive_client.exe (bin\kDrive.exe).
+Once `kDrive.exe` is running, right-click on the `kDrive_client` executable: `Debug >> kDrive_client.exe`.
 
 
 ## Testing the extension
 
 To test the extension in Debug mode, you will first need to install a [release version](https://www.infomaniak.com/en/apps/download-kdrive) of `kDrive`.  
-Once installed and running, stop the File Explorer with the command:
+Once installed and running, stop the `File Explorer` with the command:
 
 ```bash
 taskkill /f /im explorer.exe
@@ -397,7 +396,7 @@ start explorer.exe
 
 ## Build and Packaging
 
-The script `build-drive.ps1` will build, sign, then package the project. You can either start it from the root of the kdrive repository, or provide a path when executing it    
+The script `build-drive.ps1` will build, sign, then package the project. You can either start it from the root of the kdrive repository, or provide a path when executing it.    
 More information or help is available by calling the script along with the flag `-h` or `-help`
 
 **/ ! \\ For CMake to be able to build the project, you need to initialise the environment for x64 with vcvarsall.bat, or vcvars64.bat (more info in the script help) / ! \\**
