@@ -148,11 +148,12 @@ bool IoHelper::_isExpectedError(IoError ioError) noexcept {
 bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
     std::error_code ec;
     const bool isDir = _isDirectory(itemType.targetPath, ec);
-    itemType.ioError = stdError2ioError(ec);
+    IoError ioError = stdError2ioError(ec);
 
-    if (itemType.ioError != IoErrorSuccess) {
-        const bool expected = _isExpectedError(itemType.ioError);
+    if (ioError != IoErrorSuccess) {
+        const bool expected = _isExpectedError(ioError);
         if (!expected) {
+            itemType.ioError = ioError;
             LOGW_WARN(Log::instance()->getLogger(), L"Failed to check if the item is a directory: "
                                                         << Utility::formatStdError(itemType.targetPath, ec).c_str());
         }

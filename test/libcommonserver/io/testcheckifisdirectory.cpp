@@ -124,7 +124,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoErrorSuccess);  // Although the target path is invalid.
     }
 
     // A regular directory missing all permissions: no error expected

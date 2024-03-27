@@ -17,7 +17,6 @@
  */
 
 #include "testio.h"
-#include "config.h"
 
 #include <filesystem>
 
@@ -117,7 +116,7 @@ void TestIo::testGetFileSizeSimpleCases() {
 
             CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
             CPPUNIT_ASSERT(fileSize == targetPath.native().size());
-            CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+            CPPUNIT_ASSERT(ioError == IoErrorSuccess);  // Although the target path is invalid.
         }
     }
 

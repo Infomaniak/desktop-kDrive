@@ -146,41 +146,41 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     canceled = false;
 }
 
+namespace details {
+inline bool isLink(LinkType linkType) {
+    return linkType == LinkTypeSymlink || linkType == LinkTypeHardlink ||
+           (linkType == LinkTypeFinderAlias && OldUtility::isMac()) || (linkType == LinkTypeJunction && OldUtility::isWindows());
+}
+}  // namespace details
+
 void UploadJob::setData(bool &canceled) {
+    canceled = true;
+
     ItemType itemType;
     if (!IoHelper::getItemType(_filePath, itemType)) {
-        LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in IoHelper::getItemType - path=" << Path2WStr(_filePath).c_str());
-        canceled = true;
+        LOGW_WARN(_logger, L"Error in IoHelper::getItemType - " << Utility::formatSyncPath(_filePath).c_str());
         return;
     }
 
     if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item does not exist anymore - path=" << Path2WStr(_filePath).c_str());
-        canceled = true;
+        LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_filePath).c_str());
         return;
     }
 
     if (itemType.ioError == IoErrorAccessDenied) {
-        LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item misses search permission - path=" << Path2WStr(_filePath).c_str());
+        LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_filePath).c_str());
         canceled = true;
         return;
     }
 
-    if (_linkType == LinkTypeSymlink || _linkType == LinkTypeHardlink ||
-        (_linkType == LinkTypeFinderAlias && OldUtility::isMac()) || (_linkType == LinkTypeJunction && OldUtility::isWindows())) {
-        // Link
+    _linkType = itemType.linkType;
+
+    if (details::isLink(_linkType)) {
         LOG_DEBUG(_logger, "Read link data - type=" << _linkType);
-        if (!readLink()) {
-            canceled = true;
-            return;
-        }
+        if (!readLink()) return;
     } else {
-        // Normal file
         LOG_DEBUG(_logger, "Read file data");
-        if (!readFile()) {
-            canceled = true;
-            return;
-        }
+        if (!readFile()) return;
     }
 
     _contentHash = Utility::computeXxHash(_data);

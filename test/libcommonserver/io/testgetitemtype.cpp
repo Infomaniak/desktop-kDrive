@@ -192,7 +192,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         // Actual test
         ItemType itemType;
         CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);  // Although the target path is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeSymlink);
         CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
@@ -556,7 +556,7 @@ void TestIo::testGetItemTypeAllBranches() {
 
         ItemType itemType;
         CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);  // Although the target path is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeSymlink);
         CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
