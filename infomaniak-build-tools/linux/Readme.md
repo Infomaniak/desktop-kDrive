@@ -86,7 +86,7 @@ The OpenSSL Configure will require Perl to be installed first
 cd ~/Projects
 git clone git://git.openssl.org/openssl.git
 cd openssl
-git checkout openssl-3.1
+git checkout tags/openssl-3.2.1
 ./Configure shared
 make
 sudo make install
@@ -100,7 +100,7 @@ Poco installation requires the previous OpenSSL installation to be complete
 cd ~/Projects
 git clone https://github.com/pocoproject/poco.git
 cd poco
-git checkout poco-1.12.5
+git checkout tags/poco-1.13.2-release
 mkdir cmake-build
 cd cmake-build
 cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so
@@ -179,6 +179,7 @@ In the project build settings, paste the following lines in the Initial Configur
 
 ### Debugging
 
+In order that all libraries are found, you might need to define `LD_LIBRARY_PATH=/usr/local/lib`in your environment variables.
 The configuration and database files are stored in the `~/.config/kDrive` directory.  
 The log files will be generated in the `/tmp/kDrive-logdir` directory.
 
