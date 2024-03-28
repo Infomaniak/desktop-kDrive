@@ -4,9 +4,9 @@ ulimit -n 4000000
 
 set -xe
 
-export QTDIR="~/Qt/6.2.3/gcc_64"
-export BASEPATH=$PWD
 export QT_BASE_DIR="~/Qt/6.2.3"
+export QTDIR="$QT_BASE_DIR/gcc_64"
+export BASEPATH=$PWD
 export CONTENTDIR="$BASEPATH/build-linux"
 export INSTALLDIR="$CONTENTDIR/install"
 export BUILDDIR="$CONTENTDIR/build"

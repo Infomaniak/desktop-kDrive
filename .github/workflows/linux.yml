@@ -1,4 +1,4 @@
-name: Linux desktop CI on x64 Arch
+name: Linux kDrive desktop CI on x64 Arch
 
 on:
   pull_request: 
@@ -9,19 +9,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-building:
+  build-kDrive:
     if: github.event.pull_request.draft == false
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
 
     steps:
-      - name: Checkout the code
+      - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
           submodules: recursive
 
-      - name: Grant execute permission for building script
+      - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
-      - name: Build App
+      - name: Build kDrive desktop
         run : ./infomaniak-build-tools/linux/build-ci-amd64.sh
 
       - name: Clean-up generated code
