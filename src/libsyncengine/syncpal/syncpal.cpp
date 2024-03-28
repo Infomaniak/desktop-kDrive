@@ -1496,6 +1496,10 @@ void SyncPal::increaseErrorCount(const NodeId &nodeId, NodeType type, const Sync
     _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side);
 }
 
+int SyncPal::getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept {
+    return _tmpBlacklistManager->getErrorCount(nodeId, side);
+}
+
 void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {
     _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
 }

@@ -658,8 +658,7 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
 }
 
 QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) {
-    int inconsistencyTypeInt = static_cast<int>(inconsistencyType);
-
+    const int inconsistencyTypeInt = static_cast<int>(inconsistencyType);
     QString text;
 
     if (inconsistencyTypeInt & InconsistencyTypeCase) {
@@ -696,6 +695,12 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
         text +=
             tr("The file/directory name contains a recent UNICODE character not yet supported by your filesystem.<br>"
                "The parent directory has been excluded from synchronization.");
+    }
+    if (inconsistencyTypeInt & InconsistencyTypeDuplicateNames) {
+        text += (text.isEmpty() ? "" : "\n");
+        text +=
+            tr("The file/directory name coincides with the name of another item in the same directory.<br>"
+               "The file/directory has been temporarily blacklisted.");
     }
 
     return text;
