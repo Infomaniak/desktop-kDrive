@@ -42,10 +42,10 @@ std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> IoHelpe
 std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
     static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
 #ifdef __APPLE__
-std::function<bool(const SyncPath &path, ItemType &itemType)> IoHelper::_readAlias = [](const SyncPath &path,
-                                                                                        ItemType &itemType) -> bool {
+std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
+    [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
     std::string data;
-    return readAlias(path, data, itemType.targetPath, itemType.ioError);
+    return IoHelper::readAlias(path, data, targetPath, ioError);
 };
 #endif
 
@@ -215,9 +215,12 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
     if (isAlias) {
         // !!! isAlias is true for a symlink and for a Finder alias !!!
-        if (!_readAlias(path, itemType)) {
+        IoError aliasReadError = IoErrorSuccess;
+        if (!_readAlias(path, itemType.targetPath, aliasReadError)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Failed to read an item first identified as an alias: "
                                                         << Utility::formatIoError(path, itemType.ioError).c_str());
+            itemType.ioError = aliasReadError;
+
             return false;
         }
 

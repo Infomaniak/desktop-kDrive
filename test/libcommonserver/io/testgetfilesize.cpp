@@ -46,15 +46,14 @@ void TestIo::testGetFileSizeSimpleCases() {
             ofs << "Some content.\n";
             ofs.close();
         }
-        const auto allPermissions =
-            std::filesystem::perms::owner_all | std::filesystem::perms::others_all | std::filesystem::perms::group_all;
-        std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::remove);
+
+        std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
         uint64_t fileSize = 0u;
         IoError ioError = IoErrorSuccess;
 
         CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
-        std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::add);
+        std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
