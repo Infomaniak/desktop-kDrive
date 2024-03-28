@@ -169,7 +169,6 @@ void UploadJob::setData(bool &canceled) {
 
     if (itemType.ioError == IoErrorAccessDenied) {
         LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_filePath).c_str());
-        canceled = true;
         return;
     }
 
