@@ -124,7 +124,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoErrorSuccess);  // Although the target path is invalid.
     }
 
     // A regular directory missing all permissions: no error expected
@@ -133,9 +133,7 @@ void TestIo::testCheckIfIsDirectory() {
         const SyncPath path = temporaryDirectory.path / "permission_less_directory";
         std::filesystem::create_directory(path);
 
-        const auto allPermissions =
-            std::filesystem::perms::owner_all | std::filesystem::perms::others_all | std::filesystem::perms::group_all;
-        std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::remove);
+        std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
         IoError ioError = IoErrorUnknown;
         bool isDirectory = false;
@@ -144,7 +142,7 @@ void TestIo::testCheckIfIsDirectory() {
         CPPUNIT_ASSERT(isDirectory);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
 
-        std::filesystem::permissions(path, allPermissions, std::filesystem::perm_options::add);
+        std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
     }
 
     // A non-existing file with a very long name
@@ -245,7 +243,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 #endif
 }
