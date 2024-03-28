@@ -53,7 +53,6 @@ cmake -B$BUILDDIR -H$BASEPATH \
     "${CMAKE_PARAMS[@]}" \
 
 cd $BUILDDIR
-#cmake --build . --target all install
+
 make -j4
-#echo $APPDIR
 make DESTDIR=$APPDIR install
