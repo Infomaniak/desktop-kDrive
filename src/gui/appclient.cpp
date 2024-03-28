@@ -53,7 +53,7 @@
 #define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
 
 #define CONNECTION_TRIALS 3
-#define CHECKCOMMSTATUS_TRIALS 3
+#define CHECKCOMMSTATUS_TRIALS 5
 
 namespace KDC {
 
@@ -157,7 +157,7 @@ AppClient::AppClient(int &argc, char **argv)
 
     if (count == CHECKCOMMSTATUS_TRIALS) {
         QMessageBox msgBox;
-        msgBox.setText(tr("Unable to communicate with application server!"));
+        msgBox.setText(tr("The application server did not respond on time, the client will be restarted."));
         msgBox.exec();
         QTimer::singleShot(0, qApp, SLOT(quit()));
         return;
