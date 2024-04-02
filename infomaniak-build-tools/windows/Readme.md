@@ -44,7 +44,7 @@ cd desktop-kDrive && git submodule update --init --recursive
 
 # Installation Requirements
 
-Once Visual Studio 2019 is installed, all commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.  
+Once `Visual Studio 2019` is installed, all commands should to be run using the `x64 Native Tools Command Prompt` with administrator permissions.  
 
 ## Visual Studio 2019
 
@@ -79,7 +79,7 @@ In `Developer and Designer Tools` (should be selected by default):
 - CMake
 - Ninja
 
-Add an environment variable named `QTDIR`, set with the path of your Qt msvc folder (which defaults to `C:\Qt\6.2.3\msvc2019_64`)  
+Add an environment variable named `QTDIR`, set with the path of your Qt msvc folder (which defaults to `C:\Qt\6.2.3\msvc2019_64`).
 Add to the following paths to your `PATH` or adapt them to the actual location of your Qt folder if needed:
 - `C:\Qt\6.2.3\msvc2019_64\bin`
 - `C:\Qt\Tools\CMake_64\bin`
@@ -114,7 +114,7 @@ cmake --build . --target install --config Release
 
 ## OpenSSL
 
-Clone OpenSSL sources
+Clone `OpenSSL` sources:
 
 ```bash
 cd F:\Projects
@@ -128,7 +128,7 @@ Note that installing `NASM` is not required.
 
 ## Poco
 
-**/ ! \\ Poco installation requires [OpenSSL](#openssl) to be installed / ! \\**
+> [!WARNING] **Poco installation requires [OpenSSL](#openssl) to be installed.**
 
 Clone and build `Poco`:
 
@@ -181,7 +181,7 @@ git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 
 Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure as follows:
 - Select all projects then right click to access `Properties`.
-- Select `All configurations` and `All plateforms`,  then add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH` in `C/C++ >> Preprocessor >> Preprocessor Definitions`.
+- Select `All configurations` and `All plateforms`,  then add `_ALLOW_ITERATOR_DEBUG_LEVEL_MISMATCH` in `C/C++ > Preprocessor > Preprocessor Definitions`.
 - In the `Build` menu, select `Batch Build...`.
 - Select all projects in `x64` version and click on `build`.
 
@@ -212,9 +212,9 @@ inside it.
 
 ## NSIS
 
-Download and install [NSIS v3.03](https://sourceforge.net/projects/nsis/files/NSIS%203/3.03/nsis-3.03-setup.exe/download)  
+Download and install [NSIS v3.03](https://sourceforge.net/projects/nsis/files/NSIS%203/3.03/nsis-3.03-setup.exe/download).
 Add the `NSIS` path to the `PATH` environment variable.
-You will need the following NSIS Plugins:
+You will need the following `NSIS` plugins:
 - `LogicLib`
 - `nsProcess`
 - `UAC`
@@ -222,7 +222,8 @@ You will need the following NSIS Plugins:
 
 ## 7za
 
-Download [7za](https://sourceforge.net/projects/sevenzip/files/7-Zip/23.01/7z2301-extra.7z/download) and extract it in `C:\Program Files\7-Zip` (requires 7-Zip installed).
+Download [7za](https://sourceforge.net/projects/sevenzip/files/7-Zip/23.01/7z2301-extra.7z/download) and extract it in `C:\Program Files\7-Zip`. This 
+requires the prior installation of `7-Zip`.
 
 ## Icoutils
 
@@ -234,7 +235,7 @@ Add the path to the `Icoutils` folder to your `PATH` environment variable, e.g. 
 To be able to sign executables, you need to have the Infomaniak certificate installed.  
 Once installed, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDriveExt.sln`. Then follow the next steps:
 - Select `FileExplorerExtensionPackage\Package.appxmanifest`.
-- Go to the "Packaging" tab.
+- Go to the `Packaging` tab.
 - Click on `Choose Certificate...` then `Select from store`.
 - Copy the `AUMID` (located at the end of the Family Name, after the underscore).
 - Create a new environment variable named `KDC_VIRTUAL_AUMID` with the copied `AUMID` as value.
@@ -243,7 +244,7 @@ Once installed, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDrive
 
 # Build in Debug
 
-To build in `Debug`mode, you will need to build and deploy the Windows extension first.  
+To build in `Debug` mode, you will need to build and deploy the Windows extension first.  
 
 ## Using Qt Creator
 You can disable QML debugger from the settings to avoid some error pop-ups.
@@ -289,7 +290,7 @@ Then click "Re-configure with Initial Parameters".
 To build in Debug mode, you'll need to build and deploy the Windows extension first.
 
 1. Open the `kDriveExt` solution located at `F:\Projects\desktop-kDrive\extensions\windows\cfapi`.
-2. Navigate to the post-build events of the `Vfs` project: right click on the `Vfs` project and follow `Properties >> Configuration properties >> Build Events >> Post-Build Event`.
+2. Navigate to the post-build events of the `Vfs` project: right click on the `Vfs` project and follow `Properties > Configuration properties > Build Events > Post-Build Event`.
 3. Select `x64` in the `Platform` drop-down menu.
 4. Modify `F:\Projects\` to match your actual path. The last two paths are outputs of the global projects; keep them for later steps.
 5. Save and close the properties window.
@@ -300,7 +301,7 @@ Close the `kDriveExt` solution.
 
 ### Project Setup
 
-Open Visual Studio 2019 and select `Open local folder`. Then choose `F:\Projects\desktop-kDrive`.
+Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projects\desktop-kDrive`.
 
 
 ### CMake Configuration
@@ -333,7 +334,7 @@ Open Visual Studio 2019 and select `Open local folder`. Then choose `F:\Projects
     ```
    You may need to adjust paths based on your installation.
    
-   - Check that `Advanced settings >> install path` is the the build root path.
+   - Check that `Advanced settings > install path` is the the build root path.
 
 Save (CTRL + S). `CMake` will automatically run in the output window. 
 Make sure no errors occur.
@@ -350,24 +351,24 @@ Once done, right-click on the `kDrive_client` executable and then on `Install`.
 
 
 ### DLL Copy
+
 During the next step, you may encounter missing DLL errors. If so, copy the required DLLs into the `bin` folder of your output directory. The DLLs are located in:
 - `C:\Program Files (x86)\Poco\bin`
 - `C:\Program Files (x86)\log4cplus\bin`
 - `C:\Program Files (x86)\NSIS\Bin`
 - `C:\Program Files (x86)\zlib-1.2.11`
 - `C:\Program Files\OpenSSL\bin`
-- 
 
 ### Debugging
 
 In the `Solution Explorer`, go to the available view:
 Select CMake targets.
 
-Right-click on the `kDrive executable`: `Debug >> kDrive.exe`.
+Right-click on the `kDrive executable`: `Debug > kDrive.exe`.
 
-Once `kDrive.exe` is running, right-click on the client executable: `Debug >> kDrive_client.exe`.
+Once `kDrive.exe` is running, right-click on the client executable: `Debug > kDrive_client.exe`.
 
-Once `kDrive.exe` is running, right-click on the `kDrive_client` executable: `Debug >> kDrive_client.exe`.
+Once `kDrive.exe` is running, right-click on the `kDrive_client` executable: `Debug > kDrive_client.exe`.
 
 
 ## Testing the extension
@@ -386,7 +387,7 @@ copy "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\KDConte
 copy "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\KDOverlays.dll" "C:\Program Files (x86)\kDrive\shellext"
 ```
 
-And restart the File Explorer :
+Then restart the `File Explorer`:
 
 ```bash
 start explorer.exe
@@ -396,10 +397,10 @@ start explorer.exe
 
 ## Build and Packaging
 
-The script `build-drive.ps1` will build, sign, then package the project. You can either start it from the root of the kdrive repository, or provide a path when executing it.    
-More information or help is available by calling the script along with the flag `-h` or `-help`
+The script `build-drive.ps1` will build, sign, then package the project. You can either start it from the root of the `desktop-kDrive` repository, or provide a path when executing it.    
+To get more information, call the script with the option `-h` or `-help`
 
-**/ ! \\ For CMake to be able to build the project, you need to initialise the environment for x64 with vcvarsall.bat, or vcvars64.bat (more info in the script help) / ! \\**
+**Note.** For `CMake` to be able to build the project, you need to initialise the environment for `x64` with `vcvarsall.bat`, or `vcvars64.bat` (see the help output of `build-drive.ps1` for details).
 
 ```bash
 cd F:\Projects\desktop-kDrive
