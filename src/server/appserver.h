@@ -35,6 +35,7 @@
 #include "libcommon/info/driveinfo.h"
 #include "libcommon/info/syncinfo.h"
 #include "libcommon/info/syncfileiteminfo.h"
+#include "config.h"
 
 #include <QApplication>
 #include <QElapsedTimer>

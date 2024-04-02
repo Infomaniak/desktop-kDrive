@@ -21,7 +21,6 @@
 #include "common/utility.h"
 #include "updater/kdcupdater.h"
 #include "libcommonserver/vfs.h"
-#include "config.h"
 #include "migration/migrationparams.h"
 #include "updater/kdcupdater.h"
 #include "socketapi.h"
