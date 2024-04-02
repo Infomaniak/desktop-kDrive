@@ -128,7 +128,7 @@ Note that installing `NASM` is not required.
 
 ## Poco
 
-> [!WARNING] **Poco installation requires [OpenSSL](#openssl) to be installed.**
+> :warning: **Poco installation requires [OpenSSL](#openssl) to be installed.**
 
 Clone and build `Poco`:
 
