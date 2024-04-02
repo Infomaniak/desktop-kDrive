@@ -40,7 +40,7 @@ struct IoHelperTests : public IoHelper {
         static void setTempDirectoryPathFunction(std::function<SyncPath(std::error_code &ec)> f);
 
 #ifdef __APPLE__
-        static void setReadAliasFunction(std::function<bool(const SyncPath &path, ItemType &itemType)> f);
+        static void setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f);
 #endif
 
         static void resetFunctions();
@@ -123,5 +123,32 @@ class TestIo : public CppUnit::TestFixture {
         IoHelperTests *_testObj;
         const SyncPath _localTestDirPath;
 };
+
+
+struct GetItemChecker {
+        GetItemChecker(IoHelperTests *iohelper);
+
+        struct Result {
+                bool success{true};
+                std::string message;
+        };
+
+        static std::string makeMessage(const CppUnit::Exception &e);
+        Result checkSuccessfulRetrieval(const SyncPath &path, NodeType fileType) noexcept;
+        Result checkSuccessfulLinkRetrieval(const SyncPath &path, const SyncPath &targetpath, LinkType linkType,
+                                            NodeType fileType) noexcept;
+
+        Result checkItemIsNotFound(const SyncPath &path) noexcept;
+        Result checkSuccessfullRetrievalOfDanglingLink(const SyncPath &path, const SyncPath &targetPath,
+                                                       LinkType linkType) noexcept;
+
+        Result checkAccessIsDenied(const SyncPath &path) noexcept;
+
+    private:
+        IoHelperTests *_iohelper{nullptr};
+};
+
+SyncPath makeVeryLonPath(const SyncPath &rootPath);
+
 
 }  // namespace KDC

@@ -269,7 +269,7 @@ struct IoHelper {
 
 #ifdef __APPLE__
         // Can be modified in tests.
-        static std::function<bool(const SyncPath &path, ItemType &itemType)> _readAlias;
+        static std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> _readAlias;
 #endif
 
     private:
