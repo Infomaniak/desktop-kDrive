@@ -157,7 +157,7 @@ AppClient::AppClient(int &argc, char **argv)
 
     if (count == CHECKCOMMSTATUS_TRIALS) {
         QMessageBox msgBox;
-        msgBox.setText(tr("The application server did not respond on time, the client will be restarted."));
+        msgBox.setText(tr("The application server did not respond on time: the client will be restarted."));
         msgBox.exec();
         QTimer::singleShot(0, qApp, SLOT(quit()));
         return;
