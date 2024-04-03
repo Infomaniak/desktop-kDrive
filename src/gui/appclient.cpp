@@ -76,7 +76,7 @@ static void displayHelpText(const QString &t)  // No console on Windows.
     QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
     QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
                    spaces + QLatin1String("</pre></qt>");
-    QMessageBox::information(0, Theme::instance()->appNameGUI(), text);
+    QMessageBox::information(0, Theme::instance()->appClientName() + "_HelpText", text);
 }
 
 #else
