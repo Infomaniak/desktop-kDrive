@@ -297,11 +297,10 @@ AppServer::AppServer(int &argc, char **argv)
     if (_commPort != 0) {
         CommServer::setCommPort(_commPort);
     }
+
     CommServer::instance();
     connect(CommServer::instance().get(), &CommServer::requestReceived, this, &AppServer::onRequestReceived);
     connect(CommServer::instance().get(), &CommServer::startClient, this, &AppServer::onStartClientReceived);
-
-    displayHelpText(QString("CommServer started on port %1").arg(CommServer::instance()->commPort()));
 
     // Update users/accounts/drives info
     ExitCode exitCode = updateAllUsersInfo();
@@ -3018,6 +3017,10 @@ bool AppServer::startClient() {
 #endif
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
     startClient = !_noStartClient && startClient;
+    
+    if (_noStartClient) {
+		LOG_INFO(_logger, "kDrive client won't be started (noStartClient option)");
+	}
 
     if (startClient) {
         // Start the client

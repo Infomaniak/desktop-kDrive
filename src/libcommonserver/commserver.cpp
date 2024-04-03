@@ -50,6 +50,8 @@ std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
 
 void CommServer::setCommPort(quint16 port) {
 	_commPort = port;
+    LOG_DEBUG(Log::instance()->getLogger(), L"_commPort provided: " << port);
+
     if (_instance) {
 		_instance->start();
 	}
