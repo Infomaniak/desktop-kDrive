@@ -39,6 +39,7 @@ class TestJobManager : public CppUnit::TestFixture {
         CPPUNIT_TEST(testJobPriority);
         CPPUNIT_TEST(testJobPriority2);
         CPPUNIT_TEST(testJobPriority3);
+        CPPUNIT_TEST(testReuseSocket);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -56,6 +57,8 @@ class TestJobManager : public CppUnit::TestFixture {
         void testJobPriority3();  // Test execution order of jobs. Jobs are created with priority alternating between Normal and
                                   // Highest. It checks that jobs are dequed correctly in JobManager (issue #320:
                                   // https://gitlab.infomaniak.ch/infomaniak/desktop-app/multi/kdrive/-/issues/320)
+
+        void testReuseSocket();
 
     private:
         int _driveDbId;
