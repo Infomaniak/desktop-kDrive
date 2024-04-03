@@ -677,9 +677,10 @@ bool AppClient::connectToServer() {
 
     if (count == CONNECTION_TRIALS) {
         QMessageBox msgBox;
-        msgBox.setText(tr("Unable to connect to application server! Clean restart in progress..."));
+        msgBox.setText(tr("Unable to connect to application server!"));
         msgBox.exec();
-        startServer(true /*Close the client and let the server restart it*/);
+        //startServer(true /*Close the client and let the server restart it*/);
+        QTimer::singleShot(0, qApp, SLOT(quit())); //Will be replace by startServer when the mecanisme to prevent loop is implemented
         return false;
     }
 
@@ -700,9 +701,10 @@ bool AppClient::connectToServer() {
 
     if (count == CHECKCOMMSTATUS_TRIALS) {
         QMessageBox msgBox;
-        msgBox.setText(tr("The application server did not respond on time: Clean restart in progress..."));
+        msgBox.setText(tr("The application server did not respond on time!"));
         msgBox.exec();
-        startServer(true /*Close the client and let the server restart it*/);
+        //startServer(true /*Close the client and let the server restart it*/);
+        QTimer::singleShot(0, qApp, SLOT(quit())); //Will be replace by startServer when the mecanisme to prevent loop is implemented
         return false;
     }
     return true;
