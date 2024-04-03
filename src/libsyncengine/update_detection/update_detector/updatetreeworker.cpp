@@ -264,26 +264,27 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
         FSOpPtr createOp = nullptr;
         _operationSet->getOp(createOpId, createOp);
+        const auto normalizedPath = Utility::normalizedSyncPath(createOp->path());
 
         std::pair<FSOpPtrMap::iterator, bool> insertionResult;
         switch (createOp->objectType()) {
             case NodeTypeFile:
-                insertionResult = _createFileOperationSet.insert({createOp->path(), createOp});
+                insertionResult = _createFileOperationSet.insert({normalizedPath, createOp});
                 break;
             case NodeTypeDirectory:
-                insertionResult = createDirectoryOperationSet.insert({createOp->path(), createOp});
+                insertionResult = createDirectoryOperationSet.insert({normalizedPath, createOp});
                 break;
             default:
                 break;
         }
 
         if (!insertionResult.second) {
-            // Failed to insert Create operation. Rebuild the snapshot.
+            // Failed to insert Create operation. Rebuild of the snapshot required.
             //
             // Two issues have been identified:
-            // - (1) the operating system missed a delete operation, in which case a snapshot rebuild is both
+            // - Either (1) the operating system missed a delete operation, in which case a snapshot rebuild is both
             // required and sufficient.
-            // - (2) the file system allows file or directory names with different encodings but the same normalization,
+            // - Or (2) the file system allows file or directory names with different encodings but the same normalization,
             // in which case an action of the user is required. In such a situation, we trigger a snapshot rebuild
             // on the first pass in this function. Then we temporarily blacklist the item during the second pass and
             // display an error message.
