@@ -110,6 +110,9 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool parseOptions(const QStringList &);
         void setupLogging();
 
+        bool startServer(bool restartClient = false);
+        bool connectToServer();
+
         std::shared_ptr<ClientGui> _gui;
 
         Theme *_theme;

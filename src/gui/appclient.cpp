@@ -40,6 +40,7 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QFontDatabase>
+#include <QProcess>
 
 #include <iostream>
 #include <sstream>
@@ -69,6 +70,22 @@ static const QList<QString> fontFiles = QList<QString>() << QString(":/client/re
                                                          << QString(":/client/resources/fonts/SuisseIntl-Black.otf");
 // static const QString defaultFontFamily("Suisse Int'l");
 
+#ifdef Q_OS_WIN
+static void displayHelpText(const QString &t)  // No console on Windows.
+{
+    QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
+    QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
+                   spaces + QLatin1String("</pre></qt>");
+    QMessageBox::information(0, Theme::instance()->appNameGUI(), text);
+}
+
+#else
+
+static void displayHelpText(const QString &t) {
+    std::cout << qUtf8Printable(t);
+}
+#endif
+
 AppClient::AppClient(int &argc, char **argv)
     : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv),
       _gui(nullptr),
@@ -96,7 +113,7 @@ AppClient::AppClient(int &argc, char **argv)
         }
     }
 
-#ifdef QT_DEBUG
+/* #ifdef QT_DEBUG
     // Read comm port value from .comm file
     std::filesystem::path commPath(QStr2Path(QDir::homePath()));
     commPath.append(".comm");
@@ -105,17 +122,17 @@ AppClient::AppClient(int &argc, char **argv)
     std::ifstream commFile(commPath);
     commFile >> commPort;
     commFile.close();
-    _commPort = static_cast<unsigned short>(commPort);
-#else
+    _commPort = static_cast<unsigned short>(commPort);*/
+//#else
     // Read comm port value from argument list
     if (!parseOptions(arguments())) {
         QMessageBox msgBox;
-        msgBox.setText(tr("Bad arguments!"));
+        msgBox.setText(tr("Bad arguments! Clean restart in progress."));
         msgBox.exec();
-        QTimer::singleShot(0, qApp, SLOT(quit()));
+        startServer(true /*Close the client and let the server restart it*/);
         return;
     }
-#endif
+//#endif
 
     if (isRunning()) {
         QMessageBox msgBox;
@@ -125,43 +142,7 @@ AppClient::AppClient(int &argc, char **argv)
         return;
     }
 
-    // Connect to server
-    int count = 0;
-    while (!CommClient::instance()->connectToServer(_commPort) && count < CONNECTION_TRIALS) {
-        std::cout << "Connection to server failed!" << std::endl;
-        count++;
-    }
-
-    if (count == CONNECTION_TRIALS) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Unable to connect to application server!"));
-        msgBox.exec();
-        QTimer::singleShot(0, qApp, SLOT(quit()));
-        return;
-    }
-
-    connect(CommClient::instance().get(), &CommClient::disconnected, this, &AppClient::onQuit);
-    connect(CommClient::instance().get(), &CommClient::signalReceived, this, &AppClient::onSignalReceived);
-
-    // Wait for server startup
-    count = 0;
-    while (count < CHECKCOMMSTATUS_TRIALS) {
-        ExitCode exitCode = GuiRequests::checkCommStatus();
-        if (exitCode != ExitCodeOk) {
-            std::cout << "Check of comm status failed" << std::endl;
-            count++;
-        } else {
-            break;
-        }
-    }
-
-    if (count == CHECKCOMMSTATUS_TRIALS) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("The application server did not respond on time: the client will be restarted."));
-        msgBox.exec();
-        QTimer::singleShot(0, qApp, SLOT(quit()));
-        return;
-    }
+    connectToServer();
 
     // Init ParametersCache
     ParametersCache::instance();
@@ -609,6 +590,7 @@ void AppClient::onParseMessage(const QString &msg, QObject *) {
 
 bool AppClient::parseOptions(const QStringList &options) {
     if (options.size() != 2) {
+        _commPort = 0;
         return false;
     }
 
@@ -619,6 +601,7 @@ bool AppClient::parseOptions(const QStringList &options) {
 
     // Read comm port
     _commPort = it.next().toUInt();
+    displayHelpText(tr("Comm port for client: %1").arg(_commPort)); //Temporary debug, to remove before pull request
 
     return true;
 }
@@ -643,6 +626,86 @@ void AppClient::askUserToLoginAgain(int userDbId, QString userEmail, bool invali
     msgBox.exec();
 
     _gui->openLoginDialog(userDbId, invalidTokenError);
+}
+
+bool AppClient::startServer(bool restartClient) {
+    // Start the client
+    QString pathToExecutable = QCoreApplication::applicationDirPath();
+
+#if defined(Q_OS_WIN)
+    pathToExecutable += QString("/%1.exe").arg(APPLICATION_EXECUTABLE);
+#else
+    pathToExecutable += QString("/%1").arg(APPLICATION_EXECUTABLE);
+#endif
+
+    QStringList arguments;
+    if (!restartClient) {
+        arguments << QString("--commPort") << QString::number(_commPort) << QString("--noStartClient");
+    }
+
+    QProcess *clientProcess = new QProcess(this);
+    clientProcess->setProgram(pathToExecutable);
+    clientProcess->setArguments(arguments);
+    
+    clientProcess->startDetached();
+
+    if (restartClient) {
+        QTimer::singleShot(0, qApp, SLOT(quit()));
+        return true;
+    } 
+    return true;
+}
+
+bool AppClient::connectToServer() {
+
+    // Check if a commPort is provided
+    if (_commPort == 0) {
+		QMessageBox msgBox;
+		msgBox.setText(tr("No comm port provided! Clean restart in progress..."));
+		msgBox.exec();
+        displayHelpText(tr("No comm port provided! Clean restart in progress..."));
+        startServer(true /*Close the client and let the server restart it*/);
+		return false;
+	}
+
+    // Connect to server
+    int count = 0;
+    while (!CommClient::instance()->connectToServer(_commPort) && count < CONNECTION_TRIALS) {
+        std::cout << "Connection to server failed!" << std::endl;
+        count++;
+    }
+
+    if (count == CONNECTION_TRIALS) {
+        QMessageBox msgBox;
+        msgBox.setText(tr("Unable to connect to application server! Clean restart in progress..."));
+        msgBox.exec();
+        startServer(true /*Close the client and let the server restart it*/);
+        return false;
+    }
+
+    connect(CommClient::instance().get(), &CommClient::disconnected, this, &AppClient::onQuit);
+    connect(CommClient::instance().get(), &CommClient::signalReceived, this, &AppClient::onSignalReceived);
+
+    // Wait for server startup
+    count = 0;
+    while (count < CHECKCOMMSTATUS_TRIALS) {
+        ExitCode exitCode = GuiRequests::checkCommStatus();
+        if (exitCode != ExitCodeOk) {
+            std::cout << "Check of comm status failed" << std::endl;
+            count++;
+        } else {
+            break;
+        }
+    }
+
+    if (count == CHECKCOMMSTATUS_TRIALS) {
+        QMessageBox msgBox;
+        msgBox.setText(tr("The application server did not respond on time: Clean restart in progress..."));
+        msgBox.exec();
+        startServer(true /*Close the client and let the server restart it*/);
+        return false;
+    }
+    return true;
 }
 
 void AppClient::onTryTrayAgain() {
