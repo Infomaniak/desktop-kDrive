@@ -123,7 +123,7 @@ AppServer::AppServer(int &argc, char **argv)
       _versionAsked(false),
       _clearSyncNodesAsked(false),
       _debugMode(false),
-      _commPort(0){
+      _commPort(0) {
 #ifdef NDEBUG
     sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppServer", "Start"));
 #endif
@@ -295,8 +295,8 @@ AppServer::AppServer(int &argc, char **argv)
 
     // Start CommServer
     if (_commPort != 0) {
-		CommServer::setCommPort(_commPort);
-	}
+        CommServer::setCommPort(_commPort);
+    }
     CommServer::instance();
     connect(CommServer::instance().get(), &CommServer::requestReceived, this, &AppServer::onRequestReceived);
     connect(CommServer::instance().get(), &CommServer::startClient, this, &AppServer::onStartClientReceived);
@@ -316,19 +316,17 @@ AppServer::AppServer(int &argc, char **argv)
         }
     }
 
+
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
 
     // Start client
-    if (_commPort == 0) { 
-        displayHelpText(QString("No comm port provided, starting client"));
-        if (!startClient()) {
-            LOG_WARN(_logger, "Error in startClient");
-            throw std::runtime_error("Failed to start kDrive client.");
-            return;
-        }
+    if (!startClient()) {
+        LOG_WARN(_logger, "Error in startClient");
+        throw std::runtime_error("Failed to start kDrive client.");
+        return;
     }
-    
+
 
     // Send syncs progress
     connect(&_loadSyncsProgressTimer, &QTimer::timeout, this, &AppServer::onUpdateSyncsProgress);
@@ -2806,6 +2804,9 @@ void AppServer::parseOptions(const QStringList &options) {
         } else if (option == QLatin1String("--clearKeychainKeys")) {
             _clearKeychainKeysAsked = true;
             break;
+        } else if (option == QLatin1String("--noStartClient")) {
+            _noStartClient = true;
+            break;
         } else if (option == QLatin1String("--commPort")){
             if (it.hasNext()) {
 				_commPort = it.next().toInt();
@@ -3016,6 +3017,7 @@ bool AppServer::startClient() {
     startClient = true;
 #endif
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
+    startClient = !_noStartClient && startClient;
 
     if (startClient) {
         // Start the client

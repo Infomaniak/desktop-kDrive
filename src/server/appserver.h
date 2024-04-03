@@ -121,6 +121,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _settingsAsked = false;
         bool _synthesisAsked = false;
         bool _clearKeychainKeysAsked = false;
+        bool _noStartClient = false;
         bool _vfsInstallationDone = false;
         bool _vfsActivationDone = false;
         bool _vfsConnectionDone = false;
