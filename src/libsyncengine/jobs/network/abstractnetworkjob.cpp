@@ -528,8 +528,8 @@ bool AbstractNetworkJob::ioOrLogicalErrorOccurred(std::ios &stream) {
     if (res) {
         LOG_DEBUG(_logger, "sendRequest failed for job " << jobId()
                                                          << " - stream fail=" << stream.fail()
-                                                         << " - stream bad=" << stream.fail()
-                                                         << " - stream eof=" << stream.fail());
+                                                         << " - stream bad=" << stream.bad()
+                                                         << " - stream eof=" << stream.eof());
     }
     return res;
 }
