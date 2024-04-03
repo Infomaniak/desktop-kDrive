@@ -96,6 +96,23 @@ static const char optionsC[] =
     "  --synthesis          : show the Synthesis window (if the application is running).\n";
 }
 
+// Helpers for displaying messages. Note that there is no console on Windows.
+#ifdef Q_OS_WIN
+static void displayHelpText(const QString &t)  // No console on Windows.
+{
+    QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
+    QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
+                   spaces + QLatin1String("</pre></qt>");
+    QMessageBox::information(0, Theme::instance()->appNameGUI(), text);
+}
+
+#else
+
+static void displayHelpText(const QString &t) {
+    std::cout << qUtf8Printable(t);
+}
+#endif
+
 AppServer::AppServer(int &argc, char **argv)
     : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv),
       _navigationPaneHelper(nullptr),
@@ -105,7 +122,8 @@ AppServer::AppServer(int &argc, char **argv)
       _helpAsked(false),
       _versionAsked(false),
       _clearSyncNodesAsked(false),
-      _debugMode(false) {
+      _debugMode(false),
+      _commPort(0){
 #ifdef NDEBUG
     sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppServer", "Start"));
 #endif
@@ -276,9 +294,14 @@ AppServer::AppServer(int &argc, char **argv)
     _socketApi->setGetPublicLinkUrlCallback(&ServerRequests::getPublicLinkUrl);
 
     // Start CommServer
+    if (_commPort != 0) {
+		CommServer::setCommPort(_commPort);
+	}
     CommServer::instance();
     connect(CommServer::instance().get(), &CommServer::requestReceived, this, &AppServer::onRequestReceived);
     connect(CommServer::instance().get(), &CommServer::startClient, this, &AppServer::onStartClientReceived);
+
+    displayHelpText(QString("CommServer started on port %1").arg(CommServer::instance()->commPort()));
 
     // Update users/accounts/drives info
     ExitCode exitCode = updateAllUsersInfo();
@@ -297,11 +320,15 @@ AppServer::AppServer(int &argc, char **argv)
     QTimer::singleShot(0, [=]() { startSyncPals(); });
 
     // Start client
-    if (!startClient()) {
-        LOG_WARN(_logger, "Error in startClient");
-        throw std::runtime_error("Failed to start kDrive client.");
-        return;
+    if (_commPort == 0) { 
+        displayHelpText(QString("No comm port provided, starting client"));
+        if (!startClient()) {
+            LOG_WARN(_logger, "Error in startClient");
+            throw std::runtime_error("Failed to start kDrive client.");
+            return;
+        }
     }
+    
 
     // Send syncs progress
     connect(&_loadSyncsProgressTimer, &QTimer::timeout, this, &AppServer::onUpdateSyncsProgress);
@@ -2779,28 +2806,20 @@ void AppServer::parseOptions(const QStringList &options) {
         } else if (option == QLatin1String("--clearKeychainKeys")) {
             _clearKeychainKeysAsked = true;
             break;
-        } else {
+        } else if (option == QLatin1String("--commPort")){
+            if (it.hasNext()) {
+				_commPort = it.next().toInt();
+			} else {
+                displayHelpText("Missing argument for option '--commPort'");
+			}
+		}
+        else {
             showHint("Unrecognized option '" + option.toStdString() + "'");
         }
     }
 }
 
-// Helpers for displaying messages. Note that there is no console on Windows.
-#ifdef Q_OS_WIN
-static void displayHelpText(const QString &t)  // No console on Windows.
-{
-    QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
-    QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
-                   spaces + QLatin1String("</pre></qt>");
-    QMessageBox::information(0, Theme::instance()->appNameGUI(), text);
-}
 
-#else
-
-static void displayHelpText(const QString &t) {
-    std::cout << qUtf8Printable(t);
-}
-#endif
 
 void AppServer::showHelp() {
     QString helpText;

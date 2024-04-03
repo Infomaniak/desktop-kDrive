@@ -37,6 +37,8 @@ class CommServer : public QObject {
 
     public:
         static std::shared_ptr<CommServer> instance(QObject *parent = nullptr);
+        static void setCommPort(quint16 port);
+
         ~CommServer();
 
         CommServer(CommServer const &) = delete;
@@ -58,6 +60,8 @@ class CommServer : public QObject {
 
     private:
         static std::shared_ptr<CommServer> _instance;
+        static quint16 _commPort;
+
         QThread *_requestWorkerThread;
         Worker *_requestWorker;
         QTcpServer _tcpServer;

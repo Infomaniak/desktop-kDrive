@@ -131,6 +131,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
 
+        quint16 _commPort;
+       
+
 
 #if defined(WITH_CRASHREPORTER)
         QScopedPointer<CrashReporter::Handler> _crashHandler;

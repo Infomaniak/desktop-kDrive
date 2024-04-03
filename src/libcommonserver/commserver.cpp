@@ -38,6 +38,7 @@
 namespace KDC {
 
 std::shared_ptr<CommServer> CommServer::_instance = nullptr;
+quint16 CommServer::_commPort = 0;
 
 std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
     if (_instance == nullptr) {
@@ -45,6 +46,13 @@ std::shared_ptr<CommServer> CommServer::instance(QObject *parent) {
     }
 
     return _instance;
+}
+
+void CommServer::setCommPort(quint16 port) {
+	_commPort = port;
+    if (_instance) {
+		_instance->start();
+	}
 }
 
 CommServer::CommServer(QObject *parent)
@@ -107,7 +115,13 @@ void CommServer::start() {
         connect(&_tcpServer, &QTcpServer::newConnection, this, &CommServer::onNewConnection);
     }
 
-    _tcpServer.listen(QHostAddress::LocalHost);
+    if (_commPort == 0) {
+		_tcpServer.listen(QHostAddress::LocalHost);
+    }
+    else {
+        _tcpServer.listen(QHostAddress::LocalHost, _commPort);
+	}
+
     LOG_DEBUG(Log::instance()->getLogger(), "Comm server started - port=" << _tcpServer.serverPort());
 
 #ifdef QT_DEBUG
@@ -209,8 +223,6 @@ void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
                                                             << socketError << ")");
         // Restart comm server
         start();
-        // Restart client
-        emit startClient();
         return;
     }
 
