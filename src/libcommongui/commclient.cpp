@@ -50,6 +50,14 @@ CommClient::CommClient(QObject *parent)
       _buffer(QByteArray()) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);
+
+    disconnect(_requestWorkerThread, &QThread::started, _requestWorker, &Worker::onStart);
+    disconnect(_requestWorker, &Worker::finished, _requestWorkerThread, &QThread::quit);
+    disconnect(_requestWorker, &Worker::finished, _requestWorker, &Worker::deleteLater);
+    disconnect(_requestWorkerThread, &QThread::finished, _requestWorkerThread, &QObject::deleteLater);
+    disconnect(_requestWorker, &Worker::sendRequest, this, &CommClient::onSendRequest);
+    disconnect(_requestWorker, &Worker::signalReceived, this, &CommClient::onSignalReceived);
+    
     connect(_requestWorkerThread, &QThread::started, _requestWorker, &Worker::onStart);
     connect(_requestWorker, &Worker::finished, _requestWorkerThread, &QThread::quit);
     connect(_requestWorker, &Worker::finished, _requestWorker, &Worker::deleteLater);
@@ -67,6 +75,16 @@ bool CommClient::connectToServer(quint16 commPort) {
         return false;
     }
 
+    if (_tcpConnection) {
+        if (_tcpConnection->isOpen()) {
+			_tcpConnection->close();
+		}
+		_tcpConnection->deleteLater();
+	}
+
+    _tcpConnection = new QTcpSocket(this);
+
+    
     // Connection to server
     connect(_tcpConnection, &QTcpSocket::disconnected, this, &CommClient::onDisconnected);
     connect(_tcpConnection, &QTcpSocket::errorOccurred, this, &CommClient::onErrorOccurred);

@@ -683,6 +683,8 @@ bool AppClient::connectToServer() {
         QTimer::singleShot(0, qApp, SLOT(quit())); //Will be replace by startServer when the mecanisme to prevent loop is implemented
         return false;
     }
+    disconnect(CommClient::instance().get(), &CommClient::disconnected, this, &AppClient::onQuit);
+    disconnect(CommClient::instance().get(), &CommClient::signalReceived, this, &AppClient::onSignalReceived);
 
     connect(CommClient::instance().get(), &CommClient::disconnected, this, &AppClient::onQuit);
     connect(CommClient::instance().get(), &CommClient::signalReceived, this, &AppClient::onSignalReceived);
