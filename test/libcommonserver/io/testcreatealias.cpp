@@ -24,7 +24,10 @@ using namespace CppUnit;
 
 namespace KDC {
 
+
 void TestIo::testCreateAlias() {
+    GetItemChecker checker{_testObj};
+
     // A MacOSX Finder alias on a regular file.
     {
         const TemporaryDirectory temporaryDirectory;
@@ -36,12 +39,8 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(itemType.linkType == LinkTypeFinderAlias);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeFile);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
+        CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // A MacOSX Finder alias on a regular directory.
@@ -55,12 +54,8 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(itemType.linkType == LinkTypeFinderAlias);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeDirectory);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeDirectory);
+        CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // The target file does not exist: failure
@@ -87,12 +82,8 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(itemType.linkType == LinkTypeFinderAlias);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeFile);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
+        CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // The alias path is the path of an existing directory: failure
@@ -126,12 +117,10 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(itemType.linkType == LinkTypeFinderAlias);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
+        const auto privateTargetPath =
+            SyncPath{"/private" + std::string(targetPath.c_str())};  // Simple concatenation doesn't append the `/private` prefix.
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, privateTargetPath, LinkTypeFinderAlias, NodeTypeFile);
+        CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // The alias file name is very long: failure
@@ -157,18 +146,15 @@ void TestIo::testCreateAlias() {
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoErrorNoSuchFileOrDirectory);
-        // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
+        // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because of a filesystem error.
     }
 
     // The alias file path is very long: failure
     {
         const std::string pathSegment(50, 'a');
-        SyncPath path = _localTestDirPath;
-        for (int i = 0; i < 1000; ++i) {
-            path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
-        }
-
+        const SyncPath path = makeVeryLonPath(_localTestDirPath);
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
+
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
         CPPUNIT_ASSERT(aliasError == IoErrorNoSuchFileOrDirectory);
@@ -178,10 +164,7 @@ void TestIo::testCreateAlias() {
     // The target file path is very long: failure
     {
         const std::string pathSegment(50, 'a');
-        SyncPath targetPath = _localTestDirPath;
-        for (int i = 0; i < 1000; ++i) {
-            targetPath /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
-        }
+        const SyncPath targetPath = makeVeryLonPath(_localTestDirPath);
 
         const TemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "alias.txt";  // This file doesn't exist.
@@ -204,11 +187,8 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        ItemType itemType;
-        CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(itemType.linkType == LinkTypeFinderAlias);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
+        CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 }
 
