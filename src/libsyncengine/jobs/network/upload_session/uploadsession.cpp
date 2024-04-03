@@ -285,62 +285,72 @@ bool UploadSession::sendChunks() {
                 LOGW_WARN(_logger, L"Failed to read chunk - path=" << Path2WStr(_filePath).c_str());
                 readError = true;
                 break;
+            }
+
+            std::streamsize actualChunkSize = file.gcount();
+            std::string chunkContent = std::string(memblock.get(), actualChunkSize);
+
+            if (actualChunkSize <= 0) {
+                LOG_ERROR(_logger, "Chunk size is 0");
+#ifdef NDEBUG
+                sentry_capture_event(
+                    sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Upload chunke error", "Chunk size is 0"));
+#endif
+                readError = true;
+                break;
+            }
+
+            std::shared_ptr<UploadSessionChunkJob> chunkJob = nullptr;
+            try {
+                chunkJob = std::make_shared<UploadSessionChunkJob>(_driveDbId, _filePath, _sessionToken, chunkContent,
+                                                                   chunkNb, actualChunkSize, jobId());
+            } catch (std::exception const &e) {
+                LOG_ERROR(_logger, "Error in UploadSessionChunkJob::UploadSessionChunkJob: " << e.what());
+                jobCreationError = true;
+                break;
+            }
+
+            if (XXH3_64bits_update(state, chunkJob->chunkHash().data(), chunkJob->chunkHash().length()) == XXH_ERROR) {
+                LOGW_WARN(_logger,
+                          L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+                checksumError = true;
+                break;
+            }
+
+            if (_liteSyncActivated) {
+                // Set VFS callbacks
+                chunkJob->setVfsUpdateFetchStatusCallback(_vfsUpdateFetchStatus);
+                chunkJob->setVfsSetPinStateCallback(_vfsSetPinState);
+                chunkJob->setVfsForceStatusCallback(_vfsForceStatus);
+            }
+
+            if (_isAsynchrounous) {
+                std::function<void(UniqueId)> callback =
+                    std::bind(&UploadSession::uploadChunkCallback, this, std::placeholders::_1);
+
+                _mutex.lock();
+                _threadCounter++;
+                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
+                _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
+                _mutex.unlock();
+                LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
+                                             << _threadCounter << " jobs in queue");
+
+                waitForJobsToComplete(false);
             } else {
-                std::streamsize actualChunkSize = file.gcount();
-                std::string chunkContent = std::string(memblock.get(), actualChunkSize);
+                LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", thread " << chunkJob->jobId() << " start.");
 
-                std::shared_ptr<UploadSessionChunkJob> chunkJob = nullptr;
-                try {
-                    chunkJob = std::make_shared<UploadSessionChunkJob>(_driveDbId, _filePath, _sessionToken, chunkContent,
-                                                                       chunkNb, actualChunkSize, jobId());
-                } catch (std::exception const &e) {
-                    LOG_ERROR(_logger, "Error in UploadSessionChunkJob::UploadSessionChunkJob: " << e.what());
-                    jobCreationError = true;
+                ExitCode exitCode = chunkJob->runSynchronously();
+                if (exitCode != ExitCodeOk || chunkJob->hasHttpError()) {
+                    LOGW_WARN(_logger, L"Failed to upload chunk " << chunkNb << L" of file "
+                                                                  << Path2WStr(_filePath.filename()).c_str());
+                    _exitCode = exitCode;
+                    _exitCause = chunkJob->exitCause();
+                    _jobExecutionError = true;
                     break;
                 }
 
-                if (XXH3_64bits_update(state, chunkJob->chunkHash().data(), chunkJob->chunkHash().length()) == XXH_ERROR) {
-                    LOGW_WARN(_logger,
-                              L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
-                    checksumError = true;
-                    break;
-                }
-
-                if (_liteSyncActivated) {
-                    // Set VFS callbacks
-                    chunkJob->setVfsUpdateFetchStatusCallback(_vfsUpdateFetchStatus);
-                    chunkJob->setVfsSetPinStateCallback(_vfsSetPinState);
-                    chunkJob->setVfsForceStatusCallback(_vfsForceStatus);
-                }
-
-                if (_isAsynchrounous) {
-                    std::function<void(UniqueId)> callback =
-                        std::bind(&UploadSession::uploadChunkCallback, this, std::placeholders::_1);
-
-                    _mutex.lock();
-                    _threadCounter++;
-                    JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
-                    _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
-                    _mutex.unlock();
-                    LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
-                                                 << _threadCounter << " jobs in queue");
-
-                    waitForJobsToComplete(false);
-                } else {
-                    LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", thread " << chunkJob->jobId() << " start.");
-
-                    ExitCode exitCode = chunkJob->runSynchronously();
-                    if (exitCode != ExitCodeOk || chunkJob->hasHttpError()) {
-                        LOGW_WARN(_logger, L"Failed to upload chunk " << chunkNb << L" of file "
-                                                                      << Path2WStr(_filePath.filename()).c_str());
-                        _exitCode = exitCode;
-                        _exitCause = chunkJob->exitCause();
-                        _jobExecutionError = true;
-                        break;
-                    }
-
-                    _progress += actualChunkSize;
-                }
+                _progress += actualChunkSize;
             }
         }
 
