@@ -319,7 +319,7 @@ bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, con
         stream.push_back(session.sendRequest(req));
         if (ioOrLogicalErrorOccurred(stream[0].get())) {
             int err = session.socket().getError();
-            LOG_WARN(_logger, "sendRequest failed for job " << jobId() << " - err=" << err);
+            LOG_WARN(_logger, "sendRequest failed for job " << jobId() << " - socket err=" << err);
             return processSocketError(session, err);
         }
     } catch (Poco::Exception &e) {
@@ -343,7 +343,7 @@ bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, con
             stream[0].get() << std::string(itBegin, itEnd);
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
                 int err = session.socket().getError();
-                LOG_WARN(_logger, "sendRequest failed for job " << jobId() << " - err=" << err);
+                LOG_WARN(_logger, "sendRequest failed for job " << jobId() << " - socket err=" << err);
                 return processSocketError(session, err);
             }
         } catch (Poco::Exception &e) {
@@ -524,7 +524,14 @@ bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &sessi
 }
 
 bool AbstractNetworkJob::ioOrLogicalErrorOccurred(std::ios &stream) {
-    return ((stream.fail() || stream.bad()) && !stream.eof());
+    bool res = (stream.fail() || stream.bad()) && !stream.eof();
+    if (res) {
+        LOG_DEBUG(_logger, "sendRequest failed for job " << jobId()
+                                                         << " - stream fail=" << stream.fail()
+                                                         << " - stream bad=" << stream.fail()
+                                                         << " - stream eof=" << stream.fail());
+    }
+    return res;
 }
 
 const std::string AbstractNetworkJob::errorText(const Poco::Exception &e) const {
