@@ -113,7 +113,7 @@ AppClient::AppClient(int &argc, char **argv)
         }
     }
 
-/* #ifdef QT_DEBUG
+#ifdef QT_DEBUG
     // Read comm port value from .comm file
     std::filesystem::path commPath(QStr2Path(QDir::homePath()));
     commPath.append(".comm");
@@ -122,8 +122,8 @@ AppClient::AppClient(int &argc, char **argv)
     std::ifstream commFile(commPath);
     commFile >> commPort;
     commFile.close();
-    _commPort = static_cast<unsigned short>(commPort);*/
-//#else
+    _commPort = static_cast<unsigned short>(commPort);
+#else
     // Read comm port value from argument list
     if (!parseOptions(arguments())) {
         QMessageBox msgBox;
@@ -132,7 +132,7 @@ AppClient::AppClient(int &argc, char **argv)
         startServer(true /*Close the client and let the server restart it*/);
         return;
     }
-//#endif
+#endif
 
     if (isRunning()) {
         QMessageBox msgBox;
@@ -663,7 +663,6 @@ bool AppClient::connectToServer() {
 		QMessageBox msgBox;
 		msgBox.setText(tr("No comm port provided! Clean restart in progress..."));
 		msgBox.exec();
-        displayHelpText(tr("No comm port provided! Clean restart in progress..."));
         startServer(true /*Close the client and let the server restart it*/);
 		return false;
 	}
