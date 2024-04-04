@@ -491,8 +491,13 @@ void AppClient::onQuit() {
 
 void AppClient::onServerDisconnected() {
 #if NDEBUG
-    // TODO: Implement a limit of reconnection trials per x minutes
-    startServerAndKillClient();
+    if(connectToServer()){
+    		qCInfo(lcAppClient) << "Reconnected to server";
+    }else {
+			qCCritical(lcAppClient) << "Failed to reconnect to server";
+            //TODO: Implement a limit of reconnection trials per x minutes
+			startServerAndKillClient();
+	}
 #else
     displayHelpText("Server disconnected | Closing client");
     QTimer::singleShot(0, qApp, SLOT(quit()));
