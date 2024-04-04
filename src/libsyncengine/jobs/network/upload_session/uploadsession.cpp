@@ -256,125 +256,122 @@ bool UploadSession::sendChunks() {
     bool jobCreationError = false;
     bool sendChunksCanceled = false;
     std::ifstream file(_filePath.native().c_str(), std::ifstream::binary);
-    if (file.is_open()) {
-        // Create a hash stat
-        XXH3_state_t *const state = XXH3_createState();
-        if (!state) {
-            LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
-            _exitCode = ExitCodeSystemError;
-            return false;
-        }
-
-        // Initialize state with selected seed
-        if (XXH3_64bits_reset(state) == XXH_ERROR) {
-            LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
-            _exitCode = ExitCodeSystemError;
-            return false;
-        }
-
-        for (uint64_t chunkNb = 1; chunkNb <= _totalChunks; chunkNb++) {
-            if (isAborted() || _jobExecutionError) {
-                LOG_DEBUG(_logger, "Request " << jobId() << ": aborting upload job");
-                break;
-            }
-
-            std::unique_ptr<char[]> memblock(new char[_chunkSize]);
-            file.read(memblock.get(), (std::streamsize)_chunkSize);
-            if (file.bad() && !file.fail()) {
-                // Read/writing error and not logical error
-                LOGW_WARN(_logger, L"Failed to read chunk - path=" << Path2WStr(_filePath).c_str());
-                readError = true;
-                break;
-            }
-
-            std::streamsize actualChunkSize = file.gcount();
-            std::string chunkContent = std::string(memblock.get(), actualChunkSize);
-
-            if (actualChunkSize <= 0) {
-                LOG_ERROR(_logger, "Chunk size is 0");
-#ifdef NDEBUG
-                sentry_capture_event(
-                    sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Upload chunke error", "Chunk size is 0"));
-#endif
-                readError = true;
-                break;
-            }
-
-            std::shared_ptr<UploadSessionChunkJob> chunkJob = nullptr;
-            try {
-                chunkJob = std::make_shared<UploadSessionChunkJob>(_driveDbId, _filePath, _sessionToken, chunkContent,
-                                                                   chunkNb, actualChunkSize, jobId());
-            } catch (std::exception const &e) {
-                LOG_ERROR(_logger, "Error in UploadSessionChunkJob::UploadSessionChunkJob: " << e.what());
-                jobCreationError = true;
-                break;
-            }
-
-            if (XXH3_64bits_update(state, chunkJob->chunkHash().data(), chunkJob->chunkHash().length()) == XXH_ERROR) {
-                LOGW_WARN(_logger,
-                          L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
-                checksumError = true;
-                break;
-            }
-
-            if (_liteSyncActivated) {
-                // Set VFS callbacks
-                chunkJob->setVfsUpdateFetchStatusCallback(_vfsUpdateFetchStatus);
-                chunkJob->setVfsSetPinStateCallback(_vfsSetPinState);
-                chunkJob->setVfsForceStatusCallback(_vfsForceStatus);
-            }
-
-            if (_isAsynchrounous) {
-                std::function<void(UniqueId)> callback =
-                    std::bind(&UploadSession::uploadChunkCallback, this, std::placeholders::_1);
-
-                _mutex.lock();
-                _threadCounter++;
-                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
-                _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
-                _mutex.unlock();
-                LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
-                                             << _threadCounter << " jobs in queue");
-
-                waitForJobsToComplete(false);
-            } else {
-                LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", thread " << chunkJob->jobId() << " start.");
-
-                ExitCode exitCode = chunkJob->runSynchronously();
-                if (exitCode != ExitCodeOk || chunkJob->hasHttpError()) {
-                    LOGW_WARN(_logger, L"Failed to upload chunk " << chunkNb << L" of file "
-                                                                  << Path2WStr(_filePath.filename()).c_str());
-                    _exitCode = exitCode;
-                    _exitCause = chunkJob->exitCause();
-                    _jobExecutionError = true;
-                    break;
-                }
-
-                _progress += actualChunkSize;
-            }
-        }
-
-        file.close();
-        if (file.bad()) {
-            // Read/writing error or logical error
-            LOG_WARN(_logger, "Request " << jobId() << ": error after closing file");
-            readError = true;
-        }
-
-        sendChunksCanceled = isAborted() || readError || checksumError || jobCreationError || _jobExecutionError;
-
-        if (!sendChunksCanceled) {
-            // Produce the final hash value
-            XXH64_hash_t const hash = XXH3_64bits_digest(state);
-            _totalChunkHash = Utility::xxHashToStr(hash);
-        }
-
-        XXH3_freeState(state);
-    } else {
+    if (!file.is_open()) {
         LOGW_WARN(_logger, L"Failed to open file " << Path2WStr(_filePath).c_str());
         _exitCode = ExitCodeDataError;
         return false;
     }
+
+    // Create a hash state
+    XXH3_state_t *const state = XXH3_createState();
+    if (!state) {
+        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+        _exitCode = ExitCodeSystemError;
+        return false;
+    }
+
+    // Initialize state with selected seed
+    if (XXH3_64bits_reset(state) == XXH_ERROR) {
+        LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+        _exitCode = ExitCodeSystemError;
+        return false;
+    }
+
+    for (uint64_t chunkNb = 1; chunkNb <= _totalChunks; chunkNb++) {
+        if (isAborted() || _jobExecutionError) {
+            LOG_DEBUG(_logger, "Request " << jobId() << ": aborting upload job");
+            break;
+        }
+
+        std::unique_ptr<char[]> memblock(new char[_chunkSize]);
+        file.read(memblock.get(), (std::streamsize)_chunkSize);
+        if (file.bad() && !file.fail()) {
+            // Read/writing error and not logical error
+            LOGW_WARN(_logger, L"Failed to read chunk - path=" << Path2WStr(_filePath).c_str());
+            readError = true;
+            break;
+        }
+
+        const std::streamsize actualChunkSize = file.gcount();
+        if (actualChunkSize <= 0) {
+            LOG_ERROR(_logger, "Chunk size is 0");
+#ifdef NDEBUG
+            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Upload chunk error", "Chunk size is 0"));
+#endif
+            readError = true;
+            break;
+        }
+
+        const std::string chunkContent = std::string(memblock.get(), actualChunkSize);
+
+        std::shared_ptr<UploadSessionChunkJob> chunkJob;
+        try {
+            chunkJob = std::make_shared<UploadSessionChunkJob>(_driveDbId, _filePath, _sessionToken, chunkContent, chunkNb,
+                                                               actualChunkSize, jobId());
+        } catch (std::exception const &e) {
+            LOG_ERROR(_logger, "Error in UploadSessionChunkJob::UploadSessionChunkJob: " << e.what());
+            jobCreationError = true;
+            break;
+        }
+
+        if (XXH3_64bits_update(state, chunkJob->chunkHash().data(), chunkJob->chunkHash().length()) == XXH_ERROR) {
+            LOGW_WARN(_logger, L"Checksum computation " << jobId() << L" failed for file " << Path2WStr(_filePath).c_str());
+            checksumError = true;
+            break;
+        }
+
+        if (_liteSyncActivated) {
+            // Set VFS callbacks
+            chunkJob->setVfsUpdateFetchStatusCallback(_vfsUpdateFetchStatus);
+            chunkJob->setVfsSetPinStateCallback(_vfsSetPinState);
+            chunkJob->setVfsForceStatusCallback(_vfsForceStatus);
+        }
+
+        if (_isAsynchrounous) {
+            std::function<void(UniqueId)> callback = std::bind(&UploadSession::uploadChunkCallback, this, std::placeholders::_1);
+
+            _mutex.lock();
+            _threadCounter++;
+            JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
+            _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
+            _mutex.unlock();
+            LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
+                                         << _threadCounter << " jobs in queue");
+
+            waitForJobsToComplete(false);
+        } else {
+            LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", thread " << chunkJob->jobId() << " start.");
+
+            ExitCode exitCode = chunkJob->runSynchronously();
+            if (exitCode != ExitCodeOk || chunkJob->hasHttpError()) {
+                LOGW_WARN(_logger,
+                          L"Failed to upload chunk " << chunkNb << L" of file " << Path2WStr(_filePath.filename()).c_str());
+                _exitCode = exitCode;
+                _exitCause = chunkJob->exitCause();
+                _jobExecutionError = true;
+                break;
+            }
+
+            _progress += actualChunkSize;
+        }
+    }
+
+    file.close();
+    if (file.bad()) {
+        // Read/writing error or logical error
+        LOG_WARN(_logger, "Request " << jobId() << ": error after closing file");
+        readError = true;
+    }
+
+    sendChunksCanceled = isAborted() || readError || checksumError || jobCreationError || _jobExecutionError;
+
+    if (!sendChunksCanceled) {
+        // Produce the final hash value
+        XXH64_hash_t const hash = XXH3_64bits_digest(state);
+        _totalChunkHash = Utility::xxHashToStr(hash);
+    }
+
+    XXH3_freeState(state);
 
     if (_isAsynchrounous && !sendChunksCanceled) {
         waitForJobsToComplete(true);
