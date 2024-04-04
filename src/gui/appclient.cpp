@@ -73,8 +73,8 @@ static const QList<QString> fontFiles = QList<QString>() << QString(":/client/re
 #ifdef Q_OS_WIN
 static void displayHelpText(const QString &t)  // No console on Windows.
 {
-    QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
-    QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
+    static const QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
+    const QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
                    spaces + QLatin1String("</pre></qt>");
     QMessageBox::information(0, Theme::instance()->appClientName() + "_HelpText", text);
 }
@@ -691,7 +691,7 @@ bool AppClient::connectToServer() {
     // Wait for server startup
     count = 0;
     while (count < CHECKCOMMSTATUS_TRIALS) {
-        ExitCode exitCode = GuiRequests::checkCommStatus();
+        const ExitCode exitCode = GuiRequests::checkCommStatus();
         if (exitCode != ExitCodeOk) {
             qCWarning(lcAppClient()) << "Check of comm status failed";
             count++;
