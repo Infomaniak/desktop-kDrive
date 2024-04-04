@@ -302,7 +302,7 @@ bool UploadSession::sendChunks() {
             break;
         }
 
-        const std::string chunkContent = std::string(memblock.get(), actualChunkSize);
+        const auto chunkContent = std::string(memblock.get(), actualChunkSize);
 
         std::shared_ptr<UploadSessionChunkJob> chunkJob;
         try {
