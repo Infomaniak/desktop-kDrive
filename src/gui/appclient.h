@@ -110,7 +110,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool parseOptions(const QStringList &);
         void setupLogging();
 
-        bool startServer(bool restartClient = false);
+        bool startServer(bool restartClient = false); //restartClient set to true will close this instance and let the server start a new client.
         bool connectToServer();
 
         std::shared_ptr<ClientGui> _gui;

@@ -2803,8 +2803,19 @@ void AppServer::parseOptions(const QStringList &options) {
         } else if (option == QLatin1String("--clearKeychainKeys")) {
             _clearKeychainKeysAsked = true;
             break;
-        } else if (option == QLatin1String("--noStartClient")) {
-            _noStartClient = true;
+        } else if (option == QLatin1String("--startClient")) {
+            if (it.hasNext()) {
+                auto value = it.next();
+                if (value == QLatin1String("true")) {
+					_startClient = true;
+				} else if (value == QLatin1String("false")) {
+					_startClient = false;
+				} else {
+					displayHelpText("Invalid argument for option '--startClient'");
+				}
+			} else {
+				displayHelpText("Missing argument for option '--startClient'");
+            }
             break;
         } else if (option == QLatin1String("--commPort")){
             if (it.hasNext()) {
@@ -2818,8 +2829,6 @@ void AppServer::parseOptions(const QStringList &options) {
         }
     }
 }
-
-
 
 void AppServer::showHelp() {
     QString helpText;
@@ -3016,10 +3025,10 @@ bool AppServer::startClient() {
     startClient = true;
 #endif
     startClient |= QProcessEnvironment::systemEnvironment().value("KDRIVE_DEBUG_RUN_CLIENT") == "1";
-    startClient = !_noStartClient && startClient;
+    startClient = _startClient && startClient;
     
-    if (_noStartClient) {
-		LOG_INFO(_logger, "kDrive client won't be started (noStartClient option)");
+    if (!_startClient) {
+		LOG_INFO(_logger, "kDrive client won't be started (startClient option set to false)");
 	}
 
     if (startClient) {

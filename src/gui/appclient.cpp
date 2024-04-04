@@ -640,7 +640,7 @@ bool AppClient::startServer(bool restartClient) {
 
     QStringList arguments;
     if (!restartClient) {
-        arguments << QString("--commPort") << QString::number(_commPort) << QString("--noStartClient");
+        arguments << QString("--commPort") << QString::number(_commPort) << QString("--startClient") << QString("false");
     }
 
     QProcess *clientProcess = new QProcess(this);
@@ -663,6 +663,7 @@ bool AppClient::connectToServer() {
 		QMessageBox msgBox;
 		msgBox.setText(tr("No comm port provided! Clean restart in progress..."));
 		msgBox.exec();
+        qCCritical(lcAppClient()) << "No comm port provided!";
         startServer(true /*Close the client and let the server restart it*/);
 		return false;
 	}
@@ -670,7 +671,7 @@ bool AppClient::connectToServer() {
     // Connect to server
     int count = 0;
     while (!CommClient::instance()->connectToServer(_commPort) && count < CONNECTION_TRIALS) {
-        std::cout << "Connection to server failed!" << std::endl;
+        qCCritical(lcAppClient()) << "Connection to server failed!";
         count++;
     }
 
@@ -678,8 +679,7 @@ bool AppClient::connectToServer() {
         QMessageBox msgBox;
         msgBox.setText(tr("Unable to connect to application server!"));
         msgBox.exec();
-        //startServer(true /*Close the client and let the server restart it*/);
-        QTimer::singleShot(0, qApp, SLOT(quit())); //Will be replace by startServer when the mecanisme to prevent loop is implemented
+        qCCritical(lcAppClient()) << "Unable to connect to application server!";
         return false;
     }
     disconnect(CommClient::instance().get(), &CommClient::disconnected, this, &AppClient::onQuit);
@@ -693,7 +693,7 @@ bool AppClient::connectToServer() {
     while (count < CHECKCOMMSTATUS_TRIALS) {
         ExitCode exitCode = GuiRequests::checkCommStatus();
         if (exitCode != ExitCodeOk) {
-            std::cout << "Check of comm status failed" << std::endl;
+            qCWarning(lcAppClient()) << "Check of comm status failed";
             count++;
         } else {
             break;
@@ -704,8 +704,7 @@ bool AppClient::connectToServer() {
         QMessageBox msgBox;
         msgBox.setText(tr("The application server did not respond on time!"));
         msgBox.exec();
-        //startServer(true /*Close the client and let the server restart it*/);
-        QTimer::singleShot(0, qApp, SLOT(quit())); //Will be replace by startServer when the mecanisme to prevent loop is implemented
+        qCCritical(lcAppClient) << "The application server did not respond on time!";
         return false;
     }
     return true;

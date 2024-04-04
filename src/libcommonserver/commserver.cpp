@@ -117,12 +117,9 @@ void CommServer::start() {
         connect(&_tcpServer, &QTcpServer::newConnection, this, &CommServer::onNewConnection);
     }
 
-    if (_commPort == 0) {
-		_tcpServer.listen(QHostAddress::LocalHost);
-    }
-    else {
+  
         _tcpServer.listen(QHostAddress::LocalHost, _commPort);
-	}
+
 
     LOG_DEBUG(Log::instance()->getLogger(), "Comm server started - port=" << _tcpServer.serverPort());
 
