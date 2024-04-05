@@ -89,13 +89,8 @@ static void displayHelpText(const QString &t) {
 
 AppClient::AppClient(int &argc, char **argv)
     : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv),
-      _gui(nullptr),
       _theme(Theme::instance()),
-      _logExpire(0),
-      _logFlush(false),
-      _logDebug(false),
-      _debugMode(false),
-      _commPort(0){
+      _logExpire(0){
 #ifdef NDEBUG
     sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppClient", "Start"));
 #endif
@@ -129,7 +124,7 @@ AppClient::AppClient(int &argc, char **argv)
     // Read comm port value from argument list
     if (!parseOptions(arguments())) {
         //TODO: Implement a limit of reconnection trials per x minutes
-        startServerAndKillClient();
+        startServerAndDie();
         return;
     }
 #endif
@@ -146,7 +141,7 @@ AppClient::AppClient(int &argc, char **argv)
         qCInfo(lcAppClient) << "Connected to server";
 	} else {
 		qCCritical(lcAppClient) << "Failed to connect to server";
-		startServerAndKillClient();
+		startServerAndDie();
         return;
     }
 
@@ -491,13 +486,9 @@ void AppClient::onQuit() {
 
 void AppClient::onServerDisconnected() {
 #if NDEBUG
-    if(connectToServer()){
-    		qCInfo(lcAppClient) << "Reconnected to server";
-    }else {
-			qCCritical(lcAppClient) << "Failed to reconnect to server";
-            //TODO: Implement a limit of reconnection trials per x minutes
-			startServerAndKillClient();
-	}
+    qCCritical(lcAppClient) << "Server disconnected | Closing client";
+    startServerAndDie();
+
 #else
     displayHelpText("Server disconnected | Closing client");
     QTimer::singleShot(0, qApp, SLOT(quit()));
@@ -584,7 +575,7 @@ void AppClient::setupLogging() {
                                .arg(KDC::CommonUtility::platformName());
 }
 
-void AppClient::startServerAndKillClient() {
+void AppClient::startServerAndDie() {
     // Start the client
     QString pathToExecutable = QCoreApplication::applicationDirPath();
 
@@ -594,9 +585,10 @@ void AppClient::startServerAndKillClient() {
     pathToExecutable += QString("/%1").arg(APPLICATION_EXECUTABLE);
 #endif
 
-    QProcess *clientProcess = new QProcess(this);
-    clientProcess->setProgram(pathToExecutable);
-    clientProcess->startDetached();
+    QProcess *serverProcess = new QProcess(this);
+    serverProcess->setProgram(pathToExecutable);
+    serverProcess->startDetached();
+
 
     QTimer::singleShot(0, qApp, SLOT(quit()));
 }
@@ -604,11 +596,8 @@ void AppClient::startServerAndKillClient() {
 bool AppClient::connectToServer() {
     // Check if a commPort is provided
     if (_commPort == 0) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("No comm port provided! Clean restart in progress..."));
-        msgBox.exec();
-        qCCritical(lcAppClient()) << "No comm port provided!";
-
+        qCCritical(lcAppClient()) << "No comm port provided to the client at startup, failed to connect to server!";
+        startServerAndDie();
         return false;
     }
 
@@ -620,11 +609,8 @@ bool AppClient::connectToServer() {
     }
 
     if (count == CONNECTION_TRIALS) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Unable to connect to application server!"));
-        msgBox.exec();
-        qCCritical(lcAppClient()) << "Unable to connect to application server!";
 
+        qCCritical(lcAppClient()) << "Unable to connect to application server on port" << _commPort;
         return false;
     }
 
@@ -644,11 +630,7 @@ bool AppClient::connectToServer() {
     }
 
     if (count == CHECKCOMMSTATUS_TRIALS) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("The application server did not respond on time!"));
-        msgBox.exec();
         qCCritical(lcAppClient) << "The application server did not respond on time!";
-
         return false;
     }
     return true;
