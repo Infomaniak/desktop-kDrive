@@ -241,11 +241,9 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                                                                 << Path2WStr(absolutePath).c_str() << L" ("
                                                                 << Utility::s2ws(localNodeId).c_str()
                                                                 << L") removed from local replica. It will not be blacklisted.");
-            SyncName newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-                absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
-            SyncPath destPath = absolutePath.parent_path() / newName;
-            LocalMoveJob moveJob(absolutePath, destPath);
-            moveJob.runSynchronously();
+
+            SyncPath destPath;
+            PlatformInconsistencyCheckerUtility::renameLocaLFile(absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
 
             Error err(_syncPal->syncDbId(), "", "", NodeTypeDirectory, absolutePath, ConflictTypeNone, InconsistencyTypeNone,
                       CancelTypeMoveToBinFailed, destPath);
@@ -257,7 +255,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         }
     }
 
-    // Remove node (and childs by cascade) from DB
+    // Remove node (and children by cascade) from DB
     if (!_syncPal->_syncDb->deleteNode(dbId, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::deleteNode");
         return ExitCodeDbError;

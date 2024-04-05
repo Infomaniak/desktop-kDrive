@@ -733,6 +733,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                     }
                 }
             } else if (action == renameAction) {
+                _syncPal->removeItemFromTmpBlacklist(id, ReplicaSideRemote);
                 if (_snapshot->updateItem(item)) {
                     LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(name).c_str() << L" ("
                                                                    << Utility::s2ws(id).c_str() << L") renamed");
@@ -749,7 +750,6 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                 }
 
                 _syncPal->removeItemFromTmpBlacklist(id, ReplicaSideRemote);
-
                 if (_snapshot->removeItem(id)) {
                     if (ParametersCache::instance()->parameters().extendedLog()) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from remote snapshot: " << SyncName2WStr(name).c_str() << L" ("

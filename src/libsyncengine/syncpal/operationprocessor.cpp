@@ -69,8 +69,7 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
     return false;
 }
 
-std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shared_ptr<Node> node,
-                                                                       bool useLocalPath /*= false*/) {
+std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shared_ptr<Node> node) {
     ReplicaSide snapshotSide =
         (node->side() == ReplicaSide::ReplicaSideLocal ? ReplicaSide::ReplicaSideLocal : ReplicaSide::ReplicaSideRemote);
     ReplicaSide otherSnapshotSide =
@@ -138,7 +137,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shar
                 return nullptr;
             }
             if (!found) {
-                names.push_back(useLocalPath ? parentNode->validLocalName() : parentNode->name());
+                names.push_back(parentNode->name());
                 parentNode = parentNode->parentNode();
             }
         }
