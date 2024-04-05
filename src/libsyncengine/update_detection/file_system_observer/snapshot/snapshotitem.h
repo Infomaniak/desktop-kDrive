@@ -57,6 +57,8 @@ class SnapshotItem {
         inline void setCanWrite(bool canWrite) { _canWrite = canWrite; }
         inline bool canShare() const { return _canShare; }
         inline void setCanShare(bool canShare) { _canShare = canShare; }
+        inline bool isLink() const { return _isLink; }
+        inline void setIsLink(bool isLink) { _isLink = isLink; }
         SnapshotItem &operator=(const SnapshotItem &other);
 
         void addChildren(const NodeId &id);
@@ -74,6 +76,7 @@ class SnapshotItem {
         std::string _contentChecksum;
         bool _canWrite = true;
         bool _canShare = true;
+        bool _isLink = false;
 
         std::unordered_set<NodeId> _childrenIds;
 };

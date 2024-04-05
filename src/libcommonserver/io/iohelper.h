@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/utility.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/log/log.h"
 
@@ -257,6 +258,12 @@ struct IoHelper {
 
         // TODO: docstring and unit tests
         static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept;
+
+        static inline bool isLink(LinkType linkType) {
+            return linkType == LinkTypeSymlink || linkType == LinkTypeHardlink ||
+                   (linkType == LinkTypeFinderAlias && OldUtility::isMac()) ||
+                   (linkType == LinkTypeJunction && OldUtility::isWindows());
+        }
 
     protected:
         // These functions default to the std::filesystem functions.
