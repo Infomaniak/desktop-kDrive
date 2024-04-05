@@ -96,8 +96,8 @@ struct COMMONSERVER_EXPORT Utility {
 #endif
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
-        static void str2hexstr(const std::string str, std::string &hexstr, bool capital = false);
-        static void strhex2str(const std::string hexstr, std::string &str);
+        static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);
+        static void strhex2str(const std::string &hexstr, std::string &str);
         static std::vector<std::string> splitStr(const std::string &str, char sep);
         static std::string joinStr(const std::vector<std::string> &strList, char sep = 0);
         static std::string opType2Str(OperationType opType);
