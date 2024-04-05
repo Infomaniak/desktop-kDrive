@@ -587,7 +587,7 @@ void AppClient::startServerAndDie(bool serverCrashDetected) {
     QProcess *serverProcess = new QProcess(this);
     if (serverCrashDetected) {
         QStringList arguments;
-        arguments << QStringLiteral("--crashRecover");
+        arguments << QStringLiteral("--crashRecovered");
         serverProcess->setProgram(pathToExecutable);
         serverProcess->setArguments(arguments);
 
