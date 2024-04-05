@@ -123,8 +123,7 @@ AppClient::AppClient(int &argc, char **argv)
 #else
     // Read comm port value from argument list
     if (!parseOptions(arguments())) {
-        //TODO: Implement a limit of reconnection trials per x minutes
-        startServerAndDie();
+        startServerAndDie(false);
         return;
     }
 #endif
@@ -141,7 +140,7 @@ AppClient::AppClient(int &argc, char **argv)
         qCInfo(lcAppClient) << "Connected to server";
 	} else {
 		qCCritical(lcAppClient) << "Failed to connect to server";
-		startServerAndDie();
+		startServerAndDie(true);
         return;
     }
 
@@ -487,7 +486,7 @@ void AppClient::onQuit() {
 void AppClient::onServerDisconnected() {
 #if NDEBUG
     qCCritical(lcAppClient) << "Server disconnected | Closing client";
-    startServerAndDie();
+    startServerAndDie(true);
 
 #else
     displayHelpText("Server disconnected | Closing client");
@@ -575,7 +574,7 @@ void AppClient::setupLogging() {
                                .arg(KDC::CommonUtility::platformName());
 }
 
-void AppClient::startServerAndDie() {
+void AppClient::startServerAndDie(bool serverCrashDetected) {
     // Start the client
     QString pathToExecutable = QCoreApplication::applicationDirPath();
 
@@ -586,9 +585,17 @@ void AppClient::startServerAndDie() {
 #endif
 
     QProcess *serverProcess = new QProcess(this);
-    serverProcess->setProgram(pathToExecutable);
-    serverProcess->startDetached();
+    if (serverCrashDetected) {
+        QStringList arguments;
+        arguments << QStringLiteral("--crashRecover");
+        serverProcess->setProgram(pathToExecutable);
+        serverProcess->setArguments(arguments);
 
+    } else {
+        serverProcess->setProgram(pathToExecutable);
+
+    }
+    serverProcess->startDetached();
 
     QTimer::singleShot(0, qApp, SLOT(quit()));
 }
@@ -597,7 +604,7 @@ bool AppClient::connectToServer() {
     // Check if a commPort is provided
     if (_commPort == 0) {
         qCCritical(lcAppClient()) << "No comm port provided to the client at startup, failed to connect to server!";
-        startServerAndDie();
+        startServerAndDie(false);
         return false;
     }
 

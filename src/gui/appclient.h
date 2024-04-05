@@ -112,7 +112,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool parseOptions(const QStringList &);
         void setupLogging();
 
-        void startServerAndDie();
+        void startServerAndDie(bool serverCrashDetected);
         bool connectToServer();
 
         std::shared_ptr<ClientGui> _gui = nullptr;
