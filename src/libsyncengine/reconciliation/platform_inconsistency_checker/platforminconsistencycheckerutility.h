@@ -24,6 +24,8 @@
 
 namespace KDC {
 
+// TODO : this class should not be a singleton...
+
 class PlatformInconsistencyCheckerUtility {
     public:
         typedef enum { SuffixTypeRename, SuffixTypeConflict, SuffixTypeOrphan, SuffixTypeBlacklisted } SuffixType;
@@ -31,7 +33,8 @@ class PlatformInconsistencyCheckerUtility {
     public:
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> instance();
 
-        SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType = SuffixTypeRename);
+        SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
+        static ExitCode renameLocaLFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
 
         bool fixNameForbiddenChars(const SyncPath &name, SyncName &newName);
         bool checkNameForbiddenChars(const SyncPath &name);
@@ -54,7 +57,6 @@ class PlatformInconsistencyCheckerUtility {
 #if defined(_WIN32)
         static size_t _maxPathLengthFolder;
 #endif
-        static std::mutex _mutex;
 
         friend class TestPlatformInconsistencyCheckerWorker;
 };
