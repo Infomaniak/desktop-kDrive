@@ -3333,17 +3333,23 @@ bool ParmsDb::selectLastClientSelfRestartTime(int64_t &lastClientRestartTime) {
 bool ParmsDb::updateLastServerSelfRestartTime(int64_t lastServertRestartTime) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
-    bool found;
-    if (!queryNext(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID);
-        return false;
-    }
-    if (!found) {
-        return false;
+    if (lastServertRestartTime == -1) {
+        auto now = std::chrono::system_clock::now();
+        auto now_s = std::chrono::time_point_cast<std::chrono::seconds>(now);
+        auto value = now_s.time_since_epoch();
+        lastServertRestartTime = value.count();
     }
 
-    ASSERT(queryInt64Value(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, 0, lastServertRestartTime));
+    ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
+    ASSERT(queryBindValue(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, 1, lastServertRestartTime));
+    
+    int errId;
+    std::string error;
+
+    if (!queryExec(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID);
+        return false;
+    }
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
 
     return true;
@@ -3352,17 +3358,24 @@ bool ParmsDb::updateLastServerSelfRestartTime(int64_t lastServertRestartTime) {
 bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
-    bool found;
-    if (!queryNext(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID);
-        return false;
-    }
-    if (!found) {
-        return false;
+
+    if (lastClientRestartTime == -1) {
+        auto now = std::chrono::system_clock::now();
+        auto now_s = std::chrono::time_point_cast<std::chrono::seconds>(now);
+        auto value = now_s.time_since_epoch();
+        lastClientRestartTime = value.count();
     }
 
-    ASSERT(queryInt64Value(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, 0, lastClientRestartTime));
+    ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
+    ASSERT(queryBindValue(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, 1, lastClientRestartTime));
+
+    int errId;
+    std::string error;
+
+    if (!queryExec(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID);
+        return false;
+    }
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
 
     return true;
