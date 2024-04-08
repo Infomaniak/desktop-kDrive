@@ -96,6 +96,23 @@ static const char optionsC[] =
     "  --synthesis          : show the Synthesis window (if the application is running).\n";
 }
 
+// Helpers for displaying messages. Note that there is no console on Windows.
+#ifdef Q_OS_WIN
+static void displayHelpText(const QString &t)  // No console on Windows.
+{
+    QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
+    QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
+                   spaces + QLatin1String("</pre></qt>");
+    QMessageBox::information(0, Theme::instance()->appNameGUI(), text);
+}
+
+#else
+
+static void displayHelpText(const QString &t) {
+    std::cout << qUtf8Printable(t);
+}
+#endif
+
 AppServer::AppServer(int &argc, char **argv)
     : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv),
       _navigationPaneHelper(nullptr),
@@ -278,7 +295,7 @@ AppServer::AppServer(int &argc, char **argv)
     // Start CommServer
     CommServer::instance();
     connect(CommServer::instance().get(), &CommServer::requestReceived, this, &AppServer::onRequestReceived);
-    connect(CommServer::instance().get(), &CommServer::startClient, this, &AppServer::onStartClientReceived);
+    connect(CommServer::instance().get(), &CommServer::startClient, this, &AppServer::onRestartClientReceived);
 
     // Update users/accounts/drives info
     ExitCode exitCode = updateAllUsersInfo();
@@ -295,6 +312,20 @@ AppServer::AppServer(int &argc, char **argv)
 
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
+
+    //Check last crash to avoid crash loop
+    if (_crashRecovered) {
+        LOG_WARN(_logger, "Server auto restart after a crash.");
+        if (serverCrashedRecently()) {
+            LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
+            KDC::ParmsDb::instance()->updateLastServerSelfRestartTime();
+            QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed!"), QMessageBox::Ok);
+            KDC::ParmsDb::instance()->updateLastServerSelfRestartTime(0);
+            QTimer::singleShot(0, this, quit);
+            return;
+        }
+        KDC::ParmsDb::instance()->updateLastServerSelfRestartTime();
+    }
 
     // Start client
     if (!startClient()) {
@@ -1979,10 +2010,20 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
     }
 }
 
-void AppServer::onStartClientReceived() {
-    CommServer::instance()->setHasQuittedProperly(false);
-    if (!startClient()) {
-        LOG_WARN(_logger, "Error in startClient");
+void AppServer::onRestartClientReceived() {
+    //Check last start time
+    if (clientCrashedRecently()) {
+		LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
+        KDC::ParmsDb::instance()->updateLastClientSelfRestartTime(0);
+        QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed"), QMessageBox::Ok);
+        QTimer::singleShot(0, this, &AppServer::quit);
+        return;
+	} else {
+        CommServer::instance()->setHasQuittedProperly(false);
+        KDC::ParmsDb::instance()->updateLastClientSelfRestartTime();
+        if (!startClient()) {
+            LOG_WARN(_logger, "Error in startClient");
+        }
     }
 }
 
@@ -2755,6 +2796,34 @@ void AppServer::setupProxy() {
     Proxy::instance(ParametersCache::instance()->parameters().proxyConfig());
 }
 
+bool AppServer::serverCrashedRecently(int second) {
+    int64_t now_s = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+
+    int64_t lastServerCrash; 
+    KDC::ParmsDb::instance()->selectLastServerSelfRestartTime(lastServerCrash);
+    auto diff = now_s - lastServerCrash;
+    if (diff > second) {
+		return false;
+	} else {
+        LOG_WARN(_logger, "Server crashed recently: " << diff << " seconds ago");
+		return true;
+	}
+}
+
+bool AppServer::clientCrashedRecently(int second) {
+    int64_t now_s = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+
+    int64_t lastClientCrash;
+    KDC::ParmsDb::instance()->selectLastClientSelfRestartTime(lastClientCrash);
+    auto diff = now_s - lastClientCrash;
+    if (diff > second) {
+        return false;
+    } else {
+        LOG_WARN(_logger, "Client crashed recently: " << diff << " seconds ago");
+        return true;
+    }
+}
+
 void AppServer::parseOptions(const QStringList &options) {
     // Parse options; if help or bad option exit
     QStringListIterator it(options);
@@ -2779,28 +2848,14 @@ void AppServer::parseOptions(const QStringList &options) {
         } else if (option == QLatin1String("--clearKeychainKeys")) {
             _clearKeychainKeysAsked = true;
             break;
-        } else {
+        } else if (option == QLatin1String("--crashRecovered")) {
+            _crashRecovered = true;
+        }
+        else {
             showHint("Unrecognized option '" + option.toStdString() + "'");
         }
     }
 }
-
-// Helpers for displaying messages. Note that there is no console on Windows.
-#ifdef Q_OS_WIN
-static void displayHelpText(const QString &t)  // No console on Windows.
-{
-    QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
-    QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QLatin1String("</pre><pre>") +
-                   spaces + QLatin1String("</pre></qt>");
-    QMessageBox::information(0, Theme::instance()->appNameGUI(), text);
-}
-
-#else
-
-static void displayHelpText(const QString &t) {
-    std::cout << qUtf8Printable(t);
-}
-#endif
 
 void AppServer::showHelp() {
     QString helpText;
