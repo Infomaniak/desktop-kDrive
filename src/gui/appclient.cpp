@@ -136,9 +136,9 @@ AppClient::AppClient(int &argc, char **argv)
     // Connect to server
     if (connectToServer()) {
         qCInfo(lcAppClient) << "Connected to server";
-	} else {
-		qCCritical(lcAppClient) << "Failed to connect to server";
-		startServerAndDie(true);
+    } else {
+        qCCritical(lcAppClient) << "Failed to connect to server";
+        startServerAndDie(true);
         return;
     }
 
@@ -582,7 +582,7 @@ void AppClient::startServerAndDie(bool serverCrashDetected) {
     pathToExecutable += QString("/%1").arg(APPLICATION_EXECUTABLE);
 #endif
 
-    QProcess *serverProcess = new QProcess(this);
+    auto serverProcess = new QProcess(this);
     if (serverCrashDetected) {
         QStringList arguments;
         arguments << QStringLiteral("--crashRecovered");
