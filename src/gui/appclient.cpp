@@ -88,9 +88,7 @@ static void displayHelpText(const QString &t) {
 
 
 AppClient::AppClient(int &argc, char **argv)
-    : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv),
-      _theme(Theme::instance()),
-      _logExpire(0){
+    : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv), _theme(Theme::instance()), _logExpire(0) {
 #ifdef NDEBUG
     sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppClient", "Start"));
 #endif
@@ -136,7 +134,7 @@ AppClient::AppClient(int &argc, char **argv)
         return;
     }
     // Connect to server
-    if(connectToServer()){
+    if (connectToServer()) {
         qCInfo(lcAppClient) << "Connected to server";
 	} else {
 		qCCritical(lcAppClient) << "Failed to connect to server";
@@ -593,7 +591,6 @@ void AppClient::startServerAndDie(bool serverCrashDetected) {
 
     } else {
         serverProcess->setProgram(pathToExecutable);
-
     }
     serverProcess->startDetached();
 
@@ -616,7 +613,6 @@ bool AppClient::connectToServer() {
     }
 
     if (count == CONNECTION_TRIALS) {
-
         qCCritical(lcAppClient()) << "Unable to connect to application server on port" << _commPort;
         return false;
     }
