@@ -21,6 +21,17 @@ jobs:
       - name: Restore extension packages
         run : nuget restore extensions/windows/cfapi/kDriveExt.sln
 
+      - name: Import Windows virtual certificate
+        env:
+          WINDOWS_VIRTUAL_CERT: ${{ secrets.WINDOWS_VIRTUAL_CERT }}
+          WINDOWS_VIRTUAL_CERT_PASSWORD: ${{ secrets.WINDOWS_VIRTUAL_CERT_PASSWORD }}
+        run: |
+          New-Item -ItemType directory -Path certificate
+          Set-Content -Path certificate/tempCert.exe -Value $env:WINDOWS_VIRTUAL_CERT
+          certutil -decode certificate/tempCert.txt certificate/certificate.pfx
+          Remove-Item -path certificate -include tempCert.txt
+          Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
+
       - name: Build kDrive desktop
         run : |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
