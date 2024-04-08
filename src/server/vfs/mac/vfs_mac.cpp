@@ -481,9 +481,9 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(logger(), "Error catched in vfs_mac::convertDirContentToPlaceholder: " << e.code() << " - " << e.what());
+        LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder: " << e.code() << " - " << e.what());
     } catch (...) {
-        LOG_WARN(logger(), "Error catched in vfs_mac::convertDirContentToPlaceholder");
+        LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder");
     }
 }
 

@@ -206,10 +206,10 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             }
         } catch (std::filesystem::filesystem_error &e) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                             "Error catched in BlacklistPropagator::removeItem: " << e.code() << " - " << e.what());
+                             "Error caught in BlacklistPropagator::removeItem: " << e.code() << " - " << e.what());
             return ExitCodeSystemError;
         } catch (...) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error catched in BlacklistPropagator::removeItem");
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in BlacklistPropagator::removeItem");
             return ExitCodeSystemError;
         }
 

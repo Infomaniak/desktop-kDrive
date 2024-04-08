@@ -157,10 +157,10 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
                 fullList.push_back(dirEntry.path());
             }
         } catch (std::filesystem::filesystem_error &e) {
-            LOG4CPLUS_WARN(_logger, L"Error catched in findSubFolders : " << e.code() << " - " << e.what());
+            LOG4CPLUS_WARN(_logger, L"Error caught in findSubFolders : " << e.code() << " - " << e.what());
             ok = false;
         } catch (...) {
-            LOG4CPLUS_WARN(_logger, L"Error catched in findSubFolders");
+            LOG4CPLUS_WARN(_logger, L"Error caught in findSubFolders");
             ok = false;
         }
     }

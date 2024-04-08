@@ -184,11 +184,10 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             _vfsClearFileAttributes(_syncDbId, dirIt->path());
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger,
-                 "Error catched in VirtualFilesCleaner::removePlaceholdersRecursivly: " << e.code() << " - " << e.what());
+        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursivly: " << e.code() << " - " << e.what());
         return false;
     } catch (...) {
-        LOG_WARN(_logger, "Error catched in VirtualFilesCleaner::removePlaceholdersRecursivly");
+        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursivly");
         return false;
     }
 
@@ -263,11 +262,10 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger,
-                 "Error catched in VirtualFilesCleaner::removeDehydratedPlaceholders: " << e.code() << " - " << e.what());
+        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removeDehydratedPlaceholders: " << e.code() << " - " << e.what());
         ret = false;
     } catch (...) {
-        LOG_WARN(_logger, "Error catched in VirtualFilesCleaner::removeDehydratedPlaceholders");
+        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removeDehydratedPlaceholders");
         ret = false;
     }
 

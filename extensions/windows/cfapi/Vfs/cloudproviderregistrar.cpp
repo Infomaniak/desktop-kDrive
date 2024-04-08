@@ -177,7 +177,7 @@ bool CloudProviderRegistrar::unregister(std::wstring syncRootID) {
     try {
         winrt::StorageProviderSyncRootManager::Unregister(syncRootID);
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error catched : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 
