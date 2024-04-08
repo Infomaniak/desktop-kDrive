@@ -26,8 +26,6 @@
 
 #define TRIALS 5
 
-#define TRIALS 5
-
 namespace KDC {
 
 UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,

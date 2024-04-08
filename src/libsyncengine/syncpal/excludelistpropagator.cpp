@@ -86,15 +86,15 @@ ExitCode ExcludeListPropagator::checkItems() {
 
             SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, dirIt->path());
             bool isWarning = false;
-            bool isHidden = false;
+            bool isExcluded = false;
             IoError ioError = IoErrorSuccess;
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
-                                                                                       isWarning, isHidden, ioError);
+                                                                                       isWarning, isExcluded, ioError);
             if (!success) {
                 LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
                                                                     << Utility::formatIoError(dirIt->path(), ioError).c_str());
                 exitCode = ExitCodeSystemError;
-            } else if (isHidden) {
+            } else if (isExcluded) {
                 if (isWarning) {
                     NodeId localNodeId = _syncPal->_localSnapshot->itemId(relativePath);
                     NodeType localNodeType = _syncPal->_localSnapshot->type(localNodeId);
@@ -115,7 +115,7 @@ ExitCode ExcludeListPropagator::checkItems() {
                     continue;
                 }
 
-                // Remove node (and childs by cascade) from DB
+                // Remove node (and children by cascade) from DB
                 if (ParametersCache::instance()->parameters().extendedLog()) {
                     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node "
                                                                          << Path2WStr(relativePath).c_str()
