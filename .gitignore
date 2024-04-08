@@ -181,3 +181,4 @@ src/server/vfs/vfspluginmetadata.json
 src/server/vfs/vfspluginmetadata.json
 
 cmake-build-debug
+extensions/windows/cfapi/.vs
