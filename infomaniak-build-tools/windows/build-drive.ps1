@@ -34,8 +34,10 @@ Param(
 # Ext	: Rebuild the extension (automatically done if vfs.h is missing)
 [switch] $ext,
 
-# Upload :	flag to trigger the use of the USB-key certificate
-#			after the build, will add a prompt asking if the build should be uploaded
+# ci	: Build with CI testing (currently only checks the building stage)
+[switch] $ci,
+
+# Upload :	flag to trigger the use of the USB-key signing certificate
 [switch] $upload,
 
 # Help	: Displays the help message then exit if called
@@ -310,6 +312,14 @@ Invoke-Expression $buildCall
 if ($LASTEXITCODE -ne 0)
 {
 	Write-Host "CMake failed to build the source files. Aborting." -f Red
+	exit $LASTEXITCODE
+}
+
+# The CI tester will exit before creating and signing the package
+# This implementation is temporary, and will be replaced with the testing implementation.
+
+if ($ci)
+{
 	exit $LASTEXITCODE
 }
 
