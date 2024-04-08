@@ -584,9 +584,9 @@ bool ParmsDb::insertDefaultSelfRestarterData() {
     ASSERT(queryBindValue(INSERT_SELF_RESTARTER_REQUEST_ID, 2, 0));
 
     if (!queryExec(INSERT_SELF_RESTARTER_REQUEST_ID, errId, error)) {
-		LOG_WARN(_logger, "Error running query: " << INSERT_SELF_RESTARTER_REQUEST_ID);
-		return false;
-	}
+        LOG_WARN(_logger, "Error running query: " << INSERT_SELF_RESTARTER_REQUEST_ID);
+        return false;
+    }
     return true;
 }
 
