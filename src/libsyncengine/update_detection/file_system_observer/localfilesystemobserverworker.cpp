@@ -629,24 +629,24 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     // Process all files
     try {
         std::error_code ec;
-        for (auto dirIt = std::filesystem::recursive_directory_iterator(
-                 absoluteParentDirPath, std::filesystem::directory_options::skip_permission_denied, ec);
-             dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (ec) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in exploreDir " << ec.message().c_str());
-                continue;
-            }
-
+        auto dirIt = std::filesystem::recursive_directory_iterator(
+            absoluteParentDirPath, std::filesystem::directory_options::skip_permission_denied, ec);
+        if (ec) {
+            LOGW_SYNCPAL_DEBUG(_logger, "Error in exploreDir: " << Utility::formatStdError(ec).c_str());
+            setExitCause(ExitCauseFileAccessError);
+            return ExitCodeSystemError;
+        }
+        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
             if (ParametersCache::instance()->parameters().extendedLog()) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << Path2WStr(dirIt->path()).c_str() << L"\" found");
+                LOGW_SYNCPAL_DEBUG(_logger, L"Item '" << Path2WStr(dirIt->path()).c_str() << L"' found");
             }
 
             if (stopAsked()) {
                 return ExitCodeOk;
             }
 
-            SyncPath absolutePath = dirIt->path();
-            SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
+            const SyncPath absolutePath = dirIt->path();
+            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
 
             bool toExclude = false;
             bool denyFullControl = false;
@@ -824,11 +824,11 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Error catched in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " - " << e.what());
+                         "Error caught in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " - " << e.what());
         setExitCause(ExitCauseFileAccessError);
         return ExitCodeSystemError;
     } catch (...) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error catched in LocalFileSystemObserverWorker::exploreDir");
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in LocalFileSystemObserverWorker::exploreDir");
         return ExitCodeSystemError;
     }
 
