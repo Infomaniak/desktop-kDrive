@@ -206,6 +206,14 @@ struct IoHelper {
          */
         static bool createDirectory(const SyncPath &path, IoError &ioError) noexcept;
 
+        //! Remove a directory located under the specified path.
+        /*!
+        * 		 \param path is the file system path of the directory to remove.
+        * 		 \param ioError holds the error returned when an underlying OS API call fails.
+        * 		 \return true if no unexpected error occurred, false otherwise.
+        * 		 */
+        static bool deleteDirectory(const SyncPath &path, IoError &ioError) noexcept;
+
 #ifdef __APPLE__
         // From `man xattr`:
         // Extended attributes are arbitrary metadata stored with a file, but separate from the

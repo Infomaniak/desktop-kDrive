@@ -478,6 +478,14 @@ bool IoHelper::createDirectory(const SyncPath &path, IoError &ioError) noexcept 
     return creationSuccess;
 }
 
+bool IoHelper::deleteDirectory(const SyncPath &path, IoError &ioError) noexcept {
+    std::error_code ec;
+    const bool removalSuccess = std::filesystem::remove_all(path, ec);
+    ioError = stdError2ioError(ec);
+
+    return removalSuccess;
+}
+
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Cannot create symlink on itself - path=" << Path2WStr(path).c_str());
