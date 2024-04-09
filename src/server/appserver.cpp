@@ -2797,11 +2797,11 @@ void AppServer::setupProxy() {
 }
 
 bool AppServer::serverCrashedRecently(int second) {
-    int64_t now_s = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+    const int64_t nowSeconds = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     int64_t lastServerCrash; 
     KDC::ParmsDb::instance()->selectLastServerSelfRestartTime(lastServerCrash);
-    auto diff = now_s - lastServerCrash;
+    const auto diff = nowSeconds - lastServerCrash;
     if (diff > second) {
 		return false;
 	} else {
@@ -2811,11 +2811,11 @@ bool AppServer::serverCrashedRecently(int second) {
 }
 
 bool AppServer::clientCrashedRecently(int second) {
-    int64_t now_s = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+   const int64_t nowSeconds = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     int64_t lastClientCrash;
     KDC::ParmsDb::instance()->selectLastClientSelfRestartTime(lastClientCrash);
-    auto diff = now_s - lastClientCrash;
+   const auto diff = nowSecond - lastClientCrash;
     if (diff > second) {
         return false;
     } else {
