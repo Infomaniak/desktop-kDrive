@@ -2015,7 +2015,6 @@ void AppServer::onRestartClientReceived() {
     if (clientCrashedRecently()) {
 		LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
         KDC::ParmsDb::instance()->updateLastClientSelfRestartTime(0);
-        Log::instance()->generateSupportLogArchive();
         QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed"), QMessageBox::Ok);
         QTimer::singleShot(0, this, &AppServer::quit);
         return;
