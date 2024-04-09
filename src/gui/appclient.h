@@ -125,7 +125,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         // options from command line:
         QString _logFile;
         QString _logDir;
-        std::chrono::hours _logExpire;
+        std::chrono::hours _logExpire = std::chrono::hours(0);
         bool _logFlush = false;
         bool _logDebug = false;
         bool _debugMode = false;

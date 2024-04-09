@@ -487,7 +487,8 @@ void AppClient::onServerDisconnected() {
     startServerAndDie(true);
 
 #else
-    displayHelpText("Server disconnected | Closing client");
+    auto msg = tr("The server has disconnected | Closing client");
+    displayHelpText(msg);
     QTimer::singleShot(0, qApp, SLOT(quit()));
 #endif
 }
