@@ -40,7 +40,6 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     for (const auto &id : _idsToBeRemoved) {
         _syncPal->_remoteUpdateTree->deleteNode(id);
-        _syncPal->_syncDb.de
     }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
@@ -101,6 +100,16 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
 
 void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Node> remoteNode, const SyncPath &relativePath,
                                                        const InconsistencyType inconsistencyType) {
+    // Local node needs to be excluded before call to blacklistTemporarily because
+    // we need the DB entry to retrieve the corresponding node
+    auto localNode = correspondingNodeDirect(remoteNode);
+    if (localNode) {
+        // Also exclude local node by adding "conflict" suffix
+        SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
+        LOGW_SYNCPAL_INFO(_logger, L"Excluding local item \"" << Path2WStr(absoluteLocalPath).c_str() << L"\" too.");
+        PlatformInconsistencyCheckerUtility::renameLocaLFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
+    }
+
     _syncPal->blacklistTemporarily(remoteNode->id().value(), relativePath, remoteNode->side());
     Error error(_syncPal->syncDbId(), "", remoteNode->id().value(), remoteNode->type(), relativePath, ConflictTypeNone,
                 inconsistencyType);
@@ -129,14 +138,6 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     LOGW_SYNCPAL_INFO(_logger, L"Blacklisting item \"" << Path2WStr(relativePath).c_str() << L"\" because " << causeStr.c_str());
 
     _idsToBeRemoved.push_back(remoteNode->id().value());
-
-    auto localNode = correspondingNodeDirect(remoteNode);
-    if (localNode) {
-        // Also exclude local node by adding "conflict" suffix
-        SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        LOGW_SYNCPAL_INFO(_logger, L"Blacklisting local item \"" << Path2WStr(absoluteLocalPath).c_str() << L"\" too.");
-        PlatformInconsistencyCheckerUtility::renameLocaLFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
-    }
 }
 
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
