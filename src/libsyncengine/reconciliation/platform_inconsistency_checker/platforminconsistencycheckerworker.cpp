@@ -40,7 +40,6 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     for (const auto &id : _idsToBeRemoved) {
         _syncPal->_remoteUpdateTree->deleteNode(id);
-        _syncPal->_syncDb.de
     }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
