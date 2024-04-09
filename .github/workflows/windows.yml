@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-kDrive:
+  windows-build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
 
     steps:
