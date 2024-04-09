@@ -526,9 +526,6 @@
 #define UPDATE_SELF_RESTARTER_SERVER_REQUEST "UPDATE self_restarter SET lastServerRestart=?1;"
 
 
-
-
-
 namespace KDC {
 
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
@@ -933,7 +930,7 @@ bool ParmsDb::create(bool &retry) {
 	}
 	queryFree(CREATE_ERROR_TABLE_ID);
 
-	//self restarter
+    // self restarter
 	ASSERT(queryCreate(CREATE_SELF_RESTARTER_TABLE_ID));
 	if (!queryPrepare(CREATE_SELF_RESTARTER_TABLE_ID, CREATE_SELF_RESTARTER_TABLE, false, errId, error)) {
         queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
@@ -1300,7 +1297,7 @@ bool ParmsDb::prepare() {
 		return sqlFail(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
 	}
 
-	//self restarter
+    // self restarter
 	ASSERT(queryCreate(SELECT_SELF_RESTARTER_REQUEST_ID));
 	if (!queryPrepare(SELECT_SELF_RESTARTER_REQUEST_ID, SELECT_SELF_RESTARTER_REQUEST, false, errId, error)) {
 		queryFree(SELECT_SELF_RESTARTER_REQUEST_ID);
@@ -3358,12 +3355,8 @@ bool ParmsDb::updateLastServerSelfRestartTime(int64_t lastServertRestartTime) {
 bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
 	const std::lock_guard<std::mutex> lock(_mutex);
 
-
 	if (lastClientRestartTime == -1) {
-		auto now = std::chrono::system_clock::now();
-		auto now_s = std::chrono::time_point_cast<std::chrono::seconds>(now);
-		auto value = now_s.time_since_epoch();
-		lastClientRestartTime = value.count();
+        lastClientRestartTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 	}
 
 	ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
