@@ -5,11 +5,11 @@ on:
     types: [synchronize, review_requested]
 
 concurrency:
-  group: ${{ github.head_ref }}
+  group: windows-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
-  windows-build-kDrive:
+  build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
 
     steps:
