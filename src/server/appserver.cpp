@@ -313,7 +313,7 @@ AppServer::AppServer(int &argc, char **argv)
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
 
-    //Check last crash to avoid crash loop
+    // Check last crash to avoid crash loop
     if (_crashRecovered) {
         LOG_WARN(_logger, "Server auto restart after a crash.");
         if (serverCrashedRecently()) {
@@ -2011,14 +2011,14 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
 }
 
 void AppServer::onRestartClientReceived() {
-    //Check last start time
+    // Check last start time
     if (clientCrashedRecently()) {
-		LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
+        LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
         KDC::ParmsDb::instance()->updateLastClientSelfRestartTime(0);
         QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed"), QMessageBox::Ok);
         QTimer::singleShot(0, this, &AppServer::quit);
         return;
-	} else {
+    } else {
         CommServer::instance()->setHasQuittedProperly(false);
         KDC::ParmsDb::instance()->updateLastClientSelfRestartTime();
         if (!startClient()) {
@@ -2797,25 +2797,27 @@ void AppServer::setupProxy() {
 }
 
 bool AppServer::serverCrashedRecently(int second) {
-    const int64_t nowSeconds = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+    const int64_t nowSeconds =
+        std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    int64_t lastServerCrash; 
+    int64_t lastServerCrash;
     KDC::ParmsDb::instance()->selectLastServerSelfRestartTime(lastServerCrash);
     const auto diff = nowSeconds - lastServerCrash;
     if (diff > second) {
-		return false;
-	} else {
+        return false;
+    } else {
         LOG_WARN(_logger, "Server crashed recently: " << diff << " seconds ago");
-		return true;
-	}
+        return true;
+    }
 }
 
 bool AppServer::clientCrashedRecently(int second) {
-   const int64_t nowSeconds = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+    const int64_t nowSeconds =
+        std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     int64_t lastClientCrash;
     KDC::ParmsDb::instance()->selectLastClientSelfRestartTime(lastClientCrash);
-   const auto diff = nowSeconds - lastClientCrash;
+    const auto diff = nowSeconds - lastClientCrash;
     if (diff > second) {
         return false;
     } else {
@@ -2850,8 +2852,7 @@ void AppServer::parseOptions(const QStringList &options) {
             break;
         } else if (option == QLatin1String("--crashRecovered")) {
             _crashRecovered = true;
-        }
-        else {
+        } else {
             showHint("Unrecognized option '" + option.toStdString() + "'");
         }
     }
@@ -3809,8 +3810,7 @@ void AppServer::sendDriveDeletionFailed(int driveDbId) {
     int id = 0;
     const auto params = QByteArray(ArgsReader(driveDbId));
 
-    CommServer::instance()
-        ->sendSignal(SIGNAL_NUM_DRIVE_DELETE_FAILED, params, id);
+    CommServer::instance()->sendSignal(SIGNAL_NUM_DRIVE_DELETE_FAILED, params, id);
 }
 
 
