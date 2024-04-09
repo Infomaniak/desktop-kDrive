@@ -315,7 +315,7 @@ if ($LASTEXITCODE -ne 0)
 	exit $LASTEXITCODE
 }
 
-# The CI tester will exit before creating and signing the package
+# The CI tester will exit before creating and signing the package.
 # This implementation is temporary, and will be replaced with the testing implementation.
 
 if ($ci)
