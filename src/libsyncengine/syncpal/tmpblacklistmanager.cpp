@@ -77,11 +77,12 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
     }
 }
 
-void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {
+void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, const ReplicaSide side) {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
 
     auto errorItem = errors.find(nodeId);
     if (errorItem != errors.end()) {
+        // Reset error timer
         errorItem->second._count++;
         errorItem->second._lastErrorTime = std::chrono::steady_clock::now();
     } else {
@@ -129,7 +130,7 @@ void TmpBlacklistManager::refreshBlacklist() {
     }
 }
 
-void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
+void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, const ReplicaSide side) {
     SyncNodeType blacklistType = side == ReplicaSideLocal ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
 
     std::unordered_set<NodeId> tmp;
@@ -143,7 +144,7 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
     errors.erase(nodeId);
 }
 
-bool TmpBlacklistManager::isTmpBlacklisted(ReplicaSide side, const SyncPath &path) {
+bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
 
     for (const auto &errorInfo : errors) {
@@ -155,7 +156,7 @@ bool TmpBlacklistManager::isTmpBlacklisted(ReplicaSide side, const SyncPath &pat
     return false;
 }
 
-void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, ReplicaSide side) {
+void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, const ReplicaSide side) {
     SyncNodeType blacklistType = side == ReplicaSideLocal ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
 
     std::unordered_set<NodeId> tmp;
@@ -165,6 +166,28 @@ void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, ReplicaSide si
 
     LOGW_INFO(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
                                                               << L" tmp blacklist with nodeId=" << Utility::s2ws(nodeId).c_str());
+
+    removeFromDB(nodeId, side);
+}
+
+void TmpBlacklistManager::removeFromDB(const NodeId &nodeId, const ReplicaSide side) {
+    DbNodeId dbNodeId = -1;
+    bool found = false;
+    if (!_syncPal->_syncDb->dbId(side, nodeId, dbNodeId, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::dbId");
+        return;
+    }
+    if (found) {
+        // Delete old node
+        if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::deleteNode");
+            return;
+        }
+
+        if (ParametersCache::instance()->parameters().extendedLog()) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Item " << dbNodeId << " removed from DB");
+        }
+    }
 }
 
 }  // namespace KDC
