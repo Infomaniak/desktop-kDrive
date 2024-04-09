@@ -423,7 +423,15 @@ bool DownloadJob::handleResponse(std::istream &is) {
 bool DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
     if (mimeType == mimeTypeSymlink) {
         // Create symlink
-        SyncPath targetPath(_localpath.parent_path() / data);
+        SyncPath targetPath(data);
+        if (targetPath == _localpath) {
+            LOGW_DEBUG(_logger, L"Cannot create symlink on itself - path=" << Path2WStr(_localpath).c_str());
+            return false;
+        }
+
+        LOGW_DEBUG(_logger, L"Create symlink - targetPath=" << Path2WStr(targetPath).c_str() << L" path="
+                                                            << Path2WStr(_localpath).c_str());
+
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::createSymlink(targetPath, _localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create symlink: " << Utility::formatIoError(targetPath, ioError).c_str());
@@ -431,9 +439,9 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
     } else if (mimeType == mimeTypeHardlink) {
         // Unreachable code
-        SyncPath targetPath(_localpath.parent_path() / data);
+        SyncPath targetPath(data);
         if (targetPath == _localpath) {
-            LOGW_DEBUG(_logger, L"Cannot create symlink on itself - path=" << Path2WStr(_localpath).c_str());
+            LOGW_DEBUG(_logger, L"Cannot create hardlink on itself - path=" << Path2WStr(_localpath).c_str());
             return false;
         }
 
@@ -449,7 +457,9 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
     } else if (mimeType == mimeTypeJunction) {
 #if defined(_WIN32)
-        LOGW_DEBUG(_logger, L"Create junction for " << Utility::formatSyncPath(_localpath).c_str());
+        LOGW_DEBUG(_logger, L"Create hardlink - targetPath=" << Path2WStr(targetPath).c_str() << L" path="
+                                                             << Path2WStr(_localpath).c_str());
+
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::createJunction(data, _localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_localpath, ioError).c_str());

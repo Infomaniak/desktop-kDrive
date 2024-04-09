@@ -143,7 +143,7 @@ void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canc
             uri.addQueryParameter("without_ids", str);
         }
     }
-    std::unordered_set<std::string> withList({"is_link"});
+    std::unordered_set<std::string> withList({"files.is_link"});
     {
         std::string str = Utility::list2str(withList);
         if (!str.empty()) {

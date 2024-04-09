@@ -116,7 +116,27 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         NodeId nodeId = std::to_string(fileStat.inode);
         NodeType nodeType = fileStat.type;
 
+        bool isLink = false;
         if (exists) {
+            ItemType itemType;
+            if (!IoHelper::getItemType(absolutePath, itemType)) {
+                ioError = itemType.ioError;
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(absolutePath, ioError).c_str());
+                invalidateSnapshot();
+                return;
+            }
+
+            if (ioError == IoErrorAccessDenied) {
+                LOGW_SYNCPAL_DEBUG(_logger,
+                                   L"File/directory " << Path2WStr(absolutePath).c_str() << L" misses search permissions!");
+                sendAccessDeniedError(absolutePath);
+            } else if (ioError == IoErrorNoSuchFileOrDirectory) {
+                continue;
+            }
+
+            isLink = itemType.linkType != LinkTypeNone;
+
             // Check if excluded by a file exclusion rule
             bool isWarning = false;
             bool toExclude = false;
@@ -303,7 +323,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
             // This can be either Create, Move or Edit operation
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
-                              nodeType, fileStat.size);
+                              nodeType, fileStat.size, isLink);
 
             if (_snapshot->updateItem(item)) {
                 if (ParametersCache::instance()->parameters().extendedLog()) {
@@ -365,7 +385,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
         // Update snapshot
         if (_snapshot->updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                               fileStat.modtime, nodeType, fileStat.size))) {
+                                               fileStat.modtime, nodeType, fileStat.size, isLink))) {
             if (ParametersCache::instance()->parameters().extendedLog()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str() << L" (" << Utility::s2ws(nodeId).c_str()
                                                      << L") updated in local snapshot at " << fileStat.modtime);
@@ -664,11 +684,12 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             }
 #endif
 
+            bool isLink;
             if (!toExclude) {
                 // Check if the directory entry is managed
                 bool isManaged = false;
                 IoError ioError = IoErrorSuccess;
-                if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, ioError)) {
+                if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                     LOGW_SYNCPAL_WARN(_logger,
                                       L"Error in Utility::checkIfDirEntryIsManaged - path=" << Path2WStr(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
@@ -807,7 +828,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             }
 
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
-                              fileStat.isDir() ? NodeType::NodeTypeDirectory : NodeType::NodeTypeFile, fileStat.size);
+                              fileStat.isDir() ? NodeType::NodeTypeDirectory : NodeType::NodeTypeFile, fileStat.size, isLink);
             if (_snapshot->updateItem(item)) {
                 if (ParametersCache::instance()->parameters().extendedLog()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: name:"

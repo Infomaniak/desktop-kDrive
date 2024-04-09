@@ -558,6 +558,12 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
             return ExitCodeOk;
         }
 
+        bool localSnapshotIsLink = _syncPal->_localSnapshot->isLink(dbNode.nodeIdLocal().value());
+        if (localSnapshotIsLink) {
+            // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
+            return ExitCodeOk;
+        }
+
         int64_t localSnapshotSize = _syncPal->_localSnapshot->size(dbNode.nodeIdLocal().value());
         int64_t remoteSnapshotSize = _syncPal->_remoteSnapshot->size(dbNode.nodeIdRemote().value());
         SyncTime localSnapshotLastModified = _syncPal->_localSnapshot->lastModifed(dbNode.nodeIdLocal().value());

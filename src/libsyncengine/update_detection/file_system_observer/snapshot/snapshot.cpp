@@ -364,6 +364,16 @@ bool Snapshot::pathExists(const SyncPath &path) {
     return !itemId(path).empty();
 }
 
+bool Snapshot::isLink(const NodeId &itemId) {
+    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    bool ret = false;
+    auto it = _items.find(itemId);
+    if (it != _items.end()) {
+        ret = it->second.isLink();
+    }
+    return ret;
+}
+
 bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) {
     const std::lock_guard<std::recursive_mutex> lock(_mutex);
     auto it = _items.find(itemId);

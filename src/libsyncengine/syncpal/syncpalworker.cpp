@@ -523,8 +523,9 @@ bool SyncPalWorker::resetVfsFilesStatus() {
 
             // Check if the directory entry is managed
             bool isManaged;
+            bool isLink;
             IoError ioError = IoErrorSuccess;
-            if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, ioError)) {
+            if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                 LOGW_SYNCPAL_WARN(_logger,
                                   L"Error in Utility::checkIfDirEntryIsManaged - path=" << Path2WStr(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
