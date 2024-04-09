@@ -2332,7 +2332,7 @@ bool ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
         return false;
     }
 
-    // Remove item (and childs by cascade) from DB
+    // Remove item (and children by cascade) from DB
     bool found = false;
     if (!_syncPal->_syncDb->deleteNode(*node->idb(), found)) {
         LOG_SYNCPAL_WARN(_logger, "Failed to remove node " << *node->idb() << " from DB");
