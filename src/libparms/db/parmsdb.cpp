@@ -3331,10 +3331,7 @@ bool ParmsDb::updateLastServerSelfRestartTime(int64_t lastServertRestartTime) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     if (lastServertRestartTime == -1) {
-        auto now = std::chrono::system_clock::now();
-        auto now_s = std::chrono::time_point_cast<std::chrono::seconds>(now);
-        auto value = now_s.time_since_epoch();
-        lastServertRestartTime = value.count();
+        lastServertRestartTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     }
 
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
@@ -3356,8 +3353,7 @@ bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     if (lastClientRestartTime == -1) {
-        lastClientRestartTime =
-            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        lastClientRestartTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     }
 
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
