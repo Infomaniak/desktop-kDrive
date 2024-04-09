@@ -2,15 +2,14 @@ name: Linux kDrive desktop CI on x64 Arch
 
 on:
   pull_request: 
-    types: [synchronize, review_requested, ready_for_review]
+    types: [synchronize, review_requested]
 
 concurrency:
-  group: ${{ github.head_ref }}
+  group: linux-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
   build-kDrive:
-    if: github.event.pull_request.draft == false
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
 
     steps:

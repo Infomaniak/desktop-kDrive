@@ -189,11 +189,8 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "F:\Projects\build-kdrive-Desktop_Qt_6_2
     </Link>
     <Manifest />
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "F:\Projects\kdrive\src\server\vfs\win\."
-copy /Y "$(ProjectDir)$(TargetName).h" "F:\Projects\kdrive\src\server\vfs\win\."
-copy /Y "$(TargetDir)$(TargetName).dll" "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\."
-copy /Y "$(TargetDir)$(TargetName).pdb" "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\."
-</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
