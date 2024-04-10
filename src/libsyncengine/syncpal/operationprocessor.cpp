@@ -90,12 +90,11 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shar
     return findCorrespondingNodeFromCommonAncestor(node);
 }
 
-std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromCommonAncestor(std::shared_ptr<Node> node) {
-    ReplicaSide otherSnapshotSide =
-        (node->side() == ReplicaSide::ReplicaSideLocal ? ReplicaSide::ReplicaSideRemote : ReplicaSide::ReplicaSideLocal);
-    std::shared_ptr<UpdateTree> otherTree =
-        (node->side() == ReplicaSide::ReplicaSideLocal ? _syncPal->_remoteUpdateTree : _syncPal->_localUpdateTree);
+constexpr auto otherSide = [](ReplicaSide side) -> ReplicaSide {
+    return side == ReplicaSide::ReplicaSideLocal ? ReplicaSide::ReplicaSideRemote : ReplicaSide::ReplicaSideLocal;
+};
 
+std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromCommonAncestor(std::shared_ptr<Node> node) {
     std::shared_ptr<Node> parentNode = node;
     std::vector<SyncName> names;
     DbNodeId parentDbNodeId;
@@ -124,12 +123,13 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromCommonAncesto
 
     // Find corresponding ancestor node id
     NodeId parentNodeId;
-    if (!_syncPal->_syncDb->id(otherSnapshotSide, parentDbNodeId, parentNodeId, found)) {
+    if (!_syncPal->_syncDb->id(otherSide(node->side()), parentDbNodeId, parentNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id for dbNodeId=" << parentDbNodeId);
         return nullptr;
     }
 
     // Find corresponding ancestor node in the other tree
+    std::shared_ptr<UpdateTree> otherTree = _syncPal->getUpdateTree(otherSide(node->side()));
     std::shared_ptr<Node> correspondingParentNode = otherTree->getNodeById(parentNodeId);
     if (correspondingParentNode == nullptr) {
         LOG_SYNCPAL_WARN(_logger, "No corresponding node in the other tree for nodeId = " << parentNodeId.c_str());
@@ -147,15 +147,13 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromCommonAncesto
 }
 
 std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(std::shared_ptr<Node> node) {
-    ReplicaSide otherSnapshotSide =
-        (node->side() == ReplicaSide::ReplicaSideLocal ? ReplicaSide::ReplicaSideRemote : ReplicaSide::ReplicaSideLocal);
     if (node->idb() == std::nullopt) {
         return nullptr;
     }
 
     bool found = false;
     NodeId correspondingId;
-    if (!_syncPal->_syncDb->id(otherSnapshotSide, *node->idb(), correspondingId, found)) {
+    if (!_syncPal->_syncDb->id(otherSide(node->side()), *node->idb(), correspondingId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return nullptr;
     }
@@ -163,9 +161,8 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(std::shared_pt
         LOG_SYNCPAL_WARN(_logger, "nodeId not found");
         return nullptr;
     }
-    std::shared_ptr<UpdateTree> otherTree =
-        (otherSnapshotSide == ReplicaSide::ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree);
 
+    std::shared_ptr<UpdateTree> otherTree = _syncPal->getUpdateTree(otherSide(node->side()));
     NodeId effectiveCorrespondingId = correspondingId;
 
     auto previousIdIt = otherTree->previousIdSet().find(correspondingId);
