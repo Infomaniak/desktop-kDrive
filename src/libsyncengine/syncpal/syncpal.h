@@ -219,6 +219,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void refreshTmpBlacklist();
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
 
+        std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) { return side == ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree; }
+
     private:
         log4cplus::Logger _logger;
         int _syncDbId;
