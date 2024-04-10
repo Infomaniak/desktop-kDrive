@@ -129,9 +129,6 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
         case InconsistencyTypeNameLength:
             causeStr = L"the name is too long";
             break;
-        case InconsistencyTypePathLength:
-        case InconsistencyTypeNotYetSupportedChar:
-        case InconsistencyTypeNone:
         default:
             break;
     }
