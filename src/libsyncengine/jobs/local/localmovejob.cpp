@@ -51,7 +51,7 @@ bool LocalMoveJob::canRun() {
         }
     }
 
-    // Check that source file still exit
+    // Check that the source file still exists.
     bool exists = false;
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError).c_str());
