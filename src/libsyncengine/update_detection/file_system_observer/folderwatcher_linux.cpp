@@ -132,32 +132,32 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
     bool isReadable = access(dir.c_str(), R_OK) == 0;
     std::error_code ec;
     if (!(std::filesystem::exists(dir, ec) && isReadable)) {
-        if (ec.value() != 0) {
-            LOG4CPLUS_WARN(_logger, L"Failed to check if path exists " << Path2WStr(dir).c_str() << L": "
-                                                                       << Utility::s2ws(ec.message()).c_str() << " ("
-                                                                       << ec.value() << ")");
+        if (ec) {
+            LOG4CPLUS_WARN(_logger, L"Failed to check existence of " << Utility::formatSyncPath(dir).c_str() << L": "
+                                                                     << Utility::formatStdError(ec).c_str());
         } else {
             LOG4CPLUS_WARN(_logger, L"Non existing path coming in: " << Path2WStr(dir).c_str());
         }
         ok = false;
     } else {
-        std::error_code ec;
         try {
-            for (const auto &dirEntry : std::filesystem::recursive_directory_iterator(
-                     dir, std::filesystem::directory_options::skip_permission_denied, ec)) {
-                if (ec) {
-                    LOG4CPLUS_DEBUG(_logger, "Error in findSubFolders " << ec.message().c_str());
-                    continue;
-                }
-
-                if (dirEntry.is_symlink() || !dirEntry.is_directory()) {  // TODO : check for hidden files
-                    continue;
-                }
-
-                fullList.push_back(dirEntry.path());
+            std::error_code ec;
+            const auto dirIt = std::filesystem::recursive_directory_iterator(
+                dir, std::filesystem::directory_options::skip_permission_denied, ec);
+            if (ec) {
+                LOG4CPLUS_WARN(_logger, "Error in findSubFolders: " << Utility::formatStdError(ec).c_str());
+                return false;
             }
+
+            if (dirIt != std::filesystem::recursive_directory_iterator() &&
+                (dirIt->is_symlink() || !dirIt->is_directory())) {  // TODO : check for hidden files
+                return ok;
+            }
+
+            fullList.push_back(dirIt->path());
+
         } catch (std::filesystem::filesystem_error &e) {
-            LOG4CPLUS_WARN(_logger, L"Error caught in findSubFolders : " << e.code() << " - " << e.what());
+            LOG4CPLUS_WARN(_logger, L"Error caught in findSubFolders: " << e.code() << " - " << e.what());
             ok = false;
         } catch (...) {
             LOG4CPLUS_WARN(_logger, L"Error caught in findSubFolders");

@@ -50,21 +50,20 @@ int ExcludeListPropagator::syncDbId() const {
 
 ExitCode ExcludeListPropagator::checkItems() {
     ExitCode exitCode = ExitCodeOk;
-    std::error_code ec;
     try {
-        for (auto dirIt = std::filesystem::recursive_directory_iterator(
-                 _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
-             dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        std::error_code ec;
+        auto dirIt = std::filesystem::recursive_directory_iterator(
+            _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
+        if (ec) {
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), "Error in checkItems: " << Utility::formatStdError(ec).c_str());
+            return ExitCodeSystemError;
+        }
+
+        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
             if (isAborted()) {
                 LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "ExcludeListPropagator aborted " << jobId());
                 return ExitCodeOk;
             }
-
-            if (ec) {
-                LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "Error in checkItems " << ec.message().c_str());
-                continue;
-            }
-
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {
@@ -77,14 +76,14 @@ ExitCode ExcludeListPropagator::checkItems() {
 #endif
 
             if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore path=" << Path2WStr(dirIt->path()).c_str()
-                                                                                << L" because size > "
-                                                                                << CommonUtility::maxPathLength());
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Ignore " << Utility::formatSyncPath(dirIt->path()).c_str()
+                                                                           << L" because size > "
+                                                                           << CommonUtility::maxPathLength());
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
-            SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, dirIt->path());
+            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, dirIt->path());
             bool isWarning = false;
             bool isExcluded = false;
             IoError ioError = IoErrorSuccess;
@@ -103,8 +102,8 @@ ExitCode ExcludeListPropagator::checkItems() {
                     _syncPal->addError(error);
                 }
                 // Find dbId from the entry path
-                DbNodeId dbNodeId;
-                bool found;
+                DbNodeId dbNodeId = -1;
+                bool found = false;
                 if (!_syncPal->_syncDb->dbId(ReplicaSideLocal, relativePath, dbNodeId, found)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                       L"Error in SyncDb::dbId for path=" << Path2WStr(relativePath).c_str());
