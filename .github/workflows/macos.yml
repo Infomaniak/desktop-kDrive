@@ -1,17 +1,16 @@
-name: MacOS desktop CI
+name: MacOS kDrive desktop CI
 
 on:
   pull_request: 
-    types: [synchronize, review_requested, ready_for_review]
+    types: [synchronize, review_requested]
 
 concurrency:
-  group: ${{ github.head_ref }}
+  group: macos-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
   test-building:
-    if: github.event.pull_request.draft == false
-    runs-on: [ self-hosted, tests ]
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
 
     steps:
       - name: Checkout the code
@@ -22,7 +21,10 @@ jobs:
       - name: Unlock keychain to use the certificate
         run : security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} login.keychain
 
-      - name: Grant execute permission for building script
+      - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
-      - name: Build App
+      - name: Build kDrive desktop
         run : ./infomaniak-build-tools/macos/build-ci.sh
+
+      - name: Clean-up generated code
+        run : rm -rf build-macos
