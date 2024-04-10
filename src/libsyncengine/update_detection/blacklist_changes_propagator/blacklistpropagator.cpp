@@ -147,8 +147,8 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             auto dirIt = std::filesystem::recursive_directory_iterator(
                 absolutePath, std::filesystem::directory_options::skip_permission_denied, ec);
             if (ec) {
-                LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                                   "Error in BlacklistPropagator::removeItem :" << Utility::formatStdError(ec).c_str());
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                                  "Error in BlacklistPropagator::removeItem :" << Utility::formatStdError(ec).c_str());
                 return ExitCodeSystemError;
             }
             for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
