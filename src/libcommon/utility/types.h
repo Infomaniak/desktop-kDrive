@@ -37,6 +37,8 @@ typedef std::string NodeId;
 typedef std::filesystem::path SyncPath;
 typedef std::filesystem::path::string_type SyncName;
 typedef std::filesystem::path::value_type SyncChar;
+typedef std::filesystem::directory_entry DirectoryEntry;
+typedef std::filesystem::directory_options DirectoryOptions;
 
 typedef std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring> SigValueType;
 
@@ -340,7 +342,8 @@ typedef enum {
     IoErrorIsADirectory,
     IoErrorNoSuchFileOrDirectory,
     IoErrorResultOutOfRange,
-    IoErrorUnknown
+    IoErrorUnknown,
+    IoErrorEndOfDirectory
 } IoError;
 
 struct ItemType {
