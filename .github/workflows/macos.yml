@@ -1,0 +1,30 @@
+name: MacOS kDrive desktop CI
+
+on:
+  pull_request: 
+    types: [synchronize, review_requested]
+
+concurrency:
+  group: macos-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-kDrive:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4.1.1
+        with:
+          submodules: recursive
+
+      - name: Unlock keychain to use the certificate
+        run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
+
+      - name: Grant building script execute permission
+        run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
+      - name: Build kDrive desktop
+        run : ./infomaniak-build-tools/macos/build-ci.sh
+
+      - name: Clean-up generated code
+        run : rm -rf build-macos
