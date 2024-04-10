@@ -262,24 +262,24 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
             Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
         }
 
-        FSOpPtr createOp = nullptr;
+        FSOpPtr createOp;
         _operationSet->getOp(createOpId, createOp);
         const auto normalizedPath = Utility::normalizedSyncPath(createOp->path());
 
         std::pair<FSOpPtrMap::iterator, bool> insertionResult;
         switch (createOp->objectType()) {
             case NodeTypeFile:
-                insertionResult = _createFileOperationSet.insert({normalizedPath, createOp});
+                insertionResult = _createFileOperationSet.try_emplace(normalizedPath, createOp);
                 break;
             case NodeTypeDirectory:
-                insertionResult = createDirectoryOperationSet.insert({normalizedPath, createOp});
+                insertionResult = createDirectoryOperationSet.try_emplace(normalizedPath, createOp);
                 break;
             default:
                 break;
         }
 
         if (!insertionResult.second) {
-            // Failed to insert Create operation. Rebuild of the snapshot required.
+            // Failed to insert Create operation. A full rebuild of the snapshot is required.
             //
             // Two issues have been identified:
             // - Either (1) the operating system missed a delete operation, in which case a snapshot rebuild is both
@@ -290,8 +290,8 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
             // display an error message.
 
             LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                           << L" update tree: Operation Create already exists on item "
-                                           << Path2WStr(createOp->path()).c_str());
+                                           << L" update tree: Operation Create already exists on item with "
+                                           << Utility::formatSyncPath(createOp->path()).c_str());
 
 #ifdef NDEBUG
             sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "UpdateTreeWorker::step4",
