@@ -80,9 +80,9 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
 }
 
 ExitCode PlatformInconsistencyCheckerUtility::renameLocaLFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr /*= nullptr*/) {
-    auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+    const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
         absoluteLocalPath, suffixType);
-    auto newFullPath = absoluteLocalPath.parent_path() / newName;
+    const auto newFullPath = absoluteLocalPath.parent_path() / newName;
 
     LocalMoveJob moveJob(absoluteLocalPath, newFullPath);
     moveJob.runSynchronously();

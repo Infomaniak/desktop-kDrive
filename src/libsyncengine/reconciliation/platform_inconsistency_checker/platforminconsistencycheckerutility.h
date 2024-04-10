@@ -24,7 +24,7 @@
 
 namespace KDC {
 
-// TODO : this class should not be a singleton...
+// TODO : this is a utility class with only static members and should not be a singleton...
 
 class PlatformInconsistencyCheckerUtility {
     public:
