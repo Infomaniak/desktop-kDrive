@@ -555,7 +555,7 @@ bool IoHelper::deleteDirectory(const SyncPath &path, IoError &ioError) noexcept 
 bool IoHelper::getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
                                     DirectoryIterator &iterator) noexcept {
     iterator = DirectoryIterator(path, recursive, ioError);
-    return ioError != IoErrorSuccess;
+    return ioError == IoErrorSuccess;
 }
 
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
