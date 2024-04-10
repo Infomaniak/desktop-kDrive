@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test-building:
+  build-kDrive:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
 
     steps:
