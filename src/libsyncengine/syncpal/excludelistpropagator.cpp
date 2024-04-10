@@ -49,7 +49,6 @@ int ExcludeListPropagator::syncDbId() const {
 }
 
 ExitCode ExcludeListPropagator::checkItems() {
-    ExitCode exitCode = ExitCodeOk;
     try {
         std::error_code ec;
         auto dirIt = std::filesystem::recursive_directory_iterator(
@@ -92,7 +91,7 @@ ExitCode ExcludeListPropagator::checkItems() {
             if (!success) {
                 LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
                                                                     << Utility::formatIoError(dirIt->path(), ioError).c_str());
-                exitCode = ExitCodeSystemError;
+                return ExitCodeSystemError;
             } else if (isExcluded) {
                 if (isWarning) {
                     NodeId localNodeId = _syncPal->_localSnapshot->itemId(relativePath);
@@ -107,12 +106,10 @@ ExitCode ExcludeListPropagator::checkItems() {
                 if (!_syncPal->_syncDb->dbId(ReplicaSideLocal, relativePath, dbNodeId, found)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                       L"Error in SyncDb::dbId for path=" << Path2WStr(relativePath).c_str());
-                    exitCode = ExitCodeDbError;
-                    break;
+                    return ExitCodeDbError;
                 }
-                if (!found) {
-                    continue;
-                }
+
+                if (!found) continue;
 
                 // Remove node (and children by cascade) from DB
                 if (ParametersCache::instance()->parameters().extendedLog()) {
@@ -123,27 +120,25 @@ ExitCode ExcludeListPropagator::checkItems() {
 
                 if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                      L"Error in SyncDb::deleteNode for path=" << Path2WStr(relativePath).c_str());
-                    exitCode = ExitCodeDbError;
-                    break;
+                                      L"Error in SyncDb::deleteNode for " << Utility::formatSyncPath(relativePath).c_str());
+                    return ExitCodeDbError;
                 }
                 if (!found) {
                     LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Failed to delete node ID for dbNodeId=" << dbNodeId);
-                    exitCode = ExitCodeDataError;
-                    break;
+                    return ExitCodeDataError;
                 }
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                          "Error caught in ExcludeListPropagator::checkItems: " << e.code() << " - " << e.what());
-        exitCode = ExitCodeSystemError;
+        return ExitCodeSystemError;
     } catch (...) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in ExcludeListPropagator::checkItems");
-        exitCode = ExitCodeSystemError;
+        return ExitCodeSystemError;
     }
 
-    return exitCode;
+    return ExitCodeOk;
 }
 
 }  // namespace KDC
