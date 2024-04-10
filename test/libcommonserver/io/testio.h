@@ -61,6 +61,7 @@ class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST(testIsFileAccessible);
         CPPUNIT_TEST(testFileChanged);
         CPPUNIT_TEST(testCheckIfIsHiddenFile);
+        CPPUNIT_TEST(testCheckDirectoryIterator);
 #if defined(__APPLE__) || defined(_WIN32)
         CPPUNIT_TEST(testGetXAttrValue);
         CPPUNIT_TEST(testSetXAttrValue);
@@ -86,6 +87,7 @@ class TestIo : public CppUnit::TestFixture {
         void testTempDirectoryPath(void);
         void testLogDirectoryPath(void);
         void testGetNodeId(void);
+        void testCheckDirectoryIterator(void);
         void testCheckIfPathExists(void);
         void testCheckIfIsDirectory(void);
         void testCreateDirectory(void);
@@ -118,6 +120,12 @@ class TestIo : public CppUnit::TestFixture {
 
         void testCheckIfPathExistsWithSameNodeIdSimpleCases(void);
         void testCheckIfPathExistsWithSameNodeIdAllBranches(void);
+
+        void testCheckDirectoryIteratorNonExistingPath(void);
+        void testCheckDirectoryIteratorExistingPath(void);
+        void testCheckDirectoryIteratotNextAfterEndOfDir(void);
+        void testCheckDirectoryIteratorPermission(void);
+        void testCheckDirectoryIteratorWithLongPath(void);
 
     private:
         IoHelperTests *_testObj;

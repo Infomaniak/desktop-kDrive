@@ -1,0 +1,235 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "testio.h"
+
+#include <filesystem>
+#include "libcommonserver/utility/testutility.h"
+
+using namespace CppUnit;
+
+namespace KDC {
+
+void TestIo::testCheckDirectoryIterator() {
+    testCheckDirectoryIteratorNonExistingPath();
+    testCheckDirectoryIteratorExistingPath();
+    testCheckDirectoryIteratotNextAfterEndOfDir();
+    //testCheckDirectoryIteratorWithLongPath();
+    //testCheckDirectoryIteratorPermission();
+}
+
+void TestIo::testCheckDirectoryIteratorNonExistingPath() {
+    // Check that the directory iterator returns an error when the path does not exist
+    {
+        IoError error;
+        IoHelper::DirectoryIterator it("C:\\nonexistingpath", false, error);
+
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, error);
+    }
+
+    // Check that the directory iterator returns an error when the path syntax is invalid
+    {
+        IoError error;
+        IoHelper::DirectoryIterator it("C:\\nonexistingpath\\*\\", false, error);
+
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, error);
+    }
+}
+
+
+void TestIo::testCheckDirectoryIteratorExistingPath() {
+    // Check that the directory iterator is valid when the path is an empty directory and return EOF on first call
+    {
+        const SyncPath emptyDirectory = _localTestDirPath / "test_dir_iterator/empty_dir";
+
+        IoError error;
+        IoHelper::DirectoryIterator it(emptyDirectory, false, error);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+        DirectoryEntry entry;
+        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+    }
+
+    // Check that the directory iterator is valid when the path is a directory with one file and return the file on first call
+    {
+        const SyncPath directoryWithOneFile = _localTestDirPath / "test_dir_iterator/oneFile_dir";
+
+        IoError error;
+        IoHelper::DirectoryIterator it(directoryWithOneFile, false, error);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+        DirectoryEntry entry;
+        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+
+        CPPUNIT_ASSERT_EQUAL(directoryWithOneFile / "testFile1.txt", entry.path());
+
+        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+    }
+
+    // Check that the directory iterator is valid when the path is a directory with one child directory
+    {
+        const SyncPath directoryWithOneChildDirectory = _localTestDirPath / "test_dir_iterator/oneDir_dir";
+        IoError error;
+        IoHelper::DirectoryIterator it(directoryWithOneChildDirectory, false, error);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+        DirectoryEntry entry;
+        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+        CPPUNIT_ASSERT_EQUAL(directoryWithOneChildDirectory / "testDir1", entry.path());
+
+        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+    }
+
+
+    // Check that the directory iterator do not search recursively when the recursive flag is false
+    {
+        const SyncPath directoryWithMultipleSubDirectories = _localTestDirPath / "test_dir_iterator/recursive_dir";
+
+        IoError error;
+        IoHelper::DirectoryIterator it(directoryWithMultipleSubDirectories, false, error);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+        DirectoryEntry entry;
+        for (int i = 0; i < 4; i++) {
+            CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+            CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+        }
+
+        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+    }
+
+    // Check that the directory iterator search recursively when the recursive flag is true
+    {
+        const SyncPath directoryWithMultipleSubDirectories = _localTestDirPath / "test_dir_iterator/recursive_dir";
+
+        IoError error;
+        IoHelper::DirectoryIterator it(directoryWithMultipleSubDirectories, true, error);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+        DirectoryEntry entry;
+        for (int i = 0; i < 20; i++) {
+            CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+            CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+        }
+
+        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+    }
+}
+
+void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
+    // Check that the directory iterator returns an EOF on everycall to next after EOF
+    {
+        const SyncPath emptyDirectory = _localTestDirPath / "test_dir_iterator/empty_dir";
+
+        IoError error;
+        IoHelper::DirectoryIterator it(emptyDirectory, false, error);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+        DirectoryEntry entry;
+        for (int i = 0; i < 3; i++) {
+            CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+            CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+        }
+    }
+}
+
+void TestIo::testCheckDirectoryIteratorWithLongPath() {
+    // Check that the directory iterator show directory ith no permission
+
+    {
+        const TemporaryDirectory temporaryDirectory;
+        const SyncPath shortPath = temporaryDirectory.path / "chekDirIt/longPath";
+        std::filesystem::create_directories(shortPath);
+
+        //create 500 subFolders to make the path long /longPath/subDir0/subDir1/.../subDir499
+        std::string longPath = shortPath.string();
+        for (int i = 0; i < 500; i++) {
+            longPath += "/subDir" + std::to_string(i);
+            std::filesystem::create_directories(longPath);                     
+        }
+        
+
+    
+
+        IoError error;
+        IoHelper::DirectoryIterator it(shortPath, true, error);
+        std::cout << "error 1: " << IoHelper::ioError2StdString(error) << std::endl;
+
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+        DirectoryEntry entry;
+        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+        std::cout << "error2 : " << IoHelper::ioError2StdString(error) << std::endl;
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
+
+        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+    }
+}
+
+void TestIo::testCheckDirectoryIteratorPermission() {
+    // Check that the directory iterator show directory with no permission when skip_permission_denied is false
+    const TemporaryDirectory temporaryDirectory;
+    const SyncPath path = temporaryDirectory.path / "chekDirIt/noPermissionFolder";
+    std::filesystem::create_directories(path);
+    // create a file in the directory
+    const SyncPath testFilePathNoPerm = path / "testFile.txt";
+    std::ofstream(testFilePathNoPerm, std::ios::out);
+
+    // Remove permission to the file
+    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::owner_all, std::filesystem::perm_options::remove);
+
+    {
+        IoError ioError = IoErrorSuccess;
+        IoHelper::DirectoryIterator it(path, false, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+
+        DirectoryEntry entry;
+        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(testFilePathNoPerm, entry.path());
+        std::cout << "with skip == false:" << entry.path() << std::endl;
+    }
+
+    // Check that the directory iterator skip directory with no permission when skip_permission_denied is true
+    {
+        IoError ioError = IoErrorSuccess;
+        IoHelper::DirectoryIterator it(path, false, ioError, DirectoryOptions::skip_permission_denied);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+
+        DirectoryEntry entry;
+        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
+        std::cout << "with skip == true:" << entry.path() << std::endl;
+    }
+    // Restore permission to allow subdir removal
+    std::cout << "restoring permission" << std::endl;
+    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+}
+
+
+}  // namespace KDC
