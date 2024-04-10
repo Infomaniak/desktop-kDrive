@@ -18,18 +18,12 @@
 
 #include "testincludes.h"
 
-#include "utility/testutility.h"
-#include "log/testlog.h"
-#include "db/testdb.h"
-#include "io/testio.h"
+#include "vfs/mac/testlitesyncextconnector.h"
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
-}  // namespace KDC
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
+}
 
 int main(int, char **) {
-    return runTestSuite("_kDriveTestCommon.log");
+    return runTestSuite("_kDriveTestServer.log");
 }
