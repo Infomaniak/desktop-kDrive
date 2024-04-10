@@ -90,7 +90,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shar
     return findCorrespondingNodeFromCommonAncestor(node);
 }
 
-constexpr auto otherSide = [](ReplicaSide side) -> ReplicaSide {
+constexpr auto otherSide = [](ReplicaSide side) {
     return side == ReplicaSide::ReplicaSideLocal ? ReplicaSide::ReplicaSideRemote : ReplicaSide::ReplicaSideLocal;
 };
 
