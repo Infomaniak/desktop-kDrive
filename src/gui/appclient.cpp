@@ -87,8 +87,7 @@ static void displayHelpText(const QString &t) {
 #endif
 
 
-AppClient::AppClient(int &argc, char **argv)
-    : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv), _theme(Theme::instance()), _logExpire(0) {
+AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv) {
 #ifdef NDEBUG
     sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppClient", "Start"));
 #endif
@@ -589,10 +588,8 @@ void AppClient::startServerAndDie(bool serverCrashDetected) {
         arguments << QStringLiteral("--crashRecovered");
         serverProcess->setProgram(pathToExecutable);
         serverProcess->setArguments(arguments);
-
-    } else {
-        serverProcess->setProgram(pathToExecutable);
     }
+    serverProcess->setProgram(pathToExecutable);
     serverProcess->startDetached();
 
     QTimer::singleShot(0, qApp, SLOT(quit()));

@@ -117,7 +117,7 @@ class AppClient : public SharedTools::QtSingleApplication {
 
         std::shared_ptr<ClientGui> _gui = nullptr;
 
-        Theme *_theme;
+        Theme *_theme = Theme::instance();
 
         QElapsedTimer _startedAt;
         quint16 _commPort = 0;
