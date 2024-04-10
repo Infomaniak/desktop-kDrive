@@ -90,7 +90,7 @@ void CustomToolButton::leaveEvent(QEvent *event) {
     setHover(false);
 
     if (_customToolTip) {
-        emit _customToolTip->close();
+        _customToolTip->close();
         _customToolTip = nullptr;
     }
 
@@ -114,8 +114,10 @@ void CustomToolButton::applyIconSizeAndColor() {
 }
 
 void CustomToolButton::setHover(bool hover) {
-    _hover = hover;
-    applyIconSizeAndColor();
+    if (isEnabled()) {
+        _hover = hover;
+        applyIconSizeAndColor();
+    }
 }
 
 }  // namespace KDC

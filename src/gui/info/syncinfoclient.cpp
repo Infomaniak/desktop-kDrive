@@ -15,36 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #include "syncinfoclient.h"
-#include "../guirequests.h"
 #include "libcommon/utility/utility.h"
 
 #include <QDir>
 
 namespace KDC {
 
-SyncInfoClient::SyncInfoClient()
-    : SyncInfo(),
-      _paused(false),
-      _status(SyncStatus::SyncStatusUndefined),
-      _unresolvedConflicts(false),
-      _currentFile(0),
-      _totalFiles(0),
-      _completedSize(0),
-      _totalSize(0),
-      _estimatedRemainingTime(0) {}
+SyncInfoClient::SyncInfoClient() : SyncInfo() {}
 
-SyncInfoClient::SyncInfoClient(const SyncInfo &syncInfo)
-    : SyncInfo(syncInfo),
-      _paused(false),
-      _status(SyncStatus::SyncStatusUndefined),
-      _unresolvedConflicts(false),
-      _currentFile(0),
-      _totalFiles(0),
-      _completedSize(0),
-      _totalSize(0),
-      _estimatedRemainingTime(0) {}
+SyncInfoClient::SyncInfoClient(const SyncInfo &syncInfo) : SyncInfo(syncInfo) {}
 
 QString SyncInfoClient::name() const {
     return CommonUtility::getRelativePathFromHome(_localPath);

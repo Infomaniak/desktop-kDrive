@@ -774,74 +774,77 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
 }
 
 ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId) {
-    if (side == ReplicaSideLocal) {
-        if (!_syncPal->_localSnapshot->itemId(relativePath).empty()) {
-            // Item with the same path but different ID exist
-            // This is an Edit operation (Delete-Create)
-            return ExitCodeOk;
-        }
+    if (side != ReplicaSideLocal) return ExitCodeOk;
 
-        SyncPath absolutePath = _syncPal->_localPath / relativePath;
-        bool exists = false;
-        IoError ioError = IoErrorSuccess;
-        if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, exists, ioError)) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError).c_str());
-            setExitCause(ExitCauseFileAccessError);
-            return ExitCodeSystemError;
-        }
-
-        if (exists) {
-            bool readPermission = false;
-            bool writePermission = false;
-            bool execPermission = false;
-            if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, exists)) {
-                LOGW_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absolutePath).c_str());
-                setExitCause(ExitCauseFileAccessError);
-                return ExitCodeSystemError;
-            }
-
-            if (!writePermission) {
-                LOGW_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str() << L" doesn't have write permissions!");
-                return ExitCodeNoWritePermission;
-            }
-
-            // Check if file is synced
-            bool isWarning = false;
-            IoError ioError = IoErrorSuccess;
-            bool isExcluded = false;
-            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
-                                                                                       isWarning, isExcluded, ioError);
-            if (!success) {
-                LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                                       << Utility::formatIoError(absolutePath, ioError).c_str());
-                setExitCause(ExitCauseFileAccessError);
-                return ExitCodeSystemError;
-            }
-
-            if (ioError == IoErrorAccessDenied) {
-                LOGW_WARN(_logger, L"Item " << Path2WStr(absolutePath).c_str() << L" misses search permissions!");
-                setExitCause(ExitCauseNoSearchPermission);
-                return ExitCodeSystemError;
-            }
-
-            if (isExcluded) {
-                return ExitCodeOk;
-            }
-
-            LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str()
-                                                 << L" still exists on local replica. Snapshot not up to date, restarting sync");
-#ifdef NDEBUG
-            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "ComputeFSOperationWorker::checkIfOkToDelete",
-                                                                "Unwanted local delete operation averted"));
-#endif
-
-            setExitCause(ExitCauseInvalidSnapshot);
-            return ExitCodeDataError;  // We need to rebuild the remote snapshot from scratch
-        }
+    if (!_syncPal->_localSnapshot->itemId(relativePath).empty()) {
+        // Item with the same path but different ID exist
+        // This is an Edit operation (Delete-Create)
+        return ExitCodeOk;
     }
 
-    return ExitCodeOk;
+    const SyncPath absolutePath = _syncPal->_localPath / relativePath;
+    bool exists = false;
+    IoError ioError = IoErrorSuccess;
+    if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, exists, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError).c_str());
+        setExitCause(ExitCauseFileAccessError);
+
+        return ExitCodeSystemError;
+    }
+
+    if (!exists) return ExitCodeOk;
+
+    bool readPermission = false;
+    bool writePermission = false;
+    bool execPermission = false;
+    if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, exists)) {
+        LOGW_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absolutePath).c_str());
+        setExitCause(ExitCauseFileAccessError);
+        return ExitCodeSystemError;
+    }
+
+    if (!writePermission) {
+        LOGW_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str() << L" doesn't have write permissions!");
+        return ExitCodeNoWritePermission;
+    }
+
+    // Check if file is synced
+    bool isWarning = false;
+    ioError = IoErrorSuccess;
+    bool isExcluded = false;
+    const bool success =
+        ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
+    if (!success) {
+        LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                               << Utility::formatIoError(absolutePath, ioError).c_str());
+        setExitCause(ExitCauseFileAccessError);
+        return ExitCodeSystemError;
+    }
+
+    if (ioError == IoErrorAccessDenied) {
+        LOGW_WARN(_logger, L"Item " << Path2WStr(absolutePath).c_str() << L" misses search permissions!");
+        setExitCause(ExitCauseNoSearchPermission);
+        return ExitCodeSystemError;
+    }
+
+    if (isExcluded) return ExitCodeOk;
+
+    if (_syncPal->_localSnapshot->isOrphan(nodeId)) {
+        // This can happen if the propagation of template exclusions has been unexpectedly interrupted.
+        // This special handling should be removed once the app keeps track on such interruptions.
+        return ExitCodeOk;
+    }
+
+    LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str()
+                                         << L" still exists on local replica. Snapshot not up to date, restarting sync.");
+#ifdef NDEBUG
+    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "ComputeFSOperationWorker::checkIfOkToDelete",
+                                                        "Unwanted local delete operation averted"));
+#endif
+
+    setExitCause(ExitCauseInvalidSnapshot);
+
+    return ExitCodeDataError;  // We need to rebuild the local snapshot from scratch.
 }
 
 void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<Snapshot> remoteSnapshot,

@@ -23,7 +23,9 @@
 #include <log4cplus/logger.h>
 
 #include <Poco/Thread.h>
+#include <Poco/ThreadPool.h>
 #include <Poco/Net/HTTPSClientSession.h>
+#include <Poco/ThreadPool.h>
 
 #include <list>
 #include <queue>

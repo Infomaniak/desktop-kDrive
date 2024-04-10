@@ -30,6 +30,8 @@
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommon/info/exclusionappinfo.h"
 
+#include <QDataStream>
+#include <QIODevice>
 #include <QList>
 #include <QString>
 #include <QColor>
@@ -112,7 +114,7 @@ struct GuiRequests {
         static ExitCode checkCommStatus();           // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteUser(int userDbId);    // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode deleteDrive(int driveDbId);  // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteSync(int syncDbId);    // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteSync(int syncDbId);    // Asynchronous because it can be time consuming
         static ExitCode propagateSyncListChange(int syncDbId, bool restartSync);
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);
         static ExitCode propagateExcludeListChange();  // !!! Use COMM_LONG_TIMEOUT !!!

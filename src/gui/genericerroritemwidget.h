@@ -48,6 +48,8 @@ class GenericErrorItemWidget : public AbstractFileItemWidget {
         virtual void openFolder(const QString &path) override;
 
     private:
+        bool openInWebview() const;
+
         std::shared_ptr<ClientGui> _gui;
         ErrorInfo _errorInfo;
         const QString _errorMsg;

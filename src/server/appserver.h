@@ -41,6 +41,7 @@
 #include <QElapsedTimer>
 #include <QPointer>
 #include <QQueue>
+#include <QThread>
 #include <QTimer>
 
 namespace CrashReporter {
@@ -55,6 +56,8 @@ class Theme;
  * @brief The AppServer class
  * @ingroup gui
  */
+
+
 class AppServer : public SharedTools::QtSingleApplication {
         Q_OBJECT
     public:
@@ -128,6 +131,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
 
+
 #if defined(WITH_CRASHREPORTER)
         QScopedPointer<CrashReporter::Handler> _crashHandler;
 #endif
@@ -174,16 +178,21 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendDriveUpdated(const DriveInfo &driveInfo);
         void sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used);
         void sendDriveRemoved(int driveDbId);
+        void sendDriveDeletionFailed(int driveDbId);
         void sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                                   int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
         void sendSyncAdded(const SyncInfo &syncInfo);
         void sendSyncUpdated(const SyncInfo &syncInfo);
         void sendSyncRemoved(int syncDbId);
+        void sendSyncDeletionFailed(int syncDbId);
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
         void sendErrorsCleared(int syncDbId);
 
         void startSyncPals();
+        void stopSyncTask(int syncDbId);  // Long task which can block GUI: post-poned in the event loop by means of timer
+        void stopAllSyncsTask(const std::vector<int> &syncDbIdList);  // Idem.
+        void deleteAccount(int accountDbId);
 
         static void addError(const Error &error);
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
@@ -230,5 +239,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
         void onStartClientReceived();
 };
+
 
 }  // namespace KDC

@@ -24,24 +24,27 @@
 #include "bigfoldersdialog.h"
 #include "custommessagebox.h"
 #include "custompushbutton.h"
+
+#ifdef Q_OS_MAC
+#include "extensionsetupdialog.h"
+#endif
+
 #include "guiutility.h"
-#include "common/utility.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 #include "libcommon/asserts.h"
-#include "extensionsetupdialog.h"
 #include "languagechangefilter.h"
 #include "enablestateholder.h"
 #include "guirequests.h"
 #include "clientgui.h"
-#include "parameterscache.h"
 #include "common/filesystembase.h"
-#include "libcommon/theme/theme.h"
+#include "guiutility.h"
 
 #include <QDesktopServices>
 #include <QDir>
 #include <QIcon>
 #include <QLabel>
+#include <QLayout>
 #include <QStandardPaths>
 #include <QStyle>
 #include <QMutexLocker>
@@ -59,26 +62,7 @@ static const QString folderBlocName("folderBloc");
 Q_LOGGING_CATEGORY(lcDrivePreferencesWidget, "gui.drivepreferenceswidget", QtInfoMsg)
 
 DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : ParametersWidget(parent),
-      _gui(gui),
-      _driveDbId(0),
-      _userDbId(0),
-      _mainVBox(nullptr),
-      _displayErrorsWidget(nullptr),
-      _displayBigFoldersWarningWidget(nullptr),
-      _userAvatarLabel(nullptr),
-      _userNameLabel(nullptr),
-      _userMailLabel(nullptr),
-      _notificationsSwitch(nullptr),
-      _foldersBeginIndex(0),
-      _foldersLabel(nullptr),
-      _addLocalFolderButton(nullptr),
-      _notificationsLabel(nullptr),
-      _notificationsTitleLabel(nullptr),
-      _notificationsDescriptionLabel(nullptr),
-      _connectedWithLabel(nullptr),
-      _removeDriveButton(nullptr),
-      _updatingFoldersBlocs(false) {
+    : ParametersWidget(parent), _gui(gui) {
     setContentsMargins(0, 0, 0, 0);
 
     /*
@@ -253,6 +237,7 @@ DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, Q
     connect(this, &DrivePreferencesWidget::undecidedListsCleared, this, &DrivePreferencesWidget::onUndecidedListsCleared);
 
     connect(_gui.get(), &ClientGui::vfsConversionCompleted, this, &DrivePreferencesWidget::onVfsConversionCompleted);
+    connect(_gui.get(), &ClientGui::driveBeingRemoved, this, &DrivePreferencesWidget::onDriveBeingRemoved);
 }
 
 void DrivePreferencesWidget::setDrive(int driveDbId, bool unresolvedErrors) {
@@ -292,29 +277,32 @@ void DrivePreferencesWidget::showErrorBanner(bool unresolvedErrors) {
 }
 
 void DrivePreferencesWidget::refreshStatus() {
-    if (_driveDbId) {
-        QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-        for (PreferencesBlocWidget *folderBloc : folderBlocList) {
-            FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
-            if (folderItemWidget) {
-                auto syncInfoMapIt = _gui->syncInfoMap().find(folderItemWidget->syncDbId());
-                if (syncInfoMapIt != _gui->syncInfoMap().end()) {
-                    // Update folder widget
-                    folderItemWidget->updateItem(syncInfoMapIt->second);
-                }
-            } else {
-                qCDebug(lcDrivePreferencesWidget) << "Empty folder bloc!";
-            }
+    if (!_driveDbId) return;
+
+    if (const auto driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId); driveInfoMapIt != _gui->driveInfoMap().cend()) {
+        const auto &driveInfo = driveInfoMapIt->second;
+        if (!_mainVBox->isEnabled() && !driveInfo.isBeingDeleted()) {
+            // Re-enable the drive preferences widget after a deletion attempt.
+            setCustomToolTipText("");
+            GuiUtility::setEnabledRecursively(this, true);
         }
     }
+
+    const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
+    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+        folderBloc->updateBloc();
+    }
+
+    // Hack to trigger a repaint of the _mMainVBox children.
+    _notificationsLabel->setVisible(false);
+    _notificationsLabel->setVisible(true);
 }
 
 void DrivePreferencesWidget::showEvent(QShowEvent *event) {
     _gui->activateLoadInfo();
     QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
     for (PreferencesBlocWidget *folderBloc : folderBlocList) {
-        FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
-        if (folderItemWidget) {
+        if (auto folderItemWidget = folderBloc->findChild<FolderItemWidget *>(); folderItemWidget != nullptr) {
             folderItemWidget->closeFolderView();
         }
     }
@@ -532,6 +520,78 @@ void DrivePreferencesWidget::resetFoldersBlocs() {
     update();
 }
 
+void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
+    int foldersNextBeginIndex = _foldersBeginIndex;
+    QList<int> syncDbIdList;
+    const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
+    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+        FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
+        if (!folderItemWidget) {
+            qCDebug(lcDrivePreferencesWidget) << "Empty folder bloc!";
+            continue;
+        }
+        if (auto syncInfoClient = folderItemWidget->getSyncInfoClient();
+            !syncInfoClient || syncInfoClient->driveDbId() != _driveDbId) {
+            // Delete bloc when folder doesn't exist anymore or doesn't belong to the current drive
+            folderBloc->deleteLater();
+        } else {
+            // Update folder widget
+            folderItemWidget->updateItem();
+            syncDbIdList << folderItemWidget->syncDbId();
+            const int index = _mainVBox->indexOf(folderBloc) + 1;
+            if (foldersNextBeginIndex < index) {
+                foldersNextBeginIndex = index;
+            }
+        }
+    }
+
+    for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
+        if (syncInfoMapElt.second.driveDbId() != _driveDbId) {
+            continue;
+        }
+
+        if (!syncDbIdList.contains(syncInfoMapElt.first)) {
+            // Create folder bloc
+            PreferencesBlocWidget *folderBloc = new PreferencesBlocWidget(this);
+            folderBloc->setObjectName(folderBlocName);
+            _mainVBox->insertWidget(foldersNextBeginIndex, folderBloc);
+
+            QBoxLayout *folderBox = folderBloc->addLayout(QBoxLayout::Direction::LeftToRight);
+
+            FolderItemWidget *folderItemWidget = new FolderItemWidget(syncInfoMapElt.first, _gui, this);
+            folderItemWidget->setSupportVfs(syncInfoMapElt.second.supportVfs());
+            folderItemWidget->setSmartSyncActivated(syncInfoMapElt.second.virtualFileMode() != VirtualFileModeOff);
+            folderBox->addWidget(folderItemWidget);
+
+            QFrame *line = folderBloc->addSeparator();
+            line->setVisible(false);
+
+            // Folder tree
+            QBoxLayout *folderTreeBox = folderBloc->addLayout(QBoxLayout::Direction::LeftToRight, true);
+
+            FolderTreeItemWidget *folderTreeItemWidget = new FolderTreeItemWidget(_gui, false, this);
+            folderTreeItemWidget->setSyncDbId(syncInfoMapElt.first);
+            folderTreeItemWidget->setObjectName("updateFolderTreeItemWidget");
+            folderTreeItemWidget->setVisible(false);
+            folderTreeBox->addWidget(folderTreeItemWidget);
+
+            connect(folderItemWidget, &FolderItemWidget::runSync, this, &DrivePreferencesWidget::runSync);
+            connect(folderItemWidget, &FolderItemWidget::pauseSync, this, &DrivePreferencesWidget::pauseSync);
+            connect(folderItemWidget, &FolderItemWidget::resumeSync, this, &DrivePreferencesWidget::resumeSync);
+            connect(folderItemWidget, &FolderItemWidget::unSync, this, &DrivePreferencesWidget::onUnsyncTriggered);
+            connect(folderItemWidget, &FolderItemWidget::displayFolderDetail, this,
+                    &DrivePreferencesWidget::onDisplayFolderDetail);
+            connect(folderItemWidget, &FolderItemWidget::openFolder, this, &DrivePreferencesWidget::onOpenFolder);
+            connect(folderItemWidget, &FolderItemWidget::cancelUpdate, this, &DrivePreferencesWidget::onCancelUpdate);
+            connect(folderItemWidget, &FolderItemWidget::validateUpdate, this, &DrivePreferencesWidget::onValidateUpdate);
+            connect(folderItemWidget, &FolderItemWidget::triggerLiteSyncChanged, this,
+                    &DrivePreferencesWidget::onSmartSyncSwitchSyncChanged);
+            connect(folderTreeItemWidget, &FolderTreeItemWidget::terminated, this, &DrivePreferencesWidget::onSubfoldersLoaded);
+            connect(folderTreeItemWidget, &FolderTreeItemWidget::needToSave, this, &DrivePreferencesWidget::onNeedToSave);
+        }
+    }
+}
+
 void DrivePreferencesWidget::updateFoldersBlocs() {
     if (_updatingFoldersBlocs) {
         return;
@@ -539,91 +599,15 @@ void DrivePreferencesWidget::updateFoldersBlocs() {
 
     _updatingFoldersBlocs = true;
 
-    if (_driveDbId) {
-        int foldersNextBeginIndex = _foldersBeginIndex;
-        QList<int> syncDbIdList = QList<int>();
-        QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-        for (PreferencesBlocWidget *folderBloc : folderBlocList) {
-            FolderItemWidget *folderItemWidget = folderBloc->findChild<FolderItemWidget *>();
-            if (folderItemWidget) {
-                auto syncInfoMapIt = _gui->syncInfoMap().find(folderItemWidget->syncDbId());
-                if (syncInfoMapIt == _gui->syncInfoMap().end() || syncInfoMapIt->second.driveDbId() != _driveDbId) {
-                    // Delete bloc when folder doesn't exist anymore or doesn't belong to the current drive
-                    folderBloc->deleteLater();
-                } else {
-                    // Update folder widget
-                    folderItemWidget->updateItem(syncInfoMapIt->second);
-                    syncDbIdList << syncInfoMapIt->first;
-                    int index = _mainVBox->indexOf(folderBloc) + 1;
-                    if (foldersNextBeginIndex < index) {
-                        foldersNextBeginIndex = index;
-                    }
-                }
-            } else {
-                qCDebug(lcDrivePreferencesWidget) << "Empty folder bloc!";
-            }
-        }
-
-        for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
-            if (syncInfoMapElt.second.driveDbId() != _driveDbId) {
-                continue;
-            }
-
-            if (!syncDbIdList.contains(syncInfoMapElt.first)) {
-                // Create folder bloc
-                PreferencesBlocWidget *folderBloc = new PreferencesBlocWidget(this);
-                folderBloc->setObjectName(folderBlocName);
-                _mainVBox->insertWidget(foldersNextBeginIndex, folderBloc);
-
-                QBoxLayout *folderBox = folderBloc->addLayout(QBoxLayout::Direction::LeftToRight);
-
-                FolderItemWidget *folderItemWidget = new FolderItemWidget(syncInfoMapElt.first, _gui, this);
-                folderItemWidget->setSupportVfs(syncInfoMapElt.second.supportVfs());
-                folderItemWidget->setSmartSyncActivated(syncInfoMapElt.second.virtualFileMode() != VirtualFileModeOff);
-                folderBox->addWidget(folderItemWidget);
-
-                QFrame *line = folderBloc->addSeparator();
-                line->setVisible(false);
-
-                // Folder tree
-                QBoxLayout *folderTreeBox = folderBloc->addLayout(QBoxLayout::Direction::LeftToRight, true);
-
-                FolderTreeItemWidget *folderTreeItemWidget = new FolderTreeItemWidget(_gui, false, this);
-                folderTreeItemWidget->setSyncDbId(syncInfoMapElt.first);
-                folderTreeItemWidget->setObjectName("updateFolderTreeItemWidget");
-                folderTreeItemWidget->setVisible(false);
-                folderTreeBox->addWidget(folderTreeItemWidget);
-
-                connect(folderItemWidget, &FolderItemWidget::runSync, this, &DrivePreferencesWidget::runSync);
-                connect(folderItemWidget, &FolderItemWidget::pauseSync, this, &DrivePreferencesWidget::pauseSync);
-                connect(folderItemWidget, &FolderItemWidget::resumeSync, this, &DrivePreferencesWidget::resumeSync);
-                connect(folderItemWidget, &FolderItemWidget::unSync, this, &DrivePreferencesWidget::onUnsyncTriggered);
-                connect(folderItemWidget, &FolderItemWidget::displayFolderDetail, this,
-                        &DrivePreferencesWidget::onDisplayFolderDetail);
-                connect(folderItemWidget, &FolderItemWidget::openFolder, this, &DrivePreferencesWidget::onOpenFolder);
-                connect(folderItemWidget, &FolderItemWidget::cancelUpdate, this, &DrivePreferencesWidget::onCancelUpdate);
-                connect(folderItemWidget, &FolderItemWidget::validateUpdate, this, &DrivePreferencesWidget::onValidateUpdate);
-                connect(folderItemWidget, &FolderItemWidget::triggerLiteSyncChanged, this,
-                        &DrivePreferencesWidget::onSmartSyncSwitchSyncChanged);
-                connect(folderTreeItemWidget, &FolderTreeItemWidget::terminated, this,
-                        &DrivePreferencesWidget::onSubfoldersLoaded);
-                connect(folderTreeItemWidget, &FolderTreeItemWidget::needToSave, this, &DrivePreferencesWidget::onNeedToSave);
-            }
-        }
-
-        update();
-    }
+    updateGuardedFoldersBlocs();
 
     _updatingFoldersBlocs = false;
 }
 
-void DrivePreferencesWidget::refreshFoldersBlocs() {
-    QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
-    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
-        FolderTreeItemWidget *treeItemWidget = blocTreeItemWidget(folderBloc);
-        if (treeItemWidget && treeItemWidget->isVisible()) {
-            treeItemWidget->loadSubFolders();
-        }
+void DrivePreferencesWidget::refreshFoldersBlocs() const {
+    const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
+    for (const PreferencesBlocWidget *folderBloc : folderBlocList) {
+        folderBloc->refreshFolders();
     }
 }
 
@@ -1053,6 +1037,26 @@ void DrivePreferencesWidget::onRemoveDrive(bool checked) {
     emit removeDrive(driveInfoIt->second.dbId());
 }
 
+void DrivePreferencesWidget::onDriveBeingRemoved() {
+    const auto driveInfoIt = _gui->driveInfoMap().find(_driveDbId);
+    assert(driveInfoIt != _gui->driveInfoMap().cend());
+    driveInfoIt->second.setIsBeingDeleted(true);
+
+    // Lock all GUI drive-related actions during drive deletion.
+    GuiUtility::setEnabledRecursively<QLayout>(_mainVBox, false);
+    for (auto *child : findChildren<QWidget *>()) {
+        GuiUtility::setEnabledRecursively<QWidget>(child, false);
+    }
+
+    const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
+    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+        folderBloc->setToolTipsEnabled(false);
+    }
+
+    setCustomToolTipText(tr("This drive is being deleted."));
+    update();
+}
+
 void DrivePreferencesWidget::onUnsyncTriggered(int syncDbId) {
     EnableStateHolder _(this);
 
@@ -1070,24 +1074,26 @@ void DrivePreferencesWidget::onUnsyncTriggered(int syncDbId) {
     msgBox.addButton(tr("REMOVE FOLDER SYNC CONNECTION"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
-    int ret = msgBox.exec();
-    if (ret != QDialog::Rejected) {
-        if (ret == QMessageBox::Yes) {
-            PreferencesBlocWidget *folderBloc = (PreferencesBlocWidget *)sender()->parent();
-            if (!folderBloc) {
-                return;
-            }
 
-            // Remove sync
-            folderBloc->setVisible(false);
-            ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::removeSync";
-                CustomMessageBox msgBox(QMessageBox::Warning,
-                                        tr("Failed to stop syncing the folder <i>%1</i>.").arg(syncInfoMapIt->second.localPath()),
-                                        QMessageBox::Ok, this);
-                return;
-            }
+    if (msgBox.exec() == QMessageBox::Yes) {
+        PreferencesBlocWidget *folderBloc = (PreferencesBlocWidget *)sender()->parent();
+        if (!folderBloc) {
+            return;
+        }
+
+        // Disable GUI sync-related actions.
+        folderBloc->setEnabledRecursively(false);
+
+        // Remove sync
+        const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
+        if (exitCode != ExitCodeOk) {
+            qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::removeSync";
+            CustomMessageBox msgBox(QMessageBox::Warning,
+                                    tr("Failed to stop syncing the folder <i>%1</i>.").arg(syncInfoMapIt->second.localPath()),
+                                    QMessageBox::Ok, this);
+
+            // Re-enable GUI sync-related actions.
+            folderBloc->setEnabledRecursively(true);
         }
     }
 }
@@ -1258,7 +1264,7 @@ void DrivePreferencesWidget::retranslateUi() {
     _notificationsDescriptionLabel->setText(
         tr("A notification will be displayed as soon as a new folder has been synchronized or modified"));
     _connectedWithLabel->setText(tr("Connected with"));
-    _removeDriveButton->setToolTip(tr("Remove synchronization"));
+    _removeDriveButton->setToolTip(tr("Remove all synchronizations"));
 }
 
 

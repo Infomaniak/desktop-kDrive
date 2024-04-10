@@ -48,7 +48,7 @@ bool CustomRadioButton::event(QEvent *event) {
 
 void CustomRadioButton::leaveEvent(QEvent *event) {
     if (_customToolTip) {
-        emit _customToolTip->close();
+        _customToolTip->close();
         _customToolTip = nullptr;
     }
 

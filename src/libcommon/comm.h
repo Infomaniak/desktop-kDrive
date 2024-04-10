@@ -18,6 +18,10 @@
 
 #pragma once
 
+#include <QColor>
+#include <QDataStream>
+#include <QIODevice>
+
 #define COMM_SHORT_TIMEOUT 1000
 #define COMM_AVERAGE_TIMEOUT 10000
 #define COMM_LONG_TIMEOUT 60000
@@ -132,6 +136,7 @@ typedef enum {
     SIGNAL_NUM_DRIVE_UPDATED,
     SIGNAL_NUM_DRIVE_QUOTAUPDATED,
     SIGNAL_NUM_DRIVE_REMOVED,
+    SIGNAL_NUM_DRIVE_DELETE_FAILED,
     // Sync
     SIGNAL_NUM_SYNC_ADDED,
     SIGNAL_NUM_SYNC_UPDATED,
@@ -139,6 +144,7 @@ typedef enum {
     SIGNAL_NUM_SYNC_PROGRESSINFO,
     SIGNAL_NUM_SYNC_COMPLETEDITEM,
     SIGNAL_NUM_SYNC_VFS_CONVERSION_COMPLETED,
+    SIGNAL_NUM_SYNC_DELETE_FAILED,
     // Node
     SIGNAL_NUM_NODE_FOLDER_SIZE_COMPLETED,
     SIGNAL_NUM_NODE_FIX_CONFLICTED_FILES_COMPLETED,
@@ -152,3 +158,36 @@ typedef enum {
     SIGNAL_NUM_UTILITY_SHOW_SETTINGS,
     SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS
 } SignalNum;
+
+struct ArgsReader {
+        template <class... Args>
+        explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
+            read(args...);
+        }
+        template <class T>
+        void read(const T p) {
+            stream << p;
+        }
+        template <class T, class... Args>
+        void read(const T p, Args... args) {
+            stream << p;
+            read(args...);
+        }
+        explicit operator QByteArray() const { return params; }
+        QByteArray params;
+        QDataStream stream;
+};
+
+struct ArgsWriter {
+        explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
+        template <class T>
+        void write(T &r) {
+            stream >> r;
+        }
+        template <class T, class... Args>
+        void write(T &r, Args... args) {
+            stream >> r;
+            extract(args...);
+        }
+        QDataStream stream;
+};

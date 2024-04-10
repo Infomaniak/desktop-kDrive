@@ -10,10 +10,11 @@
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
     - [xxHash](#xxhash)
-- [Build in Debug mode](#build-in-debug-mode)
-    - [Configuration](#configuration)
-    - [Debugging](#debugging)
-- [Build in Release mode](#build-in-release-mode)
+- [Build in Debug](#build-in-debug)
+    - [Qt Creator](#using-qt-creator)
+        - [Configuration](#configuration)
+        - [Debugging](#debugging)
+- [Build in Release](#build-in-release)
     - [Podman Image](#podman-image)
     - [Building](#building)
 
@@ -25,7 +26,7 @@ If you wish to have the sources elsewhere, feel free to use the path you want.
 ```bash
 cd ~/Projects
 git clone https://github.com/Infomaniak/desktop-kDrive.git
-cd kdrive && git submodule update --init --recursive
+cd desktop-kDrive && git submodule update --init --recursive
 ```
 
 # Installation Requirements
@@ -85,7 +86,7 @@ The OpenSSL Configure will require Perl to be installed first
 cd ~/Projects
 git clone git://git.openssl.org/openssl.git
 cd openssl
-git checkout openssl-3.1
+git checkout tags/openssl-3.2.1
 ./Configure shared
 make
 sudo make install
@@ -99,7 +100,7 @@ Poco installation requires the previous OpenSSL installation to be complete
 cd ~/Projects
 git clone https://github.com/pocoproject/poco.git
 cd poco
-git checkout poco-1.12.5
+git checkout tags/poco-1.13.2-release
 mkdir cmake-build
 cd cmake-build
 cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so
@@ -152,9 +153,11 @@ cmake ..
 sudo cmake --build . --target install
 ```
 
-# Build in Debug mode
+# Build in Debug
 
-## Configuration
+## Using Qt Creator 
+
+### Configuration
 
 Open the kDrive project in your IDE   
 In the project build settings, paste the following lines in the Initial Configuration Batch Edit (replace `<user>`)
@@ -167,19 +170,20 @@ In the project build settings, paste the following lines in the Initial Configur
 -DCMAKE_PREFIX_PATH:STRING=%{Qt:QT_INSTALL_PREFIX}
 -DCMAKE_C_COMPILER:STRING=%{Compiler:Executable:C}
 -DCMAKE_CXX_COMPILER:STRING=%{Compiler:Executable:Cxx}
--DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
--DKDRIVE_THEME_DIR=/home/<user>/Projects/kdrive/infomaniak
--DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/build-kdrive-Desktop_Qt_6_2_3_GCC_64bit-Debug/bin
+-DAPPLICATION_CLIENT_EXECUTABLE=kdrive
+-DKDRIVE_THEME_DIR=/home/<user>/Projects/desktop-kDrive/infomaniak
+-DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_GCC_64bit-Debug/bin
 -DBUILD_TESTING=OFF
 -DWITH_CRASHREPORTER=OFF
 ```
 
-## Debugging
+### Debugging
 
+In order that all libraries are found, you might need to define `LD_LIBRARY_PATH=/usr/local/lib`in your environment variables.
 The configuration and database files are stored in the `~/.config/kDrive` directory.  
 The log files will be generated in the `/tmp/kDrive-logdir` directory.
 
-# Build in Release mode
+# Build in Release
 
 Currently, the release appImage file is generated in a podman container.
 For this part, please replace `[arch]` by either `amd64` or `arm64` depending on your architecture.

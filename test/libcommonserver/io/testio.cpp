@@ -60,7 +60,7 @@ void IoHelperTests::setTempDirectoryPathFunction(std::function<SyncPath(std::err
 }
 
 #ifdef __APPLE__
-void IoHelperTests::setReadAliasFunction(std::function<bool(const SyncPath &path, ItemType &itemType)> f) {
+void IoHelperTests::setReadAliasFunction(std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> f) {
     _readAlias = f;
 };
 #endif
@@ -75,12 +75,23 @@ void IoHelperTests::resetFunctions() {
 
 #ifdef __APPLE__
     // Default Utility::readAlias implementation
-    setReadAliasFunction([](const SyncPath &path, ItemType &itemType) -> bool {
+    setReadAliasFunction([](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
         std::string data;
-        return readAlias(path, data, itemType.targetPath, itemType.ioError);
+        return readAlias(path, data, targetPath, ioError);
     });
 #endif
 }
+
+SyncPath makeVeryLonPath(const SyncPath &rootPath) {
+    const std::string pathSegment(50, 'a');
+    SyncPath path = rootPath;
+    for (int i = 0; i < 1000; ++i) {
+        path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
+    }
+
+    return path;
+}
+
 
 TestIo::TestIo() : CppUnit::TestFixture(), _localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci") {}
 

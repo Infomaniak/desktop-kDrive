@@ -50,6 +50,8 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcClientGui, "gui.clientgui", QtInfoMsg)
 
+const int ClientGui::logsPurgeRate = 7;  // days
+
 ClientGui::ClientGui(AppClient *parent)
     : QObject(),
       _tray(nullptr),
@@ -86,10 +88,12 @@ ClientGui::ClientGui(AppClient *parent)
     connect(_app, &AppClient::driveUpdated, this, &ClientGui::onDriveUpdated);
     connect(_app, &AppClient::driveQuotaUpdated, this, &ClientGui::onDriveQuotaUpdated);
     connect(_app, &AppClient::driveRemoved, this, &ClientGui::onDriveRemoved);
+    connect(_app, &AppClient::driveDeletionFailed, this, &ClientGui::onDriveDeletionFailed);
 
     connect(_app, &AppClient::syncAdded, this, &ClientGui::onSyncAdded);
     connect(_app, &AppClient::syncUpdated, this, &ClientGui::onSyncUpdated);
     connect(_app, &AppClient::syncRemoved, this, &ClientGui::onSyncRemoved);
+    connect(_app, &AppClient::syncDeletionFailed, this, &ClientGui::onSyncDeletionFailed);
     connect(_app, &AppClient::syncProgressInfo, this, &ClientGui::onProgressInfo);
     connect(_app, &AppClient::itemCompleted, this, &ClientGui::itemCompleted);
     connect(_app, &AppClient::vfsConversionCompleted, this, &ClientGui::vfsConversionCompleted);
@@ -467,9 +471,9 @@ void ClientGui::setupSynthesisPopover() {
     _workaroundManualVisibility = true;
 #endif
 
-    qCInfo(lcClientGui) << "Tray menu workarounds:" << "noabouttoshow:" << _workaroundNoAboutToShowUpdate
-                        << "fakedoubleclick:" << _workaroundFakeDoubleClick << "showhide:" << _workaroundShowAndHideTray
-                        << "manualvisibility:" << _workaroundManualVisibility;
+    qCInfo(lcClientGui) << "Tray menu workarounds:"
+                        << "noabouttoshow:" << _workaroundNoAboutToShowUpdate << "fakedoubleclick:" << _workaroundFakeDoubleClick
+                        << "showhide:" << _workaroundShowAndHideTray << "manualvisibility:" << _workaroundManualVisibility;
 
     connect(&_delayedTrayUpdateTimer, &QTimer::timeout, this, &ClientGui::onUpdateSystray);
     _delayedTrayUpdateTimer.setInterval(2 * 1000);
@@ -1185,47 +1189,63 @@ void ClientGui::onRemoveDrive(int driveDbId) {
     }
 
     CustomMessageBox msgBox(QMessageBox::Question,
-                            tr("Do you really want to remove the synchronization of the account <i>%1</i> ?<br>"
+                            tr("Do you really want to remove the synchronizations of the account <i>%1</i> ?<br>"
                                "<b>Note:</b> This will <b>not</b> delete any files.")
                                 .arg(driveInfoMapIt->second.name()),
                             QMessageBox::NoButton);
-    msgBox.addButton(tr("REMOVE SYNCHRONIZATION"), QMessageBox::Yes);
+    msgBox.addButton(tr("REMOVE ALL SYNCHRONIZATIONS"), QMessageBox::Yes);
     msgBox.addButton(tr("CANCEL"), QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
-    int ret = msgBox.exec();
-    if (ret != QDialog::Rejected) {
-        if (ret == QMessageBox::Yes) {
-            try {
-                ExitCode exitCode = GuiRequests::deleteDrive(driveDbId);
-                if (exitCode != ExitCodeOk) {
-                    qCWarning(lcClientGui()) << "Error in Requests::deleteDrive for driveDbId=" << driveDbId;
-                    return;
-                }
-            } catch (std::exception const &) {
-                // Do nothing
+
+    if (msgBox.exec() == QMessageBox::Yes) {
+        emit driveBeingRemoved();  // Lock drive-related GUI actions.
+        try {
+            ExitCode exitCode = GuiRequests::deleteDrive(driveDbId);
+            if (exitCode != ExitCodeOk) {
+                qCWarning(lcClientGui()) << "Error in Requests::deleteDrive for driveDbId=" << driveDbId;
+                onDriveDeletionFailed(driveDbId);
             }
+        } catch (std::exception const &) {
+            onDriveDeletionFailed(driveDbId);
         }
     }
 }
 
-void ClientGui::onDriveRemoved(int driveDbId) {
+void ClientGui::onDriveDeletionFailed(int driveDbId) {
     auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
-    if (driveInfoMapIt != _driveInfoMap.end()) {
-        auto syncInfoMapIt = _syncInfoMap.begin();
-        while (syncInfoMapIt != _syncInfoMap.end()) {
-            // Erase syncs linked
+    assert(driveInfoMapIt != _driveInfoMap.cend());
+
+    // Unlock drive-related GUI actions.
+    driveInfoMapIt->second.setIsBeingDeleted(false);
+
+    emit driveListRefreshed();
+    emit refreshStatusNeeded();
+}
+
+void ClientGui::onDriveRemoved(int driveDbId) {
+    if (auto driveInfoMapIt = _driveInfoMap.find(driveDbId); driveInfoMapIt != _driveInfoMap.end()) {
+        for (auto syncInfoMapIt = _syncInfoMap.begin(); syncInfoMapIt != _syncInfoMap.end();) {
+            // Erase linked synchronizations
             if (syncInfoMapIt->second.driveDbId() == driveDbId) {
                 syncInfoMapIt = _syncInfoMap.erase(syncInfoMapIt);
-                continue;
+            } else {
+                ++syncInfoMapIt;
             }
-            syncInfoMapIt++;
         }
 
         // Erase drive
         driveInfoMapIt = _driveInfoMap.erase(driveInfoMapIt);
+
+        // Handle the case of the current drive being erased
         if (_currentDriveDbId == driveDbId) {
-            // Select next drive if there is one
-            _currentDriveDbId = !_driveInfoMap.empty() ? driveInfoMapIt->first : 0;
+            // Select the next drive if there is one.
+            if (driveInfoMapIt != _driveInfoMap.cend()) {
+                _currentDriveDbId = driveInfoMapIt->first;
+            } else if (_driveInfoMap.cbegin() != _driveInfoMap.cend()) {
+                _currentDriveDbId = _driveInfoMap.cbegin()->first;
+            } else {
+                _currentDriveDbId = 0;
+            }
         }
 
         emit driveListRefreshed();
@@ -1255,11 +1275,20 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
 }
 
 void ClientGui::onRemoveSync(int syncDbId) {
-    ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
+    const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
     if (exitCode != ExitCodeOk) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteSync for syncDbId=" << syncDbId;
-        return;
     }
+}
+
+void ClientGui::onSyncDeletionFailed(int syncDbId) {
+    // Unlock sync GUI actions.
+    auto syncInfoMapIt = _syncInfoMap.find(syncDbId);
+    assert(syncInfoMapIt != _syncInfoMap.cend());
+    syncInfoMapIt->second.setIsBeingDeleted(false);
+
+    emit syncListRefreshed();
+    emit refreshStatusNeeded();
 }
 
 void ClientGui::onSyncRemoved(int syncDbId) {

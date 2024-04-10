@@ -53,7 +53,7 @@
 #define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
 
 #define CONNECTION_TRIALS 3
-#define CHECKCOMMSTATUS_TRIALS 3
+#define CHECKCOMMSTATUS_TRIALS 5
 
 namespace KDC {
 
@@ -157,7 +157,7 @@ AppClient::AppClient(int &argc, char **argv)
 
     if (count == CHECKCOMMSTATUS_TRIALS) {
         QMessageBox msgBox;
-        msgBox.setText(tr("Unable to communicate with application server!"));
+        msgBox.setText(tr("The application server did not respond on time: the client will be restarted."));
         msgBox.exec();
         QTimer::singleShot(0, qApp, SLOT(quit()));
         return;
@@ -329,6 +329,13 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit driveRemoved(driveDbId);
             break;
         }
+        case SIGNAL_NUM_DRIVE_DELETE_FAILED: {
+            int driveDbId;
+            paramsStream >> driveDbId;
+
+            emit driveDeletionFailed(driveDbId);
+            break;
+        }
         case SIGNAL_NUM_SYNC_ADDED: {
             SyncInfo syncInfo;
             paramsStream >> syncInfo;
@@ -386,6 +393,13 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             paramsStream >> syncDbId;
 
             emit vfsConversionCompleted(syncDbId);
+            break;
+        }
+        case SIGNAL_NUM_SYNC_DELETE_FAILED: {
+            int syncDbId;
+            paramsStream >> syncDbId;
+
+            emit syncDeletionFailed(syncDbId);
             break;
         }
         case SIGNAL_NUM_NODE_FOLDER_SIZE_COMPLETED: {
@@ -547,7 +561,7 @@ void AppClient::setupLogging() {
 
         logger->setupTemporaryFolderLogDir();
         if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
-            logger->setLogExpire(std::chrono::hours(24));
+            logger->setLogExpire(std::chrono::hours(ClientGui::logsPurgeRate * 24));  // C++20 offers std::chrono::day.
         } else {
             logger->setLogExpire(std::chrono::hours(0));
         }
