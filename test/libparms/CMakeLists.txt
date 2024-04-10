@@ -1,7 +1,7 @@
 project(testparms)
 
 find_package(SQLite3 3.8.0 REQUIRED)
-find_package(Poco 1.12.5 REQUIRED Foundation Net)
+find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.0 REQUIRED)
 
 set(testparms_NAME ${APPLICATION_NAME}_test_parms)
@@ -32,7 +32,6 @@ set_target_properties(${testparms_NAME} PROPERTIES
 target_link_libraries(${testparms_NAME}
     ${libparms_NAME}
     ${SQLITE3_LIBRARIES}
-    Poco::Foundation Poco::Net
 )
 
 if (WIN32)
@@ -59,4 +58,3 @@ else()
     target_link_libraries(${testparms_NAME}
         "/usr/local/lib/libcppunit.so")
 endif()
-
