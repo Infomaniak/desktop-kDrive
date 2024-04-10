@@ -27,4 +27,5 @@ endif()
 add_subdirectory(libcommonserver)
 add_subdirectory(libparms)
 add_subdirectory(libsyncengine)
+add_subdirectory(server)
 
