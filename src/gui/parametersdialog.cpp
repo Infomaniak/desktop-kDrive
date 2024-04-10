@@ -700,7 +700,7 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory name coincides with the name of another item in the same directory.<br>"
-               "The file/directory has been temporarily blacklisted.");
+               "This item is temporarily blacklisted. Consider removing duplicate items.");
     }
 
     return text;
