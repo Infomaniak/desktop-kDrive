@@ -87,10 +87,10 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shar
     if (dbNodeId) return correspondingNodeDirect(node);
 
     // The node is not in DB => find an ancestor
-    return findFromCommonAncestor(node);
+    return findCorrespondingNodeFromCommonAncestor(node);
 }
 
-std::shared_ptr<Node> OperationProcessor::findFromCommonAncestor(std::shared_ptr<Node> node) {
+std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromCommonAncestor(std::shared_ptr<Node> node) {
     ReplicaSide otherSnapshotSide =
         (node->side() == ReplicaSide::ReplicaSideLocal ? ReplicaSide::ReplicaSideRemote : ReplicaSide::ReplicaSideLocal);
     std::shared_ptr<UpdateTree> otherTree =
@@ -126,10 +126,6 @@ std::shared_ptr<Node> OperationProcessor::findFromCommonAncestor(std::shared_ptr
     NodeId parentNodeId;
     if (!_syncPal->_syncDb->id(otherSnapshotSide, parentDbNodeId, parentNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id for dbNodeId=" << parentDbNodeId);
-        return nullptr;
-    }
-    if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Node not found for dbNodeId = " << parentDbNodeId);
         return nullptr;
     }
 

@@ -33,22 +33,33 @@ class OperationProcessor : public ISyncWorker {
          * Find the corresponding node in other tree.
          * First look in DB.
          * If not found in DB, try to find it based on path in other tree.
-         * @param node a shared pointer to the node in current tree
+         * @param node a shared pointer to the node in current tree.
          * @return a shared pointer to the node in other tree. nullptr il not found.
          */
         std::shared_ptr<Node> correspondingNodeInOtherTree(std::shared_ptr<Node> node);
         /**
          * Find the corresponding node in other tree.
          * Looks in DB only.
-         * @param node a shared pointer to the node in current tree
+         * @param node a shared pointer to the node in current tree.
          * @return a shared pointer to the node in other tree. nullptr il not found.
          */
         std::shared_ptr<Node> correspondingNodeDirect(std::shared_ptr<Node> node);
 
+        /**
+         *
+         * @param a a shared pointer to a node.
+         * @param b a shared pointer to another node.
+         * @return true if node 'a' is a child of 'b'.
+         */
         bool isABelowB(std::shared_ptr<Node> a, std::shared_ptr<Node> b);
 
     private:
-        std::shared_ptr<Node> findFromCommonAncestor(std::shared_ptr<Node> node);
+        /**
+         * Try to find a corresponding node in other tree based on path
+         * @param node a shared pointer to the node in current tree.
+         * @return a shared pointer to the node in other tree. nullptr il not found.
+         */
+        std::shared_ptr<Node> findCorrespondingNodeFromCommonAncestor(std::shared_ptr<Node> node);
 };
 
 }  // namespace KDC
