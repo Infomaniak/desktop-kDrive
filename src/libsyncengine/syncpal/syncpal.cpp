@@ -339,7 +339,7 @@ SyncStep SyncPal::step() const {
 }
 
 ExitCode SyncPal::fileStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const {
-    if (_tmpBlacklistManager && _tmpBlacklistManager->isTmpBlacklisted(side, path)) {
+    if (_tmpBlacklistManager && _tmpBlacklistManager->isTmpBlacklisted(path, side)) {
         if (path == Utility::sharedFolderName()) {
             status = SyncFileStatusSuccess;
         } else {
