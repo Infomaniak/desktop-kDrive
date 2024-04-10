@@ -44,7 +44,11 @@ class OperationProcessor : public ISyncWorker {
          * @return a shared pointer to the node in other tree. nullptr il not found.
          */
         std::shared_ptr<Node> correspondingNodeDirect(std::shared_ptr<Node> node);
+
         bool isABelowB(std::shared_ptr<Node> a, std::shared_ptr<Node> b);
+
+    private:
+        std::shared_ptr<Node> findFromCommonAncestor(std::shared_ptr<Node> node);
 };
 
 }  // namespace KDC
