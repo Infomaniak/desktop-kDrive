@@ -275,14 +275,12 @@ $args += ("'-DCMAKE_PREFIX_PATH=$installPath'")
 $flags = @(
 "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
 "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
-"'-DQTDIR=$QTDIR'",
 "'-DCMAKE_C_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe'",
 "'-DCMAKE_CXX_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe'",
 "'-DAPPLICATION_UPDATE_URL:STRING=https://www.infomaniak.com/drive/update/desktopclient'",
 "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
 "'-DBIN_INSTALL_DIR:PATH=$path'",
 "'-DVFS_DIRECTORY:PATH=$vfsDir'",
-"'-DCMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=/debug /INCREMENTAL'",
 "'-DCRASHREPORTER_SUBMIT_URL:STRING=https://www.infomaniak.com/report/drive/crash'",
 "'-DKDRIVE_THEME_DIR:STRING=$path/infomaniak'",
 "'-DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins'",
@@ -292,6 +290,11 @@ $flags = @(
 "'-DAPPLICATION_NAME:STRING=kDrive'",
 "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
 )
+
+if ($ci)
+{
+    $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
+}
 
 $args += $flags
 
@@ -312,14 +315,6 @@ Invoke-Expression $buildCall
 if ($LASTEXITCODE -ne 0)
 {
 	Write-Host "CMake failed to build the source files. Aborting." -f Red
-	exit $LASTEXITCODE
-}
-
-# The CI tester will exit before creating and signing the package.
-# This implementation is temporary, and will be replaced with the testing implementation.
-
-if ($ci)
-{
 	exit $LASTEXITCODE
 }
 
@@ -367,6 +362,12 @@ $binaries = @(
 "kDrive_crash_reporter.exe"
 )
 
+$testers = @(
+"kDrive_test_common.exe",
+"kDrive_test_parms.exe",
+"kDrive_test_syncengine.exe"
+)
+
 $dependencies = @(
 "$QTDIR/bin/Qt6Core.dll",
 "$QTDIR/bin/Qt6Gui.dll",
@@ -408,6 +409,15 @@ Write-Host "Copying dependencies to the folder $archivePath"
 foreach ($file in $dependencies)
 {
 	Copy-Item -Path $file -Destination "$archivePath"
+}
+
+if ($ci)
+{
+    foreach ($file in $testers)
+    {
+        Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
+    }
+	exit $LASTEXITCODE
 }
 
 # Move each executable to the bin folder and sign them
