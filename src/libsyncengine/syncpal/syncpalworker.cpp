@@ -498,16 +498,15 @@ void SyncPalWorker::unpauseAllWorkers(std::shared_ptr<ISyncWorker> workers[2]) {
 
 bool SyncPalWorker::resetVfsFilesStatus() {
     bool ok = true;
-    std::error_code ec;
     try {
-        for (auto dirIt = std::filesystem::recursive_directory_iterator(
-                 _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
-             dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (ec) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in resetVfsFilesStatus " << ec.message().c_str());
-                continue;
-            }
-
+        std::error_code ec;
+        auto dirIt = std::filesystem::recursive_directory_iterator(
+            _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
+        if (ec) {
+            LOGW_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
+            return false;
+        }
+        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {
@@ -519,7 +518,7 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             }
 #endif
 
-            SyncPath absolutePath = dirIt->path();
+            const SyncPath absolutePath = dirIt->path();
 
             // Check if the directory entry is managed
             bool isManaged;
@@ -607,10 +606,10 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_SYNCPAL_WARN(_logger, "Error catched in SyncPalWorker::resetVfsFilesStatus: " << e.code() << " - " << e.what());
+        LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus: " << e.code() << " - " << e.what());
         ok = false;
     } catch (...) {
-        LOG_SYNCPAL_WARN(_logger, "Error catched in SyncPalWorker::resetVfsFilesStatus");
+        LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus");
         ok = false;
     }
 
