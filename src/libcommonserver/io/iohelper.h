@@ -250,6 +250,15 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
         */
 
+        //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
+        /*!
+          \param sourcePath is the file system path of the item to copy.
+          \param destinationPath is the file system path of the location to copy the item to.
+          \param ioError holds the error associated to a failure of the underlying OS API call, if any.
+          \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+
         static bool getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
                                          DirectoryIterator &iterator) noexcept;
 #ifdef __APPLE__
