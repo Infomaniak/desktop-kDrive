@@ -3292,7 +3292,7 @@ bool ParmsDb::selectLastServerSelfRestartTime(int64_t &lastServerRestartTime) {
     const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_SELF_RESTARTER_REQUEST_ID));
-    bool found;
+    bool found = false;
     if (!queryNext(SELECT_SELF_RESTARTER_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_SELF_RESTARTER_REQUEST_ID);
         return false;
@@ -3311,7 +3311,7 @@ bool ParmsDb::selectLastClientSelfRestartTime(int64_t &lastClientRestartTime) {
     const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_SELF_RESTARTER_REQUEST_ID));
-    bool found;
+    bool found = false;
     if (!queryNext(SELECT_SELF_RESTARTER_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_SELF_RESTARTER_REQUEST_ID);
         return false;
