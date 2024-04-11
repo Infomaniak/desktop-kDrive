@@ -7,6 +7,7 @@ find_package(log4cplus 2.1.0 REQUIRED)
 set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 
 set(testcommon_SRCS
+    ../test.cpp
     test.cpp
     # Utility
     utility/testutility.h utility/testutility.cpp

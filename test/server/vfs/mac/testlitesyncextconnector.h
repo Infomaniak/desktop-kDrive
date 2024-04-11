@@ -18,18 +18,26 @@
 
 #include "testincludes.h"
 
-#include "utility/testutility.h"
-#include "log/testlog.h"
-#include "db/testdb.h"
-#include "io/testio.h"
+using namespace CppUnit;
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
-}  // namespace KDC
 
-int main(int, char **) {
-    return runTestSuite("_kDriveTestCommon.log");
-}
+class TestLiteSyncExtConnector : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestLiteSyncExtConnector);
+#ifdef __APPLE__
+        CPPUNIT_TEST(testGetVfsStatus);
+#endif
+        CPPUNIT_TEST_SUITE_END();
+
+    public:
+        TestLiteSyncExtConnector();
+        void setUp(void);
+        void tearDown(void);
+
+    protected:
+#ifdef __APPLE__
+        void testGetVfsStatus(void);
+#endif
+};
+
+}  // namespace KDC
