@@ -207,4 +207,11 @@ void TestUtility::testFormatStdError() {
     CPPUNIT_ASSERT(Utility::formatStdError(path, ec) == L"path='A/AA', err='Undefined error: 0'");
 #endif
 }
+
+void TestUtility::testNormalizedSyncPath() {
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)") == SyncPath("a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)") == SyncPath("/a/b/c"));
+}
 }  // namespace KDC
