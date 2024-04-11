@@ -2796,14 +2796,14 @@ void AppServer::setupProxy() {
     Proxy::instance(ParametersCache::instance()->parameters().proxyConfig());
 }
 
-bool AppServer::serverCrashedRecently(int second) {
+bool AppServer::serverCrashedRecently(int seconds) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     int64_t lastServerCrash;
     KDC::ParmsDb::instance()->selectLastServerSelfRestartTime(lastServerCrash);
     const auto diff = nowSeconds - lastServerCrash;
-    if (diff > second) {
+    if (diff > seconds) {
         return false;
     } else {
         LOG_WARN(_logger, "Server crashed recently: " << diff << " seconds ago");
@@ -2811,14 +2811,14 @@ bool AppServer::serverCrashedRecently(int second) {
     }
 }
 
-bool AppServer::clientCrashedRecently(int second) {
+bool AppServer::clientCrashedRecently(int seconds) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     int64_t lastClientCrash = 0;
     KDC::ParmsDb::instance()->selectLastClientSelfRestartTime(lastClientCrash);
     const auto diff = nowSeconds - lastClientCrash;
-    if (diff > second) {
+    if (diff > seconds) {
         return false;
     } else {
         LOG_WARN(_logger, "Client crashed recently: " << diff << " seconds ago");

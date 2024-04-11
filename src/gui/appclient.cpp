@@ -481,12 +481,13 @@ void AppClient::onQuit() {
 }
 
 void AppClient::onServerDisconnected() {
+  static const auto msg = tr("The server got disconnected. Restarting the server and closing.");
+  qCCritical(lcAppClient) << msg;
+  
 #if NDEBUG
-    qCCritical(lcAppClient) << "Server disconnected | Closing client";
     startServerAndDie(true);
 
 #else
-    auto msg = tr("The server has disconnected | Closing client");
     displayHelpText(msg);
     QTimer::singleShot(0, qApp, SLOT(quit()));
 #endif

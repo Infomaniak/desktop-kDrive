@@ -27,4 +27,7 @@ endif()
 add_subdirectory(libcommonserver)
 add_subdirectory(libparms)
 add_subdirectory(libsyncengine)
+if (APPLE)
+add_subdirectory(server) # Only implemented on MacOSX for now.
+endif()
 
