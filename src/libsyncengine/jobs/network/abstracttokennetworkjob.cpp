@@ -299,11 +299,8 @@ std::string AbstractTokenNetworkJob::getUrl() {
 }
 
 bool AbstractTokenNetworkJob::handleResponse(std::istream &is) {
-    if (_returnJson) {
-        return handleJsonResponse(is);
-    } else {
-        return handleOctetStreamResponse(is);
-    }
+    if (_returnJson) return handleJsonResponse(is);
+    return handleOctetStreamResponse(is);
 }
 
 bool AbstractTokenNetworkJob::handleJsonResponse(std::istream &is) {

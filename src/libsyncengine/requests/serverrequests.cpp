@@ -875,24 +875,49 @@ ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
 }
 
 bool ServerRequests::isDisplayableError(const Error &error) {
-    return ((error.exitCode() != ExitCodeNetworkError                           // Not ExitCodeNetworkError except
-             || error.exitCause() == ExitCauseNetworkTimeout                    //      ExitCauseNetworkTimeout
-             || error.exitCause() == ExitCauseSocketsDefuncted)                 //      ExitCauseSocketsDefuncted
-            && error.exitCode() != ExitCodeInconsistencyError                   // Not ExitCodeInconsistencyError
-            && (error.exitCode() != ExitCodeDataError                           // Not ExitCodeDataError except
-                || error.exitCause() == ExitCauseMigrationError                 //      ExitCauseMigrationError
-                || error.exitCause() == ExitCauseMigrationProxyNotImplemented)  //      ExitCauseMigrationProxyNotImplemented
-            && (error.exitCode() != ExitCodeBackError                           // Not ExitCodeBackError except
-                || error.exitCause() == ExitCauseDriveMaintenance               //      ExitCauseDriveMaintenance
-                || error.exitCause() == ExitCauseDriveNotRenew                  //      ExitCauseDriveNotRenew
-                || error.exitCause() == ExitCauseDriveAccessError               //      ExitCauseDriveAccessError
-                || error.exitCause() == ExitCauseHttpErrForbidden               //      ExitCauseHttpErrForbidden
-                || error.exitCause() == ExitCauseApiErr                         //      ExitCauseApiErr
-                || error.exitCause() == ExitCauseFileTooBig                     //      ExitCauseFileTooBig
-                || error.exitCause() == ExitCauseNotFound)                      //      ExitCauseNotFound
-            && (error.exitCode() != ExitCodeUnknown                             // Not ExitCodeUnknown except all but
-                || (error.inconsistencyType() != InconsistencyTypePathLength    //      InconsistencyTypePathLength
-                    && error.cancelType() != CancelTypeAlreadyExistRemote)));   //      CancelTypeAlreadyExistRemote
+    switch (error.exitCode()) {
+        case ExitCodeNetworkError: {
+            switch (error.exitCause()) {
+                case ExitCauseNetworkTimeout:
+                case ExitCauseSocketsDefuncted:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        case ExitCodeInconsistencyError: {
+            return false;
+        }
+        case ExitCodeDataError: {
+            switch (error.exitCause()) {
+                case ExitCauseMigrationError:
+                case ExitCauseMigrationProxyNotImplemented:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        case ExitCodeBackError: {
+            switch (error.exitCause()) {
+                case ExitCauseDriveMaintenance:
+                case ExitCauseDriveNotRenew:
+                case ExitCauseDriveAccessError:
+                case ExitCauseHttpErrForbidden:
+                case ExitCauseApiErr:
+                case ExitCauseFileTooBig:
+                case ExitCauseNotFound:
+                case ExitCauseQuotaExceeded:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        case ExitCodeUnknown: {
+            return error.inconsistencyType() != InconsistencyTypePathLength && error.cancelType() != CancelTypeAlreadyExistRemote;
+        }
+        default:
+            return true;
+    }
 }
 
 bool ServerRequests::isAutoResolvedError(const Error &error) {

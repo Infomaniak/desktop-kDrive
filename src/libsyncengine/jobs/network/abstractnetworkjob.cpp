@@ -36,7 +36,6 @@
 #include <Poco/Error.h>
 
 #include <iostream>  // std::ios, std::istream, std::cout, std::cerr
-#include <fstream>   // std::filebuf
 #include <functional>
 
 #define ABSTRACTNETWORKJOB_NEW_ERROR_MSG "Failed to create AbstractNetworkJob instance!"
@@ -491,7 +490,8 @@ bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
     return receiveOk;
 }
 
-bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &session, const std::string &msg, const UniqueId jobId, int err /*= 0*/, const std::string &errMsg /*= std::string()*/) {
+bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &session, const std::string &msg, const UniqueId jobId,
+                                            int err /*= 0*/, const std::string &errMsg /*= std::string()*/) {
     const std::lock_guard<std::mutex> lock(_mutexSession);
     session.reset();
     _session = nullptr;
@@ -524,10 +524,8 @@ bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &sessi
 bool AbstractNetworkJob::ioOrLogicalErrorOccurred(std::ios &stream) {
     bool res = (stream.fail() || stream.bad()) && !stream.eof();
     if (res) {
-        LOG_DEBUG(_logger, "sendRequest failed for job " << jobId()
-                                                         << " - stream fail=" << stream.fail()
-                                                         << " - stream bad=" << stream.bad()
-                                                         << " - stream eof=" << stream.eof());
+        LOG_DEBUG(_logger, "sendRequest failed for job " << jobId() << " - stream fail=" << stream.fail()
+                                                         << " - stream bad=" << stream.bad() << " - stream eof=" << stream.eof());
     }
     return res;
 }
