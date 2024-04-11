@@ -140,95 +140,6 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
     }
 }
 
-IoHelper::DirectoryIterator::DirectoryIterator(SyncPath directoryPath, bool recursive, IoError &ioError, DirectoryOptions option)
-    : _recursive(recursive), _directoryPath(directoryPath) {
-    std::error_code ec;
-
-    _skipPermissionDenied = (option == DirectoryOptions::skip_permission_denied);
-    _dirIterator = std::filesystem::begin(std::filesystem::recursive_directory_iterator(directoryPath, option, ec));
-    ioError = stdError2ioError(ec);
-}
-
-
-bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
-    std::error_code ec;
-    if (_invalid) {
-        ioError = IoErrorInvalidDirectoryIterator;
-        return _isExpectedError(ioError);
-    }
-
-    if (_directoryPath == "") {
-        ioError = IoErrorInvalidArgument;
-        return _isExpectedError(ioError);
-    }
-
-    if (_dirIterator == std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
-        ioError = IoErrorEndOfDirectory;
-        return _isExpectedError(ioError);
-    }
-
-    if (!_firstElement) {
-        if (!_recursive) {
-            _dirIterator.disable_recursion_pending();
-        }
-        _dirIterator.increment(ec);
-        ioError = stdError2ioError(ec);
-        if (ioError != IoErrorSuccess) {
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
-                ioError = IoErrorInvalidDirectoryIterator;
-                _invalid = true;
-            }
-
-            return _isExpectedError(ioError);
-        }
-    } else {
-        _firstElement = false;
-    }
-
-    if (_dirIterator != std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
-        ioError = stdError2ioError(ec);
-        if (ioError != IoErrorSuccess) {
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
-                ioError = IoErrorInvalidDirectoryIterator;
-                _invalid = true;
-            }
-            return _isExpectedError(ioError);
-        }
-
-#ifdef _WIN32
-        // skip_permission_denied doesn't work on Windows
-        if (_skipPermissionDenied) {
-            bool readRight = false;
-            bool writeRight = false;
-            bool execRight = false;
-            bool exists = false;
-            IoHelper::getRights(_dirIterator->path(), readRight, writeRight, execRight, exists);
-            if (!exists || !readRight || !writeRight || !execRight) {
-                return next(nextEntry, ioError);
-            }
-
-            try {
-                bool dummy = _dirIterator->exists();
-                nextEntry = *_dirIterator;
-                return true;
-            } catch (std::filesystem::filesystem_error &) {
-                _dirIterator.disable_recursion_pending();
-                return next(nextEntry, ioError);
-            }
-        }
-#endif
-        nextEntry = *_dirIterator;
-        return true;
-    } else {
-        ioError = IoErrorEndOfDirectory;
-        return _isExpectedError(ioError);
-    }
-}
-
-void IoHelper::DirectoryIterator::disableRecursionPending() {
-    _dirIterator.disable_recursion_pending();
-}
-
 bool IoHelper::_isExpectedError(IoError ioError) noexcept {
     return (ioError == IoErrorNoSuchFileOrDirectory) || (ioError == IoErrorAccessDenied);
 }
@@ -614,4 +525,98 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, I
 
     return ioError == IoErrorSuccess;
 }
+
+
+// DirectoryIterator
+
+DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError, DirectoryOptions option)
+    : _recursive(recursive), _directoryPath(directoryPath) {
+    std::error_code ec;
+
+    _skipPermissionDenied = (option == DirectoryOptions::skip_permission_denied);
+    _dirIterator = std::filesystem::begin(std::filesystem::recursive_directory_iterator(directoryPath, option, ec));
+    ioError = IoHelper::stdError2ioError(ec);
+}
+
+
+bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
+    std::error_code ec;
+    if (_invalid) {
+        ioError = IoErrorInvalidDirectoryIterator;
+        return IoHelper::_isExpectedError(ioError);
+    }
+
+    if (_directoryPath == "") {
+        ioError = IoErrorInvalidArgument;
+        return IoHelper::_isExpectedError(ioError);
+    }
+
+    if (_dirIterator == std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
+        ioError = IoErrorEndOfDirectory;
+        return IoHelper::_isExpectedError(ioError);
+    }
+
+    if (!_firstElement) {
+        if (!_recursive) {
+            _dirIterator.disable_recursion_pending();
+        }
+        _dirIterator.increment(ec);
+        ioError = IoHelper::stdError2ioError(ec);
+        if (ioError != IoErrorSuccess) {
+            if (ioError == IoErrorNoSuchFileOrDirectory) {
+                ioError = IoErrorInvalidDirectoryIterator;
+                _invalid = true;
+            }
+
+            return IoHelper::_isExpectedError(ioError);
+        }
+    } else {
+        _firstElement = false;
+    }
+
+    if (_dirIterator != std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
+        ioError = IoHelper::stdError2ioError(ec);
+        if (ioError != IoErrorSuccess) {
+            if (ioError == IoErrorNoSuchFileOrDirectory) {
+                ioError = IoErrorInvalidDirectoryIterator;
+                _invalid = true;
+            }
+            return IoHelper::_isExpectedError(ioError);
+        }
+
+#ifdef _WIN32
+        // skip_permission_denied doesn't work on Windows
+        if (_skipPermissionDenied) {
+            bool readRight = false;
+            bool writeRight = false;
+            bool execRight = false;
+            bool exists = false;
+            IoHelper::getRights(_dirIterator->path(), readRight, writeRight, execRight, exists);
+            if (!exists || !readRight || !writeRight || !execRight) {
+                return next(nextEntry, ioError);
+            }
+
+            try {
+                bool dummy = _dirIterator->exists();
+                (void)dummy;
+                nextEntry = *_dirIterator;
+                return true;
+            } catch (std::filesystem::filesystem_error &) {
+                _dirIterator.disable_recursion_pending();
+                return next(nextEntry, ioError);
+            }
+        }
+#endif
+        nextEntry = *_dirIterator;
+        return true;
+    } else {
+        ioError = IoErrorEndOfDirectory;
+        return IoHelper::_isExpectedError(ioError);
+    }
+}
+
+void DirectoryIterator::disableRecursionPending() {
+    _dirIterator.disable_recursion_pending();
+}
+
 }  // namespace KDC

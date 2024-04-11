@@ -37,7 +37,7 @@ void TestIo::testCheckDirectoryIteratorNonExistingPath() {
     // Check that the directory iterator returns an error when the path does not exist
     {
         IoError error;
-        const IoHelper::DirectoryIterator it("C:\\nonexistingpath", false, error);
+        const DirectoryIterator it("C:\\nonexistingpath", false, error);
 
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, error);
     }
@@ -45,7 +45,7 @@ void TestIo::testCheckDirectoryIteratorNonExistingPath() {
     // Check that the directory iterator returns an error when the path syntax is invalid
     {
         IoError error;
-        const IoHelper::DirectoryIterator it("C:\\nonexistingpath\\*\\", false, error);
+        const DirectoryIterator it("C:\\nonexistingpath\\*\\", false, error);
 
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, error);
     }
@@ -61,7 +61,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 
         IoError error;
 
-        IoHelper::DirectoryIterator it(path, false, error);
+        DirectoryIterator it(path, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
@@ -74,7 +74,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         const SyncPath directoryWithOneFile = _localTestDirPath / "test_dir_iterator/oneFile_dir";
 
         IoError error;
-        IoHelper::DirectoryIterator it(directoryWithOneFile, false, error);
+        DirectoryIterator it(directoryWithOneFile, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
@@ -92,7 +92,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
     {
         const SyncPath directoryWithOneChildDirectory = _localTestDirPath / "test_dir_iterator/oneDir_dir";
         IoError error;
-        IoHelper::DirectoryIterator it(directoryWithOneChildDirectory, false, error);
+        DirectoryIterator it(directoryWithOneChildDirectory, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
@@ -111,7 +111,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         const SyncPath directoryWithMultipleSubDirectories = _localTestDirPath / "test_dir_iterator/recursive_dir";
 
         IoError error;
-        IoHelper::DirectoryIterator it(directoryWithMultipleSubDirectories, false, error);
+        DirectoryIterator it(directoryWithMultipleSubDirectories, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
@@ -129,7 +129,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         const SyncPath directoryWithMultipleSubDirectories = _localTestDirPath / "test_dir_iterator/recursive_dir";
 
         IoError error;
-        IoHelper::DirectoryIterator it(directoryWithMultipleSubDirectories, true, error);
+        DirectoryIterator it(directoryWithMultipleSubDirectories, true, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
@@ -149,7 +149,7 @@ void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
         const SyncPath oneFileDirectory = _localTestDirPath / "test_dir_iterator/oneFile_dir";
 
         IoError error;
-        IoHelper::DirectoryIterator it(oneFileDirectory, false, error);
+        DirectoryIterator it(oneFileDirectory, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         // Read the only file in the directory
@@ -180,7 +180,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
                                  ec);
     {
         IoError ioError = IoErrorSuccess;
-        IoHelper::DirectoryIterator it(path, false, ioError);
+        DirectoryIterator it(path, false, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         DirectoryEntry entry;
@@ -192,7 +192,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     // Check that the directory iterator skip directory with no permission when skip_permission_denied is true
     {
         IoError ioError = IoErrorSuccess;
-        IoHelper::DirectoryIterator it(path, false, ioError, DirectoryOptions::skip_permission_denied);
+        DirectoryIterator it(path, false, ioError, DirectoryOptions::skip_permission_denied);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         DirectoryEntry entry;
@@ -217,7 +217,7 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
         std::filesystem::create_directories(subDir);
 
         IoError ioError = IoErrorSuccess;
-        IoHelper::DirectoryIterator it(path, true, ioError);
+        DirectoryIterator it(path, true, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         DirectoryEntry entry;

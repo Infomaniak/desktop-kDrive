@@ -25,32 +25,33 @@ namespace KDC {
 
 struct FileStat;
 
-struct IoHelper {
+class DirectoryIterator {
     public:
-        class DirectoryIterator {
-            public:
-                DirectoryIterator(SyncPath directoryPath, bool recursive, IoError &ioError,
-                                  DirectoryOptions option = DirectoryOptions::none);
-                DirectoryIterator(){};
+        DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError,
+                          DirectoryOptions option = DirectoryOptions::none);
 
-                //! Get the next directory entry.
-                /*!
-                  \param nextEntry is set with the next directory entry.
-                  \param ioError holds the error returned when an underlying OS API call fails (e.g., IoErrorEndOfDirectory, IoErrorInvalidDirectoryiterrator).
-                  \return true if no unexpected error occurred, false otherwise.
-                    See _isExpectedError for the definition of an expected error.
-                */
-                bool next(DirectoryEntry &nextEntry, IoError &ioError);
-                void disableRecursionPending();
+        DirectoryIterator() = default;
+        //! Get the next directory entry.
+        /*!
+          \param nextEntry is set with the next directory entry.
+          \param ioError holds the error returned when an underlying OS API call fails (e.g., IoErrorEndOfDirectory,
+          IoErrorInvalidDirectoryiterrator). \return true if no unexpected error occurred, false otherwise. See _isExpectedError
+          for the definition of an expected error.
+        */
+        bool next(DirectoryEntry &nextEntry, IoError &ioError);
+        void disableRecursionPending();
 
-            private:
-                bool _recursive = false;
-                bool _skipPermissionDenied = false;
-                bool _firstElement = true;
-                bool _invalid = false;
-                SyncPath _directoryPath = "";
-                std::filesystem::recursive_directory_iterator _dirIterator;
-        };
+    protected:
+        bool _recursive = false;
+        bool _skipPermissionDenied = false;
+        bool _firstElement = true;
+        bool _invalid = false;
+        SyncPath _directoryPath = "";
+        std::filesystem::recursive_directory_iterator _dirIterator;
+};
+
+struct IoHelper {
+        
 
     public:
         IoHelper(){};
@@ -304,6 +305,8 @@ struct IoHelper {
         static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept;
 
     protected:
+        friend class DirectoryIterator;
+
         // These functions default to the std::filesystem functions.
         // They can be modified in tests.
         static std::function<bool(const SyncPath &path, std::error_code &ec)> _isDirectory;
