@@ -41,7 +41,7 @@ class DirectoryIterator {
         bool next(DirectoryEntry &nextEntry, IoError &ioError);
         void disableRecursionPending();
 
-    protected:
+    private:
         bool _recursive = false;
         bool _skipPermissionDenied = false;
         bool _firstElement = true;
