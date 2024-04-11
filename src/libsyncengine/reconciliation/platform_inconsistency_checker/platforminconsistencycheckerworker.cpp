@@ -102,10 +102,10 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
                                                        const InconsistencyType inconsistencyType) {
     // Local node needs to be excluded before call to blacklistTemporarily because
     // we need the DB entry to retrieve the corresponding node
-    auto localNode = correspondingNodeDirect(remoteNode);
+    const auto localNode = correspondingNodeDirect(remoteNode);
     if (localNode) {
         // Also exclude local node by adding "conflict" suffix
-        SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
+        const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
         LOGW_SYNCPAL_INFO(_logger, L"Excluding local item \"" << Path2WStr(absoluteLocalPath).c_str() << L"\" too.");
         PlatformInconsistencyCheckerUtility::renameLocaLFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
     }
@@ -138,7 +138,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
 }
 
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
-    SyncPath relativePath = remoteNode->getPath();
+    const SyncPath relativePath = remoteNode->getPath();
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(remoteNode->name())) {
         blacklistNode(remoteNode, relativePath, InconsistencyTypeForbiddenChar);
         return false;
