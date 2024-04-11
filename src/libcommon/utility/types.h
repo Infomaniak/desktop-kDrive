@@ -346,7 +346,9 @@ typedef enum {
     IoErrorNoSuchFileOrDirectory,
     IoErrorResultOutOfRange,
     IoErrorUnknown,
-    IoErrorEndOfDirectory
+    IoErrorEndOfDirectory,
+    IoErrorInvalidDirectoryIterator  // The directory iterator is out of date with the actual directory (Can be thrown when
+                                     // the directory is modified during iteration)
 } IoError;
 
 struct ItemType {

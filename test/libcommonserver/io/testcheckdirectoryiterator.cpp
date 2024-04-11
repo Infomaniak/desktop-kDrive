@@ -30,6 +30,7 @@ void TestIo::testCheckDirectoryIterator() {
     testCheckDirectoryIteratorExistingPath();
     testCheckDirectoryIteratotNextAfterEndOfDir();
     testCheckDirectoryIteratorPermission();
+    testCheckDirectoryIteratorUnexpectedDelete();
 }
 
 void TestIo::testCheckDirectoryIteratorNonExistingPath() {
@@ -175,7 +176,8 @@ void TestIo::testCheckDirectoryIteratorPermission() {
 
     // Remove permission to the file
     std::error_code ec;
-    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::_All_write, std::filesystem::perm_options::remove, ec);
+    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::_All_write, std::filesystem::perm_options::remove,
+                                 ec);
     {
         IoError ioError = IoErrorSuccess;
         IoHelper::DirectoryIterator it(path, false, ioError);
@@ -198,8 +200,37 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
     }
     // Restore permission to allow subdir removal
-    std::cout << "restoring permission" << std::endl;
-    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::all, std::filesystem::perm_options::add);
+    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::_All_write, std::filesystem::perm_options::add);
+}
+
+void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
+    // Check that the directory iterator is consistent when a parent directory is deleted
+    {
+        const TemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path.string() + "\\chekDirIt\\subDirDel";
+        std::string subDir = path.string();
+
+        for (int i = 0; i < 5; i++) {
+            subDir += "/subDir" + std::to_string(i);
+        }
+
+        std::filesystem::create_directories(subDir);
+
+        IoError ioError = IoErrorSuccess;
+        IoHelper::DirectoryIterator it(path, true, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+
+        DirectoryEntry entry;
+        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+
+        std::filesystem::remove_all(path);
+
+        for (int i = 0; i < 20; i++) {
+            CPPUNIT_ASSERT_EQUAL(false, it.next(entry, ioError));
+            CPPUNIT_ASSERT_EQUAL(IoError::IoErrorInvalidDirectoryIterator, ioError);
+        }
+    }
 }
 
 

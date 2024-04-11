@@ -131,6 +131,10 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "Result out of range";
         case IoErrorSuccess:
             return "Success";
+        case IoErrorEndOfDirectory:
+            return "End of directory";
+        case IoErrorInvalidDirectoryIterator:
+            return "Invalid directory iterator";
         default:
             return "Unknown error";
     }
@@ -148,14 +152,19 @@ IoHelper::DirectoryIterator::DirectoryIterator(SyncPath directoryPath, bool recu
 
 bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
     std::error_code ec;
+    if (_invalid) {
+        ioError = IoErrorInvalidDirectoryIterator;
+        return _isExpectedError(ioError);
+    }
+
     if (_directoryPath == "") {
         ioError = IoErrorInvalidArgument;
-        return false;
+        return _isExpectedError(ioError);
     }
 
     if (_dirIterator == std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
         ioError = IoErrorEndOfDirectory;
-        return false;
+        return _isExpectedError(ioError);
     }
 
     if (!_firstElement) {
@@ -165,7 +174,12 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioErr
         _dirIterator.increment(ec);
         ioError = stdError2ioError(ec);
         if (ioError != IoErrorSuccess) {
-            return false;
+            if (ioError == IoErrorNoSuchFileOrDirectory) {
+                ioError = IoErrorInvalidDirectoryIterator;
+                _invalid = true;
+            }
+
+            return _isExpectedError(ioError);
         }
     } else {
         _firstElement = false;
@@ -174,7 +188,11 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioErr
     if (_dirIterator != std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
         ioError = stdError2ioError(ec);
         if (ioError != IoErrorSuccess) {
-            return false;
+            if (ioError == IoErrorNoSuchFileOrDirectory) {
+                ioError = IoErrorInvalidDirectoryIterator;
+                _invalid = true;
+            }
+            return _isExpectedError(ioError);
         }
 
 #ifdef _WIN32
@@ -188,7 +206,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioErr
             if (!exists || !readRight || !writeRight || !execRight) {
                 return next(nextEntry, ioError);
             }
-            
+
             try {
                 bool dummy = _dirIterator->exists();
                 nextEntry = *_dirIterator;
@@ -203,7 +221,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioErr
         return true;
     } else {
         ioError = IoErrorEndOfDirectory;
-        return false;
+        return _isExpectedError(ioError);
     }
 }
 

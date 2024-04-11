@@ -33,6 +33,13 @@ struct IoHelper {
                                   DirectoryOptions option = DirectoryOptions::none);
                 DirectoryIterator(){};
 
+                //! Get the next directory entry.
+                /*!
+                  \param nextEntry is set with the next directory entry.
+                  \param ioError holds the error returned when an underlying OS API call fails (e.g., IoErrorEndOfDirectory, IoErrorInvalidDirectoryiterrator).
+                  \return true if no unexpected error occurred, false otherwise.
+                    See _isExpectedError for the definition of an expected error.
+                */
                 bool next(DirectoryEntry &nextEntry, IoError &ioError);
                 void disableRecursionPending();
 
@@ -40,6 +47,7 @@ struct IoHelper {
                 bool _recursive = false;
                 bool _skipPermissionDenied = false;
                 bool _firstElement = true;
+                bool _invalid = false;
                 SyncPath _directoryPath = "";
                 std::filesystem::recursive_directory_iterator _dirIterator;
         };
