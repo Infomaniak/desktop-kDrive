@@ -30,7 +30,7 @@ void TestIo::testCheckDirectoryIterator() {
     testCheckDirectoryIteratorExistingPath();
     testCheckDirectoryIteratotNextAfterEndOfDir();
     //testCheckDirectoryIteratorWithLongPath();
-    //testCheckDirectoryIteratorPermission();
+    testCheckDirectoryIteratorPermission();
 }
 
 void TestIo::testCheckDirectoryIteratorNonExistingPath() {
@@ -55,10 +55,13 @@ void TestIo::testCheckDirectoryIteratorNonExistingPath() {
 void TestIo::testCheckDirectoryIteratorExistingPath() {
     // Check that the directory iterator is valid when the path is an empty directory and return EOF on first call
     {
-        const SyncPath emptyDirectory = _localTestDirPath / "test_dir_iterator/empty_dir";
+        const TemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path / "chekDirIt/empty_dir";
+        std::filesystem::create_directories(path);
 
         IoError error;
-        IoHelper::DirectoryIterator it(emptyDirectory, false, error);
+
+        IoHelper::DirectoryIterator it(path, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
@@ -130,7 +133,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 36; i++) {
             CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
             CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
         }
@@ -143,13 +146,18 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
     // Check that the directory iterator returns an EOF on everycall to next after EOF
     {
-        const SyncPath emptyDirectory = _localTestDirPath / "test_dir_iterator/empty_dir";
+        const SyncPath oneFileDirectory = _localTestDirPath / "test_dir_iterator/oneFile_dir";
 
         IoError error;
-        IoHelper::DirectoryIterator it(emptyDirectory, false, error);
+        IoHelper::DirectoryIterator it(oneFileDirectory, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
+        // Read the only file in the directory
         DirectoryEntry entry;
+
+        CPPUNIT_ASSERT_EQUAL(true , it.next(entry, error));
+
+        //Expecting EOF
         for (int i = 0; i < 3; i++) {
             CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
             CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
@@ -172,9 +180,6 @@ void TestIo::testCheckDirectoryIteratorWithLongPath() {
             std::filesystem::create_directories(longPath);                     
         }
         
-
-    
-
         IoError error;
         IoHelper::DirectoryIterator it(shortPath, true, error);
         std::cout << "error 1: " << IoHelper::ioError2StdString(error) << std::endl;
@@ -191,6 +196,24 @@ void TestIo::testCheckDirectoryIteratorWithLongPath() {
     }
 }
 
+
+void demo_perms(std::filesystem::perms p) {
+    using std::filesystem::perms;
+    auto show = [=](char op, perms perm) { std::cout << (perms::none == (perm & p) ? '-' : op); };
+    std::cout << '\n';
+
+    show('r', perms::owner_read);
+    show('w', perms::owner_write);
+    show('x', perms::owner_exec);
+    show('r', perms::group_read);
+    show('w', perms::group_write);
+    show('x', perms::group_exec);
+    show('r', perms::others_read);
+    show('w', perms::others_write);
+    show('x', perms::others_exec);
+    std::cout << '\n';
+}
+
 void TestIo::testCheckDirectoryIteratorPermission() {
     // Check that the directory iterator show directory with no permission when skip_permission_denied is false
     const TemporaryDirectory temporaryDirectory;
@@ -198,10 +221,16 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     std::filesystem::create_directories(path);
     // create a file in the directory
     const SyncPath testFilePathNoPerm = path / "testFile.txt";
-    std::ofstream(testFilePathNoPerm, std::ios::out);
+    std::ofstream(testFilePathNoPerm, std::ios::out).close();
+    demo_perms(std::filesystem::status(testFilePathNoPerm).permissions());
 
     // Remove permission to the file
-    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::owner_all, std::filesystem::perm_options::remove);
+    std::error_code ec;
+    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::all ,
+                                 std::filesystem::perm_options::remove, ec);
+    std::cout << "error code: " << ec.message() << std::endl;
+
+    demo_perms(std::filesystem::status(testFilePathNoPerm).permissions());
 
     {
         IoError ioError = IoErrorSuccess;
