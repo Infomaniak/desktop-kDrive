@@ -412,16 +412,15 @@ bool VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item,
 }
 
 void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydratedIn) {
-    std::error_code ec;
     try {
-        for (auto dirIt = std::filesystem::recursive_directory_iterator(
-                 QStr2Path(dirPath), std::filesystem::directory_options::skip_permission_denied, ec);
-             dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (ec) {
-                LOG_DEBUG(logger(), "Error in convertDirContentToPlaceholder " << ec.message().c_str());
-                continue;
-            }
-
+        std::error_code ec;
+        auto dirIt = std::filesystem::recursive_directory_iterator(
+            QStr2Path(dirPath), std::filesystem::directory_options::skip_permission_denied, ec);
+        if (ec) {
+            LOGW_WARN(logger(), "Error in convertDirContentToPlaceholder: " << Utility::formatStdError(ec).c_str());
+            return;
+        }
+        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {
@@ -433,7 +432,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             }
 #endif
 
-            SyncPath absolutePath = dirIt->path();
+            const SyncPath absolutePath = dirIt->path();
 
             // Check if the directory entry is managed
             bool isManaged;
@@ -481,9 +480,9 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(logger(), "Error catched in vfs_mac::convertDirContentToPlaceholder: " << e.code() << " - " << e.what());
+        LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder: " << e.code() << " - " << e.what());
     } catch (...) {
-        LOG_WARN(logger(), "Error catched in vfs_mac::convertDirContentToPlaceholder");
+        LOG_WARN(logger(), "Error caught in vfs_mac::convertDirContentToPlaceholder");
     }
 }
 

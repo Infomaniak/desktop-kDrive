@@ -200,7 +200,10 @@ typedef enum {
     InconsistencyTypeReservedName = 0x04,
     InconsistencyTypeNameLength = 0x08,
     InconsistencyTypePathLength = 0x10,
-    InconsistencyTypeNotYetSupportedChar = 0x20  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+    InconsistencyTypeNotYetSupportedChar =
+        0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+    InconsistencyTypeDuplicateNames =
+        0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
 } InconsistencyType;
 
 inline InconsistencyType operator|(InconsistencyType a, InconsistencyType b) {

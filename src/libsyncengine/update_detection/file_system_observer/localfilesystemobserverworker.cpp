@@ -540,7 +540,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
 void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolutePath) {
     LOGW_SYNCPAL_INFO(_logger, L"Access denied on file/directory " << Path2WStr(absolutePath).c_str());
 
-    SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
+    const SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
     bool isWarning = false;
     bool isExcluded = false;
     IoError ioError = IoErrorSuccess;
@@ -602,22 +602,23 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     }
 
     ItemType itemType;
+    constexpr auto formatPath = Utility::formatSyncPath;
 
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getItemType - path=" << Path2WStr(absoluteParentDirPath).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << formatPath(absoluteParentDirPath).c_str());
         setExitCause(ExitCauseFileAccessError);
         return ExitCodeSystemError;
     }
 
     if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
-        LOGW_SYNCPAL_WARN(_logger, L"Sync localpath " << Path2WStr(absoluteParentDirPath).c_str() << L" doesn't exist");
+        LOGW_SYNCPAL_WARN(_logger, L"Sync localpath '" << Path2WStr(absoluteParentDirPath).c_str() << L"' doesn't exist");
         setExitCause(ExitCauseSyncDirDoesntExist);
         return ExitCodeSystemError;
     }
 
     if (itemType.ioError == IoErrorAccessDenied) {
-        LOGW_SYNCPAL_WARN(_logger, L"Sync localpath " << Path2WStr(absoluteParentDirPath).c_str() << L" misses read permission");
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Sync localpath '" << Path2WStr(absoluteParentDirPath).c_str() << L"' misses read permission");
         setExitCause(ExitCauseSyncDirReadError);
         return ExitCodeSystemError;
     }
@@ -629,24 +630,24 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     // Process all files
     try {
         std::error_code ec;
-        for (auto dirIt = std::filesystem::recursive_directory_iterator(
-                 absoluteParentDirPath, std::filesystem::directory_options::skip_permission_denied, ec);
-             dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (ec) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in exploreDir " << ec.message().c_str());
-                continue;
-            }
-
+        auto dirIt = std::filesystem::recursive_directory_iterator(
+            absoluteParentDirPath, std::filesystem::directory_options::skip_permission_denied, ec);
+        if (ec) {
+            LOGW_SYNCPAL_DEBUG(_logger, "Error in exploreDir: " << Utility::formatStdError(ec).c_str());
+            setExitCause(ExitCauseFileAccessError);
+            return ExitCodeSystemError;
+        }
+        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
             if (ParametersCache::instance()->parameters().extendedLog()) {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << Path2WStr(dirIt->path()).c_str() << L"\" found");
+                LOGW_SYNCPAL_DEBUG(_logger, L"Item '" << Path2WStr(dirIt->path()).c_str() << L"' found");
             }
 
             if (stopAsked()) {
                 return ExitCodeOk;
             }
 
-            SyncPath absolutePath = dirIt->path();
-            SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
+            const SyncPath absolutePath = dirIt->path();
+            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
 
             bool toExclude = false;
             bool denyFullControl = false;
@@ -668,24 +669,24 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 // Check if the directory entry is managed
                 bool isManaged = false;
                 IoError ioError = IoErrorSuccess;
+
                 if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, ioError)) {
                     LOGW_SYNCPAL_WARN(_logger,
-                                      L"Error in Utility::checkIfDirEntryIsManaged - path=" << Path2WStr(absolutePath).c_str());
+                                      L"Error in Utility::checkIfDirEntryIsManaged: " << formatPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 } else if (ioError == IoErrorNoSuchFileOrDirectory) {
-                    LOGW_SYNCPAL_DEBUG(_logger,
-                                       L"Directory entry does not exist anymore - path=" << Path2WStr(absolutePath).c_str());
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore: " << formatPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 } else if (ioError == IoErrorAccessDenied) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission - path=" << Path2WStr(absolutePath).c_str());
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission: " << formatPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 }
 
                 if (!isManaged) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed - path=" << Path2WStr(absolutePath).c_str());
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry is not managed: " << formatPath(absolutePath).c_str());
                     toExclude = true;
                 }
             }
@@ -705,7 +706,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 }
                 if (isExcluded) {
                     LOGW_SYNCPAL_INFO(_logger,
-                                      L"Item \"" << Path2WStr(absolutePath).c_str() << L"\" rejected because it's excluded");
+                                      L"Item '" << Path2WStr(absolutePath).c_str() << L"' rejected because it is excluded");
                     toExclude = true;
                 }
             }
@@ -724,15 +725,14 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 }
 
                 if (!exists) {
-                    LOGW_SYNCPAL_DEBUG(_logger,
-                                       L"Directory entry does not exist anymore - path=" << Path2WStr(absolutePath).c_str());
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore - " << formatPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 }
 
                 if (ioError == IoErrorAccessDenied) {
                     LOGW_SYNCPAL_INFO(_logger,
-                                      L"Item \"" << Path2WStr(absolutePath).c_str() << L"\" rejected because access is denied");
+                                      L"Item '" << Path2WStr(absolutePath).c_str() << L"' rejected because access is denied");
                     sendAccessDeniedError(absolutePath);
                     toExclude = true;
                 } else {  // Check access permissions
@@ -742,21 +742,21 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                     bool writePermission = false;
                     bool execPermission = false;
                     if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, exists)) {
-                        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absolutePath).c_str());
+                        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::getRights: " << formatPath(absolutePath).c_str());
                         dirIt.disable_recursion_pending();
                         continue;
                     }
 
                     if (!exists) {
                         LOGW_SYNCPAL_DEBUG(_logger,
-                                           L"Directory entry does not exist anymore - path=" << Path2WStr(absolutePath).c_str());
+                                           L"Directory entry does not exist anymore: " << formatPath(absolutePath).c_str());
                         dirIt.disable_recursion_pending();
                         continue;
                     }
 
                     if (!readPermission || !writePermission || (dirIt->is_directory() && !execPermission)) {
-                        LOGW_SYNCPAL_INFO(
-                            _logger, L"Item \"" << Path2WStr(absolutePath).c_str() << L"\" rejected because access is denied");
+                        LOGW_SYNCPAL_INFO(_logger,
+                                          L"Item '" << Path2WStr(absolutePath).c_str() << L"' rejected because access is denied");
                         sendAccessDeniedError(absolutePath);
                         toExclude = true;
                     }
@@ -767,7 +767,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 if (!denyFullControl) {
                     if (!_syncPal->vfsExclude(
                             absolutePath)) {  // TODO : This class should never set any attribute or change anything on a file
-                        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsExclude for path=" << Path2WStr(absolutePath).c_str());
+                        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsExclude: " << formatPath(absolutePath).c_str());
                     }
                 }
 
@@ -824,11 +824,11 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Error catched in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " - " << e.what());
+                         "Error caught in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " - " << e.what());
         setExitCause(ExitCauseFileAccessError);
         return ExitCodeSystemError;
     } catch (...) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error catched in LocalFileSystemObserverWorker::exploreDir");
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in LocalFileSystemObserverWorker::exploreDir");
         return ExitCodeSystemError;
     }
 
