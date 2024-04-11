@@ -407,7 +407,7 @@ bool Utility::preventSleeping(bool enable) {
 }
 #endif
 
-void Utility::str2hexstr(const std::string str, std::string &hexstr, bool capital) {
+void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capital) {
     hexstr.resize(str.size() * 2);
     const char a = capital ? 'A' - 1 : 'a' - 1;
 
@@ -420,7 +420,7 @@ void Utility::str2hexstr(const std::string str, std::string &hexstr, bool capita
 }
 
 // Convert string of hex numbers to its equivalent char-stream
-void Utility::strhex2str(const std::string hexstr, std::string &str) {
+void Utility::strhex2str(const std::string &hexstr, std::string &str) {
     str.resize((hexstr.size() + 1) / 2);
 
     for (size_t i = 0, j = 0; i < str.size(); i++, j++) {

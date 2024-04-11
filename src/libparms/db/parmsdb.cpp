@@ -500,6 +500,32 @@
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID "select_migration_selectivesync"
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST "SELECT syncDbId, path, type FROM migration_selectivesync;"
 
+
+//
+// self_restarter
+//
+
+#define CREATE_SELF_RESTARTER_TABLE_ID "create_self_restarter"
+#define CREATE_SELF_RESTARTER_TABLE              \
+    "CREATE TABLE IF NOT EXISTS self_restarter(" \
+    "lastClientRestart INTEGER,"                 \
+    "lastServerRestart INTEGER);"
+
+#define INSERT_SELF_RESTARTER_REQUEST_ID "insert_self_restarter"
+#define INSERT_SELF_RESTARTER_REQUEST                                    \
+    "INSERT INTO self_restarter (lastClientRestart, lastServerRestart) " \
+    "VALUES (?1, ?2);"
+
+#define SELECT_SELF_RESTARTER_REQUEST_ID "select_self_restarter"
+#define SELECT_SELF_RESTARTER_REQUEST "SELECT lastClientRestart, lastServerRestart FROM self_restarter;"
+
+#define UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID "update_self_restarter_client_time"
+#define UPDATE_SELF_RESTARTER_CLIENT_REQUEST "UPDATE self_restarter SET lastClientRestart=?1;"
+
+#define UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID "update_self_restarter_server_time"
+#define UPDATE_SELF_RESTARTER_SERVER_REQUEST "UPDATE self_restarter SET lastServerRestart=?1;"
+
+
 namespace KDC {
 
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
@@ -535,10 +561,36 @@ ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version
     LOG_INFO(_logger, "ParmsDb initialization done");
 }
 
-bool ParmsDb::insertDefaultParameters() {
-    const std::lock_guard<std::mutex> lock(_mutex);
+bool ParmsDb::insertDefaultSelfRestarterData() {
+    const std::scoped_lock lock(_mutex);
 
-    bool found;
+    bool found = false;
+    if (!queryNext(SELECT_SELF_RESTARTER_REQUEST_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_SELF_RESTARTER_REQUEST_ID);
+        return false;
+    }
+    if (found) {
+        return true;
+    }
+
+    int errId = 0;
+    std::string error;
+
+    ASSERT(queryResetAndClearBindings(INSERT_SELF_RESTARTER_REQUEST_ID));
+    ASSERT(queryBindValue(INSERT_SELF_RESTARTER_REQUEST_ID, 1, 0));
+    ASSERT(queryBindValue(INSERT_SELF_RESTARTER_REQUEST_ID, 2, 0));
+
+    if (!queryExec(INSERT_SELF_RESTARTER_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << INSERT_SELF_RESTARTER_REQUEST_ID);
+        return false;
+    }
+    return true;
+}
+
+bool ParmsDb::insertDefaultParameters() {
+    const std::scoped_lock lock(_mutex);
+
+    bool found = false;
     if (!queryNext(SELECT_PARAMETERS_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_PARAMETERS_REQUEST_ID);
         return false;
@@ -553,7 +605,7 @@ bool ParmsDb::insertDefaultParameters() {
     proxyConfig.setType(ProxyTypeNone);
     parameters.setProxyConfig(proxyConfig);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     ASSERT(queryResetAndClearBindings(INSERT_PARAMETERS_REQUEST_ID));
@@ -877,6 +929,19 @@ bool ParmsDb::create(bool &retry) {
         return sqlFail(CREATE_ERROR_TABLE_ID, error);
     }
     queryFree(CREATE_ERROR_TABLE_ID);
+
+    // self restarter
+    ASSERT(queryCreate(CREATE_SELF_RESTARTER_TABLE_ID));
+    if (!queryPrepare(CREATE_SELF_RESTARTER_TABLE_ID, CREATE_SELF_RESTARTER_TABLE, false, errId, error)) {
+        queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
+        return sqlFail(CREATE_SELF_RESTARTER_TABLE_ID, error);
+    }
+
+    if (!queryExec(CREATE_SELF_RESTARTER_TABLE_ID, errId, error)) {
+        queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
+        return sqlFail(CREATE_SELF_RESTARTER_TABLE_ID, error);
+    }
+    queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
 
     // Migration old selectivesync table
     ASSERT(queryCreate(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID));
@@ -1227,10 +1292,34 @@ bool ParmsDb::prepare() {
     }
 
     ASSERT(queryCreate(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
-    if (!queryPrepare(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST, false, errId,
-                      error)) {
+	if (!queryPrepare(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST, false, errId, error)) {
         queryFree(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID);
         return sqlFail(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
+    }
+
+    // self restarter
+    ASSERT(queryCreate(SELECT_SELF_RESTARTER_REQUEST_ID));
+    if (!queryPrepare(SELECT_SELF_RESTARTER_REQUEST_ID, SELECT_SELF_RESTARTER_REQUEST, false, errId, error)) {
+        queryFree(SELECT_SELF_RESTARTER_REQUEST_ID);
+        return sqlFail(SELECT_SELF_RESTARTER_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
+    if (!queryPrepare(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, UPDATE_SELF_RESTARTER_SERVER_REQUEST, false, errId, error)) {
+        queryFree(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID);
+        return sqlFail(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
+    if (!queryPrepare(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, UPDATE_SELF_RESTARTER_CLIENT_REQUEST, false, errId, error)) {
+        queryFree(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID);
+        return sqlFail(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(INSERT_SELF_RESTARTER_REQUEST_ID));
+    if (!queryPrepare(INSERT_SELF_RESTARTER_REQUEST_ID, INSERT_SELF_RESTARTER_REQUEST, false, errId, error)) {
+        queryFree(INSERT_SELF_RESTARTER_REQUEST_ID);
+        return sqlFail(INSERT_SELF_RESTARTER_REQUEST_ID, error);
     }
 
     if (!initData()) {
@@ -1308,6 +1397,25 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
         }
         queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
+
+    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.1")) {
+        LOG_DEBUG(_logger, "Upgrade < 3.6.1 DB");
+
+        queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
+
+        ASSERT(queryCreate(CREATE_SELF_RESTARTER_TABLE_ID));
+        if (!queryPrepare(CREATE_SELF_RESTARTER_TABLE_ID, CREATE_SELF_RESTARTER_TABLE, false, errId, error)) {
+            queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
+            return sqlFail(CREATE_SELF_RESTARTER_TABLE_ID, error);
+        }
+
+        if (!queryExec(CREATE_SELF_RESTARTER_TABLE_ID, errId, error)) {
+            queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
+            return sqlFail(CREATE_SELF_RESTARTER_TABLE_ID, error);
+        }
+        queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
+    }
+
     return true;
 }
 
@@ -1329,6 +1437,11 @@ bool ParmsDb::initData() {
         return false;
     }
 
+    if (!insertDefaultSelfRestarterData()) {
+        LOG_WARN(_logger, "Error in insertDefaultSelfRestarterData");
+        return false;
+    }
+
     // Update exclusion templates
     if (!updateExclusionTemplates()) {
         LOG_WARN(_logger, "Error in updateExclusionTemplates");
@@ -1347,7 +1460,7 @@ bool ParmsDb::initData() {
 }
 
 bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1398,7 +1511,7 @@ bool ParmsDb::updateParameters(const Parameters &parameters, bool &found) {
 }
 
 bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_PARAMETERS_REQUEST_ID));
     if (!queryNext(SELECT_PARAMETERS_REQUEST_ID, found)) {
@@ -1506,7 +1619,7 @@ bool ParmsDb::selectParameters(Parameters &parameters, bool &found) {
 }
 
 bool ParmsDb::insertUser(const User &user) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1529,7 +1642,7 @@ bool ParmsDb::insertUser(const User &user) {
 }
 
 bool ParmsDb::updateUser(const User &user, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1558,7 +1671,7 @@ bool ParmsDb::updateUser(const User &user, bool &found) {
 }
 
 bool ParmsDb::deleteUser(int dbId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1580,7 +1693,7 @@ bool ParmsDb::deleteUser(int dbId, bool &found) {
 }
 
 bool ParmsDb::selectUser(int dbId, User &user, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_USER_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_USER_REQUEST_ID, 1, dbId));
@@ -1624,7 +1737,7 @@ bool ParmsDb::selectUser(int dbId, User &user, bool &found) {
 }
 
 bool ParmsDb::selectUserByUserId(int userId, User &user, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_USER_BY_USERID_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_USER_BY_USERID_REQUEST_ID, 1, userId));
@@ -1696,7 +1809,7 @@ bool ParmsDb::selectUserFromDriveDbId(int dbId, User &user, bool &found) {
 }
 
 bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     userList.clear();
 
@@ -1756,7 +1869,7 @@ bool ParmsDb::getNewUserDbId(int &dbId) {
 }
 
 bool ParmsDb::insertAccount(const Account &account) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1774,7 +1887,7 @@ bool ParmsDb::insertAccount(const Account &account) {
 }
 
 bool ParmsDb::updateAccount(const Account &account, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1798,7 +1911,7 @@ bool ParmsDb::updateAccount(const Account &account, bool &found) {
 }
 
 bool ParmsDb::deleteAccount(int dbId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1820,7 +1933,7 @@ bool ParmsDb::deleteAccount(int dbId, bool &found) {
 }
 
 bool ParmsDb::selectAccount(int dbId, Account &account, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_ACCOUNT_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_ACCOUNT_REQUEST_ID, 1, dbId));
@@ -1847,7 +1960,7 @@ bool ParmsDb::selectAccount(int dbId, Account &account, bool &found) {
 }
 
 bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     accountList.clear();
 
@@ -1878,7 +1991,7 @@ bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
 }
 
 bool ParmsDb::selectAllAccounts(int userDbId, std::vector<Account> &accountList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     accountList.clear();
 
@@ -1945,7 +2058,7 @@ bool ParmsDb::getNewAccountDbId(int &dbId) {
 }
 
 bool ParmsDb::insertDrive(const Drive &drive) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1968,7 +2081,7 @@ bool ParmsDb::insertDrive(const Drive &drive) {
 }
 
 bool ParmsDb::updateDrive(const Drive &drive, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -1997,7 +2110,7 @@ bool ParmsDb::updateDrive(const Drive &drive, bool &found) {
 }
 
 bool ParmsDb::deleteDrive(int dbId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2019,7 +2132,7 @@ bool ParmsDb::deleteDrive(int dbId, bool &found) {
 }
 
 bool ParmsDb::selectDrive(int dbId, Drive &drive, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_DRIVE_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_DRIVE_REQUEST_ID, 1, dbId));
@@ -2060,7 +2173,7 @@ bool ParmsDb::selectDrive(int dbId, Drive &drive, bool &found) {
 }
 
 bool ParmsDb::selectDriveByDriveId(int driveId, Drive &drive, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_DRIVE_BY_DRIVEID_REQUEST_ID, 1, driveId));
@@ -2101,7 +2214,7 @@ bool ParmsDb::selectDriveByDriveId(int driveId, Drive &drive, bool &found) {
 }
 
 bool ParmsDb::selectAllDrives(std::vector<Drive> &driveList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     driveList.clear();
 
@@ -2143,7 +2256,7 @@ bool ParmsDb::selectAllDrives(std::vector<Drive> &driveList) {
 }
 
 bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     driveList.clear();
 
@@ -2221,7 +2334,7 @@ bool ParmsDb::getNewDriveDbId(int &dbId) {
 }
 
 bool ParmsDb::insertSync(const Sync &sync) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string listingCursor;
     int64_t listingCursorTimestamp;
@@ -2255,7 +2368,7 @@ bool ParmsDb::insertSync(const Sync &sync) {
 }
 
 bool ParmsDb::updateSync(const Sync &sync, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string listingCursor;
     int64_t listingCursorTimestamp;
@@ -2294,7 +2407,7 @@ bool ParmsDb::updateSync(const Sync &sync, bool &found) {
 }
 
 bool ParmsDb::setSyncPaused(int dbId, bool value, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2317,7 +2430,7 @@ bool ParmsDb::setSyncPaused(int dbId, bool value, bool &found) {
 }
 
 bool ParmsDb::setSyncHasFullyCompleted(int dbId, bool value, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2340,7 +2453,7 @@ bool ParmsDb::setSyncHasFullyCompleted(int dbId, bool value, bool &found) {
 }
 
 bool ParmsDb::deleteSync(int dbId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2362,7 +2475,7 @@ bool ParmsDb::deleteSync(int dbId, bool &found) {
 }
 
 bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_SYNC_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_SYNC_REQUEST_ID, 1, dbId));
@@ -2424,7 +2537,7 @@ bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
 }
 
 bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     syncList.clear();
 
@@ -2479,7 +2592,7 @@ bool ParmsDb::selectAllSyncs(std::vector<Sync> &syncList) {
 }
 
 bool ParmsDb::selectAllSyncs(int driveDbId, std::vector<Sync> &syncList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     syncList.clear();
 
@@ -2552,7 +2665,7 @@ bool ParmsDb::getNewSyncDbId(int &dbId) {
 }
 
 bool ParmsDb::insertExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &constraintError) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     // Insert exclusion template record
     int errId;
@@ -2573,7 +2686,7 @@ bool ParmsDb::insertExclusionTemplate(const ExclusionTemplate &exclusionTemplate
 }
 
 bool ParmsDb::updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2598,7 +2711,7 @@ bool ParmsDb::updateExclusionTemplate(const ExclusionTemplate &exclusionTemplate
 }
 
 bool ParmsDb::deleteExclusionTemplate(const std::string &templ, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2620,7 +2733,7 @@ bool ParmsDb::deleteExclusionTemplate(const std::string &templ, bool &found) {
 }
 
 bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclusionTemplateList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     exclusionTemplateList.clear();
 
@@ -2653,7 +2766,7 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
 }
 
 bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplate> &exclusionTemplateList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     exclusionTemplateList.clear();
 
@@ -2684,7 +2797,7 @@ bool ParmsDb::selectAllExclusionTemplates(bool def, std::vector<ExclusionTemplat
 }
 
 bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionTemplate> &exclusionTemplateList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2721,7 +2834,7 @@ bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionT
 
 #ifdef __APPLE__
 bool ParmsDb::insertExclusionApp(const ExclusionApp &exclusionApp, bool &constraintError) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2740,7 +2853,7 @@ bool ParmsDb::insertExclusionApp(const ExclusionApp &exclusionApp, bool &constra
 }
 
 bool ParmsDb::updateExclusionApp(const ExclusionApp &exclusionApp, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2764,7 +2877,7 @@ bool ParmsDb::updateExclusionApp(const ExclusionApp &exclusionApp, bool &found) 
 }
 
 bool ParmsDb::deleteExclusionApp(const std::string &appId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2786,7 +2899,7 @@ bool ParmsDb::deleteExclusionApp(const std::string &appId, bool &found) {
 }
 
 bool ParmsDb::selectAllExclusionApps(std::vector<ExclusionApp> &exclusionAppList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     exclusionAppList.clear();
 
@@ -2816,7 +2929,7 @@ bool ParmsDb::selectAllExclusionApps(std::vector<ExclusionApp> &exclusionAppList
 }
 
 bool ParmsDb::selectAllExclusionApps(bool def, std::vector<ExclusionApp> &exclusionAppList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     exclusionAppList.clear();
 
@@ -2845,7 +2958,7 @@ bool ParmsDb::selectAllExclusionApps(bool def, std::vector<ExclusionApp> &exclus
 }
 
 bool ParmsDb::updateAllExclusionApps(bool def, const std::vector<ExclusionApp> &exclusionAppList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2881,7 +2994,7 @@ bool ParmsDb::updateAllExclusionApps(bool def, const std::vector<ExclusionApp> &
 #endif
 
 bool ParmsDb::insertError(const Error &err) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2912,7 +3025,7 @@ bool ParmsDb::insertError(const Error &err) {
 }
 
 bool ParmsDb::updateError(const Error &err, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2935,7 +3048,7 @@ bool ParmsDb::updateError(const Error &err, bool &found) {
 }
 
 bool ParmsDb::deleteAllErrorsByExitCode(ExitCode exitCode) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2951,7 +3064,7 @@ bool ParmsDb::deleteAllErrorsByExitCode(ExitCode exitCode) {
 }
 
 bool ParmsDb::deleteAllErrorsByExitCause(ExitCause exitCause) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -2967,7 +3080,7 @@ bool ParmsDb::deleteAllErrorsByExitCause(ExitCause exitCause) {
 }
 
 bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::vector<Error> &errs) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 1, level));
@@ -3026,7 +3139,7 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
 }
 
 bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Error> &errs) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     std::string requestId = (filter == ConflictTypeNone ? SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID
                                                         : SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
@@ -3088,7 +3201,7 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
 }
 
 bool ParmsDb::deleteErrors(ErrorLevel level) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -3104,7 +3217,7 @@ bool ParmsDb::deleteErrors(ErrorLevel level) {
 }
 
 bool ParmsDb::deleteError(int dbId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -3126,7 +3239,7 @@ bool ParmsDb::deleteError(int dbId, bool &found) {
 }
 
 bool ParmsDb::insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     int errId;
     std::string error;
@@ -3144,7 +3257,7 @@ bool ParmsDb::insertMigrationSelectiveSync(const MigrationSelectiveSync &migrati
 }
 
 bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     migrationSelectiveSyncList.clear();
 
@@ -3171,6 +3284,89 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
         migrationSelectiveSyncList.push_back(MigrationSelectiveSync(syncDbId, SyncPath(path), type));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
+
+    return true;
+}
+
+bool ParmsDb::selectLastServerSelfRestartTime(int64_t &lastServerRestartTime) {
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(SELECT_SELF_RESTARTER_REQUEST_ID));
+    bool found = false;
+    if (!queryNext(SELECT_SELF_RESTARTER_REQUEST_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_SELF_RESTARTER_REQUEST_ID);
+        return false;
+    }
+    if (!found) {
+        return false;
+    }
+
+    ASSERT(queryInt64Value(SELECT_SELF_RESTARTER_REQUEST_ID, 1, lastServerRestartTime));
+    ASSERT(queryResetAndClearBindings(SELECT_SELF_RESTARTER_REQUEST_ID));
+
+    return true;
+}
+
+bool ParmsDb::selectLastClientSelfRestartTime(int64_t &lastClientRestartTime) {
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(SELECT_SELF_RESTARTER_REQUEST_ID));
+    bool found = false;
+    if (!queryNext(SELECT_SELF_RESTARTER_REQUEST_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_SELF_RESTARTER_REQUEST_ID);
+        return false;
+    }
+    if (!found) {
+        return false;
+    }
+
+    ASSERT(queryInt64Value(SELECT_SELF_RESTARTER_REQUEST_ID, 0, lastClientRestartTime));
+    ASSERT(queryResetAndClearBindings(SELECT_SELF_RESTARTER_REQUEST_ID));
+
+    return true;
+}
+
+
+bool ParmsDb::updateLastServerSelfRestartTime(int64_t lastServertRestartTime) {
+    const std::scoped_lock lock(_mutex);
+
+    if (lastServertRestartTime == -1) {
+        lastServertRestartTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+    }
+
+    ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
+    ASSERT(queryBindValue(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, 1, lastServertRestartTime));
+
+    int errId = 0;
+    std::string error;
+
+    if (!queryExec(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID);
+        return false;
+    }
+    ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
+
+    return true;
+}
+
+bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
+    const std::scoped_lock lock(_mutex);
+
+    if (lastClientRestartTime == -1) {
+        lastClientRestartTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+    }
+
+    ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
+    ASSERT(queryBindValue(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, 1, lastClientRestartTime));
+
+    int errId = 0;
+    std::string error;
+
+    if (!queryExec(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID);
+        return false;
+    }
+    ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
 
     return true;
 }
