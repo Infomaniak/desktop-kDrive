@@ -180,6 +180,15 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioErr
 #ifdef _WIN32
         // skip_permission_denied doesn't work on Windows
         if (_skipPermissionDenied) {
+            bool readRight = false;
+            bool writeRight = false;
+            bool execRight = false;
+            bool exists = false;
+            IoHelper::getRights(_dirIterator->path(), readRight, writeRight, execRight, exists);
+            if (!exists || !readRight || !writeRight || !execRight) {
+                return next(nextEntry, ioError);
+            }
+            
             try {
                 bool dummy = _dirIterator->exists();
                 nextEntry = *_dirIterator;

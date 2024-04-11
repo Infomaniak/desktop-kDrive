@@ -29,7 +29,6 @@ void TestIo::testCheckDirectoryIterator() {
     testCheckDirectoryIteratorNonExistingPath();
     testCheckDirectoryIteratorExistingPath();
     testCheckDirectoryIteratotNextAfterEndOfDir();
-    //testCheckDirectoryIteratorWithLongPath();
     testCheckDirectoryIteratorPermission();
 }
 
@@ -155,63 +154,14 @@ void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
         // Read the only file in the directory
         DirectoryEntry entry;
 
-        CPPUNIT_ASSERT_EQUAL(true , it.next(entry, error));
+        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
 
-        //Expecting EOF
+        // Expecting EOF
         for (int i = 0; i < 3; i++) {
             CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
             CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
         }
     }
-}
-
-void TestIo::testCheckDirectoryIteratorWithLongPath() {
-    // Check that the directory iterator show directory ith no permission
-
-    {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath shortPath = temporaryDirectory.path / "chekDirIt/longPath";
-        std::filesystem::create_directories(shortPath);
-
-        //create 500 subFolders to make the path long /longPath/subDir0/subDir1/.../subDir499
-        std::string longPath = shortPath.string();
-        for (int i = 0; i < 500; i++) {
-            longPath += "/subDir" + std::to_string(i);
-            std::filesystem::create_directories(longPath);                     
-        }
-        
-        IoError error;
-        IoHelper::DirectoryIterator it(shortPath, true, error);
-        std::cout << "error 1: " << IoHelper::ioError2StdString(error) << std::endl;
-
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
-
-        DirectoryEntry entry;
-        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
-        std::cout << "error2 : " << IoHelper::ioError2StdString(error) << std::endl;
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
-
-        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
-    }
-}
-
-
-void demo_perms(std::filesystem::perms p) {
-    using std::filesystem::perms;
-    auto show = [=](char op, perms perm) { std::cout << (perms::none == (perm & p) ? '-' : op); };
-    std::cout << '\n';
-
-    show('r', perms::owner_read);
-    show('w', perms::owner_write);
-    show('x', perms::owner_exec);
-    show('r', perms::group_read);
-    show('w', perms::group_write);
-    show('x', perms::group_exec);
-    show('r', perms::others_read);
-    show('w', perms::others_write);
-    show('x', perms::others_exec);
-    std::cout << '\n';
 }
 
 void TestIo::testCheckDirectoryIteratorPermission() {
@@ -222,16 +172,10 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     // create a file in the directory
     const SyncPath testFilePathNoPerm = path / "testFile.txt";
     std::ofstream(testFilePathNoPerm, std::ios::out).close();
-    demo_perms(std::filesystem::status(testFilePathNoPerm).permissions());
 
     // Remove permission to the file
     std::error_code ec;
-    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::all ,
-                                 std::filesystem::perm_options::remove, ec);
-    std::cout << "error code: " << ec.message() << std::endl;
-
-    demo_perms(std::filesystem::status(testFilePathNoPerm).permissions());
-
+    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::_All_write, std::filesystem::perm_options::remove, ec);
     {
         IoError ioError = IoErrorSuccess;
         IoHelper::DirectoryIterator it(path, false, ioError);
@@ -241,7 +185,6 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         CPPUNIT_ASSERT_EQUAL(true, it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
         CPPUNIT_ASSERT_EQUAL(testFilePathNoPerm, entry.path());
-        std::cout << "with skip == false:" << entry.path() << std::endl;
     }
 
     // Check that the directory iterator skip directory with no permission when skip_permission_denied is true
@@ -253,11 +196,10 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         DirectoryEntry entry;
         CPPUNIT_ASSERT_EQUAL(false, it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
-        std::cout << "with skip == true:" << entry.path() << std::endl;
     }
     // Restore permission to allow subdir removal
     std::cout << "restoring permission" << std::endl;
-    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::all, std::filesystem::perm_options::add);
 }
 
 

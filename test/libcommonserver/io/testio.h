@@ -125,7 +125,6 @@ class TestIo : public CppUnit::TestFixture {
         void testCheckDirectoryIteratorExistingPath(void);
         void testCheckDirectoryIteratotNextAfterEndOfDir(void);
         void testCheckDirectoryIteratorPermission(void);
-        void testCheckDirectoryIteratorWithLongPath(void);
 
     private:
         IoHelperTests *_testObj;
