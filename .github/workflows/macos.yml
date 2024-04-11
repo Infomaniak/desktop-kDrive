@@ -26,5 +26,10 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/macos/build-ci.sh
 
+      - name: Grant test_common execute permission
+        run : chmod +x ./build-macos/build/bin/kDrive_test_common
+      - name: Execute common tests
+        run : ./build-macos/build/bin/kDrive_test_common
+
       - name: Clean-up generated code
         run : rm -rf build-macos
