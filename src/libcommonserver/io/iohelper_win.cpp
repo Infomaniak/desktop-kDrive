@@ -61,8 +61,10 @@ IoError dWordError2ioError(DWORD error) noexcept {
         case ERROR_FILE_NOT_FOUND:
         case ERROR_INVALID_DRIVE:
         case ERROR_PATH_NOT_FOUND:
+        case ERROR_INVALID_NAME:
             return IoErrorNoSuchFileOrDirectory;
         default:
+            LOG_WARN(Log::instance()->getLogger(), L"Unknown IO error - error=" << error);
             return IoErrorUnknown;
     }
 }  // namespace
