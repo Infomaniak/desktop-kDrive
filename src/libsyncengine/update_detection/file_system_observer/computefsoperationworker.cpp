@@ -24,7 +24,6 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
-#include "io/filestat.h"
 
 namespace KDC {
 

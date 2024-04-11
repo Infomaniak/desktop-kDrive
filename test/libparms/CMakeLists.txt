@@ -58,4 +58,3 @@ else()
     target_link_libraries(${testparms_NAME}
         "/usr/local/lib/libcppunit.so")
 endif()
-

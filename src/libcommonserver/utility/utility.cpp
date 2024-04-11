@@ -784,6 +784,25 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
 #endif
 }
 
+SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
+    auto segmentIt = path.begin();
+    if (segmentIt == path.end()) return {};
+
+    auto segment = *segmentIt;
+    if (segmentIt->native() != Str("/")) segment = normalizedSyncName(segment);
+
+    SyncPath result{segment};
+    ++segmentIt;
+
+    for (; segmentIt != path.end(); ++segmentIt) {
+        if (segmentIt->native() != Str("/")) {
+            result /= normalizedSyncName(*segmentIt);
+        }
+    }
+
+    return result;
+}
+
 bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, IoError &ioError) {
     isManaged = true;
     ioError = IoErrorSuccess;

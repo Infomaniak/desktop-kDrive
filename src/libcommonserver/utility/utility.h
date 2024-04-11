@@ -128,6 +128,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string errId(const char *file, int line);
 
         static SyncName normalizedSyncName(const SyncName &name);
+        static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;
 #ifdef _WIN32
         static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
