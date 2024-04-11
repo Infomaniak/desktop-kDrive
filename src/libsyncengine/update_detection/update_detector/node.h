@@ -64,8 +64,8 @@ class Node {
         inline ReplicaSide side() const { return _side; }
         inline SyncName name() const { return _name; }
         inline NodeType type() const { return _type; }
-        inline SyncName validLocalName() const { return _validLocalName; }
-        inline SyncName finalLocalName() const { return _validLocalName.empty() ? _name : _validLocalName; }
+        inline SyncName validLocalName() const { return _validLocalName; }      // TODO : to be removed, local and remote names are always the same
+        inline SyncName finalLocalName() const { return _validLocalName.empty() ? _name : _validLocalName; }          // TODO : to be removed, local and remote names are always the same
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
         inline int changeEvents() const { return _changeEvents; }
         inline std::optional<SyncTime> createdAt() const { return _createdAt; }
