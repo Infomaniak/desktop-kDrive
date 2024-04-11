@@ -35,6 +35,13 @@ TmpBlacklistManager::~TmpBlacklistManager() {
     LOG_DEBUG(Log::instance()->getLogger(), "TmpBlacklistManager destroyed");
 }
 
+int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept {
+    const auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
+    const auto errorItem = errors.find(nodeId);
+
+    return errorItem == errors.end() ? 0 : errorItem->second._count + 1;
+}
+
 void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath,
                                              ReplicaSide side) {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;

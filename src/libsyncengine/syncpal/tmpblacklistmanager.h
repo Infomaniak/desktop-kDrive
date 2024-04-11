@@ -40,6 +40,7 @@ class TmpBlacklistManager {
         void refreshBlacklist();
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         bool isTmpBlacklisted(ReplicaSide side, const SyncPath &path);
+        int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
 
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side);
