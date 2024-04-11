@@ -57,7 +57,7 @@ class OperationProcessor : public ISyncWorker {
         /**
          * Try to find a corresponding node in other tree based on path
          * @param node a shared pointer to the node in current tree.
-         * @return a shared pointer to the node in other tree. nullptr il not found.
+         * @return a shared pointer to the node in other tree. nullptr if not found.
          */
         std::shared_ptr<Node> findCorrespondingNodeFromPath(std::shared_ptr<Node> node);
 };
