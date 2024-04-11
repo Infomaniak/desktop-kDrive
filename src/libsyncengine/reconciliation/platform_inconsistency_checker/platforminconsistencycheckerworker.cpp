@@ -106,7 +106,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     if (localNode) {
         // Also exclude local node by adding "conflict" suffix
         SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        LOGW_SYNCPAL_INFO(_logger, L"Excluding local item \"" << Path2WStr(absoluteLocalPath).c_str() << L"\" too.");
+        LOGW_SYNCPAL_INFO(_logger, L"Excluding also local item with '" << Utility::formatSyncPath(absoluteLocalPath).c_str() << L"'.");
         PlatformInconsistencyCheckerUtility::renameLocaLFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
     }
 
@@ -132,7 +132,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
         default:
             break;
     }
-    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting item \"" << Path2WStr(relativePath).c_str() << L"\" because " << causeStr.c_str());
+    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting remote item '" << Utility::formatSyncPath(relativePath).c_str() << L"' because " << causeStr.c_str() << L".");
 
     _idsToBeRemoved.push_back(remoteNode->id().value());
 }

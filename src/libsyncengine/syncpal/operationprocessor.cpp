@@ -87,14 +87,14 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shar
     if (dbNodeId) return correspondingNodeDirect(node);
 
     // The node is not in DB => find an ancestor
-    return findCorrespondingNodeFromCommonAncestor(node);
+    return findCorrespondingNodeFromPath(node);
 }
 
 constexpr auto otherSide = [](ReplicaSide side) {
     return side == ReplicaSide::ReplicaSideLocal ? ReplicaSide::ReplicaSideRemote : ReplicaSide::ReplicaSideLocal;
 };
 
-std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromCommonAncestor(std::shared_ptr<Node> node) {
+std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::shared_ptr<Node> node) {
     std::shared_ptr<Node> parentNode = node;
     std::vector<SyncName> names;
     DbNodeId parentDbNodeId;
