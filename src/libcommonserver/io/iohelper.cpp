@@ -556,31 +556,37 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
         return IoHelper::_isExpectedError(ioError);
     }
 
+    if (!_recursive) {
+        disableRecursionPending();
+    }
+
     if (!_firstElement) {
-        if (!_recursive) {
-            _dirIterator.disable_recursion_pending();
-        }
         _dirIterator.increment(ec);
         ioError = IoHelper::stdError2ioError(ec);
-        if (ioError != IoErrorSuccess) {
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
-                ioError = IoErrorInvalidDirectoryIterator;
-                _invalid = true;
-            }
 
+        if (ioError == IoErrorNoSuchFileOrDirectory) {
+            ioError = IoErrorInvalidDirectoryIterator;
+            _invalid = true;
             return IoHelper::_isExpectedError(ioError);
         }
+
+        if (ioError != IoErrorSuccess) {
+            return IoHelper::_isExpectedError(ioError);
+        }
+
     } else {
         _firstElement = false;
     }
 
     if (_dirIterator != std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
         ioError = IoHelper::stdError2ioError(ec);
+        if (ioError == IoErrorNoSuchFileOrDirectory) {
+            ioError = IoErrorInvalidDirectoryIterator;
+            _invalid = true;
+            return IoHelper::_isExpectedError(ioError);
+        }
+
         if (ioError != IoErrorSuccess) {
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
-                ioError = IoErrorInvalidDirectoryIterator;
-                _invalid = true;
-            }
             return IoHelper::_isExpectedError(ioError);
         }
 
