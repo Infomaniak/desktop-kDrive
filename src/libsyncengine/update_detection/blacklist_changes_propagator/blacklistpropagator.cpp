@@ -140,21 +140,20 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     SyncPath absolutePath = _sync.localPath() / localPath;
 
     // Cancel hydration
-    bool liteSyncActivated = _syncPal->_vfsMode != VirtualFileModeOff;
+    const bool liteSyncActivated = _syncPal->_vfsMode != VirtualFileModeOff;
     if (liteSyncActivated) {
-        std::error_code ec;
         try {
-            for (auto dirIt = std::filesystem::recursive_directory_iterator(
-                     absolutePath, std::filesystem::directory_options::skip_permission_denied, ec);
-                 dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+            std::error_code ec;
+            auto dirIt = std::filesystem::recursive_directory_iterator(
+                absolutePath, std::filesystem::directory_options::skip_permission_denied, ec);
+            if (ec) {
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
+                                  "Error in BlacklistPropagator::removeItem :" << Utility::formatStdError(ec).c_str());
+                return ExitCodeSystemError;
+            }
+            for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
                 if (isAborted()) {
                     return ExitCodeOk;
-                }
-
-                if (ec) {
-                    LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                                      "Error in BlacklistPropagator::removeItem :" << ec.message().c_str());
-                    continue;
                 }
 
 #ifdef _WIN32
@@ -206,10 +205,10 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             }
         } catch (std::filesystem::filesystem_error &e) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                             "Error catched in BlacklistPropagator::removeItem: " << e.code() << " - " << e.what());
+                             "Error caught in BlacklistPropagator::removeItem: " << e.code() << " - " << e.what());
             return ExitCodeSystemError;
         } catch (...) {
-            LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error catched in BlacklistPropagator::removeItem");
+            LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in BlacklistPropagator::removeItem");
             return ExitCodeSystemError;
         }
 
@@ -218,7 +217,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     }
 
     // Remove item from filesystem
-    bool exists;
+    bool exists = false;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
