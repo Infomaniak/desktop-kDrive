@@ -2815,7 +2815,7 @@ bool AppServer::clientCrashedRecently(int second) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    int64_t lastClientCrash;
+    int64_t lastClientCrash = 0;
     KDC::ParmsDb::instance()->selectLastClientSelfRestartTime(lastClientCrash);
     const auto diff = nowSeconds - lastClientCrash;
     if (diff > second) {

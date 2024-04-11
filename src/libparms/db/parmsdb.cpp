@@ -564,7 +564,7 @@ ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version
 bool ParmsDb::insertDefaultSelfRestarterData() {
     const std::scoped_lock lock(_mutex);
 
-    bool found;
+    bool found = false;
     if (!queryNext(SELECT_SELF_RESTARTER_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_SELF_RESTARTER_REQUEST_ID);
         return false;
@@ -573,7 +573,7 @@ bool ParmsDb::insertDefaultSelfRestarterData() {
         return true;
     }
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     ASSERT(queryResetAndClearBindings(INSERT_SELF_RESTARTER_REQUEST_ID));
@@ -590,7 +590,7 @@ bool ParmsDb::insertDefaultSelfRestarterData() {
 bool ParmsDb::insertDefaultParameters() {
     const std::scoped_lock lock(_mutex);
 
-    bool found;
+    bool found = false;
     if (!queryNext(SELECT_PARAMETERS_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_PARAMETERS_REQUEST_ID);
         return false;
@@ -605,7 +605,7 @@ bool ParmsDb::insertDefaultParameters() {
     proxyConfig.setType(ProxyTypeNone);
     parameters.setProxyConfig(proxyConfig);
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     ASSERT(queryResetAndClearBindings(INSERT_PARAMETERS_REQUEST_ID));
@@ -3337,7 +3337,7 @@ bool ParmsDb::updateLastServerSelfRestartTime(int64_t lastServertRestartTime) {
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
     ASSERT(queryBindValue(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, 1, lastServertRestartTime));
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     if (!queryExec(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID, errId, error)) {
@@ -3359,7 +3359,7 @@ bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
     ASSERT(queryBindValue(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, 1, lastClientRestartTime));
 
-    int errId;
+    int errId = 0;
     std::string error;
 
     if (!queryExec(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID, errId, error)) {
