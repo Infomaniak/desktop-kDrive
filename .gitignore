@@ -186,3 +186,5 @@ cmake-build-debug
 /.vs
 /extensions/windows/cfapi/.vs
 /extensions/windows/cfapi/FileExplorerExtension/Generated Files
+/CMakeSettings.json
+/out/
