@@ -347,8 +347,8 @@ void ParametersDialog::reset() {
     _noDrivePagewidget->setVisible(true);
 }
 
-QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) {
-    QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
+QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const noexcept {
+    const QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
     // TODO: USELESS CODE : this switch should be simplified !!!!
     switch (exitCode) {
         case ExitCodeUnknown:
@@ -424,8 +424,9 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
     return QString();
 }
 
-QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) {
-    QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
+QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause,
+                                              bool userIsAdmin) const noexcept {
+    const QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
 
     switch (exitCode) {
         case ExitCodeUnknown:
@@ -585,7 +586,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
     return QString();
 }
 
-QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) {
+QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const noexcept {
     switch (conflictType) {
         case ConflictTypeNone:
             break;
@@ -654,11 +655,13 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged conflict type : " << conflictType;
-    return QString();
+
+    return {};
 }
 
-QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) {
-    const int inconsistencyTypeInt = static_cast<int>(inconsistencyType);
+QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const noexcept {
+    const auto inconsistencyTypeInt = static_cast<int>(inconsistencyType);
+
     QString text;
 
     if (inconsistencyTypeInt & InconsistencyTypeCase) {
@@ -706,7 +709,8 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
     return text;
 }
 
-QString ParametersDialog::getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath /*= ""*/) {
+QString ParametersDialog::getCancelText(CancelType cancelType, const QString &path,
+                                        const QString &destinationPath /*= ""*/) const noexcept {
     switch (cancelType) {
         case CancelTypeCreate: {
             return tr(
@@ -769,7 +773,61 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
     return "";
 }
 
-QString ParametersDialog::getErrorMessage(ErrorInfo &errorInfo) {
+QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept {
+    if (errorInfo.conflictType() != ConflictTypeNone) {
+        return getConflictText(errorInfo.conflictType(), ConflictTypeResolutionNone);
+    }
+
+    if (errorInfo.inconsistencyType() != InconsistencyTypeNone) {
+        return getInconsistencyText(errorInfo.inconsistencyType());
+    }
+
+    if (errorInfo.cancelType() != CancelTypeNone) {
+        return getCancelText(errorInfo.cancelType(), errorInfo.path(), errorInfo.destinationPath());
+    }
+
+    switch (errorInfo.exitCode()) {
+        case ExitCodeSystemError: {
+            if (errorInfo.exitCause() == ExitCauseFileAccessError) {
+                return tr("Can't access item %1.<br>"
+                          "Please fix the write permissions and restart the synchronization.")
+                    .arg(errorInfo.path());
+            }
+
+            if (errorInfo.exitCause() == ExitCauseMoveToTrashFailed) {
+                return tr("Move to trash failed for item %1").arg(errorInfo.path());
+            }
+        }
+        case ExitCodeBackError: {
+            switch (errorInfo.exitCause()) {
+            ExitCauseHttpErrForbidden: {
+                return tr("The operation performed on item %1 is forbidden.<br>"
+                          "The file/directory has been temporarily blacklisted.")
+                    .arg(errorInfo.path());
+            }
+            ExitCauseApiErr:
+            ExitCauseUploadNotTerminated: {
+                return tr("The operation performed on item %1 failed.<br>"
+                          "The file/directory has been temporarily blacklisted.")
+                    .arg(errorInfo.path());
+            }
+            ExitCauseFileTooBig: {
+                return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.")
+                    .arg(errorInfo.path());
+            }
+            ExitCauseQuotaExceeded: { return tr("You have exceeded your quota."); }
+            ExitCauseNotFound: { return tr("Impossible to download file \"%1\"").arg(errorInfo.path()); }
+            default:
+                tr("Synchronization error.");
+            }
+        }
+
+        default:
+            return tr("Synchronization error.");
+    }
+}
+
+QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const noexcept {
     switch (errorInfo.level()) {
         case ErrorLevelUnknown: {
             return tr(
@@ -782,63 +840,27 @@ QString ParametersDialog::getErrorMessage(ErrorInfo &errorInfo) {
             break;
         }
         case ErrorLevelSyncPal: {
-            const auto &syncInfoMapIt = _gui->syncInfoMap().find(errorInfo.syncDbId());
-            if (syncInfoMapIt != _gui->syncInfoMap().end()) {
+            if (const auto &syncInfoMapIt = _gui->syncInfoMap().find(errorInfo.syncDbId());
+                syncInfoMapIt != _gui->syncInfoMap().end()) {
                 const auto &driveInfoMapIt = _gui->driveInfoMap().find(syncInfoMapIt->second.driveDbId());
                 if (driveInfoMapIt == _gui->driveInfoMap().end()) {
                     qCDebug(lcParametersDialog())
                         << "Drive not found in drive map for driveDbId=" << syncInfoMapIt->second.driveDbId();
-                    return QString();
+                    return {};
                 }
                 return getSyncPalErrorText(errorInfo.workerName(), errorInfo.exitCode(), errorInfo.exitCause(),
                                            driveInfoMapIt->second.admin());
-            } else {
-                qCDebug(lcParametersDialog()) << "Sync not found in sync map for syncDbId=" << errorInfo.syncDbId();
-                return QString();
             }
-            break;
+            qCDebug(lcParametersDialog()) << "Sync not found in sync map for syncDbId=" << errorInfo.syncDbId();
+            return {};
         }
-        case ErrorLevelNode: {
-            if (errorInfo.conflictType() != ConflictTypeNone) {
-                return getConflictText(errorInfo.conflictType(), ConflictTypeResolutionNone);
-            } else if (errorInfo.inconsistencyType() != InconsistencyTypeNone) {
-                return getInconsistencyText(errorInfo.inconsistencyType());
-            } else if (errorInfo.cancelType() != CancelTypeNone) {
-                return getCancelText(errorInfo.cancelType(), errorInfo.path(), errorInfo.destinationPath());
-            } else {
-                if (errorInfo.exitCode() == ExitCodeSystemError) {
-                    if (errorInfo.exitCause() == ExitCauseFileAccessError) {
-                        return tr("Can't access item %1.<br>"
-                                  "Please fix the write permissions and restart the synchronization.")
-                            .arg(errorInfo.path());
-                    } else if (errorInfo.exitCause() == ExitCauseMoveToTrashFailed) {
-                        return tr("Move to trash failed for item %1").arg(errorInfo.path());
-                    }
-                } else if (errorInfo.exitCode() == ExitCodeBackError) {
-                    if (errorInfo.exitCause() == ExitCauseHttpErrForbidden) {
-                        return tr("The operation performed on item %1 is forbidden.<br>"
-                                  "The file/directory has been temporarily blacklisted.")
-                            .arg(errorInfo.path());
-                    } else if (errorInfo.exitCause() == ExitCauseApiErr ||
-                               errorInfo.exitCause() == ExitCauseUploadNotTerminated) {
-                        return tr("The operation performed on item %1 failed.<br>"
-                                  "The file/directory has been temporarily blacklisted.")
-                            .arg(errorInfo.path());
-                    } else if (errorInfo.exitCause() == ExitCauseFileTooBig) {
-                        return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.")
-                            .arg(errorInfo.path());
-                    } else if (errorInfo.exitCause() == ExitCauseNotFound) {
-                        return tr("Impossible to download file \"%1\"").arg(errorInfo.path());
-                    }
-                }
-                return tr("Synchronization error.");
-            }
-            break;
-        }
+        case ErrorLevelNode:
+            return getErrorLevelNodeText(errorInfo);
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged error level : " << errorInfo.level();
-    return QString();
+
+    return {};
 }
 
 void ParametersDialog::onExit() {
@@ -1047,14 +1069,9 @@ void ParametersDialog::onSendLogs() {
     msgBox.addButton(tr("NO"), QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::Yes);
 
-    int ret = msgBox.execAndMoveToCenter(this);
-    if (ret != QDialog::Rejected) {
-        if (ret == QMessageBox::No) {
-            return;
-        }
-    } else {
-        return;
-    }
+    const int ret = msgBox.execAndMoveToCenter(this);
+    if (ret == QDialog::Rejected) return;
+    if (ret == QMessageBox::No) return;
 
     auto *debugReporter = new DebugReporter(QUrl(Theme::instance()->debugReporterUrl()), this);
 

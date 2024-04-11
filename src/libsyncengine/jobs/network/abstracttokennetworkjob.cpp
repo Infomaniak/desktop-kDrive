@@ -46,18 +46,7 @@ std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToAp
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId,
                                                  bool returnJson)
-    : _jsonRes(nullptr),
-      _octetStreamRes(std::string()),
-      _apiType(apiType),
-      _userDbId(userDbId),
-      _userId(userId),
-      _driveDbId(driveDbId),
-      _driveId(driveId),
-      _returnJson(returnJson),
-      _token(std::string()),
-      _errorCode(std::string()),
-      _errorDescr(std::string()),
-      _error(nullptr) {
+    : _apiType(apiType), _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
     if (!ParmsDb::instance()) {
         LOG_WARN(_logger, "ParmsDb must be initialized!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
@@ -142,159 +131,154 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
     return str;
 }
 
-bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED) {
-        // There is no longer any refresh of the token since v3.5.6
-        // This code is only used when updating from a version < v3.5.6
-        std::string token = loadToken();
-        if (token != _token) {
-            LOG_DEBUG(_logger, "Token refreshed by another request");
-            _accessTokenAlreadyRefreshed = false;
-            _token = token;
-            addRawHeader("Authorization", "Bearer " + _token);
-            _exitCode = ExitCodeTokenRefreshed;
-            return true;
-        } else if (!_accessTokenAlreadyRefreshed || tokenUpdateDurationFromNow() > TOKEN_LIFETIME) {
-            // The token has not already been refreshed or was refreshed more than its lifetime ago
-            if (!refreshToken()) {
-                LOG_WARN(_logger, "Refresh token failed");
-                noRetry();
-                _exitCode = ExitCodeInvalidToken;
-                return false;
-            } else {
-                LOG_DEBUG(_logger, "Refresh token succeeded");
-                _exitCode = ExitCodeTokenRefreshed;
-                return true;
-            }
-        } else {
-            LOG_WARN(_logger, "Token already refreshed once");
-            _exitCode = ExitCodeInvalidToken;
-            return false;
-        }
+bool AbstractTokenNetworkJob::handleUnauthorizedResponse() {
+    // There is no longer any refresh of the token since v3.5.6
+    // This code is only used when updating from a version < v3.5.6
+    _exitCode = ExitCodeInvalidToken;
+    if (std::string token = loadToken(); token != _token) {
+        LOG_DEBUG(_logger, "Token refreshed by another request");
+        _accessTokenAlreadyRefreshed = false;
+        _token = token;
+        addRawHeader("Authorization", "Bearer " + _token);
+        _exitCode = ExitCodeTokenRefreshed;
+
+        return true;
     }
 
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
-        _exitCode = ExitCodeBackError;
-        _exitCause = ExitCauseNotFound;
-        return false;
+    if (!_accessTokenAlreadyRefreshed || tokenUpdateDurationFromNow() > TOKEN_LIFETIME) {
+        // The token has not already been refreshed or was refreshed more than its lifetime ago
+        if (!refreshToken()) {
+            LOG_WARN(_logger, "Refresh token failed");
+            noRetry();
+
+            return false;
+        }
+
+        LOG_DEBUG(_logger, "Refresh token succeeded");
+        _exitCode = ExitCodeTokenRefreshed;
+
+        return true;
+    }
+
+    LOG_WARN(_logger, "Token already refreshed once");
+
+    return false;
+}
+
+const std::map<NetworkErrorCode, AbstractTokenNetworkJob::ExitHandler> AbstractTokenNetworkJob::_errorCodeHandlingMap = {
+    {NetworkErrorCode::validationFailed, ExitHandler{ExitCauseInvalidName, "Invalid file or directory name"}},
+    {NetworkErrorCode::uploadNotTerminatedError, ExitHandler{ExitCauseUploadNotTerminated, "Upload not terminated"}},
+    {NetworkErrorCode::uploadError, ExitHandler{ExitCauseApiErr, "Upload failed"}},
+    {NetworkErrorCode::destinationAlreadyExists, ExitHandler{ExitCauseFileAlreadyExist, "Operation refused"}},
+    {NetworkErrorCode::conflictError, ExitHandler{ExitCauseFileAlreadyExist, "Operation refused"}},
+    {NetworkErrorCode::accessDenied, ExitHandler{ExitCauseHttpErrForbidden, "Access denied"}},
+    {NetworkErrorCode::fileTooBigError, ExitHandler{ExitCauseFileTooBig, "File too big"}},
+    {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCauseQuotaExceeded, "Quota exceeded"}}};
+
+bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri) {
+    switch (_resHttp.getStatus()) {
+        case Poco::Net::HTTPResponse::HTTP_UNAUTHORIZED:
+            return handleUnauthorizedResponse();
+        case Poco::Net::HTTPResponse::HTTP_NOT_FOUND: {
+            _exitCode = ExitCodeBackError;
+            _exitCause = ExitCauseNotFound;
+            return false;
+        }
+        default:
+            break;
+    }
+
+    // Manage Content-Encoding
+    std::string encoding;
+    try {
+        encoding = _resHttp.get("Content-Encoding");
+    } catch (...) {
+        // No Content-Encoding
+    }
+
+    std::stringstream ss;
+    if (encoding == "gzip") {
+        unzip(is, ss);
     } else {
-        // Manage Content-Encoding
-        std::stringstream ss;
-        std::string encoding = std::string();
-        try {
-            encoding = _resHttp.get("Content-Encoding");
-        } catch (...) {
-            // No Content-Encoding
-        }
+        ss << is.rdbuf();
+    }
 
-        if (encoding == "gzip") {
-            unzip(is, ss);
-        } else {
-            ss << is.rdbuf();
-        }
+    _exitCode = ExitCodeBackError;
+    try {
+        _error = Poco::JSON::Parser{}.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+    } catch (const Poco::Exception &exc) {
+        LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON error: "
+                                     << Utility::s2ws(exc.displayText()).c_str());
+        Utility::logGenericServerError("Request error", ss, _resHttp);
+        _exitCause = ExitCauseApiErr;
 
-        Poco::JSON::Parser jsonParser;
-        try {
-            _error = jsonParser.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
-        } catch (Poco::Exception &exc) {
-            LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON error: "
-                                         << Utility::s2ws(exc.displayText()).c_str());
-            Utility::logGenericServerError("Request error", ss, _resHttp);
+        return false;
+    }
 
-            _exitCode = ExitCodeBackError;
-            _exitCause = ExitCauseApiErr;
-            return false;
-        }
+    if (isExtendedLog()) {
+        std::ostringstream os;
+        _error->stringify(os);
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()).c_str());
+    }
 
-        if (isExtendedLog()) {
-            std::ostringstream os;
-            _error->stringify(os);
-            LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()).c_str());
-        }
+    Poco::JSON::Object::Ptr errorObj = _error->getObject(errorKey);
+    if (!JsonParserUtility::extractValue(errorObj, codeKey, _errorCode)) {
+        return false;
+    }
+    if (!JsonParserUtility::extractValue(errorObj, descriptionKey, _errorDescr)) {
+        return false;
+    }
 
-        Poco::JSON::Object::Ptr errorObj = _error->getObject(errorKey);
-        if (!JsonParserUtility::extractValue(errorObj, codeKey, _errorCode)) {
-            _exitCode = ExitCodeBackError;
-            return false;
-        }
-        if (!JsonParserUtility::extractValue(errorObj, descriptionKey, _errorDescr)) {
-            _exitCode = ExitCodeBackError;
-            return false;
-        }
+    const NetworkErrorCode errorCode = getNetworkErrorCode(_errorCode);
+    switch (errorCode) {
+        case KDC::NetworkErrorCode::notAuthorized: {
+            if (!_accessTokenAlreadyRefreshed) {
+                LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str()
+                                                      << ". Refreshing access token.");
 
-        if (_errorCode == notAuthorized && !_accessTokenAlreadyRefreshed) {
-            LOG_DEBUG(_logger, "Request failed: " << uri.toString().c_str() << " : " << _errorCode.c_str() << " - "
-                                                  << _errorDescr.c_str() << ". Refreshing access token.");
+                if (!refreshToken()) {
+                    LOG_WARN(_logger, "Refresh token failed");
+                    _exitCode = ExitCodeInvalidToken;
+                    return false;
+                }
 
-            if (!refreshToken()) {
-                LOG_WARN(_logger, "Refresh token failed");
-                _exitCode = ExitCodeInvalidToken;
-                return false;
-            } else {
                 LOG_DEBUG(_logger, "Refresh token succeeded");
                 _exitCode = ExitCodeTokenRefreshed;
                 return true;
             }
-        } else if (_errorCode == productMaintenance || _errorCode == driveIsInMaintenanceError) {
+        }
+
+        case KDC::NetworkErrorCode::productMaintenance:
+        case KDC::NetworkErrorCode::driveIsInMaintenanceError: {
             LOG_DEBUG(_logger, "Product in maintenance");
             noRetry();
-            Poco::JSON::Object::Ptr contextObj = errorObj->getObject(contextKey);
-            if (contextObj) {
+            if (auto contextObj = errorObj->getObject(contextKey); contextObj != nullptr) {
                 std::string context;
                 JsonParserUtility::extractValue(contextObj, reasonKey, context, false);
-
-                if (context == notRenew) {
-                    _exitCode = ExitCodeBackError;
+                if (getNetworkErrorReason(context) == NetworkErrorReason::notRenew) {
                     _exitCause = ExitCauseDriveNotRenew;
                     return false;
                 }
             }
-
-            _exitCode = ExitCodeBackError;
             _exitCause = ExitCauseDriveMaintenance;
-            return false;
-        } else if (_errorCode == validationFailed) {
-            LOG_DEBUG(_logger, "Invalid file/directory name");
-            _exitCode = ExitCodeBackError;
-            _exitCause = ExitCauseInvalidName;
-            return true;
-        } else if (_errorCode == uploadNotTerminatedError) {
-            LOG_DEBUG(_logger, "Upload not terminated");
-            _exitCode = ExitCodeBackError;
-            _exitCause = ExitCauseUploadNotTerminated;
-            return true;
-        } else if (_errorCode == uploadError && _errorDescr == storageObjectIsNotOk) {
-            LOG_DEBUG(_logger, "Upload failed");
-            _exitCode = ExitCodeBackError;
-            _exitCause = ExitCauseApiErr;
-            return true;
-        } else if (_errorCode == destinationAlreadyExists || _errorCode == conflictError) {
-            LOG_DEBUG(_logger, "Operation refused");
-            _exitCode = ExitCodeBackError;
-            _exitCause = ExitCauseFileAlreadyExist;
-            return true;
-        } else if (_errorCode == accessDenied) {
-            LOG_DEBUG(_logger, "Access denied");
-            _exitCode = ExitCodeBackError;
-            _exitCause = ExitCauseHttpErrForbidden;
-            return true;
-        } else if (_errorCode == fileTooBigError) {
-            LOG_DEBUG(_logger, "File too big");
-            _exitCode = ExitCodeBackError;
-            _exitCause = ExitCauseFileTooBig;
-            return true;
-        } else {
-            LOG_WARN(_logger, "Error in request " << uri.toString().c_str() << " : " << _errorCode.c_str() << " - "
-                                                  << _errorDescr.c_str());
-            _exitCode = ExitCodeBackError;
-            _exitCause = ExitCauseHttpErr;
+
             return false;
         }
-    }
+        default:
+            const auto &errorHandling = _errorCodeHandlingMap.find(errorCode);
+            if (errorHandling == _errorCodeHandlingMap.cend()) {
+                LOG_WARN(_logger, "Error in request " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str());
+                _exitCause = ExitCauseHttpErr;
 
-    // Unreachable code
-    _exitCode = ExitCodeOk;
-    return true;
+                return false;
+            }
+            // Regular handling
+            const auto &exitHandler = errorHandling->second;
+            LOG_DEBUG(_logger, exitHandler.debugMessage.c_str());
+            _exitCause = exitHandler.exitCause;
+
+            return true;
+    }
 }
 
 std::string AbstractTokenNetworkJob::getUrl() {
@@ -324,9 +308,8 @@ bool AbstractTokenNetworkJob::handleResponse(std::istream &is) {
 
 bool AbstractTokenNetworkJob::handleJsonResponse(std::istream &is) {
     // Extract JSON
-    Poco::JSON::Parser jsonParser;
     try {
-        _jsonRes = jsonParser.parse(is).extract<Poco::JSON::Object::Ptr>();
+        _jsonRes = Poco::JSON::Parser().parse(is).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
         LOG_DEBUG(_logger,
                   "Reply " << jobId() << " received doesn't contain a valid JSON payload: " << exc.displayText().c_str());
@@ -344,14 +327,13 @@ bool AbstractTokenNetworkJob::handleJsonResponse(std::istream &is) {
 
     // Check for maintenance error
     if (_jsonRes) {
-        Poco::JSON::Object::Ptr dataObj = _jsonRes->getObject(dataKey);
-        if (dataObj) {
+        if (Poco::JSON::Object::Ptr dataObj = _jsonRes->getObject(dataKey); dataObj != nullptr) {
             std::string maintenanceReason;
             if (!JsonParserUtility::extractValue(dataObj, maintenanceReasonKey, maintenanceReason, false)) {
                 return false;
             }
 
-            if (maintenanceReason == notRenew) {
+            if (getNetworkErrorReason(maintenanceReason) == NetworkErrorReason::notRenew) {
                 noRetry();
                 _exitCode = ExitCodeBackError;
                 _exitCause = ExitCauseDriveNotRenew;

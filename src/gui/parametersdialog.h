@@ -98,12 +98,13 @@ class ParametersDialog : public CustomDialog {
         QByteArray contents(const QString &path);
         void reset();
 
-        QString getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause);
-        QString getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin);
-        QString getConflictText(ConflictType conflictType, ConflictTypeResolution resolution);
-        QString getInconsistencyText(InconsistencyType inconsistencyType);
-        QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "");
-        QString getErrorMessage(ErrorInfo &errorInfo);
+        QString getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const noexcept;
+        QString getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const noexcept;
+        QString getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const noexcept;
+        QString getInconsistencyText(InconsistencyType inconsistencyType) const noexcept;
+        QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "") const noexcept;
+        QString getErrorMessage(const ErrorInfo &errorInfo) const noexcept;
+        QString getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept;
 
         void createErrorTabWidgetIfNeeded(int driveDbId);
         void refreshErrorList(int driveDbId);

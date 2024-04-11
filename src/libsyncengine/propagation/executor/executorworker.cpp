@@ -2358,9 +2358,10 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
     std::string errorCode;
     auto tokenJob(std::dynamic_pointer_cast<AbstractTokenNetworkJob>(job));
     if (tokenJob && tokenJob->hasErrorApi(&errorCode)) {
-        if (errorCode == destinationAlreadyExists) {
+        const auto code = getNetworkErrorCode(errorCode);
+        if (code == NetworkErrorCode::destinationAlreadyExists) {
             // Folder is already there, ignore this error
-        } else if (errorCode == forbiddenError) {
+        } else if (code == NetworkErrorCode::forbiddenError) {
             // The item should be blacklisted
             _executorExitCode = ExitCodeOk;
             _syncPal->blacklistTemporarily(
@@ -2392,7 +2393,7 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         auto localCreateDirJob(std::dynamic_pointer_cast<LocalCreateDirJob>(job));
         if (localCreateDirJob) {
             LOGW_SYNCPAL_WARN(_logger, L"Item " << Path2WStr(localCreateDirJob->destFilePath()).c_str()
-                                                << L" already exist. Blacklisting it on local replica.");
+                                                << L" already exists. Blacklisting it on local replica.");
             PlatformInconsistencyCheckerUtility::renameLocalFile(_syncPal->localPath() / localCreateDirJob->destFilePath(), PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
         }
         return false;

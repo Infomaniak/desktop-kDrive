@@ -39,6 +39,10 @@
 #include <Accctrl.h>
 #endif
 
+namespace Poco {
+class URI;
+}
+
 namespace KDC {
 
 struct COMMONSERVER_EXPORT Utility {
@@ -66,13 +70,17 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string trim(const std::string &s);
         static void msleep(int msec);
         static std::wstring v2ws(const dbtype &v);
+
         static std::wstring formatStdError(const std::error_code &ec);
         static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
         static std::wstring formatIoError(const SyncPath &path, IoError ioError);
         static std::wstring formatSyncPath(const SyncPath &path);
 
+        static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
+
         static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
-        static void logGenericServerError(const std::string &errorTitle, std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+        static void logGenericServerError(const std::string &errorTitle, std::istream &inputStream,
+                                          const Poco::Net::HTTPResponse &httpResponse);
 
 #ifdef _WIN32
         static bool isNtfs(const SyncPath &dirPath);
