@@ -194,12 +194,12 @@ int main(int argc, char **argv) {
         }
 
         if (appPtr->settingsAsked()) {
-            appPtr->showSettings();
+            appPtr->sendShowSettingsMsg();
             return 0;
         }
 
         if (appPtr->synthesisAsked()) {
-            appPtr->showSynthesis();
+            appPtr->sendShowSynthesisMsg();
             return 0;
         }
 
