@@ -484,20 +484,17 @@ bool IoHelper::createDirectory(const SyncPath &path, IoError &ioError) noexcept 
 
 bool IoHelper::deleteDirectory(const SyncPath &path, IoError &ioError) noexcept {
     std::error_code ec;
-    const bool removalSuccess = std::filesystem::remove_all(path, ec);
+    std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
-
-    return removalSuccess;
+    return ioError == IoErrorSuccess;
 }
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
     std::error_code ec;
     std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::recursive, ec);
     ioError = IoHelper::stdError2ioError(ec);
-    if (ioError != IoErrorSuccess) {
-        return false;
-    }
-    return true;
+ 
+    return ioError == IoErrorSuccess;
 }
 
 bool IoHelper::getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
