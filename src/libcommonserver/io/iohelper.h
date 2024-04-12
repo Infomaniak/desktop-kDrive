@@ -241,7 +241,7 @@ struct IoHelper {
          */
         static bool deleteDirectory(const SyncPath &path, IoError &ioError) noexcept;
 
-        //! Return a directory iterator for the specified path. The iterator can be used to iterate over the items in the directory.
+        //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the directory.
         /*! 
          \param path is the file system path of the directory to iterate over.
          \param recursive is a boolean indicating whether the iterator should be recursive or not.
@@ -251,6 +251,15 @@ struct IoHelper {
         */
         static bool getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
                                          DirectoryIterator &iterator) noexcept;
+
+        //! Create a directory entry for the specified path.
+        /*!
+         * \param path is the file system path of the directory entry to create.
+         * \param ioError holds the error returned when an underlying OS API call fails.
+         * \file is the directory entry that is set with the directory entry for the specified path.
+         * \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &file) noexcept;
 
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
         /*!
