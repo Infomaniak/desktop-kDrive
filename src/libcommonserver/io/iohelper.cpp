@@ -490,7 +490,7 @@ bool IoHelper::deleteDirectory(const SyncPath &path, IoError &ioError) noexcept 
     return removalSuccess;
 }
 
-bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) {
+bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
     std::error_code ec;
     std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::recursive, ec);
     ioError = IoHelper::stdError2ioError(ec);
