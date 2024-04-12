@@ -458,7 +458,7 @@ void ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
     }
 
     // The item already exist, exclude it
-    PlatformInconsistencyCheckerUtility::renameLocaLFile(absolutePath,
+    PlatformInconsistencyCheckerUtility::renameLocalFile(absolutePath,
                                                          PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
 
     _executorExitCode = ExitCodeDataError;
@@ -1751,7 +1751,7 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
             cancelType = CancelTypeCreate;
             status = SyncFileStatusIgnored;
             removeFromDb = false;
-            PlatformInconsistencyCheckerUtility::renameLocaLFile(absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
+            PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
             break;
         }
         case OperationTypeMove: {
@@ -1770,7 +1770,7 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
         case OperationTypeEdit: {
             // Rename the file so as not to lose any information
             SyncPath newSyncPath;
-            PlatformInconsistencyCheckerUtility::renameLocaLFile(
+            PlatformInconsistencyCheckerUtility::renameLocalFile(
                 absoluteLocalFilePath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict, &newSyncPath);
 
             // Exclude file from sync
@@ -2391,7 +2391,7 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         if (localCreateDirJob) {
             LOGW_SYNCPAL_WARN(_logger, L"Item " << Path2WStr(localCreateDirJob->destFilePath()).c_str()
                                                 << L" already exist. Blacklisting it on local replica.");
-            PlatformInconsistencyCheckerUtility::renameLocaLFile(_syncPal->localPath() / localCreateDirJob->destFilePath(), PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
+            PlatformInconsistencyCheckerUtility::renameLocalFile(_syncPal->localPath() / localCreateDirJob->destFilePath(), PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
         }
         return false;
     } else if (job->exitCode() != ExitCodeOk) {
