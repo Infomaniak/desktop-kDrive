@@ -401,8 +401,7 @@ $dependencies = @(
 "${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
 "${env:ProgramFiles(x86)}/xxHash/bin/xxhash.dll",
 "$vfsDir/Vfs.dll",
-"$buildPath/bin/kDrivesyncengine_vfs_win.dll",
-"$iconPath"
+"$buildPath/bin/kDrivesyncengine_vfs_win.dll"
 )
 
 Write-Host "Copying dependencies to the folder $archivePath"
@@ -418,6 +417,11 @@ if ($ci)
         Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
     }
 	exit $LASTEXITCODE
+}
+
+if (Test-Path -Path $iconPath)
+{
+	Copy-Item -Path "$iconPath" -Destination $archivePath
 }
 
 # Move each executable to the bin folder and sign them
