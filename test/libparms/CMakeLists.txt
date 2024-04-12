@@ -19,7 +19,7 @@ endif()
 
 if (WIN32)
     include_directories("F:/Projects/log4cplus/include")
-    include_directories("C:/Program Files (x86)cppunit/include")
+    include_directories("C:/Program Files (x86)/cppunit/include")
 else()
     include_directories("/usr/local/include")
 endif()
