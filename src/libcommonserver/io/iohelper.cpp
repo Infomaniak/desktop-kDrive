@@ -503,13 +503,6 @@ bool IoHelper::getDirectoryIterator(const SyncPath &path, bool recursive, IoErro
     return ioError == IoErrorSuccess;
 }
 
-bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &file) noexcept {
-    std::error_code ec;
-    file = std::filesystem::directory_entry(path, ec);
-    ioError = stdError2ioError(ec);
-    return ioError == IoErrorSuccess;
-}
-
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Cannot create symlink on itself - path=" << Path2WStr(path).c_str());
