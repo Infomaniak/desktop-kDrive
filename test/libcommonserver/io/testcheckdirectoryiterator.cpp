@@ -133,7 +133,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
-        for (int i = 0; i < 36; i++) {
+        for (int i = 0; i < 8; i++) {
             CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
             CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
         }

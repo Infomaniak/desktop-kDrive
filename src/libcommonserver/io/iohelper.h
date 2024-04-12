@@ -249,6 +249,8 @@ struct IoHelper {
          \param iterator is the directory iterator that is set with the directory iterator for the specified path.
          \return true if no unexpected error occurred, false otherwise.
         */
+        static bool getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
+                                         DirectoryIterator &iterator) noexcept;
 
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
         /*!
@@ -259,8 +261,7 @@ struct IoHelper {
         */
         static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
 
-        static bool getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
-                                         DirectoryIterator &iterator) noexcept;
+        
 #ifdef __APPLE__
         // From `man xattr`:
         // Extended attributes are arbitrary metadata stored with a file, but separate from the
