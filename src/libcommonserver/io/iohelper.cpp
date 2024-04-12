@@ -503,9 +503,9 @@ bool IoHelper::getDirectoryIterator(const SyncPath &path, bool recursive, IoErro
     return ioError == IoErrorSuccess;
 }
 
-bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &file) noexcept {
+bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept {
     std::error_code ec;
-    file = std::filesystem::directory_entry(path, ec);
+    entry = std::filesystem::directory_entry(path, ec);
     ioError = stdError2ioError(ec);
     return ioError == IoErrorSuccess;
 }
