@@ -256,10 +256,10 @@ struct IoHelper {
         /*!
          * \param path is the file system path of the directory entry to create.
          * \param ioError holds the error returned when an underlying OS API call fails.
-         * \file is the directory entry that is set with the directory entry for the specified path.
+         * \entry is the directory entry that is set with the directory entry for the specified path.
          * \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &file) noexcept;
+        static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
 
         //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
         /*!
