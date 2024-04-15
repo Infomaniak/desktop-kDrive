@@ -339,7 +339,7 @@ SyncStep SyncPal::step() const {
 }
 
 ExitCode SyncPal::fileStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const {
-    if (_tmpBlacklistManager && _tmpBlacklistManager->isTmpBlacklisted(side, path)) {
+    if (_tmpBlacklistManager && _tmpBlacklistManager->isTmpBlacklisted(path, side)) {
         if (path == Utility::sharedFolderName()) {
             status = SyncFileStatusSuccess;
         } else {
@@ -1151,14 +1151,12 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
 
 ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap) {
     for (const auto &localFileInfo : localFileMap) {
-        SyncName newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-            localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
-        SyncPath destPath = localFileInfo.second.parent_path() / newName;
-        LocalMoveJob renameJob(localFileInfo.second, destPath);
-        if (renameJob.runSynchronously() != ExitCodeOk) {
+        SyncPath destPath;
+        if (ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocaLFile(localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixTypeConflict, &destPath); exitCode != ExitCodeOk) {
             LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Path2WStr(localFileInfo.second).c_str() << L" into "
                                                           << Path2WStr(destPath).c_str());
-            return renameJob.exitCode();
+
+            return exitCode;
         }
 
         DbNodeId dbId = -1;

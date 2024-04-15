@@ -39,11 +39,12 @@ class TmpBlacklistManager {
         void blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         void refreshBlacklist();
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
-        bool isTmpBlacklisted(ReplicaSide side, const SyncPath &path);
+        bool isTmpBlacklisted(const SyncPath &path, ReplicaSide side);
         int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
 
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side);
+        void removeFromDB(const NodeId &nodeId, ReplicaSide side);
 
         std::unordered_map<NodeId, TmpErrorInfo> _localErrors;
         std::unordered_map<NodeId, TmpErrorInfo> _remoteErrors;

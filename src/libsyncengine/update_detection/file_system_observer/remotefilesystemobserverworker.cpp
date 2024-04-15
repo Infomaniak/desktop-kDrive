@@ -473,122 +473,6 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
     return ExitCodeOk;
 }
 
-// ExitCode RemoteFileSystemObserverWorker::processFiles(Poco::JSON::Array::Ptr filesArray)
-//{
-//     if (filesArray) {
-//         for (auto it = filesArray->begin(); it != filesArray->end(); ++it) {
-//             if (stopAsked()) {
-//                 return ExitCodeOk;
-//             }
-
-//            Poco::JSON::Object::Ptr fileObj = it->extract<Poco::JSON::Object::Ptr>();
-
-//            // Ignore root directory
-//            std::string val;
-//            if (JsonParserUtility::extractValue(fileObj, visibilityKey, val) && val == isRootKey) {
-//                continue;
-//            }
-
-//            if (!JsonParserUtility::extractValue(fileObj, typeKey, val)) {
-//                return ExitCodeBackError;
-//            }
-//            bool isDir = val == dirKey;
-
-//            int idInt = 0;
-//            if (!JsonParserUtility::extractValue(fileObj, fileIdKey, idInt)) {
-//                return ExitCodeBackError;
-//            }
-//            NodeId id = std::to_string(idInt);
-
-//            int parentIdInt = 0;
-//            if (!JsonParserUtility::extractValue(fileObj, parentIdKey, parentIdInt)) {
-//                return ExitCodeBackError;
-//            }
-//            NodeId parentId = std::to_string(parentIdInt);
-
-//            SyncTime createdAt = 0;
-//            if (!JsonParserUtility::extractValue(fileObj, createdAtKey, createdAt, false)) {
-//                return ExitCodeBackError;
-//            }
-
-//            SyncTime modtime = 0;
-//            if (!JsonParserUtility::extractValue(fileObj, lastModifiedAtKey, modtime, false)) {
-//                return ExitCodeBackError;
-//            }
-
-//            SyncName name;
-//            if (!JsonParserUtility::extractValue(fileObj, nameKey, name)) {
-//                return ExitCodeBackError;
-//            }
-
-//            int64_t size = 0;
-//            if (!isDir) {
-//                if (!JsonParserUtility::extractValue(fileObj, sizeKey, size)) {
-//                    return ExitCodeBackError;
-//                }
-//            }
-
-//            bool canWrite = true;
-//            Poco::JSON::Object::Ptr capabilitiesObj = fileObj->getObject(capabilitiesKey);
-//            if (capabilitiesObj) {
-//                if (!JsonParserUtility::extractValue(capabilitiesObj, canWriteKey, canWrite)) {
-//                    return ExitCodeBackError;
-//                }
-//            }
-
-//            SnapshotItem item(id, parentId, name, createdAt, modtime, isDir ? NodeType::NodeTypeDirectory :
-//            NodeType::NodeTypeFile, size, canWrite);
-
-//            bool isWarning = false;
-//            if (ExclusionTemplateCache::instance()->isExcluded("", item.name(), isWarning)) {
-//                if (isWarning) {
-//                    Error error(_syncPal->syncDbId()
-//                            , ""
-//                            , id
-//                            , isDir ? NodeType::NodeTypeDirectory : NodeType::NodeTypeFile
-//                            , name
-//                            , ConflictTypeNone
-//                            , InconsistencyTypeNone
-//                            , CancelTypeExcludedByTemplate);
-//                    _syncPal->addError(error);
-//                }
-//                continue;
-//            }
-
-//            if (!isDir) {
-//                // Compute time/size checksum
-//                item.setTimeSizeChecksum(computeTimeSizeChecksum(modtime, size));
-//            }
-
-// #ifdef _WIN32
-//             SyncName newName;
-//             if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name, newName)) {
-//                 name = newName;
-//             }
-// #endif
-
-//            if (_snapshot->updateItem(item)) {
-//                if (ParametersCache::instance()->parameters().extendedLog()) {
-//                    LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:" << SyncName2WStr(name).c_str()
-//                                                                                    << L", inode:" << Utility::s2ws(id).c_str()
-//                                                                                    << L", parent inode:" <<
-//                                                                                    Utility::s2ws(parentId).c_str()
-//                                                                                    << L", createdAt:" << createdAt
-//                                                                                    << L", modtime:" << modtime
-//                                                                                    << L", isDir:" << isDir
-//                                                                                    << L", size:" << size);
-//                }
-//            }
-//            else {
-//                LOGW_SYNCPAL_WARN(_logger, L"Fail to insert item: " << SyncName2WStr(name).c_str() << L" (" <<
-//                Utility::s2ws(id).c_str() << L")"); invalidateSnapshot(); return ExitCodeDataError;
-//            }
-//        }
-//    }
-
-//    return ExitCodeOk;
-//}
-
 ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr actionArray) {
     if (actionArray) {
         std::unordered_set<NodeId> movedItems;
@@ -733,6 +617,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                     }
                 }
             } else if (action == renameAction) {
+                _syncPal->removeItemFromTmpBlacklist(id, ReplicaSideRemote);
                 if (_snapshot->updateItem(item)) {
                     LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(name).c_str() << L" ("
                                                                    << Utility::s2ws(id).c_str() << L") renamed");
@@ -749,7 +634,6 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                 }
 
                 _syncPal->removeItemFromTmpBlacklist(id, ReplicaSideRemote);
-
                 if (_snapshot->removeItem(id)) {
                     if (ParametersCache::instance()->parameters().extendedLog()) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from remote snapshot: " << SyncName2WStr(name).c_str() << L" ("

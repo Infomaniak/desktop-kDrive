@@ -49,7 +49,7 @@ void UpdateTree::deleteNode(std::shared_ptr<Node> node) {
         return;
     }
 
-    // Recusively remove all children
+    // Recursively remove all children
     while (node->children().size() > 0) {
         deleteNode((node->children().begin())->second);
     }

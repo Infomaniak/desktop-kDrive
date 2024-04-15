@@ -54,6 +54,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         void updateUnsyncedList();
 
+        void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
+
         const std::shared_ptr<SyncDb> _syncDb = nullptr;
         Sync _sync;
 

@@ -19,6 +19,7 @@
 #include "platforminconsistencycheckerutility.h"
 
 #include "libcommon/utility/utility.h"
+#include "jobs/local/localmovejob.h"
 
 #include <iomanip>
 #include <log4cplus/loggingmacros.h>
@@ -54,7 +55,6 @@ size_t PlatformInconsistencyCheckerUtility::_maxPathLength = 0;
 #if defined(_WIN32)
 size_t PlatformInconsistencyCheckerUtility::_maxPathLengthFolder = 0;
 #endif
-std::mutex PlatformInconsistencyCheckerUtility::_mutex;
 
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::instance() {
     if (_instance == nullptr) {
@@ -64,7 +64,7 @@ std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyChecke
 }
 
 SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPath &name,
-                                                                   SuffixType suffixType /*= SuffixTypeRename*/) {
+                                                                   SuffixType suffixType) {
     SyncName suffix = generateSuffix(suffixType);
     SyncName sub = name.stem().native().substr(0, MAX_NAME_LENGTH - suffix.size() - name.extension().native().size());
 
@@ -77,6 +77,21 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
 #endif
 
     return sub + suffix + name.extension().native();
+}
+
+ExitCode PlatformInconsistencyCheckerUtility::renameLocaLFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr /*= nullptr*/) {
+    const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        absoluteLocalPath, suffixType);
+    auto newFullPath = absoluteLocalPath.parent_path() / newName;
+
+    LocalMoveJob moveJob(absoluteLocalPath, newFullPath);
+    moveJob.runSynchronously();
+
+    if (newPathPtr) {
+        *newPathPtr = std::move(newFullPath);
+    }
+
+    return moveJob.exitCode();
 }
 
 bool PlatformInconsistencyCheckerUtility::fixNameForbiddenChars(const SyncPath &name, SyncName &newName) {
