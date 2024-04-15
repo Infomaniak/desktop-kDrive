@@ -471,7 +471,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 continue;
             }
 
-            NodeType type = snapshot->type(*snapIdIt);
+            NodeId nodeId = *snapIdIt;
+            NodeType type = snapshot->type(nodeId);
             if (checkOnlyDir && type != NodeTypeDirectory) {
                 // In first loop, we check only directory
                 snapIdIt++;
@@ -479,7 +480,6 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
             }
 
             // Remove directory ID from list so 2nd iteration will be a bit faster
-            NodeId nodeId = *snapIdIt;
             snapIdIt = remainingDbIds.erase(snapIdIt);
 
             if (snapshot->isOrphan(snapshot->parentId(nodeId))) {
@@ -514,7 +514,9 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                     continue;
                 }
 
-                if (type == NodeTypeFile) {
+                bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
+
+                if (type == NodeTypeFile && !isLink) {
                     // On Windows, we receive CREATE event while the file is still being copied
                     // Do not start synchronizing the file while copying is in progress
                     const SyncPath absolutePath = _syncPal->_localPath / snapPath;

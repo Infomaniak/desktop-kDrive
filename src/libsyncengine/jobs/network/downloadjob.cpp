@@ -421,17 +421,17 @@ bool DownloadJob::handleResponse(std::istream &is) {
 }
 
 bool DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
+    SyncPath targetPath(data);
+    if (targetPath == _localpath) {
+        LOGW_DEBUG(_logger, L"Cannot create symlink on itself - path=" << Path2WStr(_localpath).c_str());
+        return false;
+    }
+
+    LOGW_DEBUG(_logger,
+               L"Create link - targetPath=" << Path2WStr(targetPath).c_str() << L" path=" << Path2WStr(_localpath).c_str());
+
     if (mimeType == mimeTypeSymlink) {
         // Create symlink
-        SyncPath targetPath(data);
-        if (targetPath == _localpath) {
-            LOGW_DEBUG(_logger, L"Cannot create symlink on itself - path=" << Path2WStr(_localpath).c_str());
-            return false;
-        }
-
-        LOGW_DEBUG(_logger, L"Create symlink - targetPath=" << Path2WStr(targetPath).c_str() << L" path="
-                                                            << Path2WStr(_localpath).c_str());
-
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::createSymlink(targetPath, _localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create symlink: " << Utility::formatIoError(targetPath, ioError).c_str());
@@ -439,14 +439,6 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
     } else if (mimeType == mimeTypeHardlink) {
         // Unreachable code
-        SyncPath targetPath(data);
-        if (targetPath == _localpath) {
-            LOGW_DEBUG(_logger, L"Cannot create hardlink on itself - path=" << Path2WStr(_localpath).c_str());
-            return false;
-        }
-
-        LOGW_DEBUG(_logger, L"Create hardlink - targetPath=" << Path2WStr(targetPath).c_str() << L" path="
-                                                             << Path2WStr(_localpath).c_str());
         std::error_code ec;
         std::filesystem::create_hard_link(targetPath, _localpath, ec);
         if (ec.value() != 0) {
@@ -457,9 +449,6 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
     } else if (mimeType == mimeTypeJunction) {
 #if defined(_WIN32)
-        LOGW_DEBUG(_logger, L"Create hardlink - targetPath=" << Path2WStr(targetPath).c_str() << L" path="
-                                                             << Path2WStr(_localpath).c_str());
-
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::createJunction(data, _localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_localpath, ioError).c_str());
@@ -468,7 +457,6 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 #endif
     } else if (mimeType == mimeTypeFinderAlias) {
 #if defined(__APPLE__)
-        LOGW_DEBUG(_logger, L"Create alias - path=" << Path2WStr(_localpath).c_str());
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::createAlias(data, _localpath, ioError)) {
             const std::wstring message = Utility::s2ws(IoHelper::ioError2StdString(ioError));

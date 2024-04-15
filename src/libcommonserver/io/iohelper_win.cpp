@@ -239,8 +239,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
     buf->modtime = FileTimeToUnixTime(pFileInfo->LastWriteTime, &rem);
     buf->creationTime = FileTimeToUnixTime(pFileInfo->CreationTime, &rem);
 
-    bool isDirectory =
-        !(pFileInfo->FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) && pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+    bool isDirectory = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
     buf->type = isDirectory ? NodeTypeDirectory : NodeTypeFile;
 
     buf->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
@@ -589,10 +588,11 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     wcscpy(reparseDataBuffer->MountPointReparseBuffer.PathBuffer, targetPathCstr);
     wcscpy(reparseDataBuffer->MountPointReparseBuffer.PathBuffer + targetPathWLen + 1, targetPathCstr);
     reparseDataBuffer->MountPointReparseBuffer.SubstituteNameOffset = 0;
-    reparseDataBuffer->MountPointReparseBuffer.SubstituteNameLength = targetPathWLen * sizeof(WCHAR);
-    reparseDataBuffer->MountPointReparseBuffer.PrintNameOffset = (targetPathWLen + 1) * sizeof(WCHAR);
-    reparseDataBuffer->MountPointReparseBuffer.PrintNameLength = targetPathWLen * sizeof(WCHAR);
-    reparseDataBuffer->ReparseDataLength = (targetPathWLen + 1) * 2 * sizeof(WCHAR) + REPARSE_MOUNTPOINT_HEADER_SIZE;
+    reparseDataBuffer->MountPointReparseBuffer.SubstituteNameLength = static_cast<WORD>(targetPathWLen * sizeof(WCHAR));
+    reparseDataBuffer->MountPointReparseBuffer.PrintNameOffset = static_cast<WORD>((targetPathWLen + 1) * sizeof(WCHAR));
+    reparseDataBuffer->MountPointReparseBuffer.PrintNameLength = static_cast<WORD>(targetPathWLen * sizeof(WCHAR));
+    reparseDataBuffer->ReparseDataLength =
+        static_cast<WORD>((targetPathWLen + 1) * 2 * sizeof(WCHAR) + REPARSE_MOUNTPOINT_HEADER_SIZE);
 
     DWORD dwError;
     const bool success =

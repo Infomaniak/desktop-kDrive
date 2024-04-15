@@ -504,14 +504,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
 
         bool placeholderCreation = isLiteSyncActivated() && syncOp->affectedNode()->type() == NodeTypeFile;
         if (placeholderCreation && syncOp->affectedNode()->id().has_value()) {
-            bool isLink = false;
-            ExitCode exitCode = ExecutorWorker::isLink(*syncOp->affectedNode()->id(), isLink);
-            if (exitCode != ExitCodeOk) {
-                _executorExitCode = exitCode;
-                _executorExitCause = ExitCauseUnknown;
-                return false;
-            }
-
+            bool isLink = _syncPal->_remoteSnapshot->isLink(*syncOp->affectedNode()->id());
             placeholderCreation = !isLink;
         }
 
@@ -2520,22 +2513,6 @@ void ExecutorWorker::increaseErrorCount(SyncOpPtr syncOp) {
             correspondingUpdateTree->deleteNode(syncOp->correspondingNode());
         }
     }
-}
-
-ExitCode ExecutorWorker::isLink(const NodeId &nodeId, bool &isLink) {
-    GetFileInfoJob job(_syncPal->driveDbId(), nodeId);
-    job.runSynchronously();
-    if (job.hasHttpError()) {
-        if (job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-            job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
-            return ExitCodeOk;
-        }
-
-        return ExitCodeBackError;
-    }
-
-    isLink = job.isLink();
-    return ExitCodeOk;
 }
 
 }  // namespace KDC
