@@ -20,8 +20,8 @@
 
 #include "libcommonserver/commonserverlib.h"
 #include "libcommon/utility/types.h"
-
 #include <log4cplus/logger.h>
+#include <zip.h>
 #include <sentry.h>
 
 namespace KDC {
@@ -161,9 +161,28 @@ class COMMONSERVER_EXPORT Log {
         inline log4cplus::Logger getLogger() { return _logger; }
         bool configure(bool useLog, LogLevel logLevel, bool purgeOldLogs);
 
+        /*! Returns the estimated size of the log files in bytes.
+        * Actual size may be different due to compression.
+        * \param ioError The error object to be filled in case of error.
+        * \return The estimated size of the log files in bytes.
+        */
+        int64_t getLogEstimatedSize(IoError &ioError);
+
+        /*! Generates a support archive containing the logs and the parms.db file.
+        * \param includeOldLogs If true, the old logs will be included in the archive.
+        * \param outputPath The path where the archive will be generated.
+        * \param archiveName The name of the archive.
+        * \param ioError The error object to be filled in case of error.
+        * \return True if the archive was generated successfully, false otherwise.
+        */
+        bool generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const std::string &archiveName,
+                                        IoError &ioError);
+
     private:
         Log(const log4cplus::tstring &filePath);
-
+        bool copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, IoError &ioError);
+        bool copyParmsDbTo(const SyncPath &outputPath, IoError &ioError);
+        bool compressLogs(const SyncPath &directoryToCompress, IoError &ioError);
         static std::shared_ptr<Log> _instance;
         log4cplus::Logger _logger;
 };

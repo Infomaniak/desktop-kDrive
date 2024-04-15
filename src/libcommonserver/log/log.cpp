@@ -20,6 +20,9 @@
 #include "customrollingfileappender.h"
 #include "utility/utility.h"
 
+#include "libcommonserver/io/iohelper.h"
+#include "libcommon/utility/utility.h"
+
 #include <log4cplus/initializer.h>
 #include <log4cplus/fileappender.h>
 #include <log4cplus/loggingmacros.h>
@@ -108,5 +111,282 @@ Log::Log(const log4cplus::tstring &filePath) {
 
     LOG_INFO(_logger, "Logger initialization done");
 }
+
+int64_t Log::getLogEstimatedSize(IoError &ioError) {
+    SyncPath logPath;
+
+    IoHelper::logDirectoryPath(logPath, ioError);
+    if (ioError != IoErrorSuccess) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::logDirectoryPath : " << Utility::formatIoError(logPath, ioError).c_str());
+        return -1;
+    }
+
+    DirectoryIterator dir;
+    IoHelper::getDirectoryIterator(logPath, false, ioError, dir);
+    if (ioError != IoErrorSuccess) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in DirectoryIterator : " << Utility::formatIoError(logPath, ioError).c_str());
+        return -1;
+    }
+
+    // Estimate the size of the log files
+    int64_t size = 0;
+    DirectoryEntry entry;
+    bool retried = true;
+    ioError = IoErrorSuccess;
+
+    for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
+        size = 0;
+        while (dir.next(entry, ioError)) {
+            size += entry.file_size();
+        }
+
+        if (ioError == IoErrorEndOfDirectory) {
+            break;
+        } else {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in DirectoryIterator : " << Utility::formatIoError(logPath, ioError).c_str() << " retrying once.");
+        }
+    }
+
+    if (ioError != IoErrorEndOfDirectory) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in DirectoryIterator : " << Utility::formatIoError(logPath, ioError).c_str());
+        return -1;
+    }
+    return size;
+}
+
+bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const std::string &archiveName,
+                                     IoError &ioError) {
+    // Get the log directory path
+    SyncPath logPath;
+    ioError = IoErrorSuccess;
+    IoHelper::logDirectoryPath(logPath, ioError);
+    if (ioError != IoErrorSuccess) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::logDirectoryPath : " << Utility::formatIoError(logPath, ioError).c_str());
+        return false;
+    }
+
+    // Create temp folder
+    std::string tempsFolderName;
+    tempsFolderName = "tempLogArchive_" + CommonUtility::generateRandomStringAlphaNum(10);
+
+    if (!IoHelper::createDirectory(logPath / "send_log_directory_temp", ioError) && ioError != IoErrorDirectoryExists) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::createDirectory : "
+                     << Utility::formatIoError(logPath / "send_log_directory_temp", ioError).c_str());
+        return false;
+    }
+
+    if (!IoHelper::createDirectory(logPath / "send_log_directory_temp" / tempsFolderName, ioError)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::createDirectory : "
+                     << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    // Copy log files to temp folder
+    if (!copyLogsTo(logPath / "send_log_directory_temp" / tempsFolderName, includeOldLogs, ioError)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in copyLogsTo : "
+                     << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    // Copy .parmsdb to temp folder
+    if (!copyParmsDbTo(logPath / "send_log_directory_temp" / tempsFolderName / ".parms.db", ioError)) {
+        LOG_WARN(
+            Log::instance()->getLogger(),
+            "Error in copyParmsDbTo : "
+                << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName / ".parms.db", ioError).c_str());
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    // compress all the files in the folder
+    if (!compressLogs(logPath / "send_log_directory_temp" / tempsFolderName, ioError)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in compressLogs : "
+                     << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    // Generate the archive
+    int err = 0;
+    zip_t *archive = zip_open((logPath / "send_log_directory_temp" / archiveName).string().c_str(), ZIP_CREATE, &err);
+    if (err != ZIP_ER_OK) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in zip_open : " << zip_strerror(archive));
+        LOG_WARN(Log::instance()->getLogger(), "Error in zip_open : " << err);
+
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    DirectoryIterator dir;
+    DirectoryEntry entry;
+    if (!IoHelper::getDirectoryIterator(logPath / "send_log_directory_temp" / tempsFolderName, false, ioError, dir)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in DirectoryIterator : "
+                     << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    while (dir.next(entry, ioError)) {
+        std::string entryPath = entry.path().string();
+        zip_source_t *source = zip_source_file(archive, entryPath.c_str(), 0, ZIP_LENGTH_TO_END);
+        if (source == nullptr) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in zip_source_file : " << zip_strerror(archive));
+            IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+            return false;
+        }
+
+        std::string entryName = entry.path().filename().string();
+        if (zip_file_add(archive, entryName.c_str(), source, ZIP_FL_OVERWRITE) < 0) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in zip_file_add : " << zip_strerror(archive));
+            IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+            return false;
+        }
+    }
+
+    if (ioError != IoErrorEndOfDirectory) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in DirectoryIterator : "
+                     << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    // Close the archive
+    if (zip_close(archive) < 0) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in zip_close : " << zip_strerror(archive));
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    // Copy the archive to the output path
+    if (!IoHelper::copyFileOrDirectory(logPath / "send_log_directory_temp" / archiveName, outputPath / archiveName, ioError)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::copyFileOrDirectory : "
+                     << Utility::formatIoError(logPath / "send_log_directory_temp" / archiveName, ioError).c_str());
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    // Delete the temp folder
+    if (IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::deleteDirectory : "
+                     << Utility::formatIoError(logPath / "send_log_directory_temp", ioError).c_str());
+    }
+
+    return true;
+}
+
+bool Log::copyParmsDbTo(const SyncPath &outputPath, IoError &ioError) {
+    const SyncPath parmsDbName = ".parms.db";
+    const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
+    DirectoryEntry entryParmsDb;
+
+    if (!IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::getDirectoryEntry : " << Utility::formatIoError(parmsDbPath, ioError).c_str());
+        return false;
+    }
+
+    if (!IoHelper::copyFileOrDirectory(parmsDbPath, outputPath, ioError)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::copyFileOrDirectory : " << Utility::formatIoError(parmsDbPath, ioError).c_str());
+        return false;
+    }
+    return true;
+}
+
+bool Log::copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, IoError &ioError) {
+    SyncPath logPath;
+    if (!IoHelper::logDirectoryPath(logPath, ioError)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::logDirectoryPath : " << Utility::formatIoError(logPath, ioError).c_str());
+        return false;
+    }
+
+    DirectoryIterator dir;
+    if (!IoHelper::getDirectoryIterator(logPath, false, ioError, dir)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in DirectoryIterator : " << Utility::formatIoError(logPath, ioError).c_str());
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+
+    DirectoryEntry entry;
+    while (dir.next(entry, ioError)) {
+        if (entry.is_directory()) {
+            LOG_WARN(Log::instance()->getLogger(), "Ignoring temp directory " << entry.path().filename().string().c_str());
+            continue;
+        }
+
+        if (!includeOldLogs && entry.path().filename().string().find(".gz") != std::string::npos) {
+            LOG_WARN(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string().c_str());
+            continue;
+        }
+
+        if (!IoHelper::copyFileOrDirectory(entry.path(), outputPath / entry.path().filename(), ioError)) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in IoHelper::copyFileOrDirectory : " << Utility::formatIoError(entry.path(), ioError).c_str());
+        }
+    }
+
+    if (ioError != IoErrorEndOfDirectory) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in DirectoryIterator : " << Utility::formatIoError(logPath, ioError).c_str());
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        return false;
+    }
+    return true;
+}
+
+bool Log::compressLogs(const SyncPath &directoryToCompress, IoError &ioError) {
+    DirectoryIterator dir;
+    if (!IoHelper::getDirectoryIterator(directoryToCompress, false, ioError, dir)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in DirectoryIterator : " << Utility::formatIoError(directoryToCompress, ioError).c_str());
+        return false;
+    }
+
+    DirectoryEntry entry;
+    while (dir.next(entry, ioError)) {
+        std::string entryPath = entry.path().string();
+        if (entryPath.find(".gz") != std::string::npos) {
+            continue;
+        }
+        QString destPath = QString::fromStdString(entryPath + ".gz");
+        if (!CommonUtility::compressFile(QString::fromStdString(entryPath), destPath)) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in compressFile for " << entryPath.c_str() << " to " << destPath.toStdString().c_str());
+            ioError = IoErrorUnknown;
+            return false;
+        }
+
+        if (!IoHelper::deleteDirectory(entry.path(), ioError)) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in IoHelper::deleteDirectory : " << Utility::formatIoError(entry.path(), ioError).c_str());
+            return false;
+        }
+    }
+
+    if (ioError != IoErrorEndOfDirectory) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in DirectoryIterator : " << Utility::formatIoError(directoryToCompress, ioError).c_str());
+        return false;
+    }
+    return true;
+}
+
 
 }  // namespace KDC

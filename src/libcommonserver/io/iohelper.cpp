@@ -115,6 +115,8 @@ std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
             return "Access denied";
         case IoErrorAttrNotFound:
             return "Attribute not found";
+        case IoErrorDirectoryExists:
+            return "Directory already exists";
         case IoErrorDiskFull:
             return "Disk full";
         case IoErrorFileExists:
@@ -493,7 +495,7 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
     std::error_code ec;
     std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::recursive, ec);
     ioError = IoHelper::stdError2ioError(ec);
- 
+
     return ioError == IoErrorSuccess;
 }
 
