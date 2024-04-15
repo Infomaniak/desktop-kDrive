@@ -171,8 +171,8 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                 SyncPath absolutePath = dirIt->path();
 
                 // Check if the directory entry is managed
-                bool isManaged;
-                bool isLink;
+                bool isManaged = true;
+                bool isLink = false;
                 IoError ioError = IoErrorSuccess;
                 if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),

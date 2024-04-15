@@ -471,8 +471,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 continue;
             }
 
-            NodeId nodeId = *snapIdIt;
-            NodeType type = snapshot->type(nodeId);
+            const NodeId nodeId = *snapIdIt;
+            const NodeType type = snapshot->type(nodeId);
             if (checkOnlyDir && type != NodeTypeDirectory) {
                 // In first loop, we check only directory
                 snapIdIt++;
@@ -514,7 +514,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                     continue;
                 }
 
-                bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
+                const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
 
                 if (type == NodeTypeFile && !isLink) {
                     // On Windows, we receive CREATE event while the file is still being copied
@@ -560,7 +560,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
             return ExitCodeOk;
         }
 
-        bool localSnapshotIsLink = _syncPal->_localSnapshot->isLink(dbNode.nodeIdLocal().value());
+        const bool localSnapshotIsLink = _syncPal->_localSnapshot->isLink(dbNode.nodeIdLocal().value());
         if (localSnapshotIsLink) {
             // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
             return ExitCodeOk;

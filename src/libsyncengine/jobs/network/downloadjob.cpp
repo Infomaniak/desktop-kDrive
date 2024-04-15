@@ -70,32 +70,32 @@ DownloadJob::~DownloadJob() {
     if (_responseHandlingCanceled) {
         if (_vfsSetPinState) {
             if (!_vfsSetPinState(_localpath, PinStateOnlineOnly)) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState - path=" << Path2WStr(_localpath).c_str());
+                LOGW_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
 
         // TODO: usefull ?
         if (_vfsForceStatus) {
             if (!_vfsForceStatus(_localpath, false, 0, false)) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_localpath).c_str());
+                LOGW_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
 
         if (_vfsCancelHydrate) {
             if (!_vfsCancelHydrate(_localpath)) {
-                LOGW_WARN(_logger, L"Error in vfsCancelHydrate - path=" << Path2WStr(_localpath).c_str());
+                LOGW_WARN(_logger, L"Error in vfsCancelHydrate : " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
     } else {
         if (_vfsSetPinState) {
             if (!_vfsSetPinState(_localpath, _exitCode == ExitCodeOk ? PinStateAlwaysLocal : PinStateOnlineOnly)) {
-                LOGW_WARN(_logger, L"Error in vfsSetPinState - path=" << Path2WStr(_localpath).c_str());
+                LOGW_WARN(_logger, L"Error in vfsSetPinState : " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
 
         if (_vfsForceStatus) {
             if (!_vfsForceStatus(_localpath, false, 0, _exitCode == ExitCodeOk)) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_localpath).c_str());
+                LOGW_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
     }
@@ -125,7 +125,8 @@ bool DownloadJob::canRun() {
     }
 
     if (_isCreate && exists) {
-        LOGW_DEBUG(_logger, L"Item " << Path2WStr(_localpath).c_str() << L" already exist. Aborting current sync and restart.");
+        LOGW_DEBUG(_logger, L"Item : " << Utility::formatSyncPath(_localpath).c_str()
+                                       << L" already exist. Aborting current sync and restart.");
         _exitCode = ExitCodeNeedRestart;
         _exitCause = ExitCauseUnexpectedFileSystemEvent;
         return false;
@@ -149,13 +150,13 @@ void DownloadJob::runJob() noexcept {
             std::string error;
             if (!_vfsUpdateMetadata(_localpath, filestat.creationTime, filestat.modtime, _expectedSize,
                                     std::to_string(filestat.inode), error)) {
-                LOGW_WARN(_logger, L"Update metadata failed - path=" << Path2WStr(_localpath).c_str());
+                LOGW_WARN(_logger, L"Update metadata failed : " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
 
         if (_vfsForceStatus) {
             if (!_vfsForceStatus(_localpath, true, 0, false)) {
-                LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_localpath).c_str());
+                LOGW_WARN(_logger, L"Error in vfsForceStatus : " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
     }
@@ -225,7 +226,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
         std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
         if (!output) {
-            LOGW_WARN(_logger, L"Failed to create file - path=" << Path2WStr(tmpPath).c_str());
+            LOGW_WARN(_logger, L"Failed to create file : " << Utility::formatSyncPath(tmpPath).c_str());
             _exitCode = ExitCodeSystemError;
             _exitCause = Utility::enoughSpace(tmpPath) ? ExitCauseFileAccessError : ExitCauseNotEnoughDiskSpace;
             return false;
@@ -309,11 +310,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
                     if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
                         if (!_vfsUpdateFetchStatus(tmpPath, _localpath, _progress, fetchCanceled, fetchFinished)) {
-                            LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus - path=" << Path2WStr(_localpath).c_str());
+                            LOGW_WARN(_logger,
+                                      L"Error in vfsUpdateFetchStatus : " << Utility::formatSyncPath(_localpath).c_str());
                             fetchError = true;
                             break;
                         } else if (fetchCanceled) {
-                            LOGW_WARN(_logger, L"Update fetch status canceled - path=" << Path2WStr(_localpath).c_str());
+                            LOGW_WARN(_logger, L"Update fetch status canceled : " << Utility::formatSyncPath(_localpath).c_str());
                             break;
                         }
                         fileProgressTimer = std::chrono::steady_clock::now();
@@ -336,12 +338,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
             if (_vfsUpdateFetchStatus && !fetchFinished) {
                 // Update fetch status
                 if (!_vfsUpdateFetchStatus(tmpPath, _localpath, _progress, fetchCanceled, fetchFinished)) {
-                    LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus - path=" << Path2WStr(_localpath).c_str());
+                    LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus : " << Utility::formatSyncPath(_localpath).c_str());
                     fetchError = true;
                 } else if (fetchCanceled) {
-                    LOGW_WARN(_logger, L"Update fetch status canceled - path=" << Path2WStr(_localpath).c_str());
+                    LOGW_WARN(_logger, L"Update fetch status canceled : " << Utility::formatSyncPath(_localpath).c_str());
                 } else if (!fetchFinished) {
-                    LOGW_WARN(_logger, L"Update fetch status not terminated - path=" << Path2WStr(_localpath).c_str());
+                    LOGW_WARN(_logger, L"Update fetch status not terminated : " << Utility::formatSyncPath(_localpath).c_str());
                 }
 
                 _responseHandlingCanceled = fetchCanceled || fetchError || (!fetchFinished);
@@ -349,7 +351,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 // Replace file by tmp one
                 bool replaceError = false;
                 if (!moveTmpFile(tmpPath, restartSync)) {
-                    LOGW_WARN(_logger, L"Failed to replace file by tmp one - path=" << Path2WStr(tmpPath).c_str());
+                    LOGW_WARN(_logger, L"Failed to replace file by tmp one : " << Utility::formatSyncPath(tmpPath).c_str());
                     replaceError = true;
                 }
 
@@ -362,7 +364,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
             // Remove tmp file
             if (!removeTmpFile(tmpPath)) {
-                LOGW_WARN(_logger, L"Failed to remove tmp file - path=" << Path2WStr(tmpPath).c_str());
+                LOGW_WARN(_logger, L"Failed to remove tmp file : " << Utility::formatSyncPath(tmpPath).c_str());
             }
 
             if (isAborted() || fetchCanceled) {
@@ -387,14 +389,14 @@ bool DownloadJob::handleResponse(std::istream &is) {
         bool exists = false;
         if (!Utility::setFileDates(_localpath, std::make_optional<KDC::SyncTime>(_creationTime),
                                    std::make_optional<KDC::SyncTime>(_modtimeIn), exists)) {
-            LOGW_WARN(_logger, L"Error in Utility::setFileDates - path=" << Path2WStr(_localpath).c_str());
+            LOGW_WARN(_logger, L"Error in Utility::setFileDates : " << Utility::formatSyncPath(_localpath).c_str());
             // Do nothing (remote file will be updated during the next sync)
 #ifdef NDEBUG
             sentry_capture_event(
                 sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "DownloadJob::handleResponse", "Unable to set file dates"));
 #endif
         } else if (!exists) {
-            LOGW_INFO(_logger, L"Item does not exist anymore. Restarting sync - path=" << Path2WStr(_localpath).c_str());
+            LOGW_INFO(_logger, L"Item does not exist anymore. Restarting sync : " << Utility::formatSyncPath(_localpath).c_str());
             _exitCode = ExitCodeDataError;
             _exitCause = ExitCauseInvalidSnapshot;
             return false;
@@ -423,12 +425,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
 bool DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
     SyncPath targetPath(data);
     if (targetPath == _localpath) {
-        LOGW_DEBUG(_logger, L"Cannot create symlink on itself - path=" << Path2WStr(_localpath).c_str());
+        LOGW_DEBUG(_logger, L"Cannot create symlink on itself : " << Utility::formatSyncPath(_localpath).c_str());
         return false;
     }
 
-    LOGW_DEBUG(_logger,
-               L"Create link - targetPath=" << Path2WStr(targetPath).c_str() << L" path=" << Path2WStr(_localpath).c_str());
+    LOGW_DEBUG(_logger, L"Create link : " << Utility::formatSyncPath(targetPath).c_str() << L" "
+                                          << Utility::formatSyncPath(_localpath).c_str());
 
     if (mimeType == mimeTypeSymlink) {
         // Create symlink
@@ -442,9 +444,10 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         std::error_code ec;
         std::filesystem::create_hard_link(targetPath, _localpath, ec);
         if (ec.value() != 0) {
-            LOGW_WARN(_logger, L"Failed to create hardlink - targetPath="
-                                   << Path2WStr(targetPath).c_str() << L" path=" << Path2WStr(_localpath).c_str() << L" err="
-                                   << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
+            LOGW_WARN(_logger, L"Failed to create hardlink : " << Utility::formatSyncPath(targetPath).c_str() << L" "
+                                                               << Utility::formatSyncPath(_localpath).c_str() << L" err="
+                                                               << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
+                                                               << L")");
             return false;
         }
     } else if (mimeType == mimeTypeJunction) {
@@ -460,7 +463,8 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::createAlias(data, _localpath, ioError)) {
             const std::wstring message = Utility::s2ws(IoHelper::ioError2StdString(ioError));
-            LOGW_WARN(_logger, L"Failed to create alias - path=" << Path2WStr(_localpath).c_str() << L" err=" << message.c_str());
+            LOGW_WARN(_logger,
+                      L"Failed to create alias : " << Utility::formatSyncPath(_localpath).c_str() << L" err=" << message.c_str());
 
             return false;
         }
@@ -477,13 +481,12 @@ bool DownloadJob::removeTmpFile(const SyncPath &path) {
     std::error_code ec;
     if (!std::filesystem::remove_all(path, ec)) {
         if (ec.value() != 0) {
-            LOGW_WARN(_logger, L"Failed to remove all - path=" << Path2WStr(path).c_str() << L" err="
-                                                               << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
-                                                               << L")");
+            LOGW_WARN(_logger, L"Failed to remove all : " << Utility::formatSyncPath(path).c_str() << L" err="
+                                                          << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
             return false;
         }
 
-        LOGW_WARN(_logger, L"Failed to remove all - path=" << Path2WStr(path).c_str());
+        LOGW_WARN(_logger, L"Failed to remove all : " << Utility::formatSyncPath(path).c_str());
         return false;
     }
 
@@ -514,9 +517,8 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
             ec.clear();
             std::filesystem::copy(path, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
             if (ec.value() != 0) {
-                LOGW_WARN(_logger, L"Failed to copy - path=" << Path2WStr(_localpath).c_str() << L" err="
-                                                             << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
-                                                             << L")");
+                LOGW_WARN(_logger, L"Failed to copy : " << Utility::formatSyncPath(_localpath).c_str() << L" err="
+                                                        << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
                 return false;
             }
         }
@@ -526,12 +528,11 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
                 // Retry
                 retry = true;
                 Utility::msleep(10);
-                LOGW_DEBUG(_logger, L"Retrying to move downloaded file - path=" << Path2WStr(_localpath).c_str());
+                LOGW_DEBUG(_logger, L"Retrying to move downloaded file : " << Utility::formatSyncPath(_localpath).c_str());
                 counter--;
             } else {
-                LOGW_WARN(_logger, L"Failed to rename - path=" << Path2WStr(_localpath).c_str() << L" err="
-                                                               << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
-                                                               << L")");
+                LOGW_WARN(_logger, L"Failed to rename : " << Utility::formatSyncPath(_localpath).c_str() << L" err="
+                                                          << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
                 return false;
             }
         }
@@ -548,15 +549,15 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
             }
 
             if (!exists) {
-                LOGW_INFO(_logger, L"Parent of item does not exist anymore - path=" << Path2WStr(_localpath).c_str() << L" err="
-                                                                                    << Utility::s2ws(ec.message()).c_str()
-                                                                                    << L" (" << ec.value() << L")");
+                LOGW_INFO(_logger, L"Parent of item does not exist anymore : " << Utility::formatSyncPath(_localpath).c_str()
+                                                                               << L" err=" << Utility::s2ws(ec.message()).c_str()
+                                                                               << L" (" << ec.value() << L")");
                 restartSync = true;
                 return true;
             }
 
-            LOGW_WARN(_logger, L"Failed to rename - path=" << Path2WStr(_localpath).c_str() << L" err="
-                                                           << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
+            LOGW_WARN(_logger, L"Failed to rename : " << Utility::formatSyncPath(_localpath).c_str() << L" err="
+                                                      << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
             return false;
         }
 #ifdef _WIN32

@@ -59,7 +59,7 @@ class CsvFullFileListWithCursorJob : public AbstractTokenNetworkJob {
 
         virtual bool handleResponse(std::istream &is) override;
 
-        bool updateSnapshotItem(const std::string &str, const CsvIndex index, SnapshotItem &item);
+        bool updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item);
 
         NodeId _dirId;
         std::unordered_set<NodeId> _blacklist;

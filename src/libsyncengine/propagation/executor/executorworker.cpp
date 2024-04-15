@@ -504,7 +504,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
 
         bool placeholderCreation = isLiteSyncActivated() && syncOp->affectedNode()->type() == NodeTypeFile;
         if (placeholderCreation && syncOp->affectedNode()->id().has_value()) {
-            bool isLink = _syncPal->_remoteSnapshot->isLink(*syncOp->affectedNode()->id());
+            const bool isLink = _syncPal->_remoteSnapshot->isLink(*syncOp->affectedNode()->id());
             placeholderCreation = !isLink;
         }
 

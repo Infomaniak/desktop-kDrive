@@ -105,7 +105,7 @@ SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, bool ha
       _operationsSorterWorker(nullptr),
       _executorWorker(nullptr),
       _tmpBlacklistManager(nullptr) {
-    LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init with syncDbPath=" << Path2WStr(syncDbPath).c_str());
+    LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init : " << Utility::formatSyncPath(syncDbPath).c_str());
 
     if (!createOrOpenDb(syncDbPath, version)) {
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
@@ -368,7 +368,7 @@ ExitCode SyncPal::fileSyncing(ReplicaSide side, const SyncPath &path, bool &sync
         return ExitCodeDbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for path=" << Path2WStr(path).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path).c_str());
         return ExitCodeDataError;
     }
 
@@ -382,7 +382,7 @@ ExitCode SyncPal::setFileSyncing(ReplicaSide side, const SyncPath &path, bool sy
         return ExitCodeDbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for path=" << Path2WStr(path).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path).c_str());
         return ExitCodeDataError;
     }
 
@@ -397,7 +397,7 @@ ExitCode SyncPal::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path) {
     }
 
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for path=" << Path2WStr(path).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path).c_str());
         return ExitCodeDataError;
     }
 
@@ -522,7 +522,8 @@ bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTi
 bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) {
     if (ParametersCache::instance()->parameters().extendedLog()) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"vfsUpdateFetchStatus path=" << Path2WStr(path).c_str() << L" received=" << received);
+        LOGW_SYNCPAL_DEBUG(_logger,
+                           L"vfsUpdateFetchStatus : " << Utility::formatSyncPath(path).c_str() << L" received=" << received);
     }
 
     if (!_vfsUpdateFetchStatus) {
@@ -758,7 +759,7 @@ void SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
             return;
         }
         if (item.instruction() != SyncFileInstructionGet && item.instruction() != SyncFileInstructionPut) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node not found for path=" << Path2WStr(relativePath).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Node not found : " << Utility::formatSyncPath(relativePath).c_str());
             return;
         }
     }
@@ -775,7 +776,7 @@ void SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
     }
     if (!found) {
         // Can happen for a dehydrated placeholder
-        LOGW_SYNCPAL_DEBUG(_logger, L"Node not found for path=" << Path2WStr(relativeLocalPath).c_str());
+        LOGW_SYNCPAL_DEBUG(_logger, L"Node not found : " << Utility::formatSyncPath(relativeLocalPath).c_str());
         return;
     }
 }
@@ -808,7 +809,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         return ExitCodeDbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for path=" << Path2WStr(relativePath).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(relativePath).c_str());
         return ExitCodeDataError;
     }
 
@@ -1039,7 +1040,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
         return ExitCodeDbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for path=" << Path2WStr(path).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table : " << Utility::formatSyncPath(path).c_str());
         return ExitCodeDataError;
     }
 
@@ -1156,8 +1157,8 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
         SyncPath destPath = localFileInfo.second.parent_path() / newName;
         LocalMoveJob renameJob(localFileInfo.second, destPath);
         if (renameJob.runSynchronously() != ExitCodeOk) {
-            LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Path2WStr(localFileInfo.second).c_str() << L" into "
-                                                          << Path2WStr(destPath).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Utility::formatSyncPath(localFileInfo.second).c_str() << L" into "
+                                                          << Utility::formatSyncPath(destPath).c_str());
             return renameJob.exitCode();
         }
 
@@ -1426,8 +1427,9 @@ void SyncPal::fixFileNamesWithColon(std::shared_ptr<SyncDb> syncDb, const SyncPa
             }
 
             // Rename file
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Rename " << Path2WStr(localPath / oldLocalPath).c_str() << L" to "
-                                                                     << Path2WStr(localPath / newLocalPath).c_str());
+            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
+                       L"Rename " << Utility::formatSyncPath(localPath / oldLocalPath).c_str() << L" to "
+                                  << Utility::formatSyncPath(localPath / newLocalPath).c_str());
             LocalMoveJob moveJob(localPath / oldLocalPath, localPath / newLocalPath);
             moveJob.runSynchronously();
         }

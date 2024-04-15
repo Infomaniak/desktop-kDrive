@@ -182,7 +182,7 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     return true;
 }
 
-bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, const CsvIndex index, SnapshotItem &item) {
+bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item) {
     switch (index) {
         case CsvIndexId: {
             item.setId(str);
