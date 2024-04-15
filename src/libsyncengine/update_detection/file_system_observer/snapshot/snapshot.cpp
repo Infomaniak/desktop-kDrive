@@ -35,7 +35,7 @@ Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode)
 }
 
 void Snapshot::init() {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     startUpdate();
 
     _items.clear();
@@ -45,7 +45,7 @@ void Snapshot::init() {
 }
 
 bool Snapshot::updateItem(const SnapshotItem &newItem) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     if (newItem.parentId().empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id().c_str());
@@ -88,7 +88,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
 }
 
 bool Snapshot::removeItem(const NodeId &id) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     if (id.empty()) {
         return false;
@@ -117,7 +117,7 @@ bool Snapshot::removeItem(const NodeId &id) {
 }
 
 NodeId Snapshot::itemId(const SyncPath &path) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     NodeId ret;
     auto itemIt = _items.find(_rootFolderId);
@@ -146,7 +146,7 @@ NodeId Snapshot::itemId(const SyncPath &path) {
 }
 
 NodeId Snapshot::parentId(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     NodeId ret;
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -156,7 +156,7 @@ NodeId Snapshot::parentId(const NodeId &itemId) {
 }
 
 bool Snapshot::setParentId(const NodeId &itemId, const NodeId &newParentId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     auto it = _items.find(itemId);
     if (it != _items.end()) {
         it->second.setParentId(newParentId);
@@ -171,7 +171,7 @@ bool Snapshot::setParentId(const NodeId &itemId, const NodeId &newParentId) {
 }
 
 bool Snapshot::path(const NodeId &itemId, SyncPath &path) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     bool ok = true;
     std::deque<SyncName> names;
 
@@ -205,7 +205,7 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path) {
 }
 
 SyncName Snapshot::name(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     SyncName ret;
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -215,7 +215,7 @@ SyncName Snapshot::name(const NodeId &itemId) {
 }
 
 bool Snapshot::setName(const NodeId &itemId, const SyncName &newName) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     auto it = _items.find(itemId);
     if (it != _items.end()) {
         it->second.setName(newName);
@@ -229,7 +229,7 @@ bool Snapshot::setName(const NodeId &itemId, const SyncName &newName) {
 }
 
 SyncTime Snapshot::createdAt(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     SyncTime ret = 0;
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -239,7 +239,7 @@ SyncTime Snapshot::createdAt(const NodeId &itemId) {
 }
 
 bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     auto it = _items.find(itemId);
     if (it != _items.end()) {
         it->second.setCreatedAt(newTime);
@@ -253,7 +253,7 @@ bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
 }
 
 SyncTime Snapshot::lastModifed(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     SyncTime ret = 0;
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -263,7 +263,7 @@ SyncTime Snapshot::lastModifed(const NodeId &itemId) {
 }
 
 bool Snapshot::setLastModifed(const NodeId &itemId, SyncTime newTime) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     auto it = _items.find(itemId);
     if (it != _items.end()) {
         it->second.setLastModified(newTime);
@@ -277,7 +277,7 @@ bool Snapshot::setLastModifed(const NodeId &itemId, SyncTime newTime) {
 }
 
 NodeType Snapshot::type(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     NodeType ret = NodeTypeUnknown;
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -287,7 +287,7 @@ NodeType Snapshot::type(const NodeId &itemId) {
 }
 
 int64_t Snapshot::size(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     int64_t ret = 0;
     if (type(itemId) == NodeTypeDirectory) {
         std::unordered_set<NodeId> childrenIds;
@@ -305,7 +305,7 @@ int64_t Snapshot::size(const NodeId &itemId) {
 }
 
 std::string Snapshot::contentChecksum(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     std::string ret;
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -315,7 +315,7 @@ std::string Snapshot::contentChecksum(const NodeId &itemId) {
 }
 
 bool Snapshot::setContentChecksum(const NodeId &itemId, const std::string &newChecksum) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     // Note: do not call "startUpdate" here since the computation of content checksum is asynchronous
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -326,7 +326,7 @@ bool Snapshot::setContentChecksum(const NodeId &itemId, const std::string &newCh
 }
 
 bool Snapshot::canWrite(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     bool ret = true;
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -336,7 +336,7 @@ bool Snapshot::canWrite(const NodeId &itemId) {
 }
 
 bool Snapshot::canShare(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     bool ret = true;
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -346,12 +346,12 @@ bool Snapshot::canShare(const NodeId &itemId) {
 }
 
 bool Snapshot::clearContentChecksum(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     return setContentChecksum(itemId, "");
 }
 
 bool Snapshot::exists(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     auto it = _items.find(itemId);
     if (it != _items.end() && !isOrphan(itemId)) {
         return true;
@@ -360,12 +360,12 @@ bool Snapshot::exists(const NodeId &itemId) {
 }
 
 bool Snapshot::pathExists(const SyncPath &path) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     return !itemId(path).empty();
 }
 
 bool Snapshot::isLink(const NodeId &itemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     bool ret = false;
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -375,7 +375,7 @@ bool Snapshot::isLink(const NodeId &itemId) {
 }
 
 bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     auto it = _items.find(itemId);
     if (it != _items.end()) {
         childrenIds = it->second.childrenIds();
@@ -385,7 +385,7 @@ bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &
 }
 
 void Snapshot::ids(std::unordered_set<NodeId> &ids) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     ids.clear();
     for (const auto &it : _items) {
         ids.insert(it.first);
@@ -393,7 +393,7 @@ void Snapshot::ids(std::unordered_set<NodeId> &ids) {
 }
 
 bool Snapshot::isAncestor(const NodeId &itemId, const NodeId &ancestorItemId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     if (itemId == _rootFolderId) {
         // Root directory cannot have any ancestor
         return false;
@@ -428,22 +428,22 @@ bool Snapshot::isOrphan(const NodeId &itemId) {
 }
 
 bool Snapshot::isEmpty() {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     return _items.empty();
 }
 
 uint64_t Snapshot::nbItems() {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     return _items.size();
 }
 
 bool Snapshot::isValid() {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     return _isValid;
 }
 
 void Snapshot::setValid(bool newIsValid) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     _isValid = newIsValid;
 }
 
