@@ -502,10 +502,10 @@ bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &sessi
     } else {
         std::stringstream errMsgStream;
         errMsgStream << msg.c_str();
-        if (jobId) errMsgStream << " - job ID= " << jobId;
-        if (err) errMsgStream << " - err= " << jobId;
-        if (!errMsg.empty()) errMsgStream << " - err message= " << errMsg.c_str();
-        LOG_WARN(_logger, &errMsgStream);
+        if (jobId) errMsgStream << " - job ID=" << jobId;
+        if (err) errMsgStream << " - err=" << err;
+        if (!errMsg.empty()) errMsgStream << " - err message=" << errMsg.c_str();
+        LOG_WARN(_logger, errMsgStream.str().c_str());
 
         _exitCode = ExitCodeNetworkError;
         if (err == EBADF) {
