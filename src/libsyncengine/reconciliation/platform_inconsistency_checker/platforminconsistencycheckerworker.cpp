@@ -107,7 +107,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
         // Also exclude local node by adding "conflict" suffix
         const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
         LOGW_SYNCPAL_INFO(_logger, L"Excluding also local item with '" << Utility::formatSyncPath(absoluteLocalPath).c_str() << L"'.");
-        PlatformInconsistencyCheckerUtility::renameLocaLFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
+        PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
     }
 
     _syncPal->blacklistTemporarily(remoteNode->id().value(), relativePath, remoteNode->side());
