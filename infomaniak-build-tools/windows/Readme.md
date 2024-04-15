@@ -177,7 +177,7 @@ cmake --build . --target install --config Release
 Clone `CPPUnit`:
 
 ```bash
-cd F:\Projects
+cd "C:\Program Files (x86)"
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 ```
 
@@ -187,6 +187,7 @@ Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure
 - In the `Build` menu, select `Batch Build...`.
 - Select all projects in `x64` version and click on `build`.
 
+Only the two directories `lib` and `include` are required, everything else can be removed after the build.
 
 ## Zlib
 
@@ -274,7 +275,7 @@ Then copy the following list of `CMake` variables in "Initial CMake Parameters" 
 -DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
 -DCMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=/debug /INCREMENTAL
 -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
--DCMAKE_INSTALL_PREFIX:PATH=%{ActiveProject:RunConfig:Executable:Path}
+-DCMAKE_INSTALL_PREFIX:PATH=%{ActiveProject:RunConfig:Executable:Path}/..
 -DCRASHREPORTER_SUBMIT_URL:STRING=https://www.infomaniak.com/report/drive/crash
 -DKDRIVE_THEME_DIR:STRING=F:/projects/desktop-kDrive/infomaniak
 -DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins
