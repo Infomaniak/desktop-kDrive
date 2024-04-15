@@ -106,7 +106,8 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
                           FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
     if (hParent == INVALID_HANDLE_VALUE) {
-        LOGW_INFO(Log::instance()->getLogger(), L"Error in CreateFileW - path=" << Path2WStr(path.parent_path()).c_str());
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Error in CreateFileW : " << Utility::formatSyncPath(path.parent_path()).c_str());
         return false;
     }
 
@@ -129,7 +130,8 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
         (PZW_QUERY_DIRECTORY_FILE)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
 
     if (zwQueryDirectoryFile == 0) {
-        LOG_WARN(Log::instance()->getLogger(), L"Error in GetProcAddress - path=" << Path2WStr(path.parent_path()).c_str());
+        LOG_WARN(Log::instance()->getLogger(),
+                 L"Error in GetProcAddress : " << Utility::formatSyncPath(path.parent_path()).c_str());
         return false;
     }
 
@@ -175,12 +177,12 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
                 retry = true;
                 Utility::msleep(10);
                 LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"Retrying to get handle - path=" << Path2WStr(path.parent_path()).c_str());
+                           L"Retrying to get handle : " << Utility::formatSyncPath(path.parent_path()).c_str());
                 counter--;
                 continue;
             }
 
-            LOG_WARN(logger(), L"Error in CreateFileW - path=" << Path2WStr(path.parent_path()).c_str());
+            LOG_WARN(logger(), L"Error in CreateFileW : " << Utility::formatSyncPath(path.parent_path()).c_str());
             ioError = dWordError2ioError(GetLastError());
             exists = false;
 
@@ -223,7 +225,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
         (!isNtfs && dwError != 0)) {  // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we
                                       // also check GetLastError
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in zwQueryDirectoryFile - path=" << Path2WStr(path.parent_path()).c_str());
+                   L"Error in zwQueryDirectoryFile : " << Utility::formatSyncPath(path.parent_path()).c_str());
         CloseHandle(hParent);
         exists = false;
         ioError = dWordError2ioError(dwError);
@@ -239,8 +241,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
     buf->modtime = FileTimeToUnixTime(pFileInfo->LastWriteTime, &rem);
     buf->creationTime = FileTimeToUnixTime(pFileInfo->CreationTime, &rem);
 
-    bool isDirectory =
-        !(pFileInfo->FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) && pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+    bool isDirectory = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
     buf->type = isDirectory ? NodeTypeDirectory : NodeTypeFile;
 
     buf->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
@@ -359,11 +360,11 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                             read = false;
                             write = false;
                             exec = false;
-                            LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
+                            LOGW_INFO(logger(), L"Access denied : " << szFilePath);
                             return true;
                         }
 
-                        LOGW_WARN(logger(), L"Error in GetNamedSecurityInfoW - path=" << szFilePath << L" result=" << result);
+                        LOGW_WARN(logger(), L"Error in GetNamedSecurityInfoW : " << szFilePath << L" result=" << result);
                     } else {
                         // Get rights for trustee
                         ACCESS_MASK rights = 0;
@@ -380,12 +381,11 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                                 read = false;
                                 write = false;
                                 exec = false;
-                                LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
+                                LOGW_INFO(logger(), L"Access denied : " << szFilePath);
                                 return true;
                             }
 
-                            LOGW_WARN(logger(),
-                                      L"Error in GetEffectiveRightsFromAcl - path=" << szFilePath << L" result=" << result);
+                            LOGW_WARN(logger(), L"Error in GetEffectiveRightsFromAcl : " << szFilePath << L" result=" << result);
                         } else {
                             exists = true;
                             read = (rights & FILE_GENERIC_READ) == FILE_GENERIC_READ;
@@ -589,12 +589,13 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     wcscpy(reparseDataBuffer->MountPointReparseBuffer.PathBuffer, targetPathCstr);
     wcscpy(reparseDataBuffer->MountPointReparseBuffer.PathBuffer + targetPathWLen + 1, targetPathCstr);
     reparseDataBuffer->MountPointReparseBuffer.SubstituteNameOffset = 0;
-    reparseDataBuffer->MountPointReparseBuffer.SubstituteNameLength = targetPathWLen * sizeof(WCHAR);
-    reparseDataBuffer->MountPointReparseBuffer.PrintNameOffset = (targetPathWLen + 1) * sizeof(WCHAR);
-    reparseDataBuffer->MountPointReparseBuffer.PrintNameLength = targetPathWLen * sizeof(WCHAR);
-    reparseDataBuffer->ReparseDataLength = (targetPathWLen + 1) * 2 * sizeof(WCHAR) + REPARSE_MOUNTPOINT_HEADER_SIZE;
+    reparseDataBuffer->MountPointReparseBuffer.SubstituteNameLength = static_cast<WORD>(targetPathWLen * sizeof(WCHAR));
+    reparseDataBuffer->MountPointReparseBuffer.PrintNameOffset = static_cast<WORD>((targetPathWLen + 1) * sizeof(WCHAR));
+    reparseDataBuffer->MountPointReparseBuffer.PrintNameLength = static_cast<WORD>(targetPathWLen * sizeof(WCHAR));
+    reparseDataBuffer->ReparseDataLength =
+        static_cast<WORD>((targetPathWLen + 1) * 2 * sizeof(WCHAR) + REPARSE_MOUNTPOINT_HEADER_SIZE);
 
-    DWORD dwError;
+    DWORD dwError = ERROR_SUCCESS;
     const bool success =
         DeviceIoControl(hDir, FSCTL_SET_REPARSE_POINT, reparseDataBuffer,
                         reparseDataBuffer->ReparseDataLength + REPARSE_MOUNTPOINT_HEADER_SIZE, NULL, 0, &dwError, NULL);

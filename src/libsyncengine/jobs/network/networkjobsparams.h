@@ -95,6 +95,7 @@ static const std::string accountAdminKey = "account_admin";
 static const std::string capabilitiesKey = "capabilities";
 static const std::string canWriteKey = "can_write";
 static const std::string redirectUriKey = "redirect_uri";
+static const std::string symbolicLinkKey = "symbolic_link";
 
 static const std::string totalNbItemKey = "total";
 static const std::string pageKey = "page";
@@ -115,8 +116,6 @@ static const std::string redirectUrlPathKey = "/html/body/a";
 static const std::string dirKey = "dir";
 static const std::string fileKey = "file";
 static const std::string urlKey = "url";
-
-static const std::string symbolicLinkKey = "symbolic_link";
 
 /// Action type
 static const std::string createAction = "file_create";

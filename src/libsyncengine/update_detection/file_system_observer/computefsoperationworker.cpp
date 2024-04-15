@@ -471,7 +471,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 continue;
             }
 
-            NodeType type = snapshot->type(*snapIdIt);
+            const NodeId nodeId = *snapIdIt;
+            const NodeType type = snapshot->type(nodeId);
             if (checkOnlyDir && type != NodeTypeDirectory) {
                 // In first loop, we check only directory
                 snapIdIt++;
@@ -479,7 +480,6 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
             }
 
             // Remove directory ID from list so 2nd iteration will be a bit faster
-            NodeId nodeId = *snapIdIt;
             snapIdIt = remainingDbIds.erase(snapIdIt);
 
             if (snapshot->isOrphan(snapshot->parentId(nodeId))) {
@@ -514,7 +514,9 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                     continue;
                 }
 
-                if (type == NodeTypeFile) {
+                const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
+
+                if (type == NodeTypeFile && !isLink) {
                     // On Windows, we receive CREATE event while the file is still being copied
                     // Do not start synchronizing the file while copying is in progress
                     const SyncPath absolutePath = _syncPal->_localPath / snapPath;
@@ -555,6 +557,12 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         if (!_syncPal->_localSnapshot->exists(dbNode.nodeIdLocal().value()) ||
             !_syncPal->_remoteSnapshot->exists(dbNode.nodeIdRemote().value())) {
             // Ignore if item does not exist
+            return ExitCodeOk;
+        }
+
+        const bool localSnapshotIsLink = _syncPal->_localSnapshot->isLink(dbNode.nodeIdLocal().value());
+        if (localSnapshotIsLink) {
+            // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
             return ExitCodeOk;
         }
 

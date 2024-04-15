@@ -646,10 +646,17 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             NodeType type = tmp == fileKey ? NodeTypeFile : NodeTypeDirectory;
 
             int64_t size = 0;
+            bool isLink = false;
             if (type == NodeTypeFile) {
                 if (!JsonParserUtility::extractValue(actionObj, sizeKey, size, false)) {
                     return ExitCodeBackError;
                 }
+
+                std::string linkTarget;
+                if (!JsonParserUtility::extractValue(actionObj, symbolicLinkKey, linkTarget, false)) {
+                    return ExitCodeBackError;
+                }
+                isLink = !linkTarget.empty();
             }
 
             // Check unsupported characters
@@ -685,7 +692,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             if (!destName.empty()) {
                 usedName = destName;
             }
-            SnapshotItem item(id, parentId, usedName, createdAt, modtime, type, size, canWrite);
+            SnapshotItem item(id, parentId, usedName, createdAt, modtime, type, size, isLink, canWrite);
 
             bool isWarning = false;
             if (ExclusionTemplateCache::instance()->isExcludedTemplate(item.name(), isWarning)) {

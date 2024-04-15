@@ -784,8 +784,10 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
 #endif
 }
 
-bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, IoError &ioError) {
+bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
+                                       IoError &ioError) {
     isManaged = true;
+    isLink = false;
     ioError = IoErrorSuccess;
 
     ItemType itemType;
@@ -800,7 +802,7 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
         return true;
     }
 
-    bool isLink = itemType.linkType != LinkTypeNone;
+    isLink = itemType.linkType != LinkTypeNone;
     if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
         LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
                                        << L" because it's not a directory, a regular file or a symlink");
