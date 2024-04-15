@@ -33,10 +33,13 @@ jobs:
           Import-PfxCertificate -FilePath certificate/certificate.pfx -CertStoreLocation Cert:\CurrentUser\My -Password (ConvertTo-SecureString -String $env:WINDOWS_VIRTUAL_CERT_PASSWORD -Force -AsPlainText)
 
       - name: Build kDrive desktop
-        run : |
+        run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
+
+      - name: Run common tests
+        run: ./build-Release/install/bin/kDrive_test_common.exe
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all

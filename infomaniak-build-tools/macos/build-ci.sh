@@ -92,7 +92,7 @@ cmake \
 	-DQTKEYCHAIN_INCLUDE_DIR="/usr/local/include/qt6keychain/" \
 	-DQTDIR="$QTDIR" \
 	-DWITH_CRASHREPORTER=0 \
-	-DBUILD_UNIT_TESTS=0 \
+	-DBUILD_UNIT_TESTS=1 \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
 
