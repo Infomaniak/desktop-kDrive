@@ -773,6 +773,33 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
     return "";
 }
 
+QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noexcept {
+    switch (errorInfo.exitCause()) {
+        case ExitCauseHttpErrForbidden: {
+            return tr("The operation performed on item %1 is forbidden.<br>"
+                      "The file/directory has been temporarily blacklisted.")
+                .arg(errorInfo.path());
+        }
+        case ExitCauseApiErr:
+        case ExitCauseUploadNotTerminated: {
+            return tr("The operation performed on item %1 failed.<br>"
+                      "The file/directory has been temporarily blacklisted.")
+                .arg(errorInfo.path());
+        }
+        case ExitCauseFileTooBig: {
+            return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.").arg(errorInfo.path());
+        }
+        case ExitCauseQuotaExceeded: {
+            return tr("You have exceeded your quota.");
+        }
+        case ExitCauseNotFound: {
+            return tr("Impossible to download file \"%1\"").arg(errorInfo.path());
+        }
+        default:
+            return tr("Synchronization error.");
+    }
+}
+
 QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept {
     if (errorInfo.conflictType() != ConflictTypeNone) {
         return getConflictText(errorInfo.conflictType(), ConflictTypeResolutionNone);
@@ -799,27 +826,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
             }
         }
         case ExitCodeBackError: {
-            switch (errorInfo.exitCause()) {
-            ExitCauseHttpErrForbidden: {
-                return tr("The operation performed on item %1 is forbidden.<br>"
-                          "The file/directory has been temporarily blacklisted.")
-                    .arg(errorInfo.path());
-            }
-            ExitCauseApiErr:
-            ExitCauseUploadNotTerminated: {
-                return tr("The operation performed on item %1 failed.<br>"
-                          "The file/directory has been temporarily blacklisted.")
-                    .arg(errorInfo.path());
-            }
-            ExitCauseFileTooBig: {
-                return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.")
-                    .arg(errorInfo.path());
-            }
-            ExitCauseQuotaExceeded: { return tr("You have exceeded your quota."); }
-            ExitCauseNotFound: { return tr("Impossible to download file \"%1\"").arg(errorInfo.path()); }
-            default:
-                tr("Synchronization error.");
-            }
+            return getBackErrorText(errorInfo);
         }
 
         default:

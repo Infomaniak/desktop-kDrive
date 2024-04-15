@@ -104,6 +104,7 @@ class ParametersDialog : public CustomDialog {
         QString getInconsistencyText(InconsistencyType inconsistencyType) const noexcept;
         QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "") const noexcept;
         QString getErrorMessage(const ErrorInfo &errorInfo) const noexcept;
+        QString getBackErrorText(const ErrorInfo &errorInfo) const noexcept;
         QString getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept;
 
         void createErrorTabWidgetIfNeeded(int driveDbId);
