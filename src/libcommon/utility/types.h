@@ -122,7 +122,8 @@ typedef enum {
     ExitCodeTokenRefreshed,
     ExitCodeNoWritePermission,
     ExitCodeRateLimited,
-    ExitCodeInvalidSync  // The sync configuration is not valid
+    ExitCodeInvalidSync,  // The sync configuration is not valid
+    ExitCodeNoDriveFound  // No drive found
 } ExitCode;
 
 typedef enum {

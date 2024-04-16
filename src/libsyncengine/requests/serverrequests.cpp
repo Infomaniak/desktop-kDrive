@@ -874,6 +874,51 @@ ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
     return ExitCodeOk;
 }
 
+ExitCode ServerRequests::generateLogDirectory(SyncPath &logDirectoryPath, bool sendAllLogs,
+                                              std::function<void(int64_t)> progressCallback) {
+    // Generate archive name: <drive id 1>-<drive id 2>...-<drive id N>-yyyyMMdd-HHmmss.zip
+    std::string archiveName;
+    std::vector<Drive> driveList;
+
+    if (!ParmsDb::instance()->selectAllDrives(driveList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
+        return ExitCodeDbError;
+    }
+    if (driveList.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
+        return ExitCodeNotLoggedIn;  // Currently, we can't send logs if no drive is found
+    }
+
+    for (auto drive : driveList) {
+        archiveName += std::to_string(drive.driveId()) + "-";
+    }
+
+    const std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    OStringStream woss;
+    woss << std::put_time(&tm, Str("%Y%m%d_%H%M%S"));
+
+    archiveName += Utility::ws2s(woss.str()) + ".zip";
+
+    // Create temp folder
+    SyncPath tempFolder = CommonUtility::getAppSupportDir() / "tempLogSend";
+    IoError ioError = IoErrorSuccess;
+    if (!IoHelper::createDirectory(tempFolder, ioError) && ioError != IoErrorDirectoryExists) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::createDirectory : " << Utility::formatIoError(tempFolder, ioError).c_str());
+        return ExitCodeSystemError;
+    }
+    if (!Log::instance()->generateLogsSupportArchive(sendAllLogs, tempFolder, archiveName, ioError, progressCallback)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Log::generateLogsSupportArchive");
+        IoHelper::deleteDirectory(tempFolder, ioError);
+        return ExitCodeSystemError;
+    }
+    logDirectoryPath = tempFolder.string() + "/" + archiveName;
+
+    LOG_DEBUG(Log::instance()->getLogger(), "Log archive for support saved at: " << logDirectoryPath.c_str());
+    return ExitCodeOk;
+}
+
 bool ServerRequests::isDisplayableError(const Error &error) {
     return ((error.exitCode() != ExitCodeNetworkError                           // Not ExitCodeNetworkError except
              || error.exitCause() == ExitCauseNetworkTimeout                    //      ExitCauseNetworkTimeout
@@ -957,6 +1002,48 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
         return ExitCodeDataError;
     }
 
+    return ExitCodeOk;
+}
+
+ExitCode ServerRequests::sendLogToSupport(bool sendAllLogs, std::function<void(char, int64_t)> progressCallback) {
+    SyncPath logArchivePath;
+    bool progressMonitoring = progressCallback != nullptr;
+
+    ExitCode exitCode = ExitCodeOk;
+    if (progressMonitoring) {
+        generateLogDirectory(logArchivePath, sendAllLogs, [&](int64_t progress) { progressCallback('A', progress); });
+    } else {
+        generateLogDirectory(logArchivePath, sendAllLogs);
+    }
+
+    if (exitCode != ExitCodeOk) {
+        if (progressMonitoring) {
+            progressCallback('F', 0);  // Failed
+        }
+        return exitCode;
+    }
+
+    // Send log placeholder
+    // TODO: Implement new API route for sending logs
+    for (int i = 0; i < 100; i += 1) {
+        if (progressMonitoring) {
+            progressCallback('U', i);  // Uploading
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+
+
+    // Cleaning
+    IoError ioError = IoErrorSuccess;
+
+    if (!IoHelper::deleteDirectory(logArchivePath,
+                                   ioError)) {  // Delete the log archive, we don't throw an error if it fails.
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::deleteFile : " << Utility::formatIoError(logArchivePath, ioError).c_str());
+    }
+    if (progressMonitoring) {
+        progressCallback('S', 100);  // Success
+    }
     return ExitCodeOk;
 }
 

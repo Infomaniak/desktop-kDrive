@@ -62,7 +62,7 @@ CommServer::CommServer(QObject *parent)
     connect(_requestWorkerThread, &QThread::finished, _requestWorkerThread, &QObject::deleteLater);
     connect(_requestWorker, &Worker::requestReceived, this, &CommServer::onRequestReceived);
     connect(_requestWorker, &Worker::sendReply, this, &CommServer::onSendReply);
-    connect(_requestWorker, &Worker::sendSignal, this, &CommServer::onSendSignal);
+    connect(_requestWorker, &Worker::sendSignal, this, &CommServer::onSendSignal, Qt::DirectConnection); //Direct connection to avoid lag when sending signals to the client
 
     _requestWorkerThread->start();
     _requestWorkerThread->setPriority(QThread::Priority::HighestPriority);
