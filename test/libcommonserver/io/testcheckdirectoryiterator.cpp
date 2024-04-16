@@ -161,7 +161,7 @@ void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
 }
 
 void TestIo::testCheckDirectoryIteratorPermission() {
-    // Check that the directory iterator show directory with no permission when skip_permission_denied is false
+    // Check that the directory iterator shows a directory with no permission when `skip_permission_denied` is false
     const TemporaryDirectory temporaryDirectory;
     const SyncPath path = temporaryDirectory.path / "chekDirIt/noPermissionFolder";
     std::filesystem::create_directories(path);
@@ -169,7 +169,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     const SyncPath testFilePathNoPerm = path / "testFile.txt";
     std::ofstream(testFilePathNoPerm, std::ios::out).close();
 
-    // Remove permission to the file
+    // Remove permission from the file
     std::error_code ec;
     std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::_All_write, std::filesystem::perm_options::remove,
                                  ec);
@@ -183,7 +183,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         CPPUNIT_ASSERT_EQUAL(testFilePathNoPerm, entry.path());
     }
 
-    // Check that the directory iterator skip directory with no permission when skip_permission_denied is true
+    // Check that the directory iterator skips each directory with no permission when `skip_permission_denied` is true
     {
         IoError ioError = IoErrorSuccess;
         DirectoryIterator it(path, false, ioError, DirectoryOptions::skip_permission_denied);
