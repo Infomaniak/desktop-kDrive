@@ -75,7 +75,7 @@ void ExecutorWorker::execute() {
 
     initProgressManager();
 
-    uint64_t localChangesCounter = 0;
+    uint64_t changesCounter = 0;
     bool hasError = false;
     while (!_opList.empty()) {  // Same loop twice because we might reschedule the jobs after a pause TODO : refactor double loop
         // Create all the jobs
@@ -123,10 +123,7 @@ void ExecutorWorker::execute() {
                 continue;
             }
 
-            if (syncOp->targetSide() == ReplicaSideLocal) {
-                // Changes occured on the remote side. They will be replicated locally
-                localChangesCounter++;
-            }
+            changesCounter++;
 
             std::shared_ptr<AbstractJob> job = nullptr;
             switch (syncOp->type()) {
@@ -194,7 +191,7 @@ void ExecutorWorker::execute() {
     _syncPal->_syncOps->clear();
     _syncPal->_remoteFSObserverWorker->forceUpdate();
 
-    if (localChangesCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
+    if (changesCounter > SNAPSHOT_INVALIDATION_THRESHOLD) {
         // If there are too many changes on the local filesystem, the OS stops sending events at some point.
         LOG_SYNCPAL_INFO(_logger, "Local snapshot is potentially invalid");
         _snapshotToInvalidate = true;
