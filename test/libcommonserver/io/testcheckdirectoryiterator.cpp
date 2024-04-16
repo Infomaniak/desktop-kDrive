@@ -273,7 +273,7 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
             bool error = it.next(entry, ioError);
             CPPUNIT_ASSERT(!it.next(entry, ioError));
             std::cout << "Error: " << IoHelper::ioError2StdString(ioError) << " | " << error << std::endl;
-            /CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, ioError);
+            CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, ioError);
         }
 
         CPPUNIT_ASSERT(!it.next(entry, ioError));
