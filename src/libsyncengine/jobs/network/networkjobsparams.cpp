@@ -22,11 +22,11 @@
 
 #include <map>
 
-#define THREAD_POOL_MIN_CAPACITY 10
+static const int threadPoolMinCapacity = 10;
 
 namespace KDC {
 NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {
-    static const std::map<std::string, NetworkErrorCode> errorCodeMap = {
+    static const std::map<std::string, NetworkErrorCode, std::less<std::string>> errorCodeMap = {
         {"forbidden_error", NetworkErrorCode::forbiddenError},
         {"not_authorized", NetworkErrorCode::notAuthorized},
         {"product_maintenance", NetworkErrorCode::productMaintenance},
@@ -43,17 +43,15 @@ NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {
         {"limit_exceeded_error", NetworkErrorCode::fileTooBigError},
         {"quota_exceeded_error", NetworkErrorCode::quotaExceededError}};
 
-    const auto it = errorCodeMap.find(errorCode);
-    if (it != errorCodeMap.cend()) return it->second;
+    if (const auto it = errorCodeMap.find(errorCode); it != errorCodeMap.cend()) return it->second;
 
     return NetworkErrorCode::unknownError;
 }
 NetworkErrorReason getNetworkErrorReason(const std::string &errorReason) noexcept {
-    static const std::map<std::string, NetworkErrorReason> errorReasonMap = {
+    static const std::map<std::string, NetworkErrorReason, std::less<std::string>> errorReasonMap = {
         {"refresh_token_revoked", NetworkErrorReason::refreshTokenRevoked}, {"not_renew", NetworkErrorReason::notRenew}};
 
-    const auto it = errorReasonMap.find(errorReason);
-    if (it != errorReasonMap.cend()) return it->second;
+    if (const auto it = errorReasonMap.find(errorReason); it != errorReasonMap.cend()) return it->second;
 
     return NetworkErrorReason::unknownReason;
 };

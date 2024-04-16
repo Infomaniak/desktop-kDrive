@@ -663,7 +663,6 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
 
 QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const noexcept {
     const auto inconsistencyTypeInt = static_cast<int>(inconsistencyType);
-
     QString text;
 
     if (inconsistencyTypeInt & InconsistencyTypeCase) {
@@ -1324,7 +1323,7 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
     unresolvedErrorsListWidget->clear();
     errorTabWidget->showResolveConflicts(false);
     errorTabWidget->showResolveUnsupportedCharacters(false);
-    for (auto errorInfo : errorInfoList) {
+    for (const auto &errorInfo : errorInfoList) {
         // Find list to update and increase drive error counters
         QListWidget *list = nullptr;
         if (errorInfo.autoResolved()) {
@@ -1336,7 +1335,7 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
         }
 
         // Get user friendly error message
-        QString errorMsg = getErrorMessage(errorInfo);
+        const QString errorMsg = getErrorMessage(errorInfo);
 
         // Insert error item
         QListWidgetItem *listWidgetItem = new QListWidgetItem();

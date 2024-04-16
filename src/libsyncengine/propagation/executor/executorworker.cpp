@@ -1636,7 +1636,8 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
         targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
     }
 
-    NodeId locaNodeId, remoteNodeId;
+    NodeId locaNodeId;
+    NodeId remoteNodeId;
     if (syncOp->targetSide() == ReplicaSideLocal) {
         if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) locaNodeId = *syncOp->correspondingNode()->id();
         remoteNodeId = syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string();
