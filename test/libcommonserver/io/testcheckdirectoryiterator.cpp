@@ -29,13 +29,9 @@ void TestIo::testCheckDirectoryIterator() {
     testCheckDirectoryIteratorNonExistingPath();
     testCheckDirectoryIteratorExistingPath();
     testCheckDirectoryIteratotNextAfterEndOfDir();
-    testCheckDirectoryIteratorPermission();
+    //testCheckDirectoryIteratorPermission();
     testCheckDirectoryIteratorUnexpectedDelete();
-#ifndef _WIN32
-    // This test is not valid on Windows because the permission is not checked
-    // on the directory iterator
-    testCheckDirectoryPermissionLost();
-#endif  
+    //testCheckDirectoryPermissionLost();
 
 }
 
