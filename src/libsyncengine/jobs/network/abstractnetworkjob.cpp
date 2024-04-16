@@ -447,7 +447,7 @@ bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
         pDoc = parser.parse(&inputSrc);
     } catch (Poco::Exception &exc) {
         LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
-        Utility::logGenericServerError("Redirection error", inputStream, _resHttp);
+        Utility::logGenericServerError(_logger, "Redirection error", inputStream, _resHttp);
 
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseApiErr;

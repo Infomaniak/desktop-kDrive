@@ -72,7 +72,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatSyncPath(const SyncPath &path);
 
         static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
-        static void logGenericServerError(const std::string &errorTitle, std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+        static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
 #ifdef _WIN32
         static bool isNtfs(const SyncPath &dirPath);

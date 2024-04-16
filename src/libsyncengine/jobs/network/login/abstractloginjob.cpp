@@ -72,7 +72,7 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
         jsonError = jsonParser.parse(inputStream).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
         LOG_WARN(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
-        Utility::logGenericServerError("Login error", inputStream, _resHttp);
+        Utility::logGenericServerError(_logger, "Login error", inputStream, _resHttp);
 
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseApiErr;
