@@ -176,13 +176,13 @@ class COMMONSERVER_EXPORT Log {
         * \return True if the archive was generated successfully, false otherwise.
         */
         bool generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const std::string &archiveName,
-                                        IoError &ioError);
+                                        IoError &ioError, std::function<void(int64_t)> progressCallback = nullptr);
 
     private:
         Log(const log4cplus::tstring &filePath);
         bool copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, IoError &ioError);
         bool copyParmsDbTo(const SyncPath &outputPath, IoError &ioError);
-        bool compressLogs(const SyncPath &directoryToCompress, IoError &ioError);
+        bool compressLogs(const SyncPath &directoryToCompress, IoError &ioError, std::function<void(int64_t)> progressCallback = nullptr);
         static std::shared_ptr<Log> _instance;
         log4cplus::Logger _logger;
 };

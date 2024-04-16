@@ -345,6 +345,7 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
+
 }
 
 AppServer::~AppServer() {
@@ -658,6 +659,44 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             // TODO : not implemented yet
 
             resultStream << ExitCodeOk;
+            break;
+        }
+        case REQUEST_NUM_SEND_LOG_TO_SUPPORT: {
+            // Send log to support
+            bool sendAllLogs = false;  // if set to false, only the current session log will be sent (server, client and parms.db)
+            QDataStream paramsStream(params);
+            paramsStream >> sendAllLogs;
+
+            resultStream << ExitCodeOk;  // return immediately, progress and error will be report via addError and signal
+
+            QTimer::singleShot(100, [this, sendAllLogs]() {
+                std::function<void(char, int64_t)> progressFunc = [this](char status, int64_t progress) {
+                    sendLogTransfertStatus(status, progress);
+                    LOG_DEBUG(_logger, "Log transfert progress : " << status << " | " << progress << " %");
+                };
+                ExitCode exitCode = ServerRequests::sendLogToSupport(sendAllLogs, progressFunc);
+                if (exitCode != ExitCodeOk) {
+                    LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode);
+                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
+                }
+            });
+            LOG_WARN(_logger, "Send log to support requested");
+
+            break;
+        }
+        case REQUEST_NUM_GET_LOG_ESTIMATED_SIZE: {
+            // Get estimated size of the log file
+            IoError ioError = IoErrorSuccess;
+            int64_t size = Log::instance()->getLogEstimatedSize(ioError);
+            if (size >= 0) {
+                resultStream << ExitCodeOk;
+                resultStream << size;
+            } else {
+                LOG_WARN(_logger, "Error in Log::getLogEstimatedSize : " << IoHelper::ioError2StdString(ioError).c_str());
+                addError(Error(ERRID, ExitCodeSystemError, ExitCauseFileAccessError));
+                resultStream << ExitCodeSystemError;
+            }
+
             break;
         }
         case REQUEST_NUM_USER_AVAILABLEDRIVES: {
@@ -1952,6 +1991,16 @@ void AppServer::sendErrorsCleared(int syncDbId) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
     CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_ERRORS_CLEARED, params, id);
+}
+
+void AppServer::sendLogTransfertStatus(const char state, const int64_t percent) {
+    int id;
+
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << state;
+    paramsStream << percent;
+    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_SEND_LOG_TO_SUPPORT_STATUS, params, id);
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {

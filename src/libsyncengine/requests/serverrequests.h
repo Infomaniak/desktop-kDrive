@@ -139,6 +139,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static bool isDisplayableError(const Error &error);
         static bool isAutoResolvedError(const Error &error);
         static ExitCode getUserFromSyncDbId(int syncDbId, User &user);
+        static ExitCode sendLogToSupport(bool sendAllLogs, std::function<void(char, int64_t)> progressCallback = nullptr);
 
     private:
         static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);
@@ -153,6 +154,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode createAccount(const Account &account, AccountInfo &accountInfo);
         static ExitCode createDrive(const Drive &drive, DriveInfo &driveInfo);
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
+
+        static ExitCode generateLogDirectory(SyncPath &logDirectoryPath, bool sendAllLogs,
+                                             std::function<void(int64_t)> progressCallback = nullptr);
 };
 
 }  // namespace KDC

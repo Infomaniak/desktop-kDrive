@@ -159,7 +159,7 @@ int64_t Log::getLogEstimatedSize(IoError &ioError) {
 }
 
 bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const std::string &archiveName,
-                                     IoError &ioError) {
+                                     IoError &ioError, std::function<void(int64_t)> progressCallback) {
     // Get the log directory path
     SyncPath logPath;
     ioError = IoErrorSuccess;
@@ -198,6 +198,7 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
         return false;
     }
 
+
     // Copy .parmsdb to temp folder
     if (!copyParmsDbTo(logPath / "send_log_directory_temp" / tempsFolderName / ".parms.db", ioError)) {
         LOG_WARN(
@@ -209,7 +210,7 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
     }
 
     // compress all the files in the folder
-    if (!compressLogs(logPath / "send_log_directory_temp" / tempsFolderName, ioError)) {
+    if (!compressLogs(logPath / "send_log_directory_temp" / tempsFolderName, ioError, progressCallback)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in compressLogs : "
                      << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
@@ -280,7 +281,7 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
     }
 
     // Delete the temp folder
-    if (IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError)) {
+    if (!IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::deleteDirectory : "
                      << Utility::formatIoError(logPath / "send_log_directory_temp", ioError).c_str());
@@ -351,7 +352,7 @@ bool Log::copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, IoError &i
     return true;
 }
 
-bool Log::compressLogs(const SyncPath &directoryToCompress, IoError &ioError) {
+bool Log::compressLogs(const SyncPath &directoryToCompress, IoError &ioError, std::function<void(int64_t)> progressCallback) {
     DirectoryIterator dir;
     if (!IoHelper::getDirectoryIterator(directoryToCompress, false, ioError, dir)) {
         LOG_WARN(Log::instance()->getLogger(),
@@ -359,7 +360,22 @@ bool Log::compressLogs(const SyncPath &directoryToCompress, IoError &ioError) {
         return false;
     }
 
+    bool progressMonitoring = progressCallback != nullptr;
+    float nbFiles = 0;
     DirectoryEntry entry;
+
+    if (progressMonitoring) {
+        while (dir.next(entry, ioError)) {
+            nbFiles++;
+        }
+        if (!IoHelper::getDirectoryIterator(directoryToCompress, false, ioError, dir)) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in DirectoryIterator : " << Utility::formatIoError(directoryToCompress, ioError).c_str());
+            return false;
+        }
+    }
+
+    float progress = 0.0;
     while (dir.next(entry, ioError)) {
         std::string entryPath = entry.path().string();
         if (entryPath.find(".gz") != std::string::npos) {
@@ -377,6 +393,11 @@ bool Log::compressLogs(const SyncPath &directoryToCompress, IoError &ioError) {
             LOG_WARN(Log::instance()->getLogger(),
                      "Error in IoHelper::deleteDirectory : " << Utility::formatIoError(entry.path(), ioError).c_str());
             return false;
+        }
+        if (progressMonitoring) {
+            progress++;
+            int64_t progressPercent = 100.0 * progress / nbFiles;
+            progressCallback(progressPercent);
         }
     }
 
