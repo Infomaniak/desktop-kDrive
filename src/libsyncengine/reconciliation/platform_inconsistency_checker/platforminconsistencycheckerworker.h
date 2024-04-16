@@ -38,7 +38,11 @@ class PlatformInconsistencyCheckerWorker : public OperationProcessor {
         bool checkPathAndName(std::shared_ptr<Node> remoteNode);
         void checkNameClashAgainstSiblings(std::shared_ptr<Node> remoteParentNode);
 
-        std::list<NodeId> _idsToBeRemoved;
+        struct NodeIdPair {
+                NodeId remoteId;
+                NodeId localId; // Optional, only required if the file is already synchronized.
+        };
+        std::list<NodeIdPair> _idsToBeRemoved;
 
         friend class TestPlatformInconsistencyCheckerWorker;
 };

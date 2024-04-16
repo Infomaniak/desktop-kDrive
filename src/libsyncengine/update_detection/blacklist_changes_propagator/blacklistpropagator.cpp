@@ -242,7 +242,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                                                                 << L") removed from local replica. It will not be blacklisted.");
 
             SyncPath destPath;
-            PlatformInconsistencyCheckerUtility::renameLocaLFile(absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
+            PlatformInconsistencyCheckerUtility::renameLocalFile(absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
 
             Error err(_syncPal->syncDbId(), "", "", NodeTypeDirectory, absolutePath, ConflictTypeNone, InconsistencyTypeNone,
                       CancelTypeMoveToBinFailed, destPath);

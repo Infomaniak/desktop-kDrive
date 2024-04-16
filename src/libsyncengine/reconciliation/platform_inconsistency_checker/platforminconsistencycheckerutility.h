@@ -34,7 +34,7 @@ class PlatformInconsistencyCheckerUtility {
         static std::shared_ptr<PlatformInconsistencyCheckerUtility> instance();
 
         SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
-        static ExitCode renameLocaLFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
+        static ExitCode renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
 
         bool fixNameForbiddenChars(const SyncPath &name, SyncName &newName);
         bool checkNameForbiddenChars(const SyncPath &name);

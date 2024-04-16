@@ -211,7 +211,9 @@ void TestUtility::testFormatStdError() {
 void TestUtility::testNormalizedSyncPath() {
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
+#ifdef _WIN32
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)") == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)") == SyncPath("/a/b/c"));
+#endif
 }
 }  // namespace KDC
