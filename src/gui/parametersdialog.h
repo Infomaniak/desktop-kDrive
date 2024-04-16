@@ -105,6 +105,8 @@ class ParametersDialog : public CustomDialog {
         QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "") const noexcept;
         QString getErrorMessage(const ErrorInfo &errorInfo) const noexcept;
         QString getBackErrorText(const ErrorInfo &errorInfo) const noexcept;
+        QString getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const noexcept;
+        QString getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const noexcept;
         QString getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept;
 
         void createErrorTabWidgetIfNeeded(int driveDbId);

@@ -425,6 +425,98 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
     return {};
 }
 
+QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const noexcept {
+    switch (exitCause) {
+        case ExitCauseNoSearchPermission:
+            return tr("The item misses search permission (error %1).<br>"
+                      "Please check that you have search/exec access to the parent folder.")
+                .arg(err);
+        case ExitCauseSyncDirDoesntExist:
+            return tr("The synchronization folder is no longer accessible (error %1).<br>"
+                      "Synchronization will resume as soon as the folder is accessible.")
+                .arg(err);
+
+        case ExitCauseSyncDirReadError:
+            return tr("The synchronization folder is inaccessible (error %1).<br>"
+                      "Please check that you have read access to this folder.")
+                .arg(err);
+
+        case ExitCauseSyncDirWriteError:
+            return tr("The synchronization folder is inaccessible (error %1).<br>"
+                      "Please check that you have write access to this folder.")
+                .arg(err);
+
+        case ExitCauseNotEnoughDiskSpace:
+            return tr(
+                "There is not enough space left on your disk.<br>"
+                "The synchronization has been stopped.");
+
+        case ExitCauseNotEnoughtMemory:
+            return tr(
+                "There is not enough memory left on your machine.<br>"
+                "The synchronization has been stopped.");
+        case ExitCauseLiteSyncNotAllowed:
+            return tr("Unable to start synchronization (error %1).<br>"
+                      "You must allow:<br>"
+                      "- kDrive in System Settings >> Privacy & Security >> Security<br>"
+                      "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
+                .arg(err);
+        case ExitCauseUnableToCreateVfs: {
+            if (OldUtility::isWindows()) {
+                return tr("Unable to start Lite Sync plugin (error %1).<br>"
+                          "Check that the Lite Sync extension is installed and Windows Search service is enabled.<br>"
+                          "Please empty the history, restart and if the error persists, contact our support team.")
+                    .arg(err);
+            } else if (OldUtility::isMac()) {
+                return tr("Unable to start Lite Sync plugin (error %1).<br>"
+                          "Check that the Lite Sync extension has the correct permissions and is running.<br>"
+                          "Please empty the history, restart and if the error persists, contact our support team.")
+                    .arg(err);
+            } else {
+                return tr("Unable to start Lite Sync plugin (error %1).<br>"
+                          "Please empty the history, restart and if the error persists, contact our support team.")
+                    .arg(err);
+            }
+        }
+        default:
+            return tr("A technical error has occurred (error %1).<br>"
+                      "Please empty the history and if the error persists, contact our support team.")
+                .arg(err);
+    }
+}
+
+QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const noexcept {
+    switch (exitCause) {
+        case ExitCauseDriveMaintenance:
+            return tr(
+                "The kDrive is in maintenance mode.<br>"
+                "Synchronization will begin again as soon as possible. Please contact our support team if the error "
+                "persists.");
+        case ExitCauseDriveNotRenew: {
+            if (userIsAdmin) {
+                return tr(
+                    "The kDrive is blocked.<br>"
+                    "Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be "
+                    "impossible to recover them.");
+            } else {
+                return tr(
+                    "The kDrive is blocked.<br>"
+                    "Please contact an administrator to renew the kDrive. If no action is taken, the data will be "
+                    "permanently deleted and it will be impossible to recover them.");
+            }
+        }
+        case ExitCauseDriveAccessError:
+            return tr(
+                "You are not authorised to access this kDrive.<br>"
+                "Synchronization has been paused. Please contact an administrator.");
+        default:
+            return tr("A technical error has occurred (error %1).<br>"
+                      "Synchronization will resume as soon as possible. Please contact our support team if the error "
+                      "persists.")
+                .arg(err);
+    }
+}
+
 QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause,
                                               bool userIsAdmin) const noexcept {
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
@@ -475,87 +567,9 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             }
             break;
         case ExitCodeBackError:
-            if (exitCause == ExitCauseDriveMaintenance) {
-                return tr(
-                    "The kDrive is in maintenance mode.<br>"
-                    "Synchronization will begin again as soon as possible. Please contact our support team if the error "
-                    "persists.");
-            } else if (exitCause == ExitCauseDriveNotRenew) {
-                if (userIsAdmin) {
-                    return tr(
-                        "The kDrive is blocked.<br>"
-                        "Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be "
-                        "impossible to recover them.");
-                } else {
-                    return tr(
-                        "The kDrive is blocked.<br>"
-                        "Please contact an administrator to renew the kDrive. If no action is taken, the data will be "
-                        "permanently deleted and it will be impossible to recover them.");
-                }
-            } else if (exitCause == ExitCauseDriveAccessError) {
-                return tr(
-                    "You are not authorised to access this kDrive.<br>"
-                    "Synchronization has been paused. Please contact an administrator.");
-            } else {
-                return tr("A technical error has occurred (error %1).<br>"
-                          "Synchronization will resume as soon as possible. Please contact our support team if the error "
-                          "persists.")
-                    .arg(err);
-            }
-            break;
+            return getSyncPalBackErrorText(err, exitCause, userIsAdmin);
         case ExitCodeSystemError:
-            if (exitCause == ExitCauseNoSearchPermission) {
-                return tr("The item misses search permission (error %1).<br>"
-                          "Please check that you have search/exec access to the parent folder.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseSyncDirDoesntExist) {
-                return tr("The synchronization folder is no longer accessible (error %1).<br>"
-                          "Synchronization will resume as soon as the folder is accessible.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseSyncDirReadError) {
-                return tr("The synchronization folder is inaccessible (error %1).<br>"
-                          "Please check that you have read access to this folder.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseSyncDirWriteError) {
-                return tr("The synchronization folder is inaccessible (error %1).<br>"
-                          "Please check that you have write access to this folder.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseNotEnoughDiskSpace) {
-                return tr(
-                    "There is not enough space left on your disk.<br>"
-                    "The synchronization has been stopped.");
-            } else if (exitCause == ExitCauseNotEnoughtMemory) {
-                return tr(
-                    "There is not enough memory left on your machine.<br>"
-                    "The synchronization has been stopped.");
-            } else if (exitCause == ExitCauseLiteSyncNotAllowed) {
-                return tr("Unable to start synchronization (error %1).<br>"
-                          "You must allow:<br>"
-                          "- kDrive in System Settings >> Privacy & Security >> Security<br>"
-                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseUnableToCreateVfs) {
-                if (OldUtility::isWindows()) {
-                    return tr("Unable to start Lite Sync plugin (error %1).<br>"
-                              "Check that the Lite Sync extension is installed and Windows Search service is enabled.<br>"
-                              "Please empty the history, restart and if the error persists, contact our support team.")
-                        .arg(err);
-                } else if (OldUtility::isMac()) {
-                    return tr("Unable to start Lite Sync plugin (error %1).<br>"
-                              "Check that the Lite Sync extension has the correct permissions and is running.<br>"
-                              "Please empty the history, restart and if the error persists, contact our support team.")
-                        .arg(err);
-                } else {
-                    return tr("Unable to start Lite Sync plugin (error %1).<br>"
-                              "Please empty the history, restart and if the error persists, contact our support team.")
-                        .arg(err);
-                }
-            } else {
-                return tr("A technical error has occurred (error %1).<br>"
-                          "Please empty the history and if the error persists, contact our support team.")
-                    .arg(err);
-            }
-            break;
+            return getSyncPalSystemErrorText(err, exitCause);
         case ExitCodeFatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")

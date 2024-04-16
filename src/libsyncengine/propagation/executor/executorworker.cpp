@@ -1660,6 +1660,16 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
     return true;
 }
 
+namespace details {
+bool isManagedBackError(ExitCause exitCause) {
+    static const std::set<ExitCause> managedExitCauses = {ExitCauseInvalidName,   ExitCauseApiErr,
+                                                          ExitCauseFileTooBig,    ExitCauseNotFound,
+                                                          ExitCauseQuotaExceeded, ExitCauseUploadNotTerminated};
+
+    return managedExitCauses.find(exitCause) != managedExitCauses.cend();
+}
+}  // namespace details
+
 bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath) {
     if (job->exitCode() == ExitCodeNeedRestart) {
         // Cancel all queued jobs
@@ -1694,7 +1704,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
 >>>>>>> 5ae37b5 (Qualifies quota excess as a managed backend error)
 
     if (const bool isInconsistencyIssue = job->exitCause() == ExitCauseInvalidName;
-        job->exitCode() == ExitCodeBackError && Utility::isManagedBackError(job->exitCause())) {
+        job->exitCode() == ExitCodeBackError && details::isManagedBackError(job->exitCause())) {
         return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue);
     }
 

@@ -165,15 +165,32 @@ bool AbstractTokenNetworkJob::handleUnauthorizedResponse() {
     return false;
 }
 
-const std::map<NetworkErrorCode, AbstractTokenNetworkJob::ExitHandler> AbstractTokenNetworkJob::_errorCodeHandlingMap = {
-    {NetworkErrorCode::validationFailed, ExitHandler{ExitCauseInvalidName, "Invalid file or directory name"}},
-    {NetworkErrorCode::uploadNotTerminatedError, ExitHandler{ExitCauseUploadNotTerminated, "Upload not terminated"}},
-    {NetworkErrorCode::uploadError, ExitHandler{ExitCauseApiErr, "Upload failed"}},
-    {NetworkErrorCode::destinationAlreadyExists, ExitHandler{ExitCauseFileAlreadyExist, "Operation refused"}},
-    {NetworkErrorCode::conflictError, ExitHandler{ExitCauseFileAlreadyExist, "Operation refused"}},
-    {NetworkErrorCode::accessDenied, ExitHandler{ExitCauseHttpErrForbidden, "Access denied"}},
-    {NetworkErrorCode::fileTooBigError, ExitHandler{ExitCauseFileTooBig, "File too big"}},
-    {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCauseQuotaExceeded, "Quota exceeded"}}};
+bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri) {
+    static const std::map<NetworkErrorCode, AbstractTokenNetworkJob::ExitHandler> errorCodeHandlingMap = {
+        {NetworkErrorCode::validationFailed, ExitHandler{ExitCauseInvalidName, "Invalid file or directory name"}},
+        {NetworkErrorCode::uploadNotTerminatedError, ExitHandler{ExitCauseUploadNotTerminated, "Upload not terminated"}},
+        {NetworkErrorCode::uploadError, ExitHandler{ExitCauseApiErr, "Upload failed"}},
+        {NetworkErrorCode::destinationAlreadyExists, ExitHandler{ExitCauseFileAlreadyExist, "Operation refused"}},
+        {NetworkErrorCode::conflictError, ExitHandler{ExitCauseFileAlreadyExist, "Operation refused"}},
+        {NetworkErrorCode::accessDenied, ExitHandler{ExitCauseHttpErrForbidden, "Access denied"}},
+        {NetworkErrorCode::fileTooBigError, ExitHandler{ExitCauseFileTooBig, "File too big"}},
+        {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCauseQuotaExceeded, "Quota exceeded"}}};
+
+    const auto &errorHandling = errorCodeHandlingMap.find(errorCode);
+    if (errorHandling == errorCodeHandlingMap.cend()) {
+        LOG_WARN(_logger, "Error in request " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str());
+        _exitCause = ExitCauseHttpErr;
+
+        return false;
+    }
+    // Regular handling
+    const auto &exitHandler = errorHandling->second;
+    LOG_DEBUG(_logger, exitHandler.debugMessage.c_str());
+    _exitCause = exitHandler.exitCause;
+
+    return true;
+}
+
 
 bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri) {
     switch (_resHttp.getStatus()) {
@@ -265,19 +282,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
             return false;
         }
         default:
-            const auto &errorHandling = _errorCodeHandlingMap.find(errorCode);
-            if (errorHandling == _errorCodeHandlingMap.cend()) {
-                LOG_WARN(_logger, "Error in request " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str());
-                _exitCause = ExitCauseHttpErr;
-
-                return false;
-            }
-            // Regular handling
-            const auto &exitHandler = errorHandling->second;
-            LOG_DEBUG(_logger, exitHandler.debugMessage.c_str());
-            _exitCause = exitHandler.exitCause;
-
-            return true;
+            return defaultBackErrorHandling(errorCode, uri);
     }
 }
 

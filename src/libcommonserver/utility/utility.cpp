@@ -290,13 +290,6 @@ void Utility::logGenericServerError(const std::string &errorTitle, std::istream 
     LOG_WARN(_logger, errorTitle.c_str() << ": " << errorMsg.c_str());
 }
 
-bool Utility::isManagedBackError(ExitCause exitCause) noexcept {
-    static const std::set<ExitCause> managedExitCauses = {ExitCauseInvalidName, ExitCauseApiErr, ExitCauseFileTooBig,
-                                                          ExitCauseNotFound, ExitCauseQuotaExceeded};
-
-    return managedExitCauses.find(exitCause) != managedExitCauses.cend();
-}
-
 #ifdef _WIN32
 static std::unordered_map<std::string, bool> rootFsTypeMap;
 

@@ -22,7 +22,6 @@
 #include "jobs/network/networkjobsparams.h"
 #include "login/login.h"
 
-#include <map>
 #include <unordered_map>
 
 namespace KDC {
@@ -89,13 +88,12 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         std::string _errorDescr;
         Poco::JSON::Object::Ptr _error{nullptr};
 
-        static const std::map<NetworkErrorCode, ExitHandler> _errorCodeHandlingMap;
-
         std::string loadToken();
 
         virtual std::string getUrl() override;
         bool handleUnauthorizedResponse();
         bool handleNotFoundResponse();
+        bool defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri);
 };
 
 }  // namespace KDC

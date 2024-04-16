@@ -589,7 +589,6 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                 usedName = newName;
             }
 #endif
-
             // Process action
             if (action == createAction || action == restoreAction || action == moveInAction || rightsAdded) {
                 if (_snapshot->updateItem(item)) {

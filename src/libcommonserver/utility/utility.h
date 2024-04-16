@@ -81,7 +81,6 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
         static void logGenericServerError(const std::string &errorTitle, std::istream &inputStream,
                                           const Poco::Net::HTTPResponse &httpResponse);
-        static bool isManagedBackError(ExitCause exitCause) noexcept;
 
 #ifdef _WIN32
         static bool isNtfs(const SyncPath &dirPath);
