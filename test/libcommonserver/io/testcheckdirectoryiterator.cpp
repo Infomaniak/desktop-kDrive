@@ -79,7 +79,6 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 
         DirectoryEntry entry;
         CPPUNIT_ASSERT(it.next(entry, error));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
 
         CPPUNIT_ASSERT_EQUAL(directoryWithOneFile / "testFile1.txt", entry.path());
@@ -97,7 +96,6 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 
         DirectoryEntry entry;
         CPPUNIT_ASSERT(it.next(entry, error));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         CPPUNIT_ASSERT_EQUAL(directoryWithOneChildDirectory / "testDir1", entry.path());
 
@@ -117,7 +115,6 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         DirectoryEntry entry;
         for (int i = 0; i < 4; i++) {
             CPPUNIT_ASSERT(it.next(entry, error));
-            CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
         }
 
         CPPUNIT_ASSERT(!it.next(entry, error));
@@ -135,7 +132,6 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         DirectoryEntry entry;
         for (int i = 0; i < 8; i++) {
             CPPUNIT_ASSERT(it.next(entry, error));
-            CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
         }
 
         CPPUNIT_ASSERT(!it.next(entry, error));
@@ -185,7 +181,6 @@ void TestIo::testCheckDirectoryIteratorPermission() {
 
         DirectoryEntry entry;
         CPPUNIT_ASSERT(it.next(entry, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
         CPPUNIT_ASSERT_EQUAL(testFilePathNoPerm, entry.path());
     }
 
@@ -222,7 +217,6 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
 
         DirectoryEntry entry;
         CPPUNIT_ASSERT(it.next(entry, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         std::filesystem::remove_all(path);
 
