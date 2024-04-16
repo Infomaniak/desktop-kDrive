@@ -84,6 +84,19 @@ AbstractNetworkJob::AbstractNetworkJob() {
     }
 }
 
+bool AbstractNetworkJob::isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept {
+    static const std::set<ExitCause> managedExitCauses = {ExitCauseInvalidName, ExitCauseApiErr, ExitCauseFileTooBig,
+                                                          ExitCauseNotFound, ExitCauseQuotaExceeded};
+    switch (exitCode) {
+        case ExitCodeBackError:
+            return managedExitCauses.find(exitCause) != managedExitCauses.cend();
+        case ExitCodeNetworkError:
+            return exitCause == ExitCauseNetworkTimeout;
+        default:
+            return false;
+    }
+}
+
 void AbstractNetworkJob::runJob() noexcept {
     std::string url = getUrl();
     if (url == "") {
@@ -216,10 +229,7 @@ void AbstractNetworkJob::runJob() noexcept {
             _exitCode = ExitCodeOk;
             _trials++;  // Add one more chance
             continue;
-        } else if ((_exitCode == ExitCodeBackError && (_exitCause == ExitCauseInvalidName || _exitCause == ExitCauseApiErr ||
-                                                       _exitCause == ExitCauseFileAlreadyExist ||
-                                                       _exitCause == ExitCauseFileTooBig || _exitCause == ExitCauseNotFound)) ||
-                   (_exitCode == ExitCodeNetworkError && _exitCause == ExitCauseNetworkTimeout)) {
+        } else if (isManagedError(_exitCode, _exitCause)) {
             break;
         } else {
             _exitCode = ExitCodeOk;

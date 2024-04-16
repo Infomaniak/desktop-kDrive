@@ -790,7 +790,7 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noe
             return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.").arg(errorInfo.path());
         }
         case ExitCauseQuotaExceeded: {
-            return tr("You have exceeded your quota.");
+            return tr("You have exceeded your quota. Increase your space quota to re-enable file upload.");
         }
         case ExitCauseNotFound: {
             return tr("Impossible to download file \"%1\"").arg(errorInfo.path());
