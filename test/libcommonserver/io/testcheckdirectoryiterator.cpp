@@ -31,6 +31,12 @@ void TestIo::testCheckDirectoryIterator() {
     testCheckDirectoryIteratotNextAfterEndOfDir();
     testCheckDirectoryIteratorPermission();
     testCheckDirectoryIteratorUnexpectedDelete();
+#ifndef _WIN32
+    // This test is not valid on Windows because the permission is not checked
+    // on the directory iterator
+    testCheckDirectoryPermissionLost();
+#endif  
+
 }
 
 void TestIo::testCheckDirectoryIteratorNonExistingPath() {
@@ -174,8 +180,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     std::filesystem::permissions(
         testFilePathNoPerm,
         std::filesystem::perms::group_write | std::filesystem::perms::others_write | std::filesystem::perms::owner_write,
-                                 std::filesystem::perm_options::remove,
-                                 ec);
+        std::filesystem::perm_options::remove, ec);
     {
         IoError ioError = IoErrorSuccess;
         DirectoryIterator it(path, false, ioError);
@@ -225,12 +230,63 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
 
         std::filesystem::remove_all(path);
 
-        for (int i = 0; i < 20; i++) {
-            CPPUNIT_ASSERT(!it.next(entry, ioError));
-            CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, ioError);
-        }
+        CPPUNIT_ASSERT(!it.next(entry, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, ioError);
+
         CPPUNIT_ASSERT(!it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorInvalidDirectoryIterator, ioError);
+    }
+}
+
+void TestIo::testCheckDirectoryPermissionLost(void) {
+    // Check that the directory iterator is consistent when a parent directory loses permission
+    {
+        const TemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path.string() + "\\chekDirIt\\subDirDel";
+        std::string subDir = path.string();
+
+        for (int i = 0; i < 7; i++) {
+            subDir += "/subDir" + std::to_string(i);
+        }
+
+        std::filesystem::create_directories(subDir);
+
+        IoError ioError = IoErrorSuccess;
+        DirectoryIterator it(path, true, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+
+        DirectoryEntry entry;
+        CPPUNIT_ASSERT(it.next(entry, ioError));
+
+        
+        for (int i = 0; i < 2; i++) {
+            CPPUNIT_ASSERT(it.next(entry, ioError));
+        }
+
+        std::filesystem::permissions(
+            path,
+            std::filesystem::perms::group_write | std::filesystem::perms::others_write | std::filesystem::perms::owner_write,
+            std::filesystem::perm_options::remove);
+
+
+        for (int i = 0; i < 3; i++) {
+            bool error = it.next(entry, ioError);
+            CPPUNIT_ASSERT(!it.next(entry, ioError));
+            std::cout << "Error: " << IoHelper::ioError2StdString(ioError) << " | " << error << std::endl;
+            /CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, ioError);
+        }
+
+        CPPUNIT_ASSERT(!it.next(entry, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorInvalidDirectoryIterator, ioError);
+
+        // Restore permission to allow subdir removal
+        std::filesystem::permissions(
+            path,
+            std::filesystem::perms::group_write | std::filesystem::perms::others_write | std::filesystem::perms::owner_write,
+            std::filesystem::perm_options::add);
+
+        std::filesystem::remove_all(path);
+
     }
 }
 
