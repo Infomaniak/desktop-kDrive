@@ -45,7 +45,7 @@ class DirectoryIterator {
         bool _skipPermissionDenied = false;
         bool _firstElement = true;
         bool _invalid = false;
-        SyncPath _directoryPath = "";
+        SyncPath _directoryPath;
         std::filesystem::recursive_directory_iterator _dirIterator;
 };
 
