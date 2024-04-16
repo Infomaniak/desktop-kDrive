@@ -120,7 +120,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
     }
 
-    // Check that the directory iterator search recursively when the recursive flag is true
+    // Check that the directory iterator searches recursively when the recursive flag is true
     {
         const SyncPath directoryWithMultipleSubDirectories = _localTestDirPath / "test_dir_iterator/recursive_dir";
 
