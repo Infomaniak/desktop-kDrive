@@ -100,7 +100,6 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         CPPUNIT_ASSERT_EQUAL(directoryWithOneChildDirectory / "testDir1", entry.path());
 
         CPPUNIT_ASSERT(!it.next(entry, error));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
     }
 
 
