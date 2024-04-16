@@ -171,7 +171,10 @@ void TestIo::testCheckDirectoryIteratorPermission() {
 
     // Remove permission to the file
     std::error_code ec;
-    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::_All_write, std::filesystem::perm_options::remove,
+    std::filesystem::permissions(
+        testFilePathNoPerm,
+        std::filesystem::perms::group_write | std::filesystem::perms::others_write | std::filesystem::perms::owner_write,
+                                 std::filesystem::perm_options::remove,
                                  ec);
     {
         IoError ioError = IoErrorSuccess;
@@ -194,7 +197,10 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
     }
     // Restore permission to allow subdir removal
-    std::filesystem::permissions(testFilePathNoPerm, std::filesystem::perms::_All_write, std::filesystem::perm_options::add);
+    std::filesystem::permissions(
+        testFilePathNoPerm,
+        std::filesystem::perms::group_write | std::filesystem::perms::others_write | std::filesystem::perms::owner_write,
+        std::filesystem::perm_options::add);
 }
 
 void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
