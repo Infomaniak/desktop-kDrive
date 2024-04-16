@@ -38,8 +38,9 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     ExitCode exitCode = checkTree(_syncPal->_remoteUpdateTree->rootNode(), _syncPal->_remoteUpdateTree->rootNode()->name());
 
-    for (const auto &id : _idsToBeRemoved) {
-        _syncPal->_remoteUpdateTree->deleteNode(id);
+    for (const auto &idItem : _idsToBeRemoved) {
+        _syncPal->_remoteUpdateTree->deleteNode(idItem.remoteId);
+        _syncPal->_localUpdateTree->deleteNode(idItem.localId);
     }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
@@ -102,12 +103,15 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
                                                        const InconsistencyType inconsistencyType) {
     // Local node needs to be excluded before call to blacklistTemporarily because
     // we need the DB entry to retrieve the corresponding node
+    NodeIdPair nodeIDs;
     const auto localNode = correspondingNodeDirect(remoteNode);
     if (localNode) {
         // Also exclude local node by adding "conflict" suffix
         const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        LOGW_SYNCPAL_INFO(_logger, L"Excluding also local item with '" << Utility::formatSyncPath(absoluteLocalPath).c_str() << L"'.");
-        PlatformInconsistencyCheckerUtility::renameLocaLFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
+        LOGW_SYNCPAL_INFO(_logger, L"Excluding also local item with " << Utility::formatSyncPath(absoluteLocalPath).c_str() << L".");
+        PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
+
+        if (localNode->id().has_value()) nodeIDs.localId = *localNode->id();
     }
 
     _syncPal->blacklistTemporarily(remoteNode->id().value(), relativePath, remoteNode->side());
@@ -132,9 +136,10 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
         default:
             break;
     }
-    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting remote item '" << Utility::formatSyncPath(relativePath).c_str() << L"' because " << causeStr.c_str() << L".");
+    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting remote item with " << Utility::formatSyncPath(relativePath).c_str() << L" because " << causeStr.c_str() << L".");
 
-    _idsToBeRemoved.push_back(remoteNode->id().value());
+    nodeIDs.remoteId = *remoteNode->id();
+    _idsToBeRemoved.emplace_back(nodeIDs);
 }
 
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
