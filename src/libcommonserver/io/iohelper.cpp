@@ -557,17 +557,17 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
     std::error_code ec;
     if (_invalid) {
         ioError = IoErrorInvalidDirectoryIterator;
-        return IoHelper::_isExpectedError(ioError);
+        return false;
     }
 
     if (_directoryPath == "") {
         ioError = IoErrorInvalidArgument;
-        return IoHelper::_isExpectedError(ioError);
+        return false;
     }
 
     if (_dirIterator == std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
         ioError = IoErrorEndOfDirectory;
-        return IoHelper::_isExpectedError(ioError);
+        return false;
     }
 
     if (!_recursive) {
@@ -578,14 +578,9 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
         _dirIterator.increment(ec);
         ioError = IoHelper::stdError2ioError(ec);
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
-            ioError = IoErrorInvalidDirectoryIterator;
-            _invalid = true;
-            return IoHelper::_isExpectedError(ioError);
-        }
-
         if (ioError != IoErrorSuccess) {
-            return IoHelper::_isExpectedError(ioError);
+            _invalid = true;
+            return false;
         }
 
     } else {
@@ -594,14 +589,10 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
 
     if (_dirIterator != std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
         ioError = IoHelper::stdError2ioError(ec);
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
-            ioError = IoErrorInvalidDirectoryIterator;
-            _invalid = true;
-            return IoHelper::_isExpectedError(ioError);
-        }
 
         if (ioError != IoErrorSuccess) {
-            return IoHelper::_isExpectedError(ioError);
+            _invalid = true;
+            return false;
         }
 
 #ifdef _WIN32
@@ -631,7 +622,7 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
         return true;
     } else {
         ioError = IoErrorEndOfDirectory;
-        return IoHelper::_isExpectedError(ioError);
+        return false;
     }
 }
 
