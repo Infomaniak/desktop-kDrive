@@ -65,7 +65,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT(!it.next(entry, error));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
     }
 
@@ -78,13 +78,13 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+        CPPUNIT_ASSERT(it.next(entry, error));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
 
         CPPUNIT_ASSERT_EQUAL(directoryWithOneFile / "testFile1.txt", entry.path());
 
-        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT(!it.next(entry, error));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
     }
 
@@ -96,12 +96,12 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+        CPPUNIT_ASSERT(it.next(entry, error));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         CPPUNIT_ASSERT_EQUAL(directoryWithOneChildDirectory / "testDir1", entry.path());
 
-        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT(!it.next(entry, error));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
     }
 
@@ -116,11 +116,11 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 
         DirectoryEntry entry;
         for (int i = 0; i < 4; i++) {
-            CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+            CPPUNIT_ASSERT(it.next(entry, error));
             CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
         }
 
-        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT(!it.next(entry, error));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
     }
 
@@ -134,11 +134,11 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 
         DirectoryEntry entry;
         for (int i = 0; i < 8; i++) {
-            CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+            CPPUNIT_ASSERT(it.next(entry, error));
             CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
         }
 
-        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+        CPPUNIT_ASSERT(!it.next(entry, error));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
     }
 }
@@ -155,11 +155,11 @@ void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
         // Read the only file in the directory
         DirectoryEntry entry;
 
-        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, error));
+        CPPUNIT_ASSERT(it.next(entry, error));
 
         // Expecting EOF
         for (int i = 0; i < 3; i++) {
-            CPPUNIT_ASSERT_EQUAL(false, it.next(entry, error));
+            CPPUNIT_ASSERT(!it.next(entry, error));
             CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
         }
     }
@@ -184,7 +184,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, ioError));
+        CPPUNIT_ASSERT(it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
         CPPUNIT_ASSERT_EQUAL(testFilePathNoPerm, entry.path());
     }
@@ -196,7 +196,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT_EQUAL(false, it.next(entry, ioError));
+        CPPUNIT_ASSERT(!it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
     }
     // Restore permission to allow subdir removal
@@ -221,13 +221,13 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT_EQUAL(true, it.next(entry, ioError));
+        CPPUNIT_ASSERT(it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         std::filesystem::remove_all(path);
 
         for (int i = 0; i < 20; i++) {
-            CPPUNIT_ASSERT_EQUAL(false, it.next(entry, ioError));
+            CPPUNIT_ASSERT(!it.next(entry, ioError));
             CPPUNIT_ASSERT_EQUAL(IoError::IoErrorInvalidDirectoryIterator, ioError);
         }
     }
