@@ -85,11 +85,9 @@ AbstractNetworkJob::AbstractNetworkJob() {
 }
 
 bool AbstractNetworkJob::isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept {
-    static const std::set<ExitCause> managedExitCauses = {ExitCauseInvalidName, ExitCauseApiErr, ExitCauseFileTooBig,
-                                                          ExitCauseNotFound, ExitCauseQuotaExceeded};
     switch (exitCode) {
         case ExitCodeBackError:
-            return managedExitCauses.find(exitCause) != managedExitCauses.cend();
+            return Utility::isManagedBackError(exitCause);
         case ExitCodeNetworkError:
             return exitCause == ExitCauseNetworkTimeout;
         default:

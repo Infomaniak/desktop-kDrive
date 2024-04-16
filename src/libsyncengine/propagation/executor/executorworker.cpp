@@ -1620,14 +1620,6 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
     return !hasError;
 }
 
-bool ExecutorWorker::isManagedBackError(const ExitCause exitCause, bool &isInconsistencyIssue) {
-    static const std::set<ExitCause> managedExitCauses = {ExitCauseInvalidName, ExitCauseUploadNotTerminated,
-                                                          ExitCauseApiErr,      ExitCauseFileTooBig,
-                                                          ExitCauseNotFound,    ExitCauseQuotaExceeded};
-    isInconsistencyIssue = exitCause == ExitCauseInvalidName;
-    return managedExitCauses.find(exitCause) != managedExitCauses.cend();
-}
-
 bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue) {
     _executorExitCode = ExitCodeOk;
     if (jobExitCause == ExitCauseQuotaExceeded) {
@@ -1700,8 +1692,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
     }
 >>>>>>> 5ae37b5 (Qualifies quota excess as a managed backend error)
 
-    if (bool isInconsistencyIssue = false;
-        job->exitCode() == ExitCodeBackError && isManagedBackError(job->exitCause(), isInconsistencyIssue)) {
+    if (const bool isInconsistencyIssue = job->exitCause() == ExitCauseInvalidName;
+        job->exitCode() == ExitCodeBackError && Utility::isManagedBackError(job->exitCause())) {
         return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue);
     }
 
@@ -1714,9 +1706,9 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
                    (job->exitCause() == ExitCauseFileAccessError || job->exitCause() == ExitCauseMoveToTrashFailed)) {
             LOGW_DEBUG(_logger, L"File/directory " << Path2WStr(relativeLocalPath).c_str()
                                                    << L" doesn't have write permissions or is locked!");
-            _syncPal->blacklistTemporarily(
-                syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), relativeLocalPath,
-                syncOp->targetSide() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal);
+            _syncPal->blacklistTemporarily(syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(),
+                                           relativeLocalPath,
+                                           syncOp->targetSide() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal);
             Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, _syncPal->_localPath / relativeLocalPath,
                         ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone, "", job->exitCode(), job->exitCause());
             _syncPal->addError(error);

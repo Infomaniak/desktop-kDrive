@@ -420,8 +420,9 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code : " << exitCode;
-    return QString();
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+
+    return {};
 }
 
 QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause,
@@ -582,8 +583,9 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code : " << exitCode;
-    return QString();
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+
+    return {};
 }
 
 QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const noexcept {
@@ -654,7 +656,7 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged conflict type : " << conflictType;
+    qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << conflictType;
 
     return {};
 }
@@ -769,8 +771,9 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
         }
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged cancel type : " << cancelType;
-    return "";
+    qCDebug(lcParametersDialog()) << "Unmanaged cancel type: " << cancelType;
+
+    return {};
 }
 
 QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noexcept {
@@ -1077,8 +1080,7 @@ void ParametersDialog::onSendLogs() {
     msgBox.setDefaultButton(QMessageBox::Yes);
 
     const int ret = msgBox.execAndMoveToCenter(this);
-    if (ret == QDialog::Rejected) return;
-    if (ret == QMessageBox::No) return;
+    if (ret == QDialog::Rejected || ret == QMessageBox::No) return;
 
     auto *debugReporter = new DebugReporter(QUrl(Theme::instance()->debugReporterUrl()), this);
 
