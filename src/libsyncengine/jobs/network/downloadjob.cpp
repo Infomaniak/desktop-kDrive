@@ -425,7 +425,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 bool DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
     if (mimeType == mimeTypeSymlink) {
         // Create symlink
-        SyncPath targetPath(Str2Path(data));
+        const SyncPath targetPath = Str2Path(data);
         if (targetPath == _localpath) {
             LOGW_DEBUG(_logger, L"Cannot create symlink on itself : " << Utility::formatSyncPath(_localpath).c_str());
             return false;
@@ -441,7 +441,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
     } else if (mimeType == mimeTypeHardlink) {
         // Unreachable code
-        SyncPath targetPath(Str2Path(data));
+        const SyncPath targetPath = Str2Path(data);
         if (targetPath == _localpath) {
             LOGW_DEBUG(_logger, L"Cannot create hardlink on itself : " << Utility::formatSyncPath(_localpath).c_str());
             return false;
@@ -452,11 +452,10 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 
         std::error_code ec;
         std::filesystem::create_hard_link(targetPath, _localpath, ec);
-        if (ec.value() != 0) {
-            LOGW_WARN(_logger, L"Failed to create hardlink : " << Utility::formatSyncPath(targetPath).c_str() << L" "
-                                                               << Utility::formatSyncPath(_localpath).c_str() << L" err="
-                                                               << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
-                                                               << L")");
+        if (ec) {
+            LOGW_WARN(_logger, L"Failed to create hardlink : " << Utility::formatSyncPath(targetPath).c_str() << L", "
+                                                               << Utility::formatSyncPath(_localpath).c_str() << L", "
+                                                               << Utility::formatStdError(ec).c_str());
             return false;
         }
     } else if (mimeType == mimeTypeJunction) {
@@ -493,9 +492,9 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 bool DownloadJob::removeTmpFile(const SyncPath &path) {
     std::error_code ec;
     if (!std::filesystem::remove_all(path, ec)) {
-        if (ec.value() != 0) {
-            LOGW_WARN(_logger, L"Failed to remove all : " << Utility::formatSyncPath(path).c_str() << L" err="
-                                                          << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
+        if (ec) {
+            LOGW_WARN(_logger, L"Failed to remove all : " << Utility::formatSyncPath(path).c_str() << L", "
+                                                          << Utility::formatStdError(ec).c_str());
             return false;
         }
 
@@ -518,20 +517,19 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
         retry = false;
 #endif
         std::filesystem::rename(path, _localpath, ec);
-        bool crossDeviceLink;
 #ifdef _WIN32
-        crossDeviceLink = ec.value() == ERROR_NOT_SAME_DEVICE;
+        const bool crossDeviceLink = ec.value() == ERROR_NOT_SAME_DEVICE;
 #else
-    crossDeviceLink = ec.value() == (int)std::errc::cross_device_link;
+    const bool crossDeviceLink = ec.value() == (int)std::errc::cross_device_link;
 #endif
         if (crossDeviceLink) {
             // The sync might be on a different file system than tmp folder
             // In that case, try to copy the file instead
             ec.clear();
             std::filesystem::copy(path, _localpath, std::filesystem::copy_options::overwrite_existing, ec);
-            if (ec.value() != 0) {
-                LOGW_WARN(_logger, L"Failed to copy : " << Utility::formatSyncPath(_localpath).c_str() << L" err="
-                                                        << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
+            if (ec) {
+                LOGW_WARN(_logger, L"Failed to copy : " << Utility::formatSyncPath(_localpath).c_str() << L", "
+                                                        << Utility::formatStdError(ec).c_str());
                 return false;
             }
         }
@@ -544,13 +542,13 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
                 LOGW_DEBUG(_logger, L"Retrying to move downloaded file : " << Utility::formatSyncPath(_localpath).c_str());
                 counter--;
             } else {
-                LOGW_WARN(_logger, L"Failed to rename : " << Utility::formatSyncPath(_localpath).c_str() << L" err="
-                                                          << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
+                LOGW_WARN(_logger, L"Failed to rename : " << Utility::formatSyncPath(_localpath).c_str() << L", "
+                                                          << Utility::formatStdError(ec).c_str());
                 return false;
             }
         }
 #endif
-        else if (ec.value() != 0) {
+        else if (ec) {
             bool exists = false;
             IoError ioError = IoErrorSuccess;
             if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
@@ -563,14 +561,13 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
 
             if (!exists) {
                 LOGW_INFO(_logger, L"Parent of item does not exist anymore : " << Utility::formatSyncPath(_localpath).c_str()
-                                                                               << L" err=" << Utility::s2ws(ec.message()).c_str()
-                                                                               << L" (" << ec.value() << L")");
+                                                                               << L", " << Utility::formatStdError(ec).c_str());
                 restartSync = true;
                 return true;
             }
 
-            LOGW_WARN(_logger, L"Failed to rename : " << Utility::formatSyncPath(_localpath).c_str() << L" err="
-                                                      << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
+            LOGW_WARN(_logger, L"Failed to rename : " << Utility::formatSyncPath(_localpath).c_str() << L", "
+                                                      << Utility::formatStdError(ec).c_str());
             return false;
         }
 #ifdef _WIN32
