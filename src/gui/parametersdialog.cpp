@@ -573,6 +573,11 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
                 "The app does not have write rights to the synchronization folder.<br>"
                 "The synchronization has been stopped.");
             break;
+        case ExitCodeNoDriveFound:
+            return tr("No kDrive found (error %1).<br>"
+                                 "Log in to your kDrive account and add a kDrive.")
+                .arg(err);
+            break;
         case ExitCodeOk:
         case ExitCodeNeedRestart:
         case ExitCodeInconsistencyError:
