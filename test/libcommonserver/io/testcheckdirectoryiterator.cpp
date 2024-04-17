@@ -200,8 +200,10 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     file << "file";
     file.close();
 
-   std::filesystem::permissions(noPermissionFile, std::filesystem::perms::owner_all | std::filesystem::perms::group_all |
-                                                       std::filesystem::perms::others_all, std::filesystem::perm_options::remove);
+    std::filesystem::permissions(
+        noPermissionFile,
+        std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
+        std::filesystem::perm_options::remove);
     // Check that the directory iterator shows a directory with no permission when `skip_permission_denied` is false
     {
         IoError ioError = IoErrorSuccess;
@@ -276,13 +278,14 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
     // Check that the directory iterator is consistent when a parent directory loses permission
     {
         IoError ioError = IoErrorSuccess;
-        DirectoryIterator it(permLostRoot, true, ioError, DirectoryOptions::skip_permission_denied); // Skip permission denied to true, when false it is the user responsibility to check the permission
+        DirectoryIterator it(permLostRoot, true, ioError,
+                             DirectoryOptions::skip_permission_denied);  // Skip permission denied to true, when false it is the
+                                                                         // user responsibility to check the permission
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         // Remove permission (after iterator is created)
         std::filesystem::permissions(
-            subDir,
-            std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
+            subDir, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
             std::filesystem::perm_options::remove);
 
         DirectoryEntry entry;
@@ -293,7 +296,8 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(
-            subDir, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all);
+            subDir, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
+            std::filesystem::perm_options::add);
 
         std::filesystem::remove_all(permLostRoot);
     }
