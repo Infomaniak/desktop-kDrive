@@ -483,8 +483,7 @@ qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
 bool GuiUtility::openFolder(const QString &dirPath) {
     if (dirPath.isEmpty()) return true;
 
-    QFileInfo fileInfo(dirPath);
-    if (fileInfo.exists()) {
+    if (const auto fileInfo = QFileInfo(dirPath); fileInfo.exists()) {
         const QUrl url = getUrlFromLocalPath(QDir::cleanPath(fileInfo.filePath()));
         if (url.isValid() && !QDesktopServices::openUrl(url)) return false;
     } else if (fileInfo.dir().exists()) {
