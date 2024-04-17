@@ -78,7 +78,7 @@ void DebuggingDialog::initUI() {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     // Title
-    QLabel *titleLabel = new QLabel(this);
+    auto *titleLabel = new QLabel(this);
     titleLabel->setObjectName("titleLabel");
     titleLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     titleLabel->setText(tr("Record debugging information"));
@@ -91,7 +91,7 @@ void DebuggingDialog::initUI() {
     mainLayout->addLayout(recordDebuggingHBox);
     mainLayout->addSpacing(recordDebuggingBoxVMargin);
 
-    QLabel *recordDebuggingLabel = new QLabel(this);
+    auto *recordDebuggingLabel = new QLabel(this);
     recordDebuggingLabel->setObjectName("boldTextLabel");
     recordDebuggingLabel->setText(tr("Activate the recording of information in a temporary folder"));
     recordDebuggingHBox->addWidget(recordDebuggingLabel);
@@ -103,14 +103,14 @@ void DebuggingDialog::initUI() {
     recordDebuggingHBox->addWidget(_recordDebuggingSwitch);
 
     // Minimum debug level
-    QLabel *debugLevelLabel = new QLabel(this);
+    auto *debugLevelLabel = new QLabel(this);
     debugLevelLabel->setObjectName("boldTextLabel");
     debugLevelLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     debugLevelLabel->setText(tr("Minimum trace level"));
     mainLayout->addWidget(debugLevelLabel);
     mainLayout->addSpacing(debugLevelLabelBoxVMargin);
 
-    QHBoxLayout *debugLevelHBox = new QHBoxLayout();
+    auto *debugLevelHBox = new QHBoxLayout();
     debugLevelHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     mainLayout->addLayout(debugLevelHBox);
     mainLayout->addSpacing(debugLevelSelectBoxVMargin);
@@ -133,7 +133,7 @@ void DebuggingDialog::initUI() {
     debugLevelHBox->addStretch();
 
     // Delete logs
-    QHBoxLayout *deleteLogsHBox = new QHBoxLayout();
+    auto *deleteLogsHBox = new QHBoxLayout();
     deleteLogsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     mainLayout->addLayout(deleteLogsHBox);
 
@@ -145,13 +145,13 @@ void DebuggingDialog::initUI() {
     mainLayout->addStretch();
 
     // Send Logs
-    QLabel *sendLogsLabel = new QLabel(this);
+    auto *sendLogsLabel = new QLabel(this);
     sendLogsLabel->setObjectName("boldTextLabel");
     sendLogsLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     sendLogsLabel->setText(tr("Send logs to Infomaniak support"));
     mainLayout->addWidget(sendLogsLabel);
 
-    QHBoxLayout *sendLogsHBox = new QHBoxLayout();
+    auto *sendLogsHBox = new QHBoxLayout();
     sendLogsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     mainLayout->addLayout(sendLogsHBox);
     mainLayout->addSpacing(debugLevelSelectBoxVMargin);
@@ -180,7 +180,7 @@ void DebuggingDialog::initUI() {
 
 
     // Add dialog buttons
-    QHBoxLayout *buttonsHBox = new QHBoxLayout();
+    auto *buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     buttonsHBox->setSpacing(boxHSpacing);
     mainLayout->addLayout(buttonsHBox);
