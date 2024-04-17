@@ -1011,7 +1011,8 @@ ExitCode ServerRequests::sendLogToSupport(bool sendAllLogs, std::function<void(c
 
     ExitCode exitCode = ExitCodeOk;
     if (progressMonitoring) {
-        generateLogDirectory(logArchivePath, sendAllLogs, [&](int64_t progress) { progressCallback('A', progress); });
+        generateLogDirectory(logArchivePath, sendAllLogs,
+                             [progressCallback](int64_t progress) { progressCallback('A', progress); });
     } else {
         generateLogDirectory(logArchivePath, sendAllLogs);
     }
