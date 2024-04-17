@@ -244,7 +244,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
         void onRestartClientReceived();
-		void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
+        void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
 };
 
 

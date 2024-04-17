@@ -152,7 +152,7 @@ AppServer::AppServer(int &argc, char **argv)
     // Cleanup at quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
 
-    // Setup single application : show Settings or Synthesis window if the application is running"
+    // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
 
     // Init parms DB
