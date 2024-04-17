@@ -208,6 +208,22 @@ copy zlib1.dll bin\
 copy zlib1.pdb bin\
 ```
 
+## libzip
+
+> :warning: **`libzip` requires [zlib](#zlib) to be installed.**
+
+Clone and install libzip
+
+```bash
+git clone https://github.com/nih-at/libzip.git
+cd libzip
+git checkout tags/v1.10.1
+mkdir build && cd build
+cmake .. -DZLIB_LIBRARY="C:\Program Files (x86)\zlib-1.2.11\lib\zlib.lib"
+cmake --build . --target install --config Debug
+cmake --build . --target install --config Release
+```
+
 ## Redistributable
 
 Create the `F:\Projects\vcredist` folder and copy-paste the [C++ Redistributable](https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170) `x64` and `arm64` 
