@@ -273,13 +273,13 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
     return errorStream.str();   // str() return a copy of the underlying string
 }
 
-void Utility::logGenericServerError(const std::string &errorTitle, std::istream &inputStream,
+void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
 #ifdef NDEBUG
     sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, errorTitle.c_str(), errorMsg.c_str()));
 #endif
-    LOG_WARN(_logger, errorTitle.c_str() << ": " << errorMsg.c_str());
+    LOG_WARN(logger, errorTitle.c_str() << ": " << errorMsg.c_str());
 }
 
 #ifdef _WIN32
