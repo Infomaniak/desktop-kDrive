@@ -175,7 +175,7 @@ class COMMONSERVER_EXPORT Log {
         * \param ioError The error object to be filled in case of error.
         * \return True if the archive was generated successfully, false otherwise.
         */
-        bool generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const std::string &archiveName,
+        bool generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const SyncPath &archiveName,
                                         IoError &ioError, std::function<void(int64_t)> progressCallback = nullptr);
 
     private:

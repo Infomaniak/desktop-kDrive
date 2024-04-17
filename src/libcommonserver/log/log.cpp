@@ -158,7 +158,7 @@ int64_t Log::getLogEstimatedSize(IoError &ioError) {
     return size;
 }
 
-bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const std::string &archiveName,
+bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const SyncPath &archiveName,
                                      IoError &ioError, std::function<void(int64_t)> progressCallback) {
     // Get the log directory path
     SyncPath logPath;
@@ -171,7 +171,7 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
     }
 
     // Create temp folder
-    std::string tempsFolderName;
+    SyncPath tempsFolderName;
     tempsFolderName = "tempLogArchive_" + CommonUtility::generateRandomStringAlphaNum(10);
 
     if (!IoHelper::createDirectory(logPath / "send_log_directory_temp", ioError) && ioError != IoErrorDirectoryExists) {
