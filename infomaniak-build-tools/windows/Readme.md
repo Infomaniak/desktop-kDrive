@@ -10,6 +10,7 @@
     - [log4cplus](#log4cplus)
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
+    - [libzip](#libzip)
     - [C++ Redistributable](#redistributable)
     - [NSIS](#nsis)
     - [7za](#7za)
@@ -215,6 +216,7 @@ copy zlib1.pdb bin\
 Clone and install libzip
 
 ```bash
+cd F:\Projects
 git clone https://github.com/nih-at/libzip.git
 cd libzip
 git checkout tags/v1.10.1

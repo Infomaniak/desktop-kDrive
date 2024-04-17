@@ -11,6 +11,7 @@
 	- [OpenSSL](#openssl)
 	- [Poco](#poco)
 	- [xxHash](#xxhash)
+	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
 	- [Notarytool](#notarytool)
@@ -185,6 +186,21 @@ mkdir build
 cd build
 cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15"
 sudo cmake --build . --target install
+```
+
+## libzip  
+
+Clone and install libzip
+
+```bash
+cd ~/Projects
+git clone https://github.com/nih-at/libzip.git
+cd libzip
+git checkout tags/v1.10.1
+mkdir build && cd build
+cmake ..
+make
+make install
 ```
 
 ## Sparkle
