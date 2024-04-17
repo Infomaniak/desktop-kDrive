@@ -34,9 +34,8 @@ class DirectoryIterator {
         //! Get the next directory entry.
         /*!
           \param nextEntry is set with the next directory entry.
-          \param ioError holds the error returned when an underlying OS API call fails (e.g., IoErrorEndOfDirectory,
-          IoErrorInvalidDirectoryiterrator). \return true if no unexpected error occurred, false otherwise. See _isExpectedError
-          for the definition of an expected error.
+          \param ioError holds the error returned when an underlying OS API call fails.
+          \return true if no error occurred, false otherwise.
         */
         bool next(DirectoryEntry &nextEntry, IoError &ioError);
         void disableRecursionPending();
@@ -46,7 +45,7 @@ class DirectoryIterator {
         bool _skipPermissionDenied = false;
         bool _firstElement = true;
         bool _invalid = false;
-        SyncPath _directoryPath = "";
+        SyncPath _directoryPath;
         std::filesystem::recursive_directory_iterator _dirIterator;
 };
 
