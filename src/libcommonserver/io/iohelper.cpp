@@ -595,7 +595,7 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
             return false;
         }
 
-#ifdef _WIN32
+//#ifdef _WIN32
         // skip_permission_denied doesn't work on Windows
         if (_skipPermissionDenied) {
             bool readRight = false;
@@ -617,7 +617,7 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
                 return next(nextEntry, ioError);
             }
         }
-#endif
+//#endif
         nextEntry = *_dirIterator;
         return true;
     } else {
