@@ -287,7 +287,7 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
 
         // Remove permission (after iterator is created)
         std::filesystem::permissions(
-            subDir, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
+            filePath, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
             std::filesystem::perm_options::remove);
 
         DirectoryEntry entry;
@@ -298,12 +298,11 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(
-            subDir, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
+            filePath, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
             std::filesystem::perm_options::add);
 
         std::filesystem::remove_all(permLostRoot);
     }
 }
-
 
 }  // namespace KDC
