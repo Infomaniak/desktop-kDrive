@@ -1757,7 +1757,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
                                             syncOp->affectedNode()->hasChangeEvent(
                                                 OperationTypeDelete);  // TODO : If node has both create and delete events, bypass
                                                                        // progress complete. But this should be refactored
-                                                                       // alongside with UpdateTreeWorker::getOrCreateNodeFromPath
+                                                                       // alongside UpdateTreeWorker::getOrCreateNodeFromPath
 
         if (!bypassProgressComplete) {
             _syncPal->setProgressComplete(relativeLocalPath, status);
