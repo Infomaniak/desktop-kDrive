@@ -200,8 +200,8 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     file << "file";
     file.close();
 
-    std::filesystem::permissions(noPermissionFile, std::filesystem::perms::none);
-
+   std::filesystem::permissions(noPermissionFile, std::filesystem::perms::owner_all | std::filesystem::perms::group_all |
+                                                       std::filesystem::perms::others_all, std::filesystem::perm_options::remove);
     // Check that the directory iterator shows a directory with no permission when `skip_permission_denied` is false
     {
         IoError ioError = IoErrorSuccess;
@@ -280,7 +280,10 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         // Remove permission (after iterator is created)
-        std::filesystem::permissions(subDir, std::filesystem::perms::none);
+        std::filesystem::permissions(
+            subDir,
+            std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
+            std::filesystem::perm_options::remove);
 
         DirectoryEntry entry;
         CPPUNIT_ASSERT(it.next(entry, ioError));
