@@ -94,6 +94,9 @@ class AppClient : public SharedTools::QtSingleApplication {
         void showNotification(const QString &title, const QString &message);
         void errorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         void errorsCleared(int syncDbId);
+        void updateLogToSupportStatus(
+            const char state /*state: 'A' for Archiving, 'U' for uploading, 'F' for failed, 'S' for Succes*/,
+            const int64_t percent);
 
     public slots:
         void onWizardDone(int);

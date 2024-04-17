@@ -225,6 +225,37 @@ ExitCode GuiRequests::setRootPinState(int syncDbId, PinState pinState) {
     return exitCode;
 }
 
+ExitCode GuiRequests::getAproximateLogSize(int64_t &size) {
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_GET_LOG_ESTIMATED_SIZE, QByteArray(), results)) {
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> size;
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::sendLogToSupport(bool sendAllLogs) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << sendAllLogs;
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_SEND_LOG_TO_SUPPORT, params, results, COMM_SHORT_TIMEOUT)) { // Short timeout because the operation is asynchronous
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+
+    return exitCode;
+}
+
 ExitCode GuiRequests::deleteUser(int userDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);

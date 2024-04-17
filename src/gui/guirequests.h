@@ -79,6 +79,8 @@ struct GuiRequests {
         static ExitCode resolveUnsupportedCharErrors(int driveDbId);
         static ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
         static ExitCode setRootPinState(int syncDbId, PinState pinState);
+        static ExitCode getAproximateLogSize(int64_t &size);
+        static ExitCode sendLogToSupport(bool sendAllLogs);
 
 #ifdef Q_OS_WIN
         static ExitCode showInExplorerNavigationPane(bool &show);

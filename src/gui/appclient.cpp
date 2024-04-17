@@ -456,6 +456,15 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit showSynthesisDialog();
             break;
         }
+        case SIGNAL_NUM_UTILITY_SEND_LOG_TO_SUPPORT_STATUS: {
+            char status;
+            int64_t progress;
+            paramsStream >> status;
+            paramsStream >> progress;
+
+            emit updateLogToSupportStatus(status, progress);
+            break;
+        }
         default: {
             qCDebug(lcAppClient) << "Signal not implemented!";
             break;
@@ -481,9 +490,9 @@ void AppClient::onQuit() {
 }
 
 void AppClient::onServerDisconnected() {
-  static const auto msg = tr("The server got disconnected. Restarting the server and closing.");
-  qCCritical(lcAppClient) << msg;
-  
+    static const auto msg = tr("The server got disconnected. Restarting the server and closing.");
+    qCCritical(lcAppClient) << msg;
+
 #if NDEBUG
     startServerAndDie(true);
 

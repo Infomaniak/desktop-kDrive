@@ -147,7 +147,7 @@ void ParametersDialog::initUI() {
 
     setObjectName("ParametersDialog");
     ClientGui::restoreGeometry(this);
-    setResizable(true);
+    setResizable(false);
 
     // Page stacked widget
     _pageStackedWidget = new QStackedWidget(this);

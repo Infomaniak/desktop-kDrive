@@ -18,12 +18,14 @@
 
 #include "debuggingdialog.h"
 #include "clientgui.h"
+#include "guirequests.h"
 #include "parameterscache.h"
 #include "custommessagebox.h"
 #include "enablestateholder.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/comm.h"
 #include "libcommongui/commclient.h"
+#include "libcommongui/logger.h"
 
 #include <map>
 
@@ -142,6 +144,41 @@ void DebuggingDialog::initUI() {
 
     mainLayout->addStretch();
 
+    // Send Logs
+    QLabel *sendLogsLabel = new QLabel(this);
+    sendLogsLabel->setObjectName("boldTextLabel");
+    sendLogsLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    sendLogsLabel->setText(tr("Send logs to Infomaniak support"));
+    mainLayout->addWidget(sendLogsLabel);
+
+    QHBoxLayout *sendLogsHBox = new QHBoxLayout();
+    sendLogsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    mainLayout->addLayout(sendLogsHBox);
+    mainLayout->addSpacing(debugLevelSelectBoxVMargin);
+
+    _sendLogButton = new QPushButton(this);
+    _sendLogButton->setObjectName("defaultbutton");
+    _sendLogButton->setFlat(true);
+    _sendLogButton->setText(tr("SEND LOGS"));
+    sendLogsHBox->addWidget(_sendLogButton);
+
+    _sendLogProgressBar = new QProgressBar(this);
+    _sendLogProgressBar->setObjectName("sendLogProgressBar");
+    _sendLogProgressBar->setMinimum(0);
+    _sendLogProgressBar->setMaximum(100);
+    _sendLogProgressBar->setValue(22);
+    _sendLogProgressBar->hide();
+    sendLogsHBox->addWidget(_sendLogProgressBar);
+
+    _sendLogStatusLabel = new QLabel(this);
+    _sendLogStatusLabel->setObjectName("sendLogStatusLabel");
+    _sendLogStatusLabel->setText(tr("Sending logs..."));
+    _sendLogStatusLabel->hide();
+    sendLogsHBox->addWidget(_sendLogStatusLabel);
+
+    sendLogsHBox->addStretch();
+
+
     // Add dialog buttons
     QHBoxLayout *buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
@@ -168,8 +205,10 @@ void DebuggingDialog::initUI() {
     connect(_deleteLogsCheckBox, &CustomCheckBox::clicked, this, &DebuggingDialog::onDeleteLogsCheckBoxClicked);
     connect(_extendedLogCheckBox, &CustomCheckBox::clicked, this, &DebuggingDialog::onExtendedLogCheckBoxClicked);
     connect(_saveButton, &QPushButton::clicked, this, &DebuggingDialog::onSaveButtonTriggered);
+    connect(_sendLogButton, &QPushButton::clicked, this, &DebuggingDialog::onSendLogButtonTriggered);
     connect(cancelButton, &QPushButton::clicked, this, &DebuggingDialog::onExit);
     connect(this, &CustomDialog::exit, this, &DebuggingDialog::onExit);
+    connect(_gui.get(), &ClientGui::logToSupportStatusUpdated, this, &DebuggingDialog::onSendLogProgressUpdate);
 }
 
 void DebuggingDialog::updateUI() {
@@ -248,6 +287,59 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
     ParametersCache::instance()->saveParametersInfo();
 
     accept();
+}
+
+void DebuggingDialog::onSendLogButtonTriggered() {
+    int64_t size;
+    ExitCode exitCode = GuiRequests::getAproximateLogSize(size);
+
+    CustomMessageBox msgBox(QMessageBox::Question, tr("Do you want to send all logs? The estimated size is %1 MB").arg(size),
+                            QMessageBox::Yes | QMessageBox::No, this);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+    int ret = msgBox.exec();
+    if (ret != QDialog::Rejected) {
+        if (ret == QMessageBox::Yes) {
+            onSendLogConfirmed(true);
+        } else {
+            onSendLogConfirmed(false);
+        }
+    }
+}
+
+void DebuggingDialog::onSendLogConfirmed(bool allLog) {
+    _sendLogButton->setEnabled(false);
+    _sendLogProgressBar->setValue(0);
+    _sendLogStatusLabel->setText(tr("Sending logs..."));
+    _sendLogProgressBar->show();
+    _sendLogStatusLabel->show();
+
+    ExitCode exitCode = GuiRequests::sendLogToSupport(allLog);
+}
+
+void DebuggingDialog::onSendLogProgressUpdate(char status, int64_t progress) {
+    int progressValue = progress;
+    _sendLogProgressBar->setValue(progressValue);
+    switch (status) {
+        case 'A':
+            _sendLogStatusLabel->setText(tr("1/2 | Compression"));
+            break;
+        case 'U':
+            _sendLogStatusLabel->setText(tr("2/2 | Upload"));
+            break;
+        case 'S':
+            _sendLogStatusLabel->setText(tr("Log sent to Infomaniak support."));
+            _sendLogProgressBar->hide();
+            _sendLogButton->setEnabled(true);
+            break;
+        case 'F':
+            _sendLogStatusLabel->setText(tr("Failed"));
+            _sendLogProgressBar->hide();
+            _sendLogButton->setEnabled(true);
+            break;
+        default:
+            _sendLogStatusLabel->setText(tr("Sending logs..."));
+            break;
+    }
 }
 
 }  // namespace KDC

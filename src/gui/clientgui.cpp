@@ -104,6 +104,8 @@ ClientGui::ClientGui(AppClient *parent)
     connect(_app, &AppClient::folderSizeCompleted, this, &ClientGui::folderSizeCompleted);
     connect(_app, &AppClient::fixConflictingFilesCompleted, this, &ClientGui::onFixConflictingFilesCompleted);
 
+    connect(_app, &AppClient::updateLogToSupportStatus, this, &ClientGui::logToSupportStatusUpdated);
+
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
 
     connect(&_refreshErrorListTimer, &QTimer::timeout, this, &ClientGui::onRefreshErrorList);
