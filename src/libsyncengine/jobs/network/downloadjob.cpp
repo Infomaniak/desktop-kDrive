@@ -426,12 +426,12 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         // Create symlink
         const auto targetPath = Str2Path(data);
         if (targetPath == _localpath) {
-            LOGW_DEBUG(_logger, L"Cannot create symlink on itself : " << Utility::formatSyncPath(_localpath).c_str());
+            LOGW_DEBUG(_logger, L"Cannot create symlink on itself: " << Utility::formatSyncPath(_localpath).c_str());
             return false;
         }
 
-        LOGW_DEBUG(_logger, L"Create symlink : " << Utility::formatSyncPath(targetPath).c_str() << L" "
-                                                 << Utility::formatSyncPath(_localpath).c_str());
+        LOGW_DEBUG(_logger, L"Create symlink: " << Utility::formatSyncPath(targetPath).c_str() << L", "
+                                                << Utility::formatSyncPath(_localpath).c_str());
 
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::createSymlink(targetPath, _localpath, ioError)) {
@@ -446,15 +446,15 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
             return false;
         }
 
-        LOGW_DEBUG(_logger, L"Create hardlink: " << Utility::formatSyncPath(targetPath).c_str() << L" "
-                                                 << Utility::formatSyncPath(_localpath).c_str());
+        LOGW_DEBUG(_logger, L"Create hardlink: target " << Utility::formatSyncPath(targetPath).c_str() << L", "
+                                                        << Utility::formatSyncPath(_localpath).c_str());
 
         std::error_code ec;
         std::filesystem::create_hard_link(targetPath, _localpath, ec);
         if (ec) {
-            LOGW_WARN(_logger, L"Failed to create hardlink: " << Utility::formatSyncPath(targetPath).c_str() << L", "
-                                                              << Utility::formatSyncPath(_localpath).c_str() << L", "
-                                                              << Utility::formatStdError(ec).c_str());
+            LOGW_WARN(_logger, L"Failed to create hardlink: target " << Utility::formatSyncPath(targetPath).c_str() << L", "
+                                                                     << Utility::formatSyncPath(_localpath).c_str() << L", "
+                                                                     << Utility::formatStdError(ec).c_str());
             return false;
         }
     } else if (mimeType == mimeTypeJunction) {
