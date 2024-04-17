@@ -609,6 +609,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
 
                 if (exists) {
                     // Normal in lite sync mode
+                    // or in case where a remote item and a local item have same name with different cases
+                    // (ex: 'test.txt' on local replica needs to be uploaded, 'Text.txt' on remote replica needs to be downloaded)
                     if (ParametersCache::instance()->parameters().extendedLog()) {
                         LOGW_SYNCPAL_DEBUG(
                             _logger, L"File " << Path2WStr(absoluteLocalFilePath).c_str() << L" already exists on local replica");
