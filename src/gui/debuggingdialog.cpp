@@ -292,6 +292,10 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
 void DebuggingDialog::onSendLogButtonTriggered() {
     int64_t size;
     ExitCode exitCode = GuiRequests::getAproximateLogSize(size);
+    if (exitCode != ExitCode::ExitCodeOk) {
+        onSendLogConfirmed(true); // Send all logs by default if we can't get the aproximate size
+        return;
+    }
 
     CustomMessageBox msgBox(QMessageBox::Question, tr("Do you want to send all logs? The estimated size is %1 MB").arg(size),
                             QMessageBox::Yes | QMessageBox::No, this);
@@ -314,6 +318,9 @@ void DebuggingDialog::onSendLogConfirmed(bool allLog) {
     _sendLogStatusLabel->show();
 
     ExitCode exitCode = GuiRequests::sendLogToSupport(allLog);
+    if (exitCode != ExitCode::ExitCodeOk) {
+        onSendLogProgressUpdate('F', 0);
+    }
 }
 
 void DebuggingDialog::onSendLogProgressUpdate(char status, int64_t progress) {
