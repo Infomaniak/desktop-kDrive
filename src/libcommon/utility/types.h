@@ -80,9 +80,11 @@ typedef std::ostringstream OStringStream;
 #ifdef __GNUC__
 #define Path2WStr(p) KDC::Utility::s2ws(p.native())
 #define Path2Str(p) p.native()
+#define Str2Path(s) std::filesystem::path(s)
 #else
 #define Path2WStr(p) p.native()
 #define Path2Str(p) KDC::Utility::ws2s(p.native())
+#define Str2Path(s) std::filesystem::path(KDC::Utility::s2ws(s))
 #endif
 
 typedef std::function<void(const char *)> ExecuteCommand;
