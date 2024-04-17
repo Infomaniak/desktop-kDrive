@@ -22,8 +22,6 @@
 
 #include <map>
 
-static const int threadPoolMinCapacity = 10;
-
 namespace KDC {
 NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {
     static const std::map<std::string, NetworkErrorCode, std::less<std::string>> errorCodeMap = {
