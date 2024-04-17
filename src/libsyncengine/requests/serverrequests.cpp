@@ -886,7 +886,7 @@ ExitCode ServerRequests::generateLogDirectory(SyncPath &logDirectoryPath, bool s
     }
     if (driveList.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
-        return ExitCodeNotLoggedIn;  // Currently, we can't send logs if no drive is found
+        return ExitCodeNoDriveFound;  // Currently, we can't send logs if no drive is found
     }
 
     for (auto drive : driveList) {
