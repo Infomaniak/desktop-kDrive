@@ -22,16 +22,11 @@
 #include "jobs/network/networkjobsparams.h"
 #include "login/login.h"
 
-#include <unordered_map>
+#include <unordered_set>
 
 namespace KDC {
 
 class AbstractTokenNetworkJob : public AbstractNetworkJob {
-        struct ExitHandler {
-                ExitCause exitCause{ExitCauseUnknown};
-                std::string debugMessage;
-        };
-
     public:
         typedef enum { ApiDrive, ApiDriveByUser, ApiProfile, ApiNotifyDrive } ApiType;
 
@@ -65,7 +60,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         int userId() const { return _userId; }
         int driveId() const { return _driveId; }
 
-        Poco::JSON::Object::Ptr _jsonRes{nullptr};
+        Poco::JSON::Object::Ptr _jsonRes;
         std::string _octetStreamRes;
 
     private:
@@ -86,14 +81,11 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         bool _accessTokenAlreadyRefreshed = false;
         std::string _errorCode;
         std::string _errorDescr;
-        Poco::JSON::Object::Ptr _error{nullptr};
+        Poco::JSON::Object::Ptr _error;
 
         std::string loadToken();
 
         virtual std::string getUrl() override;
-        bool handleUnauthorizedResponse();
-        bool handleNotFoundResponse();
-        bool defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri);
 };
 
 }  // namespace KDC

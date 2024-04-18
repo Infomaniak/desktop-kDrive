@@ -137,7 +137,7 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
         TRACE_DEBUG(L"Dehydrating placeholder : path = %ls", path);
         winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, NULL));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         if (ex.code() == HRESULT_FROM_WIN32(ERROR_CLOUD_FILE_IN_USE)) {
             // Workaround to fix a MS Photos issue that leads to locking pictures
             CF_PLACEHOLDER_STANDARD_INFO info;
@@ -148,7 +148,7 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
                     CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
             } catch (winrt::hresult_error const &ex) {
                 if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
-                    TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
+                    TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
                                 ex.message().c_str());
                     res = false;
                 }
@@ -166,7 +166,7 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
                     TRACE_DEBUG(L"Dehydrating placeholder : path = %ls", path);
                     winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, NULL));
                 } catch (winrt::hresult_error const &ex) {
-                    TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
+                    TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
                                 ex.message().c_str());
                     res = false;
                 }
@@ -212,7 +212,7 @@ bool CloudProvider::hydrate(const wchar_t *path) {
             TRACE_DEBUG(L"Hydration has been cancelled : path = %ls", path);
             res = true;
         } else {
-            TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+            TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
             if (ex.code() == 0x800701aa) {
                 // Timeout
                 res = false;
@@ -315,7 +315,7 @@ bool CloudProvider::updateTransfer(const wchar_t *filePath, const wchar_t *fromF
                             opParams.TransferData.Length.QuadPart);
                 winrt::check_hresult(CfExecute(&opInfo, &opParams));
             } catch (winrt::hresult_error const &ex) {
-                TRACE_ERROR(L"Error caught : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+                TRACE_ERROR(L"Error catched : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
                 res = false;
                 break;
             }
@@ -408,7 +408,7 @@ bool CloudProvider::cancelTransfer(ProviderInfo *providerInfo, const wchar_t *fi
             TRACE_DEBUG(L"Cancel transfer : path = %lls", filePath);
             winrt::check_hresult(CfExecute(&opInfo, &opParams));
         } catch (winrt::hresult_error const &ex) {
-            TRACE_ERROR(L"Error caught : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+            TRACE_ERROR(L"Error catched : hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
             return false;
         }
     }
@@ -596,7 +596,7 @@ bool CloudProvider::connectSyncRootTransferCallbacks() {
                                                CF_CONNECT_FLAG_REQUIRE_PROCESS_INFO | CF_CONNECT_FLAG_REQUIRE_FULL_FILE_PATH,
                                                &_transferCallbackConnectionKey));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error catched : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 
@@ -608,7 +608,7 @@ bool CloudProvider::disconnectSyncRootTransferCallbacks() {
     try {
         winrt::check_hresult(CfDisconnectSyncRoot(_transferCallbackConnectionKey));
     } catch (...) {
-        TRACE_ERROR(L"WinRT error caught : hr %08x", static_cast<HRESULT>(winrt::to_hresult()));
+        TRACE_ERROR(L"WinRT error catched : hr %08x", static_cast<HRESULT>(winrt::to_hresult()));
         return false;
     }
 
@@ -638,7 +638,7 @@ bool CloudProvider::addFolderToSearchIndexer(const PCWSTR folder) {
         winrt::check_hresult(searchCrawlScopeManager->AddDefaultScopeRule(url.data(), TRUE, FOLLOW_FLAGS::FF_INDEXCOMPLEXURLS));
         winrt::check_hresult(searchCrawlScopeManager->SaveAll());
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error catched : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 

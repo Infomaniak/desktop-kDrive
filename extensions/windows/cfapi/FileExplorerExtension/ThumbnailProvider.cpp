@@ -37,7 +37,7 @@ IFACEMETHODIMP ThumbnailProvider::Initialize(_In_ IShellItem *item, _In_ DWORD m
     try {
         winrt::check_hresult(item->QueryInterface(__uuidof(_item), _item.put_void()));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error catched : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return winrt::to_hresult();
     }
 
@@ -141,7 +141,7 @@ IFACEMETHODIMP ThumbnailProvider::GetThumbnail(_In_ UINT width, _Out_ HBITMAP *b
             winrt::check_hresult(thumbnailProviderSource->GetThumbnail(width, bitmap, alphaType));
         }
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error catched : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return E_UNEXPECTED;
     }
 

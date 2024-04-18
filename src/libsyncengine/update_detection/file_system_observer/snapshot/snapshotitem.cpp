@@ -29,7 +29,7 @@ SnapshotItem::SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncN
                            bool canShare /*= true*/)
     : _id(id),
       _parentId(parentId),
-      _name(name),
+      _name(Utility::normalizedSyncName(name)),
       _createdAt(createdAt),
       _lastModified(lastModified),
       _type(type),

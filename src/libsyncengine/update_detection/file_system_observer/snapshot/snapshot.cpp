@@ -129,7 +129,7 @@ NodeId Snapshot::itemId(const SyncPath &path) {
 
         bool idFound = false;
         for (const NodeId &childId : itemIt->second.childrenIds()) {
-            if (name(childId) == *pathIt) {
+            if (name(childId) == Utility::normalizedSyncName(*pathIt)) {
                 itemIt = _items.find(childId);
                 ret = childId;
                 idFound = true;
@@ -207,11 +207,10 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path) {
 SyncName Snapshot::name(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     SyncName ret;
-
-    if (const auto it = _items.find(itemId); it != _items.cend()) {
+    auto it = _items.find(itemId);
+    if (it != _items.end()) {
         ret = it->second.name();
     }
-
     return ret;
 }
 

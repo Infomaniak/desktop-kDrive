@@ -28,5 +28,3 @@
 #include <cppunit/TestRunner.h>
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>
-
-int runTestSuite(const std::string &logFileName);

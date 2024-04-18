@@ -59,7 +59,7 @@ bool ShellServices::initAndStartServiceTask() {
             HANDLE temp = dummyEvent.get();
             winrt::check_hresult(CoWaitForMultipleHandles(COWAIT_DISPATCH_CALLS, INFINITE, 1, &temp, &index));
         } catch (winrt::hresult_error const &ex) {
-            TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+            TRACE_ERROR(L"WinRT error catched : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         }
 
         TRACE_DEBUG(L"Task end");

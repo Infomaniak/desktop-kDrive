@@ -124,7 +124,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsInstallationDone = false;
         bool _vfsActivationDone = false;
         bool _vfsConnectionDone = false;
-        bool _crashRecovered = false;
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
@@ -143,8 +142,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void parseOptions(const QStringList &);
         void initLogging() noexcept(false);
         void setupProxy();
-        bool serverCrashedRecently(int seconds = 60 /*Allow one server self restart per minute (default)*/);
-        bool clientCrashedRecently(int second = 60 /*Allow one client self restart per minute (default)*/);
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);
@@ -240,7 +237,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onShowWindowsUpdateErrorDialog();
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
-        void onRestartClientReceived();
+        void onStartClientReceived();
 };
 
 

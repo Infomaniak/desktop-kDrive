@@ -106,29 +106,24 @@ class AppClient : public SharedTools::QtSingleApplication {
 
         void onQuit();
 
-        void onServerDisconnected();
-
     private:
         bool parseOptions(const QStringList &);
         void setupLogging();
 
-        void startServerAndDie(bool serverCrashDetected);
-        bool connectToServer();
+        std::shared_ptr<ClientGui> _gui;
 
-        std::shared_ptr<ClientGui> _gui = nullptr;
-
-        Theme *_theme = Theme::instance();
+        Theme *_theme;
 
         QElapsedTimer _startedAt;
-        quint16 _commPort = 0;
+        quint16 _commPort;
 
         // options from command line:
         QString _logFile;
         QString _logDir;
-        std::chrono::hours _logExpire = std::chrono::hours(0);
-        bool _logFlush = false;
-        bool _logDebug = false;
-        bool _debugMode = false;
+        std::chrono::hours _logExpire;
+        bool _logFlush;
+        bool _logDebug;
+        bool _debugMode;
 
 #if defined(WITH_CRASHREPORTER)
         QScopedPointer<CrashReporter::Handler> _crashHandler;

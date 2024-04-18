@@ -24,6 +24,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#include "io/filestat.h"
 
 namespace KDC {
 
@@ -306,10 +307,17 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                                                  dbNode.created().has_value() ? dbNode.created().value() : 0,
                                                                  dbLastModified, dbNode.size(), dbPath);
                     opSet->insertOp(fsOp);
-                    logOperationGeneration(snapshot->side(), fsOp);
 
                     if (dbNode.type() == NodeTypeDirectory) {
                         addFolderToDelete(dbPath);
+                    }
+
+                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                        LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str()
+                                                                 << L" delete FS operation on "
+                                                                 << (dbNode.type() == NodeTypeDirectory ? L"dir: " : L"file: ")
+                                                                 << Path2WStr(localDbPath).c_str() << L" ("
+                                                                 << Utility::s2ws(nodeId).c_str() << L")");
                     }
                     continue;
                 }
@@ -358,7 +366,15 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                                                  snapshot->createdAt(nodeId), snapshotLastModified,
                                                                  snapshot->size(nodeId), snapPath);
                     opSet->insertOp(fsOp);
-                    logOperationGeneration(snapshot->side(), fsOp);
+
+                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                        LOGW_SYNCPAL_DEBUG(
+                            _logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" edit FS operation on "
+                                                  << (dbNode.type() == NodeTypeDirectory ? L"dir: " : L"file: ")
+                                                  << Path2WStr(snapPath).c_str() << L" (" << Utility::s2ws(nodeId).c_str() << L")"
+                                                  << L", last modified DB: " << dbLastModified << L", last modified snapshot: "
+                                                  << snapshotLastModified);
+                    }
                 }
 
                 bool movedOrRenamed = dbName != snapshot->name(nodeId) || parentId != snapshot->parentId(nodeId);
@@ -366,30 +382,33 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     FSOpPtr fsOp = nullptr;
                     if (isInUnsyncedList(snapshot, nodeId, side)) {
                         // Delete operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete
-                                                             , nodeId
-                                                             , dbNode.type()
-                                                             ,snapshot->createdAt(nodeId)
-                                                             , snapshotLastModified
-                                                             ,snapshot->size(nodeId)
-                                                             ,remoteDbPath  // We use the remotePath anyway here to display
-                                                                                 // notifications with the real (remote) name
-                                                             ,snapPath);
+                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete, nodeId, dbNode.type(),
+                                                             snapshot->createdAt(nodeId), snapshotLastModified,
+                                                             snapshot->size(nodeId),
+                                                             remoteDbPath  // We use the remotePath anyway here to display
+                                                                           // notifications with the real (remote) name
+                                                             ,
+                                                             snapPath);
                     } else {
                         // Move operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeMove
-                                                             , nodeId
-                                                             , dbNode.type()
-                                                             ,snapshot->createdAt(nodeId)
-                                                             , snapshotLastModified
-                                                             ,snapshot->size(nodeId)
-                                                             ,remoteDbPath  // We use the remotePath anyway here to display
-                                                                                 // notifications with the real (remote) name
-                                                             ,snapPath);
+                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeMove, nodeId, dbNode.type(),
+                                                             snapshot->createdAt(nodeId), snapshotLastModified,
+                                                             snapshot->size(nodeId),
+                                                             remoteDbPath  // We use the remotePath anyway here to display
+                                                                           // notifications with the real (remote) name
+                                                             ,
+                                                             snapPath);
                     }
 
                     opSet->insertOp(fsOp);
-                    logOperationGeneration(snapshot->side(), fsOp);
+
+                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                        LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::side2Str(side).c_str() << L" move FS operation from "
+                                                                 << (dbNode.type() == NodeTypeDirectory ? L"dir \"" : L"file \"")
+                                                                 << SyncName2WStr(dbPath).c_str() << L"\" to \""
+                                                                 << Path2WStr(snapPath).c_str() << L"\" ("
+                                                                 << Utility::s2ws(nodeId).c_str() << L")");
+                    }
                 }
             }
 
@@ -514,38 +533,17 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 std::make_shared<FSOperation>(OperationType::OperationTypeCreate, nodeId, type, snapshot->createdAt(nodeId),
                                               snapshot->lastModifed(nodeId), snapshotSize, snapPath);
             opSet->insertOp(fsOp);
-            logOperationGeneration(snapshot->side(), fsOp);
+
+            if (ParametersCache::instance()->parameters().extendedLog()) {
+                LOGW_SYNCPAL_DEBUG(_logger, L"Generate "
+                                                << Utility::side2Str(snapshot->side()).c_str() << L" create FS operation on "
+                                                << (snapshot->type(nodeId) == NodeTypeDirectory ? L"dir: " : L"file: ")
+                                                << Path2WStr(snapPath).c_str() << L" (" << Utility::s2ws(nodeId).c_str() << L")");
+            }
         }
     }
 
     return ExitCodeOk;
-}
-
-void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp) {
-    if (!fsOp) {
-        return;
-    }
-    if (!ParametersCache::instance()->parameters().extendedLog()) {
-        return;
-    }
-
-    if (fsOp->operationType() == OperationTypeMove) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                                                 << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str())
-                                                 << L" FS operation from "
-                                                 << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
-                                                 << Path2WStr(fsOp->path()).c_str() << L"\" to \""
-                                                 << Path2WStr(fsOp->destinationPath()).c_str() << L"\" ("
-                                                 << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
-        return;
-    }
-
-    LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                                             << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str())
-                                             << L" FS operation on "
-                                             << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
-                                             << Path2WStr(fsOp->path()).c_str() << L"\" ("
-                                             << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
 }
 
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {

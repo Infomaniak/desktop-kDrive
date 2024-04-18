@@ -875,49 +875,24 @@ ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
 }
 
 bool ServerRequests::isDisplayableError(const Error &error) {
-    switch (error.exitCode()) {
-        case ExitCodeNetworkError: {
-            switch (error.exitCause()) {
-                case ExitCauseNetworkTimeout:
-                case ExitCauseSocketsDefuncted:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        case ExitCodeInconsistencyError: {
-            return false;
-        }
-        case ExitCodeDataError: {
-            switch (error.exitCause()) {
-                case ExitCauseMigrationError:
-                case ExitCauseMigrationProxyNotImplemented:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        case ExitCodeBackError: {
-            switch (error.exitCause()) {
-                case ExitCauseDriveMaintenance:
-                case ExitCauseDriveNotRenew:
-                case ExitCauseDriveAccessError:
-                case ExitCauseHttpErrForbidden:
-                case ExitCauseApiErr:
-                case ExitCauseFileTooBig:
-                case ExitCauseNotFound:
-                case ExitCauseQuotaExceeded:
-                    return true;
-                default:
-                    return false;
-            }
-        }
-        case ExitCodeUnknown: {
-            return error.inconsistencyType() != InconsistencyTypePathLength && error.cancelType() != CancelTypeAlreadyExistRemote;
-        }
-        default:
-            return true;
-    }
+    return ((error.exitCode() != ExitCodeNetworkError                           // Not ExitCodeNetworkError except
+             || error.exitCause() == ExitCauseNetworkTimeout                    //      ExitCauseNetworkTimeout
+             || error.exitCause() == ExitCauseSocketsDefuncted)                 //      ExitCauseSocketsDefuncted
+            && error.exitCode() != ExitCodeInconsistencyError                   // Not ExitCodeInconsistencyError
+            && (error.exitCode() != ExitCodeDataError                           // Not ExitCodeDataError except
+                || error.exitCause() == ExitCauseMigrationError                 //      ExitCauseMigrationError
+                || error.exitCause() == ExitCauseMigrationProxyNotImplemented)  //      ExitCauseMigrationProxyNotImplemented
+            && (error.exitCode() != ExitCodeBackError                           // Not ExitCodeBackError except
+                || error.exitCause() == ExitCauseDriveMaintenance               //      ExitCauseDriveMaintenance
+                || error.exitCause() == ExitCauseDriveNotRenew                  //      ExitCauseDriveNotRenew
+                || error.exitCause() == ExitCauseDriveAccessError               //      ExitCauseDriveAccessError
+                || error.exitCause() == ExitCauseHttpErrForbidden               //      ExitCauseHttpErrForbidden
+                || error.exitCause() == ExitCauseApiErr                         //      ExitCauseApiErr
+                || error.exitCause() == ExitCauseFileTooBig                     //      ExitCauseFileTooBig
+                || error.exitCause() == ExitCauseNotFound)                      //      ExitCauseNotFound
+            && (error.exitCode() != ExitCodeUnknown                             // Not ExitCodeUnknown except all but
+                || (error.inconsistencyType() != InconsistencyTypePathLength    //      InconsistencyTypePathLength
+                    && error.cancelType() != CancelTypeAlreadyExistRemote)));   //      CancelTypeAlreadyExistRemote
 }
 
 bool ServerRequests::isAutoResolvedError(const Error &error) {
@@ -1037,7 +1012,7 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCodeOk) {
         std::string errorCode;
-        if (job->hasErrorApi(&errorCode) && getNetworkErrorCode(errorCode) == NetworkErrorCode::fileShareLinkAlreadyExists) {
+        if (job->hasErrorApi(&errorCode) && errorCode == fileShareLinkAlreadyExists) {
             // Get link
             std::shared_ptr<GetFileLinkJob> job2;
             try {
@@ -1652,8 +1627,7 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     }
 
     Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
-    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN ||
-        httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
+    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN || httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Unable to get thumbnail for driveDbId=" << driveDbId << " and nodeId=" << nodeId.c_str());
         return ExitCodeDataError;
@@ -1693,8 +1667,7 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     }
 
     Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
-    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN ||
-        httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
+    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN || httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to get user info for userId=" << user.userId());
         return ExitCodeDataError;
     } else if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {

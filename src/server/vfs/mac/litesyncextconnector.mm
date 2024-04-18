@@ -1195,25 +1195,26 @@ bool LiteSyncExtConnector::vfsSetThumbnail(const QString &absoluteFilePath, cons
 }
 
 bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                                        int &progress, log4cplus::Logger &logger) noexcept {
-    isPlaceholder = false;
-    isHydrated = false;
-    isSyncing = false;
-    progress = 0;
-
-    constexpr auto isExpectedError = [](IoError error) -> bool {
-        return error == IoErrorSuccess || error == IoErrorAttrNotFound || error == IoErrorNoSuchFileOrDirectory;
-    };
-
+                                        int &progress) {
     // Read status
     QString value;
     IoError ioError = IoErrorSuccess;
-    if (!getXAttrValue(absoluteFilePath, [EXT_ATTR_STATUS UTF8String], value, ioError) && !isExpectedError(ioError)) {
-        LOGW_WARN(logger, L"Error in getXAttrValue: " << Utility::formatIoError(QStr2Str(absoluteFilePath), ioError).c_str());
-        return false;
+    if (!getXAttrValue(absoluteFilePath, [EXT_ATTR_STATUS UTF8String], value, ioError)) {
+        if (ioError != IoErrorAttrNotFound) {
+            LOGW_WARN(_logger,
+                      L"Error in getXAttrValue: " << Utility::formatIoError(QStr2Str(absoluteFilePath), ioError).c_str());
+            return false;
+        }
     }
 
-    if (value.isEmpty()) return true;
+    if (value.isEmpty()) {
+        isPlaceholder = false;
+        isHydrated = false;
+        isSyncing = false;
+        progress = 0;
+
+        return true;
+    }
 
     isPlaceholder = true;
     isHydrated = (value == EXT_ATTR_STATUS_OFFLINE);
@@ -1222,6 +1223,8 @@ bool LiteSyncExtConnector::vfsGetStatus(const QString &absoluteFilePath, bool &i
     if (isSyncing) {
         value.remove(0, QString(EXT_ATTR_STATUS_HYDRATING).length());
         progress = value.toInt();
+    } else {
+        progress = 0;
     }
 
     return true;
