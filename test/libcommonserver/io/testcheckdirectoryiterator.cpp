@@ -196,7 +196,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     {
         TemporaryDirectory tempDir;
         const SyncPath chekDirItDir = tempDir.path / "chekDirIt";
-        const SyncPath noPermissionDir = chekDirItDir / "chekDirIt/noPermission";
+        const SyncPath noPermissionDir = chekDirItDir / "noPermission";
         const SyncPath noPermissionFile = noPermissionDir / "file.txt";
 
         std::filesystem::create_directories(noPermissionDir);
