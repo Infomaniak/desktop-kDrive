@@ -159,7 +159,8 @@ typedef enum {
     ExitCauseNetworkTimeout,
     ExitCauseSocketsDefuncted,  // macOS: sockets defuncted by kernel
     ExitCauseNoSearchPermission,
-    ExitCauseNotFound
+    ExitCauseNotFound,
+    ExitCauseQuotaExceeded
 
 
 } ExitCause;

@@ -17,9 +17,7 @@
  */
 
 #include "genericerroritemwidget.h"
-#include "guiutility.h"
 #include "clientgui.h"
-#include "libcommon/utility/utility.h"
 #include "custommessagebox.h"
 
 #include <QDir>
@@ -28,8 +26,6 @@
 #include <QLoggingCategory>
 #include <QPainter>
 #include <QPainterPath>
-
-#include <iostream>
 
 namespace KDC {
 
@@ -59,7 +55,6 @@ void GenericErrorItemWidget::init() {
         }
 
         // Path
-        QString pathStr;
         if (_errorInfo.level() == ErrorLevelSyncPal) {
             setDriveName(driveInfoMapIt->second.name(), syncInfoMapIt->second.localPath());
             setPathIconColor(driveInfoMapIt->second.color());
@@ -76,7 +71,7 @@ void GenericErrorItemWidget::init() {
     QLabel *fileDateLabel = new QLabel(this);
     fileDateLabel->setObjectName("fileDateLabel");
     fileDateLabel->setText(QDateTime::fromSecsSinceEpoch(_errorInfo.getTime()).toString(dateFormat));
-    ;
+
     addCustomWidget(fileDateLabel);
 }
 
@@ -103,15 +98,15 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
 }
 
 bool GenericErrorItemWidget::openInWebview() const {
-    return _errorInfo.inconsistencyType() == InconsistencyTypePathLength
-        || _errorInfo.inconsistencyType() == InconsistencyTypeCase
-        || _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar
-        || _errorInfo.inconsistencyType() == InconsistencyTypeReservedName
-        || _errorInfo.inconsistencyType() == InconsistencyTypeNameLength
-        || _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar
-        || _errorInfo.cancelType() == CancelTypeAlreadyExistLocal
-        || (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty())
-        || (_errorInfo.exitCode() == ExitCodeBackError && _errorInfo.exitCause() == ExitCauseNotFound);
+    return _errorInfo.inconsistencyType() == InconsistencyTypePathLength ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeCase ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeReservedName ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeNameLength ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar ||
+           _errorInfo.cancelType() == CancelTypeAlreadyExistLocal ||
+           (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
+           (_errorInfo.exitCode() == ExitCodeBackError && _errorInfo.exitCause() == ExitCauseNotFound);
 }
 
 }  // namespace KDC
