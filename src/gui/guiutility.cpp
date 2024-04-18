@@ -480,29 +480,24 @@ qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
     return total;
 }
 
+QString GuiUtility::getFolderPath(const QString &path, NodeType nodeType) {
+    return nodeType == NodeTypeDirectory ? path : QFileInfo(path).path();
+}
+
 bool GuiUtility::openFolder(const QString &dirPath) {
-    if (!dirPath.isEmpty()) {
-        QFileInfo fileInfo(dirPath);
-        if (fileInfo.exists()) {
-            const QUrl url = getUrlFromLocalPath(fileInfo.path());
-            if (url.isValid()) {
-                if (!QDesktopServices::openUrl(url)) {
-                    return false;
-                }
-            }
-        } else if (fileInfo.dir().exists()) {
-            const QUrl url = getUrlFromLocalPath(fileInfo.dir().path());
-            if (url.isValid()) {
-                if (!QDesktopServices::openUrl(url)) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+    if (dirPath.isEmpty()) return true;
+
+    if (const auto fileInfo = QFileInfo(dirPath); fileInfo.exists()) {
+        const QUrl url = getUrlFromLocalPath(QDir::cleanPath(fileInfo.filePath()));
+        if (url.isValid() && !QDesktopServices::openUrl(url)) return false;
+    } else if (fileInfo.dir().exists()) {
+        const QUrl url = getUrlFromLocalPath(QDir::cleanPath(fileInfo.dir().path()));
+        if (!url.isValid()) return false;
+        if (!QDesktopServices::openUrl(url)) return false;
+    } else {
+        return false;
     }
+
     return true;
 }
 

@@ -29,8 +29,6 @@
 #include <QPainter>
 #include <QPainterPath>
 
-#include <iostream>
-
 namespace KDC {
 
 #define GENERICERRORITEMWIDGET_NEW_ERROR_MSG "Failed to create GenericErrorItemWidget instance!"
@@ -59,14 +57,13 @@ void GenericErrorItemWidget::init() {
         }
 
         // Path
-        QString pathStr;
         if (_errorInfo.level() == ErrorLevelSyncPal) {
             setDriveName(driveInfoMapIt->second.name(), syncInfoMapIt->second.localPath());
             setPathIconColor(driveInfoMapIt->second.color());
         } else if (_errorInfo.level() == ErrorLevelNode) {
-            bool useDestPath = _errorInfo.cancelType() == CancelTypeAlreadyExistRemote ||
-                               _errorInfo.cancelType() == CancelTypeMoveToBinFailed ||
-                               _errorInfo.conflictType() == ConflictTypeEditDelete;
+            const bool useDestPath = _errorInfo.cancelType() == CancelTypeAlreadyExistRemote ||
+                                     _errorInfo.cancelType() == CancelTypeMoveToBinFailed ||
+                                     _errorInfo.conflictType() == ConflictTypeEditDelete;
             const QString &filePath = useDestPath ? _errorInfo.destinationPath() : _errorInfo.path();
             setFilePath(filePath, _errorInfo.nodeType());
         }
@@ -76,7 +73,7 @@ void GenericErrorItemWidget::init() {
     QLabel *fileDateLabel = new QLabel(this);
     fileDateLabel->setObjectName("fileDateLabel");
     fileDateLabel->setText(QDateTime::fromSecsSinceEpoch(_errorInfo.getTime()).toString(dateFormat));
-    ;
+
     addCustomWidget(fileDateLabel);
 }
 
@@ -97,21 +94,21 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
         }
     }
 
-    // Open on local filesystem
-    QString fullPath = syncInfoMapIt->second.localPath() + "/" + path;
-    AbstractFileItemWidget::openFolder(fullPath);
+    // Open on local filesystem (open the parent folder for an item of file type).
+    const auto folderPath = GuiUtility::getFolderPath(syncInfoMapIt->second.localPath() + "/" + path, _errorInfo.nodeType());
+    AbstractFileItemWidget::openFolder(folderPath);
 }
 
 bool GenericErrorItemWidget::openInWebview() const {
-    return _errorInfo.inconsistencyType() == InconsistencyTypePathLength
-        || _errorInfo.inconsistencyType() == InconsistencyTypeCase
-        || _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar
-        || _errorInfo.inconsistencyType() == InconsistencyTypeReservedName
-        || _errorInfo.inconsistencyType() == InconsistencyTypeNameLength
-        || _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar
-        || _errorInfo.cancelType() == CancelTypeAlreadyExistLocal
-        || (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty())
-        || (_errorInfo.exitCode() == ExitCodeBackError && _errorInfo.exitCause() == ExitCauseNotFound);
+    return _errorInfo.inconsistencyType() == InconsistencyTypePathLength ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeCase ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeReservedName ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeNameLength ||
+           _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar ||
+           _errorInfo.cancelType() == CancelTypeAlreadyExistLocal ||
+           (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
+           (_errorInfo.exitCode() == ExitCodeBackError && _errorInfo.exitCause() == ExitCauseNotFound);
 }
 
 }  // namespace KDC
