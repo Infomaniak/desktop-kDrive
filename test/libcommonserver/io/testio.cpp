@@ -37,9 +37,13 @@ TemporaryDirectory::TemporaryDirectory() {
 }
 
 TemporaryDirectory::~TemporaryDirectory() {
-    //restore permissions
+    // restore permissions
     for (const auto &entry : std::filesystem::recursive_directory_iterator(path)) {
-        std::filesystem::permissions(entry.path(), std::filesystem::perms::all, std::filesystem::perm_options::replace);
+        try {
+            std::filesystem::permissions(entry.path(), std::filesystem::perms::all, std::filesystem::perm_options::replace);
+        } catch (...) {
+            // Ignore
+        }
     }
     std::filesystem::remove_all(path);
 }
