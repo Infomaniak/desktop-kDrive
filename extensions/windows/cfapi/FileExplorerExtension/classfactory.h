@@ -35,7 +35,7 @@ class ClassFactory : public winrt::implements<ClassFactory<T>, IClassFactory> {
                 winrt::check_hresult(unkn->QueryInterface(riid, object));
                 return S_OK;
             } catch (winrt::hresult_error const& ex) {
-                TRACE_ERROR(L"WinRT error catched : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()),
+                TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()),
                             ex.message().c_str());
                 return winrt::to_hresult();
             }

@@ -20,9 +20,8 @@
 
 #include <string>
 
-#define THREAD_POOL_MIN_CAPACITY 10
-
 namespace KDC {
+static const int threadPoolMinCapacity = 10;
 static const uint64_t chunkMinSize = 10 * 1024 * 1024;                // 10MB
 static const uint64_t chunkMaxSize = 100 * 1024 * 1024;               // 100MB
 static const uint64_t useUploadSessionThreshold = 100 * 1024 * 1024;  // if file size > 100MB -> start upload session
@@ -160,22 +159,36 @@ static const std::string codeKey = "code";
 static const std::string descriptionKey = "description";
 static const std::string contextKey = "context";
 /// Error codes
-static const std::string forbiddenError = "forbidden_error";
-static const std::string notAuthorized = "not_authorized";
-static const std::string productMaintenance = "product_maintenance";
-static const std::string driveIsInMaintenanceError = "drive_is_in_maintenance_error";
-static const std::string fileShareLinkAlreadyExists = "file_share_link_already_exists";
-static const std::string objectNotFound = "object_not_found";
-static const std::string refreshTokenRevoked = "refresh_token_revoked";
-static const std::string invalidGrant = "invalid_grant";
-static const std::string notRenew = "not_renew";
-static const std::string validationFailed = "validation_failed";
-static const std::string uploadNotTerminatedError = "upload_not_terminated_error";
-static const std::string uploadError = "upload_error";
-static const std::string destinationAlreadyExists = "destination_already_exists";
-static const std::string conflictError = "conflict_error";
-static const std::string accessDenied = "access_denied";
-static const std::string fileTooBigError = "limit_exceeded_error";
+
+enum class NetworkErrorCode {
+    forbiddenError,
+    notAuthorized,
+    productMaintenance,
+    driveIsInMaintenanceError,
+    fileShareLinkAlreadyExists,
+    objectNotFound,
+    invalidGrant,
+    validationFailed,
+    uploadNotTerminatedError,
+    uploadError,
+    destinationAlreadyExists,
+    conflictError,
+    accessDenied,
+    fileTooBigError,
+    quotaExceededError,
+    unknownError  // None of the handled errors
+};
+
+enum class NetworkErrorReason {
+    refreshTokenRevoked,
+    notRenew,
+    unknownReason  // None of the handled reasons
+};
+
+NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept;
+NetworkErrorReason getNetworkErrorReason(const std::string &errorCode) noexcept;
+
+
 /// Error descriptions
 static const std::string storageObjectIsNotOk = "storage_object_is_not_ok";
 

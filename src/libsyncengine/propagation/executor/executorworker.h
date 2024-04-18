@@ -48,7 +48,6 @@ class ExecutorWorker : public OperationProcessor {
 
         void handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError);
         void checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
-        void blacklistLocalItem(const SyncPath &absolutePath);
         bool generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
         bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path, bool &isDehydratedPlaceholder);
         bool createPlaceholder(const SyncPath &relativeLocalPath);
@@ -71,7 +70,7 @@ class ExecutorWorker : public OperationProcessor {
 
         void waitForAllJobsToFinish(bool &hasError);
         bool deleteFinishedAsyncJobs();
-        bool isManagedBackError(const ExitCause exitCause, bool &isInconsistencyIssue);
+        bool handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue);
         bool handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath);
         void handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath);
         void sendProgress();

@@ -40,6 +40,7 @@
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QFontDatabase>
+#include <QProcess>
 
 #include <iostream>
 #include <sstream>
@@ -69,14 +70,24 @@ static const QList<QString> fontFiles = QList<QString>() << QString(":/client/re
                                                          << QString(":/client/resources/fonts/SuisseIntl-Black.otf");
 // static const QString defaultFontFamily("Suisse Int'l");
 
-AppClient::AppClient(int &argc, char **argv)
-    : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv),
-      _gui(nullptr),
-      _theme(Theme::instance()),
-      _logExpire(0),
-      _logFlush(false),
-      _logDebug(false),
-      _debugMode(false) {
+#ifdef Q_OS_WIN
+static void displayHelpText(const QString &t)  // No console on Windows.
+{
+    static const QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
+    const QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() +
+                         QLatin1String("</pre><pre>") + spaces + QLatin1String("</pre></qt>");
+    QMessageBox::information(0, Theme::instance()->appClientName() + "_HelpText", text);
+}
+
+#else
+
+static void displayHelpText(const QString &t) {
+    std::cout << qUtf8Printable(t);
+}
+#endif
+
+
+AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv) {
 #ifdef NDEBUG
     sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppClient", "Start"));
 #endif
@@ -109,10 +120,7 @@ AppClient::AppClient(int &argc, char **argv)
 #else
     // Read comm port value from argument list
     if (!parseOptions(arguments())) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Bad arguments!"));
-        msgBox.exec();
-        QTimer::singleShot(0, qApp, SLOT(quit()));
+        startServerAndDie(false);
         return;
     }
 #endif
@@ -124,44 +132,15 @@ AppClient::AppClient(int &argc, char **argv)
         QTimer::singleShot(0, qApp, SLOT(quit()));
         return;
     }
-
     // Connect to server
-    int count = 0;
-    while (!CommClient::instance()->connectToServer(_commPort) && count < CONNECTION_TRIALS) {
-        std::cout << "Connection to server failed!" << std::endl;
-        count++;
-    }
-
-    if (count == CONNECTION_TRIALS) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Unable to connect to application server!"));
-        msgBox.exec();
-        QTimer::singleShot(0, qApp, SLOT(quit()));
+    if (connectToServer()) {
+        qCInfo(lcAppClient) << "Connected to server";
+    } else {
+        qCCritical(lcAppClient) << "Failed to connect to server";
+        startServerAndDie(true);
         return;
     }
 
-    connect(CommClient::instance().get(), &CommClient::disconnected, this, &AppClient::onQuit);
-    connect(CommClient::instance().get(), &CommClient::signalReceived, this, &AppClient::onSignalReceived);
-
-    // Wait for server startup
-    count = 0;
-    while (count < CHECKCOMMSTATUS_TRIALS) {
-        ExitCode exitCode = GuiRequests::checkCommStatus();
-        if (exitCode != ExitCodeOk) {
-            std::cout << "Check of comm status failed" << std::endl;
-            count++;
-        } else {
-            break;
-        }
-    }
-
-    if (count == CHECKCOMMSTATUS_TRIALS) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("The application server did not respond on time: the client will be restarted."));
-        msgBox.exec();
-        QTimer::singleShot(0, qApp, SLOT(quit()));
-        return;
-    }
 
     // Init ParametersCache
     ParametersCache::instance();
@@ -501,6 +480,19 @@ void AppClient::onQuit() {
     quit();
 }
 
+void AppClient::onServerDisconnected() {
+  static const auto msg = tr("The server got disconnected. Restarting the server and closing.");
+  qCCritical(lcAppClient) << msg;
+  
+#if NDEBUG
+    startServerAndDie(true);
+
+#else
+    displayHelpText(msg);
+    QTimer::singleShot(0, qApp, SLOT(quit()));
+#endif
+}
+
 void AppClient::onCleanup() {
     _gui->onShutdown();
 }
@@ -579,6 +571,71 @@ void AppClient::setupLogging() {
                                .arg(property("ui_lang").toString())
                                .arg(_theme->version())
                                .arg(KDC::CommonUtility::platformName());
+}
+
+void AppClient::startServerAndDie(bool serverCrashDetected) {
+    // Start the client
+    QString pathToExecutable = QCoreApplication::applicationDirPath();
+
+#if defined(Q_OS_WIN)
+    pathToExecutable += QString("/%1.exe").arg(APPLICATION_EXECUTABLE);
+#else
+    pathToExecutable += QString("/%1").arg(APPLICATION_EXECUTABLE);
+#endif
+
+    auto serverProcess = new QProcess(this);
+    if (serverCrashDetected) {
+        QStringList arguments;
+        arguments << QStringLiteral("--crashRecovered");
+        serverProcess->setProgram(pathToExecutable);
+        serverProcess->setArguments(arguments);
+    }
+    serverProcess->setProgram(pathToExecutable);
+    serverProcess->startDetached();
+
+    QTimer::singleShot(0, qApp, SLOT(quit()));
+}
+
+bool AppClient::connectToServer() {
+    // Check if a commPort is provided
+    if (_commPort == 0) {
+        qCCritical(lcAppClient()) << "No comm port provided to the client at startup, failed to connect to server!";
+        startServerAndDie(false);
+        return false;
+    }
+
+    // Connect to server
+    int count = 0;
+    while (!CommClient::instance()->connectToServer(_commPort) && count < CONNECTION_TRIALS) {
+        qCCritical(lcAppClient()) << "Connection to server failed!";
+        count++;
+    }
+
+    if (count == CONNECTION_TRIALS) {
+        qCCritical(lcAppClient()) << "Unable to connect to application server on port" << _commPort;
+        return false;
+    }
+
+    connect(CommClient::instance().get(), &CommClient::disconnected, this, &AppClient::onServerDisconnected);
+    connect(CommClient::instance().get(), &CommClient::signalReceived, this, &AppClient::onSignalReceived);
+
+    // Wait for server startup
+    count = 0;
+    while (count < CHECKCOMMSTATUS_TRIALS) {
+        const ExitCode exitCode = GuiRequests::checkCommStatus();
+        if (exitCode != ExitCodeOk) {
+            qCWarning(lcAppClient()) << "Check of comm status failed";
+            count++;
+        } else {
+            break;
+        }
+    }
+
+    if (count == CHECKCOMMSTATUS_TRIALS) {
+        qCCritical(lcAppClient) << "The application server did not respond on time!";
+        return false;
+    }
+    return true;
 }
 
 void AppClient::onUseMonoIconsChanged(bool) {

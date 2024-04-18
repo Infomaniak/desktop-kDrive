@@ -49,7 +49,7 @@ cmake -B$BUILDDIR -H$BASEPATH \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DWITH_CRASHREPORTER=0 \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
-    -DBUILD_UNIT_TESTS=0 \
+    -DBUILD_UNIT_TESTS=1 \
     "${CMAKE_PARAMS[@]}" \
 
 cd $BUILDDIR

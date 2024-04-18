@@ -2,15 +2,14 @@ name: Linux kDrive desktop CI on x64 Arch
 
 on:
   pull_request: 
-    types: [synchronize, review_requested, ready_for_review]
+    types: [synchronize, review_requested]
 
 concurrency:
-  group: ${{ github.head_ref }}
+  group: linux-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
   build-kDrive:
-    if: github.event.pull_request.draft == false
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
 
     steps:
@@ -23,6 +22,11 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/linux/build-ci-amd64.sh
+
+      - name: Grant test_common execute permission
+        run : chmod +x ./build-linux/build/bin/kDrive_test_common
+      - name: Execute common tests
+        run : ./build-linux/build/bin/kDrive_test_common
 
       - name: Clean-up generated code
         run : rm -rf build-linux

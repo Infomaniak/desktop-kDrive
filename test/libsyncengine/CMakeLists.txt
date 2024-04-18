@@ -7,6 +7,7 @@ find_package(log4cplus 2.1.0 REQUIRED)
 set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 
 set(testsyncengine_SRCS
+    ../test.cpp
     test.cpp
     # Database
     db/testsyncdb.h db/testsyncdb.cpp
@@ -48,7 +49,7 @@ endif()
 
 if (WIN32)
     include_directories("F:/Projects/log4cplus/include")
-    include_directories("F:/Projects/cppunit/include")
+    include_directories("C:/Program Files (x86)/cppunit/include")
 else()
     include_directories("/usr/local/include")
 endif()
@@ -77,9 +78,9 @@ endif()
 if (WIN32)
     target_link_libraries(${testsyncengine_NAME}
         debug
-        "F:/Projects/cppunit/lib/cppunitd.lib"
+        "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
         optimized
-        "F:/Projects/cppunit/lib/cppunit.lib")
+        "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
 elseif(APPLE)
     target_link_libraries(${testsyncengine_NAME}
         "/usr/local/lib/libcppunit.dylib")
