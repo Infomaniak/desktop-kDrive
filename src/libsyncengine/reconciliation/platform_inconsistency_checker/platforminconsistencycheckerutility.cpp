@@ -79,7 +79,7 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
     return sub + suffix + name.extension().native();
 }
 
-ExitCode PlatformInconsistencyCheckerUtility::renameLocaLFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr /*= nullptr*/) {
+ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr /*= nullptr*/) {
     const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
         absoluteLocalPath, suffixType);
     auto newFullPath = absoluteLocalPath.parent_path() / newName;
