@@ -214,12 +214,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void fixNodeTableDeleteItemsWithNullParentNodeId();
 
         void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
-        int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
         void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         void refreshTmpBlacklist();
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
-
-        std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) { return side == ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree; }
 
     private:
         log4cplus::Logger _logger;
@@ -344,7 +341,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class BlacklistPropagator;
         friend class ExcludeListPropagator;
         friend class ConflictingFilesCorrector;
-        friend class TmpBlacklistManager;
 
         friend class TestSyncPal;
         friend class TestLocalFileSystemObserverWorker;

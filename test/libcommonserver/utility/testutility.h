@@ -45,7 +45,6 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testXxHash);
         CPPUNIT_TEST(isSubDir);
         CPPUNIT_TEST(testFormatStdError);
-        CPPUNIT_TEST(testNormalizedSyncPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -74,7 +73,6 @@ class TestUtility : public CppUnit::TestFixture {
         void testXxHash(void);
         void isSubDir(void);
         void testFormatStdError(void);
-        void testNormalizedSyncPath(void);
 
     private:
         Utility *_testObj;

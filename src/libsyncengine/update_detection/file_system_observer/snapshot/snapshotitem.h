@@ -41,7 +41,7 @@ class SnapshotItem {
         inline const std::unordered_set<NodeId> &childrenIds() const { return _childrenIds; }
         inline void setChildrenIds(const std::unordered_set<NodeId> &newChildrenIds) { _childrenIds = newChildrenIds; }
         inline SyncName name() const { return _name; }
-        inline void setName(const SyncName &newName) { _name = newName; }
+        inline void setName(const SyncName &newName) { _name = Utility::normalizedSyncName(newName); }
         inline SyncTime createdAt() const { return _createdAt; }
         inline void setCreatedAt(SyncTime newCreatedAt) { _createdAt = newCreatedAt; }
         inline SyncTime lastModified() const { return _lastModified; }

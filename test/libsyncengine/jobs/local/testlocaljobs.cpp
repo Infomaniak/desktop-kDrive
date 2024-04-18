@@ -114,8 +114,8 @@ void KDC::TestLocalJobs::testCreateMoveDeleteDir() {
     CPPUNIT_ASSERT(std::filesystem::exists(finalPath));
 
     // Delete
-    LocalDeleteJob deleteJob(_driveDbId, localTestDirPath, "tmp_dir", false, "-1");
-    deleteJob.runSynchronously();
+    LocalDeleteJob deletejob(_driveDbId, localTestDirPath, "tmp_dir", false, "-1");
+    deletejob.runSynchronously();
 
     CPPUNIT_ASSERT(!std::filesystem::exists(localDirPath));
 }

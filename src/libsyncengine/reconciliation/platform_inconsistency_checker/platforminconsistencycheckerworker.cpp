@@ -38,9 +38,8 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     ExitCode exitCode = checkTree(_syncPal->_remoteUpdateTree->rootNode(), _syncPal->_remoteUpdateTree->rootNode()->name());
 
-    for (const auto &idItem : _idsToBeRemoved) {
-        _syncPal->_remoteUpdateTree->deleteNode(idItem.remoteId);
-        _syncPal->_localUpdateTree->deleteNode(idItem.localId);
+    for (const auto &id : _idsToBeRemoved) {
+        _syncPal->_remoteUpdateTree->deleteNode(id);
     }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
@@ -99,63 +98,43 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
     return ExitCodeOk;
 }
 
-void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Node> remoteNode, const SyncPath &relativePath,
-                                                       const InconsistencyType inconsistencyType) {
-    // Local node needs to be excluded before call to blacklistTemporarily because
-    // we need the DB entry to retrieve the corresponding node
-    NodeIdPair nodeIDs;
-    const auto localNode = correspondingNodeDirect(remoteNode);
-    if (localNode) {
-        // Also exclude local node by adding "conflict" suffix
-        const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        LOGW_SYNCPAL_INFO(_logger, L"Excluding also local item with " << Utility::formatSyncPath(absoluteLocalPath).c_str() << L".");
-        PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
-
-        if (localNode->id().has_value()) nodeIDs.localId = *localNode->id();
-    }
-
-    _syncPal->blacklistTemporarily(remoteNode->id().value(), relativePath, remoteNode->side());
-    Error error(_syncPal->syncDbId(), "", remoteNode->id().value(), remoteNode->type(), relativePath, ConflictTypeNone,
-                inconsistencyType);
-    _syncPal->addError(error);
-
-    std::wstring causeStr;
-    switch (inconsistencyType) {
-        case InconsistencyTypeCase:
-            causeStr = L"of a name clash";
-            break;
-        case InconsistencyTypeForbiddenChar:
-            causeStr = L"of a forbidden character";
-            break;
-        case InconsistencyTypeReservedName:
-            causeStr = L"the name is reserved on this OS";
-            break;
-        case InconsistencyTypeNameLength:
-            causeStr = L"the name is too long";
-            break;
-        default:
-            break;
-    }
-    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting remote item with " << Utility::formatSyncPath(relativePath).c_str() << L" because " << causeStr.c_str() << L".");
-
-    nodeIDs.remoteId = *remoteNode->id();
-    _idsToBeRemoved.emplace_back(nodeIDs);
-}
-
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
-    const SyncPath relativePath = remoteNode->getPath();
+    SyncPath path = remoteNode->getPath();
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(remoteNode->name())) {
-        blacklistNode(remoteNode, relativePath, InconsistencyTypeForbiddenChar);
+        _syncPal->blacklistTemporarily(remoteNode->id().value(), path, remoteNode->side());
+        Error error(_syncPal->syncDbId(), "", remoteNode->id().value(), remoteNode->type(), path, ConflictTypeNone,
+                    InconsistencyTypeForbiddenChar);
+        _syncPal->addError(error);
+
+        LOGW_SYNCPAL_INFO(_logger, L"Blacklisting item \"" << Path2WStr(path).c_str() << L"\" because of a forbidden character");
+
+        _idsToBeRemoved.push_back(remoteNode->id().value());
         return false;
     }
 
+    // Check reserved names and name size
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
-        blacklistNode(remoteNode, relativePath, InconsistencyTypeReservedName);
+        _syncPal->blacklistTemporarily(remoteNode->id().value(), path, remoteNode->side());
+        Error error(_syncPal->syncDbId(), "", remoteNode->id().value(), remoteNode->type(), path, ConflictTypeNone,
+                    InconsistencyTypeReservedName);
+        _syncPal->addError(error);
+
+        LOGW_SYNCPAL_INFO(_logger,
+                          L"Blacklisting item \"" << Path2WStr(path).c_str() << L"\" because of the name is reserved on this OS");
+
+        _idsToBeRemoved.push_back(remoteNode->id().value());
         return false;
     }
 
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameSize(remoteNode->name())) {
-        blacklistNode(remoteNode, relativePath, InconsistencyTypeNameLength);
+        _syncPal->blacklistTemporarily(remoteNode->id().value(), path, remoteNode->side());
+        Error error(_syncPal->syncDbId(), "", remoteNode->id().value(), remoteNode->type(), path, ConflictTypeNone,
+                    InconsistencyTypeNameLength);
+        _syncPal->addError(error);
+
+        LOGW_SYNCPAL_INFO(_logger, L"Blacklisting item \"" << Path2WStr(path).c_str() << L"\" because of name size");
+
+        _idsToBeRemoved.push_back(remoteNode->id().value());
         return false;
     }
 
@@ -204,11 +183,27 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(std::shar
 
             if (currentChildNode->hasChangeEvent() && !isSpecialFolder) {
                 // Blacklist the new one
-                blacklistNode(currentChildNode, currentChildNode->getPath(), InconsistencyTypeCase);
+                SyncPath path = currentChildNode->getPath();
+                _syncPal->blacklistTemporarily(currentChildNode->id().value(), path, currentChildNode->side());
+                Error error(_syncPal->syncDbId(), "", currentChildNode->id().value(), currentChildNode->type(), path,
+                            ConflictTypeNone, InconsistencyTypeCase);
+                _syncPal->addError(error);
+
+                LOGW_SYNCPAL_INFO(_logger, L"Blacklisting item \"" << Path2WStr(path).c_str() << L"\" because of a name clash");
+
+                _idsToBeRemoved.push_back(currentChildNode->id().value());
                 continue;
             } else {
                 // Blacklist the previously discovered child
-                blacklistNode(prevChildNode, prevChildNode->getPath(), InconsistencyTypeCase);
+                SyncPath path = prevChildNode->getPath();
+                _syncPal->blacklistTemporarily(prevChildNode->id().value(), path, prevChildNode->side());
+                Error error(_syncPal->syncDbId(), "", prevChildNode->id().value(), prevChildNode->type(), path, ConflictTypeNone,
+                            InconsistencyTypeCase);
+                _syncPal->addError(error);
+
+                LOGW_SYNCPAL_INFO(_logger, L"Blacklisting item \"" << Path2WStr(path).c_str() << L"\" because of a name clash");
+
+                _idsToBeRemoved.push_back(prevChildNode->id().value());
                 continue;
             }
         }

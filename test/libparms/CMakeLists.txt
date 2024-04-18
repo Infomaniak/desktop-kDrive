@@ -7,7 +7,6 @@ find_package(log4cplus 2.1.0 REQUIRED)
 set(testparms_NAME ${APPLICATION_NAME}_test_parms)
 
 set(testparms_SRCS
-    ../test.cpp
     test.cpp
     # Database
     db/testparmsdb.h db/testparmsdb.cpp
@@ -19,7 +18,7 @@ endif()
 
 if (WIN32)
     include_directories("F:/Projects/log4cplus/include")
-    include_directories("C:/Program Files (x86)/cppunit/include")
+    include_directories("F:/Projects/cppunit/include")
 else()
     include_directories("/usr/local/include")
 endif()
@@ -48,9 +47,9 @@ endif()
 if (WIN32)
     target_link_libraries(${testparms_NAME}
         debug
-        "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
+        "F:/Projects/cppunit/lib/cppunitd.lib"
         optimized
-        "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
+        "F:/Projects/cppunit/lib/cppunit.lib")
 elseif(APPLE)
     target_link_libraries(${testparms_NAME}
         "/usr/local/lib/libcppunit.dylib")
@@ -58,3 +57,4 @@ else()
     target_link_libraries(${testparms_NAME}
         "/usr/local/lib/libcppunit.so")
 endif()
+

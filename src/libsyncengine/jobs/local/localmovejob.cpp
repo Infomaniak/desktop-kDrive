@@ -35,7 +35,7 @@ bool LocalMoveJob::canRun() {
     IoError ioError = IoErrorSuccess;
     if (!Utility::isEqualInsensitive(_source, _dest)) {
         // Check that we can move the file in destination
-        bool exists = false;
+        bool exists;
         if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError).c_str());
             _exitCode = ExitCodeSystemError;
@@ -51,8 +51,8 @@ bool LocalMoveJob::canRun() {
         }
     }
 
-    // Check that the source file still exists.
-    bool exists = false;
+    // Check that source file still exit
+    bool exists;
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError).c_str());
         _exitCode = ExitCodeSystemError;

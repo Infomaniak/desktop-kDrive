@@ -39,10 +39,6 @@
 #include <Accctrl.h>
 #endif
 
-namespace Poco {
-class URI;
-}
-
 namespace KDC {
 
 struct COMMONSERVER_EXPORT Utility {
@@ -70,17 +66,13 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string trim(const std::string &s);
         static void msleep(int msec);
         static std::wstring v2ws(const dbtype &v);
-
         static std::wstring formatStdError(const std::error_code &ec);
         static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
         static std::wstring formatIoError(const SyncPath &path, IoError ioError);
         static std::wstring formatSyncPath(const SyncPath &path);
 
-        static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
-
         static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
-        static void logGenericServerError(const std::string &errorTitle, std::istream &inputStream,
-                                          const Poco::Net::HTTPResponse &httpResponse);
+        static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
 #ifdef _WIN32
         static bool isNtfs(const SyncPath &dirPath);
@@ -104,8 +96,8 @@ struct COMMONSERVER_EXPORT Utility {
 #endif
         static bool getLinuxDesktopType(std::string &currentDesktop);
 
-        static void str2hexstr(const std::string &str, std::string &hexstr, bool capital = false);
-        static void strhex2str(const std::string &hexstr, std::string &str);
+        static void str2hexstr(const std::string str, std::string &hexstr, bool capital = false);
+        static void strhex2str(const std::string hexstr, std::string &str);
         static std::vector<std::string> splitStr(const std::string &str, char sep);
         static std::string joinStr(const std::vector<std::string> &strList, char sep = 0);
         static std::string opType2Str(OperationType opType);
@@ -136,7 +128,6 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string errId(const char *file, int line);
 
         static SyncName normalizedSyncName(const SyncName &name);
-        static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;
 #ifdef _WIN32
         static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);

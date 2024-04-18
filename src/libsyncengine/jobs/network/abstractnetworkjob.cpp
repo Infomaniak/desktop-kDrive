@@ -36,6 +36,7 @@
 #include <Poco/Error.h>
 
 #include <iostream>  // std::ios, std::istream, std::cout, std::cerr
+#include <fstream>   // std::filebuf
 #include <functional>
 
 #define ABSTRACTNETWORKJOB_NEW_ERROR_MSG "Failed to create AbstractNetworkJob instance!"
@@ -81,22 +82,6 @@ AbstractNetworkJob::AbstractNetworkJob() {
                 }
             }
         }
-    }
-}
-
-
-bool AbstractNetworkJob::isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept {
-    static const std::set<ExitCause> managedExitCauses = {ExitCauseInvalidName,   ExitCauseApiErr,
-                                                          ExitCauseFileTooBig,    ExitCauseNotFound,
-                                                          ExitCauseQuotaExceeded, ExitCauseFileAlreadyExist};
-
-    switch (exitCode) {
-        case ExitCodeBackError:
-            return managedExitCauses.find(exitCause) != managedExitCauses.cend();
-        case ExitCodeNetworkError:
-            return exitCause == ExitCauseNetworkTimeout;
-        default:
-            return false;
     }
 }
 
@@ -232,7 +217,10 @@ void AbstractNetworkJob::runJob() noexcept {
             _exitCode = ExitCodeOk;
             _trials++;  // Add one more chance
             continue;
-        } else if (isManagedError(_exitCode, _exitCause)) {
+        } else if ((_exitCode == ExitCodeBackError && (_exitCause == ExitCauseInvalidName || _exitCause == ExitCauseApiErr ||
+                                                       _exitCause == ExitCauseFileAlreadyExist ||
+                                                       _exitCause == ExitCauseFileTooBig || _exitCause == ExitCauseNotFound)) ||
+                   (_exitCode == ExitCodeNetworkError && _exitCause == ExitCauseNetworkTimeout)) {
             break;
         } else {
             _exitCode = ExitCodeOk;
@@ -503,8 +491,7 @@ bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
     return receiveOk;
 }
 
-bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &session, const std::string &msg, const UniqueId jobId,
-                                            int err /*= 0*/, const std::string &errMsg /*= std::string()*/) {
+bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &session, const std::string &msg, const UniqueId jobId, int err /*= 0*/, const std::string &errMsg /*= std::string()*/) {
     const std::lock_guard<std::mutex> lock(_mutexSession);
     session.reset();
     _session = nullptr;
@@ -537,8 +524,10 @@ bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &sessi
 bool AbstractNetworkJob::ioOrLogicalErrorOccurred(std::ios &stream) {
     bool res = (stream.fail() || stream.bad()) && !stream.eof();
     if (res) {
-        LOG_DEBUG(_logger, "sendRequest failed for job " << jobId() << " - stream fail=" << stream.fail()
-                                                         << " - stream bad=" << stream.bad() << " - stream eof=" << stream.eof());
+        LOG_DEBUG(_logger, "sendRequest failed for job " << jobId()
+                                                         << " - stream fail=" << stream.fail()
+                                                         << " - stream bad=" << stream.bad()
+                                                         << " - stream eof=" << stream.eof());
     }
     return res;
 }

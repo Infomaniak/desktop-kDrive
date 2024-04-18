@@ -49,18 +49,17 @@ bool VirtualFilesCleaner::run() {
 }
 
 bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPath) {
-    const SyncName rootPathStr = _rootPath.native();
+    SyncName rootPathStr = _rootPath.native();
+    std::error_code ec;
     try {
-        std::error_code ec;
-        auto dirIt = std::filesystem::recursive_directory_iterator(
-            parentPath, std::filesystem::directory_options::skip_permission_denied, ec);
-        if (ec) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      "Error in removePlaceholdersRecursively: " << Utility::formatStdError(ec).c_str());
-            return false;
-        }
+        for (auto dirIt = std::filesystem::recursive_directory_iterator(
+                 parentPath, std::filesystem::directory_options::skip_permission_denied, ec);
+             dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+            if (ec) {
+                LOG_DEBUG(Log::instance()->getLogger(), "Error in removePlaceholdersRecursivly " << ec.message().c_str());
+                continue;
+            }
 
-        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {
@@ -185,10 +184,11 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             _vfsClearFileAttributes(_syncDbId, dirIt->path());
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursivly: " << e.code() << " - " << e.what());
+        LOG_WARN(_logger,
+                 "Error catched in VirtualFilesCleaner::removePlaceholdersRecursivly: " << e.code() << " - " << e.what());
         return false;
     } catch (...) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removePlaceholdersRecursivly");
+        LOG_WARN(_logger, "Error catched in VirtualFilesCleaner::removePlaceholdersRecursivly");
         return false;
     }
 
@@ -197,15 +197,16 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
 
 bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders) {
     bool ret = true;
+    std::error_code ec;
     try {
-        std::error_code ec;
-        auto dirIt = std::filesystem::recursive_directory_iterator(
-            _rootPath, std::filesystem::directory_options::skip_permission_denied, ec);
-        if (ec) {
-            LOGW_WARN(_logger, "Error in removeDehydratedPlaceholders: " << Utility::formatStdError(ec).c_str());
-            return false;
-        }
-        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        for (auto dirIt = std::filesystem::recursive_directory_iterator(
+                 _rootPath, std::filesystem::directory_options::skip_permission_denied, ec);
+             dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+            if (ec) {
+                LOG_DEBUG(_logger, "Error in removeDehydratedPlaceholders " << ec.message().c_str());
+                continue;
+            }
+
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {
@@ -262,10 +263,11 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removeDehydratedPlaceholders: " << e.code() << " - " << e.what());
+        LOG_WARN(_logger,
+                 "Error catched in VirtualFilesCleaner::removeDehydratedPlaceholders: " << e.code() << " - " << e.what());
         ret = false;
     } catch (...) {
-        LOG_WARN(_logger, "Error caught in VirtualFilesCleaner::removeDehydratedPlaceholders");
+        LOG_WARN(_logger, "Error catched in VirtualFilesCleaner::removeDehydratedPlaceholders");
         ret = false;
     }
 

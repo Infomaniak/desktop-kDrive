@@ -120,7 +120,7 @@ void JobManager::defaultCallback(UniqueId jobId) {
 JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
     int jobPoolCapacityFactor = ParametersCache::instance()->parameters().jobPoolCapacityFactor();
 
-    _maxNbThread = std::max(threadPoolMinCapacity, jobPoolCapacityFactor * (int)std::thread::hardware_concurrency());
+    _maxNbThread = std::max(THREAD_POOL_MIN_CAPACITY, jobPoolCapacityFactor * (int)std::thread::hardware_concurrency());
     Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
 
     _cpuUsageThreshold = ParametersCache::instance()->parameters().maxAllowedCpu() / 100.0;
@@ -239,7 +239,7 @@ void JobManager::adjustMaxNbThread() {
         maxTmpNbThread += _threadAdjustmentStep;
     }
 
-    maxTmpNbThread = std::max(maxTmpNbThread, threadPoolMinCapacity);
+    maxTmpNbThread = std::max(maxTmpNbThread, THREAD_POOL_MIN_CAPACITY);
     int threadMultiplier = _cpuUsageThreshold * 10;
     _maxNbThread = std::min(maxTmpNbThread, threadMultiplier * static_cast<int>(std::thread::hardware_concurrency()));
 
