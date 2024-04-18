@@ -229,11 +229,8 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     // Restor permissions for noPermissionDir to allow deletion
     // Restor permissions to allow deletion
     for (auto& path : std::filesystem::recursive_directory_iterator(tempDir.path)) {
-        std::filesystem::permissions(path,
-                                     std::filesystem::perms::group_exec | std::filesystem::perms::others_exec |
-                                         std::filesystem::perms::owner_exec | std::filesystem::perms::group_read |
-                                         std::filesystem::perms::others_read | std::filesystem::perms::owner_read,
-                                     std::filesystem::perm_options::add);
+        std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
+
     }
 }
 
@@ -301,11 +298,7 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
 
         // Restor permissions to allow deletion
         for (auto& path : std::filesystem::recursive_directory_iterator(temporaryDirectory.path)) {
-            std::filesystem::permissions(path,
-                                         std::filesystem::perms::group_exec | std::filesystem::perms::others_exec |
-                                             std::filesystem::perms::owner_exec | std::filesystem::perms::group_read |
-                                             std::filesystem::perms::others_read | std::filesystem::perms::owner_read,
-                                         std::filesystem::perm_options::add);
+            std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
         }
 
         // std::filesystem::remove_all(permLostRoot);
