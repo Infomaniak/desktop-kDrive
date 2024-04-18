@@ -895,7 +895,7 @@ ExitCode ServerRequests::generateLogDirectory(SyncPath &logDirectoryPath, bool s
 
     const std::time_t now = std::time(nullptr);
     const std::tm tm = *std::localtime(&now);
-    OStringStream woss;
+    std::wstringstream woss;
     woss << std::put_time(&tm, Str("%Y%m%d_%H%M%S"));
 
     archiveName += Utility::ws2s(woss.str()) + ".zip";
