@@ -27,7 +27,7 @@
 #include <utility/utility.h>
 
 #ifdef _WIN32
-#include "objbase.h"
+#include <objbase.h>
 #endif
 
 namespace KDC {
