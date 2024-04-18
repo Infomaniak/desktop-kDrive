@@ -1,7 +1,5 @@
 #! /bin/bash
 
-ulimit -n 4000000
-
 set -xe
 
 export QT_BASE_DIR="~/Qt/6.2.3"
@@ -35,7 +33,6 @@ CMAKE_PARAMS=()
 export KDRIVE_DEBUG=0
 
 cmake -B$BUILDDIR -H$BASEPATH \
-    -DQTDIR=$QTDIR \
     -DOPENSSL_ROOT_DIR=/usr/local \
     -DOPENSSL_INCLUDE_DIR=/usr/local/include \
     -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
