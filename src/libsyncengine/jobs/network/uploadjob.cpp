@@ -181,6 +181,7 @@ std::string UploadJob::getContentType(bool &canceled) {
     canceled = false;
 
     if (_linkType == LinkTypeSymlink) {
+        // TODO: Manage file & folder symlinks separately
         return mimeTypeSymlink;
     } else if (_linkType == LinkTypeHardlink) {
         return mimeTypeHardlink;
