@@ -225,7 +225,6 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         CPPUNIT_ASSERT(!it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
     }
-
 }
 
 void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
@@ -291,4 +290,6 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
         CPPUNIT_ASSERT(!it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
     }
+}
+
 }  // namespace KDC
