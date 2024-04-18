@@ -202,8 +202,8 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     file << "file";
     file.close();
 
-    std::filesystem::permissions(noPermissionDir, std::filesystem::perms::none,
-        std::filesystem::perm_options::replace);
+    std::filesystem::permissions(noPermissionDir, std::filesystem::perms::group_read | std::filesystem::perms::others_read,
+                                 std::filesystem::perm_options::remove);
     // Check that the directory iterator shows a directory with no permission when `skip_permission_denied` is false
     {
         IoError ioError = IoErrorSuccess;
@@ -227,10 +227,10 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     }
 
     // Restor permissions for noPermissionDir to allow deletion
-    std::filesystem::permissions(
-        noPermissionDir,
-        std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
-        std::filesystem::perm_options::add);
+    // Restor permissions to allow deletion
+    for (auto& path : std::filesystem::recursive_directory_iterator(tempDir.path)) {
+        std::filesystem::permissions(path, std::filesystem::perms::all);  // Uses fs::perm_options::replace.
+    }
 }
 
 void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
@@ -286,9 +286,8 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         // Remove permission (after iterator is created)
-        std::filesystem::permissions(
-            filePath, std::filesystem::perms::none,
-            std::filesystem::perm_options::replace);
+        std::filesystem::permissions(subDir, std::filesystem::perms::group_read | std::filesystem::perms::others_read,
+                                     std::filesystem::perm_options::remove);
 
         DirectoryEntry entry;
         CPPUNIT_ASSERT(it.next(entry, ioError));
@@ -296,10 +295,10 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
         CPPUNIT_ASSERT(!it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
 
-        // Restore permission to allow subdir removal
-        std::filesystem::permissions(
-            filePath, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
-            std::filesystem::perm_options::add);
+        // Restor permissions to allow deletion
+        for (auto& path : std::filesystem::recursive_directory_iterator(temporaryDirectory.path)) {
+            std::filesystem::permissions(path, std::filesystem::perms::all);  // Uses fs::perm_options::replace.
+        }
 
         std::filesystem::remove_all(permLostRoot);
     }
