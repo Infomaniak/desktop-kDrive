@@ -425,7 +425,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 bool DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
     if (mimeType == mimeTypeSymlink) {
         // Create symlink
-        SyncPath targetPath(Str2Path(data));
+        SyncPath targetPath = Str2Path(data);
         if (targetPath == _localpath) {
             LOGW_DEBUG(_logger, L"Cannot create symlink on itself : " << Utility::formatSyncPath(_localpath).c_str());
             return false;
@@ -441,7 +441,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         }
     } else if (mimeType == mimeTypeHardlink) {
         // Unreachable code
-        SyncPath targetPath(Str2Path(data));
+        SyncPath targetPath = Str2Path(data);
         if (targetPath == _localpath) {
             LOGW_DEBUG(_logger, L"Cannot create hardlink on itself : " << Utility::formatSyncPath(_localpath).c_str());
             return false;

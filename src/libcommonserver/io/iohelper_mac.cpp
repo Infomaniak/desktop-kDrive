@@ -62,19 +62,6 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
         return _isExpectedError(ioError);
     }
 
-    switch (sb.st_mode & S_IFMT) {
-        case S_IFDIR:
-            buf->type = NodeTypeDirectory;
-            break;
-        case S_IFREG:
-        case S_IFLNK:
-            buf->type = NodeTypeFile;
-            break;
-        default:
-            buf->type = NodeTypeUnknown;
-            break;
-    }
-
     if (sb.st_flags & UF_HIDDEN) {
         buf->isHidden = true;
     }
