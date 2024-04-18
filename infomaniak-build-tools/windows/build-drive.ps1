@@ -19,8 +19,8 @@
 # Parameters :
 Param(
 # BuildType	: The type of build (Debug will run the tests, Release will sign the app)
-[ValidateSet('Release', 'Debug')]
-[string] $buildType = "Release",
+[ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
+[string] $buildType = "RelWithDebInfo",
 
 # Path	: The path to the root CMakeLists.txt
 [string] $path = $PWD.Path,
@@ -52,11 +52,11 @@ Param(
 
 # CMake will treat any backslash as escape character and return an error
 $path = $path.Replace('\', '/')
-$contentPath = "$path/build-$buildType"
+$contentPath = "$path/build-windows"
 $buildPath = "$contentPath/build"
 $installPath = "$contentPath/install"
 $extPath = "$path/extensions/windows/cfapi/"
-$vfsDir = $extPath + "x64/" + $buildType
+$vfsDir = $extPath + "x64/" + "Release"
 
 # NSIS needs the path to use backslash
 $iconPath = "$buildPath\src\gui\kdrive-win.ico".Replace('/', '\')
@@ -70,7 +70,7 @@ $archivePath = "$installPath/bin"
 $archiveName = "kDrive.7z"
 
 # NSIS needs the path to use backslash
-$archiveDataPath = ('{0}\build-{1}\{2}' -f $path.Replace('/', '\'), $buildType, $archiveName)
+$archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archiveName)
 
 $sourceTranslation = "$installPath/i18n"
 $sourceFiles = "$archivePath/*"
@@ -254,7 +254,7 @@ if (!$aumid)
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext)
 {
-	msbuild "$extPath\kDriveExt.sln" /p:Configuration=$buildType /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
+	msbuild "$extPath\kDriveExt.sln" /p:Configuration=Release /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 	
 	Copy-Item -Path "$extPath\Vfs\..\Common\debug.h" -Destination "$path\src\server\vfs\win\."
