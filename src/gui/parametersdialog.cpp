@@ -347,8 +347,8 @@ void ParametersDialog::reset() {
     _noDrivePagewidget->setVisible(true);
 }
 
-QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) {
-    QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
+QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const noexcept {
+    const QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
     // TODO: USELESS CODE : this switch should be simplified !!!!
     switch (exitCode) {
         case ExitCodeUnknown:
@@ -420,12 +420,106 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code : " << exitCode;
-    return QString();
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+
+    return {};
 }
 
-QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) {
-    QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
+QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const noexcept {
+    switch (exitCause) {
+        case ExitCauseNoSearchPermission:
+            return tr("The item misses search permission (error %1).<br>"
+                      "Please check that you have search/exec access to the parent folder.")
+                .arg(err);
+        case ExitCauseSyncDirDoesntExist:
+            return tr("The synchronization folder is no longer accessible (error %1).<br>"
+                      "Synchronization will resume as soon as the folder is accessible.")
+                .arg(err);
+
+        case ExitCauseSyncDirReadError:
+            return tr("The synchronization folder is inaccessible (error %1).<br>"
+                      "Please check that you have read access to this folder.")
+                .arg(err);
+
+        case ExitCauseSyncDirWriteError:
+            return tr("The synchronization folder is inaccessible (error %1).<br>"
+                      "Please check that you have write access to this folder.")
+                .arg(err);
+
+        case ExitCauseNotEnoughDiskSpace:
+            return tr(
+                "There is not enough space left on your disk.<br>"
+                "The synchronization has been stopped.");
+
+        case ExitCauseNotEnoughtMemory:
+            return tr(
+                "There is not enough memory left on your machine.<br>"
+                "The synchronization has been stopped.");
+        case ExitCauseLiteSyncNotAllowed:
+            return tr("Unable to start synchronization (error %1).<br>"
+                      "You must allow:<br>"
+                      "- kDrive in System Settings >> Privacy & Security >> Security<br>"
+                      "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
+                .arg(err);
+        case ExitCauseUnableToCreateVfs: {
+            if (OldUtility::isWindows()) {
+                return tr("Unable to start Lite Sync plugin (error %1).<br>"
+                          "Check that the Lite Sync extension is installed and Windows Search service is enabled.<br>"
+                          "Please empty the history, restart and if the error persists, contact our support team.")
+                    .arg(err);
+            } else if (OldUtility::isMac()) {
+                return tr("Unable to start Lite Sync plugin (error %1).<br>"
+                          "Check that the Lite Sync extension has the correct permissions and is running.<br>"
+                          "Please empty the history, restart and if the error persists, contact our support team.")
+                    .arg(err);
+            } else {
+                return tr("Unable to start Lite Sync plugin (error %1).<br>"
+                          "Please empty the history, restart and if the error persists, contact our support team.")
+                    .arg(err);
+            }
+        }
+        default:
+            return tr("A technical error has occurred (error %1).<br>"
+                      "Please empty the history and if the error persists, contact our support team.")
+                .arg(err);
+    }
+}
+
+QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const noexcept {
+    switch (exitCause) {
+        case ExitCauseDriveMaintenance:
+            return tr(
+                "The kDrive is in maintenance mode.<br>"
+                "Synchronization will begin again as soon as possible. Please contact our support team if the error "
+                "persists.");
+        case ExitCauseDriveNotRenew: {
+            if (userIsAdmin) {
+                return tr(
+                    "The kDrive is blocked.<br>"
+                    "Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be "
+                    "impossible to recover them.");
+            } else {
+                return tr(
+                    "The kDrive is blocked.<br>"
+                    "Please contact an administrator to renew the kDrive. If no action is taken, the data will be "
+                    "permanently deleted and it will be impossible to recover them.");
+            }
+        }
+        case ExitCauseDriveAccessError:
+            return tr(
+                "You are not authorised to access this kDrive.<br>"
+                "Synchronization has been paused. Please contact an administrator.");
+        default:
+            return tr("A technical error has occurred (error %1).<br>"
+                      "Synchronization will resume as soon as possible. Please contact our support team if the error "
+                      "persists.")
+                .arg(err);
+    }
+}
+
+QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause,
+                                              bool userIsAdmin) const noexcept {
+    const QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
 
     switch (exitCode) {
         case ExitCodeUnknown:
@@ -473,87 +567,9 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             }
             break;
         case ExitCodeBackError:
-            if (exitCause == ExitCauseDriveMaintenance) {
-                return tr(
-                    "The kDrive is in maintenance mode.<br>"
-                    "Synchronization will begin again as soon as possible. Please contact our support team if the error "
-                    "persists.");
-            } else if (exitCause == ExitCauseDriveNotRenew) {
-                if (userIsAdmin) {
-                    return tr(
-                        "The kDrive is blocked.<br>"
-                        "Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be "
-                        "impossible to recover them.");
-                } else {
-                    return tr(
-                        "The kDrive is blocked.<br>"
-                        "Please contact an administrator to renew the kDrive. If no action is taken, the data will be "
-                        "permanently deleted and it will be impossible to recover them.");
-                }
-            } else if (exitCause == ExitCauseDriveAccessError) {
-                return tr(
-                    "You are not authorised to access this kDrive.<br>"
-                    "Synchronization has been paused. Please contact an administrator.");
-            } else {
-                return tr("A technical error has occurred (error %1).<br>"
-                          "Synchronization will resume as soon as possible. Please contact our support team if the error "
-                          "persists.")
-                    .arg(err);
-            }
-            break;
+            return getSyncPalBackErrorText(err, exitCause, userIsAdmin);
         case ExitCodeSystemError:
-            if (exitCause == ExitCauseNoSearchPermission) {
-                return tr("The item misses search permission (error %1).<br>"
-                          "Please check that you have search/exec access to the parent folder.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseSyncDirDoesntExist) {
-                return tr("The synchronization folder is no longer accessible (error %1).<br>"
-                          "Synchronization will resume as soon as the folder is accessible.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseSyncDirReadError) {
-                return tr("The synchronization folder is inaccessible (error %1).<br>"
-                          "Please check that you have read access to this folder.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseSyncDirWriteError) {
-                return tr("The synchronization folder is inaccessible (error %1).<br>"
-                          "Please check that you have write access to this folder.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseNotEnoughDiskSpace) {
-                return tr(
-                    "There is not enough space left on your disk.<br>"
-                    "The synchronization has been stopped.");
-            } else if (exitCause == ExitCauseNotEnoughtMemory) {
-                return tr(
-                    "There is not enough memory left on your machine.<br>"
-                    "The synchronization has been stopped.");
-            } else if (exitCause == ExitCauseLiteSyncNotAllowed) {
-                return tr("Unable to start synchronization (error %1).<br>"
-                          "You must allow:<br>"
-                          "- kDrive in System Settings >> Privacy & Security >> Security<br>"
-                          "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
-                    .arg(err);
-            } else if (exitCause == ExitCauseUnableToCreateVfs) {
-                if (OldUtility::isWindows()) {
-                    return tr("Unable to start Lite Sync plugin (error %1).<br>"
-                              "Check that the Lite Sync extension is installed and Windows Search service is enabled.<br>"
-                              "Please empty the history, restart and if the error persists, contact our support team.")
-                        .arg(err);
-                } else if (OldUtility::isMac()) {
-                    return tr("Unable to start Lite Sync plugin (error %1).<br>"
-                              "Check that the Lite Sync extension has the correct permissions and is running.<br>"
-                              "Please empty the history, restart and if the error persists, contact our support team.")
-                        .arg(err);
-                } else {
-                    return tr("Unable to start Lite Sync plugin (error %1).<br>"
-                              "Please empty the history, restart and if the error persists, contact our support team.")
-                        .arg(err);
-                }
-            } else {
-                return tr("A technical error has occurred (error %1).<br>"
-                          "Please empty the history and if the error persists, contact our support team.")
-                    .arg(err);
-            }
-            break;
+            return getSyncPalSystemErrorText(err, exitCause);
         case ExitCodeFatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
@@ -581,11 +597,12 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code : " << exitCode;
-    return QString();
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+
+    return {};
 }
 
-QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) {
+QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const noexcept {
     switch (conflictType) {
         case ConflictTypeNone:
             break;
@@ -653,13 +670,13 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged conflict type : " << conflictType;
-    return QString();
+    qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << conflictType;
+
+    return {};
 }
 
-QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) {
-    int inconsistencyTypeInt = static_cast<int>(inconsistencyType);
-
+QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const noexcept {
+    const auto inconsistencyTypeInt = static_cast<int>(inconsistencyType);
     QString text;
 
     if (inconsistencyTypeInt & InconsistencyTypeCase) {
@@ -697,11 +714,18 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
             tr("The file/directory name contains a recent UNICODE character not yet supported by your filesystem.<br>"
                "The parent directory has been excluded from synchronization.");
     }
+    if (inconsistencyTypeInt & InconsistencyTypeDuplicateNames) {
+        text += (text.isEmpty() ? "" : "\n");
+        text +=
+            tr("The file/directory name coincides with the name of another item in the same directory.<br>"
+               "This item is temporarily blacklisted. Consider removing duplicate items.");
+    }
 
     return text;
 }
 
-QString ParametersDialog::getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath /*= ""*/) {
+QString ParametersDialog::getCancelText(CancelType cancelType, const QString &path,
+                                        const QString &destinationPath /*= ""*/) const noexcept {
     switch (cancelType) {
         case CancelTypeCreate: {
             return tr(
@@ -760,11 +784,73 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
         }
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged cancel type : " << cancelType;
-    return "";
+    qCDebug(lcParametersDialog()) << "Unmanaged cancel type: " << cancelType;
+
+    return {};
 }
 
-QString ParametersDialog::getErrorMessage(ErrorInfo &errorInfo) {
+QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noexcept {
+    switch (errorInfo.exitCause()) {
+        case ExitCauseHttpErrForbidden: {
+            return tr("The operation performed on item %1 is forbidden.<br>"
+                      "The file/directory has been temporarily blacklisted.")
+                .arg(errorInfo.path());
+        }
+        case ExitCauseApiErr:
+        case ExitCauseUploadNotTerminated: {
+            return tr("The operation performed on item %1 failed.<br>"
+                      "The file/directory has been temporarily blacklisted.")
+                .arg(errorInfo.path());
+        }
+        case ExitCauseFileTooBig: {
+            return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.").arg(errorInfo.path());
+        }
+        case ExitCauseQuotaExceeded: {
+            return tr("You have exceeded your quota. Increase your space quota to re-enable file upload.");
+        }
+        case ExitCauseNotFound: {
+            return tr("Impossible to download file \"%1\"").arg(errorInfo.path());
+        }
+        default:
+            return tr("Synchronization error.");
+    }
+}
+
+QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept {
+    if (errorInfo.conflictType() != ConflictTypeNone) {
+        return getConflictText(errorInfo.conflictType(), ConflictTypeResolutionNone);
+    }
+
+    if (errorInfo.inconsistencyType() != InconsistencyTypeNone) {
+        return getInconsistencyText(errorInfo.inconsistencyType());
+    }
+
+    if (errorInfo.cancelType() != CancelTypeNone) {
+        return getCancelText(errorInfo.cancelType(), errorInfo.path(), errorInfo.destinationPath());
+    }
+
+    switch (errorInfo.exitCode()) {
+        case ExitCodeSystemError: {
+            if (errorInfo.exitCause() == ExitCauseFileAccessError) {
+                return tr("Can't access item %1.<br>"
+                          "Please fix the write permissions and restart the synchronization.")
+                    .arg(errorInfo.path());
+            }
+
+            if (errorInfo.exitCause() == ExitCauseMoveToTrashFailed) {
+                return tr("Move to trash failed for item %1").arg(errorInfo.path());
+            }
+        }
+        case ExitCodeBackError: {
+            return getBackErrorText(errorInfo);
+        }
+
+        default:
+            return tr("Synchronization error.");
+    }
+}
+
+QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const noexcept {
     switch (errorInfo.level()) {
         case ErrorLevelUnknown: {
             return tr(
@@ -777,63 +863,27 @@ QString ParametersDialog::getErrorMessage(ErrorInfo &errorInfo) {
             break;
         }
         case ErrorLevelSyncPal: {
-            const auto &syncInfoMapIt = _gui->syncInfoMap().find(errorInfo.syncDbId());
-            if (syncInfoMapIt != _gui->syncInfoMap().end()) {
+            if (const auto &syncInfoMapIt = _gui->syncInfoMap().find(errorInfo.syncDbId());
+                syncInfoMapIt != _gui->syncInfoMap().end()) {
                 const auto &driveInfoMapIt = _gui->driveInfoMap().find(syncInfoMapIt->second.driveDbId());
                 if (driveInfoMapIt == _gui->driveInfoMap().end()) {
                     qCDebug(lcParametersDialog())
                         << "Drive not found in drive map for driveDbId=" << syncInfoMapIt->second.driveDbId();
-                    return QString();
+                    return {};
                 }
                 return getSyncPalErrorText(errorInfo.workerName(), errorInfo.exitCode(), errorInfo.exitCause(),
                                            driveInfoMapIt->second.admin());
-            } else {
-                qCDebug(lcParametersDialog()) << "Sync not found in sync map for syncDbId=" << errorInfo.syncDbId();
-                return QString();
             }
-            break;
+            qCDebug(lcParametersDialog()) << "Sync not found in sync map for syncDbId=" << errorInfo.syncDbId();
+            return {};
         }
-        case ErrorLevelNode: {
-            if (errorInfo.conflictType() != ConflictTypeNone) {
-                return getConflictText(errorInfo.conflictType(), ConflictTypeResolutionNone);
-            } else if (errorInfo.inconsistencyType() != InconsistencyTypeNone) {
-                return getInconsistencyText(errorInfo.inconsistencyType());
-            } else if (errorInfo.cancelType() != CancelTypeNone) {
-                return getCancelText(errorInfo.cancelType(), errorInfo.path(), errorInfo.destinationPath());
-            } else {
-                if (errorInfo.exitCode() == ExitCodeSystemError) {
-                    if (errorInfo.exitCause() == ExitCauseFileAccessError) {
-                        return tr("Can't access item %1.<br>"
-                                  "Please fix the write permissions and restart the synchronization.")
-                            .arg(errorInfo.path());
-                    } else if (errorInfo.exitCause() == ExitCauseMoveToTrashFailed) {
-                        return tr("Move to trash failed for item %1").arg(errorInfo.path());
-                    }
-                } else if (errorInfo.exitCode() == ExitCodeBackError) {
-                    if (errorInfo.exitCause() == ExitCauseHttpErrForbidden) {
-                        return tr("The operation performed on item %1 is forbidden.<br>"
-                                  "The file/directory has been temporarily blacklisted.")
-                            .arg(errorInfo.path());
-                    } else if (errorInfo.exitCause() == ExitCauseApiErr ||
-                               errorInfo.exitCause() == ExitCauseUploadNotTerminated) {
-                        return tr("The operation performed on item %1 failed.<br>"
-                                  "The file/directory has been temporarily blacklisted.")
-                            .arg(errorInfo.path());
-                    } else if (errorInfo.exitCause() == ExitCauseFileTooBig) {
-                        return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.")
-                            .arg(errorInfo.path());
-                    } else if (errorInfo.exitCause() == ExitCauseNotFound) {
-                        return tr("Impossible to download file \"%1\"").arg(errorInfo.path());
-                    }
-                }
-                return tr("Synchronization error.");
-            }
-            break;
-        }
+        case ErrorLevelNode:
+            return getErrorLevelNodeText(errorInfo);
     }
 
     qCDebug(lcParametersDialog()) << "Unmanaged error level : " << errorInfo.level();
-    return QString();
+
+    return {};
 }
 
 void ParametersDialog::onExit() {
@@ -1042,14 +1092,8 @@ void ParametersDialog::onSendLogs() {
     msgBox.addButton(tr("NO"), QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::Yes);
 
-    int ret = msgBox.execAndMoveToCenter(this);
-    if (ret != QDialog::Rejected) {
-        if (ret == QMessageBox::No) {
-            return;
-        }
-    } else {
-        return;
-    }
+    const int ret = msgBox.execAndMoveToCenter(this);
+    if (ret == QDialog::Rejected || ret == QMessageBox::No) return;
 
     auto *debugReporter = new DebugReporter(QUrl(Theme::instance()->debugReporterUrl()), this);
 
@@ -1293,7 +1337,7 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
     unresolvedErrorsListWidget->clear();
     errorTabWidget->showResolveConflicts(false);
     errorTabWidget->showResolveUnsupportedCharacters(false);
-    for (auto errorInfo : errorInfoList) {
+    for (const auto &errorInfo : errorInfoList) {
         // Find list to update and increase drive error counters
         QListWidget *list = nullptr;
         if (errorInfo.autoResolved()) {
@@ -1305,7 +1349,7 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
         }
 
         // Get user friendly error message
-        QString errorMsg = getErrorMessage(errorInfo);
+        const QString errorMsg = getErrorMessage(errorInfo);
 
         // Insert error item
         QListWidgetItem *listWidgetItem = new QListWidgetItem();

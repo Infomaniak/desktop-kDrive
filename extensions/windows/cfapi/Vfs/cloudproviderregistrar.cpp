@@ -37,7 +37,7 @@ using namespace Windows::Security::Cryptography;
 #define REGKEY_AUMID L"AUMID"
 
 // Package family name, see FileExplorerExtensionPackage / Package.appxmanifest
-#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_dbrs6rk4qqhna!App"
+#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_csy8f8zhvqa20!App"
 
 std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID,
                                                        DWORD *namespaceCLSIDSize) {
@@ -177,7 +177,7 @@ bool CloudProviderRegistrar::unregister(std::wstring syncRootID) {
     try {
         winrt::StorageProviderSyncRootManager::Unregister(syncRootID);
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error catched : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught : hr %08x - %s!", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 

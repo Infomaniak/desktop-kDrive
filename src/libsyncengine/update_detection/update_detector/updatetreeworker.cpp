@@ -241,46 +241,81 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
     return ExitCodeOk;
 }
 
-ExitCode UpdateTreeWorker::step4DeleteFile() {
-    // Store all create file operations
-    {
-        _createFileOperationSet.clear();
-        std::unordered_set<UniqueId> createOpsIds;
-        _operationSet->getOpsByType(OperationTypeCreate, createOpsIds);
-        for (const auto &createOpId : createOpsIds) {
-            // worker stop or pause
-            if (stopAsked()) {
-                return ExitCodeOk;
+ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
+    _createFileOperationSet.clear();
+    FSOpPtrMap createDirectoryOperationSet;
+    std::unordered_set<UniqueId> createOpsIds;
+    _operationSet->getOpsByType(OperationTypeCreate, createOpsIds);
+
+    bool isSnapshotRebuildRequired = false;
+
+    for (const auto &createOpId : createOpsIds) {
+        // worker stop or pause
+        if (stopAsked()) {
+            return ExitCodeOk;
+        }
+        while (pauseAsked() || isPaused()) {
+            if (!isPaused()) {
+                setPauseDone();
             }
-            while (pauseAsked() || isPaused()) {
-                if (!isPaused()) {
-                    setPauseDone();
-                }
 
-                Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
-            }
+            Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
+        }
 
-            FSOpPtr createOp = nullptr;
-            _operationSet->getOp(createOpId, createOp);
+        FSOpPtr createOp;
+        _operationSet->getOp(createOpId, createOp);
+        const auto normalizedPath = Utility::normalizedSyncPath(createOp->path());
 
-            if (createOp->objectType() == NodeTypeFile) {
-                auto res = _createFileOperationSet.insert({createOp->path(), createOp});
-                if (!res.second) {
-                    // Failed to insert Create operation. Rebuild the snapshot.
-                    LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                                   << L" update tree: Operation Create already exists on file "
-                                                   << Path2WStr(createOp->path()).c_str());
+        std::pair<FSOpPtrMap::iterator, bool> insertionResult;
+        switch (createOp->objectType()) {
+            case NodeTypeFile:
+                insertionResult = _createFileOperationSet.try_emplace(normalizedPath, createOp);
+                break;
+            case NodeTypeDirectory:
+                insertionResult = createDirectoryOperationSet.try_emplace(normalizedPath, createOp);
+                break;
+            default:
+                break;
+        }
+
+        if (!insertionResult.second) {
+            // Failed to insert Create operation. A full rebuild of the snapshot is required.
+            //
+            // Two issues have been identified:
+            // - Either (1) the operating system missed a delete operation, in which case a snapshot rebuild is both
+            // required and sufficient.
+            // - Or (2) the file system allows file or directory names with different encodings but the same normalization,
+            // in which case an action of the user is required. In such a situation, we trigger a snapshot rebuild
+            // on the first pass in this function. Then we temporarily blacklist the item during the second pass and
+            // display an error message.
+
+            LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
+                                           << L" update tree: Operation Create already exists on item with "
+                                           << Utility::formatSyncPath(createOp->path()).c_str());
 
 #ifdef NDEBUG
-                    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "UpdateTreeWorker::step4",
-                                                                        "2 Create operations detected on the same item"));
+            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "UpdateTreeWorker::step4",
+                                                                "2 Create operations detected on the same item"));
 #endif
 
-                    return ExitCodeDataError;
-                }
+            _syncPal->increaseErrorCount(createOp->nodeId(), createOp->objectType(), createOp->path(), _side);
+            if (_syncPal->getErrorCount(createOp->nodeId(), _side) > 1) {
+                // We are in situation (2), i.e. duplicate normalized names.
+                // We display to the user an explicit error message about item name inconsistency.
+                Error err(_syncPal->syncDbId(), "", createOp->nodeId(), createOp->objectType(), createOp->path(),
+                          ConflictTypeNone, InconsistencyTypeDuplicateNames, CancelTypeNone);
+                _syncPal->addError(err);
             }
+
+            isSnapshotRebuildRequired = true;
         }
     }
+
+    return isSnapshotRebuildRequired ? ExitCodeDataError : ExitCodeOk;
+}
+ExitCode UpdateTreeWorker::step4DeleteFile() {
+    const ExitCode exitCode = handleCreateOperationsWithSamePath();
+    if (exitCode != ExitCodeOk) return exitCode;  // Rebuild the snapshot.
 
     std::unordered_set<UniqueId> deleteOpsIds;
     _operationSet->getOpsByType(OperationTypeDelete, deleteOpsIds);
@@ -448,6 +483,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             }
         }
     }
+
     return ExitCodeOk;
 }
 

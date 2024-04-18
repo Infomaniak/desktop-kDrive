@@ -122,6 +122,12 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
+        bool selectLastServerSelfRestartTime(int64_t &lastServerRestartTime);
+        bool selectLastClientSelfRestartTime(int64_t &lastClientRestartTime);
+
+        bool updateLastServerSelfRestartTime(int64_t lastServerRestartTime = -1 /* -1 means now*/);
+        bool updateLastClientSelfRestartTime(int64_t lastClientRestartTime = -1 /* -1 means now*/);
+
     private:
         static std::shared_ptr<ParmsDb> _instance;
         bool _test;
@@ -129,6 +135,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test);
 
         bool insertDefaultParameters();
+        bool insertDefaultSelfRestarterData();
         bool updateExclusionTemplates();
 #ifdef __APPLE__
         bool updateExclusionApps();

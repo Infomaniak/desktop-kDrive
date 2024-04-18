@@ -34,8 +34,10 @@ Param(
 # Ext	: Rebuild the extension (automatically done if vfs.h is missing)
 [switch] $ext,
 
-# Upload :	flag to trigger the use of the USB-key certificate
-#			after the build, will add a prompt asking if the build should be uploaded
+# ci	: Build with CI testing (currently only checks the building stage)
+[switch] $ci,
+
+# Upload :	flag to trigger the use of the USB-key signing certificate
 [switch] $upload,
 
 # Help	: Displays the help message then exit if called
@@ -273,14 +275,12 @@ $args += ("'-DCMAKE_PREFIX_PATH=$installPath'")
 $flags = @(
 "'-DCMAKE_MAKE_PROGRAM=C:\Qt\Tools\Ninja\ninja.exe'",
 "'-DQT_QMAKE_EXECUTABLE:STRING=C:\Qt\Tools\CMake_64\bin\cmake.exe'",
-"'-DQTDIR=$QTDIR'",
 "'-DCMAKE_C_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe'",
 "'-DCMAKE_CXX_COMPILER:STRING=C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/cl.exe'",
 "'-DAPPLICATION_UPDATE_URL:STRING=https://www.infomaniak.com/drive/update/desktopclient'",
 "'-DAPPLICATION_VIRTUALFILE_SUFFIX:STRING=kdrive'",
 "'-DBIN_INSTALL_DIR:PATH=$path'",
 "'-DVFS_DIRECTORY:PATH=$vfsDir'",
-"'-DCMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=/debug /INCREMENTAL'",
 "'-DCRASHREPORTER_SUBMIT_URL:STRING=https://www.infomaniak.com/report/drive/crash'",
 "'-DKDRIVE_THEME_DIR:STRING=$path/infomaniak'",
 "'-DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins'",
@@ -290,6 +290,11 @@ $flags = @(
 "'-DAPPLICATION_NAME:STRING=kDrive'",
 "'-DKDRIVE_VERSION_BUILD=$buildVersion'"
 )
+
+if ($ci)
+{
+    $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
+}
 
 $args += $flags
 
@@ -357,6 +362,12 @@ $binaries = @(
 "kDrive_crash_reporter.exe"
 )
 
+$testers = @(
+"kDrive_test_common.exe"
+# "kDrive_test_parms.exe",
+# "kDrive_test_syncengine.exe"
+)
+
 $dependencies = @(
 "$QTDIR/bin/Qt6Core.dll",
 "$QTDIR/bin/Qt6Gui.dll",
@@ -390,14 +401,27 @@ $dependencies = @(
 "${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
 "${env:ProgramFiles(x86)}/xxHash/bin/xxhash.dll",
 "$vfsDir/Vfs.dll",
-"$buildPath/bin/kDrivesyncengine_vfs_win.dll",
-"$iconPath"
+"$buildPath/bin/kDrivesyncengine_vfs_win.dll"
 )
 
 Write-Host "Copying dependencies to the folder $archivePath"
 foreach ($file in $dependencies)
 {
 	Copy-Item -Path $file -Destination "$archivePath"
+}
+
+if ($ci)
+{
+    foreach ($file in $testers)
+    {
+        Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
+    }
+	exit $LASTEXITCODE
+}
+
+if (Test-Path -Path $iconPath)
+{
+	Copy-Item -Path "$iconPath" -Destination $archivePath
 }
 
 # Move each executable to the bin folder and sign them

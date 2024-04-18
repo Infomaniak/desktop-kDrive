@@ -17,6 +17,7 @@
  */
 
 #include "utility.h"
+#include "Poco/URI.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -253,6 +254,13 @@ std::wstring Utility::formatIoError(const SyncPath &path, IoError ioError) {
     return ss.str();
 }
 
+std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description) {
+    std::stringstream ss;
+    ss << uri.toString().c_str() << " : " << code.c_str() << " - " << description.c_str();
+
+    return ss.str();
+}
+
 std::string Utility::formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse) {
     std::stringstream errorStream;
     errorStream << "Error in reply";
@@ -270,7 +278,7 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
         errorStream << ", encoding: " << encoding.c_str();
     }
 
-    return errorStream.str();   // str() return a copy of the underlying string
+    return errorStream.str();  // str() return a copy of the underlying string
 }
 
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
@@ -407,7 +415,7 @@ bool Utility::preventSleeping(bool enable) {
 }
 #endif
 
-void Utility::str2hexstr(const std::string str, std::string &hexstr, bool capital) {
+void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capital) {
     hexstr.resize(str.size() * 2);
     const char a = capital ? 'A' - 1 : 'a' - 1;
 
@@ -420,7 +428,7 @@ void Utility::str2hexstr(const std::string str, std::string &hexstr, bool capita
 }
 
 // Convert string of hex numbers to its equivalent char-stream
-void Utility::strhex2str(const std::string hexstr, std::string &str) {
+void Utility::strhex2str(const std::string &hexstr, std::string &str) {
     str.resize((hexstr.size() + 1) / 2);
 
     for (size_t i = 0, j = 0; i < str.size(); i++, j++) {
@@ -782,6 +790,25 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
     std::free((void *)str);
     return syncName;
 #endif
+}
+
+SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
+    auto segmentIt = path.begin();
+    if (segmentIt == path.end()) return {};
+
+    auto segment = *segmentIt;
+    if (segmentIt->native() != Str("/")) segment = normalizedSyncName(segment);
+
+    SyncPath result{segment};
+    ++segmentIt;
+
+    for (; segmentIt != path.end(); ++segmentIt) {
+        if (segmentIt->native() != Str("/")) {
+            result /= normalizedSyncName(*segmentIt);
+        }
+    }
+
+    return result;
 }
 
 bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,

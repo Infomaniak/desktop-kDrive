@@ -35,6 +35,13 @@ TmpBlacklistManager::~TmpBlacklistManager() {
     LOG_DEBUG(Log::instance()->getLogger(), "TmpBlacklistManager destroyed");
 }
 
+int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept {
+    const auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
+    const auto errorItem = errors.find(nodeId);
+
+    return errorItem == errors.end() ? 0 : errorItem->second._count + 1;
+}
+
 void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath,
                                              ReplicaSide side) {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
@@ -75,6 +82,7 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
 
     auto errorItem = errors.find(nodeId);
     if (errorItem != errors.end()) {
+        // Reset error timer
         errorItem->second._count++;
         errorItem->second._lastErrorTime = std::chrono::steady_clock::now();
     } else {
@@ -136,7 +144,7 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
     errors.erase(nodeId);
 }
 
-bool TmpBlacklistManager::isTmpBlacklisted(ReplicaSide side, const SyncPath &path) {
+bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
 
     for (const auto &errorInfo : errors) {
@@ -158,6 +166,28 @@ void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, ReplicaSide si
 
     LOGW_INFO(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
                                                               << L" tmp blacklist with nodeId=" << Utility::s2ws(nodeId).c_str());
+
+    removeFromDB(nodeId, side);
+}
+
+void TmpBlacklistManager::removeFromDB(const NodeId &nodeId, const ReplicaSide side) {
+    DbNodeId dbNodeId = -1;
+    bool found = false;
+    if (!_syncPal->_syncDb->dbId(side, nodeId, dbNodeId, found)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::dbId");
+        return;
+    }
+    if (found) {
+        // Delete old node
+        if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::deleteNode");
+            return;
+        }
+
+        if (ParametersCache::instance()->parameters().extendedLog()) {
+            LOG_DEBUG(Log::instance()->getLogger(), "Item " << dbNodeId << " removed from DB");
+        }
+    }
 }
 
 }  // namespace KDC
