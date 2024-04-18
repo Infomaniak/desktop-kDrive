@@ -493,7 +493,7 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
     std::error_code ec;
     std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::recursive, ec);
     ioError = IoHelper::stdError2ioError(ec);
- 
+
     return ioError == IoErrorSuccess;
 }
 
@@ -543,7 +543,8 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, I
 
 // DirectoryIterator
 
-DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError, DirectoryOptions option)
+IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError,
+                                               DirectoryOptions option)
     : _recursive(recursive), _directoryPath(directoryPath) {
     std::error_code ec;
 
@@ -553,7 +554,7 @@ DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursi
 }
 
 
-bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
+bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
     std::error_code ec;
     if (_invalid) {
         ioError = IoErrorInvalidDirectoryIterator;
@@ -595,18 +596,9 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
             return false;
         }
 
-//#ifdef _WIN32
+#ifdef _WIN32
         // skip_permission_denied doesn't work on Windows
         if (_skipPermissionDenied) {
-            bool readRight = false;
-            bool writeRight = false;
-            bool execRight = false;
-            bool exists = false;
-            IoHelper::getRights(_dirIterator->path(), readRight, writeRight, execRight, exists);
-            if (!exists || !readRight || !writeRight || !execRight) {
-                return next(nextEntry, ioError);
-            }
-
             try {
                 bool dummy = _dirIterator->exists();
                 (void)dummy;
@@ -617,7 +609,7 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
                 return next(nextEntry, ioError);
             }
         }
-//#endif
+#endif
         nextEntry = *_dirIterator;
         return true;
     } else {
@@ -626,7 +618,7 @@ bool DirectoryIterator::next(DirectoryEntry &nextEntry, IoError &ioError) {
     }
 }
 
-void DirectoryIterator::disableRecursionPending() {
+void IoHelper::DirectoryIterator::disableRecursionPending() {
     _dirIterator.disable_recursion_pending();
 }
 
