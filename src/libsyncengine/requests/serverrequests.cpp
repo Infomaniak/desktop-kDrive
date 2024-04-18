@@ -895,10 +895,10 @@ ExitCode ServerRequests::generateLogDirectory(SyncPath &logDirectoryPath, bool s
 
     const std::time_t now = std::time(nullptr);
     const std::tm tm = *std::localtime(&now);
-    OStringStream woss;
-    woss << std::put_time(&tm, Str("%Y%m%d_%H%M%S"));
+    std::ostringstream woss;
+    woss << std::put_time(&tm, "%Y%m%d_%H%M%S");
 
-    archiveName += Utility::ws2s(woss.str()) + ".zip";
+    archiveName += woss.str() + ".zip";
 
     // Create temp folder
     SyncPath tempFolder = CommonUtility::getAppSupportDir() / "tempLogSend";
@@ -1715,7 +1715,8 @@ ExitCode ServerRequests::getThumbnail(int driveDbId, NodeId nodeId, int width, s
     }
 
     Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
-    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN || httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
+    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN ||
+        httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Unable to get thumbnail for driveDbId=" << driveDbId << " and nodeId=" << nodeId.c_str());
         return ExitCodeDataError;
@@ -1755,7 +1756,8 @@ ExitCode ServerRequests::loadUserInfo(User &user, bool &updated) {
     }
 
     Poco::Net::HTTPResponse::HTTPStatus httpStatus = job->getStatusCode();
-    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN || httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
+    if (httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_FORBIDDEN ||
+        httpStatus == Poco::Net::HTTPResponse::HTTPStatus::HTTP_NOT_FOUND) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to get user info for userId=" << user.userId());
         return ExitCodeDataError;
     } else if (httpStatus != Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK) {
