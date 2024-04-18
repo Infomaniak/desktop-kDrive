@@ -226,11 +226,6 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
     }
 
-    // Restor permissions for noPermissionDir to allow deletion
-    // Restor permissions to allow deletion
-    std::filesystem::permissions(noPermissionFile, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-    std::filesystem::permissions(noPermissionDir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-    std::filesystem::permissions(chekDirItDir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 }
 
 void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
@@ -295,14 +290,5 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
 
         CPPUNIT_ASSERT(!it.next(entry, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
-
-        // Restor permissions to allow deletion
-        std::filesystem::permissions(filePath, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-        std::filesystem::permissions(subDir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-        std::filesystem::permissions(permLostRoot, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-        std::filesystem::permissions(chekDirItDir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
-        // std::filesystem::remove_all(permLostRoot);
     }
-}
-
 }  // namespace KDC
