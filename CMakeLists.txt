@@ -5,6 +5,7 @@ project(client)
 
 IF(APPLE)
     SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT "dwarf-with-dsym")
 ENDIF(APPLE)
 
 set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
@@ -161,7 +162,7 @@ if (WIN32)
 endif(WIN32)
 
 if (APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -g")
 endif()
 
 # Handle Translations, pick all client_* files from trans directory.
