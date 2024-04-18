@@ -177,7 +177,6 @@ void AbstractFileItemWidget::setFileTypeIcon(const QString &ressourcePath) {
 
 void AbstractFileItemWidget::setFileName(const QString &path, NodeType type) {
     setFileTypeIcon(CommonUtility::getFileIconPathFromFileName(path, type));
-    QString test = QFileInfo(path).fileName();
     _filenameLabel->setText(QFileInfo(path).fileName());
 }
 
