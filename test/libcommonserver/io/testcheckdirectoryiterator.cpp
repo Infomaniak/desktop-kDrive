@@ -193,8 +193,8 @@ void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
 
 void TestIo::testCheckDirectoryIteratorPermission() {
     TemporaryDirectory tempDir;
-
-    const SyncPath noPermissionDir = tempDir.path / "chekDirIt/noPermission";
+    const SyncPath chekDirItDir = tempDir.path / "chekDirIt";
+    const SyncPath noPermissionDir = chekDirItDir / "chekDirIt/noPermission";
     const SyncPath noPermissionFile = noPermissionDir / "file.txt";
 
     std::filesystem::create_directories(noPermissionDir);
@@ -230,6 +230,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     // Restor permissions to allow deletion
     std::filesystem::permissions(noPermissionFile, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
     std::filesystem::permissions(noPermissionDir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
+    std::filesystem::permissions(chekDirItDir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 }
 
 void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
@@ -266,7 +267,8 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
 
 void TestIo::testCheckDirectoryPermissionLost(void) {
     const TemporaryDirectory temporaryDirectory;
-    const SyncPath permLostRoot = temporaryDirectory.path.string() + "/chekDirIt/permissionLost";
+    const SyncPath chekDirItDir = temporaryDirectory.path / "chekDirIt";
+    const SyncPath permLostRoot = chekDirItDir / "permissionLost";
     const SyncPath subDir = permLostRoot / "subDir1";
     const SyncPath filePath = subDir / "file.txt";
 
@@ -297,6 +299,8 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
         // Restor permissions to allow deletion
         std::filesystem::permissions(filePath, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
         std::filesystem::permissions(subDir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
+        std::filesystem::permissions(permLostRoot, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
+        std::filesystem::permissions(chekDirItDir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
         // std::filesystem::remove_all(permLostRoot);
     }
 }
