@@ -440,6 +440,10 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         return;
     }
 
+    if (callbackParameters->FetchData.Flags & CF_CALLBACK_FETCH_DATA_FLAG_NONE) {
+        return;
+    }
+
     ProviderInfo *providerInfo = (ProviderInfo *)callbackInfo->CallbackContext;
     if (providerInfo) {
         std::filesystem::path fullPath =
