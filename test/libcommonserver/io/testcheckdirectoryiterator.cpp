@@ -31,7 +31,7 @@ void TestIo::testCheckDirectoryIterator() {
     testCheckDirectoryRecursive();
     testCheckDirectoryIteratotNextAfterEndOfDir();
     testCheckDirectoryIteratorUnexpectedDelete();
-#ifndef _WIN32 //We cannot change permission on windows for now
+#ifndef _WIN32  // We cannot change permission on windows for now
     testCheckDirectoryIteratorPermission();
     testCheckDirectoryPermissionLost();
 #endif
@@ -202,7 +202,9 @@ void TestIo::testCheckDirectoryIteratorPermission() {
     file << "file";
     file.close();
 
-    std::filesystem::permissions(noPermissionDir, std::filesystem::perms::none,
+    std::filesystem::permissions(
+        noPermissionDir,
+        std::filesystem::perms::group_read | std::filesystem::perms::others_read | std::filesystem::perms::owner_read,
         std::filesystem::perm_options::replace);
     // Check that the directory iterator shows a directory with no permission when `skip_permission_denied` is false
     {
@@ -280,15 +282,17 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
     // Check that the directory iterator is consistent when a parent directory loses permission
     {
         IoError ioError = IoErrorSuccess;
-        IoHelper::DirectoryIterator it(subDir, true, ioError,
-                             DirectoryOptions::skip_permission_denied);  // Skip permission denied to true, when false it is the
-                                                                         // user responsibility to check the permission
+        IoHelper::DirectoryIterator it(
+            subDir, true, ioError,
+            DirectoryOptions::skip_permission_denied);  // Skip permission denied to true, when false it is the
+                                                        // user responsibility to check the permission
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         // Remove permission (after iterator is created)
         std::filesystem::permissions(
-            filePath, std::filesystem::perms::none,
-            std::filesystem::perm_options::replace);
+            filePath,
+            std::filesystem::perms::group_read | std::filesystem::perms::others_read | std::filesystem::perms::owner_read,
+            std::filesystem::perm_options::remove);
 
         DirectoryEntry entry;
         CPPUNIT_ASSERT(it.next(entry, ioError));
