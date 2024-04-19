@@ -77,7 +77,7 @@ $sourceFiles = "$archivePath/*"
 $target = "$contentPath/$archiveName"
 
 $date = Get-Date -Format "yyyyMMdd"
-$buildVersion = if ($buildType -eq 'Release') { $date } else { "0" }
+$buildVersion = if ($buildType -eq 'Debug') { "0" } else { $date }
 $aumid = if ($upload) {$env:KDC_PHYSICAL_AUMID} else {$env:KDC_VIRTUAL_AUMID}
 
 #################################################################################################
