@@ -441,8 +441,11 @@ bool Log::compressLogs(const SyncPath &directoryToCompress, IoError &ioError, st
 bool Log::generateUserDescriptionFile(const SyncPath &outputPath, IoError &ioError) {
     SyncPath filePath = outputPath / "user_description.txt";
 
-    std::string osName, osArch, appVersion, userId;
-    // CommonUtility::getRunningOS(osName, osVersion, osArch);
+    std::string osName;
+    std::string osArch;
+    std::string appVersion;
+    std::string userId;
+
     osName = CommonUtility::platformName().toStdString();
     osArch = CommonUtility::platformArch().toStdString();
     appVersion = CommonUtility::userAgentString();
