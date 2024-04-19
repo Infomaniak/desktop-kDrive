@@ -235,7 +235,7 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
 
     // Generate the archive
     int err = 0;
-    zip_t *archive = zip_open((logPath / "send_log_directory_temp" / archiveName).string().c_str(), ZIP_CREATE, &err);
+    zip_t *archive = zip_open((logPath / "send_log_directory_temp" / archiveName).string().c_str(), ZIP_CREATE | ZIP_EXCL, &err);
     if (err != ZIP_ER_OK) {
         LOG_WARN(Log::instance()->getLogger(), "Error in zip_open : " << zip_strerror(archive));
         LOG_WARN(Log::instance()->getLogger(), "Error in zip_open : " << err);
