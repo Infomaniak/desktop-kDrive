@@ -204,7 +204,6 @@ ExitCode Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &ou
     }
 
     ExitCode exitCode = ExitCodeUnknown;
-    ExitCause exitCause = ExitCauseUnknown;
     // Copy log files to temp folder
     exitCode = copyLogsTo(tempDirectory, includeOldLogs, exitCause);
     if (exitCode != ExitCodeOk) {
