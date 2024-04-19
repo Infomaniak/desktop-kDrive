@@ -463,7 +463,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(!exists);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(IoErrorAccessDenied, ioError);
     }
 }
 
