@@ -98,8 +98,8 @@ cmake \
 make
 
 # Generate Debug files
-dsymutil ./bin/kDrive.app/Contents/MacOS/kDrive -o ./kDrive.dSYM
-dsymutil ./bin/kDrive_client -o ./kDrive_client.dSYM
+dsymutil ./bin/kDrive.app/Contents/MacOS/kDrive -o ../kDrive.dSYM
+dsymutil ./bin/kDrive_client -o ../kDrive_client.dSYM
 
 # Create the installer
 make install
