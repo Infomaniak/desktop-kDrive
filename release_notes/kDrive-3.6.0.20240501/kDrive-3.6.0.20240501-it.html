@@ -1,0 +1,58 @@
+<!--
+  ~ Infomaniak kDrive - Desktop
+  ~ Copyright (C) 2023-2024 Infomaniak Network SA
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Note di rilascio - kDrive 3.6.0</h1>
+<h2><b>Nuove caratteristiche</b></h2>
+  <ul>
+    <li>Windows - Sincronizzazione dei collegamenti (collegamenti simbolici e giunzioni)</li>
+    <li>macOS - Sincronizzazione dei collegamenti (link simbolici e alias)</li>
+    <li>Linux - Sincronizzazione dei collegamenti (symlink)</li>
+    <li>Aggiunta protezione per evitare la sincronizzazione di 2 sincronizzazioni all'interno della stessa cartella</li>
+    <li>I registri vengono ora conservati per 72 ore invece che per 24 ore.</li>
+    <li></li>
+  </ul>
+<h2><b>Correzioni di bug</b></h2>
+  <ul>
+    <li>Corretta la rottura delle opzioni di lauch --synthesis e --settings</li>
+    <li>Corretto un problema del generatore di operazioni quando un elemento con operazione DELETE viene inserito nella lista nera.</li>
+    <li>Corretto un arresto anomalo del Job Manager</li>
+    <li>Corretto un arresto anomalo dell'Executor quando viene ricostruita l'istantanea locale.</li>
+    <li>&Egrave; stato risolto un problema che causava lo svuotamento della cartella locale quando si cambiavano i diritti sul kDrive.</li>
+    <li>&Egrave; stato risolto un problema che si verificava quando si rimuoveva una sincronizzazione durante la sincronizzazione.</li>
+    <li>Corretto un problema che si verificava durante i caricamenti massicci</li>
+    <li>Corretto il messaggio che segnalava un file troppo grande</li>
+    <li>Corretta la migrazione se c'&egrave; un accento nel percorso della home dell'utente</li>
+    <li>Corretto un problema di sincronizzazione relativo a Office e a software simili, a causa del mancato rilevamento delle operazioni di cancellazione.</li>
+    <li>&Egrave; stato risolto un problema di sincronizzazione con Pro Tools e software simili.</li>
+    <li>Corretta la sincronizzazione che non funziona sui dischi FAT</li>
+    <li>Corretto un conflitto tra un file e una directory</li>
+    <li>Corretto un arresto anomalo quando ci sono 2 file con lo stesso nome ma con codifiche diverse</li>
+    <li>Corretto un ciclo di sincronizzazione dovuto a un problema di caso</li>
+    <li>Corretto un problema di conflitto tra modifica e spostamento</li>
+    <li>Selezione delle cartelle di sincronizzazione - Visualizzazione dell'avviso solo in caso di deselezione</li>
+    <li>Visualizzare un messaggio esplicito se &egrave; stata raggiunta la quota di kDrive</li>
+    <li>Windows - Migliore gestione dell'eliminazione delle sincronizzazioni di grandi dimensioni</li>
+    <li>Windows - I file di grandi dimensioni aggiunti vengono inseriti nella lista nera</li>
+    <li>macOS - LiteSync - Prevenire le idratazioni indesiderate</li>
+    <li>Linux - Corretto un arresto anomalo dopo l'aggiunta di elementi in locale il cui percorso contiene caratteri non supportati</li>
+  </ul>
+</body>
+</html>
