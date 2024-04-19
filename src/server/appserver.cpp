@@ -96,6 +96,9 @@ static const char optionsC[] =
     "  --synthesis          : show the Synthesis window (if the application is running).\n";
 }
 
+static const QString showSynthesisMsg = "showSynthesis";
+static const QString showSettingsMsg = "showSettings";
+
 // Helpers for displaying messages. Note that there is no console on Windows.
 #ifdef Q_OS_WIN
 static void displayHelpText(const QString &t)  // No console on Windows.
@@ -148,6 +151,9 @@ AppServer::AppServer(int &argc, char **argv)
 
     // Cleanup at quit
     connect(this, &QCoreApplication::aboutToQuit, this, &AppServer::onCleanup);
+
+    // Setup single application: show the Settings or Synthesis window if the application is running.
+    connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
 
     // Init parms DB
     bool alreadyExist = false;
@@ -2090,6 +2096,17 @@ void AppServer::onRestartClientReceived() {
     }
 }
 
+void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObject *) {
+    LOG_DEBUG(_logger, "Message received from another kDrive process: '" << message.toStdString().c_str() << "'");
+
+    if (message == showSynthesisMsg) {
+        showSynthesis();
+    }
+    else if (message == showSettingsMsg) {
+        showSettings();
+    }
+}
+
 void AppServer::sendShowNotification(const QString &title, const QString &message) {
     // Notify client
     int id;
@@ -2974,18 +2991,26 @@ void AppServer::clearSyncNodes() {
     }
 }
 
+void AppServer::sendShowSettingsMsg() {
+    sendMessage(showSettingsMsg);
+}
+
+void AppServer::sendShowSynthesisMsg() {
+    sendMessage(showSynthesisMsg);
+}
+
 void AppServer::showSettings() {
-    int id;
+    int id = 0;
     CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_SHOW_SETTINGS, QByteArray(), id);
 }
 
 void AppServer::showSynthesis() {
-    int id;
+    int id = 0;
     CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS, QByteArray(), id);
 }
 
 void AppServer::clearKeychainKeys() {
-    bool alreadyExist;
+    bool alreadyExist = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExist);
     if (parmsDbPath.empty()) {
         LOG_WARN(_logger, "Error in Db::makeDbName");
@@ -3024,7 +3049,7 @@ ExitCode AppServer::sendShowFileNotification(int syncDbId, const QString &filena
 
     // Check if notifications are disabled for this drive
     Sync sync;
-    bool found;
+    bool found = false;
     if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
         return ExitCodeDbError;

@@ -170,8 +170,6 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     }
 #endif
 
-    connect(this, &SharedTools::QtSingleApplication::messageReceived, this, &AppClient::onParseMessage);
-
     setQuitOnLastWindowClosed(false);
 
     // Setup translations
@@ -659,28 +657,6 @@ bool AppClient::connectToServer() {
 
 void AppClient::onUseMonoIconsChanged(bool) {
     _gui->computeOverallSyncStatus();
-}
-
-void AppClient::onParseMessage(const QString &msg, QObject *) {
-    if (msg.startsWith(QLatin1String("MSG_SHOWSETTINGS"))) {
-        qCInfo(lcAppClient) << "Running for" << _startedAt.elapsed() / 1000.0 << "sec";
-        if (_startedAt.elapsed() < 10 * 1000) {
-            // This call is mirrored with the one in int main()
-            qCWarning(lcAppClient)
-                << "Ignoring MSG_SHOWSETTINGS, possibly double-invocation of client via session restore and auto start";
-            return;
-        }
-        showParametersDialog();
-    } else if (msg.startsWith(QLatin1String("MSG_SHOWSYNTHESIS"))) {
-        qCInfo(lcAppClient) << "Running for" << _startedAt.elapsed() / 1000.0 << "sec";
-        if (_startedAt.elapsed() < 10 * 1000) {
-            // This call is mirrored with the one in int main()
-            qCWarning(lcAppClient)
-                << "Ignoring MSG_SHOWSETTINGS, possibly double-invocation of client via session restore and auto start";
-            return;
-        }
-        showSynthesisDialog();
-    }
 }
 
 bool AppClient::parseOptions(const QStringList &options) {

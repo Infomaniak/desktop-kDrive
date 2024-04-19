@@ -17,6 +17,7 @@
  */
 
 #include "utility.h"
+#include "Poco/URI.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -253,6 +254,13 @@ std::wstring Utility::formatIoError(const SyncPath &path, IoError ioError) {
     return ss.str();
 }
 
+std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description) {
+    std::stringstream ss;
+    ss << uri.toString().c_str() << " : " << code.c_str() << " - " << description.c_str();
+
+    return ss.str();
+}
+
 std::string Utility::formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse) {
     std::stringstream errorStream;
     errorStream << "Error in reply";
@@ -270,7 +278,7 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
         errorStream << ", encoding: " << encoding.c_str();
     }
 
-    return errorStream.str();   // str() return a copy of the underlying string
+    return errorStream.str();  // str() return a copy of the underlying string
 }
 
 void Utility::logGenericServerError(const std::string &errorTitle, std::istream &inputStream,
