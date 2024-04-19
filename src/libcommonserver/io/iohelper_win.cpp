@@ -241,9 +241,6 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
     buf->modtime = FileTimeToUnixTime(pFileInfo->LastWriteTime, &rem);
     buf->creationTime = FileTimeToUnixTime(pFileInfo->CreationTime, &rem);
 
-    bool isDirectory = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
-    buf->type = isDirectory ? NodeTypeDirectory : NodeTypeFile;
-
     buf->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
     CloseHandle(hParent);
 

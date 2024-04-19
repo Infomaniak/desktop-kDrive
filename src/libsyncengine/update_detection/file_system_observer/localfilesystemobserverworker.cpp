@@ -114,7 +114,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         NodeId nodeId = std::to_string(fileStat.inode);
-        NodeType nodeType = fileStat.type;
+        NodeType nodeType = NodeTypeUnknown;
 
         bool isLink = false;
         if (exists) {
@@ -135,6 +135,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 continue;
             }
 
+            nodeType = itemType.nodeType;
             isLink = itemType.linkType != LinkTypeNone;
 
             // Check if excluded by a file exclusion rule
@@ -626,7 +627,6 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     }
 
     ItemType itemType;
-
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(absoluteParentDirPath).c_str());
@@ -836,15 +836,23 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 parentNodeId = std::to_string(parentFileStat.inode);
             }
 
+            if (!IoHelper::getItemType(absolutePath, itemType)) {
+                LOGW_SYNCPAL_DEBUG(_logger, L"Error in IoHelper::getItemType: "
+                                                << Utility::formatIoError(absolutePath, itemType.ioError).c_str());
+                dirIt.disable_recursion_pending();
+                continue;
+            }
+
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
-                              fileStat.isDir() ? NodeType::NodeTypeDirectory : NodeType::NodeTypeFile, fileStat.size, isLink);
+                              itemType.nodeType, fileStat.size, isLink);
             if (_snapshot->updateItem(item)) {
                 if (ParametersCache::instance()->parameters().extendedLog()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot : "
                                                     << Utility::formatSyncPath(absolutePath.filename()).c_str() << L" inode:"
                                                     << nodeId.c_str() << L" parent inode:" << Utility::s2ws(parentNodeId).c_str()
                                                     << L" createdAt:" << fileStat.creationTime << L" modtime:" << fileStat.modtime
-                                                    << L" isDir:" << fileStat.isDir() << L" size:" << fileStat.size);
+                                                    << L" isDir:" << (itemType.nodeType == NodeTypeDirectory) << L" size:"
+                                                    << fileStat.size);
                 }
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item : " << Utility::formatSyncPath(absolutePath.filename()).c_str()

@@ -835,7 +835,8 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
         return false;
     }
 
-    if (!_syncPal->vfsForceStatus(absoluteLocalFilePath, true, 100, hydrated)) {
+    bool isSyncing = hydrated;
+    if (!_syncPal->vfsForceStatus(absoluteLocalFilePath, isSyncing, 100, hydrated)) {
         LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(absoluteLocalFilePath).c_str());
         return false;
     }

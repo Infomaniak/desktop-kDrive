@@ -480,26 +480,37 @@ bool IoHelper::createDirectory(const SyncPath &path, IoError &ioError) noexcept 
 
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
     if (targetPath == path) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Cannot create symlink on itself - path=" << Path2WStr(path).c_str());
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path).c_str());
         ioError = IoErrorInvalidArgument;
         return false;
     }
 
     std::error_code ec;
-    const bool isDirectory = std::filesystem::is_directory(targetPath, ec);
+    bool createDirSymlink = false;
+#ifdef _WIN32
+    // !!! If the target doesn't exist yet, a file symlink will be created
+    if (targetPath.root_directory() == std::filesystem::path()) {
+        // targetPath is relative
+        createDirSymlink = std::filesystem::is_directory(path.parent_path() / targetPath, ec);
+    } else {
+        // targetPath is absolute
+        createDirSymlink = std::filesystem::is_directory(targetPath, ec);
+    }
     ioError = stdError2ioError(ec);
-
     if (ioError != IoErrorSuccess && ioError != IoErrorNoSuchFileOrDirectory) {
         return _isExpectedError(ioError);
     }
+#else
+    // On macOS & Linux, create_symlink can create files & directories symlinks
+#endif
 
-    if (isDirectory) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Create directory symlink - targetPath="
-                                                     << Path2WStr(targetPath).c_str() << L" path=" << Path2WStr(path).c_str());
+    if (createDirSymlink) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Create directory symlink: target " << Path2WStr(targetPath).c_str() << L", "
+                                                                                      << Utility::formatSyncPath(path).c_str());
         std::filesystem::create_directory_symlink(targetPath, path, ec);
     } else {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Create file symlink - targetPath=" << Path2WStr(targetPath).c_str() << L" path=" << Path2WStr(path).c_str());
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Create file symlink: target " << Path2WStr(targetPath).c_str() << L", "
+                                                                                 << Utility::formatSyncPath(path).c_str());
         std::filesystem::create_symlink(targetPath, path, ec);
     }
 
