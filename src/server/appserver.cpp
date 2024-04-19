@@ -1997,7 +1997,7 @@ void AppServer::sendErrorsCleared(int syncDbId) {
     CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_ERRORS_CLEARED, params, id);
 }
 
-void AppServer::sendLogUploadStatusUpdated(const char state, const int64_t percent) {
+void AppServer::sendLogUploadStatusUpdated(const char state, const int percent) {
     int id;
 
     QByteArray params;

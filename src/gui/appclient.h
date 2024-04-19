@@ -96,7 +96,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         void errorsCleared(int syncDbId);
         void logUploadStatusUpdated(
             const char state /*state: 'A' for Archiving, 'U' for uploading*/,
-            const int64_t percent);
+            const int percent);
         void logUploadCompleted(bool success, const SyncPath &archivePath);
 
     public slots:

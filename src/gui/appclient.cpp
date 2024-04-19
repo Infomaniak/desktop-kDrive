@@ -458,7 +458,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
         }
         case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
             char status;
-            int64_t progress;
+            int progress;
             paramsStream >> status;
             paramsStream >> progress;
 
