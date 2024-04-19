@@ -26,7 +26,6 @@ export SUFFIX=""
 # Build client
 cd $BUILDDIR
 mkdir -p $BUILDDIR/client
-cd client
 
 CMAKE_PARAMS=()
 
@@ -48,8 +47,6 @@ cmake -B$BUILDDIR -H$BASEPATH \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
     -DBUILD_UNIT_TESTS=1 \
     "${CMAKE_PARAMS[@]}" \
-
-cd $BUILDDIR
 
 make -j4
 make DESTDIR=$APPDIR install
