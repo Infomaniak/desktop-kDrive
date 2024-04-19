@@ -63,6 +63,7 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
         case static_cast<int>(std::errc::is_a_directory):
             return IoErrorIsADirectory;
         case static_cast<int>(std::errc::no_such_file_or_directory):
+        case static_cast<int>(std::errc::not_a_directory):  // Occurs in particular when converting a bundle into a single file
             return IoErrorNoSuchFileOrDirectory;
         case static_cast<int>(std::errc::no_space_on_device):
             return IoErrorDiskFull;
