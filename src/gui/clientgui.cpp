@@ -103,8 +103,8 @@ ClientGui::ClientGui(AppClient *parent)
     connect(_app, &AppClient::errorsCleared, this, &ClientGui::onErrorsCleared);
     connect(_app, &AppClient::folderSizeCompleted, this, &ClientGui::folderSizeCompleted);
     connect(_app, &AppClient::fixConflictingFilesCompleted, this, &ClientGui::onFixConflictingFilesCompleted);
-
-    connect(_app, &AppClient::updateLogToSupportStatus, this, &ClientGui::logToSupportStatusUpdated);
+    connect(_app, &AppClient::logUploadStatusUpdated, this, &ClientGui::logUploadStatusUpdated);
+    connect(_app, &AppClient::logUploadCompleted, this, &ClientGui::logUploadCompleted);
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
 

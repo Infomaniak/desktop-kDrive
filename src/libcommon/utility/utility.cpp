@@ -111,6 +111,10 @@ QString CommonUtility::platformName() {
     return QSysInfo::prettyProductName();
 }
 
+QString CommonUtility::platformArch() {
+    return QSysInfo::currentCpuArchitecture();
+}
+
 std::string CommonUtility::userAgentString() {
     std::ostringstream userAgent;
     userAgent << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";

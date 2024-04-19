@@ -913,9 +913,10 @@ ExitCode ServerRequests::generateLogDirectory(SyncPath &logDirectoryPath, bool s
         IoHelper::deleteDirectory(tempFolder, ioError);
         return ExitCodeSystemError;
     }
+
     logDirectoryPath = tempFolder.string() + "/" + archiveName;
 
-    LOG_DEBUG(Log::instance()->getLogger(), "Log archive for support saved at: " << logDirectoryPath.c_str());
+    LOG_INFO(Log::instance()->getLogger(), "Log archive for support saved at: " << logDirectoryPath.c_str());
     return ExitCodeOk;
 }
 
@@ -1005,32 +1006,35 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCodeOk;
 }
 
-ExitCode ServerRequests::sendLogToSupport(bool sendAllLogs, std::function<void(char, int64_t)> progressCallback) {
+ExitCode ServerRequests::sendLogToSupport(bool sendAllLogs, SyncPath &archivePath,
+                                          std::function<void(char, int64_t)> progressCallback) {
     SyncPath logArchivePath;
     bool progressMonitoring = progressCallback != nullptr;
 
     ExitCode exitCode = ExitCodeOk;
     if (progressMonitoring) {
-        generateLogDirectory(logArchivePath, sendAllLogs,
-                             [progressCallback](int64_t progress) { progressCallback('A', progress); });
+        exitCode = generateLogDirectory(logArchivePath, sendAllLogs,
+                                        [progressCallback](int64_t progress) { progressCallback('A', progress); });
     } else {
-        generateLogDirectory(logArchivePath, sendAllLogs);
+        exitCode = generateLogDirectory(logArchivePath, sendAllLogs);
     }
 
     if (exitCode != ExitCodeOk) {
         if (progressMonitoring) {
-            progressCallback('F', 0);  // Failed
+            progressCallback('A', 0);  // Failed
         }
         return exitCode;
     }
+
+    archivePath = logArchivePath;
 
     // Send log placeholder
     // TODO: Implement new API route for sending logs
     for (int i = 0; i < 100; i += 1) {
         if (progressMonitoring) {
             progressCallback('U', i);  // Uploading
+            //std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
 
@@ -1042,9 +1046,7 @@ ExitCode ServerRequests::sendLogToSupport(bool sendAllLogs, std::function<void(c
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::deleteFile : " << Utility::formatIoError(logArchivePath, ioError).c_str());
     }
-    if (progressMonitoring) {
-        progressCallback('S', 100);  // Success
-    }
+
     return ExitCodeOk;
 }
 

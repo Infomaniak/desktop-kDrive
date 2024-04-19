@@ -345,7 +345,6 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
-
 }
 
 AppServer::~AppServer() {
@@ -671,14 +670,19 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             QTimer::singleShot(100, [this, sendAllLogs]() {
                 std::function<void(char, int64_t)> progressFunc = [this](char status, int64_t progress) {
-                    sendLogTransfertStatus(status, progress);
+                    sendLogUploadStatusUpdated(status, progress);
                     LOG_DEBUG(_logger, "Log transfert progress : " << status << " | " << progress << " %");
                 };
-                ExitCode exitCode = ServerRequests::sendLogToSupport(sendAllLogs, progressFunc);
+
+                SyncPath archivePath;
+                ExitCode exitCode = ServerRequests::sendLogToSupport(sendAllLogs, archivePath, progressFunc);
+
                 if (exitCode != ExitCodeOk) {
                     LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode);
                     addError(Error(ERRID, exitCode, ExitCauseUnknown));
                 }
+
+                sendLogUploadCompleted(exitCode == ExitCodeOk, archivePath);
             });
             LOG_WARN(_logger, "Send log to support requested");
 
@@ -1993,14 +1997,24 @@ void AppServer::sendErrorsCleared(int syncDbId) {
     CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_ERRORS_CLEARED, params, id);
 }
 
-void AppServer::sendLogTransfertStatus(const char state, const int64_t percent) {
+void AppServer::sendLogUploadStatusUpdated(const char state, const int64_t percent) {
     int id;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << state;
     paramsStream << percent;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_SEND_LOG_TO_SUPPORT_STATUS, params, id);
+    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
+}
+
+void AppServer::sendLogUploadCompleted(bool success, const SyncPath &archivePath) {
+    int id;
+
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << success;
+    paramsStream << QString::fromStdString(archivePath.string());
+    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_LOG_UPLOAD_COMPLETED, params, id);
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {

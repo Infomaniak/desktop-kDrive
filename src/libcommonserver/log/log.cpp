@@ -19,6 +19,9 @@
 #include "log.h"
 #include "customrollingfileappender.h"
 #include "utility/utility.h"
+#include "libparms/db/user.h"
+#include "libparms/db/parmsdb.h"
+#include "libparms/db/drive.h"
 
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
@@ -163,8 +166,7 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
     // Get the log directory path
     SyncPath logPath;
     ioError = IoErrorSuccess;
-    IoHelper::logDirectoryPath(logPath, ioError);
-    if (ioError != IoErrorSuccess) {
+    if (!IoHelper::logDirectoryPath(logPath, ioError) || ioError != IoErrorSuccess) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::logDirectoryPath : " << Utility::formatIoError(logPath, ioError).c_str());
         return false;
@@ -185,7 +187,8 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::createDirectory : "
                      << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
-        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        IoError ignoreError;
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ignoreError);
         return false;
     }
 
@@ -194,10 +197,10 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in copyLogsTo : "
                      << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
-        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        IoError ignoreError;
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ignoreError);
         return false;
     }
-
 
     // Copy .parmsdb to temp folder
     if (!copyParmsDbTo(logPath / "send_log_directory_temp" / tempsFolderName / ".parms.db", ioError)) {
@@ -205,7 +208,18 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
             Log::instance()->getLogger(),
             "Error in copyParmsDbTo : "
                 << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName / ".parms.db", ioError).c_str());
-        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        IoError ignoreError;
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ignoreError);
+        return false;
+    }
+
+    // Generate user description file
+    if (!generateUserDescriptionFile(logPath / "send_log_directory_temp" / tempsFolderName, ioError)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in generateUserDescriptionFile : "
+                     << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
+        IoError ignoreError;
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ignoreError);
         return false;
     }
 
@@ -214,7 +228,8 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in compressLogs : "
                      << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
-        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        IoError ignoreError;
+        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ignoreError);
         return false;
     }
 
@@ -226,6 +241,7 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
         LOG_WARN(Log::instance()->getLogger(), "Error in zip_open : " << err);
 
         IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        ioError = IoErrorUnknown;
         return false;
     }
 
@@ -236,6 +252,8 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
                  "Error in DirectoryIterator : "
                      << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
         IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        ioError = IoErrorUnknown;
+
         return false;
     }
 
@@ -245,6 +263,8 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
         if (source == nullptr) {
             LOG_WARN(Log::instance()->getLogger(), "Error in zip_source_file : " << zip_strerror(archive));
             IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+            ioError = IoErrorUnknown;
+
             return false;
         }
 
@@ -252,6 +272,8 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
         if (zip_file_add(archive, entryName.c_str(), source, ZIP_FL_OVERWRITE) < 0) {
             LOG_WARN(Log::instance()->getLogger(), "Error in zip_file_add : " << zip_strerror(archive));
             IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+            ioError = IoErrorUnknown;
+
             return false;
         }
     }
@@ -261,6 +283,8 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
                  "Error in DirectoryIterator : "
                      << Utility::formatIoError(logPath / "send_log_directory_temp" / tempsFolderName, ioError).c_str());
         IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        ioError = IoErrorUnknown;
+
         return false;
     }
 
@@ -268,6 +292,8 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
     if (zip_close(archive) < 0) {
         LOG_WARN(Log::instance()->getLogger(), "Error in zip_close : " << zip_strerror(archive));
         IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        ioError = IoErrorUnknown;
+
         return false;
     }
 
@@ -277,6 +303,8 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
                  "Error in IoHelper::copyFileOrDirectory : "
                      << Utility::formatIoError(logPath / "send_log_directory_temp" / archiveName, ioError).c_str());
         IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
+        ioError = IoErrorUnknown;
+
         return false;
     }
 
@@ -286,6 +314,8 @@ bool Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &output
                  "Error in IoHelper::deleteDirectory : "
                      << Utility::formatIoError(logPath / "send_log_directory_temp", ioError).c_str());
     }
+    ioError = IoErrorSuccess;
+
 
     return true;
 }
@@ -321,7 +351,6 @@ bool Log::copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, IoError &i
     if (!IoHelper::getDirectoryIterator(logPath, false, ioError, dir)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in DirectoryIterator : " << Utility::formatIoError(logPath, ioError).c_str());
-        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
         return false;
     }
 
@@ -346,9 +375,9 @@ bool Log::copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, IoError &i
     if (ioError != IoErrorEndOfDirectory) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in DirectoryIterator : " << Utility::formatIoError(logPath, ioError).c_str());
-        IoHelper::deleteDirectory(logPath / "send_log_directory_temp", ioError);
         return false;
     }
+    ioError = IoErrorSuccess;
     return true;
 }
 
@@ -406,6 +435,53 @@ bool Log::compressLogs(const SyncPath &directoryToCompress, IoError &ioError, st
                  "Error in DirectoryIterator : " << Utility::formatIoError(directoryToCompress, ioError).c_str());
         return false;
     }
+    return true;
+}
+
+bool Log::generateUserDescriptionFile(const SyncPath &outputPath, IoError &ioError) {
+    SyncPath filePath = outputPath / "user_description.txt";
+
+    std::string osName, osArch, appVersion, userId;
+    // CommonUtility::getRunningOS(osName, osVersion, osArch);
+    osName = CommonUtility::platformName().toStdString();
+    osArch = CommonUtility::platformArch().toStdString();
+    appVersion = CommonUtility::userAgentString();
+
+    std::ofstream file(filePath.string());
+    if (!file.is_open()) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in creating file : " << Utility::formatIoError(filePath, ioError).c_str());
+        ioError = IoErrorUnknown;
+        return false;
+    }
+    file << "OS Name: " << osName << std::endl;
+    file << "OS Architecture: " << osArch << std::endl;
+    file << "App Version: " << appVersion << std::endl;
+    file << "User ID(s): ";
+
+    std::vector<User> userList;
+    if (ParmsDb::instance()->selectAllUsers(userList)) {
+        for (const User &user : userList) {
+            file << user.userId() << " | ";
+        }
+        file << std::endl;
+    } else {
+        file << "Unable to retrieve user ID(s)" << std::endl;
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
+    }
+
+    file << "Drive ID(s): ";
+    std::vector<Drive> driveList;
+    if (ParmsDb::instance()->selectAllDrives(driveList)) {
+        for (const Drive &drive : driveList) {
+            file << drive.driveId() << " | ";
+        }
+        file << std::endl;
+    } else {
+        file << "Unable to retrieve drive ID(s)" << std::endl;
+        LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
+    }
+
+    file.close();
     return true;
 }
 

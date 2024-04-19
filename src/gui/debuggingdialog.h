@@ -71,7 +71,8 @@ class DebuggingDialog : public CustomDialog {
         void onSaveButtonTriggered(bool checked = false);
         void onSendLogButtonTriggered();
         void onSendLogConfirmed(bool allLog);
-        void onSendLogProgressUpdate(char status, int64_t progress);
+        void onLogUploadStatusUpdated(char status, int64_t progress);
+        void onLogUploadCompleted(bool success, const SyncPath &archivePath);
 };
 
 }  // namespace KDC

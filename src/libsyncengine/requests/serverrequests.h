@@ -139,7 +139,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static bool isDisplayableError(const Error &error);
         static bool isAutoResolvedError(const Error &error);
         static ExitCode getUserFromSyncDbId(int syncDbId, User &user);
-        static ExitCode sendLogToSupport(bool sendAllLogs, std::function<void(char, int64_t)> progressCallback = nullptr);
+        static ExitCode sendLogToSupport(bool sendAllLogs, SyncPath &archivePath, std::function<void(char, int64_t)> progressCallback = nullptr);
 
     private:
         static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);

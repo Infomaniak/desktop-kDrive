@@ -208,7 +208,8 @@ void DebuggingDialog::initUI() {
     connect(_sendLogButton, &QPushButton::clicked, this, &DebuggingDialog::onSendLogButtonTriggered);
     connect(cancelButton, &QPushButton::clicked, this, &DebuggingDialog::onExit);
     connect(this, &CustomDialog::exit, this, &DebuggingDialog::onExit);
-    connect(_gui.get(), &ClientGui::logToSupportStatusUpdated, this, &DebuggingDialog::onSendLogProgressUpdate);
+    connect(_gui.get(), &ClientGui::logUploadStatusUpdated, this, &DebuggingDialog::onLogUploadStatusUpdated);
+    connect(_gui.get(), &ClientGui::logUploadCompleted, this, &DebuggingDialog::onLogUploadCompleted);
 }
 
 void DebuggingDialog::updateUI() {
@@ -293,7 +294,7 @@ void DebuggingDialog::onSendLogButtonTriggered() {
     int64_t size;
     ExitCode exitCode = GuiRequests::getAproximateLogSize(size);
     if (exitCode != ExitCode::ExitCodeOk) {
-        onSendLogConfirmed(true); // Send all logs by default if we can't get the aproximate size
+        onSendLogConfirmed(true);  // Send all logs by default if we can't get the aproximate size
         return;
     }
 
@@ -319,13 +320,17 @@ void DebuggingDialog::onSendLogConfirmed(bool allLog) {
 
     ExitCode exitCode = GuiRequests::sendLogToSupport(allLog);
     if (exitCode != ExitCode::ExitCodeOk) {
-        onSendLogProgressUpdate('F', 0);
+        onLogUploadStatusUpdated('F', 0);
     }
 }
 
-void DebuggingDialog::onSendLogProgressUpdate(char status, int64_t progress) {
+void DebuggingDialog::onLogUploadStatusUpdated(char status, int64_t progress) {
     int progressValue = progress;
+    _sendLogButton->setEnabled(false);
+    _sendLogProgressBar->show();
+    _sendLogStatusLabel->show();
     _sendLogProgressBar->setValue(progressValue);
+
     switch (status) {
         case 'A':
             _sendLogStatusLabel->setText(tr("1/2 | Compression"));
@@ -333,19 +338,23 @@ void DebuggingDialog::onSendLogProgressUpdate(char status, int64_t progress) {
         case 'U':
             _sendLogStatusLabel->setText(tr("2/2 | Upload"));
             break;
-        case 'S':
-            _sendLogStatusLabel->setText(tr("Log sent to Infomaniak support."));
-            _sendLogProgressBar->hide();
-            _sendLogButton->setEnabled(true);
-            break;
-        case 'F':
-            _sendLogStatusLabel->setText(tr("Failed"));
-            _sendLogProgressBar->hide();
-            _sendLogButton->setEnabled(true);
-            break;
         default:
             _sendLogStatusLabel->setText(tr("Sending logs..."));
             break;
+    }
+}
+
+void DebuggingDialog::onLogUploadCompleted(bool success, const SyncPath &archivePath) {
+    if (success) {
+        _sendLogStatusLabel->setText(tr("Log sent to Infomaniak support."));
+        _sendLogProgressBar->hide();
+        _sendLogButton->setEnabled(true);
+    } else {
+        _sendLogStatusLabel->setText(
+            tr("Failed to send logs to Infomaniak support. You can manually send the file available at %1")
+                .arg(QString::fromStdString(archivePath.string())));
+        _sendLogProgressBar->hide();
+        _sendLogButton->setEnabled(true);
     }
 }
 

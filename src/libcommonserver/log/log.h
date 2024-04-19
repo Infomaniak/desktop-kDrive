@@ -162,27 +162,30 @@ class COMMONSERVER_EXPORT Log {
         bool configure(bool useLog, LogLevel logLevel, bool purgeOldLogs);
 
         /*! Returns the estimated size of the log files in bytes.
-        * Actual size may be different due to compression.
-        * \param ioError The error object to be filled in case of error.
-        * \return The estimated size of the log files in bytes.
-        */
+         * Actual size may be different due to compression.
+         * \param ioError The error object to be filled in case of error.
+         * \return The estimated size of the log files in bytes.
+         */
         int64_t getLogEstimatedSize(IoError &ioError);
 
         /*! Generates a support archive containing the logs and the parms.db file.
-        * \param includeOldLogs If true, the old logs will be included in the archive.
-        * \param outputPath The path where the archive will be generated.
-        * \param archiveName The name of the archive.
-        * \param ioError The error object to be filled in case of error.
-        * \return True if the archive was generated successfully, false otherwise.
-        */
+         * \param includeOldLogs If true, the old logs will be included in the archive.
+         * \param outputPath The path where the archive will be generated.
+         * \param archiveName The name of the archive.
+         * \param ioError The error object to be filled in case of error.
+         * \return True if the archive was generated successfully, false otherwise.
+         */
         bool generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const SyncPath &archiveName,
                                         IoError &ioError, std::function<void(int64_t)> progressCallback = nullptr);
+
+        bool generateUserDescriptionFile(const SyncPath &outputPath, IoError &ioError);  // TODO: set this method as private
 
     private:
         Log(const log4cplus::tstring &filePath);
         bool copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, IoError &ioError);
         bool copyParmsDbTo(const SyncPath &outputPath, IoError &ioError);
-        bool compressLogs(const SyncPath &directoryToCompress, IoError &ioError, std::function<void(int64_t)> progressCallback = nullptr);
+        bool compressLogs(const SyncPath &directoryToCompress, IoError &ioError,
+                          std::function<void(int64_t)> progressCallback = nullptr);
         static std::shared_ptr<Log> _instance;
         log4cplus::Logger _logger;
 };

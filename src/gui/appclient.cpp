@@ -456,13 +456,23 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit showSynthesisDialog();
             break;
         }
-        case SIGNAL_NUM_UTILITY_SEND_LOG_TO_SUPPORT_STATUS: {
+        case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
             char status;
             int64_t progress;
             paramsStream >> status;
             paramsStream >> progress;
 
-            emit updateLogToSupportStatus(status, progress);
+            emit logUploadStatusUpdated(status, progress);
+            break;
+        }
+        case SIGNAL_NUM_UTILITY_LOG_UPLOAD_COMPLETED: {
+            bool success;
+            SyncPath archivePath;
+            QString archivePathStr;
+            paramsStream >> success;
+            paramsStream >> archivePathStr;
+            archivePath = SyncPath(archivePathStr.toStdString());
+            emit logUploadCompleted(success, archivePath);
             break;
         }
         default: {
