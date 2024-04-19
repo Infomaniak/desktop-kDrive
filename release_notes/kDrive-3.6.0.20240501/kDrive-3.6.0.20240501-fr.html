@@ -1,0 +1,58 @@
+<!--
+  ~ Infomaniak kDrive - Desktop
+  ~ Copyright (C) 2023-2024 Infomaniak Network SA
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Notes de version - kDrive 3.6.0</h1>
+<h2><b>Nouvelles fonctionnalit&eacute;s</b></h2>
+  <ul>
+    <li>Windows - Synchronisation des liens (liens symboliques et jonctions)</li>
+    <li>macOS - Synchronisation des liens (symlinks et alias)</li>
+    <li>Linux - Synchronisation des liens (symlinks)</li>
+    <li>Ajout d'une protection pour &eacute;viter que 2 synchronisations se fassent dans le m&ecirc;me dossier</li>
+    <li>Les journaux sont d&eacute;sormais conserv&eacute;s pendant 72 heures au lieu de 24 heures.</li>
+    <li></li>
+  </ul>
+<h2><b>Correction de bugs</b></h2>
+  <ul>
+    <li>Correction des options de lancement --synthesis et --settings qui ne fonctionnaient pas.</li>
+    <li>Correction d'un probl&egrave;me li&eacute; au g&eacute;n&eacute;rateur d'op&eacute;rations lorsqu'un &eacute;l&eacute;ment avec l'op&eacute;ration DELETE est mis sur liste noire.</li>
+    <li>Correction d'un crash dans le gestionnaire de t&acirc;ches</li>
+    <li>Correction d'un crash dans l'Executor lorsque l'instantan&eacute; local est reconstruit</li>
+    <li>Correction d'un probl&egrave;me qui provoquait le vidage du dossier local lors d'un changement de droits sur le kDrive</li>
+    <li>Correction d'un probl&egrave;me survenant lors de la suppression d'une synchronisation pendant la synchronisation</li>
+    <li>Correction d'un probl&egrave;me survenant lors de t&eacute;l&eacute;chargements massifs</li>
+    <li>Correction du message signalant un fichier trop volumineux</li>
+    <li>Correction de la migration en cas d'accent dans le chemin d'acc&egrave;s de l'utilisateur</li>
+    <li>Correction d'un probl&egrave;me de synchronisation concernant Office et les logiciels similaires en raison de la non-d&eacute;tection des op&eacute;rations DELETE.</li>
+    <li>Correction d'un probl&egrave;me de synchronisation avec Pro Tools et les logiciels similaires</li>
+    <li>Correction de la synchro qui ne fonctionnait pas sur les disques FAT</li>
+    <li>Correction d'un conflit entre un fichier et un r&eacute;pertoire</li>
+    <li>Correction d'un crash lorsqu'il y a 2 fichiers avec le m&ecirc;me nom mais des encodages diff&eacute;rents</li>
+    <li>Correction d'une boucle de synchronisation due &agrave; un probl&egrave;me de cas</li>
+    <li>Correction d'un probl&egrave;me de conflit entre la modification et le d&eacute;placement</li>
+    <li>Synchronisation de la s&eacute;lection des dossiers - Affichage d'un avertissement uniquement en cas de d&eacute;s&eacute;lection</li>
+    <li>Afficher un message explicite si le quota de kDrive a &eacute;t&eacute; atteint</li>
+    <li>Windows - Meilleure gestion de la suppression des synchronisations importantes</li>
+    <li>Windows - Les gros fichiers ajout&eacute;s sont mis sur liste noire</li>
+    <li>macOS - LiteSync - Pr&eacute;venir les hydratations non d&eacute;sir&eacute;es</li>
+    <li>Linux - Correction d'un crash survenant apr&egrave;s l'ajout local d'&eacute;l&eacute;ments dont le chemin d'acc&egrave;s contient des caract&egrave;res non pris en charge</li>
+  </ul>
+</body>
+</html>
