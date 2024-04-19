@@ -350,9 +350,14 @@ void DebuggingDialog::onLogUploadCompleted(bool success, const SyncPath &archive
         _sendLogProgressBar->hide();
         _sendLogButton->setEnabled(true);
     } else {
-        _sendLogStatusLabel->setText(
-            tr("Failed to send logs to Infomaniak support. You can manually send the file available at %1")
-                .arg(QString::fromStdString(archivePath.string())));
+        if (!archivePath.empty()) {
+            _sendLogStatusLabel->setText(
+                tr("Failed to send logs to Infomaniak support. You can manually send the file available at %1")
+                    .arg(QString::fromStdString(archivePath.string())));
+        } else {
+            _sendLogStatusLabel->setText(
+                tr("Failed to send logs to Infomaniak support."));
+        }
         _sendLogProgressBar->hide();
         _sendLogButton->setEnabled(true);
     }
