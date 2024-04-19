@@ -30,8 +30,7 @@ struct IoHelper {
     public:
         class DirectoryIterator {
             public:
-                DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError,
-                                  DirectoryOptions option = DirectoryOptions::none);
+                DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError);
 
                 DirectoryIterator() = default;
                 //! Get the next directory entry.
@@ -40,12 +39,11 @@ struct IoHelper {
                   \param ioError holds the error returned when an underlying OS API call fails.
                   \return true if no error occurred, false otherwise.
                 */
-                bool next(DirectoryEntry &nextEntry, IoError &ioError);
+                bool next(DirectoryEntry &nextEntry, bool &endOfDirectory, IoError &ioError);
                 void disableRecursionPending();
 
             private:
                 bool _recursive = false;
-                bool _skipPermissionDenied = false;
                 bool _firstElement = true;
                 bool _invalid = false;
                 SyncPath _directoryPath;
