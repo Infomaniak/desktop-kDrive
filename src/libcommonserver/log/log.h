@@ -166,7 +166,7 @@ class COMMONSERVER_EXPORT Log {
          * \param ioError The error object to be filled in case of error.
          * \return The estimated size of the log files in bytes.
          */
-        int64_t getLogEstimatedSize(IoError &ioError);
+        int getLogEstimatedSize(IoError &ioError);
 
         /*! Generates a support archive containing the logs and the parms.db file.
          * \param includeOldLogs If true, the old logs will be included in the archive.

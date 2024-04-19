@@ -410,6 +410,10 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
+        case ExitCodeNoDriveFound:
+            return tr("No kDrive found (error %1).<br>"
+                      "Log in to your kDrive account and add a kDrive.")
+                .arg(err);
         case ExitCodeOk:
         case ExitCodeNeedRestart:
         case ExitCodeInconsistencyError:
@@ -575,7 +579,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             break;
         case ExitCodeNoDriveFound:
             return tr("No kDrive found (error %1).<br>"
-                                 "Log in to your kDrive account and add a kDrive.")
+                      "Log in to your kDrive account and add a kDrive.")
                 .arg(err);
             break;
         case ExitCodeOk:

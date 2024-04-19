@@ -225,7 +225,7 @@ ExitCode GuiRequests::setRootPinState(int syncDbId, PinState pinState) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getAproximateLogSize(int64_t &size) {
+ExitCode GuiRequests::getAproximateLogSize(int &size) {
     QByteArray results;
     if (!CommClient::instance()->execute(REQUEST_NUM_GET_LOG_ESTIMATED_SIZE, QByteArray(), results)) {
         return ExitCodeSystemError;

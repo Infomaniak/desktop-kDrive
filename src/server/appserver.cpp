@@ -691,7 +691,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         case REQUEST_NUM_GET_LOG_ESTIMATED_SIZE: {
             // Get estimated size of the log file
             IoError ioError = IoErrorSuccess;
-            int64_t size = Log::instance()->getLogEstimatedSize(ioError);
+            int size = Log::instance()->getLogEstimatedSize(ioError);
             if (size >= 0) {
                 resultStream << ExitCodeOk;
                 resultStream << size;

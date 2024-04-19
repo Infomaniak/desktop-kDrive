@@ -115,7 +115,7 @@ Log::Log(const log4cplus::tstring &filePath) {
     LOG_INFO(_logger, "Logger initialization done");
 }
 
-int64_t Log::getLogEstimatedSize(IoError &ioError) {
+int Log::getLogEstimatedSize(IoError &ioError) {
     SyncPath logPath;
 
     IoHelper::logDirectoryPath(logPath, ioError);
@@ -134,7 +134,7 @@ int64_t Log::getLogEstimatedSize(IoError &ioError) {
     }
 
     // Estimate the size of the log files
-    int64_t size = 0;
+    int size = 0;
     DirectoryEntry entry;
     bool retried = true;
     ioError = IoErrorSuccess;

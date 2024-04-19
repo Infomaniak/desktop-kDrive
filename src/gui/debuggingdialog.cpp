@@ -291,7 +291,7 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
 }
 
 void DebuggingDialog::onSendLogButtonTriggered() {
-    int64_t size;
+    int size;
     ExitCode exitCode = GuiRequests::getAproximateLogSize(size);
     if (exitCode != ExitCode::ExitCodeOk) {
         onSendLogConfirmed(true);  // Send all logs by default if we can't get the aproximate size
