@@ -87,6 +87,7 @@ endif()
 # Link
 target_link_libraries(${libcommonserver_NAME}
     ${libcommon_NAME}
+    ${libparms_NAME}
     ${SQLITE3_LIBRARIES}
     Poco::Foundation Poco::Net Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto
