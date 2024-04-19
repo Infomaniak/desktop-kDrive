@@ -25,6 +25,7 @@ ELSEIF(WIN32)
         "C:/Program Files (x86)/log4cplus"
         "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/xxHash"
+        "C:/Program Files (x86)/libzip"
     )
 ENDIF()
 
