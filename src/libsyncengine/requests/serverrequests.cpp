@@ -874,18 +874,22 @@ ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
     return ExitCodeOk;
 }
 
-ExitCode ServerRequests::generateLogDirectory(SyncPath &logDirectoryPath, bool sendAllLogs,
+ExitCode ServerRequests::generateLogDirectory(SyncPath &logDirectoryPath, bool sendAllLogs, ExitCause &exitCause,
                                               std::function<void(int64_t)> progressCallback) {
     // Generate archive name: <drive id 1>-<drive id 2>...-<drive id N>-yyyyMMdd-HHmmss.zip
     std::string archiveName;
     std::vector<Drive> driveList;
+    exitCause = ExitCauseUnknown;
 
     if (!ParmsDb::instance()->selectAllDrives(driveList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
+        exitCause = ExitCauseDbAccessError;
         return ExitCodeDbError;
     }
+
     if (driveList.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
+        exitCause = ExitCauseUnknown;
         return ExitCodeNoDriveFound;  // Currently, we can't send logs if no drive is found
     }
 
@@ -906,17 +910,26 @@ ExitCode ServerRequests::generateLogDirectory(SyncPath &logDirectoryPath, bool s
     if (!IoHelper::createDirectory(tempFolder, ioError) && ioError != IoErrorDirectoryExists) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::createDirectory : " << Utility::formatIoError(tempFolder, ioError).c_str());
+        if (ioError == IoErrorDiskFull) {
+            exitCause = ExitCauseNotEnoughDiskSpace;
+        } else {
+            exitCause = ExitCauseUnknown;
+        }
         return ExitCodeSystemError;
     }
-    if (!Log::instance()->generateLogsSupportArchive(sendAllLogs, tempFolder, archiveName, ioError, progressCallback)) {
+
+    ExitCode exitCode =
+        Log::instance()->generateLogsSupportArchive(sendAllLogs, tempFolder, archiveName, exitCause, progressCallback);
+    if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error in Log::generateLogsSupportArchive");
         IoHelper::deleteDirectory(tempFolder, ioError);
-        return ExitCodeSystemError;
+        return exitCode;
     }
 
     logDirectoryPath = tempFolder.string() + "/" + archiveName;
 
     LOG_INFO(Log::instance()->getLogger(), "Log archive for support saved at: " << logDirectoryPath.c_str());
+    exitCause = ExitCauseUnknown;
     return ExitCodeOk;
 }
 
@@ -1006,17 +1019,17 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCodeOk;
 }
 
-ExitCode ServerRequests::sendLogToSupport(bool sendAllLogs, SyncPath &archivePath,
+ExitCode ServerRequests::sendLogToSupport(bool sendAllLogs, SyncPath &archivePath, ExitCause &exitCause,
                                           std::function<void(char, int64_t)> progressCallback) {
     SyncPath logArchivePath;
     bool progressMonitoring = progressCallback != nullptr;
-
+    exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;
     if (progressMonitoring) {
-        exitCode = generateLogDirectory(logArchivePath, sendAllLogs,
+        exitCode = generateLogDirectory(logArchivePath, sendAllLogs, exitCause,
                                         [progressCallback](int64_t progress) { progressCallback('A', progress); });
     } else {
-        exitCode = generateLogDirectory(logArchivePath, sendAllLogs);
+        exitCode = generateLogDirectory(logArchivePath, sendAllLogs, exitCause);
     }
 
     if (exitCode != ExitCodeOk) {
@@ -1033,7 +1046,7 @@ ExitCode ServerRequests::sendLogToSupport(bool sendAllLogs, SyncPath &archivePat
     for (int i = 0; i < 100; i += 1) {
         if (progressMonitoring) {
             progressCallback('U', i);  // Uploading
-            //std::this_thread::sleep_for(std::chrono::milliseconds(50));
+            // std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     }
 

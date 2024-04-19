@@ -675,17 +675,17 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 };
 
                 SyncPath archivePath;
-                ExitCode exitCode = ServerRequests::sendLogToSupport(sendAllLogs, archivePath, progressFunc);
+                ExitCause exitCause = ExitCauseUnknown;
+                ExitCode exitCode = ServerRequests::sendLogToSupport(sendAllLogs, archivePath, exitCause, progressFunc);
 
                 if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode);
-                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
+                    LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);
+                    addError(Error(ERRID, exitCode, exitCause));
                 }
 
                 sendLogUploadCompleted(exitCode == ExitCodeOk, archivePath);
             });
             LOG_WARN(_logger, "Send log to support requested");
-
             break;
         }
         case REQUEST_NUM_GET_LOG_ESTIMATED_SIZE: {

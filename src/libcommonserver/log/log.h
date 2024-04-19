@@ -175,16 +175,16 @@ class COMMONSERVER_EXPORT Log {
          * \param ioError The error object to be filled in case of error.
          * \return True if the archive was generated successfully, false otherwise.
          */
-        bool generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const SyncPath &archiveName,
-                                        IoError &ioError, std::function<void(int64_t)> progressCallback = nullptr);
+        ExitCode generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const SyncPath &archiveName,
+                                            ExitCause &exitCause, std::function<void(int64_t)> progressCallback = nullptr);
 
     private:
         Log(const log4cplus::tstring &filePath);
-        bool copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, IoError &ioError);
-        bool copyParmsDbTo(const SyncPath &outputPath, IoError &ioError);
-        bool compressLogs(const SyncPath &directoryToCompress, IoError &ioError,
+        ExitCode copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, ExitCause &exitCause);
+        ExitCode copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause);
+        ExitCode compressLogs(const SyncPath &directoryToCompress, ExitCause &exitCause,
                           std::function<void(int64_t)> progressCallback = nullptr);
-        bool generateUserDescriptionFile(const SyncPath &outputPath, IoError &ioError); 
+        ExitCode generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause); 
 
         static std::shared_ptr<Log> _instance;
         log4cplus::Logger _logger;

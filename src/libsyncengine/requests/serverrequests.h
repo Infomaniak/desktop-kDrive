@@ -139,7 +139,8 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static bool isDisplayableError(const Error &error);
         static bool isAutoResolvedError(const Error &error);
         static ExitCode getUserFromSyncDbId(int syncDbId, User &user);
-        static ExitCode sendLogToSupport(bool sendAllLogs, SyncPath &archivePath, std::function<void(char, int64_t)> progressCallback = nullptr);
+        static ExitCode sendLogToSupport(bool sendAllLogs, SyncPath &archivePath, ExitCause &exitCause,
+                                         std::function<void(char, int64_t)> progressCallback = nullptr);
 
     private:
         static ExitCode processRequestTokenFinished(const Login &login, UserInfo &userInfo, bool &userCreated);
@@ -155,7 +156,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static ExitCode createDrive(const Drive &drive, DriveInfo &driveInfo);
         static ExitCode createSync(const Sync &sync, SyncInfo &syncInfo);
 
-        static ExitCode generateLogDirectory(SyncPath &logDirectoryPath, bool sendAllLogs,
+        static ExitCode generateLogDirectory(SyncPath &logDirectoryPath, bool sendAllLogs, ExitCause &exitCause,
                                              std::function<void(int64_t)> progressCallback = nullptr);
 };
 
