@@ -177,13 +177,6 @@ int main(int argc, char **argv) {
     }
 #endif
 
-    // If handleStartup returns true, main() needs to terminate here, e.g. because the updater is triggered
-    KDC::UpdaterServer *updater = KDC::UpdaterServer::instance();
-    if (updater && updater->handleStartup()) {
-        LOG_INFO(KDC::Log::instance()->getLogger(), "Update in progress, exiting...");
-        return 1;
-    }
-
     // If the application is already running, notify it.
     if (appPtr->isRunning()) {
         LOG_INFO(KDC::Log::instance()->getLogger(), "Server already running");
@@ -194,17 +187,24 @@ int main(int argc, char **argv) {
         }
 
         if (appPtr->settingsAsked()) {
-            appPtr->showSettings();
+            appPtr->sendShowSettingsMsg();
             return 0;
         }
 
         if (appPtr->synthesisAsked()) {
-            appPtr->showSynthesis();
+            appPtr->sendShowSynthesisMsg();
             return 0;
         }
 
         appPtr->showAlreadyRunning();
         return 0;
+    }
+
+    // If handleStartup returns true, main() needs to terminate here, e.g. because the updater is triggered
+    KDC::UpdaterServer *updater = KDC::UpdaterServer::instance();
+    if (updater && updater->handleStartup()) {
+        LOG_INFO(KDC::Log::instance()->getLogger(), "Update in progress, exiting...");
+        return 1;
     }
 
     // Make sure everything flushes

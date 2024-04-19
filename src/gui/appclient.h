@@ -137,7 +137,6 @@ class AppClient : public SharedTools::QtSingleApplication {
         QScopedPointer<UpdaterClient> _updaterClient;
 
     private slots:
-        void onParseMessage(const QString &, QObject *);
         void onUseMonoIconsChanged(bool);
         void onCleanup();
         void onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params);

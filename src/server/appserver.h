@@ -90,8 +90,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void showHelp();
         void showVersion();
         void clearSyncNodes();
-        void showSettings();
-        void showSynthesis();
+        void sendShowSettingsMsg();
+        void sendShowSynthesisMsg();
         void clearKeychainKeys();
         void showAlreadyRunning();
 
@@ -231,6 +231,9 @@ class AppServer : public SharedTools::QtSingleApplication {
                                                  SyncFileInstruction status, int count);
         static void sendShowNotification(const QString &title, const QString &message);
 
+        void showSettings();
+        void showSynthesis();
+
     private slots:
         void onLoadInfo();
         void onUpdateSyncsProgress();
@@ -241,6 +244,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
         void onRestartClientReceived();
+        void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
 };
 
 
