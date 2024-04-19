@@ -38,6 +38,10 @@ jobs:
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
+  test-common:
+    runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    
+    steps:
       - name: Run common tests
         run: ./build-windows/install/bin/kDrive_test_common.exe
 
