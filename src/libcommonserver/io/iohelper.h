@@ -258,6 +258,17 @@ struct IoHelper {
         // TODO: docstring and unit tests
         static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept;
 
+        //! Set the rights of the item indicated by `path`.
+        /*!
+         \param path is the file system path of the item.
+         \param read is a boolean indicating whether the item should be readable.
+         \param write is a boolean indicating whether the item should be writable.
+         \param exec is a boolean indicating whether the item should be executable.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
+
     protected:
         // These functions default to the std::filesystem functions.
         // They can be modified in tests.
