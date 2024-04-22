@@ -255,7 +255,15 @@ struct IoHelper {
          */
         static bool checkIfFileIsDehydrated(const SyncPath &path, bool &isDehydrated, IoError &ioError) noexcept;
 
-        // TODO: docstring and unit tests
+        //! Get the rights of the item indicated by `path`.
+        /*! 
+         \param path is the file system path of the item.
+         \param read is a boolean indicating whether the item is readable.
+         \param write is a boolean indicating whether the item is writable.
+         \param exec is a boolean indicating whether the item is executable.
+         \param exists is a boolean indicating whether the item exists.
+         \return true if no unexpected error occurred, false otherwise.
+         */
         static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept;
 
         //! Set the rights of the item indicated by `path`.
