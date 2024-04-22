@@ -81,6 +81,7 @@ void UpdateTreeWorker::execute() {
     }
 
     integrityCheck();
+    drawUpdateTree();
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
 
@@ -134,22 +135,20 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
         auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
         if (currentNodeIt != _updateTree->nodes().end()) {
             // Node exists
-            std::shared_ptr<Node> testNode = currentNodeIt->second;
-
             currentNodeIt->second->insertChangeEvent(OperationTypeDelete);
             currentNodeIt->second->setCreatedAt(deleteOp->createdAt());
             currentNodeIt->second->setLastModified(deleteOp->lastModified());
             currentNodeIt->second->setSize(deleteOp->size());
             currentNodeIt->second->setIsTmp(false);
             if (ParametersCache::instance()->parameters().extendedLog()) {
-                LOG_SYNCPAL_DEBUG(
+                LOGW_SYNCPAL_DEBUG(
                     _logger,
                     Utility::s2ws(Utility::side2Str(_side)).c_str()
-                        << L" update tree: Node " << SyncName2WStr(currentNodeIt->second->name()).c_str() << L" (node ID: "
+                        << L" update tree: Node '" << SyncName2WStr(currentNodeIt->second->name()).c_str() << L"' (node ID: '"
                         << Utility::s2ws(currentNodeIt->second->id().has_value() ? *currentNodeIt->second->id() : NodeId())
                                .c_str()
-                        << L", DB ID: " << (currentNodeIt->second->idb().has_value() ? *currentNodeIt->second->idb() : -1)
-                        << L") updated. Operation DELETE inserted in change events.");
+                        << L"', DB ID: '" << (currentNodeIt->second->idb().has_value() ? *currentNodeIt->second->idb() : -1)
+                        << L"') updated. Operation DELETE inserted in change events.");
             }
         } else {
             // Look for parentNodeId in db
@@ -206,12 +205,12 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                 newNode->setIsTmp(false);
                 _updateTree->nodes()[deleteOp->nodeId()] = newNode;
                 if (ParametersCache::instance()->parameters().extendedLog()) {
-                    LOG_SYNCPAL_DEBUG(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                                   << L" update tree: Node " << SyncName2WStr(newNode->name()).c_str()
-                                                   << L" (node ID: "
+                    LOGW_SYNCPAL_DEBUG(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
+                                                   << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str()
+                                                   << L"' (node ID: '"
                                                    << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
-                                                   << L", DB ID: " << (newNode->idb().has_value() ? *newNode->idb() : -1)
-                                                   << L") updated. Operation DELETE inserted in change events.");
+                                                   << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1)
+                                                   << L"') updated. Operation DELETE inserted in change events.");
                 }
             } else {
                 // create node
@@ -227,13 +226,13 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                 parentNode->insertChildren(newNode);
                 _updateTree->nodes()[deleteOp->nodeId()] = newNode;
                 if (ParametersCache::instance()->parameters().extendedLog()) {
-                    LOG_SYNCPAL_DEBUG(
+                    LOGW_SYNCPAL_DEBUG(
                         _logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                     << L" update tree: Node " << SyncName2WStr(newNode->name()).c_str() << L" (node ID: "
+                                     << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
                                      << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
-                                     << L", DB ID: " << (newNode->idb().has_value() ? *newNode->idb() : -1) << L", parent ID: "
+                                     << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
                                      << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : NodeId()).c_str()
-                                     << L") inserted. Operation DELETE inserted in change events.");
+                                     << L"') inserted. Operation DELETE inserted in change events.");
                 }
             }
         }
@@ -348,12 +347,12 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             }
 
             if (ParametersCache::instance()->parameters().extendedLog()) {
-                LOG_SYNCPAL_DEBUG(_logger,
+                LOGW_SYNCPAL_DEBUG(_logger,
                                   Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                      << L" update tree: Node " << SyncName2WStr(currentNode->name()).c_str() << L" (node ID: "
+                                      << L" update tree: Node '" << SyncName2WStr(currentNode->name()).c_str() << L"' (node ID: '"
                                       << Utility::s2ws(currentNode->id().has_value() ? *currentNode->id() : NodeId()).c_str()
-                                      << L", DB ID: " << (currentNode->idb().has_value() ? *currentNode->idb() : -1)
-                                      << L") updated. Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
+                                      << L"', DB ID: '" << (currentNode->idb().has_value() ? *currentNode->idb() : -1)
+                                      << L"') updated. Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
                                       << L" inserted in change events.");
             }
         } else {
@@ -397,12 +396,12 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
                 _updateTree->nodes()[op->nodeId()] = newNode;
                 if (ParametersCache::instance()->parameters().extendedLog()) {
-                    LOG_SYNCPAL_DEBUG(_logger,
+                    LOGW_SYNCPAL_DEBUG(_logger,
                                       Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                          << L" update tree: Node " << SyncName2WStr(newNode->name()).c_str() << L" (node ID: "
+                                          << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
                                           << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
-                                          << L", DB ID: " << (newNode->idb().has_value() ? *newNode->idb() : -1)
-                                          << L") updated. Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
+                                          << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1)
+                                          << L"') updated. Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
                                           << L" inserted in change events.");
                 }
             } else {
@@ -436,13 +435,13 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 parentNode->insertChildren(newNode);
                 _updateTree->nodes()[op->nodeId()] = newNode;
                 if (ParametersCache::instance()->parameters().extendedLog()) {
-                    LOG_SYNCPAL_DEBUG(
+                    LOGW_SYNCPAL_DEBUG(
                         _logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                     << L" update tree: Node " << SyncName2WStr(newNode->name()).c_str() << L" (node ID: "
+                                     << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
                                      << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
-                                     << L", DB ID: " << (newNode->idb().has_value() ? *newNode->idb() : -1) << L", parent ID: "
+                                     << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
                                      << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : NodeId()).c_str()
-                                     << L") inserted. Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
+                                     << L"') inserted. Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
                                      << L" inserted in change events.");
                 }
             }
@@ -488,12 +487,12 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
         currentNode->setIsTmp(false);
         _updateTree->nodes()[createOp->nodeId()] = currentNode;
         if (ParametersCache::instance()->parameters().extendedLog()) {
-            LOG_SYNCPAL_DEBUG(
+            LOGW_SYNCPAL_DEBUG(
                 _logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                             << L" update tree: Node " << SyncName2WStr(currentNode->name()).c_str() << L" (node ID: "
+                             << L" update tree: Node '" << SyncName2WStr(currentNode->name()).c_str() << L"' (node ID: '"
                              << Utility::s2ws(currentNode->id().has_value() ? *currentNode->id() : std::string()).c_str()
-                             << L", DB ID: " << (currentNode->idb().has_value() ? *currentNode->idb() : -1)
-                             << L") inserted. Operation " << Utility::s2ws(Utility::opType2Str(createOp->operationType())).c_str()
+                             << L"', DB ID: '" << (currentNode->idb().has_value() ? *currentNode->idb() : -1)
+                             << L"') inserted. Operation " << Utility::s2ws(Utility::opType2Str(createOp->operationType())).c_str()
                              << L" inserted in change events.");
         }
     }
@@ -531,13 +530,13 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 
                 _updateTree->nodes()[operation->nodeId()] = newNode;
                 if (ParametersCache::instance()->parameters().extendedLog()) {
-                    LOG_SYNCPAL_DEBUG(
+                    LOGW_SYNCPAL_DEBUG(
                         _logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                     << L" update tree: Node " << SyncName2WStr(newNode->name()).c_str() << L" (node ID: "
+                                     << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
                                      << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str()
-                                     << L", DB ID: " << (newNode->idb().has_value() ? *newNode->idb() : -1) << L", parent ID: "
+                                     << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
                                      << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : "-1").c_str()
-                                     << L") updated. Operation "
+                                     << L"') updated. Operation "
                                      << Utility::s2ws(Utility::opType2Str(operation->operationType())).c_str()
                                      << L" inserted in change events.");
                 }
@@ -558,13 +557,13 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
         parentNode->insertChildren(newNode);
         _updateTree->nodes()[operation->nodeId()] = newNode;
         if (ParametersCache::instance()->parameters().extendedLog()) {
-            LOG_SYNCPAL_DEBUG(
+            LOGW_SYNCPAL_DEBUG(
                 _logger,
                 Utility::s2ws(Utility::side2Str(_side)).c_str()
-                    << L" update tree: Node " << SyncName2WStr(newNode->name()).c_str() << L" (node ID: "
-                    << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : "").c_str() << L", DB ID: "
-                    << (newNode->idb().has_value() ? *newNode->idb() : -1) << L", parent ID: "
-                    << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : "-1").c_str() << L") inserted. Operation "
+                    << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                    << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : "").c_str() << L"', DB ID: '"
+                    << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
+                    << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : "-1").c_str() << L"') inserted. Operation "
                     << Utility::s2ws(Utility::opType2Str(operation->operationType())).c_str() << L" inserted in change events.");
         }
     }
@@ -607,12 +606,12 @@ ExitCode UpdateTreeWorker::step7EditFile() {
 
             _updateTree->nodes()[editOp->nodeId()] = newNode;
             if (ParametersCache::instance()->parameters().extendedLog()) {
-                LOG_SYNCPAL_DEBUG(
+                LOGW_SYNCPAL_DEBUG(
                     _logger,
                     Utility::s2ws(Utility::side2Str(_side)).c_str()
-                        << L" update tree: Node " << SyncName2WStr(newNode->name()).c_str() << L" (node ID: "
-                        << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str() << L", DB ID: "
-                        << (newNode->idb().has_value() ? *newNode->idb() : -1) << L") updated. Operation "
+                        << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                        << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str() << L"', DB ID: '"
+                        << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"') updated. Operation "
                         << Utility::s2ws(Utility::opType2Str(editOp->operationType())).c_str() << L" inserted in change events.");
             }
             continue;
@@ -642,13 +641,13 @@ ExitCode UpdateTreeWorker::step7EditFile() {
         parentNode->insertChildren(newNode);
         _updateTree->nodes()[editOp->nodeId()] = newNode;
         if (ParametersCache::instance()->parameters().extendedLog()) {
-            LOG_SYNCPAL_DEBUG(
+            LOGW_SYNCPAL_DEBUG(
                 _logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                             << L" update tree: Node " << SyncName2WStr(newNode->name()).c_str() << L" (node ID: "
-                             << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str() << L", DB ID: "
-                             << (newNode->idb().has_value() ? *newNode->idb() : -1) << L", parent ID: "
+                             << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
+                             << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : std::string()).c_str() << L"', DB ID: '"
+                             << (newNode->idb().has_value() ? *newNode->idb() : -1) << L"', parent ID: '"
                              << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
-                             << L") inserted. editOp " << Utility::s2ws(Utility::opType2Str(editOp->operationType())).c_str()
+                             << L"') inserted. editOp " << Utility::s2ws(Utility::opType2Str(editOp->operationType())).c_str()
                              << L" inserted in change events.");
         }
     }
@@ -762,13 +761,13 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
             parentNode->insertChildren(n);
             _updateTree->nodes()[newNodeId] = n;
             if (ParametersCache::instance()->parameters().extendedLog()) {
-                LOG_SYNCPAL_DEBUG(_logger,
+                LOGW_SYNCPAL_DEBUG(_logger,
                                   Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                      << L" update tree: Node " << SyncName2WStr(n->name()).c_str() << L" (node ID: "
-                                      << Utility::s2ws(n->id().has_value() ? *n->id() : std::string()).c_str() << L", DB ID: "
-                                      << (n->idb().has_value() ? *n->idb() : 1) << L", parent ID: "
+                                      << L" update tree: Node '" << SyncName2WStr(n->name()).c_str() << L"' (node ID: '"
+                                      << Utility::s2ws(n->id().has_value() ? *n->id() : std::string()).c_str() << L"', DB ID: '"
+                                      << (n->idb().has_value() ? *n->idb() : 1) << L"', parent ID: '"
                                       << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
-                                      << L") inserted. Without change events.");
+                                      << L"') inserted. Without change events.");
             }
         }
     }
@@ -847,14 +846,14 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             parentNode->insertChildren(currentNode);
 
             if (ParametersCache::instance()->parameters().extendedLog()) {
-                LOG_SYNCPAL_DEBUG(
+                LOGW_SYNCPAL_DEBUG(
                     _logger,
                     Utility::s2ws(Utility::side2Str(_side)).c_str()
-                        << L" update tree: Node " << SyncName2WStr(currentNode->name()).c_str() << L" (node ID: "
+                        << L" update tree: Node '" << SyncName2WStr(currentNode->name()).c_str() << L"' (node ID: '"
                         << Utility::s2ws(currentNode->id().has_value() ? *currentNode->id() : std::string()).c_str()
-                        << L", DB ID: " << (currentNode->idb().has_value() ? *currentNode->idb() : -1) << L", parent ID: "
+                        << L"', DB ID: '" << (currentNode->idb().has_value() ? *currentNode->idb() : -1) << L"', parent ID: '"
                         << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
-                        << L") inserted. Operation " << Utility::s2ws(Utility::opType2Str(moveOp->operationType())).c_str()
+                        << L"') inserted. Operation " << Utility::s2ws(Utility::opType2Str(moveOp->operationType())).c_str()
                         << L" inserted in change events.");
             }
         } else {
@@ -898,13 +897,13 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             parentNode->insertChildren(n);
             _updateTree->nodes()[*n->id()] = n;
             if (ParametersCache::instance()->parameters().extendedLog()) {
-                LOG_SYNCPAL_DEBUG(_logger,
+                LOGW_SYNCPAL_DEBUG(_logger,
                                   Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                      << L" update tree: Node " << SyncName2WStr(n->name()).c_str() << L" (node ID: "
-                                      << Utility::s2ws(n->id().has_value() ? *n->id() : std::string()).c_str() << L", DB ID: "
-                                      << (n->idb().has_value() ? *n->idb() : -1) << L", parent ID: "
+                                      << L" update tree: Node '" << SyncName2WStr(n->name()).c_str() << L"' (node ID: '"
+                                      << Utility::s2ws(n->id().has_value() ? *n->id() : std::string()).c_str() << L"', DB ID: '"
+                                      << (n->idb().has_value() ? *n->idb() : -1) << L"', parent ID: '"
                                       << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : std::string()).c_str()
-                                      << L") inserted. Operation "
+                                      << L"') inserted. Operation "
                                       << Utility::s2ws(Utility::opType2Str(moveOp->operationType())).c_str()
                                       << L" inserted in change events.");
             }
@@ -915,9 +914,19 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
 }
 
 void UpdateTreeWorker::updateNodeId(std::shared_ptr<Node> node, const NodeId &newId) {
+    const NodeId oldId = node->id().has_value() ? *node->id() : "";
+
     node->parentNode()->deleteChildren(node);
     node->setId(newId);
     node->parentNode()->insertChildren(node);
+
+    if (ParametersCache::instance()->parameters().extendedLog()) {
+        LOGW_SYNCPAL_DEBUG(_logger,
+                          Utility::s2ws(Utility::side2Str(_side)).c_str()
+                              << L" update tree: Node ID changed from '" << Utility::s2ws(oldId).c_str()
+                              << L"' to '" << Utility::s2ws(newId).c_str()
+                              << L"' for node '" << SyncName2WStr(node->name()).c_str() << L"'.");
+    }
 }
 
 std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path) {
@@ -967,7 +976,7 @@ void UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
     if (tmpNode->id().has_value() && !realNode->id().has_value()) {
         // TODO: How is this possible?? Tmp node should NEVER have a valid id and real node should ALWAYS have a valid id
         updateNodeId(realNode, tmpNode->id().value());
-        LOG_SYNCPAL_DEBUG(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
+        LOGW_SYNCPAL_DEBUG(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
                                        << L" update tree: Real node ID updated with tmp node ID. Should never happen...");
     }
 
@@ -990,18 +999,45 @@ bool UpdateTreeWorker::integrityCheck() {
     LOGW_SYNCPAL_INFO(_logger, Utility::side2Str(_side).c_str() << L" update tree integrity check started");
     for (const auto &node : _updateTree->nodes()) {
         if (node.second->isTmp() || Utility::startsWith(*node.second->id(), "tmp_")) {
-            LOG_SYNCPAL_WARN(_logger,
+            LOGW_SYNCPAL_WARN(_logger,
                              Utility::s2ws(Utility::side2Str(_side)).c_str()
                                  << L" update tree integrity check failed. A temporary node remains in the update tree: "
-                                 << L" (node ID: "
+                                 << L" (node ID: '"
                                  << Utility::s2ws(node.second->id().has_value() ? *node.second->id() : std::string()).c_str()
-                                 << L", DB ID: " << (node.second->idb().has_value() ? *node.second->idb() : -1) << L", name: "
-                                 << SyncName2WStr(node.second->name()).c_str() << L")");
+                                 << L"', DB ID: '" << (node.second->idb().has_value() ? *node.second->idb() : -1) << L"', name: '"
+                                 << SyncName2WStr(node.second->name()).c_str() << L"')");
             return false;
         }
     }
+
     LOGW_SYNCPAL_INFO(_logger, Utility::side2Str(_side).c_str() << L" update tree integrity check finished");
     return true;
+}
+
+void UpdateTreeWorker::drawUpdateTree() {
+    SyncName treeStr;
+    drawUpdateTreeRow(_updateTree->rootNode(), treeStr);
+    LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
+                                   << L" update tree:\n"
+                                   << SyncName2WStr(treeStr).c_str());
+}
+
+void UpdateTreeWorker::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth /*= 0*/) {
+    for (int i = 0; i < depth; i++) {
+        treeStr += " ";
+    }
+    treeStr += "'" + node->name() + "'";
+    treeStr += "[";
+    treeStr += *node->id();
+    treeStr += " / ";
+    treeStr += Utility::opType2Str((OperationType)node->changeEvents());
+    treeStr += "]";
+    treeStr += "\n";
+
+    depth++;
+    for (const auto child : node->children()) {
+        drawUpdateTreeRow(child.second, treeStr, depth);
+    }
 }
 
 ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &newPath) {
@@ -1013,7 +1049,7 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
         pathTmp = pathTmp.parent_path();
     }
 
-    // Vector Id
+    // Vector ID
     SyncPath tmpPath;
     for (std::vector<std::pair<SyncName, NodeId>>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         tmpPath.append(nameIt->first);
@@ -1086,8 +1122,8 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
             }
             if (!found) {
                 LOGW_SYNCPAL_WARN(_logger, L"Node not found in DB for path = "
-                                               << Path2WStr(dbPath).c_str() << L" (Node name: "
-                                               << SyncName2WStr(node->name()).c_str() << L") on side"
+                                               << Path2WStr(dbPath).c_str() << L" (Node name: '"
+                                               << SyncName2WStr(node->name()).c_str() << L"') on side"
                                                << Utility::s2ws(Utility::side2Str(_side)).c_str());
                 return ExitCodeDataError;
             }
@@ -1095,6 +1131,8 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve ID for node= " << SyncName2WStr(node->name()).c_str());
                 return ExitCodeDataError;
             }
+
+
             updateNodeId(node, id.value());
 
             DbNodeId dbId;
@@ -1104,25 +1142,58 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
             }
             if (!found) {
                 LOGW_SYNCPAL_WARN(_logger, L"Node not found for ID = "
-                                               << Utility::s2ws(*id).c_str() << L" (Node name: "
-                                               << SyncName2WStr(node->name()).c_str() << L", node valid name: "
-                                               << SyncName2WStr(node->validLocalName()).c_str() << L") on side"
+                                               << Utility::s2ws(*id).c_str() << L" (Node name: '"
+                                               << SyncName2WStr(node->name()).c_str() << L"', node valid name: '"
+                                               << SyncName2WStr(node->validLocalName()).c_str() << L"') on side"
                                                << Utility::s2ws(Utility::side2Str(_side)).c_str());
                 return ExitCodeDataError;
             }
             node->setIdb(dbId);
             node->setIsTmp(false);
 
+
+            const auto &prevNode = _updateTree->nodes()[*id];
+            if (prevNode) {
+                // Update children list
+                for (auto child : prevNode->children()) {
+                    node->insertChildren(child.second);
+                    child.second->setParentNode(node);
+                    LOGW_SYNCPAL_DEBUG(
+                        _logger,
+                        Utility::s2ws(Utility::side2Str(_side)).c_str()
+                            << L" update tree: Node '" << SyncName2WStr(child.second->name()).c_str()
+                            << L"' (node ID: '"
+                            << Utility::s2ws((child.second->id().has_value() ? *child.second->id() : std::string())).c_str()
+                            << L"') inserted in children list of node '" << SyncName2WStr(node->name()).c_str()
+                            << L"' (node ID: '"
+                            << Utility::s2ws((node->id().has_value() ? *node->id() : std::string())).c_str()
+                            << L"')");
+                }
+
+                // Update events
+                if (node->changeEvents() != prevNode->changeEvents()) {
+                    node->setChangeEvents(prevNode->changeEvents());
+                    LOGW_SYNCPAL_DEBUG(
+                        _logger,
+                        Utility::s2ws(Utility::side2Str(_side)).c_str()
+                            << L" update tree: Changed events to '" << prevNode->changeEvents()
+                            << "' for node '" << SyncName2WStr(node->name()).c_str()
+                            << L"' (node ID: '"
+                            << Utility::s2ws((node->id().has_value() ? *node->id() : std::string())).c_str()
+                            << L"')");
+                }
+            }
+
             _updateTree->nodes()[*id] = node;
             if (ParametersCache::instance()->parameters().extendedLog()) {
-                LOG_SYNCPAL_DEBUG(
+                LOGW_SYNCPAL_DEBUG(
                     _logger,
                     Utility::s2ws(Utility::side2Str(_side)).c_str()
-                        << L" update tree: Node " << SyncName2WStr(node->name()).c_str() << L" (node ID: "
-                        << Utility::s2ws((node->id().has_value() ? *node->id() : std::string())).c_str() << L", DB ID: "
-                        << (node->idb().has_value() ? *node->idb() : -1) << L", parent ID: "
+                        << L" update tree: Node '" << SyncName2WStr(node->name()).c_str() << L"' (node ID: '"
+                        << Utility::s2ws((node->id().has_value() ? *node->id() : std::string())).c_str() << L"', DB ID: '"
+                        << (node->idb().has_value() ? *node->idb() : -1) << L"', parent ID: '"
                         << Utility::s2ws(node->parentNode()->id().has_value() ? *node->parentNode()->id() : std::string()).c_str()
-                        << L") updated. Node updated with DB");
+                        << L"') updated. Node updated with DB");
             }
         }
 

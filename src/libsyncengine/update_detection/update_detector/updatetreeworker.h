@@ -117,6 +117,8 @@ class UpdateTreeWorker : public ISyncWorker {
         void mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
 
         bool integrityCheck();
+        void drawUpdateTree();
+        void drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth = 0);
 
         friend class TestUpdateTreeWorker;
 };
