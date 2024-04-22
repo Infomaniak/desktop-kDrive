@@ -89,7 +89,7 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
 }
 }  // namespace
 
-int IoHelper::_getRightsMethod = 0;
+int IoHelper::_getAndSetRightsMethod = 0;
 
 bool IoHelper::fileExists(const std::error_code &ec) noexcept {
     return (ec.value() != ERROR_FILE_NOT_FOUND) && (ec.value() != ERROR_PATH_NOT_FOUND) && (ec.value() != ERROR_INVALID_DRIVE);
@@ -337,7 +337,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
 
     IoError ioError = IoErrorSuccess;
     for (;;) {
-        switch (_getRightsMethod) {
+        switch (_getAndSetRightsMethod) {
             case 0: {
                 if (Utility::_trustee.ptstrName) {
                     WCHAR szFilePath[MAX_PATH_LENGTH_WIN_LONG];
@@ -397,7 +397,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                 }
 
                 // Try next method
-                IoHelper::_getRightsMethod++;
+                IoHelper::_getAndSetRightsMethod++;
                 Utility::_trustee = {0};
                 LocalFree(Utility::_psid);
                 Utility::_psid = NULL;
@@ -448,6 +448,109 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
 
     return true;
 }
+
+bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
+    ioError = IoErrorSuccess;
+
+    for (;;) {
+        switch (_getAndSetRightsMethod) {
+            case 0: {
+                if (Utility::_trustee.ptstrName) {
+                    std::unique_ptr<PSECURITY_DESCRIPTOR> pSecurityDescriptor;
+                    if (!InitializeSecurityDescriptor(*pSecurityDescriptor, SECURITY_DESCRIPTOR_REVISION)) {
+                        ioError = dWordError2ioError(GetLastError());
+                        LOG_WARN(logger(), L"Error in InitializeSecurityDescriptor - path="
+                                               << Path2WStr(path).c_str() << L" error="
+                                               << IoHelper::ioError2StdString(ioError).c_str());
+                        return _isExpectedError(ioError);
+                    }
+
+                    EXPLICIT_ACCESS ExplicitAccess[1];
+                    ZeroMemory(ExplicitAccess, sizeof(ExplicitAccess));
+
+                    DWORD permission = READ_CONTROL | WRITE_DAC | WRITE_OWNER;  // We need to keep these permissions to be able to
+                                                                                // change the permissions later
+
+                    if (read) permission |= GENERIC_READ;
+                    if (write) permission |= GENERIC_WRITE | DELETE;
+                    if (exec) permission |= GENERIC_EXECUTE;
+
+                    BuildExplicitAccessWithName(&ExplicitAccess[0], Utility::_trustee.ptstrName, permission, SET_ACCESS,
+                                                NO_INHERITANCE);
+
+                    PACL pACL_old = NULL; // Current ACL
+                    PACL pACL_new = NULL; // New ACL
+                    LPCWSTR pathw = Path2WStr(path).c_str();
+
+                    DWORD ValueReturned = GetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL,
+                                                               &pACL_old, NULL, pSecurityDescriptor.get());
+
+                    DWORD result = SetEntriesInAcl(1, ExplicitAccess, pACL_old, &pACL_new);
+
+                    if (result != ERROR_SUCCESS) {
+                        ioError = dWordError2ioError(result);
+                        LOG_WARN(logger(), L"Error in SetEntriesInAcl - path=" << Path2WStr(path).c_str()
+                                                                                << L" error=" << IoHelper::ioError2StdString(ioError).c_str());
+                        return _isExpectedError(ioError);
+                    }
+
+                    if (!IsValidAcl(pACL_new)) {
+                        ioError = IoErrorUnknown;
+                        LOG_WARN(logger(), L"Invalid ACL - path=" << Path2WStr(path).c_str());
+                        return false;  // Invalid ACL, Failed to set permissions.
+                    }
+
+                    result = SetNamedSecurityInfo((LPWSTR)pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, pACL_new,
+                                                  NULL);
+
+                    if (result != ERROR_SUCCESS) {
+                        ioError = dWordError2ioError(result);
+                        LOG_WARN(logger(), L"Error in SetNamedSecurityInfo - path=" << Path2WStr(path).c_str()
+                                                                                     << L" error=" << IoHelper::ioError2StdString(ioError).c_str());
+                        return _isExpectedError(ioError);
+                    }
+
+                    return true;
+                }
+                // Try next method
+                IoHelper::_getAndSetRightsMethod++;
+                Utility::_trustee = {0};
+                LocalFree(Utility::_psid);
+                Utility::_psid = NULL;
+
+                LOG_WARN(logger(), L"Trustee is not initialized, using fallback method");
+                break;
+            }
+            case 1: {
+                // Fallback method only applied read only flag wich is not meaningful on Windows
+                std::filesystem::perms perms = std::filesystem::perms::none;
+                if (read) {
+                    perms |= std::filesystem::perms::owner_read;
+                }
+                if (write) {
+                    perms |= std::filesystem::perms::owner_write;
+                }
+                if (exec) {
+                    perms |= std::filesystem::perms::owner_exec;
+                }
+
+                std::error_code ec;
+                std::filesystem::permissions(path, perms, ec);
+                if (ec.value() != 0) {
+                    ioError = posixError2ioError(ec.value());
+                    return _isExpectedError(ioError);
+                }
+
+                return true;
+
+                break;
+            }
+        }
+    }
+
+    return true;
+}
+
 
 bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError &ioError) noexcept {
     isJunction = false;

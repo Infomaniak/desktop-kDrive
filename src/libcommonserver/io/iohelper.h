@@ -32,7 +32,7 @@ struct IoHelper {
         inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
 
 #ifdef _WIN32
-        static int _getRightsMethod;
+        static int _getAndSetRightsMethod;
 #endif
 
         static IoError stdError2ioError(int error) noexcept;
