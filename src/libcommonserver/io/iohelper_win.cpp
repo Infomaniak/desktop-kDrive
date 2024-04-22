@@ -551,7 +551,6 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
     return true;
 }
 
-
 bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError &ioError) noexcept {
     isJunction = false;
     ioError = IoErrorSuccess;

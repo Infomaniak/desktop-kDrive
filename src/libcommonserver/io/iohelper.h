@@ -302,6 +302,8 @@ struct IoHelper {
 #endif
         static bool _setTargetType(ItemType &itemType) noexcept;
         static bool _checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
+
+        static bool _setRightsUnix(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 };
 
 }  // namespace KDC
