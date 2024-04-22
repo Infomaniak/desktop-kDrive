@@ -1240,7 +1240,7 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
     job->runSynchronously();
 
     if (job->exitCode() == ExitCodeOk && syncOp->conflict().type() != ConflictTypeNone) {
-        // Conflict fixing job finished succesfully
+        // Conflict fixing job finished successfully
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode = nullptr;
         if (!propagateChangeToDbAndTree(syncOp, job, newNode)) {
@@ -2344,7 +2344,7 @@ bool ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
         return false;
     }
 
-    // Remove item (and childs by cascade) from DB
+    // Remove item (and children by cascade) from DB
     bool found = false;
     if (!_syncPal->_syncDb->deleteNode(*node->idb(), found)) {
         LOG_SYNCPAL_WARN(_logger, "Failed to remove node " << *node->idb() << " from DB");

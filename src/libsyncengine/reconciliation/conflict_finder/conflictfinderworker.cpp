@@ -222,7 +222,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
         // remove it from queue
         queue.pop();
 
-        // visit childrens
+        // visit children
         for (auto &childElt : node->children()) {
             auto child = childElt.second;
             if (!visited[child]) {
