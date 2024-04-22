@@ -24,7 +24,7 @@
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"  // QStr2Str
+#include "libcommonserver/utility/utility.h"
 
 #include <iostream>
 #include <unordered_map>
@@ -149,11 +149,11 @@ void VfsWin::stopImpl(bool unregister) {
 }
 
 void VfsWin::dehydrate(const QString &path) {
-    LOGW_DEBUG(logger(), L"dehydrate : " << QStr2WStr(path).c_str());
+    LOGW_DEBUG(logger(), L"dehydrate : " << QStr2Path(path).c_str());
 
     // Dehydrate file
-    if (vfsDehydratePlaceHolder(QStr2WStr(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsDehydratePlaceHolder : " << QStr2WStr(path).c_str());
+    if (vfsDehydratePlaceHolder(QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsDehydratePlaceHolder : " << QStr2Path(path).c_str());
     }
 
     QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
@@ -161,12 +161,12 @@ void VfsWin::dehydrate(const QString &path) {
 }
 
 void VfsWin::hydrate(const QString &path) {
-    LOGW_DEBUG(logger(), L"hydrate : " << QStr2WStr(path).c_str());
+    LOGW_DEBUG(logger(), L"hydrate : " << QStr2Path(path).c_str());
 
     if (vfsHydratePlaceHolder(std::to_wstring(_vfsSetupParams._driveId).c_str(),
                               std::to_wstring(_vfsSetupParams._syncDbId).c_str(),
-                              QStr2WStr(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsHydratePlaceHolder : " << QStr2WStr(path).c_str());
+                              QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsHydratePlaceHolder : " << QStr2Path(path).c_str());
     }
 
     QString relativePath = QStringView(path).mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
@@ -174,11 +174,11 @@ void VfsWin::hydrate(const QString &path) {
 }
 
 void VfsWin::cancelHydrate(const QString &path) {
-    LOGW_DEBUG(logger(), L"cancelHydrate : " << QStr2WStr(path).c_str());
+    LOGW_DEBUG(logger(), L"cancelHydrate : " << QStr2Path(path).c_str());
 
     if (vfsCancelFetch(std::to_wstring(_vfsSetupParams._driveId).c_str(), std::to_wstring(_vfsSetupParams._syncDbId).c_str(),
-                       QStr2WStr(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsCancelFetch : " << QStr2WStr(path).c_str());
+                       QStr2Path(QDir::toNativeSeparators(path)).c_str()) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsCancelFetch : " << QStr2Path(path).c_str());
         return;
     }
 
@@ -187,24 +187,24 @@ void VfsWin::cancelHydrate(const QString &path) {
 }
 
 void VfsWin::exclude(const QString &path) {
-    LOGW_DEBUG(logger(), L"exclude : " << QStr2WStr(path).c_str());
+    LOGW_DEBUG(logger(), L"exclude : " << QStr2Path(path).c_str());
 
-    DWORD dwAttrs = GetFileAttributesW(QStr2WStr(QDir::toNativeSeparators(path)).c_str());
+    DWORD dwAttrs = GetFileAttributesW(QStr2Path(QDir::toNativeSeparators(path)).c_str());
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
-        LOGW_WARN(logger(), L"Error in GetFileAttributesW : " << QStr2WStr(path).c_str() << L" code=" << errorCode);
+        LOGW_WARN(logger(), L"Error in GetFileAttributesW : " << QStr2Path(path).c_str() << L" code=" << errorCode);
         return;
     }
 
-    if (vfsSetPinState(QStr2WStr(QDir::toNativeSeparators(path)).c_str(), VFS_PIN_STATE_EXCLUDED) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsSetPinState : " << QStr2WStr(path).c_str());
+    if (vfsSetPinState(QStr2Path(QDir::toNativeSeparators(path)).c_str(), VFS_PIN_STATE_EXCLUDED) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsSetPinState : " << QStr2Path(path).c_str());
         return;
     }
 }
 
 void VfsWin::setPlaceholderStatus(const QString &path, bool syncOngoing) {
-    if (vfsSetPlaceHolderStatus(QStr2WStr(QDir::toNativeSeparators(path)).c_str(), syncOngoing) != S_OK) {
-        LOGW_WARN(logger(), L"Error in vfsSetPlaceHolderStatus : " << QStr2WStr(path).c_str());
+    if (vfsSetPlaceHolderStatus(QStr2Path(QDir::toNativeSeparators(path)).c_str(), syncOngoing) != S_OK) {
+        LOGW_WARN(logger(), L"Error in vfsSetPlaceHolderStatus : " << QStr2Path(path).c_str());
         return;
     }
 }
@@ -215,10 +215,10 @@ bool VfsWin::isHydrating() const {
 
 bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t modtime, qint64 size, const QByteArray &,
                             QString *) {
-    LOGW_DEBUG(logger(), L"updateMetadata: path=" << QStr2WStr(filePath).c_str() << L" creationTime=" << creationTime
+    LOGW_DEBUG(logger(), L"updateMetadata: path=" << QStr2Path(filePath).c_str() << L" creationTime=" << creationTime
                                                   << L" modtime=" << modtime);
 
-    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Str(filePath));
+    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(filePath));
     bool exists = false;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
@@ -238,9 +238,9 @@ bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t
     OldUtility::UnixTimeToFiletime(modtime, &findData.ftLastWriteTime);
     findData.ftLastAccessTime = findData.ftLastWriteTime;
     OldUtility::UnixTimeToFiletime(creationTime, &findData.ftCreationTime);
-    findData.dwFileAttributes = GetFileAttributesW(QStr2WStr(filePath).c_str());
+    findData.dwFileAttributes = GetFileAttributesW(QStr2Path(filePath).c_str());
 
-    if (vfsUpdatePlaceHolder(QStr2WStr(QDir::toNativeSeparators(filePath)).c_str(), &findData) != S_OK) {
+    if (vfsUpdatePlaceHolder(QStr2Path(QDir::toNativeSeparators(filePath)).c_str(), &findData) != S_OK) {
         LOGW_WARN(logger(), L"Error in vfsUpdatePlaceHolder : " << Utility::formatSyncPath(fullPath).c_str());
     }
 
@@ -299,14 +299,14 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
 }
 
 bool VfsWin::dehydratePlaceholder(const QString &path) {
-    LOGW_DEBUG(logger(), L"dehydratePlaceholder : " << QStr2WStr(path).c_str());
+    LOGW_DEBUG(logger(), L"dehydratePlaceholder : " << QStr2Path(path).c_str());
 
     if (path.isEmpty()) {
         LOG_WARN(logger(), "Empty file!");
         return false;
     }
 
-    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Str(path));
+    SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     bool exists = false;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
@@ -342,7 +342,7 @@ bool VfsWin::dehydratePlaceholder(const QString &path) {
 }
 
 bool VfsWin::convertToPlaceholder(const QString &path, const SyncFileItem &item, bool &needRestart) {
-    LOGW_DEBUG(logger(), L"convertToPlaceholder : " << QStr2WStr(path).c_str());
+    LOGW_DEBUG(logger(), L"convertToPlaceholder : " << QStr2Path(path).c_str());
 
     if (path.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
@@ -448,7 +448,7 @@ void VfsWin::clearFileAttributes(const QString &path) {
 bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled, bool &finished) {
     Q_UNUSED(finished)
 
-    LOGW_DEBUG(logger(), L"updateFetchStatus : " << QStr2WStr(path).c_str());
+    LOGW_DEBUG(logger(), L"updateFetchStatus : " << QStr2Path(path).c_str());
 
     if (tmpPath.isEmpty() || path.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
@@ -555,7 +555,7 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
     }
 
     // Set status
-    LOGW_DEBUG(logger(), L"Setting syncing status to: " << isSyncing << L" for file: " << QStr2WStr(absolutePath).c_str());
+    LOGW_DEBUG(logger(), L"Setting syncing status to: " << isSyncing << L" for file: " << QStr2Path(absolutePath).c_str());
     setPlaceholderStatus(absolutePath, isSyncing);
 
     return true;
@@ -641,10 +641,10 @@ bool VfsWin::status(const QString &filePath, bool &isPlaceholder, bool &isHydrat
 }
 
 bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
-    LOGW_DEBUG(logger(), L"fileStatusChanged : " << QStr2WStr(path).c_str() << L" status = "
+    LOGW_DEBUG(logger(), L"fileStatusChanged : " << QStr2Path(path).c_str() << L" status = "
                                                  << Utility::s2ws(Utility::syncFileStatus2Str(status)).c_str());
 
-    SyncPath fullPath(QStr2Str(path));
+    SyncPath fullPath(QStr2Path(path));
     bool exists = false;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
