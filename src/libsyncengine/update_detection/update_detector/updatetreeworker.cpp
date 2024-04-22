@@ -1015,6 +1015,9 @@ bool UpdateTreeWorker::integrityCheck() {
 }
 
 void UpdateTreeWorker::drawUpdateTree() {
+    static const char *drawUpdateTreeEnv = std::getenv("KDRIVE_DEBUG_DRAW_UPDATETREE");
+    if (!drawUpdateTreeEnv) return;
+
     SyncName treeStr;
     drawUpdateTreeRow(_updateTree->rootNode(), treeStr);
     LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
@@ -1132,7 +1135,6 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 return ExitCodeDataError;
             }
 
-
             updateNodeId(node, id.value());
 
             DbNodeId dbId;
@@ -1150,7 +1152,6 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
             }
             node->setIdb(dbId);
             node->setIsTmp(false);
-
 
             const auto &prevNode = _updateTree->nodes()[*id];
             if (prevNode) {
