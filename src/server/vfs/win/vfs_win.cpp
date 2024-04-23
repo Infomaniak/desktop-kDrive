@@ -476,9 +476,8 @@ bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint
         return false;
     }
 
-    auto updateFct = [=](bool &canceled, bool &error) {
+    auto updateFct = [=](bool &canceled, bool &finished, bool &error) {
         // Update download progress
-        bool finished = false;
         if (vfsUpdateFetchStatus(std::to_wstring(_vfsSetupParams._driveId).c_str(),
                                  std::to_wstring(_vfsSetupParams._syncDbId).c_str(), fullPath.lexically_normal().native().c_str(),
                                  fullTmpPath.lexically_normal().native().c_str(), received, &canceled, &finished) != S_OK) {
@@ -486,15 +485,11 @@ bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint
             error = true;
             return;
         }
-
-        if (finished) {
-            // Do nothing
-        }
     };
 
     // Launch update in a separate thread
     bool error = false;
-    std::thread updateTask(updateFct, std::ref(canceled), std::ref(error));
+    std::thread updateTask(updateFct, std::ref(canceled), std::ref(finished), std::ref(error));
     updateTask.join();
 
     return !error;
