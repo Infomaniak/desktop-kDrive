@@ -155,7 +155,7 @@ void ISyncWorker::setDone(ExitCode code) {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " has finished with code=" << code << " and cause=" << _exitCause);
 
     if (code != ExitCodeOk) {
-        _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, code, _exitCause));  // TODO : we should not have syncpal as attribute just to add an error. The caller should add the error.
+        _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, code, _exitCause));
     }
 
     _isRunning = false;
