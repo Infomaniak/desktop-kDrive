@@ -39,7 +39,7 @@
 #include <shlguid.h>
 #include <strsafe.h>
 #include <AclAPI.h>
-#include <Accctrl.h>
+#include <AccCtrl.h>
 #define SECURITY_WIN32
 #include <security.h>
 
@@ -506,7 +506,7 @@ bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_
     LPCWSTR pathw_c = Path2WStr(path).c_str();
     size_t pathw_len = Path2WStr(path).length();
 
-    std::unique_ptr<WCHAR[]> pathw_ptr(new WCHAR[pathw_len + 1]);
+    std::unique_ptr<WCHAR[]> pathw_ptr = std::make_unique<WCHAR[]>(pathw_len + 1);
     Path2WStr(path).copy(pathw_ptr.get(), pathw_len);
     LPWSTR pathw = pathw_ptr.get();
     pathw[pathw_len] = L'\0';
@@ -547,7 +547,7 @@ bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_
     }
 
     ValueReturned =
-        SetNamedSecurityInfo((LPWSTR)pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
+        SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
         LOG_WARN(logger(), L"Error in SetNamedSecurityInfo - path=" << Path2WStr(path).c_str() << L" error="

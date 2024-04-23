@@ -21,7 +21,7 @@
 #include "libcommon/utility/types.h"
 #include "libcommonserver/log/log.h"
 #ifdef _WIN32
-#include <accctrl.h>
+#include <AccCtrl.h>
 #endif
 
 namespace KDC {
