@@ -504,11 +504,12 @@ bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_
     ExplicitAccess[0].Trustee.ptstrName = Utility::_trustee.ptstrName;
 
     LPCWSTR pathw_c = Path2WStr(path).c_str();
+    size_t pathw_len = Path2WStr(path).length();
 
-    std::unique_ptr<WCHAR[]> pathw_ptr(new WCHAR[wcslen(pathw_c) + 1]);
+    std::unique_ptr<WCHAR[]> pathw_ptr(new WCHAR[pathw_len + 1]);
+    Path2WStr(path).copy(pathw_ptr.get(), pathw_len);
     LPWSTR pathw = pathw_ptr.get();
-    wcscpy(pathw, pathw_c);
-
+    pathw[pathw_len] = L'\0';
 
 
     DWORD ValueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACL_old,
