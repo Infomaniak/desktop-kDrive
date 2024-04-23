@@ -119,7 +119,7 @@ class UpdateTreeWorker : public ISyncWorker {
 
         /**
          * Check that there is no temporary node remaining in the update tree
-         * @return true if no temporary node found
+         * @return true if no temporary node is found
          */
         bool integrityCheck();
 

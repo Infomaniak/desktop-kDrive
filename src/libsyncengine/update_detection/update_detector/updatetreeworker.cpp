@@ -1038,7 +1038,7 @@ void UpdateTreeWorker::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncN
     treeStr += "\n";
 
     depth++;
-    for (const auto& [id, childNode] : node->children()) {
+    for (const auto& [_, childNode] : node->children()) {
         drawUpdateTreeRow(childNode, treeStr, depth);
     }
 }
@@ -1188,8 +1188,8 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
         return ExitCodeDbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found in DB for path = "
-                                       << Path2WStr(dbPath).c_str() << L" (Node name: '"
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found in DB for "
+                                       << Utility::formatSyncPath(dbPath).c_str() << L" (Node name: '"
                                        << SyncName2WStr(tmpNode->name()).c_str() << L"') on side"
                                        << Utility::s2ws(Utility::side2Str(_side)).c_str());
         return ExitCodeDataError;
@@ -1220,7 +1220,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
     const auto &prevNode = _updateTree->nodes()[*id];
     if (prevNode) {
         // Update children list
-        for (const auto& [childId, childNode] : prevNode->children()) {
+        for (const auto& [_, childNode] : prevNode->children()) {
             tmpNode->insertChildren(childNode);
             childNode->setParentNode(tmpNode);
             LOGW_SYNCPAL_DEBUG(
