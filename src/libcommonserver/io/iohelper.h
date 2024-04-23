@@ -20,6 +20,9 @@
 
 #include "libcommon/utility/types.h"
 #include "libcommonserver/log/log.h"
+#ifdef _WIN32
+#include <Accctrl.h>
+#endif
 
 namespace KDC {
 
@@ -256,7 +259,7 @@ struct IoHelper {
         static bool checkIfFileIsDehydrated(const SyncPath &path, bool &isDehydrated, IoError &ioError) noexcept;
 
         //! Get the rights of the item indicated by `path`.
-        /*! 
+        /*!
          \param path is the file system path of the item.
          \param read is a boolean indicating whether the item is readable.
          \param write is a boolean indicating whether the item is writable.
@@ -304,6 +307,11 @@ struct IoHelper {
         static bool _checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
 
         static bool _setRightsUnix(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
+
+#ifdef _WIN32
+        static bool _setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode,
+                                           IoError &ioError) noexcept;
+#endif
 };
 
 }  // namespace KDC
