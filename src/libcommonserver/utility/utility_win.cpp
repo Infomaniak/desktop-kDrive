@@ -46,100 +46,89 @@
 namespace KDC {
 
 static bool initTrusteeWithUserSID() {
-    if (Utility::_psid != NULL) {
-        std::cout << "TestIo::testCheckSetAndGetRights: _pssid is not null" << std::endl;
-        LocalFree(Utility::_psid);
-        Utility::_psid = NULL;
-    }
+    if (Utility::_psid != nullptr) {  // should never happen
+        delete[] Utility::_psid;
+        Utility::_psid = nullptr;
 
+        LOGW_WARN(Log::instance()->getLogger(), "Error in initTrusteeWithUserSID - _pssid is not null");
+        std::cout << "TestIo::testCheckSetAndGetRights: _pssid is not null" << std::endl;
+    }
     Utility::_trustee = {0};
 
-    // Get user name
-    DWORD userNameSize = 0;
-    WCHAR *szUserName = NULL;
-    GetUserNameEx(NameSamCompatible, szUserName, &userNameSize);
-    WORD dwError = GetLastError();
-    if (dwError == ERROR_MORE_DATA) {
-        // Normal case as szUserName is NULL
-        szUserName = (WCHAR *)malloc(userNameSize * sizeof(WCHAR));
-        if (!GetUserNameEx(NameSamCompatible, szUserName, &userNameSize)) {
-            dwError = GetLastError();
-            LOGW_WARN(Log::instance()->getLogger(), "Error in GetUserNameExW - err=" << dwError);
-            free(szUserName);
-            std::cout << "TestIo::testCheckSetAndGetRights: Error in GetUserNameExW - err=" << dwError << std::endl;
-            return false;
-        }
-    } else {
-        LOGW_WARN(Log::instance()->getLogger(), "Error in GetUserNameExW - err=" << dwError);
-        std::cout << "TestIo::testCheckSetAndGetRights: Error in GetUserNameExW - err=" << dwError << std::endl;
-        return false;
-    }
+    // Get SID associated with the current process
+    auto hToken_std = std::make_unique<HANDLE>();
+    PHANDLE hToken = hToken_std.get();
+    if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, hToken)) {
+        DWORD dwError = GetLastError();
+        if (dwError == ERROR_NO_TOKEN) {
+            if (!ImpersonateSelf(SecurityImpersonation)) {
+                dwError = GetLastError();
+                LOGW_WARN(Log::instance()->getLogger(), "Error in ImpersonateSelf - err=" << dwError);
+                std::cout << "TestIo::testCheckSetAndGetRights: Error in ImpersonateSelf - err=" << dwError << std::endl;
+                return false;
+            }
 
-    // Get size of SID and domain
-    Utility::_psid = NULL;
-    DWORD sidsize = 0;
-    DWORD dlen = 0;
-    SID_NAME_USE stype;
-    if (!LookupAccountName(NULL, szUserName, Utility::_psid, &sidsize, NULL, &dlen, &stype)) {
-        dwError = GetLastError();
-        if (dwError == ERROR_INSUFFICIENT_BUFFER) {
-            // Normal case as Utility::_psid is NULL
+            if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, hToken)) {
+                dwError = GetLastError();
+                LOGW_WARN(Log::instance()->getLogger(), "Error in OpenThreadToken - err=" << dwError);
+                std::cout << "TestIo::testCheckSetAndGetRights: Error in OpenThreadToken 1 - err=" << dwError << std::endl;
+                return false;
+            }
         } else {
-            LOGW_WARN(Log::instance()->getLogger(), "Error in LookupAccountNameW 1 - err=" << dwError);
-            Utility::_psid = NULL;
-            std::cout << "TestIo::testCheckSetAndGetRights: Error in LookupAccountNameW 1 - err=" << dwError << " - account name="
-                      << Utility::ws2s(szUserName) << std::endl;
-            free(szUserName);
-
+            LOGW_WARN(Log::instance()->getLogger(), "Error in OpenThreadToken - err=" << dwError);
+            std::cout << "TestIo::testCheckSetAndGetRights: Error in OpenThreadToken 2 - err=" << dwError << std::endl;
             return false;
         }
     }
 
-    // Get SID and domain
-    Utility::_psid = (PSID)LocalAlloc(0, sidsize);
-    if (Utility::_psid == NULL) {
+    DWORD dwLength = 0;
+    GetTokenInformation(*hToken, TokenUser, nullptr, 0, &dwLength);
+    if (dwLength == 0) {
+        DWORD dwError = GetLastError();
+        LOGW_WARN(Log::instance()->getLogger(), "Error in GetTokenInformation 1 - err=" << dwError);
+        std::cout << "TestIo::testCheckSetAndGetRights: Error in GetTokenInformation 1 - err=" << dwError << std::endl;
+        return false;
+    }
+    auto pTokenUser_std = std::make_unique<TOKEN_USER[]>(dwLength);
+    PTOKEN_USER pTokenUser = pTokenUser_std.get();
+    if (pTokenUser == nullptr) {
         LOGW_WARN(Log::instance()->getLogger(), "Memory allocation error");
-        free(szUserName);
         std::cout << "TestIo::testCheckSetAndGetRights: Memory allocation error" << std::endl;
         return false;
     }
 
-    LPTSTR pdomain = (LPTSTR)LocalAlloc(0, dlen * sizeof(WCHAR));
-    if (pdomain == NULL) {
+    if (!GetTokenInformation(*hToken, TokenUser, pTokenUser, dwLength, &dwLength)) {
+        DWORD dwError = GetLastError();
+        LOGW_WARN(Log::instance()->getLogger(), "Error in GetTokenInformation 2 - err=" << dwError);
+        std::cout << "TestIo::testCheckSetAndGetRights: Error in GetTokenInformation 2 - err=" << dwError << std::endl;
+        return false;
+    }
+
+    Utility::_psid = new BYTE[GetLengthSid(pTokenUser->User.Sid)];
+    if (Utility::_psid == nullptr) {
         LOGW_WARN(Log::instance()->getLogger(), "Memory allocation error");
-        free(szUserName);
-        LocalFree(Utility::_psid);
-        Utility::_psid = NULL;
         std::cout << "TestIo::testCheckSetAndGetRights: Memory allocation error" << std::endl;
         return false;
     }
 
-    if (!LookupAccountName(NULL, szUserName, Utility::_psid, &sidsize, pdomain, &dlen, &stype)) {
-        WORD dwError = GetLastError();
-        LOGW_WARN(Log::instance()->getLogger(), "Error in LookupAccountNameW 2 - err=" << dwError);
-        LocalFree(Utility::_psid);
-        Utility::_psid = NULL;
-        LocalFree(pdomain);
-        std::cout << "TestIo::testCheckSetAndGetRights: Error in LookupAccountNameW 2 - err=" << dwError
-                  << " - account name=" << Utility::ws2s(szUserName) << std::endl;
-        free(szUserName);
-
+    if (!CopySid(GetLengthSid(pTokenUser->User.Sid), Utility::_psid, pTokenUser->User.Sid)) {
+        DWORD dwError = GetLastError();
+        LOGW_WARN(Log::instance()->getLogger(), "Error in CopySid - err=" << dwError);
+        std::cout << "TestIo::testCheckSetAndGetRights: Error in CopySid - err=" << dwError << std::endl;
+        delete[] Utility::_psid;
+        Utility::_psid = nullptr;
         return false;
     }
 
-    free(szUserName);
-    LocalFree(pdomain);
-
-    // Build trustee structure
+    // initialize the trustee structure
     BuildTrusteeWithSid(&Utility::_trustee, Utility::_psid);
 
-    // NB: Don't free _psid as it is referenced in _trustee
     std::cout << "TestIo::testCheckSetAndGetRights: trustee set" << std::endl;
     return true;
 }
 
 static bool init_private() {
-    if (Utility::_psid != NULL) {
+    if (Utility::_psid != nullptr) {
         std::cout << "TestIo::testCheckSetAndGetRights: _pssid is not null" << std::endl;
         return false;
     }
@@ -150,8 +139,8 @@ static bool init_private() {
 }
 
 static void free_private() {
-    if (Utility::_psid != NULL) {
-        LocalFree(Utility::_psid);
+    if (Utility::_psid != nullptr) {
+        delete[] Utility::_psid;
         Utility::_psid = NULL;
     }
 }
