@@ -245,6 +245,7 @@ void TestIo::testCheckSetAndGetRights() {
         bool isExecutable = false;
         bool exists = false;
 
+        bool result = IoHelper::setRights(path, true, true , true, ioError);
         CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, exists));
         CPPUNIT_ASSERT(exists && isReadable && isWritable && isExecutable);
         CPPUNIT_ASSERT(IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, exists));
@@ -252,7 +253,7 @@ void TestIo::testCheckSetAndGetRights() {
         CPPUNIT_ASSERT(IoHelper::getRights(subFilePath, isReadable, isWritable, isExecutable, exists));
         CPPUNIT_ASSERT(exists && isReadable && isWritable && isExecutable);
 
-        bool result = IoHelper::setRights(path, true, false, true, ioError);
+        result = IoHelper::setRights(path, true, false, true, ioError);
         result &= ioError == IoErrorSuccess;
         if (!result) {
             IoHelper::setRights(path, true, true, true, ioError);  // Restore the rights for delete
