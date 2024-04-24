@@ -57,12 +57,12 @@ static bool initTrusteeWithUserSID() {
     // Get user name
     DWORD userNameSize = 0;
     WCHAR *szUserName = NULL;
-    GetUserNameExW(NameSamCompatible, szUserName, &userNameSize);
+    GetUserNameEx(NameSamCompatible, szUserName, &userNameSize);
     WORD dwError = GetLastError();
     if (dwError == ERROR_MORE_DATA) {
         // Normal case as szUserName is NULL
         szUserName = (WCHAR *)malloc(userNameSize * sizeof(WCHAR));
-        if (!GetUserNameExW(NameSamCompatible, szUserName, &userNameSize)) {
+        if (!GetUserNameEx(NameSamCompatible, szUserName, &userNameSize)) {
             dwError = GetLastError();
             LOGW_WARN(Log::instance()->getLogger(), "Error in GetUserNameExW - err=" << dwError);
             free(szUserName);
@@ -80,7 +80,7 @@ static bool initTrusteeWithUserSID() {
     DWORD sidsize = 0;
     DWORD dlen = 0;
     SID_NAME_USE stype;
-    if (!LookupAccountNameW(NULL, szUserName, Utility::_psid, &sidsize, NULL, &dlen, &stype)) {
+    if (!LookupAccountName(NULL, szUserName, Utility::_psid, &sidsize, NULL, &dlen, &stype)) {
         dwError = GetLastError();
         if (dwError == ERROR_INSUFFICIENT_BUFFER) {
             // Normal case as Utility::_psid is NULL
@@ -114,7 +114,7 @@ static bool initTrusteeWithUserSID() {
         return false;
     }
 
-    if (!LookupAccountNameW(NULL, szUserName, Utility::_psid, &sidsize, pdomain, &dlen, &stype)) {
+    if (!LookupAccountName(NULL, szUserName, Utility::_psid, &sidsize, pdomain, &dlen, &stype)) {
         WORD dwError = GetLastError();
         LOGW_WARN(Log::instance()->getLogger(), "Error in LookupAccountNameW 2 - err=" << dwError);
         LocalFree(Utility::_psid);
@@ -131,7 +131,7 @@ static bool initTrusteeWithUserSID() {
     LocalFree(pdomain);
 
     // Build trustee structure
-    BuildTrusteeWithSidW(&Utility::_trustee, Utility::_psid);
+    BuildTrusteeWithSid(&Utility::_trustee, Utility::_psid);
 
     // NB: Don't free _psid as it is referenced in _trustee
     std::cout << "TestIo::testCheckSetAndGetRights: trustee set" << std::endl;
