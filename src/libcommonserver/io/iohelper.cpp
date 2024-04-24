@@ -509,6 +509,7 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, I
 }
 
 #ifndef _WIN32
+//See iohelper_win.cpp for the Windows implementation
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     return _setRightsUnix(path, read, write, exec, ioError);
 }
