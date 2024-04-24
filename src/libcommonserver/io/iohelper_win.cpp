@@ -330,7 +330,6 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return IoHelper::getXAttrValue(itemPath.native(), FILE_ATTRIBUTE_OFFLINE, isDehydrated, ioError);
 }
 
-
 static bool setRightsApiWindows(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {  // Always return false if ioError is not IoErrorSuccess,
                                                                       // caller should check _isExpectedError(ioError)
@@ -458,9 +457,22 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                 write = false;
                 exec = false;
                 LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
+                return _isExpectedError(ioError);
             }
-            LOGW_WARN(logger(), L"Error in GetEffectiveRightsFromAcl - path=" << szFilePath << L" result=" << result);
-            return _isExpectedError(ioError);
+
+            if (result == ERROR_INVALID_SID) {  // Access denied, try to force read control
+                setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger());
+                GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL,
+                                     &psecDesc);
+                result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
+                setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger());
+                ioError = dWordError2ioError(result);
+
+                if (result != ERROR_SUCCESS) {
+                    LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
+                    return _isExpectedError(ioError);
+                }
+            }
         }
 
         bool readCtrl =
@@ -487,7 +499,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         exists = true;
         read = (rights & FILE_GENERIC_READ) == FILE_GENERIC_READ;
         write = (rights & FILE_GENERIC_WRITE) == FILE_GENERIC_WRITE;
-        exec = (rights & FILE_GENERIC_EXECUTE) == FILE_GENERIC_EXECUTE;
+        exec = (rights & FILE_EXECUTE) == FILE_EXECUTE;
         return true;
 
 
@@ -544,19 +556,19 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         DWORD deniedPermission = 0;
 
         if (!read) {
-            deniedPermission |= FILE_GENERIC_READ & ~READ_CONTROL & ~SYNCHRONIZE;
+            deniedPermission |= (FILE_GENERIC_READ & ~READ_CONTROL & ~SYNCHRONIZE);
         } else {
             grantedPermission |= FILE_GENERIC_READ;
         }
 
         if (!write) {
-            deniedPermission |= FILE_GENERIC_WRITE & ~READ_CONTROL & ~SYNCHRONIZE;
+            deniedPermission |= (FILE_GENERIC_WRITE & ~READ_CONTROL & ~SYNCHRONIZE);
         } else {
             grantedPermission |= FILE_GENERIC_WRITE;
         }
 
         if (!exec) {
-            deniedPermission |= FILE_GENERIC_EXECUTE & ~READ_CONTROL & ~SYNCHRONIZE & ~FILE_READ_ATTRIBUTES;
+            deniedPermission |= (FILE_GENERIC_EXECUTE & ~READ_CONTROL & ~SYNCHRONIZE & ~FILE_READ_ATTRIBUTES);
         } else {
             grantedPermission |= FILE_GENERIC_EXECUTE;
         }
@@ -567,7 +579,13 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
             return _isExpectedError(ioError);
         }
         res = setRightsApiWindows(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger());
-        return _isExpectedError(ioError);
+
+        if (!res) {
+            return _isExpectedError(ioError);
+        }
+
+        return true;
+
     } else {
         return _setRightsStandart(path, read, write, exec, ioError);
     }
