@@ -451,29 +451,26 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
         ioError = dWordError2ioError(result);
 
+        exists = ioError != IoErrorNoSuchFileOrDirectory;
+        if (ioError == IoErrorAccessDenied) {
+            read = false;
+            write = false;
+            exec = false;
+            LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
+            return _isExpectedError(ioError);
+        }
+
+        if (result == ERROR_INVALID_SID) {  // Access denied, try to force read control
+            setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger());
+            GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
+            result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
+            setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger());
+            ioError = dWordError2ioError(result);
+        }
+
         if (ioError != IoErrorSuccess) {
-            exists = ioError != IoErrorNoSuchFileOrDirectory;
-            if (ioError == IoErrorAccessDenied) {
-                read = false;
-                write = false;
-                exec = false;
-                LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
-                return _isExpectedError(ioError);
-            }
-
-            if (result == ERROR_INVALID_SID) {  // Access denied, try to force read control
-                setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger());
-                GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL,
-                                     &psecDesc);
-                result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
-                setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger());
-                ioError = dWordError2ioError(result);
-
-                if (result != ERROR_SUCCESS) {
-                    LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
-                    return _isExpectedError(ioError);
-                }
-            }
+            LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
+            return _isExpectedError(ioError);
         }
 
         bool readCtrl =
