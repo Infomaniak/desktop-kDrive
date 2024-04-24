@@ -352,8 +352,6 @@ AppServer::AppServer(int &argc, char **argv)
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
 
-    SyncPath test = "C:/Users/Herve/Documents/test";
-    IoHelper::setRights(test, false, false, false, ioError);
 }
 
 AppServer::~AppServer() {

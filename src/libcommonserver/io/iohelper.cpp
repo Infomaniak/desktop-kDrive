@@ -529,7 +529,7 @@ bool IoHelper::_setRightsUnix(const SyncPath &path, bool read, bool write, bool 
 
     std::error_code ec;
     std::filesystem::permissions(path, perms, ec);
-    if (ec.value() != 0) {
+    if (ec) {
         ioError = posixError2ioError(ec.value());
         return _isExpectedError(ioError);
     }
