@@ -53,9 +53,12 @@ static int rightsSetToInt(rightsSet rightsSet) {
 }
 
 void TestIo::testCheckSetAndGetRights() {
-    #ifdef _WIN32
-        CPPUNIT_ASSERT(Utility::init());  // Initialize the utility library, needed to access/change the permissions on Windows
-    #endif
+    std::cout << "TestIo::testCheckSetAndGetRights: start" << std::endl;
+
+#ifdef _WIN32
+    std::cout << "TestIo::testCheckSetAndGetRights: init trustee" << std::endl;
+    CPPUNIT_ASSERT(Utility::init());  // Initialize the utility library, needed to access/change the permissions on Windows
+#endif
 
     const TemporaryDirectory temporaryDirectory;
 
@@ -77,24 +80,24 @@ void TestIo::testCheckSetAndGetRights() {
         // For a directory
 
         /* Test all the possible rights and the all the possible order of rights modification. ie:
-        *  | READ | WRITE | EXECUTE | |
-        *  |  0   |   0   |    0    | v
-        *  |  0   |   0   |    1    | |
-        *  |  0   |   0   |    0    | v
-        *  |  0   |   1   |    0    | |
-        *  |  0   |   0   |    0    | v
-        *  |  0   |   1   |    1    | |
-        *  |  0   |   0   |    0    | v
-        *  |  1   |   0   |    0    | |
-        *  |  0   |   0   |    0    | v
-        *  |  1   |   0   |    1    | |
-        *  |  0   |   0   |    0    | v
-        *  |  1   |   1   |    0    | |
-        *  |  0   |   0   |    0    | v
-        *  |  1   |   1   |    1    | |
-        *  |  0   |   0   |    0    | v
-        *  ...
-        */
+         *  | READ | WRITE | EXECUTE | |
+         *  |  0   |   0   |    0    | v
+         *  |  0   |   0   |    1    | |
+         *  |  0   |   0   |    0    | v
+         *  |  0   |   1   |    0    | |
+         *  |  0   |   0   |    0    | v
+         *  |  0   |   1   |    1    | |
+         *  |  0   |   0   |    0    | v
+         *  |  1   |   0   |    0    | |
+         *  |  0   |   0   |    0    | v
+         *  |  1   |   0   |    1    | |
+         *  |  0   |   0   |    0    | v
+         *  |  1   |   1   |    0    | |
+         *  |  0   |   0   |    0    | v
+         *  |  1   |   1   |    1    | |
+         *  |  0   |   0   |    0    | v
+         *  ...
+         */
 
         for (int baseRigths = 0; baseRigths < 7;
              baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification

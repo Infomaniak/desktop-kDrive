@@ -47,6 +47,7 @@ namespace KDC {
 
 static bool initTrusteeWithUserSID() {
     if (Utility::_psid != NULL) {
+        std::cout << "TestIo::testCheckSetAndGetRights: _pssid is not null" << std::endl;
         LocalFree(Utility::_psid);
         Utility::_psid = NULL;
     }
@@ -65,10 +66,12 @@ static bool initTrusteeWithUserSID() {
             dwError = GetLastError();
             LOGW_WARN(Log::instance()->getLogger(), "Error in GetUserNameExW - err=" << dwError);
             free(szUserName);
+            std::cout << "TestIo::testCheckSetAndGetRights: Error in GetUserNameExW - err=" << dwError << std::endl;
             return false;
         }
     } else {
         LOGW_WARN(Log::instance()->getLogger(), "Error in GetUserNameExW - err=" << dwError);
+        std::cout << "TestIo::testCheckSetAndGetRights: Error in GetUserNameExW - err=" << dwError << std::endl;
         return false;
     }
 
@@ -85,6 +88,7 @@ static bool initTrusteeWithUserSID() {
             LOGW_WARN(Log::instance()->getLogger(), "Error in LookupAccountNameW - err=" << dwError);
             free(szUserName);
             Utility::_psid = NULL;
+            std::cout << "TestIo::testCheckSetAndGetRights: Error in LookupAccountNameW - err=" << dwError << std::endl;
             return false;
         }
     }
@@ -94,6 +98,7 @@ static bool initTrusteeWithUserSID() {
     if (Utility::_psid == NULL) {
         LOGW_WARN(Log::instance()->getLogger(), "Memory allocation error");
         free(szUserName);
+        std::cout << "TestIo::testCheckSetAndGetRights: Memory allocation error" << std::endl;
         return false;
     }
 
@@ -103,6 +108,7 @@ static bool initTrusteeWithUserSID() {
         free(szUserName);
         LocalFree(Utility::_psid);
         Utility::_psid = NULL;
+        std::cout << "TestIo::testCheckSetAndGetRights: Memory allocation error" << std::endl;
         return false;
     }
 
@@ -113,6 +119,7 @@ static bool initTrusteeWithUserSID() {
         LocalFree(Utility::_psid);
         Utility::_psid = NULL;
         LocalFree(pdomain);
+        std::cout << "TestIo::testCheckSetAndGetRights: Error in LookupAccountNameW - err=" << dwError << std::endl;
         return false;
     }
 
@@ -123,11 +130,13 @@ static bool initTrusteeWithUserSID() {
     BuildTrusteeWithSidW(&Utility::_trustee, Utility::_psid);
 
     // NB: Don't free _psid as it is referenced in _trustee
+    std::cout << "TestIo::testCheckSetAndGetRights: trustee set" << std::endl;
     return true;
 }
 
 static bool init_private() {
     if (Utility::_psid != NULL) {
+        std::cout << "TestIo::testCheckSetAndGetRights: _pssid is not null" << std::endl;
         return false;
     }
 
