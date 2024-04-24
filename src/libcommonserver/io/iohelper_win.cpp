@@ -129,7 +129,8 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
         (PZW_QUERY_DIRECTORY_FILE)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
 
     if (zwQueryDirectoryFile == 0) {
-        LOG_WARN(Log::instance()->getLogger(), L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()).c_str());
+        LOG_WARN(Log::instance()->getLogger(),
+                 L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()).c_str());
         return false;
     }
 
@@ -491,17 +492,17 @@ bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_
     PACL pACL_old = nullptr;  // Current ACL
     PACL pACL_new = nullptr;  // New ACL
     PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
-    EXPLICIT_ACCESS ExplicitAccess[1];
-    ZeroMemory(&ExplicitAccess[0], sizeof(ExplicitAccess));
+    EXPLICIT_ACCESS ExplicitAccess;
+    ZeroMemory(&ExplicitAccess, sizeof(ExplicitAccess));
 
-    ExplicitAccess[0].grfAccessPermissions = permission;
-    ExplicitAccess[0].grfAccessMode = accessMode;
-    ExplicitAccess[0].grfInheritance = NO_INHERITANCE;
-    ExplicitAccess[0].Trustee.pMultipleTrustee = nullptr;
-    ExplicitAccess[0].Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
-    ExplicitAccess[0].Trustee.TrusteeForm = Utility::_trustee.TrusteeForm;
-    ExplicitAccess[0].Trustee.TrusteeType = Utility::_trustee.TrusteeType;
-    ExplicitAccess[0].Trustee.ptstrName = Utility::_trustee.ptstrName;
+    ExplicitAccess.grfAccessPermissions = permission;
+    ExplicitAccess.grfAccessMode = accessMode;
+    ExplicitAccess.grfInheritance = NO_INHERITANCE;
+    ExplicitAccess.Trustee.pMultipleTrustee = nullptr;
+    ExplicitAccess.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
+    ExplicitAccess.Trustee.TrusteeForm = Utility::_trustee.TrusteeForm;
+    ExplicitAccess.Trustee.TrusteeType = Utility::_trustee.TrusteeType;
+    ExplicitAccess.Trustee.ptstrName = Utility::_trustee.ptstrName;
 
     LPCWSTR pathw_c = Path2WStr(path).c_str();
     size_t pathw_len = Path2WStr(path).length();
@@ -518,18 +519,18 @@ bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
         LOG_WARN(logger(), L"Error in GetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
-                                                                    << IoHelper::ioError2StdString(ioError).c_str());
+                                                              << IoHelper::ioError2StdString(ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
         return _isExpectedError(ioError);
     }
 
-    ValueReturned = SetEntriesInAcl(1, ExplicitAccess, pACL_old, &pACL_new);
+    ValueReturned = SetEntriesInAcl(1, &ExplicitAccess, pACL_old, &pACL_new);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
         LOG_WARN(logger(), L"Error in SetEntriesInAcl: " << Utility::formatSyncPath(path).c_str() << L" error="
-                                                               << IoHelper::ioError2StdString(ioError).c_str());
+                                                         << IoHelper::ioError2StdString(ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -543,15 +544,14 @@ bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
-        return false; 
+        return false;
     }
 
-    ValueReturned =
-        SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
+    ValueReturned = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
         LOG_WARN(logger(), L"Error in SetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
-                                                                    << IoHelper::ioError2StdString(ioError).c_str());
+                                                              << IoHelper::ioError2StdString(ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
