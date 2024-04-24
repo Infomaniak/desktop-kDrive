@@ -51,7 +51,6 @@ static bool initTrusteeWithUserSID() {
         Utility::_psid = nullptr;
 
         LOGW_WARN(Log::instance()->getLogger(), "Error in initTrusteeWithUserSID - _pssid is not null");
-        std::cout << "TestIo::testCheckSetAndGetRights: _pssid is not null" << std::endl;
     }
     Utility::_trustee = {0};
 
@@ -64,19 +63,16 @@ static bool initTrusteeWithUserSID() {
             if (!ImpersonateSelf(SecurityImpersonation)) {
                 dwError = GetLastError();
                 LOGW_WARN(Log::instance()->getLogger(), "Error in ImpersonateSelf - err=" << dwError);
-                std::cout << "TestIo::testCheckSetAndGetRights: Error in ImpersonateSelf - err=" << dwError << std::endl;
                 return false;
             }
 
             if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, hToken)) {
                 dwError = GetLastError();
                 LOGW_WARN(Log::instance()->getLogger(), "Error in OpenThreadToken - err=" << dwError);
-                std::cout << "TestIo::testCheckSetAndGetRights: Error in OpenThreadToken 1 - err=" << dwError << std::endl;
                 return false;
             }
         } else {
             LOGW_WARN(Log::instance()->getLogger(), "Error in OpenThreadToken - err=" << dwError);
-            std::cout << "TestIo::testCheckSetAndGetRights: Error in OpenThreadToken 2 - err=" << dwError << std::endl;
             return false;
         }
     }
@@ -86,35 +82,30 @@ static bool initTrusteeWithUserSID() {
     if (dwLength == 0) {
         DWORD dwError = GetLastError();
         LOGW_WARN(Log::instance()->getLogger(), "Error in GetTokenInformation 1 - err=" << dwError);
-        std::cout << "TestIo::testCheckSetAndGetRights: Error in GetTokenInformation 1 - err=" << dwError << std::endl;
         return false;
     }
     auto pTokenUser_std = std::make_unique<TOKEN_USER[]>(dwLength);
     PTOKEN_USER pTokenUser = pTokenUser_std.get();
     if (pTokenUser == nullptr) {
         LOGW_WARN(Log::instance()->getLogger(), "Memory allocation error");
-        std::cout << "TestIo::testCheckSetAndGetRights: Memory allocation error" << std::endl;
         return false;
     }
 
     if (!GetTokenInformation(*hToken, TokenUser, pTokenUser, dwLength, &dwLength)) {
         DWORD dwError = GetLastError();
         LOGW_WARN(Log::instance()->getLogger(), "Error in GetTokenInformation 2 - err=" << dwError);
-        std::cout << "TestIo::testCheckSetAndGetRights: Error in GetTokenInformation 2 - err=" << dwError << std::endl;
         return false;
     }
 
     Utility::_psid = new BYTE[GetLengthSid(pTokenUser->User.Sid)];
     if (Utility::_psid == nullptr) {
         LOGW_WARN(Log::instance()->getLogger(), "Memory allocation error");
-        std::cout << "TestIo::testCheckSetAndGetRights: Memory allocation error" << std::endl;
         return false;
     }
 
     if (!CopySid(GetLengthSid(pTokenUser->User.Sid), Utility::_psid, pTokenUser->User.Sid)) {
         DWORD dwError = GetLastError();
         LOGW_WARN(Log::instance()->getLogger(), "Error in CopySid - err=" << dwError);
-        std::cout << "TestIo::testCheckSetAndGetRights: Error in CopySid - err=" << dwError << std::endl;
         delete[] Utility::_psid;
         Utility::_psid = nullptr;
         return false;
@@ -123,13 +114,11 @@ static bool initTrusteeWithUserSID() {
     // initialize the trustee structure
     BuildTrusteeWithSid(&Utility::_trustee, Utility::_psid);
 
-    std::cout << "TestIo::testCheckSetAndGetRights: trustee set" << std::endl;
     return true;
 }
 
 static bool init_private() {
     if (Utility::_psid != nullptr) {
-        std::cout << "TestIo::testCheckSetAndGetRights: _pssid is not null" << std::endl;
         return false;
     }
 
