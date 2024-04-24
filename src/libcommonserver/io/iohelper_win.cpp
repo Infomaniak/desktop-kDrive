@@ -42,6 +42,7 @@
 #include <AccCtrl.h>
 #define SECURITY_WIN32
 #include <security.h>
+#include <iostream>
 
 namespace KDC {
 
@@ -587,6 +588,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         return true;
 
     } else {
+        std::cout << "setRights: No trustee set" << std::endl;
         return _setRightsStandart(path, read, write, exec, ioError);
     }
 }
