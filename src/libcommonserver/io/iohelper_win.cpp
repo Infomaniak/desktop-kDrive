@@ -106,7 +106,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
                           FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
     if (hParent == INVALID_HANDLE_VALUE) {
-        LOGW_INFO(Log::instance()->getLogger(), L"Error in CreateFileW - path=" << Path2WStr(path.parent_path()).c_str());
+        LOGW_INFO(Log::instance()->getLogger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()).c_str());
         return false;
     }
 
@@ -129,7 +129,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
         (PZW_QUERY_DIRECTORY_FILE)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
 
     if (zwQueryDirectoryFile == 0) {
-        LOG_WARN(Log::instance()->getLogger(), L"Error in GetProcAddress - path=" << Path2WStr(path.parent_path()).c_str());
+        LOG_WARN(Log::instance()->getLogger(), L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()).c_str());
         return false;
     }
 
@@ -175,12 +175,12 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
                 retry = true;
                 Utility::msleep(10);
                 LOGW_DEBUG(Log::instance()->getLogger(),
-                           L"Retrying to get handle - path=" << Path2WStr(path.parent_path()).c_str());
+                           L"Retrying to get handle: " << Utility::formatSyncPath(path.parent_path()).c_str());
                 counter--;
                 continue;
             }
 
-            LOG_WARN(logger(), L"Error in CreateFileW - path=" << Path2WStr(path.parent_path()).c_str());
+            LOG_WARN(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()).c_str());
             ioError = dWordError2ioError(GetLastError());
             exists = false;
 
@@ -223,7 +223,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
         (!isNtfs && dwError != 0)) {  // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we
                                       // also check GetLastError
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in zwQueryDirectoryFile - path=" << Path2WStr(path.parent_path()).c_str());
+                   L"Error in zwQueryDirectoryFile: " << Utility::formatSyncPath(path.parent_path()).c_str());
         CloseHandle(hParent);
         exists = false;
         ioError = dWordError2ioError(dwError);
@@ -517,7 +517,7 @@ bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_
 
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger(), L"Error in GetNamedSecurityInfo - path=" << Path2WStr(path).c_str() << L" error="
+        LOG_WARN(logger(), L"Error in GetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
                                                                     << IoHelper::ioError2StdString(ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
@@ -528,7 +528,7 @@ bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_
     ValueReturned = SetEntriesInAcl(1, ExplicitAccess, pACL_old, &pACL_new);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger(), L"Error in SetEntriesInAcl - path=" << Path2WStr(path).c_str() << L" error="
+        LOG_WARN(logger(), L"Error in SetEntriesInAcl: " << Utility::formatSyncPath(path).c_str() << L" error="
                                                                << IoHelper::ioError2StdString(ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
@@ -538,19 +538,19 @@ bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_
 
     if (!IsValidAcl(pACL_new)) {
         ioError = IoErrorUnknown;
-        LOG_WARN(logger(), L"Invalid ACL - path=" << Path2WStr(path).c_str());
+        LOG_WARN(logger(), L"Invalid ACL: " << Utility::formatSyncPath(path).c_str());
 
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
-        return false;  // Invalid ACL, Failed to set permissions.
+        return false; 
     }
 
     ValueReturned =
         SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger(), L"Error in SetNamedSecurityInfo - path=" << Path2WStr(path).c_str() << L" error="
+        LOG_WARN(logger(), L"Error in SetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
                                                                     << IoHelper::ioError2StdString(ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
