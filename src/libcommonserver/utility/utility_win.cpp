@@ -85,10 +85,12 @@ static bool initTrusteeWithUserSID() {
         if (dwError == ERROR_INSUFFICIENT_BUFFER) {
             // Normal case as Utility::_psid is NULL
         } else {
-            LOGW_WARN(Log::instance()->getLogger(), "Error in LookupAccountNameW - err=" << dwError);
-            free(szUserName);
+            LOGW_WARN(Log::instance()->getLogger(), "Error in LookupAccountNameW 1 - err=" << dwError);
             Utility::_psid = NULL;
-            std::cout << "TestIo::testCheckSetAndGetRights: Error in LookupAccountNameW - err=" << dwError << std::endl;
+            std::cout << "TestIo::testCheckSetAndGetRights: Error in LookupAccountNameW 1 - err=" << dwError << " - account name="
+                      << Utility::ws2s(szUserName) << std::endl;
+            free(szUserName);
+
             return false;
         }
     }
@@ -114,12 +116,14 @@ static bool initTrusteeWithUserSID() {
 
     if (!LookupAccountNameW(NULL, szUserName, Utility::_psid, &sidsize, pdomain, &dlen, &stype)) {
         WORD dwError = GetLastError();
-        LOGW_WARN(Log::instance()->getLogger(), "Error in LookupAccountNameW - err=" << dwError);
-        free(szUserName);
+        LOGW_WARN(Log::instance()->getLogger(), "Error in LookupAccountNameW 2 - err=" << dwError);
         LocalFree(Utility::_psid);
         Utility::_psid = NULL;
         LocalFree(pdomain);
-        std::cout << "TestIo::testCheckSetAndGetRights: Error in LookupAccountNameW - err=" << dwError << std::endl;
+        std::cout << "TestIo::testCheckSetAndGetRights: Error in LookupAccountNameW 2 - err=" << dwError
+                  << " - account name=" << Utility::ws2s(szUserName) << std::endl;
+        free(szUserName);
+
         return false;
     }
 
