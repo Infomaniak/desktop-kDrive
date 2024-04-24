@@ -222,8 +222,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     if (!success) {
-        LOGW_WARN(logger(),
-                  L"Failed to check if the item is a symlink: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Failed to get item type - " << Utility::formatIoError(path, ioError).c_str());
         return false;
     }
     exists = itemType.ioError != IoErrorNoSuchFileOrDirectory;
