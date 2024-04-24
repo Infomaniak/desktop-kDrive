@@ -330,6 +330,87 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return IoHelper::getXAttrValue(itemPath.native(), FILE_ATTRIBUTE_OFFLINE, isDehydrated, ioError);
 }
 
+
+static bool setRightsApiWindows(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
+                                log4cplus::Logger logger) noexcept {  // Always return false if ioError is not IoErrorSuccess,
+                                                                      // caller should check _isExpectedError(ioError)
+    PACL pACL_old = nullptr;  // Current ACL
+    PACL pACL_new = nullptr;  // New ACL
+    PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
+    EXPLICIT_ACCESS ExplicitAccess;
+    ZeroMemory(&ExplicitAccess, sizeof(ExplicitAccess));
+
+    ExplicitAccess.grfAccessPermissions = permission;
+    ExplicitAccess.grfAccessMode = accessMode;
+    ExplicitAccess.grfInheritance = NO_INHERITANCE;
+    ExplicitAccess.Trustee.pMultipleTrustee = nullptr;
+    ExplicitAccess.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
+    ExplicitAccess.Trustee.TrusteeForm = Utility::_trustee.TrusteeForm;
+    ExplicitAccess.Trustee.TrusteeType = Utility::_trustee.TrusteeType;
+    ExplicitAccess.Trustee.ptstrName = Utility::_trustee.ptstrName;
+
+    LPCWSTR pathw_c = Path2WStr(path).c_str();
+    size_t pathw_len = Path2WStr(path).length();
+
+    auto pathw_ptr = std::make_unique<WCHAR[]>(pathw_len + 1);
+    Path2WStr(path).copy(pathw_ptr.get(), pathw_len);
+    LPWSTR pathw = pathw_ptr.get();
+    pathw[pathw_len] = L'\0';
+
+
+    DWORD ValueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACL_old,
+                                               nullptr, &pSecurityDescriptor);
+
+    if (ValueReturned != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(ValueReturned);
+        LOG_WARN(logger, L"Error in GetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
+                                                            << IoHelper::ioError2StdString(ioError).c_str());
+        LocalFree(pSecurityDescriptor);
+        LocalFree(pACL_new);
+        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        return false;
+    }
+
+    ValueReturned = SetEntriesInAcl(1, &ExplicitAccess, pACL_old, &pACL_new);
+    if (ValueReturned != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(ValueReturned);
+        LOG_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatSyncPath(path).c_str() << L" error="
+                                                       << IoHelper::ioError2StdString(ioError).c_str());
+        LocalFree(pSecurityDescriptor);
+        LocalFree(pACL_new);
+        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        return false;
+    }
+
+    if (!IsValidAcl(pACL_new)) {
+        ioError = IoErrorUnknown;
+        LOG_WARN(logger, L"Invalid ACL: " << Utility::formatSyncPath(path).c_str());
+
+        LocalFree(pSecurityDescriptor);
+        LocalFree(pACL_new);
+        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        return false;
+    }
+
+    ValueReturned = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
+    if (ValueReturned != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(ValueReturned);
+        LOG_WARN(logger, L"Error in SetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
+                                                            << IoHelper::ioError2StdString(ioError).c_str());
+        LocalFree(pSecurityDescriptor);
+        LocalFree(pACL_new);
+        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        return false;
+    }
+
+
+    LocalFree(pSecurityDescriptor);
+    LocalFree(pACL_new);
+    // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+
+    return true;
+}
+
 bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept {
     read = false;
     write = false;
@@ -386,13 +467,16 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             (rights & READ_CONTROL) == READ_CONTROL;  // Check if we have read control (needed to read the permissions)
 
         if (!readCtrl) {
-            _setRightsWindows(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError);  // Force read control
-            GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
-            LocalFree(psecDesc);
-            GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
-            _setRightsWindows(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS,
-                              ioError);  // Revoke read control after reading the permissions
-            readCtrl = (rights & READ_CONTROL) == READ_CONTROL;
+            if (setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError,
+                                    logger())) {  // Try to force read control
+                GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL,
+                                     &psecDesc);
+                LocalFree(psecDesc);
+                GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
+                setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError,
+                                    logger());  // Revoke read control after reading the permissions
+                readCtrl = (rights & READ_CONTROL) == READ_CONTROL;
+            }
             if (!readCtrl) {
                 ioError = IoErrorAccessDenied;
                 LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
@@ -452,6 +536,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     return true;
 }
 
+
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     if (Utility::_trustee.ptstrName) {
         ioError = IoErrorSuccess;
@@ -477,93 +562,15 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         }
 
         bool res = false;
-        res = _setRightsWindows(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError);
+        res = setRightsApiWindows(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger());
         if (!res) {
-            return false;
+            return _isExpectedError(ioError);
         }
-        res = _setRightsWindows(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError);
-        return res;
+        res = setRightsApiWindows(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger());
+        return _isExpectedError(ioError);
     } else {
-        return _setRightsUnix(path, read, write, exec, ioError);
+        return _setRightsStandart(path, read, write, exec, ioError);
     }
-}
-
-bool IoHelper::_setRightsWindows(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError) noexcept {
-    PACL pACL_old = nullptr;  // Current ACL
-    PACL pACL_new = nullptr;  // New ACL
-    PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
-    EXPLICIT_ACCESS ExplicitAccess;
-    ZeroMemory(&ExplicitAccess, sizeof(ExplicitAccess));
-
-    ExplicitAccess.grfAccessPermissions = permission;
-    ExplicitAccess.grfAccessMode = accessMode;
-    ExplicitAccess.grfInheritance = NO_INHERITANCE;
-    ExplicitAccess.Trustee.pMultipleTrustee = nullptr;
-    ExplicitAccess.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
-    ExplicitAccess.Trustee.TrusteeForm = Utility::_trustee.TrusteeForm;
-    ExplicitAccess.Trustee.TrusteeType = Utility::_trustee.TrusteeType;
-    ExplicitAccess.Trustee.ptstrName = Utility::_trustee.ptstrName;
-
-    LPCWSTR pathw_c = Path2WStr(path).c_str();
-    size_t pathw_len = Path2WStr(path).length();
-
-    auto pathw_ptr = std::make_unique<WCHAR[]>(pathw_len + 1);
-    Path2WStr(path).copy(pathw_ptr.get(), pathw_len);
-    LPWSTR pathw = pathw_ptr.get();
-    pathw[pathw_len] = L'\0';
-
-
-    DWORD ValueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACL_old,
-                                               nullptr, &pSecurityDescriptor);
-
-    if (ValueReturned != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger(), L"Error in GetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
-                                                              << IoHelper::ioError2StdString(ioError).c_str());
-        LocalFree(pSecurityDescriptor);
-        LocalFree(pACL_new);
-        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
-        return _isExpectedError(ioError);
-    }
-
-    ValueReturned = SetEntriesInAcl(1, &ExplicitAccess, pACL_old, &pACL_new);
-    if (ValueReturned != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger(), L"Error in SetEntriesInAcl: " << Utility::formatSyncPath(path).c_str() << L" error="
-                                                         << IoHelper::ioError2StdString(ioError).c_str());
-        LocalFree(pSecurityDescriptor);
-        LocalFree(pACL_new);
-        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
-        return _isExpectedError(ioError);
-    }
-
-    if (!IsValidAcl(pACL_new)) {
-        ioError = IoErrorUnknown;
-        LOG_WARN(logger(), L"Invalid ACL: " << Utility::formatSyncPath(path).c_str());
-
-        LocalFree(pSecurityDescriptor);
-        LocalFree(pACL_new);
-        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
-        return false;
-    }
-
-    ValueReturned = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
-    if (ValueReturned != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger(), L"Error in SetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
-                                                              << IoHelper::ioError2StdString(ioError).c_str());
-        LocalFree(pSecurityDescriptor);
-        LocalFree(pACL_new);
-        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
-        return _isExpectedError(ioError);
-    }
-
-
-    LocalFree(pSecurityDescriptor);
-    LocalFree(pACL_new);
-    // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
-
-    return true;
 }
 
 bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError &ioError) noexcept {
