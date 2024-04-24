@@ -1027,15 +1027,15 @@ void UpdateTreeWorker::drawUpdateTree() {
 
 void UpdateTreeWorker::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth /*= 0*/) {
     for (int i = 0; i < depth; i++) {
-        treeStr += " ";
+        treeStr += Str(" ");
     }
-    treeStr += "'" + node->name() + "'";
-    treeStr += "[";
-    treeStr += *node->id();
-    treeStr += " / ";
-    treeStr += node->changeEvents() > 0 ? Utility::opType2Str((OperationType)node->changeEvents()) : "-";
-    treeStr += "]";
-    treeStr += "\n";
+    treeStr += Str("'") + node->name() + Str("'");
+    treeStr += Str("[");
+    treeStr += Str2SyncName(*node->id());
+    treeStr += Str(" / ");
+    treeStr += node->changeEvents() > 0 ? Str2SyncName(Utility::opType2Str((OperationType)node->changeEvents())) : Str("-");
+    treeStr += Str("]");
+    treeStr += Str("\n");
 
     depth++;
     for (const auto& [_, childNode] : node->children()) {
