@@ -359,7 +359,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger, L"Error in GetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
+        LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str());
                                                             << IoHelper::ioError2StdString(ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
@@ -370,7 +370,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     ValueReturned = SetEntriesInAcl(1, &ExplicitAccess, pACL_old, &pACL_new);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatSyncPath(path).c_str() << L" error="
+        LOGW_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatIoError(path, ioError).c_str());
                                                        << IoHelper::ioError2StdString(ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
@@ -380,7 +380,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
     if (!IsValidAcl(pACL_new)) {
         ioError = IoErrorUnknown;
-        LOG_WARN(logger, L"Invalid ACL: " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(logger, L"Invalid ACL: " << Utility::formatSyncPath(path).c_str());
 
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
@@ -391,7 +391,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     ValueReturned = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger, L"Error in SetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
+        LOGW_WARN(logger, L"Error in SetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str());
                                                             << IoHelper::ioError2StdString(ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
@@ -437,7 +437,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                 LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
             }
 
-            LOGW_WARN(logger(), L"Error in GetNamedSecurityInfoW - path=" << szFilePath << L" result=" << result);
+            LOGW_WARN(logger(), L"Error in GetNamedSecurityInfoW:" << Utility::formatSyncPath(path).c_str() << L" result=" << result);
             return _isExpectedError(ioError);
         }
 
@@ -484,7 +484,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             }
             if (!readCtrl) {
                 ioError = IoErrorAccessDenied;
-                LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
+                LOGW_INFO(logger(), L"Access denied : " << Utility::formatSyncPath(path).c_str());
                 return _isExpectedError(ioError);
             }
         }
