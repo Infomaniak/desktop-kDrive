@@ -144,7 +144,7 @@ void TestIo::testCheckSetAndGetRights() {
         IoHelper::setRights(path, true, true, true, ioError);
     }
 
-    // Test if the rights are correctly set and get on a file
+    // Test if the rights are correctly set and if they can be successfully retrieved from a file
     {
         const SyncPath filepath = temporaryDirectory.path / "changePerm.txt";
 
@@ -214,7 +214,7 @@ void TestIo::testCheckSetAndGetRights() {
         IoHelper::setRights(filepath, true, true, true, ioError);
     }
 
-    // Check permission is not recursive on folder
+    // Check permissions are not set recursively on a folder
     {
         const SyncPath path = temporaryDirectory.path / "testCheckSetAndGetRights";
         const SyncPath subFolderPath = path / "subFolder";

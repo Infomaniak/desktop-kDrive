@@ -354,8 +354,6 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     Path2WStr(path).copy(pathw_ptr.get(), pathw_len);
     LPWSTR pathw = pathw_ptr.get();
     pathw[pathw_len] = L'\0';
-
-
     DWORD ValueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACL_old,
                                                nullptr, &pSecurityDescriptor);
 
@@ -443,7 +441,6 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             return _isExpectedError(ioError);
         }
 
-
         // Get rights for trustee
         ACCESS_MASK rights = 0;
         result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
@@ -497,13 +494,10 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         write = (rights & FILE_GENERIC_WRITE) == FILE_GENERIC_WRITE;
         exec = (rights & FILE_EXECUTE) == FILE_EXECUTE;
         return true;
-
-
     }
-    // Fallback method
     else {
         // Fallback method
-        // !!! When Deny Full control to file/directory => returns exists == false !!!
+        // !!! When Full control to file/directory is denied to the user, the function will return as if the file/directory does not exist.
 
         ItemType itemType;
         const bool success = getItemType(path, itemType);
@@ -539,8 +533,6 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
         return true;
     }
-
-
     return true;
 }
 
@@ -579,9 +571,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         if (!res) {
             return _isExpectedError(ioError);
         }
-
         return true;
-
     } else {
         return _setRightsStd(path, read, write, exec, ioError);
     }
@@ -615,11 +605,8 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
             return ioError == IoErrorNoSuchFileOrDirectory;
         }
     }
-
     CloseHandle(hFile);
-
     isJunction = ReparseBuffer.ReparseTag == IO_REPARSE_TAG_MOUNT_POINT;
-
     return true;
 }
 
@@ -687,7 +674,6 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
     pPath[nameLength] = L'\0';
 
     if (wcsncmp(pPath, L"\\??\\", 4) == 0) pPath += 4;  // Skip 'non-parsed' prefix
-
     targetPath = SyncPath(pPath);
 
     return true;
