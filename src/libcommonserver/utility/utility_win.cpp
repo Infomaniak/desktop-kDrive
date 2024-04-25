@@ -47,9 +47,7 @@ namespace KDC {
 
 static bool initTrusteeWithUserSID() {
     if (Utility::_psid != nullptr) {  // should never happen
-        delete[] Utility::_psid;
-        Utility::_psid = nullptr;
-
+        Utility::_psid.reset();
         LOGW_WARN(Log::instance()->getLogger(), "Error in initTrusteeWithUserSID - _pssid is not null");
     }
     Utility::_trustee = {0};
@@ -97,22 +95,17 @@ static bool initTrusteeWithUserSID() {
         return false;
     }
 
-    Utility::_psid = new BYTE[GetLengthSid(pTokenUser->User.Sid)];
-    if (Utility::_psid == nullptr) {
-        LOGW_WARN(Log::instance()->getLogger(), "Memory allocation error");
-        return false;
-    }
+    Utility::_psid = std::make_unique<BYTE[]>(GetLengthSid(pTokenUser->User.Sid));
 
-    if (!CopySid(GetLengthSid(pTokenUser->User.Sid), Utility::_psid, pTokenUser->User.Sid)) {
+    if (!CopySid(GetLengthSid(pTokenUser->User.Sid), Utility::_psid.get(), pTokenUser->User.Sid)) {
         DWORD dwError = GetLastError();
         LOGW_WARN(Log::instance()->getLogger(), "Error in CopySid - err=" << dwError);
-        delete[] Utility::_psid;
-        Utility::_psid = nullptr;
+        Utility::_psid.reset();
         return false;
     }
 
     // initialize the trustee structure
-    BuildTrusteeWithSid(&Utility::_trustee, Utility::_psid);
+    BuildTrusteeWithSid(&Utility::_trustee, Utility::_psid.get());
 
     return true;
 }
@@ -129,8 +122,7 @@ static bool init_private() {
 
 static void free_private() {
     if (Utility::_psid != nullptr) {
-        delete[] Utility::_psid;
-        Utility::_psid = NULL;
+        Utility::_psid.reset();
     }
 }
 

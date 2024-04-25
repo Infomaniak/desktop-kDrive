@@ -52,10 +52,6 @@ void TestIo::testCheckSetAndGetRights() {
         bool isExecutable = false;
         bool exists = false;
 
-        RightsSet rightsSet(false, false, false);
-
-        // For a directory
-
         /* Test all the possible rights and all the possible order of rights modification. ie:
          *  | READ | WRITE | EXECUTE | |
          *  |  0   |   0   |    0    | v
@@ -78,7 +74,7 @@ void TestIo::testCheckSetAndGetRights() {
 
         for (int baseRigths = 0; baseRigths < 7; baseRigths++) {
             for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                rightsSet = RightsSet(baseRigths);
+                auto rightsSet = RightsSet(baseRigths);
                 bool result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
@@ -139,14 +135,12 @@ void TestIo::testCheckSetAndGetRights() {
         bool isExecutable = false;
         bool exists = false;
 
-        RightsSet rightsSet = {false, false, false};
-
         // For a directory
         for (int baseRigths = 0; baseRigths < 7;
              baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
             for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
 
-                rightsSet = RightsSet(baseRigths);
+                auto rightsSet = RightsSet(baseRigths);
                 bool result = IoHelper::setRights(filepath, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
