@@ -331,7 +331,7 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return IoHelper::getXAttrValue(itemPath.native(), FILE_ATTRIBUTE_OFFLINE, isDehydrated, ioError);
 }
 
-static bool setRightsApiWindows(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
+static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {  // Always return false if ioError is not IoErrorSuccess,
                                                                       // caller should check _isExpectedError(ioError)
     PACL pACL_old = nullptr;  // Current ACL
@@ -356,15 +356,12 @@ static bool setRightsApiWindows(const SyncPath &path, DWORD permission, ACCESS_M
     Path2WStr(path).copy(pathw_ptr.get(), pathw_len);
     LPWSTR pathw = pathw_ptr.get();
     pathw[pathw_len] = L'\0';
-
-
     DWORD ValueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACL_old,
                                                nullptr, &pSecurityDescriptor);
 
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger, L"Error in GetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
-                                                            << IoHelper::ioError2StdString(ioError).c_str());
+        LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -374,8 +371,7 @@ static bool setRightsApiWindows(const SyncPath &path, DWORD permission, ACCESS_M
     ValueReturned = SetEntriesInAcl(1, &ExplicitAccess, pACL_old, &pACL_new);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatSyncPath(path).c_str() << L" error="
-                                                       << IoHelper::ioError2StdString(ioError).c_str());
+        LOGW_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatIoError(path, ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -384,7 +380,7 @@ static bool setRightsApiWindows(const SyncPath &path, DWORD permission, ACCESS_M
 
     if (!IsValidAcl(pACL_new)) {
         ioError = IoErrorUnknown;
-        LOG_WARN(logger, L"Invalid ACL: " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(logger, L"Invalid ACL: " << Utility::formatSyncPath(path).c_str());
 
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
@@ -395,8 +391,7 @@ static bool setRightsApiWindows(const SyncPath &path, DWORD permission, ACCESS_M
     ValueReturned = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
-        LOG_WARN(logger, L"Error in SetNamedSecurityInfo: " << Utility::formatSyncPath(path).c_str() << L" error="
-                                                            << IoHelper::ioError2StdString(ioError).c_str());
+        LOGW_WARN(logger, L"Error in SetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str());
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -441,10 +436,9 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                 LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
             }
 
-            LOGW_WARN(logger(), L"Error in GetNamedSecurityInfoW - path=" << szFilePath << L" result=" << result);
+            LOGW_WARN(logger(), L"Error in GetNamedSecurityInfoW:" << Utility::formatSyncPath(path).c_str() << L" result=" << result);
             return _isExpectedError(ioError);
         }
-
 
         // Get rights for trustee
         ACCESS_MASK rights = 0;
@@ -461,10 +455,10 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         }
 
         if (result == ERROR_INVALID_SID) {  // Access denied, try to force read control
-            setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger());
+            setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger());
             GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
             result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
-            setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger());
+            setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger());
             ioError = dWordError2ioError(result);
         }
 
@@ -477,19 +471,19 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             (rights & READ_CONTROL) == READ_CONTROL;  // Check if we have read control (needed to read the permissions)
 
         if (!readCtrl) {
-            if (setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError,
+            if (setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError,
                                     logger())) {  // Try to force read control
                 GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL,
                                      &psecDesc);
                 LocalFree(psecDesc);
                 GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
-                setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError,
+                setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError,
                                     logger());  // Revoke read control after reading the permissions
                 readCtrl = (rights & READ_CONTROL) == READ_CONTROL;
             }
             if (!readCtrl) {
                 ioError = IoErrorAccessDenied;
-                LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
+                LOGW_INFO(logger(), L"Access denied : " << Utility::formatSyncPath(path).c_str());
                 return _isExpectedError(ioError);
             }
         }
@@ -499,13 +493,10 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         write = (rights & FILE_GENERIC_WRITE) == FILE_GENERIC_WRITE;
         exec = (rights & FILE_EXECUTE) == FILE_EXECUTE;
         return true;
-
-
     }
-    // Fallback method
     else {
         // Fallback method
-        // !!! When Deny Full control to file/directory => returns exists == false !!!
+        // !!! When Full control to file/directory is denied to the user, the function will return as if the file/directory does not exist.
 
         ItemType itemType;
         const bool success = getItemType(path, itemType);
@@ -541,8 +532,6 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
         return true;
     }
-
-
     return true;
 }
 
@@ -572,18 +561,16 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         }
 
         bool res = false;
-        res = setRightsApiWindows(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger());
+        res = setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger());
         if (!res) {
             return _isExpectedError(ioError);
         }
-        res = setRightsApiWindows(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger());
+        res = setRightsWindowsApi(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger());
 
         if (!res) {
             return _isExpectedError(ioError);
         }
-
         return true;
-
     } else {
         return _setRightsStd(path, read, write, exec, ioError);
     }
@@ -617,11 +604,8 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
             return ioError == IoErrorNoSuchFileOrDirectory;
         }
     }
-
     CloseHandle(hFile);
-
     isJunction = ReparseBuffer.ReparseTag == IO_REPARSE_TAG_MOUNT_POINT;
-
     return true;
 }
 
@@ -689,7 +673,6 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
     pPath[nameLength] = L'\0';
 
     if (wcsncmp(pPath, L"\\??\\", 4) == 0) pPath += 4;  // Skip 'non-parsed' prefix
-
     targetPath = SyncPath(pPath);
 
     return true;

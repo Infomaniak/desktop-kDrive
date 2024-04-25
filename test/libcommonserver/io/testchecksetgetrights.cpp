@@ -25,32 +25,13 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static struct rightsSet {
+static struct RightsSet {
+        RightsSet(int rights) : read(rights & 4), write(rights & 2), execute(rights & 1){};
+        RightsSet(bool read, bool write, bool execute) : read(read), write(write), execute(execute){};
         bool read;
         bool write;
         bool execute;
 };
-
-static void rightsSetFromInt(int rights, rightsSet& rightsSet) {
-    rightsSet.read = rights & 4;
-    rightsSet.write = rights & 2;
-    rightsSet.execute = rights & 1;
-}
-
-static int rightsSetToInt(rightsSet rightsSet) {
-    int rights = 0;
-    if (rightsSet.read) {
-        rights += 4;
-    }
-    if (rightsSet.write) {
-        rights += 2;
-    }
-    if (rightsSet.execute) {
-        rights += 1;
-    }
-
-    return rights;
-}
 
 void TestIo::testCheckSetAndGetRights() {
 #ifdef _WIN32
@@ -64,14 +45,14 @@ void TestIo::testCheckSetAndGetRights() {
 
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 
         bool isReadable = false;
         bool isWritable = false;
         bool isExecutable = false;
         bool exists = false;
 
-        rightsSet rightsSet = {false, false, false};
+        RightsSet rightsSet(false, false, false);
 
         // For a directory
 
@@ -97,8 +78,7 @@ void TestIo::testCheckSetAndGetRights() {
 
         for (int baseRigths = 0; baseRigths < 7; baseRigths++) {
             for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                rightsSetFromInt(baseRigths, rightsSet);
-
+                rightsSet = RightsSet(baseRigths);
                 bool result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
@@ -118,8 +98,7 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
 
-                rightsSetFromInt(targetRigths, rightsSet);
-
+                rightsSet = RightsSet(targetRigths);
                 result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
@@ -144,13 +123,13 @@ void TestIo::testCheckSetAndGetRights() {
         IoHelper::setRights(path, true, true, true, ioError);
     }
 
-    // Test if the rights are correctly set and get on a file
+    // Test if the rights are correctly set and if they can be successfully retrieved from a file
     {
         const SyncPath filepath = temporaryDirectory.path / "changePerm.txt";
 
         IoError ioError = IoErrorUnknown;
 
-        std::ofstream file(filepath.string());
+        std::ofstream file(filepath);
         CPPUNIT_ASSERT(file.is_open());
         file << "testCheckSetAndGetRights";
         file.close();
@@ -160,14 +139,14 @@ void TestIo::testCheckSetAndGetRights() {
         bool isExecutable = false;
         bool exists = false;
 
-        rightsSet rightsSet = {false, false, false};
+        RightsSet rightsSet = {false, false, false};
 
         // For a directory
         for (int baseRigths = 0; baseRigths < 7;
              baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
             for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-                rightsSetFromInt(baseRigths, rightsSet);
 
+                rightsSet = RightsSet(baseRigths);
                 bool result = IoHelper::setRights(filepath, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
@@ -187,8 +166,7 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
 
-                rightsSetFromInt(targetRigths, rightsSet);
-
+                rightsSet = RightsSet(targetRigths);
                 result = IoHelper::setRights(filepath, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
@@ -214,7 +192,7 @@ void TestIo::testCheckSetAndGetRights() {
         IoHelper::setRights(filepath, true, true, true, ioError);
     }
 
-    // Check permission is not recursive on folder
+    // Check permissions are not set recursively on a folder
     {
         const SyncPath path = temporaryDirectory.path / "testCheckSetAndGetRights";
         const SyncPath subFolderPath = path / "subFolder";
@@ -223,12 +201,12 @@ void TestIo::testCheckSetAndGetRights() {
 
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 
         CPPUNIT_ASSERT(IoHelper::createDirectory(subFolderPath, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 
-        std::ofstream file(subFilePath.string());
+        std::ofstream file(subFilePath);
         CPPUNIT_ASSERT(file.is_open());
         file << "testCheckSetAndGetRights";
         file.close();
