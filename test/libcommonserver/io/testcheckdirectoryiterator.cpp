@@ -305,8 +305,10 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
 
         DirectoryEntry entry;
         bool endOfDirectory = false;
+
         result = it.next(entry, endOfDirectory, ioError);
         result &= ioError == IoErrorSuccess;
+
         if (!result) {
             IoHelper::setRights(subDir, true, true, true, ioError);
             IoHelper::setRights(filePath, true, true, true, ioError);
