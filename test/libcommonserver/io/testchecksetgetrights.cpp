@@ -139,14 +139,12 @@ void TestIo::testCheckSetAndGetRights() {
         bool isExecutable = false;
         bool exists = false;
 
-        RightsSet rightsSet = {false, false, false};
-
         // For a directory
         for (int baseRigths = 0; baseRigths < 7;
              baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
             for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
 
-                rightsSet = RightsSet(baseRigths);
+                auto rightsSet = RightsSet(baseRigths);
                 bool result = IoHelper::setRights(filepath, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
