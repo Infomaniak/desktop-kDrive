@@ -332,8 +332,8 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {  // Always return false if ioError is not IoErrorSuccess,
                                                                       // caller should check _isExpectedError(ioError)
-    PACL pACL_old = nullptr;  // Current ACL
-    PACL pACL_new = nullptr;  // New ACL
+    PACL pACL_old = nullptr;                                          // Current ACL
+    PACL pACL_new = nullptr;                                          // New ACL
     PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
     EXPLICIT_ACCESS ExplicitAccess;
     ZeroMemory(&ExplicitAccess, sizeof(ExplicitAccess));
@@ -347,13 +347,16 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     ExplicitAccess.Trustee.TrusteeType = Utility::_trustee.TrusteeType;
     ExplicitAccess.Trustee.ptstrName = Utility::_trustee.ptstrName;
 
-    LPCWSTR pathw_c = Path2WStr(path).c_str();
-    size_t pathw_len = Path2WStr(path).length();
+    std::wstring path_wstr = Path2WStr(path);
+    size_t pathw_len = path_wstr.length();
 
     auto pathw_ptr = std::make_unique<WCHAR[]>(pathw_len + 1);
-    Path2WStr(path).copy(pathw_ptr.get(), pathw_len);
+    path_wstr.copy(pathw_ptr.get(), pathw_len);
+
+    LPCWSTR pathw_c = path_wstr.c_str();
     LPWSTR pathw = pathw_ptr.get();
     pathw[pathw_len] = L'\0';
+
     DWORD ValueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACL_old,
                                                nullptr, &pSecurityDescriptor);
 
@@ -434,7 +437,8 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                 LOGW_INFO(logger(), L"Access denied - path=" << szFilePath);
             }
 
-            LOGW_WARN(logger(), L"Error in GetNamedSecurityInfoW:" << Utility::formatSyncPath(path).c_str() << L" result=" << result);
+            LOGW_WARN(logger(),
+                      L"Error in GetNamedSecurityInfoW:" << Utility::formatSyncPath(path).c_str() << L" result=" << result);
             return _isExpectedError(ioError);
         }
 
@@ -491,8 +495,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         write = (rights & FILE_GENERIC_WRITE) == FILE_GENERIC_WRITE;
         exec = (rights & FILE_EXECUTE) == FILE_EXECUTE;
         return true;
-    }
-    else {
+    } else {
         // Fallback method
         // !!! When Full control to file/directory is denied to the user, the function will return as if the file/directory does not exist.
 
