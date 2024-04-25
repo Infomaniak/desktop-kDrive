@@ -222,7 +222,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     if (!success) {
-        LOGW_WARN(logger(), L"Failed to get item type - " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError).c_str());
         return false;
     }
     exists = itemType.ioError != IoErrorNoSuchFileOrDirectory;
@@ -241,7 +241,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             return true;
         }
 
-        LOGW_WARN(logger(), L"Failed to get permissions - " << Utility::formatStdError(path, ec).c_str());
+        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
         return false;
     }
 
