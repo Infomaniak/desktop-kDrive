@@ -19,22 +19,25 @@
 #include "testio.h"
 
 #include <filesystem>
+#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/testutility.h"
+
 
 using namespace CppUnit;
 
 namespace KDC {
 
 void TestIo::testCheckDirectoryIterator() {
+#ifdef _WIN32
+    Utility::init();  // Initialize the utility library, needed to access/change the permissions on Windows
+#endif
     testCheckDirectoryIteratorNonExistingPath();
     testCheckDirectoryIteratorExistingPath();
     testCheckDirectoryRecursive();
     testCheckDirectoryIteratotNextAfterEndOfDir();
     testCheckDirectoryIteratorUnexpectedDelete();
-#ifndef _WIN32  // We cannot change permission on windows for now
     testCheckDirectoryIteratorPermission();
     testCheckDirectoryPermissionLost();
-#endif
 }
 
 void TestIo::testCheckDirectoryIteratorNonExistingPath() {
@@ -208,24 +211,33 @@ void TestIo::testCheckDirectoryIteratorPermission() {
         const SyncPath noPermissionDir = tempDir.path / "chekDirIt/noPermission";
         const SyncPath noPermissionFile = noPermissionDir / "file.txt";
 
-        std::filesystem::create_directories(noPermissionDir);
+        IoError ioError = IoErrorSuccess;
+
+        CPPUNIT_ASSERT(IoHelper::createDirectory(noPermissionDir.parent_path(), ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT(IoHelper::createDirectory(noPermissionDir, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+
         std::ofstream file(noPermissionFile);
         file << "file";
         file.close();
 
-        std::filesystem::permissions(noPermissionDir, std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read,
-                                     std::filesystem::perm_options::remove);
 
-        IoError ioError = IoErrorSuccess;
+        bool result = IoHelper::setRights(noPermissionDir, false, false, false, ioError);
+        result &= ioError == IoErrorSuccess;
+        if (!result) {
+            IoHelper::setRights(noPermissionDir, true, true, true, ioError);
+            CPPUNIT_ASSERT(false /*setRights failed*/);
+        }
+
         IoHelper::DirectoryIterator it(noPermissionDir, false, ioError);
 
         DirectoryEntry entry;
         bool endOfDirectory = false;
-
         bool success = it.next(entry, endOfDirectory, ioError);
 
-        std::filesystem::permissions(noPermissionDir, std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read,
-                                     std::filesystem::perm_options::add);
+        IoHelper::setRights(noPermissionDir, true, true, true, ioError);
+
 
         CPPUNIT_ASSERT(success);
         CPPUNIT_ASSERT(endOfDirectory);
@@ -278,37 +290,37 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
     file << "file";
     file.close();
 
-
-    // Check that the directory iterator is consistent when a parent directory loses permission
+    // Check that the directory iterator is consistent when a parent directory lose permission
     {
         IoError ioError = IoErrorSuccess;
-        IoHelper::DirectoryIterator it(subDir, true, ioError);  // Skip permission denied to true, when false it is the
-                                                                // user responsibility to check the permission
+        IoHelper::DirectoryIterator it(permLostRoot, true, ioError);
 
         // Remove permission (after iterator is created)
-        std::filesystem::permissions(subDir, std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read,
-                                     std::filesystem::perm_options::remove);
+        bool result = IoHelper::setRights(subDir, false, false, false, ioError);
+        result &= ioError == IoErrorSuccess;
+        if (!result) {
+            IoHelper::setRights(subDir, true, true, true, ioError);
+            CPPUNIT_ASSERT(false /*setRights failed*/);
+        }
 
         DirectoryEntry entry;
         bool endOfDirectory = false;
-        bool success = it.next(entry, endOfDirectory, ioError);
-        if (!success) {
-            std::filesystem::permissions(subDir, std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read,
-                                         std::filesystem::perm_options::add);
-            std::filesystem::permissions(filePath, std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read,
-                                         std::filesystem::perm_options::add);
+        result = it.next(entry, endOfDirectory, ioError);
+        result &= ioError == IoErrorSuccess;
+        if (!result) {
+            IoHelper::setRights(subDir, true, true, true, ioError);
+            IoHelper::setRights(filePath, true, true, true, ioError);
         }
 
-        CPPUNIT_ASSERT(success /*success = it.next(entry, endOfDirectory, ioError);*/);
+        CPPUNIT_ASSERT(result /*result = it.next(entry, endOfDirectory, ioError);*/);
 
-        success = it.next(entry, endOfDirectory, ioError);
+        result = it.next(entry, endOfDirectory, ioError);
+        result &= ioError == IoErrorSuccess;
 
-        std::filesystem::permissions(subDir, std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read,
-                                     std::filesystem::perm_options::add);
-        std::filesystem::permissions(filePath, std::filesystem::perms::owner_exec | std::filesystem::perms::owner_read,
-                                     std::filesystem::perm_options::add);
+        IoHelper::setRights(subDir, true, true, true, ioError);
+        IoHelper::setRights(filePath, true, true, true, ioError);
 
-        CPPUNIT_ASSERT(success /*success = it.next(entry, endOfDirectory, ioError);*/);
+        CPPUNIT_ASSERT(result /*result = it.next(entry, endOfDirectory, ioError);*/);
         CPPUNIT_ASSERT(endOfDirectory);
     }
 }

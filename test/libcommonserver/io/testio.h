@@ -61,6 +61,7 @@ class TestIo : public CppUnit::TestFixture {
         // CPPUNIT_TEST(testIsFileAccessible); // Temporary disabled: Infinite loop on Linux CI
         CPPUNIT_TEST(testFileChanged);
         CPPUNIT_TEST(testCheckIfIsHiddenFile);
+        CPPUNIT_TEST(testCheckSetAndGetRights);
         CPPUNIT_TEST(testCheckDirectoryIterator);
 #if defined(__APPLE__) || defined(_WIN32)
         CPPUNIT_TEST(testGetXAttrValue);
@@ -74,7 +75,6 @@ class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateJunction);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
-        CPPUNIT_TEST(testCheckSetAndGetRights);
         CPPUNIT_TEST_SUITE_END();
 
     public:

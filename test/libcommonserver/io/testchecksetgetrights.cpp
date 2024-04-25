@@ -35,7 +35,7 @@ static struct RightsSet {
 
 void TestIo::testCheckSetAndGetRights() {
 #ifdef _WIN32
-    CPPUNIT_ASSERT(Utility::init());  // Initialize the utility library, needed to access/change the permissions on Windows
+    Utility::init();  // Initialize the utility library, needed to access/change the permissions on Windows
 #endif
     const TemporaryDirectory temporaryDirectory;
 
