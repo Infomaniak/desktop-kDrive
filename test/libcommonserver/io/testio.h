@@ -74,6 +74,7 @@ class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateJunction);
 #endif
         CPPUNIT_TEST(testCheckIfFileIsDehydrated);
+        CPPUNIT_TEST(testCheckSetAndGetRights);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -107,6 +108,7 @@ class TestIo : public CppUnit::TestFixture {
         void testCreateJunction(void);
 #endif
         void testCheckIfFileIsDehydrated(void);
+        void testCheckSetAndGetRights(void);
 
     private:
         void testGetItemTypeSimpleCases(void);

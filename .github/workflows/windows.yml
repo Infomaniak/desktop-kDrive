@@ -40,6 +40,6 @@ jobs:
 
       - name: Run common tests
         run: ./build-Release/install/bin/kDrive_test_common.exe
-
+          
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all

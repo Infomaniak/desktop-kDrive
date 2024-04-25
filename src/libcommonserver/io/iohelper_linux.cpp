@@ -141,5 +141,4 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     return true;
 }
 
-
 }  // namespace KDC

@@ -351,6 +351,7 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
+
 }
 
 AppServer::~AppServer() {
@@ -2038,8 +2039,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
 
     if (message == showSynthesisMsg) {
         showSynthesis();
-    }
-    else if (message == showSettingsMsg) {
+    } else if (message == showSettingsMsg) {
         showSettings();
     }
 }

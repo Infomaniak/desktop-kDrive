@@ -622,4 +622,36 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
     _dirIterator.disable_recursion_pending();
 }
 
+
+#ifndef _WIN32
+//See iohelper_win.cpp for the Windows implementation
+bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
+    return _setRightsStandart(path, read, write, exec, ioError);
+}
+#endif
+
+bool IoHelper::_setRightsStandart(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
+    ioError = IoErrorSuccess;
+    std::filesystem::perms perms = std::filesystem::perms::none;
+    if (read) {
+        perms |= std::filesystem::perms::owner_read;
+    }
+    if (write) {
+        perms |= std::filesystem::perms::owner_write;
+    }
+    if (exec) {
+        perms |= std::filesystem::perms::owner_exec;
+    }
+
+    std::error_code ec;
+    std::filesystem::permissions(path, perms, ec);
+    if (ec) {
+        ioError = posixError2ioError(ec.value());
+        return _isExpectedError(ioError);
+    }
+
+    return true;
+}
+
+
 }  // namespace KDC
