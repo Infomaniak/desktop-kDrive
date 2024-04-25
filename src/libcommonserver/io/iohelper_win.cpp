@@ -403,7 +403,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
                 if (!exists) {
                     return true;
                 }
-                const bool isSymlink = itemType.linkType = LinkTypeSymlink;
+                const bool isSymlink = itemType.linkType == LinkTypeSymlink;
 
                 std::error_code ec;
                 std::filesystem::perms perms = isSymlink ? std::filesystem::symlink_status(path, ec).permissions()
