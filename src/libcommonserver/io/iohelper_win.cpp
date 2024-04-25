@@ -363,7 +363,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
     DWORD ValueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACL_old,
                                                nullptr, &pSecurityDescriptor);
-
+    ioError = dWordError2ioError(ValueReturned);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
         LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str()
@@ -371,10 +371,14 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        if (ioError == IoErrorNoSuchFileOrDirectory || ioError == IoErrorAccessDenied) {
+            return true;
+        }
         return false;
     }
 
     ValueReturned = SetEntriesInAcl(1, &ExplicitAccess, pACL_old, &pACL_new);
+    ioError = dWordError2ioError(ValueReturned);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
         LOGW_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatIoError(path, ioError).c_str() << L" | DWORD error: "
@@ -382,6 +386,9 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        if (ioError == IoErrorNoSuchFileOrDirectory || ioError == IoErrorAccessDenied) {
+            return true;
+        }
         return false;
     }
 
@@ -396,6 +403,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     }
 
     ValueReturned = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
+    ioError = dWordError2ioError(ValueReturned);
     if (ValueReturned != ERROR_SUCCESS) {
         ioError = dWordError2ioError(ValueReturned);
         LOGW_WARN(logger, L"Error in SetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str()
@@ -403,6 +411,9 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
         LocalFree(pSecurityDescriptor);
         LocalFree(pACL_new);
         // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        if (ioError == IoErrorNoSuchFileOrDirectory || ioError == IoErrorAccessDenied) {
+            return true;
+        }
         return false;
     }
 
@@ -520,8 +531,8 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         }
         LOGW_WARN(logger(), L"Failed to get rights using Windows API, falling back to std::filesystem.");
         sentry_value_t event = sentry_value_new_event();
-        sentry_value_t exc =
-            sentry_value_new_exception("Exception", "Failed to set/get rights using Windows API, falling back to std::filesystem.");
+        sentry_value_t exc = sentry_value_new_exception(
+            "Exception", "Failed to set/get rights using Windows API, falling back to std::filesystem.");
         sentry_value_set_stacktrace(exc, NULL, 0);
         sentry_event_add_exception(event, exc);
         sentry_capture_event(event);
@@ -601,14 +612,13 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         }
         LOGW_WARN(logger(), L"Failed to set rights using Windows API, falling back to std::filesystem.");
         sentry_value_t event = sentry_value_new_event();
-        sentry_value_t exc =
-            sentry_value_new_exception("Exception", "Failed to set/get rights using Windows API, falling back to std::filesystem.");
+        sentry_value_t exc = sentry_value_new_exception(
+            "Exception", "Failed to set/get rights using Windows API, falling back to std::filesystem.");
         sentry_value_set_stacktrace(exc, NULL, 0);
         sentry_event_add_exception(event, exc);
         sentry_capture_event(event);
         Utility::_trustee.ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
-
     }
     return _setRightsStd(path, read, write, exec, ioError);
 }
