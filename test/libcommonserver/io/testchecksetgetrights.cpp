@@ -64,7 +64,7 @@ void TestIo::testCheckSetAndGetRights() {
 
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 
         bool isReadable = false;
         bool isWritable = false;
@@ -223,10 +223,10 @@ void TestIo::testCheckSetAndGetRights() {
 
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 
         CPPUNIT_ASSERT(IoHelper::createDirectory(subFolderPath, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 
         std::ofstream file(subFilePath.string());
         CPPUNIT_ASSERT(file.is_open());
