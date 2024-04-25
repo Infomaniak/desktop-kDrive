@@ -53,13 +53,9 @@ static int rightsSetToInt(rightsSet rightsSet) {
 }
 
 void TestIo::testCheckSetAndGetRights() {
-    std::cout << "TestIo::testCheckSetAndGetRights: start" << std::endl;
-
 #ifdef _WIN32
-    std::cout << "TestIo::testCheckSetAndGetRights: init trustee" << std::endl;
     CPPUNIT_ASSERT(Utility::init());  // Initialize the utility library, needed to access/change the permissions on Windows
 #endif
-
     const TemporaryDirectory temporaryDirectory;
 
     // Test if the rights are correctly set and get on a directory
@@ -79,7 +75,7 @@ void TestIo::testCheckSetAndGetRights() {
 
         // For a directory
 
-        /* Test all the possible rights and the all the possible order of rights modification. ie:
+        /* Test all the possible rights and all the possible order of rights modification. ie:
          *  | READ | WRITE | EXECUTE | |
          *  |  0   |   0   |    0    | v
          *  |  0   |   0   |    1    | |
@@ -99,8 +95,7 @@ void TestIo::testCheckSetAndGetRights() {
          *  ...
          */
 
-        for (int baseRigths = 0; baseRigths < 7;
-             baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
+        for (int baseRigths = 0; baseRigths < 7; baseRigths++) {
             for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
                 rightsSetFromInt(baseRigths, rightsSet);
 
@@ -120,8 +115,6 @@ void TestIo::testCheckSetAndGetRights() {
                 if (!(exists && isReadable == rightsSet.read && isWritable == rightsSet.write &&
                       isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    std::cout << "setted rigths (RWX): " << rightsSet.read << rightsSet.write << rightsSet.execute
-                              << " | readed rigths(RWX): " << isReadable << isWritable << isExecutable << std::endl;
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
 
@@ -143,8 +136,6 @@ void TestIo::testCheckSetAndGetRights() {
                 if (!(exists && isReadable == rightsSet.read && isWritable == rightsSet.write &&
                       isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    std::cout << "setted rigths (RWX): " << rightsSet.read << rightsSet.write << rightsSet.execute
-                              << " | readed rigths(RWX): " << isReadable << isWritable << isExecutable << std::endl;
                     CPPUNIT_ASSERT(false /* Set target rights mismatch with get target rights */);
                 }
             }
