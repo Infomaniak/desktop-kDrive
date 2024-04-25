@@ -129,7 +129,7 @@ void TestIo::testCheckSetAndGetRights() {
 
         IoError ioError = IoErrorUnknown;
 
-        std::ofstream file(filepath.string());
+        std::ofstream file(filepath);
         CPPUNIT_ASSERT(file.is_open());
         file << "testCheckSetAndGetRights";
         file.close();
