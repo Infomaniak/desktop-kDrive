@@ -132,7 +132,7 @@ bool VfsWin::startImpl(bool &, bool &, bool &) {
 
     _vfsSetupParams._namespaceCLSID = Utility::ws2s(std::wstring(clsid));
 
-    // setPinState(Path2QStr(_vfsSetupParams._localPath), PinStateOnlineOnly);
+    setPinState(Path2QStr(_vfsSetupParams._localPath), PinStateOnlineOnly);
 
     return true;
 }
