@@ -329,7 +329,7 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return IoHelper::getXAttrValue(itemPath.native(), FILE_ATTRIBUTE_OFFLINE, isDehydrated, ioError);
 }
 
-static bool setRightsApiWindows(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
+static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {  // Always return false if ioError is not IoErrorSuccess,
                                                                       // caller should check _isExpectedError(ioError)
     PACL pACL_old = nullptr;  // Current ACL
@@ -459,10 +459,10 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         }
 
         if (result == ERROR_INVALID_SID) {  // Access denied, try to force read control
-            setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger());
+            setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger());
             GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
             result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
-            setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger());
+            setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger());
             ioError = dWordError2ioError(result);
         }
 
@@ -475,13 +475,13 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             (rights & READ_CONTROL) == READ_CONTROL;  // Check if we have read control (needed to read the permissions)
 
         if (!readCtrl) {
-            if (setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError,
+            if (setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError,
                                     logger())) {  // Try to force read control
                 GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL,
                                      &psecDesc);
                 LocalFree(psecDesc);
                 GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
-                setRightsApiWindows(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError,
+                setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError,
                                     logger());  // Revoke read control after reading the permissions
                 readCtrl = (rights & READ_CONTROL) == READ_CONTROL;
             }
@@ -570,11 +570,11 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         }
 
         bool res = false;
-        res = setRightsApiWindows(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger());
+        res = setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger());
         if (!res) {
             return _isExpectedError(ioError);
         }
-        res = setRightsApiWindows(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger());
+        res = setRightsWindowsApi(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger());
 
         if (!res) {
             return _isExpectedError(ioError);
