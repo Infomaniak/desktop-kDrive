@@ -117,6 +117,9 @@ void TestIo::testCheckSetAndGetRights() {
         }
         // Restore the rights
         IoHelper::setRights(path, true, true, true, ioError);
+#ifdef _WIN32
+        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod); // Check that no error occurred with the wndows API
+#endif
     }
 
     // Test if the rights are correctly set and if they can be successfully retrieved from a file
@@ -139,7 +142,6 @@ void TestIo::testCheckSetAndGetRights() {
         for (int baseRigths = 0; baseRigths < 7;
              baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
             for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
-
                 auto rightsSet = RightsSet(baseRigths);
                 bool result = IoHelper::setRights(filepath, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                 result &= ioError == IoErrorSuccess;
@@ -184,6 +186,9 @@ void TestIo::testCheckSetAndGetRights() {
 
         // Restore the rights
         IoHelper::setRights(filepath, true, true, true, ioError);
+#ifdef _WIN32
+        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the wndows API
+#endif
     }
 
     // Check permissions are not set recursively on a folder
@@ -240,6 +245,9 @@ void TestIo::testCheckSetAndGetRights() {
 
         // Restore the rights
         IoHelper::setRights(path, true, true, true, ioError);  // Restore the rights for delete
+#ifdef _WIN32
+        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the wndows API
+#endif
     }
 
     // Test on a non existing file
@@ -256,6 +264,9 @@ void TestIo::testCheckSetAndGetRights() {
 
         CPPUNIT_ASSERT(IoHelper::setRights(path, true, true, true, ioError));
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+#ifdef _WIN32
+        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the wndows API
+#endif
     }
 }
 }  // namespace KDC
