@@ -1084,47 +1084,49 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
             return true;
         }
     } else {
-        PinState pinState = PinStateUnspecified;
-        if (!_syncPal->vfsPinState(absolutePath, pinState)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Utility::formatSyncPath(absolutePath).c_str());
-            _executorExitCode = ExitCodeSystemError;
-            _executorExitCause = ExitCauseInconsistentPinState;
-            return false;
-        }
-
-        switch (pinState) {
-            case PinStateInherited: {
-                // TODO : what do we do in that case??
-                LOG_SYNCPAL_WARN(_logger, "Inherited pin state not implemented yet");
-                _executorExitCode = ExitCodeDataError;
-                _executorExitCause = ExitCauseUnknown;
+        if (isPlaceholder) {
+            PinState pinState = PinStateUnspecified;
+            if (!_syncPal->vfsPinState(absolutePath, pinState)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Utility::formatSyncPath(absolutePath).c_str());
+                _executorExitCode = ExitCodeSystemError;
+                _executorExitCause = ExitCauseInconsistentPinState;
                 return false;
             }
-            case PinStateAlwaysLocal: {
-                if (isSyncingTmp) {
-                    // Ignore this item until it is synchronized
-                    isSyncing = true;
-                } else if (isHydrated) {
-                    // Download
+
+            switch (pinState) {
+                case PinStateInherited: {
+                    // TODO : what do we do in that case??
+                    LOG_SYNCPAL_WARN(_logger, "Inherited pin state not implemented yet");
+                    _executorExitCode = ExitCodeDataError;
+                    _executorExitCause = ExitCauseUnknown;
+                    return false;
                 }
-                break;
-            }
-            case PinStateOnlineOnly: {
-                // Update metadata
-                std::string error;
-                _syncPal->vfsUpdateMetadata(
-                    absolutePath, syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
-                    syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
-                    syncOp->affectedNode()->size(),
-                    syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
-                syncOp->setOmit(true);  // Do not propagate change in file system, only in DB
-                break;
-            }
-            case PinStateUnspecified:
-            default: {
-                LOGW_SYNCPAL_DEBUG(_logger, L"Ignore EDIT for file: " << Path2WStr(absolutePath).c_str());
-                ignoreItem = true;
-                return true;
+                case PinStateAlwaysLocal: {
+                    if (isSyncingTmp) {
+                        // Ignore this item until it is synchronized
+                        isSyncing = true;
+                    } else if (isHydrated) {
+                        // Download
+                    }
+                    break;
+                }
+                case PinStateOnlineOnly: {
+                    // Update metadata
+                    std::string error;
+                    _syncPal->vfsUpdateMetadata(
+                        absolutePath, syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : 0,
+                        syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified() : 0,
+                        syncOp->affectedNode()->size(),
+                        syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), error);
+                    syncOp->setOmit(true);  // Do not propagate change in file system, only in DB
+                    break;
+                }
+                case PinStateUnspecified:
+                default: {
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Ignore EDIT for file: " << Path2WStr(absolutePath).c_str());
+                    ignoreItem = true;
+                    return true;
+                }
             }
         }
     }
