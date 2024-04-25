@@ -585,7 +585,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         return true;
 
     } else {
-        return _setRightsStandart(path, read, write, exec, ioError);
+        return _setRightsStd(path, read, write, exec, ioError);
     }
 }
 
