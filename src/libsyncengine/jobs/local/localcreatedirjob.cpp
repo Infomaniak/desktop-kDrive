@@ -43,7 +43,7 @@ bool LocalCreateDirJob::canRun() {
     }
 
     if (exists) {
-        LOGW_DEBUG(_logger, L"Directory " << Path2WStr(_destFilePath).c_str() << L" already exist.");
+        LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" already exist.");
         _exitCode = ExitCodeDataError;
         _exitCause = ExitCauseFileAlreadyExist;
         return false;
@@ -60,13 +60,13 @@ void LocalCreateDirJob::runJob() {
     IoError ioError = IoErrorSuccess;
     if (IoHelper::createDirectory(_destFilePath, ioError)) {
         if (isExtendedLog()) {
-            LOGW_DEBUG(_logger, L"Directory " << Path2WStr(_destFilePath).c_str() << L" created");
+            LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" created");
         }
         _exitCode = ExitCodeOk;
     }
 
     if (ioError == IoErrorAccessDenied) {
-        LOGW_WARN(_logger, L"Search permission missing for path=" << Path2WStr(_destFilePath).c_str());
+        LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath).c_str());
         _exitCode = ExitCodeSystemError;
         _exitCause = ExitCauseNoSearchPermission;
         return;
@@ -81,11 +81,25 @@ void LocalCreateDirJob::runJob() {
 
     if (_exitCode == ExitCodeOk) {
         FileStat filestat;
-        bool exists = false;
-        if (!IoHelper::getFileStat(_destFilePath, &filestat, exists, ioError)) {
+        if (!IoHelper::getFileStat(_destFilePath, &filestat, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_destFilePath, ioError).c_str());
-            // TODO: handle error appropriately.
+            _exitCode = ExitCodeSystemError;
+            _exitCause = ExitCauseFileAccessError;
+            return;
         }
+
+        if (ioError == IoErrorNoSuchFileOrDirectory) {
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath).c_str());
+            _exitCode = ExitCodeDataError;
+            _exitCause = ExitCauseInvalidSnapshot;
+            return;
+        } else if (ioError == IoErrorAccessDenied) {
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath).c_str());
+            _exitCode = ExitCodeSystemError;
+            _exitCause = ExitCauseNoSearchPermission;
+            return;
+        }
+
         _nodeId = std::to_string(filestat.inode);
         _modtime = filestat.modtime;
     }

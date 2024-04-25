@@ -88,7 +88,7 @@ struct IoHelper {
          dangling symlink is an existing item of file type), false otherwise. \param ioError holds the error returned when an
          underlying OS API call fails. \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, IoError &ioError) noexcept;
+        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
 
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
@@ -173,7 +173,7 @@ struct IoHelper {
           \param ioError holds the error associated to a failure of the underlying OS API call, if any.
           \return true if no unexpected error occurred, false otherwise.
         */
-        static bool createSymlink(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept;
+        static bool createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept;
 
 #ifdef __APPLE__
         //! Create a Finder alias file for the specified target under the specified path.

@@ -41,8 +41,8 @@ bool DeleteJob::canRun() {
     bool exists;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _fileId, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path="
-                               << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
+        LOGW_WARN(_logger,
+                  L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
         _exitCode = ExitCodeSystemError;
         _exitCause = ExitCauseFileAccessError;
         return false;
@@ -50,20 +50,34 @@ bool DeleteJob::canRun() {
 
     if (exists) {
         FileStat filestat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
-        const bool fileStatSuccess = IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, exists, ioError);
-        if (!ParametersCache::instance()->parameters().syncHiddenFiles() && fileStatSuccess && filestat.isHidden) {
+        if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
+            LOGW_WARN(_logger,
+                      L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
+            _exitCode = ExitCodeSystemError;
+            _exitCause = ExitCauseFileAccessError;
+            return false;
+        }
+
+        if (ioError == IoErrorNoSuchFileOrDirectory) {
+            LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
+            _exitCode = ExitCodeDataError;
+            _exitCause = ExitCauseInvalidSnapshot;
+            return false;
+        } else if (ioError == IoErrorAccessDenied) {
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
+            _exitCode = ExitCodeSystemError;
+            _exitCause = ExitCauseNoSearchPermission;
+            return false;
+        }
+
+        if (!ParametersCache::instance()->parameters().syncHiddenFiles() && filestat.isHidden) {
             // The item is hidden, remove it from sync
             return true;
         }
-        if (!fileStatSuccess) {
-            LOGW_WARN(_logger,
-                      L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
-        }
 
-        LOGW_DEBUG(_logger, L"Item " << Path2WStr(_absoluteLocalFilepath).c_str()
-                                     << L" still exist on local replica. Aborting current sync and restart.");
+        LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
+                                      << L" still exist on local replica. Aborting current sync and restart.");
         _exitCode = ExitCodeDataError;  // Data error so the snapshots will be re-created
         _exitCause = ExitCauseUnexpectedFileSystemEvent;
         return false;

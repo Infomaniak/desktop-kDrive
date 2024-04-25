@@ -301,40 +301,29 @@ bool Utility::isNtfs(const SyncPath &dirPath) {
 #endif
 
 std::string Utility::fileSystemName(const SyncPath &dirPath) {
-    bool exists;
-    IoError ioError = IoErrorSuccess;
-    if (!IoHelper::checkIfPathExists(dirPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dirPath, ioError).c_str());
-        return std::string();
-    }
-
-    if (exists) {
 #if defined(__APPLE__)
-        struct statfs stat;
-        if (statfs(dirPath.native().c_str(), &stat) == 0) {
-            return stat.f_fstypename;
-        }
-#elif defined(_WIN32)
-        TCHAR szFileSystemName[MAX_PATH + 1];
-        DWORD dwMaxFileNameLength = 0;
-        DWORD dwFileSystemFlags = 0;
-
-        if (GetVolumeInformation(dirPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                                 szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-            return Utility::ws2s(szFileSystemName);
-        } else {
-            // Not all the requested information is retrieved
-            DWORD dwError = GetLastError();
-            LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << Path2WStr(dirPath.root_name()).c_str() << L" ("
-                                                                      << dwError << L")");
-
-            // !!! File system name can be OK or not !!!
-            return Utility::ws2s(szFileSystemName);
-        }
-#endif
-    } else {
-        return fileSystemName(dirPath.parent_path());
+    struct statfs stat;
+    if (statfs(dirPath.root_path().native().c_str(), &stat) == 0) {
+        return stat.f_fstypename;
     }
+#elif defined(_WIN32)
+    TCHAR szFileSystemName[MAX_PATH + 1];
+    DWORD dwMaxFileNameLength = 0;
+    DWORD dwFileSystemFlags = 0;
+
+    if (GetVolumeInformation(dirPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
+        return Utility::ws2s(szFileSystemName);
+    } else {
+        // Not all the requested information is retrieved
+        DWORD dwError = GetLastError();
+        LOGW_WARN(logger(),
+                  L"Error in GetVolumeInformation for " << Path2WStr(dirPath.root_name()).c_str() << L" (" << dwError << L")");
+
+        // !!! File system name can be OK or not !!!
+        return Utility::ws2s(szFileSystemName);
+    }
+#endif
 
     return std::string();
 }

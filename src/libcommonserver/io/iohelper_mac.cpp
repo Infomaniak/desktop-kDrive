@@ -49,16 +49,13 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, IoError &ioError) noexcept {
-    exists = true;
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoErrorSuccess;
 
     struct stat sb;
 
     if (lstat(path.string().c_str(), &sb) < 0) {
-        exists = (errno != ENOENT) && (errno != ENAMETOOLONG);
         ioError = posixError2ioError(errno);
-
         return _isExpectedError(ioError);
     }
 

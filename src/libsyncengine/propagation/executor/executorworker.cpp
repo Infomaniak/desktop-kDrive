@@ -67,8 +67,8 @@ void ExecutorWorker::execute() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
-    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->countManagedJobs() :" << JobManager::instance()->countManagedJobs());
-    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->maxNbThreads() * 2 :" << JobManager::instance()->maxNbThreads() * 2);
+    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->countManagedJobs(): " << JobManager::instance()->countManagedJobs());
+    LOG_SYNCPAL_DEBUG(_logger, "JobManager::instance()->maxNbThreads() * 2: " << JobManager::instance()->maxNbThreads() * 2);
 
     // Keep a copy of the sorted list
     _opList = _syncPal->_syncOps->opSortedList();
@@ -119,7 +119,7 @@ void ExecutorWorker::execute() {
             SyncOpPtr syncOp = _syncPal->_syncOps->getOp(opId);
 
             if (!syncOp) {
-                LOG_SYNCPAL_WARN(_logger, "Operation doesn't exist anymore - id=" << opId);
+                LOG_SYNCPAL_WARN(_logger, "Operation doesn't exist anymore: id=" << opId);
                 continue;
             }
 
@@ -144,7 +144,7 @@ void ExecutorWorker::execute() {
                     break;
                 }
                 default: {
-                    LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type "
+                    LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type: "
                                                    << Utility::s2ws(Utility::opType2Str(syncOp->type())).c_str() << L" on file "
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                     _executorExitCode = ExitCodeDataError;
@@ -212,7 +212,7 @@ void ExecutorWorker::initProgressManager() {
         SyncFileItem syncItem;
         SyncOpPtr syncOp = _syncPal->_syncOps->getOp(syncOpId);
         if (!syncOp) {
-            LOG_SYNCPAL_WARN(_logger, "Operation doesn't exist anymore - id=" << syncOpId);
+            LOG_SYNCPAL_WARN(_logger, "Operation doesn't exist anymore: id=" << syncOpId);
             continue;
         }
 
@@ -447,7 +447,8 @@ void ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
             }
         }
     } catch (...) {
-        LOGW_SYNCPAL_WARN(_logger, L"Failed to check if file " << Path2WStr(absolutePath).c_str() << L" already exist.");
+        LOGW_SYNCPAL_WARN(_logger,
+                          L"Failed to check if file: " << Utility::formatSyncPath(absolutePath).c_str() << L" already exist.");
     }
 
     if (!alreadyExist) {
@@ -522,8 +523,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 }
 
                 if (ioError == IoErrorAccessDenied) {
-                    LOGW_WARN(_logger,
-                              L"Item misses search permission -path=" << Path2WStr(absoluteLocalFilePath.parent_path()).c_str());
+                    LOGW_WARN(_logger, L"Item misses search permission: "
+                                           << Utility::formatSyncPath(absoluteLocalFilePath.parent_path()).c_str());
                     _executorExitCode = ExitCodeSystemError;
                     _executorExitCause = ExitCauseNoSearchPermission;
                     return false;
@@ -539,7 +540,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 }
 
                 if (ioError == IoErrorAccessDenied) {
-                    LOGW_WARN(_logger, L"Item misses search permission -path=" << Path2WStr(absoluteLocalFilePath).c_str());
+                    LOGW_WARN(_logger,
+                              L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
                     _executorExitCode = ExitCodeSystemError;
                     _executorExitCause = ExitCauseNoSearchPermission;
                     return false;
@@ -554,12 +556,25 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             }
 
             FileStat fileStat;
-            bool exists = false;
             IoError ioError = IoErrorSuccess;
-            if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, exists, ioError) || ioError != IoErrorSuccess) {
+            if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: "
                                                << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
                 _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusError);
+                _executorExitCode = ExitCodeSystemError;
+                _executorExitCause = ExitCauseUnknown;
+                return false;
+            }
+
+            if (ioError == IoErrorNoSuchFileOrDirectory) {
+                LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
+                _executorExitCode = ExitCodeDataError;
+                _executorExitCause = ExitCauseInvalidSnapshot;
+                return false;
+            } else if (ioError == IoErrorAccessDenied) {
+                LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
+                _executorExitCode = ExitCodeSystemError;
+                _executorExitCause = ExitCauseNoSearchPermission;
                 return false;
             }
 
@@ -597,7 +612,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 bool exists = false;
                 IoError ioError = IoErrorSuccess;
                 if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
-                    LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path="
+                    LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                            << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
                     _executorExitCode = ExitCodeSystemError;
                     _executorExitCause = ExitCauseFileAccessError;
@@ -607,8 +622,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 if (exists) {
                     // Normal in lite sync mode
                     if (ParametersCache::instance()->parameters().extendedLog()) {
-                        LOGW_SYNCPAL_DEBUG(
-                            _logger, L"File " << Path2WStr(absoluteLocalFilePath).c_str() << L" already exists on local replica");
+                        LOGW_SYNCPAL_DEBUG(_logger, L"File: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
+                                                              << L" already exists on local replica");
                     }
                     // Do not propagate this file
                     return true;
@@ -684,7 +699,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             IoError ioError = IoErrorSuccess;
             if (!IoHelper::getFileSize(absoluteLocalFilePath, filesize, ioError)) {
                 LOGW_WARN(_logger,
-                          L"Error in IoHelper::getFileSize " << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
+                          L"Error in IoHelper::getFileSize: " << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
                 _executorExitCode = ExitCodeSystemError;
                 _executorExitCause = ExitCauseUnknown;
                 return false;
@@ -779,14 +794,14 @@ bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path
         bool isSyncing = false;
         int progress = 0;
         if (!_syncPal->vfsStatus(path, isPlaceholder, isHydrated, isSyncing, progress)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(path).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(path).c_str());
             _executorExitCode = ExitCodeSystemError;
             _executorExitCause = ExitCauseFileAccessError;
             return false;
         }
 
         if (isPlaceholder && !isHydrated) {
-            LOGW_SYNCPAL_INFO(_logger, L"Do not upload dehydrated placeholders: " << Path2WStr(path).c_str());
+            LOGW_SYNCPAL_INFO(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(path).c_str());
             isDehydratedPlaceholder = true;
         }
     }
@@ -797,8 +812,8 @@ bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path
 bool ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
     SyncFileItem syncItem;
     if (!_syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Failed to retrieve SyncFileItem associated to item " << Path2WStr(relativeLocalPath).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve SyncFileItem associated to item: "
+                                       << Utility::formatSyncPath(relativeLocalPath).c_str());
         _executorExitCode = ExitCodeDataError;
         _executorExitCause = ExitCauseUnknown;
         return false;
@@ -809,8 +824,8 @@ bool ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
 bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated, bool &needRestart) {
     SyncFileItem syncItem;
     if (!_syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
-        LOGW_SYNCPAL_WARN(_logger,
-                          L"Failed to retrieve SyncFileItem associated to item " << Path2WStr(relativeLocalPath).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve SyncFileItem associated to item: "
+                                       << Utility::formatSyncPath(relativeLocalPath).c_str());
         _executorExitCode = ExitCodeDataError;
         _executorExitCause = ExitCauseUnknown;
         return false;
@@ -822,13 +837,26 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
 
     // Update the local ID
     FileStat fileStat;
-    bool exists = false;
     IoError ioError = IoErrorSuccess;
-    const bool fileStatSuccess = IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, exists, ioError);
-    if (!fileStatSuccess) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat " << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
+    if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
+        _executorExitCode = ExitCodeSystemError;
+        _executorExitCause = ExitCauseUnknown;
         return false;
     }
+
+    if (ioError == IoErrorNoSuchFileOrDirectory) {
+        LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
+        _executorExitCode = ExitCodeDataError;
+        _executorExitCause = ExitCauseInvalidSnapshot;
+        return false;
+    } else if (ioError == IoErrorAccessDenied) {
+        LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
+        _executorExitCode = ExitCodeSystemError;
+        _executorExitCause = ExitCauseNoSearchPermission;
+        return false;
+    }
+
     syncItem.setLocalNodeId(std::to_string(fileStat.inode));
 
     if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem, needRestart)) {  // TODO : should not use SyncFileItem
@@ -837,12 +865,12 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
 
     bool isSyncing = hydrated;
     if (!_syncPal->vfsForceStatus(absoluteLocalFilePath, isSyncing, 100, hydrated)) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(absoluteLocalFilePath).c_str());
+        LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
 
     if (!_syncPal->vfsSetPinState(absoluteLocalFilePath, hydrated ? PinStateAlwaysLocal : PinStateOnlineOnly)) {
-        LOGW_WARN(_logger, L"Error in vfsSetPinState for path=" << Path2WStr(absoluteLocalFilePath).c_str());
+        LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
 
@@ -966,21 +994,21 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         uint64_t filesize;
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::getFileSize(absoluteLocalFilePath, filesize, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for path=" << Path2WStr(absoluteLocalFilePath).c_str());
+            LOGW_WARN(_logger, L"Error in IoHelper::getFileSize: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
             _executorExitCode = ExitCodeSystemError;
             _executorExitCause = ExitCauseUnknown;
             return false;
         }
 
         if (ioError == IoErrorNoSuchFileOrDirectory) {  // The synchronization will re-started.
-            LOGW_WARN(_logger, L"Item doesn't exist for path=" << Path2WStr(absoluteLocalFilePath).c_str());
+            LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
             _executorExitCode = ExitCodeDataError;
             _executorExitCause = ExitCauseUnknown;
             return false;
         }
 
         if (ioError == IoErrorAccessDenied) {  // An action from the user is requested.
-            LOGW_WARN(_logger, L"Item misses search permission for path=" << Path2WStr(absoluteLocalFilePath).c_str());
+            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
             _executorExitCode = ExitCodeSystemError;
             _executorExitCause = ExitCauseNoSearchPermission;
             return false;
@@ -1040,7 +1068,7 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
     bool isSyncingTmp = false;
     int progress = 0;
     if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncingTmp, progress)) {
-        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(absolutePath).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath).c_str());
         _executorExitCode = ExitCodeSystemError;
         _executorExitCause = ExitCauseFileAccessError;
         return false;
@@ -1049,15 +1077,16 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
     if (syncOp->targetSide() == ReplicaSideRemote) {
         if (isPlaceholder && !isHydrated) {
             std::string id = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";
-            LOGW_SYNCPAL_DEBUG(_logger, L"Do not upload dehydrated placeholders: " << Path2WStr(absolutePath).c_str() << L" ("
-                                                                                   << Utility::s2ws(id).c_str() << L")");
+            LOGW_SYNCPAL_DEBUG(_logger, L"Do not upload dehydrated placeholders: "
+                                            << Utility::formatSyncPath(absolutePath).c_str() << L" (" << Utility::s2ws(id).c_str()
+                                            << L")");
             ignoreItem = true;
             return true;
         }
     } else {
         PinState pinState = PinStateUnspecified;
         if (!_syncPal->vfsPinState(absolutePath, pinState)) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Path2WStr(absolutePath).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Utility::formatSyncPath(absolutePath).c_str());
             _executorExitCode = ExitCodeSystemError;
             _executorExitCause = ExitCauseInconsistentPinState;
             return false;
@@ -1345,7 +1374,7 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
             bool isSyncing = false;
             int progress = 0;
             if (!_syncPal->vfsStatus(absoluteLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(absoluteLocalFilePath).c_str());
+                LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
                 _executorExitCode = ExitCodeSystemError;
                 _executorExitCause = ExitCauseFileAccessError;
                 return false;
@@ -1399,7 +1428,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
     bool writePermission = false;
     bool execPermission = false;
     if (!IoHelper::getRights(absoluteLocalFilePath, readPermission, writePermission, execPermission, exists)) {
-        LOGW_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absoluteLocalFilePath).c_str());
+        LOGW_WARN(_logger, L"Error in Utility::getRights: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
 
@@ -1407,8 +1436,8 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
         switch (syncOp->type()) {
             case OperationTypeCreate: {
                 if (exists && !writePermission) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"File/directory " << Path2WStr(absoluteLocalFilePath).c_str()
-                                                                   << L" already exists but doesn't have write permissions!");
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
+                                                          << L" already exists but doesn't have write permissions!");
                     Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, absoluteLocalFilePath, ConflictTypeNone,
                                 InconsistencyTypeNone, CancelTypeNone, "", ExitCodeSystemError, ExitCauseFileAccessError);
                     _syncPal->addError(error);
@@ -1420,8 +1449,8 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
             case OperationTypeMove:
             case OperationTypeDelete: {
                 if (!exists) {
-                    LOGW_SYNCPAL_WARN(
-                        _logger, L"File/directory " << Path2WStr(absoluteLocalFilePath).c_str() << L" doesn't exist anymore!");
+                    LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
+                                                         << L" doesn't exist anymore!");
                     return false;
                 }
 
@@ -1429,8 +1458,8 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                     Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, absoluteLocalFilePath, ConflictTypeNone,
                                 InconsistencyTypeNone, CancelTypeNone, "", ExitCodeSystemError, ExitCauseFileAccessError);
                     _syncPal->addError(error);
-                    LOGW_SYNCPAL_DEBUG(_logger, L"File/directory " << Path2WStr(absoluteLocalFilePath).c_str()
-                                                                   << L" doesn't have write permissions!");
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
+                                                          << L" doesn't have write permissions!");
                     return false;
                 }
                 break;
@@ -1450,8 +1479,8 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                 }
 
                 if (!writePermission) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"File/directory " << Path2WStr(absoluteLocalFilePath).c_str()
-                                                                   << L" doesn't have write permissions!");
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
+                                                          << L" doesn't have write permissions!");
                     return false;
                 }
 
@@ -1479,8 +1508,8 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
             }
             case OperationTypeEdit: {
                 if (!exists) {
-                    LOGW_SYNCPAL_WARN(
-                        _logger, L"File/directory " << Path2WStr(absoluteLocalFilePath).c_str() << L" doesn't exist anymore!");
+                    LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
+                                                         << L" doesn't exist anymore!");
                     return false;
                 }
 
@@ -1522,13 +1551,14 @@ bool ExecutorWorker::enoughLocalSpace(SyncOpPtr syncOp) {
     const int64_t freeBytes = Utility::freeDiskSpace(_syncPal->_localPath);
     if (freeBytes >= 0) {
         if (freeBytes < newSize + Utility::freeDiskSpaceLimit()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only " << freeBytes << L"B available at path "
-                                                                  << Path2WStr(_syncPal->_localPath).c_str()
+            LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only " << freeBytes << L"B available at "
+                                                                  << Utility::formatSyncPath(_syncPal->_localPath).c_str()
                                                                   << L". Synchronization canceled.");
             return false;
         }
     } else {
-        LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at" << Path2WStr(_syncPal->_localPath).c_str());
+        LOGW_SYNCPAL_WARN(
+            _logger, L"Could not determine free space available at " << Utility::formatSyncPath(_syncPal->_localPath).c_str());
     }
 
     return true;
@@ -1688,8 +1718,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             handleForbiddenAction(syncOp, relativeLocalPath);
         } else if (job->exitCode() == ExitCodeSystemError &&
                    (job->exitCause() == ExitCauseFileAccessError || job->exitCause() == ExitCauseMoveToTrashFailed)) {
-            LOGW_DEBUG(_logger, L"File/directory " << Path2WStr(relativeLocalPath).c_str()
-                                                   << L" doesn't have write permissions or is locked!");
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(relativeLocalPath).c_str()
+                                          << L" doesn't have write permissions or is locked!");
             _syncPal->blacklistTemporarily(
                 syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), relativeLocalPath,
                 syncOp->targetSide() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal);
@@ -1791,7 +1821,8 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
 
             // Exclude file from sync
             if (!_syncPal->vfsFileStatusChanged(fullPath, SyncFileStatusIgnored)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged for path=" << Path2WStr(fullPath).c_str());
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(fullPath).c_str());
             }
 
             cancelType = CancelTypeEdit;
@@ -2405,8 +2436,8 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                 job->exitCause() == ExitCauseFileAlreadyExist)) {
         auto localCreateDirJob(std::dynamic_pointer_cast<LocalCreateDirJob>(job));
         if (localCreateDirJob) {
-            LOGW_SYNCPAL_WARN(_logger, L"Item " << Path2WStr(localCreateDirJob->destFilePath()).c_str()
-                                                << L" already exist. Blacklisting it on local replica.");
+            LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(localCreateDirJob->destFilePath()).c_str()
+                                                 << L" already exist. Blacklisting it on local replica.");
             blacklistLocalItem(_syncPal->localPath() / localCreateDirJob->destFilePath());
         }
         return false;

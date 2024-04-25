@@ -28,6 +28,7 @@ struct FileStat {
         int64_t size = 0;
         uint64_t inode = 0;
         bool isHidden = false;
+        bool isDir = false;
 };
 
 }  // namespace KDC

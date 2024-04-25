@@ -198,7 +198,19 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         itemType.nodeType = NodeTypeFile;
         itemType.linkType = LinkTypeSymlink;
 
-        return _setTargetType(itemType);
+        // Get target type
+        FileStat filestat;
+        if (!getFileStat(path, &filestat, itemType.ioError)) {
+            LOGW_WARN(logger(), L"Error in getFileStat: " << Utility::formatStdError(path, ec).c_str());
+            return false;
+        }
+
+        if (itemType.ioError != IoErrorSuccess) {
+            return _isExpectedError(itemType.ioError);
+        }
+
+        itemType.targetType = filestat.isDir ? NodeTypeDirectory : NodeTypeFile;
+        return true;
     }
 
 #ifdef __APPLE__
@@ -389,7 +401,8 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
 
 void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
     IoError ioError = IoErrorSuccess;
-    if (!getFileStat(path, buf, exists, ioError)) {
+    if (!getFileStat(path, buf, ioError)) {
+        exists = (ioError != IoErrorNoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
@@ -400,8 +413,7 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, ti
     changed = false;
 
     FileStat fileStat;
-    bool exists = false;
-    if (!getFileStat(path, &fileStat, exists, ioError)) {
+    if (!getFileStat(path, &fileStat, ioError)) {
         LOGW_WARN(logger(), L"Failed to get file status: " << Utility::formatIoError(path, ioError).c_str());
 
         return false;
@@ -479,7 +491,7 @@ bool IoHelper::createDirectory(const SyncPath &path, IoError &ioError) noexcept 
     return creationSuccess;
 }
 
-bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
+bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path).c_str());
         ioError = IoErrorInvalidArgument;
@@ -487,25 +499,7 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, I
     }
 
     std::error_code ec;
-    bool createDirSymlink = false;
-#ifdef _WIN32
-    // !!! If the target doesn't exist yet, a file symlink will be created
-    if (targetPath.root_directory() == std::filesystem::path()) {
-        // targetPath is relative
-        createDirSymlink = std::filesystem::is_directory(path.parent_path() / targetPath, ec);
-    } else {
-        // targetPath is absolute
-        createDirSymlink = std::filesystem::is_directory(targetPath, ec);
-    }
-    ioError = stdError2ioError(ec);
-    if (ioError != IoErrorSuccess && ioError != IoErrorNoSuchFileOrDirectory) {
-        return _isExpectedError(ioError);
-    }
-#else
-    // On macOS & Linux, create_symlink can create files & directories symlinks
-#endif
-
-    if (createDirSymlink) {
+    if (isFolder) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Create directory symlink: target " << Path2WStr(targetPath).c_str() << L", "
                                                                                       << Utility::formatSyncPath(path).c_str());
         std::filesystem::create_directory_symlink(targetPath, path, ec);
