@@ -352,29 +352,6 @@ AppServer::AppServer(int &argc, char **argv)
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
 
-
-    // TODO: Remove this
-    std::string value;
-    bool res = ParmsDb::instance()->setValueForKey("lastServerSelfRestartTime", "test");
-    LOG_DEBUG(_logger, "lastServerSelfRestartTime set result : " << res);
-
-    res = ParmsDb::instance()->selectValueForKey("lastServerSelfRestartTime", value);
-    LOG_DEBUG(_logger, "lastServerSelfRestartTime get result : " << res << " value : " << value.c_str());
-
-    res = ParmsDb::instance()->setValueForKey("lastServerSelfRestartTime", "changed value");
-    LOG_DEBUG(_logger, "lastServerSelfRestartTime set result : " << res);
-
-    res = ParmsDb::instance()->selectValueForKey("lastServerSelfRestartTime", value);
-    LOG_DEBUG(_logger, "lastServerSelfRestartTime get result : " << res << " value : " << value.c_str());
-
-    res = ParmsDb::instance()->deleteKeyValueEntry("lastServerSelfRestartTime");
-    LOG_DEBUG(_logger, "lastServerSelfRestartTime delete result : " << res);
-
-    res = ParmsDb::instance()->selectValueForKey("lastServerSelfRestartTime", value);
-    LOG_DEBUG(_logger, "lastServerSelfRestartTime get result : " << res << " value : " << value.c_str());
-
-    res = ParmsDb::instance()->selectValueForKey("lastServerSelfRestartTime", value, "custom default value");
-    LOG_DEBUG(_logger, "lastServerSelfRestartTime get result : " << res << " value : " << value.c_str());
 }
 
 AppServer::~AppServer() {
