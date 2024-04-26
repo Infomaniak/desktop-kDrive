@@ -334,81 +334,81 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {  // Return false if we should try the fallback method
 
-    PACL pACL_old = nullptr;  // Current ACL
-    PACL pACL_new = nullptr;  // New ACL
+    PACL pACLold = nullptr;  // Current ACL
+    PACL pACLnew = nullptr;  // New ACL
     PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
-    EXPLICIT_ACCESS ExplicitAccess;
-    ZeroMemory(&ExplicitAccess, sizeof(ExplicitAccess));
+    EXPLICIT_ACCESS explicitAccess;
+    ZeroMemory(&explicitAccess, sizeof(explicitAccess));
 
-    ExplicitAccess.grfAccessPermissions = permission;
-    ExplicitAccess.grfAccessMode = accessMode;
-    ExplicitAccess.grfInheritance = NO_INHERITANCE;
-    ExplicitAccess.Trustee.pMultipleTrustee = nullptr;
-    ExplicitAccess.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
-    ExplicitAccess.Trustee.TrusteeForm = Utility::_trustee.TrusteeForm;
-    ExplicitAccess.Trustee.TrusteeType = Utility::_trustee.TrusteeType;
-    ExplicitAccess.Trustee.ptstrName = Utility::_trustee.ptstrName;
+    explicitAccess.grfAccessPermissions = permission;
+    explicitAccess.grfAccessMode = accessMode;
+    explicitAccess.grfInheritance = NO_INHERITANCE;
+    explicitAccess.Trustee.pMultipleTrustee = nullptr;
+    explicitAccess.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
+    explicitAccess.Trustee.TrusteeForm = Utility::_trustee.TrusteeForm;
+    explicitAccess.Trustee.TrusteeType = Utility::_trustee.TrusteeType;
+    explicitAccess.Trustee.ptstrName = Utility::_trustee.ptstrName;
 
-    std::wstring path_wstr = Path2WStr(path);
-    size_t pathw_len = path_wstr.length();
+    std::wstring pathWstr = Path2WStr(path);
+    size_t pathLen = pathWstr.length();
 
-    auto pathw_ptr = std::make_unique<WCHAR[]>(pathw_len + 1);
-    path_wstr.copy(pathw_ptr.get(), pathw_len);
+    auto pathwPtr = std::make_unique<WCHAR[]>(pathLen + 1);
+    pathWstr.copy(pathwPtr.get(), pathLen);
 
-    LPCWSTR pathw_c = path_wstr.c_str();
-    LPWSTR pathw = pathw_ptr.get();
-    pathw[pathw_len] = L'\0';
+    LPCWSTR pathw_c = pathWstr.c_str();
+    LPWSTR pathw = pathwPtr.get();
+    pathw[pathLen] = L'\0';
 
-    DWORD ValueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACL_old,
+    DWORD valueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACLold,
                                                nullptr, &pSecurityDescriptor);
-    ioError = dWordError2ioError(ValueReturned);
-    if (ValueReturned != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(ValueReturned);
+    ioError = dWordError2ioError(valueReturned);
+    if (valueReturned != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(valueReturned);
         LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str()
-                                                             << L" | DWORD error: " << ValueReturned);
+                                                             << L" | DWORD error: " << valueReturned);
         LocalFree(pSecurityDescriptor);
-        LocalFree(pACL_new);
-        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        LocalFree(pACLnew);
+        // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
         if (ioError == IoErrorNoSuchFileOrDirectory || ioError == IoErrorAccessDenied) {
             return true;
         }
         return false;
     }
 
-    ValueReturned = SetEntriesInAcl(1, &ExplicitAccess, pACL_old, &pACL_new);
-    ioError = dWordError2ioError(ValueReturned);
-    if (ValueReturned != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(ValueReturned);
+    valueReturned = SetEntriesInAcl(1, &explicitAccess, pACLold, &pACLnew);
+    ioError = dWordError2ioError(valueReturned);
+    if (valueReturned != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(valueReturned);
         LOGW_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatIoError(path, ioError).c_str() << L" | DWORD error: "
-                                                        << ValueReturned);
+                                                        << valueReturned);
         LocalFree(pSecurityDescriptor);
-        LocalFree(pACL_new);
-        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        LocalFree(pACLnew);
+        // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
         if (ioError == IoErrorNoSuchFileOrDirectory || ioError == IoErrorAccessDenied) {
             return true;
         }
         return false;
     }
 
-    if (!IsValidAcl(pACL_new)) {
+    if (!IsValidAcl(pACLnew)) {
         ioError = IoErrorUnknown;
         LOGW_WARN(logger, L"Invalid new ACL: " << Utility::formatSyncPath(path).c_str());
 
         LocalFree(pSecurityDescriptor);
-        LocalFree(pACL_new);
-        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        LocalFree(pACLnew);
+        // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
         return false;
     }
 
-    ValueReturned = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACL_new, nullptr);
-    ioError = dWordError2ioError(ValueReturned);
-    if (ValueReturned != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(ValueReturned);
+    valueReturned = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACLnew, nullptr);
+    ioError = dWordError2ioError(valueReturned);
+    if (valueReturned != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(valueReturned);
         LOGW_WARN(logger, L"Error in SetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str()
-                                                             << L" | DWORD error: " << ValueReturned);
+                                                             << L" | DWORD error: " << valueReturned);
         LocalFree(pSecurityDescriptor);
-        LocalFree(pACL_new);
-        // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+        LocalFree(pACLnew);
+        // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
         if (ioError == IoErrorNoSuchFileOrDirectory || ioError == IoErrorAccessDenied) {
             return true;
         }
@@ -417,8 +417,8 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
 
     LocalFree(pSecurityDescriptor);
-    LocalFree(pACL_new);
-    // pACL_old is a pointer to the ACL in the security descriptor, so it should not be freed.
+    LocalFree(pACLnew);
+    // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
 
     return true;
 }
