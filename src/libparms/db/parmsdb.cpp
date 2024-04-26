@@ -3446,7 +3446,7 @@ bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
 }
 
 
-bool ParmsDb::selectValueFromKeyValue(const std::string &key, std::string &value, const std::string &defaultValue) {
+bool ParmsDb::selectValueForKey(const std::string &key, std::string &value, const std::string &defaultValue) {
     const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_VALUE_FROM_KEY_REQUEST_ID));
@@ -3468,15 +3468,15 @@ bool ParmsDb::selectValueFromKeyValue(const std::string &key, std::string &value
     return true;
 }
 
-bool ParmsDb::setValueFromKeyValue(const std::string &key, const std::string &value) {
+bool ParmsDb::setValueForKey(const std::string &key, const std::string &value) {
     if (value.empty()) {
-        return deleteValueFromKeyValue(key);
+        return deleteKeyValueEntry(key);
     }
 
     std::string existingValue;
     int errId;
     std::string error;
-    bool found = selectValueFromKeyValue(key, existingValue);
+    bool found = selectValueForKey(key, existingValue);
     found = found && !existingValue.empty();
     const std::scoped_lock lock(_mutex);
     if (found) {  // UPDATE
@@ -3502,7 +3502,7 @@ bool ParmsDb::setValueFromKeyValue(const std::string &key, const std::string &va
     return true;
 }
 
-bool ParmsDb::deleteValueFromKeyValue(const std::string &key) {
+bool ParmsDb::deleteKeyValueEntry(const std::string &key) {
     const std::scoped_lock lock(_mutex);
 
     int errId;
