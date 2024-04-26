@@ -450,7 +450,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
         LOGW_DEBUG(_logger, L"Create symlink: " << Utility::formatSyncPath(targetPath).c_str() << L", "
                                                 << Utility::formatSyncPath(_localpath).c_str());
 
-        bool isFolder = mimeType == mimeTypeSymlink ? false : true;
+        bool isFolder = mimeType == mimeTypeSymlinkFolder;
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::createSymlink(targetPath, _localpath, isFolder, ioError)) {
             LOGW_WARN(_logger, L"Failed to create symlink: " << Utility::formatIoError(targetPath, ioError).c_str());
@@ -509,8 +509,7 @@ bool DownloadJob::removeTmpFile(const SyncPath &path) {
     std::error_code ec;
     if (!std::filesystem::remove_all(path, ec)) {
         if (ec) {
-            LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatSyncPath(path).c_str() << L", "
-                                                         << Utility::formatStdError(ec).c_str());
+            LOGW_WARN(_logger, L"Failed to remove all: " << Utility::formatStdError(path, ec).c_str());
             return false;
         }
 
@@ -558,8 +557,7 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
                 LOGW_DEBUG(_logger, L"Retrying to move downloaded file: " << Utility::formatSyncPath(_localpath).c_str());
                 counter--;
             } else {
-                LOGW_WARN(_logger, L"Failed to rename: " << Utility::formatSyncPath(_localpath).c_str() << L", "
-                                                         << Utility::formatStdError(ec).c_str());
+                LOGW_WARN(_logger, L"Failed to rename: " << Utility::formatStdError(_localpath, ec).c_str());
                 return false;
             }
         }
@@ -576,14 +574,12 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
             }
 
             if (!exists) {
-                LOGW_INFO(_logger, L"Parent of item does not exist anymore: " << Utility::formatSyncPath(_localpath).c_str()
-                                                                              << L", " << Utility::formatStdError(ec).c_str());
+                LOGW_INFO(_logger, L"Parent of item does not exist anymore: " << Utility::formatStdError(_localpath, ec).c_str());
                 restartSync = true;
                 return true;
             }
 
-            LOGW_WARN(_logger, L"Failed to rename: " << Utility::formatSyncPath(_localpath).c_str() << L", "
-                                                     << Utility::formatStdError(ec).c_str());
+            LOGW_WARN(_logger, L"Failed to rename: " << Utility::formatStdError(_localpath, ec).c_str());
             return false;
         }
 #ifdef _WIN32

@@ -632,7 +632,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     ItemType itemType;
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getItemType: " << Utility::formatSyncPath(absoluteParentDirPath).c_str());
+                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, itemType.ioError).c_str());
         setExitCause(ExitCauseFileAccessError);
         return ExitCodeSystemError;
     }
