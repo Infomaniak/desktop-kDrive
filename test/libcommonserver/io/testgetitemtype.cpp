@@ -84,14 +84,14 @@ GetItemChecker::Result GetItemChecker::checkItemIsNotFound(const SyncPath &path)
 }
 
 GetItemChecker::Result GetItemChecker::checkSuccessfullRetrievalOfDanglingLink(const SyncPath &path, const SyncPath &targetPath,
-                                                                               LinkType linkType) noexcept {
+                                                                               LinkType linkType, NodeType targetType) noexcept {
     ItemType itemType;
     try {
         CPPUNIT_ASSERT(_iohelper->getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);  // Although `targetPath` is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(itemType.linkType == linkType);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
+        CPPUNIT_ASSERT(itemType.targetType == targetType);
         CPPUNIT_ASSERT(itemType.targetPath == targetPath);
     } catch (const CppUnit::Exception &e) {
         return Result{false, makeMessage(e)};
@@ -239,13 +239,13 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         // Assumptions made to implement getItemType.
         CPPUNIT_ASSERT(std::filesystem::is_symlink(path));
-        CPPUNIT_ASSERT(!std::filesystem::exists(path));
+        CPPUNIT_ASSERT(!std::filesystem::exists(path));  // Follow links
         std::error_code ec;
         const SyncPath targetPath_ = std::filesystem::read_symlink(path, ec);
         CPPUNIT_ASSERT(targetPath == targetPath_ && ec.value() == 0);
 
         // Actual test
-        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkTypeSymlink);
+        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkTypeSymlink, NodeTypeUnknown);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
@@ -287,7 +287,12 @@ void TestIo::testGetItemTypeSimpleCases() {
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
         std::filesystem::remove(targetPath);
 
-        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias);
+#ifdef _WIN32
+        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeFile);
+#else
+        const auto result =
+            checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeUnknown);
+#endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
@@ -303,7 +308,13 @@ void TestIo::testGetItemTypeSimpleCases() {
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
         std::filesystem::remove_all(targetPath);
 
-        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias);
+#ifdef _WIN32
+        const auto result =
+            checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeDirectory);
+#else
+        const auto result =
+            checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeUnknown);
+#endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
@@ -540,7 +551,7 @@ void TestIo::testGetItemTypeAllBranches() {
             return std::filesystem::is_directory(path, ec);
         });
 
-        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkTypeSymlink);
+        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkTypeSymlink, NodeTypeFile);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
 
         _testObj->resetFunctions();

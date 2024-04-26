@@ -209,7 +209,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
             return _isExpectedError(itemType.ioError);
         }
 
-        itemType.targetType = filestat.isDir ? NodeTypeDirectory : NodeTypeFile;
+        itemType.targetType = filestat.nodeType;
         return true;
     }
 

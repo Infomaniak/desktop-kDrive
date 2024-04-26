@@ -62,6 +62,18 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
 #endif
     buf->modtime = sb.st_mtime;
     buf->size = sb.st_size;
+    if (S_ISLNK(sb.st_mode)) {
+        // Symlink
+        struct stat sbTarget;
+        if (stat(path.string().c_str(), &sbTarget) < 0) {
+            // Cannot access target => undetermined
+            buf->nodeType = NodeTypeUnknown;
+        } else {
+            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+        }
+    } else {
+        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+    }
 
     return true;
 }

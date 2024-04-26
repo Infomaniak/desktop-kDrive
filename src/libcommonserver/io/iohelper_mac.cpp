@@ -71,6 +71,18 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
 #endif
     buf->modtime = sb.st_mtime;
     buf->size = sb.st_size;
+    if (S_ISLNK(sb.st_mode)) {
+        // Symlink
+        struct stat sbTarget;
+        if (stat(path.string().c_str(), &sbTarget) < 0) {
+            // Cannot access target => undetermined
+            buf->nodeType = NodeTypeUnknown;
+        } else {
+            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+        }
+    } else {
+        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+    }
 
     return true;
 }
@@ -92,9 +104,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, Io
     }
 
     FileStat filestat;
-    bool exists = false;
-
-    if (!getFileStat(filepath.string().c_str(), &filestat, exists, ioError)) {
+    if (!getFileStat(filepath.string().c_str(), &filestat, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(filepath, ioError).c_str());
         return false;
     }
@@ -107,7 +117,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, Io
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
     return (error == IoErrorNoSuchFileOrDirectory) || (error == IoErrorAttrNotFound) || (error == IoErrorAccessDenied);
-};
+}
 }  // namespace
 
 bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, std::string &value, IoError &ioError) noexcept {
