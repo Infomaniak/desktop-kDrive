@@ -122,15 +122,9 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
-        bool selectLastServerSelfRestartTime(int64_t &lastServerRestartTime);
-        bool selectLastClientSelfRestartTime(int64_t &lastClientRestartTime);
-
         bool selectValueForKey(const std::string &key, std::string &value, const std::string &defaultValue = "");
         bool setValueForKey(const std::string &key, const std::string &value); // update or insert
         bool deleteKeyValueEntry(const std::string &key);
-
-        bool updateLastServerSelfRestartTime(int64_t lastServerRestartTime = -1 /* -1 means now*/);
-        bool updateLastClientSelfRestartTime(int64_t lastClientRestartTime = -1 /* -1 means now*/);
 
     private:
         static std::shared_ptr<ParmsDb> _instance;
