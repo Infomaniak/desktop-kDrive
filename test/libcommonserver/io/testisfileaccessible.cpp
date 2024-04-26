@@ -34,11 +34,10 @@ void TestIo::testIsFileAccessible() {
     const SyncPath destPath = temporaryDirectory.path / "test_big_file_copy.txt";
 
     // Create a 100 MB file
-    std::ofstream sourceFile(sourcePath);
-    for (int i = 0; i < 10000000; i++) {
-        sourceFile << "0123456789";
+    {
+        std::ofstream sourceFile(sourcePath);
+        sourceFile << std::string(100000000, 'z');
     }
-    sourceFile.close();
 
     std::shared_ptr<LocalCopyJob> copyJob = std::make_shared<LocalCopyJob>(sourcePath, destPath);
     JobManager::instance()->queueAsyncJob(copyJob);
