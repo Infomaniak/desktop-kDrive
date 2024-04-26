@@ -823,7 +823,7 @@ ExitCode GuiRequests::setLaunchOnStartup(bool enabled) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getValueForKey(const QString &key, QString &value, const QString &defaultValue = QString()) {
+ExitCode GuiRequests::getValueForKey(const QString &key, QString &value, const QString &defaultValue) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << key;
