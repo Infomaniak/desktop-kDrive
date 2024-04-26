@@ -1831,11 +1831,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case REQUEST_NUM_UTILITY_GET_KEYVALUE: {
             QString key;
+            QString defaultValue;
             QDataStream paramsStream(params);
             paramsStream >> key;
+            paramsStream >> defaultValue;
 
             std::string value;
-            if (!ParmsDb::instance()->selectValueForKey(key.toStdString(), value)) {
+            if (!ParmsDb::instance()->selectValueForKey(key.toStdString(), value, defaultValue.toStdString())) {
                 LOG_WARN(_logger, "Error in ParmsDb::getValueFromKeyValue");
                 resultStream << ExitCodeDbError;
                 break;
