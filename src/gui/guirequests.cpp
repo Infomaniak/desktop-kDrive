@@ -823,6 +823,43 @@ ExitCode GuiRequests::setLaunchOnStartup(bool enabled) {
     return exitCode;
 }
 
+ExitCode GuiRequests::getValueForKey(const QString &key, QString &value) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << key;
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_KEYVALUE, params, results)) {
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> value;
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::setValueForKey(const QString &key, const QString &value) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << key;
+    paramsStream << value;
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SET_KEYVALUE, params, results)) {
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+
+    return exitCode;
+
+}
+
 ExitCode GuiRequests::getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                     bool withPath /*= false*/) {
     QByteArray params;

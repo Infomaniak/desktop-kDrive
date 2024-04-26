@@ -121,6 +121,8 @@ struct GuiRequests {
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);
         static ExitCode setLaunchOnStartup(bool enabled);
+        static ExitCode getValueForKey(const QString &key, QString &value);
+        static ExitCode setValueForKey(const QString &key, const QString &value);
 };
 
 }  // namespace KDC
