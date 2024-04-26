@@ -351,6 +351,30 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
+
+
+    // TODO: Remove this
+    std::string value;
+    bool res = ParmsDb::instance()->setValueForKey("lastServerSelfRestartTime", "test");
+    LOG_DEBUG(_logger, "lastServerSelfRestartTime set result : " << res);
+
+    res = ParmsDb::instance()->selectValueForKey("lastServerSelfRestartTime", value);
+    LOG_DEBUG(_logger, "lastServerSelfRestartTime get result : " << res << " value : " << value.c_str());
+
+    res = ParmsDb::instance()->setValueForKey("lastServerSelfRestartTime", "changed value");
+    LOG_DEBUG(_logger, "lastServerSelfRestartTime set result : " << res);
+
+    res = ParmsDb::instance()->selectValueForKey("lastServerSelfRestartTime", value);
+    LOG_DEBUG(_logger, "lastServerSelfRestartTime get result : " << res << " value : " << value.c_str());
+
+    res = ParmsDb::instance()->deleteKeyValueEntry("lastServerSelfRestartTime");
+    LOG_DEBUG(_logger, "lastServerSelfRestartTime delete result : " << res);
+
+    res = ParmsDb::instance()->selectValueForKey("lastServerSelfRestartTime", value);
+    LOG_DEBUG(_logger, "lastServerSelfRestartTime get result : " << res << " value : " << value.c_str());
+
+    res = ParmsDb::instance()->selectValueForKey("lastServerSelfRestartTime", value, "custom default value");
+    LOG_DEBUG(_logger, "lastServerSelfRestartTime get result : " << res << " value : " << value.c_str());
 }
 
 AppServer::~AppServer() {
@@ -1789,6 +1813,38 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCodeOk;
             break;
         }
+        case REQUEST_NUM_UTILITY_SET_KEYVALUE: {
+            QString key;
+            QString value;
+            QDataStream paramsStream(params);
+            paramsStream >> key;
+            paramsStream >> value;
+
+            if (!ParmsDb::instance()->setValueForKey(key.toStdString(), value.toStdString())) {
+                LOG_WARN(_logger, "Error in ParmsDb::setKeyValue");
+                resultStream << ExitCodeDbError;
+                break;
+            }
+
+            resultStream << ExitCodeOk;
+            break;
+        }
+        case REQUEST_NUM_UTILITY_GET_KEYVALUE: {
+            QString key;
+            QDataStream paramsStream(params);
+            paramsStream >> key;
+
+            std::string value;
+            if (!ParmsDb::instance()->selectValueForKey(key.toStdString(), value)) {
+                LOG_WARN(_logger, "Error in ParmsDb::getValueFromKeyValue");
+                resultStream << ExitCodeDbError;
+                break;
+            }
+
+            resultStream << ExitCodeOk;
+            resultStream << QString::fromStdString(value);
+            break;
+        }
         case REQUEST_NUM_SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId;
             bool value;
@@ -2038,8 +2094,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
 
     if (message == showSynthesisMsg) {
         showSynthesis();
-    }
-    else if (message == showSettingsMsg) {
+    } else if (message == showSettingsMsg) {
         showSettings();
     }
 }
