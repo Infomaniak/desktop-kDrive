@@ -42,12 +42,15 @@
 #include <Accctrl.h>
 #define SECURITY_WIN32
 #include <security.h>
+#include <ntstatus.h>
 
 namespace KDC {
 
 namespace {
 IoError dWordError2ioError(DWORD error) noexcept {
     switch (error) {
+        case ERROR_SUCCESS:
+            return IoErrorSuccess;
         case ERROR_ACCESS_DENIED:
             return IoErrorAccessDenied;
         case ERROR_DISK_FULL:
@@ -56,8 +59,8 @@ IoError dWordError2ioError(DWORD error) noexcept {
             return IoErrorFileExists;
         case ERROR_INVALID_PARAMETER:
             return IoErrorInvalidArgument;
-        case ERROR_SUCCESS:
-            return IoErrorSuccess;
+        case ERROR_FILENAME_EXCED_RANGE:
+            return IoErrorFileNameTooLong;
         case ERROR_FILE_NOT_FOUND:
         case ERROR_INVALID_DRIVE:
         case ERROR_PATH_NOT_FOUND:
@@ -65,7 +68,25 @@ IoError dWordError2ioError(DWORD error) noexcept {
         default:
             return IoErrorUnknown;
     }
-}  // namespace
+}
+
+IoError ntStatus2ioError(NTSTATUS status) noexcept {
+    switch (status) {
+        case STATUS_SUCCESS:
+            return IoErrorSuccess;
+        case STATUS_ACCESS_DENIED:
+            return IoErrorAccessDenied;
+        case STATUS_DISK_FULL:
+            return IoErrorDiskFull;
+        case STATUS_INVALID_PARAMETER:
+            return IoErrorInvalidArgument;
+        case STATUS_NO_SUCH_FILE:
+        case STATUS_NO_SUCH_DEVICE:
+            return IoErrorNoSuchFileOrDirectory;
+        default:
+            return IoErrorUnknown;
+    }
+}
 
 time_t FileTimeToUnixTime(FILETIME *filetime, DWORD *remainder) {
     long long int t = filetime->dwHighDateTime;
@@ -161,8 +182,8 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
 
         hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                               FILE_FLAG_BACKUP_SEMANTICS, NULL);
-
         if (hParent == INVALID_HANDLE_VALUE) {
+            DWORD dwError = GetLastError();
             if (counter) {
                 retry = true;
                 Utility::msleep(10);
@@ -173,14 +194,14 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
             }
 
             LOG_WARN(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()).c_str());
-            ioError = dWordError2ioError(GetLastError());
+            ioError = dWordError2ioError(dwError);
             return _isExpectedError(ioError);
         }
     }
 
     // Get file information
     WCHAR szFileName[MAX_PATH_LENGTH_WIN_LONG];
-    lstrcpyW(szFileName, path.filename().wstring().c_str());
+    StringCchCopy(szFileName, MAX_PATH_LENGTH_WIN_LONG, path.filename().wstring().c_str());
 
     UNICODE_STRING fn;
     fn.Buffer = (LPWSTR)szFileName;
@@ -214,7 +235,12 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in zwQueryDirectoryFile: " << Utility::formatSyncPath(path.parent_path()).c_str());
         CloseHandle(hParent);
-        ioError = dWordError2ioError(dwError);
+
+        if (!NT_SUCCESS(status)) {
+            ioError = ntStatus2ioError(status);
+        } else if (dwError != 0) {
+            ioError = dWordError2ioError(dwError);
+        }
         return _isExpectedError(ioError);
     }
 
@@ -227,7 +253,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
     buf->creationTime = FileTimeToUnixTime(pFileInfo->CreationTime, &rem);
 
     buf->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
-    buf->isDir = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+    buf->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeTypeDirectory : NodeTypeFile;
     CloseHandle(hParent);
 
     return true;
