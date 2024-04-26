@@ -30,6 +30,9 @@ class DownloadJob : public AbstractTokenNetworkJob {
         DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize);
         ~DownloadJob();
 
+        inline const NodeId & remoteNodeId() const { return _remoteFileId; }
+        inline const SyncPath & localPath() const { return _localpath; }
+
         inline const NodeId &localNodeId() const { return _localNodeId; }
         inline SyncTime modtime() const { return _modtimeIn; }
 

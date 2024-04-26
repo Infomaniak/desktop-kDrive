@@ -788,6 +788,21 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         return;
     }
 
+    if (directDownloadJobsMapIt->second->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+        Error error(syncDbId()
+                    , ""
+                    , directDownloadJobsMapIt->second->remoteNodeId()
+                    , NodeTypeFile
+                    , directDownloadJobsMapIt->second->localPath()
+                    , ConflictTypeNone
+                    , InconsistencyTypeNone
+                    , CancelTypeNone
+                    , ""
+                    , ExitCodeBackError
+                    , ExitCauseNotFound);
+        addError(error);
+    }
+
     _syncPathToDownloadJobMap.erase(directDownloadJobsMapIt->second->affectedFilePath());
     _directDownloadJobsMap.erase(directDownloadJobsMapIt);
 }
