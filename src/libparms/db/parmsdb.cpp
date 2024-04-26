@@ -1464,7 +1464,6 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
         LOG_DEBUG(_logger, "Upgrade < 3.6.1 DB");
 
         queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
-
         ASSERT(queryCreate(CREATE_SELF_RESTARTER_TABLE_ID));
         if (!queryPrepare(CREATE_SELF_RESTARTER_TABLE_ID, CREATE_SELF_RESTARTER_TABLE, false, errId, error)) {
             queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
@@ -1476,6 +1475,18 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
             return sqlFail(CREATE_SELF_RESTARTER_TABLE_ID, error);
         }
         queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
+
+        queryFree(CREATE_KEY_VALUE_TABLE_ID);
+        ASSERT(queryCreate(CREATE_KEY_VALUE_TABLE_ID));
+        if (!queryPrepare(CREATE_KEY_VALUE_TABLE_ID, CREATE_KEY_VALUE_TABLE, false, errId, error)) {
+            queryFree(CREATE_KEY_VALUE_TABLE_ID);
+            return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
+        }
+        if (!queryExec(CREATE_KEY_VALUE_TABLE_ID, errId, error)) {
+            queryFree(CREATE_KEY_VALUE_TABLE_ID);
+            return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
+        }
+        queryFree(CREATE_KEY_VALUE_TABLE_ID);
     }
 
     return true;
