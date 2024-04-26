@@ -324,13 +324,15 @@ AppServer::AppServer(int &argc, char **argv)
         LOG_WARN(_logger, "Server auto restart after a crash.");
         if (serverCrashedRecently()) {
             LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
-            KDC::ParmsDb::instance()->updateLastServerSelfRestartTime();
             QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed!"), QMessageBox::Ok);
-            KDC::ParmsDb::instance()->updateLastServerSelfRestartTime(0);
+            KDC::ParmsDb::instance()->setValueForKey("lastServerSelfRestart", "0");
             QTimer::singleShot(0, this, quit);
             return;
         }
-        KDC::ParmsDb::instance()->updateLastServerSelfRestartTime();
+        long timestamp =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        std::string timestampStr = std::to_string(timestamp);
+        KDC::ParmsDb::instance()->setValueForKey("lastServerSelfRestart", timestampStr);
     }
 
     // Start client
@@ -351,7 +353,6 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
-
 }
 
 AppServer::~AppServer() {
@@ -2055,13 +2056,16 @@ void AppServer::onRestartClientReceived() {
     // Check last start time
     if (clientCrashedRecently()) {
         LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
-        KDC::ParmsDb::instance()->updateLastClientSelfRestartTime(0);
+        KDC::ParmsDb::instance()->setValueForKey("lastClientSelfRestart", "0");
         QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed"), QMessageBox::Ok);
         QTimer::singleShot(0, this, &AppServer::quit);
         return;
     } else {
         CommServer::instance()->setHasQuittedProperly(false);
-        KDC::ParmsDb::instance()->updateLastClientSelfRestartTime();
+        long timestamp =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        std::string timestampStr = std::to_string(timestamp);
+        KDC::ParmsDb::instance()->setValueForKey("lastClientSelfRestart", timestampStr);
         if (!startClient()) {
             LOG_WARN(_logger, "Error in startClient");
         }
@@ -2851,8 +2855,21 @@ bool AppServer::serverCrashedRecently(int seconds) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    int64_t lastServerCrash;
-    KDC::ParmsDb::instance()->selectLastServerSelfRestartTime(lastServerCrash);
+    int64_t lastServerCrash = 0;
+    std::string lastServerCrashStr;
+    KDC::ParmsDb::instance()->selectValueForKey("lastServerSelfRestart", lastServerCrashStr);
+
+    if (lastServerCrashStr.empty()) {
+        return false;
+    }
+
+    try {
+        lastServerCrash = std::stoll(lastServerCrashStr);
+    } catch (const std::exception &e) {
+        LOG_WARN(_logger, "Error in std::stoll: " << e.what());
+        return false;
+    }
+
     const auto diff = nowSeconds - lastServerCrash;
     if (diff > seconds) {
         return false;
@@ -2867,7 +2884,20 @@ bool AppServer::clientCrashedRecently(int seconds) {
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     int64_t lastClientCrash = 0;
-    KDC::ParmsDb::instance()->selectLastClientSelfRestartTime(lastClientCrash);
+    std::string lastClientCrashStr;
+    KDC::ParmsDb::instance()->selectValueForKey("lastClientSelfRestart", lastClientCrashStr);
+
+    if (lastClientCrashStr.empty()) {
+        return false;
+    }
+
+    try {
+        lastClientCrash = std::stoll(lastClientCrashStr);
+    } catch (const std::exception &e) {
+        LOG_WARN(_logger, "Error in std::stoll: " << e.what());
+        return false;
+    }
+
     const auto diff = nowSeconds - lastClientCrash;
     if (diff > seconds) {
         return false;
