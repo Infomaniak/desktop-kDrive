@@ -126,8 +126,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectLastClientSelfRestartTime(int64_t &lastClientRestartTime);
 
         bool selectValueForKey(const std::string &key, std::string &value, const std::string &defaultValue = "");
-        bool setValueForKey(const std::string &key, const std::string &value); // update or insert
-        bool deleteKeyValueEntry(const std::string &key);
+        bool setValueForKey(const std::string &key, const std::string &value);  // update or insert
 
         bool updateLastServerSelfRestartTime(int64_t lastServerRestartTime = -1 /* -1 means now*/);
         bool updateLastClientSelfRestartTime(int64_t lastClientRestartTime = -1 /* -1 means now*/);

@@ -547,9 +547,6 @@
 #define UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID "update_value_with_key"
 #define UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST "UPDATE key_value SET value=?2 WHERE key=?1;"
 
-#define DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID "delete_value_with_key"
-#define DELETE_VALUE_WITH_KEY_CLIENT_REQUEST "DELETE FROM key_value WHERE key=?1;"
-
 namespace KDC {
 
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
@@ -1376,12 +1373,6 @@ bool ParmsDb::prepare() {
     if (!queryPrepare(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST, false, errId, error)) {
         queryFree(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
         return sqlFail(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-    if (!queryPrepare(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, DELETE_VALUE_WITH_KEY_CLIENT_REQUEST, false, errId, error)) {
-        queryFree(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
-        return sqlFail(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, error);
     }
 
     if (!initData()) {
@@ -3469,10 +3460,6 @@ bool ParmsDb::selectValueForKey(const std::string &key, std::string &value, cons
 }
 
 bool ParmsDb::setValueForKey(const std::string &key, const std::string &value) {
-    if (value.empty()) {
-        return deleteKeyValueEntry(key);
-    }
-
     std::string existingValue;
     int errId;
     std::string error;
@@ -3499,23 +3486,6 @@ bool ParmsDb::setValueForKey(const std::string &key, const std::string &value) {
         }
         ASSERT(queryResetAndClearBindings(INSERT_KEY_VALUE_REQUEST_ID));
     }
-    return true;
-}
-
-bool ParmsDb::deleteKeyValueEntry(const std::string &key) {
-    const std::scoped_lock lock(_mutex);
-
-    int errId;
-    std::string error;
-
-    ASSERT(queryResetAndClearBindings(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, 1, key));
-    if (!queryExec(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
-        return false;
-    }
-    ASSERT(queryResetAndClearBindings(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-
     return true;
 }
 }  // namespace KDC
