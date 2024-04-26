@@ -525,6 +525,30 @@
 #define UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID "update_self_restarter_server_time"
 #define UPDATE_SELF_RESTARTER_SERVER_REQUEST "UPDATE self_restarter SET lastServerRestart=?1;"
 
+//
+// key_value
+//
+
+#define CREATE_KEY_VALUE_TABLE_ID "create_key_value"
+#define CREATE_KEY_VALUE_TABLE              \
+    "CREATE TABLE IF NOT EXISTS key_value(" \
+    "key TEXT PRIMARY KEY,"                 \
+    "value TEXT);"
+
+
+#define INSERT_KEY_VALUE_REQUEST_ID "insert_key_value"
+#define INSERT_KEY_VALUE_REQUEST          \
+    "INSERT INTO key_value (key, value) " \
+    "VALUES (?1, ?2);"
+
+#define SELECT_VALUE_FROM_KEY_REQUEST_ID "select_value_from_key"
+#define SELECT_VALUE_FROM_KEY_REQUEST "SELECT value FROM key_value WHERE key=?1;"
+
+#define UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID "update_value_with_key"
+#define UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST "UPDATE key_value SET value=?2 WHERE key=?1;"
+
+#define DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID "delete_value_with_key"
+#define DELETE_VALUE_WITH_KEY_CLIENT_REQUEST "DELETE FROM key_value WHERE key=?1;"
 
 namespace KDC {
 
@@ -943,6 +967,19 @@ bool ParmsDb::create(bool &retry) {
     }
     queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
 
+    // key value
+    ASSERT(queryCreate(CREATE_KEY_VALUE_TABLE_ID));
+    if (!queryPrepare(CREATE_KEY_VALUE_TABLE_ID, CREATE_KEY_VALUE_TABLE, false, errId, error)) {
+        queryFree(CREATE_KEY_VALUE_TABLE_ID);
+        return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
+    }
+    if (!queryExec(CREATE_KEY_VALUE_TABLE_ID, errId, error)) {
+        queryFree(CREATE_KEY_VALUE_TABLE_ID);
+        return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
+    }
+
+    queryFree(CREATE_KEY_VALUE_TABLE_ID);
+
     // Migration old selectivesync table
     ASSERT(queryCreate(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID));
     if (!queryPrepare(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE, false, errId, error)) {
@@ -1292,7 +1329,8 @@ bool ParmsDb::prepare() {
     }
 
     ASSERT(queryCreate(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
-	if (!queryPrepare(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST, false, errId, error)) {
+    if (!queryPrepare(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST, false, errId,
+                      error)) {
         queryFree(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID);
         return sqlFail(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
     }
@@ -1320,6 +1358,30 @@ bool ParmsDb::prepare() {
     if (!queryPrepare(INSERT_SELF_RESTARTER_REQUEST_ID, INSERT_SELF_RESTARTER_REQUEST, false, errId, error)) {
         queryFree(INSERT_SELF_RESTARTER_REQUEST_ID);
         return sqlFail(INSERT_SELF_RESTARTER_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(INSERT_KEY_VALUE_REQUEST_ID));
+    if (!queryPrepare(INSERT_KEY_VALUE_REQUEST_ID, INSERT_KEY_VALUE_REQUEST, false, errId, error)) {
+        queryFree(INSERT_KEY_VALUE_REQUEST_ID);
+        return sqlFail(INSERT_KEY_VALUE_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(SELECT_VALUE_FROM_KEY_REQUEST_ID));
+    if (!queryPrepare(SELECT_VALUE_FROM_KEY_REQUEST_ID, SELECT_VALUE_FROM_KEY_REQUEST, false, errId, error)) {
+        queryFree(SELECT_VALUE_FROM_KEY_REQUEST_ID);
+        return sqlFail(SELECT_VALUE_FROM_KEY_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
+    if (!queryPrepare(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST, false, errId, error)) {
+        queryFree(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
+        return sqlFail(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
+    if (!queryPrepare(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, DELETE_VALUE_WITH_KEY_CLIENT_REQUEST, false, errId, error)) {
+        queryFree(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
+        return sqlFail(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, error);
     }
 
     if (!initData()) {
@@ -3326,12 +3388,12 @@ bool ParmsDb::selectLastClientSelfRestartTime(int64_t &lastClientRestartTime) {
     return true;
 }
 
-
 bool ParmsDb::updateLastServerSelfRestartTime(int64_t lastServertRestartTime) {
     const std::scoped_lock lock(_mutex);
 
     if (lastServertRestartTime == -1) {
-        lastServertRestartTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        lastServertRestartTime =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     }
 
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
@@ -3353,7 +3415,8 @@ bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
     const std::scoped_lock lock(_mutex);
 
     if (lastClientRestartTime == -1) {
-        lastClientRestartTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        lastClientRestartTime =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     }
 
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));
@@ -3371,4 +3434,77 @@ bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
     return true;
 }
 
+
+bool ParmsDb::selectValueFromKeyValue(const std::string &key, std::string &value, const std::string &defaultValue) {
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(SELECT_VALUE_FROM_KEY_REQUEST_ID));
+    ASSERT(queryBindValue(SELECT_VALUE_FROM_KEY_REQUEST_ID, 1, key));
+    bool found = false;
+    if (!queryNext(SELECT_VALUE_FROM_KEY_REQUEST_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_VALUE_FROM_KEY_REQUEST_ID);
+        value = defaultValue;
+        return false;
+    }
+    if (!found) {
+        value = defaultValue;
+        return true;
+    }
+
+    ASSERT(queryStringValue(SELECT_VALUE_FROM_KEY_REQUEST_ID, 0, value));
+    ASSERT(queryResetAndClearBindings(SELECT_VALUE_FROM_KEY_REQUEST_ID));
+
+    return true;
+}
+
+bool ParmsDb::setValueFromKeyValue(const std::string &key, const std::string &value) {
+    if (value.empty()) {
+        return deleteValueFromKeyValue(key);
+    }
+
+    std::string existingValue;
+    int errId;
+    std::string error;
+    bool found = selectValueFromKeyValue(key, existingValue);
+    found = found && !existingValue.empty();
+    const std::scoped_lock lock(_mutex);
+    if (found) {  // UPDATE
+        ASSERT(queryResetAndClearBindings(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
+        ASSERT(queryBindValue(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, 1, key));
+        ASSERT(queryBindValue(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, 2, value));
+        if (!queryExec(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, errId, error)) {
+            LOG_WARN(_logger, "Error running query: " << UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
+            return false;
+        }
+        ASSERT(queryResetAndClearBindings(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
+    } else {  // INSERT
+        ASSERT(queryResetAndClearBindings(INSERT_KEY_VALUE_REQUEST_ID));
+        ASSERT(queryBindValue(INSERT_KEY_VALUE_REQUEST_ID, 1, key));
+        ASSERT(queryBindValue(INSERT_KEY_VALUE_REQUEST_ID, 2, value));
+
+        if (!queryExec(INSERT_KEY_VALUE_REQUEST_ID, errId, error)) {
+            LOG_WARN(_logger, "Error running query: " << INSERT_KEY_VALUE_REQUEST_ID);
+            return false;
+        }
+        ASSERT(queryResetAndClearBindings(INSERT_KEY_VALUE_REQUEST_ID));
+    }
+    return true;
+}
+
+bool ParmsDb::deleteValueFromKeyValue(const std::string &key) {
+    const std::scoped_lock lock(_mutex);
+
+    int errId;
+    std::string error;
+
+    ASSERT(queryResetAndClearBindings(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
+    ASSERT(queryBindValue(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, 1, key));
+    if (!queryExec(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
+        return false;
+    }
+    ASSERT(queryResetAndClearBindings(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
+
+    return true;
+}
 }  // namespace KDC
