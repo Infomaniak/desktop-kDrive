@@ -79,7 +79,11 @@ void TestIo::testCreateSymlink() {
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);  // Although the target path is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeSymlink);
+#ifdef _WIN32
+        CPPUNIT_ASSERT(itemType.targetType == NodeTypeFile);
+#else
         CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
+#endif
     }
 
     // Fails to create a symlink whose path indicates an existing file: no overwriting
@@ -104,11 +108,7 @@ void TestIo::testCreateSymlink() {
 
         IoError ioError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, true, ioError));
-#ifdef _WIN32
-        CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
-#else
         CPPUNIT_ASSERT(ioError == IoErrorFileExists);
-#endif
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         ItemType itemType;

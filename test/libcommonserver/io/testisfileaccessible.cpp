@@ -30,10 +30,17 @@ namespace KDC {
 
 void TestIo::testIsFileAccessible() {
     const TemporaryDirectory temporaryDirectory;
-    const SyncPath sourcePath = _localTestDirPath / "big_file_dir/test_big_file.mov";
+    const SyncPath sourcePath = temporaryDirectory.path / "test_big_file.txt";
+    const SyncPath destPath = temporaryDirectory.path / "test_big_file_copy.txt";
 
-    std::shared_ptr<LocalCopyJob> copyJob =
-        std::make_shared<LocalCopyJob>(sourcePath, temporaryDirectory.path / "test_big_file.mov");
+    // Create a 100 MB file
+    std::ofstream sourceFile(sourcePath);
+    for (int i = 0; i < 10000000; i++) {
+        sourceFile << "0123456789";
+    }
+    sourceFile.close();
+
+    std::shared_ptr<LocalCopyJob> copyJob = std::make_shared<LocalCopyJob>(sourcePath, destPath);
     JobManager::instance()->queueAsyncJob(copyJob);
 
     while (!copyJob->isRunning()) {
@@ -42,7 +49,7 @@ void TestIo::testIsFileAccessible() {
     Utility::msleep(10);
 
     IoError ioError = IoErrorUnknown;
-    bool res = IoHelper::isFileAccessible(temporaryDirectory.path / "test_big_file.mov", ioError);
+    bool res = IoHelper::isFileAccessible(destPath, ioError);
     // IoHelper::isFileAccessible returns instantly `true` on MacOSX and Linux.
 #ifdef _WIN32
     CPPUNIT_ASSERT(!res);
@@ -52,7 +59,7 @@ void TestIo::testIsFileAccessible() {
     Utility::msleep(1000);
 
     // File copy is now finished.
-    res = IoHelper::isFileAccessible(temporaryDirectory.path / "test_big_file.mov", ioError);
+    res = IoHelper::isFileAccessible(destPath, ioError);
     CPPUNIT_ASSERT(res);
 }
 

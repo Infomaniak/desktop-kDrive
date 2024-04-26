@@ -146,7 +146,7 @@ void TestIo::testGetItemTypeSimpleCases() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const TemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
-        std::filesystem::create_symlink(targetPath, path);
+        std::filesystem::create_directory_symlink(targetPath, path);
 
         const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeSymlink, NodeTypeDirectory);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -245,7 +245,11 @@ void TestIo::testGetItemTypeSimpleCases() {
         CPPUNIT_ASSERT(targetPath == targetPath_ && ec.value() == 0);
 
         // Actual test
+#ifdef _WIN32
+        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkTypeSymlink, NodeTypeFile);
+#else
         const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkTypeSymlink, NodeTypeUnknown);
+#endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
