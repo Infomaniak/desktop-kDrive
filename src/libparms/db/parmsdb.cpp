@@ -3436,7 +3436,6 @@ bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
     return true;
 }
 
-
 bool ParmsDb::selectValueForKey(const std::string &key, std::string &value, const std::string &defaultValue) {
     const std::scoped_lock lock(_mutex);
 
