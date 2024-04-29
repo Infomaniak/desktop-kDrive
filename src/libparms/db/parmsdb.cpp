@@ -17,11 +17,9 @@
  */
 
 #include "parmsdb.h"
-
 #include "libcommonserver/utility/asserts.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/utility.h"
-
 
 #include <3rdparty/sqlite3/sqlite3.h>
 
@@ -1456,7 +1454,6 @@ bool ParmsDb::initData() {
         LOG_WARN(_logger, "Error in insertDefaultAppState");
         return false;
     }
-
 
     // Update exclusion templates
     if (!updateExclusionTemplates()) {

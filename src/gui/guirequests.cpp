@@ -854,7 +854,7 @@ ExitCode GuiRequests::updateAppState(AppStateKey key, const QString &value) {
         return ExitCodeSystemError;
     }
 
-    ExitCode exitCode;
+    ExitCode exitCode = ExitCodeUnknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 

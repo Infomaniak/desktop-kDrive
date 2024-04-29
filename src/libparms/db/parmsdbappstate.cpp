@@ -37,7 +37,6 @@ bool ParmsDb::createAppState() {
         return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
     }
     queryFree(CREATE_APP_STATE_TABLE_ID);
-
     return true;
 }
 
@@ -62,7 +61,6 @@ bool ParmsDb::prepareAppState() {
         queryFree(UPDATE_APP_STATE_REQUEST_ID);
         return sqlFail(UPDATE_APP_STATE_REQUEST_ID, error);
     }
-
     return true;
 }
 
@@ -78,6 +76,7 @@ bool ParmsDb::insertDefaultAppState() {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
     }
+
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
     if (!found) {
         ASSERT(queryResetAndClearBindings(INSERT_APP_STATE_REQUEST_ID));
@@ -88,7 +87,6 @@ bool ParmsDb::insertDefaultAppState() {
             return false;
         }
     }
-
     return true;
 }
 
@@ -102,13 +100,13 @@ bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
     }
+
     if (!found) {
         LOG_WARN(_logger, "AppStateKey not found: " << key);
         return true;
     }
     ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, value));
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
-
     return true;
 }
 
@@ -135,7 +133,6 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
         }
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
     }
-
     return true;
 }
 
