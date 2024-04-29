@@ -302,11 +302,11 @@ void TestParmsDb::testAppState(void) {
     bool found = true;
     std::string value;
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::Test, value, found) && found);
-    CPPUNIT_ASSERT_EQUAL("Test", value);
+    CPPUNIT_ASSERT_EQUAL(std::string("Test"), value);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(AppStateKey::Test, "value 1", found));
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::Test, value, found) && found);
-    CPPUNIT_ASSERT_EQUAL("value 1", value);
+    CPPUNIT_ASSERT_EQUAL(std::string("value 1"), value);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(9548215525211611), "value 2", found));
     CPPUNIT_ASSERT(!found);
