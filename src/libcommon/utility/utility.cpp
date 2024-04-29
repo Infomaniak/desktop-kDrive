@@ -64,6 +64,8 @@
 #include "utility_linux.cpp"
 #endif
 
+#include <iostream>//TODO remove this
+
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 #define MAX_PATH_LENGTH_WIN_SHORT 259
 #define MAX_PATH_LENGTH_MAC 1023
@@ -437,17 +439,21 @@ const SyncPath CommonUtility::getAppSupportDir() {
 #endif
 
         if (exists) {
+            std::cout << "Failed to create directory, already exist: " << dirPath << std::endl; //TODO remove this
             return SyncPath();
         }
 
         if (!std::filesystem::create_directory(dirPath, ec)) {
             if (ec.value() != 0) {
+                std::cout << "Failed to create directory: " << dirPath << std::endl; //TODO remove this
                 return SyncPath();
             }
+            std::cout << "Failed to create directory2: " << dirPath << std::endl; //TODO remove this
 
             return SyncPath();
         }
     }
+    std::cout << "getAppSupportDir: " << dirPath << std::endl; //TODO remove this
 
     return dirPath;
 }
