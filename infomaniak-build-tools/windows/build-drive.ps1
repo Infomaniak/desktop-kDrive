@@ -368,23 +368,6 @@ $testers = @(
 )
 
 $dependencies = @(
-"$QTDIR/bin/Qt6Core.dll",
-"$QTDIR/bin/Qt6Gui.dll",
-"$QTDIR/bin/Qt6Network.dll",
-"$QTDIR/bin/Qt6Positioning.dll",
-"$QTDIR/bin/Qt6PrintSupport.dll",
-"$QTDIR/bin/Qt6Qml.dll",
-"$QTDIR/bin/Qt6QmlModels.dll",
-"$QTDIR/bin/Qt6Quick.dll",
-"$QTDIR/bin/Qt6QuickWidgets.dll",
-"$QTDIR/bin/Qt6Sql.dll",
-"$QTDIR/bin/Qt6Svg.dll",
-"$QTDIR/bin/Qt6WebChannel.dll",
-"$QTDIR/bin/Qt6WebEngineCore.dll",
-"$QTDIR/bin/Qt6WebEngineWidgets.dll",
-"$QTDIR/bin/Qt6Widgets.dll",
-"$QTDIR/bin/Qt6Xml.dll",
-"$QTDIR/bin/Qt6Core5Compat.dll",
 "${env:ProgramFiles(x86)}//zlib-1.2.11/bin/zlib1.dll",
 "${env:ProgramFiles(x86)}/log4cplus/bin/log4cplusU.dll",
 "${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64.dll",
