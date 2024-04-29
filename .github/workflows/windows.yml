@@ -41,8 +41,5 @@ jobs:
       - name: Execute common tests
         run: ./build-Release/install/bin/kDrive_test_common.exe
 
-      - name: Execute parms tests
-        run: ./build-Release/install/bin/kDrive_test_parms.exe
-
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all

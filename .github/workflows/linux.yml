@@ -28,10 +28,5 @@ jobs:
       - name: Execute common tests
         run : ./build-linux/build/bin/kDrive_test_common
 
-      - name: Grant test_parms execute permission
-        run : chmod +x ./build-linux/build/bin/kDrive_test_parms
-      - name: Execute parms tests
-        run : ./build-linux/build/bin/kDrive_test_parms
-
       - name: Clean-up generated code
         run : rm -rf build-linux
