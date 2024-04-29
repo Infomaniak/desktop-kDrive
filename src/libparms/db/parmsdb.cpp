@@ -526,26 +526,28 @@
 #define UPDATE_SELF_RESTARTER_SERVER_REQUEST "UPDATE self_restarter SET lastServerRestart=?1;"
 
 //
-// key_value
+// app_state
 //
 
-#define CREATE_KEY_VALUE_TABLE_ID "create_key_value"
-#define CREATE_KEY_VALUE_TABLE              \
-    "CREATE TABLE IF NOT EXISTS key_value(" \
-    "key TEXT PRIMARY KEY,"                 \
+#define CREATE_APP_STATE_TABLE_ID "create_app_state"
+#define CREATE_APP_STATE_TABLE              \
+    "CREATE TABLE IF NOT EXISTS app_state(" \
+    "key INTEGER PRIMARY KEY,"              \
     "value TEXT);"
 
 
-#define INSERT_KEY_VALUE_REQUEST_ID "insert_key_value"
-#define INSERT_KEY_VALUE_REQUEST          \
-    "INSERT INTO key_value (key, value) " \
+#define INSERT_APP_STATE_REQUEST_ID "insert_app_state"
+#define INSERT_APP_STATE_REQUEST          \
+    "INSERT INTO app_state (key, value) " \
     "VALUES (?1, ?2);"
 
-#define SELECT_VALUE_FROM_KEY_REQUEST_ID "select_value_from_key"
-#define SELECT_VALUE_FROM_KEY_REQUEST "SELECT value FROM key_value WHERE key=?1;"
+#define SELECT_APP_STATE_REQUEST_ID "select_value_from_key"
+#define SELECT_APP_STATE_REQUEST "SELECT value FROM app_state WHERE key=?1;"
 
-#define UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID "update_value_with_key"
-#define UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST "UPDATE key_value SET value=?2 WHERE key=?1;"
+#define UPDATE_APP_STATE_REQUEST_ID "update_value_with_key"
+#define UPDATE_APP_STATE_REQUEST "UPDATE app_state SET value=?2 WHERE key=?1;"
+
+#define APP_STATE_KEY_DEFAULT_AppStateKeyTest "Test"
 
 namespace KDC {
 
@@ -580,6 +582,31 @@ ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version
     }
 
     LOG_INFO(_logger, "ParmsDb initialization done");
+}
+
+bool ParmsDb::insertDefaultAppState() {
+    const std::scoped_lock lock(_mutex);
+
+    int errId = 0;
+    std::string error;
+    bool found = false;
+
+    ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
+    ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, AppStateKeyTest));
+    if (!queryNext(SELECT_APP_STATE_REQUEST_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
+        return false;
+    }
+
+    ASSERT(queryResetAndClearBindings(INSERT_APP_STATE_REQUEST_ID));
+    ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 1, AppStateKeyTest));
+    ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 2, APP_STATE_KEY_DEFAULT_AppStateKeyTest));
+    if (!queryExec(INSERT_APP_STATE_REQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << INSERT_APP_STATE_REQUEST_ID);
+        return false;
+    }
+
+    return true;
 }
 
 bool ParmsDb::insertDefaultSelfRestarterData() {
@@ -965,17 +992,17 @@ bool ParmsDb::create(bool &retry) {
     queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
 
     // key value
-    ASSERT(queryCreate(CREATE_KEY_VALUE_TABLE_ID));
-    if (!queryPrepare(CREATE_KEY_VALUE_TABLE_ID, CREATE_KEY_VALUE_TABLE, false, errId, error)) {
-        queryFree(CREATE_KEY_VALUE_TABLE_ID);
-        return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
+    ASSERT(queryCreate(CREATE_APP_STATE_TABLE_ID));
+    if (!queryPrepare(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE, false, errId, error)) {
+        queryFree(CREATE_APP_STATE_TABLE_ID);
+        return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
     }
-    if (!queryExec(CREATE_KEY_VALUE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_KEY_VALUE_TABLE_ID);
-        return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
+    if (!queryExec(CREATE_APP_STATE_TABLE_ID, errId, error)) {
+        queryFree(CREATE_APP_STATE_TABLE_ID);
+        return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
     }
 
-    queryFree(CREATE_KEY_VALUE_TABLE_ID);
+    queryFree(CREATE_APP_STATE_TABLE_ID);
 
     // Migration old selectivesync table
     ASSERT(queryCreate(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID));
@@ -1357,22 +1384,23 @@ bool ParmsDb::prepare() {
         return sqlFail(INSERT_SELF_RESTARTER_REQUEST_ID, error);
     }
 
-    ASSERT(queryCreate(INSERT_KEY_VALUE_REQUEST_ID));
-    if (!queryPrepare(INSERT_KEY_VALUE_REQUEST_ID, INSERT_KEY_VALUE_REQUEST, false, errId, error)) {
-        queryFree(INSERT_KEY_VALUE_REQUEST_ID);
-        return sqlFail(INSERT_KEY_VALUE_REQUEST_ID, error);
+    // App state
+    ASSERT(queryCreate(INSERT_APP_STATE_REQUEST_ID));
+    if (!queryPrepare(INSERT_APP_STATE_REQUEST_ID, INSERT_APP_STATE_REQUEST, false, errId, error)) {
+        queryFree(INSERT_APP_STATE_REQUEST_ID);
+        return sqlFail(INSERT_APP_STATE_REQUEST_ID, error);
     }
 
-    ASSERT(queryCreate(SELECT_VALUE_FROM_KEY_REQUEST_ID));
-    if (!queryPrepare(SELECT_VALUE_FROM_KEY_REQUEST_ID, SELECT_VALUE_FROM_KEY_REQUEST, false, errId, error)) {
-        queryFree(SELECT_VALUE_FROM_KEY_REQUEST_ID);
-        return sqlFail(SELECT_VALUE_FROM_KEY_REQUEST_ID, error);
+    ASSERT(queryCreate(SELECT_APP_STATE_REQUEST_ID));
+    if (!queryPrepare(SELECT_APP_STATE_REQUEST_ID, SELECT_APP_STATE_REQUEST, false, errId, error)) {
+        queryFree(SELECT_APP_STATE_REQUEST_ID);
+        return sqlFail(SELECT_APP_STATE_REQUEST_ID, error);
     }
 
-    ASSERT(queryCreate(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-    if (!queryPrepare(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
-        return sqlFail(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, error);
+    ASSERT(queryCreate(UPDATE_APP_STATE_REQUEST_ID));
+    if (!queryPrepare(UPDATE_APP_STATE_REQUEST_ID, UPDATE_APP_STATE_REQUEST, false, errId, error)) {
+        queryFree(UPDATE_APP_STATE_REQUEST_ID);
+        return sqlFail(UPDATE_APP_STATE_REQUEST_ID, error);
     }
 
     if (!initData()) {
@@ -1467,17 +1495,17 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
         }
         queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
 
-        queryFree(CREATE_KEY_VALUE_TABLE_ID);
-        ASSERT(queryCreate(CREATE_KEY_VALUE_TABLE_ID));
-        if (!queryPrepare(CREATE_KEY_VALUE_TABLE_ID, CREATE_KEY_VALUE_TABLE, false, errId, error)) {
-            queryFree(CREATE_KEY_VALUE_TABLE_ID);
-            return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
+        queryFree(CREATE_APP_STATE_TABLE_ID);
+        ASSERT(queryCreate(CREATE_APP_STATE_TABLE_ID));
+        if (!queryPrepare(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE, false, errId, error)) {
+            queryFree(CREATE_APP_STATE_TABLE_ID);
+            return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
         }
-        if (!queryExec(CREATE_KEY_VALUE_TABLE_ID, errId, error)) {
-            queryFree(CREATE_KEY_VALUE_TABLE_ID);
-            return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
+        if (!queryExec(CREATE_APP_STATE_TABLE_ID, errId, error)) {
+            queryFree(CREATE_APP_STATE_TABLE_ID);
+            return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
         }
-        queryFree(CREATE_KEY_VALUE_TABLE_ID);
+        queryFree(CREATE_APP_STATE_TABLE_ID);
     }
 
     return true;
@@ -1505,6 +1533,12 @@ bool ParmsDb::initData() {
         LOG_WARN(_logger, "Error in insertDefaultSelfRestarterData");
         return false;
     }
+
+    if (!insertDefaultAppState()) {
+        LOG_WARN(_logger, "Error in insertDefaultAppState");
+        return false;
+    }
+
 
     // Update exclusion templates
     if (!updateExclusionTemplates()) {
@@ -3436,54 +3470,49 @@ bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
     return true;
 }
 
-bool ParmsDb::selectValueForKey(const std::string &key, std::string &value, const std::string &defaultValue) {
+bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
     const std::scoped_lock lock(_mutex);
+    found = false;
 
-    ASSERT(queryResetAndClearBindings(SELECT_VALUE_FROM_KEY_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_VALUE_FROM_KEY_REQUEST_ID, 1, key));
-    bool found = false;
-    if (!queryNext(SELECT_VALUE_FROM_KEY_REQUEST_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << SELECT_VALUE_FROM_KEY_REQUEST_ID);
-        value = defaultValue;
+    ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
+    ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, key));
+    if (!queryNext(SELECT_APP_STATE_REQUEST_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
     }
     if (!found) {
-        value = defaultValue;
         return true;
     }
-
-    ASSERT(queryStringValue(SELECT_VALUE_FROM_KEY_REQUEST_ID, 0, value));
-    ASSERT(queryResetAndClearBindings(SELECT_VALUE_FROM_KEY_REQUEST_ID));
+    ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, value));
+    ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
 
     return true;
 }
 
-bool ParmsDb::setValueForKey(const std::string &key, const std::string &value) {
+bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &found) {
     std::string existingValue;
     int errId;
     std::string error;
-    bool found = selectValueForKey(key, existingValue);
-    found = found && !existingValue.empty();
+    if (!selectAppState(key, existingValue, found)) {
+        LOG_WARN(_logger, "Error in selectAppState");
+        return false;
+    }
+
+    if (!found) {
+        LOG_FATAL(_logger, "Key not found in app state: " << key);
+        return true;
+    }
+
     const std::scoped_lock lock(_mutex);
     if (found) {  // UPDATE
-        ASSERT(queryResetAndClearBindings(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-        ASSERT(queryBindValue(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, 1, key));
-        ASSERT(queryBindValue(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, 2, value));
-        if (!queryExec(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, errId, error)) {
-            LOG_WARN(_logger, "Error running query: " << UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
+        ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
+        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, key));
+        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, value));
+        if (!queryExec(UPDATE_APP_STATE_REQUEST_ID, errId, error)) {
+            LOG_WARN(_logger, "Error running query: " << UPDATE_APP_STATE_REQUEST_ID);
             return false;
         }
-        ASSERT(queryResetAndClearBindings(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-    } else {  // INSERT
-        ASSERT(queryResetAndClearBindings(INSERT_KEY_VALUE_REQUEST_ID));
-        ASSERT(queryBindValue(INSERT_KEY_VALUE_REQUEST_ID, 1, key));
-        ASSERT(queryBindValue(INSERT_KEY_VALUE_REQUEST_ID, 2, value));
-
-        if (!queryExec(INSERT_KEY_VALUE_REQUEST_ID, errId, error)) {
-            LOG_WARN(_logger, "Error running query: " << INSERT_KEY_VALUE_REQUEST_ID);
-            return false;
-        }
-        ASSERT(queryResetAndClearBindings(INSERT_KEY_VALUE_REQUEST_ID));
+        ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
     }
     return true;
 }

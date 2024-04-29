@@ -27,11 +27,10 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestParmsDb::setUp() {
-    // Create parmsDb
+    // Create a temp parmsDb
     bool alreadyExists;
-    std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
+    ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
     ParmsDb::instance()->setAutoDelete(true);
 }
 
@@ -297,6 +296,20 @@ void TestParmsDb::testExclusionTemplate() {
     CPPUNIT_ASSERT(exclusionTemplateList.size() > 0);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->deleteExclusionTemplate(exclusionTemplate3.templ(), found) && found);
+}
+
+void TestParmsDb::testAppState(void) {
+    bool found = true;
+    std::string value;
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKeyTest, value, found) && found);
+    CPPUNIT_ASSERT(value == "Test");
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(AppStateKeyTest, "value 1", found));
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKeyTest, value, found) && found);
+    CPPUNIT_ASSERT(value == "value 1");
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(9548215525211611), "value 2", found));
+    CPPUNIT_ASSERT(!found);
 }
 
 #ifdef __APPLE__

@@ -125,8 +125,8 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectLastServerSelfRestartTime(int64_t &lastServerRestartTime);
         bool selectLastClientSelfRestartTime(int64_t &lastClientRestartTime);
 
-        bool selectValueForKey(const std::string &key, std::string &value, const std::string &defaultValue = "");
-        bool setValueForKey(const std::string &key, const std::string &value);  // update or insert
+        bool selectAppState(AppStateKey key, std::string &value, bool& found);
+        bool updateAppState(AppStateKey key, const std::string &value, bool& found);  // update or insert
 
         bool updateLastServerSelfRestartTime(int64_t lastServerRestartTime = -1 /* -1 means now*/);
         bool updateLastClientSelfRestartTime(int64_t lastClientRestartTime = -1 /* -1 means now*/);
@@ -139,6 +139,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertDefaultParameters();
         bool insertDefaultSelfRestarterData();
+        bool insertDefaultAppState();
         bool updateExclusionTemplates();
 #ifdef __APPLE__
         bool updateExclusionApps();

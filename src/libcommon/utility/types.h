@@ -358,4 +358,9 @@ struct ItemType {
         // `LinkTypeUnknown`) and its target doesn't exist.
         IoError ioError{IoErrorSuccess};
 };
+
+typedef enum {
+    //Adding a new key here requires to add it in insertDefaultAppState in parmsdb.cpp
+    AppStateKeyTest // To be removed after the implementation of the first key
+} AppStateKey;
 }  // namespace KDC
