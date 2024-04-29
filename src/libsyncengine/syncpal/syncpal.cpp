@@ -801,6 +801,8 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
                     , ExitCodeBackError
                     , ExitCauseNotFound);
         addError(error);
+
+        vfsCancelHydrate(directDownloadJobsMapIt->second->localPath());
     }
 
     _syncPathToDownloadJobMap.erase(directDownloadJobsMapIt->second->affectedFilePath());
@@ -870,7 +872,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         job->setVfsUpdateFetchStatusCallback(vfsUpdateFetchStatusCallback);
 
 #ifdef __APPLE__
-        // Not done in Windows case: the pin state and the status must not be set by the download job because hydratation could be
+        // Not done in Windows case: the pin state and the status must not be set by the download job because hydration could be
         // asked for a move and so, the file place will change just after the dl.
         std::function<bool(const SyncPath &, PinState)> vfsSetPinStateCallback =
             std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);
