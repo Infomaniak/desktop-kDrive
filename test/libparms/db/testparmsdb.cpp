@@ -29,13 +29,7 @@ namespace KDC {
 void TestParmsDb::setUp() {
     // Create a temp parmsDb
     bool alreadyExists;
-    // std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
-
-#ifdef _WIN32
-    std::filesystem::path parmsDbPath = "C:/actions_runner/_work/desktop-kdrive/test_parms.db";
-#else
-    std::filesystem::path parmsDbPath = "/Users/runner/work/desktop-kdrive/test_parms.db";
-#endif
+    std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
     ParmsDb::instance()->setAutoDelete(true);
 }
