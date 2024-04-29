@@ -19,7 +19,7 @@
 # Parameters :
 Param(
 # BuildType	: The type of build (Debug will run the tests, Release will sign the app)
-[ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
+[ValidateSet('Release', 'RelWithDebInfo')]
 [string] $buildType = "RelWithDebInfo",
 
 # Path	: The path to the root CMakeLists.txt
@@ -56,7 +56,7 @@ $contentPath = "$path/build-windows"
 $buildPath = "$contentPath/build"
 $installPath = "$contentPath/install"
 $extPath = "$path/extensions/windows/cfapi/"
-$vfsDir = $extPath + "x64/" + "Release"
+$vfsDir = $extPath + "x64/Release"
 
 # NSIS needs the path to use backslash
 $iconPath = "$buildPath\src\gui\kdrive-win.ico".Replace('/', '\')
@@ -76,8 +76,7 @@ $sourceTranslation = "$installPath/i18n"
 $sourceFiles = "$archivePath/*"
 $target = "$contentPath/$archiveName"
 
-$date = Get-Date -Format "yyyyMMdd"
-$buildVersion = if ($buildType -eq 'Debug') { "0" } else { $date }
+$buildVersion = Get-Date -Format "yyyyMMdd"
 $aumid = if ($upload) {$env:KDC_PHYSICAL_AUMID} else {$env:KDC_VIRTUAL_AUMID}
 
 #################################################################################################
@@ -99,17 +98,17 @@ function Clean {
 
 function Get-Thumbprint {
    param (
-        [bool] $upload
+		[bool] $upload
    )
 
    $thumbprint = 
    If ($upload)
    {
-        Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
+		Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
    } 
    Else
    {
-        Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
+		Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
    }
    return $thumbprint
 }
@@ -186,42 +185,42 @@ switch -regex ($clean.ToLower())
 {
 	"b(uild)?" 
 	{
-        Write-Host "Removing kDrive built files" -f Yellow
+		Write-Host "Removing kDrive built files" -f Yellow
 		Clean $buildPath
-        Write-Host "Done, exiting" -f Yellow
+		Write-Host "Done, exiting" -f Yellow
 		exit 
 	}
 
 	"ext"
 	{
-        Write-Host "Removing extension files" -f Yellow
+		Write-Host "Removing extension files" -f Yellow
 		Clean $vfsDir
-        Write-Host "Done, exiting" -f Yellow
+		Write-Host "Done, exiting" -f Yellow
 		exit
 	}
 
 	"all"
 	{
-        Write-Host "Removing all generated files" -f Yellow 
+		Write-Host "Removing all generated files" -f Yellow 
 		Clean $contentPath
 		Clean $vfsDir
-        Write-Host "Done, exiting" -f Yellow
+		Write-Host "Done, exiting" -f Yellow
 		exit
 	}
 
 	"re(make)?"
 	{
-        Write-Host "Removing all generated files" -f Yellow
+		Write-Host "Removing all generated files" -f Yellow
 		Clean $contentPath
 		Clean $vfsDir
-        Write-Host "Done, rebuilding" -f Yellow
+		Write-Host "Done, rebuilding" -f Yellow
 	}
 	default {}
 }
 
 if (!$thumbprint)
 {
-    $thumbprint = Get-Thumbprint $upload
+	$thumbprint = Get-Thumbprint $upload
 }
 
 if ($upload)
@@ -234,8 +233,8 @@ if ($upload)
 		exit 1
 	}
 
-    Write-Host "Preparing for full upload build." -f Green
-    Clean $contentPath
+	Write-Host "Preparing for full upload build." -f Green
+	Clean $contentPath
 	Clean $vfsDir
 }
 
@@ -248,7 +247,7 @@ if ($upload)
 if (!$aumid)
 {
 	Write-Host "The AUMID value could not be read from env.
-                Exiting." -f Red
+				Exiting." -f Red
 	exit 1
 }
 
@@ -293,7 +292,7 @@ $flags = @(
 
 if ($ci)
 {
-    $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
+	$flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
 }
 
 $args += $flags
@@ -412,10 +411,10 @@ foreach ($file in $dependencies)
 
 if ($ci)
 {
-    foreach ($file in $testers)
-    {
-        Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
-    }
+	foreach ($file in $testers)
+	{
+		Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
+	}
 	exit $LASTEXITCODE
 }
 
@@ -466,6 +465,6 @@ else
 
 if ($upload)
 {
-    Write-Host "Packaging done"
+	Write-Host "Packaging done"
 	Write-Host "Run the upload script to generate the update file and upload the new version"
 }
