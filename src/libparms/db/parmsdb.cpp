@@ -943,6 +943,9 @@ bool ParmsDb::create(bool &retry) {
     }
     queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
 
+    // app state
+    createAppState();
+
     // Migration old selectivesync table
     ASSERT(queryCreate(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID));
     if (!queryPrepare(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID, CREATE_MIGRATION_SELECTIVESYNC_TABLE, false, errId, error)) {
@@ -1292,7 +1295,8 @@ bool ParmsDb::prepare() {
     }
 
     ASSERT(queryCreate(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
-	if (!queryPrepare(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST, false, errId, error)) {
+    if (!queryPrepare(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST, false, errId,
+                      error)) {
         queryFree(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID);
         return sqlFail(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
     }
@@ -1321,6 +1325,9 @@ bool ParmsDb::prepare() {
         queryFree(INSERT_SELF_RESTARTER_REQUEST_ID);
         return sqlFail(INSERT_SELF_RESTARTER_REQUEST_ID, error);
     }
+
+    // App state
+    prepareAppState();
 
     if (!initData()) {
         LOG_WARN(_logger, "Error in initParameters");
@@ -1402,7 +1409,6 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
         LOG_DEBUG(_logger, "Upgrade < 3.6.1 DB");
 
         queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
-
         ASSERT(queryCreate(CREATE_SELF_RESTARTER_TABLE_ID));
         if (!queryPrepare(CREATE_SELF_RESTARTER_TABLE_ID, CREATE_SELF_RESTARTER_TABLE, false, errId, error)) {
             queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
@@ -1414,6 +1420,8 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
             return sqlFail(CREATE_SELF_RESTARTER_TABLE_ID, error);
         }
         queryFree(CREATE_SELF_RESTARTER_TABLE_ID);
+
+        createAppState();
     }
 
     return true;
@@ -1439,6 +1447,11 @@ bool ParmsDb::initData() {
 
     if (!insertDefaultSelfRestarterData()) {
         LOG_WARN(_logger, "Error in insertDefaultSelfRestarterData");
+        return false;
+    }
+
+    if (!insertDefaultAppState()) {
+        LOG_WARN(_logger, "Error in insertDefaultAppState");
         return false;
     }
 
@@ -3326,12 +3339,12 @@ bool ParmsDb::selectLastClientSelfRestartTime(int64_t &lastClientRestartTime) {
     return true;
 }
 
-
 bool ParmsDb::updateLastServerSelfRestartTime(int64_t lastServertRestartTime) {
     const std::scoped_lock lock(_mutex);
 
     if (lastServertRestartTime == -1) {
-        lastServertRestartTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        lastServertRestartTime =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     }
 
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_SERVER_REQUEST_ID));
@@ -3353,7 +3366,8 @@ bool ParmsDb::updateLastClientSelfRestartTime(int64_t lastClientRestartTime) {
     const std::scoped_lock lock(_mutex);
 
     if (lastClientRestartTime == -1) {
-        lastClientRestartTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        lastClientRestartTime =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     }
 
     ASSERT(queryResetAndClearBindings(UPDATE_SELF_RESTARTER_CLIENT_REQUEST_ID));

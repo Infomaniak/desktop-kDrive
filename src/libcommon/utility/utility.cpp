@@ -602,6 +602,8 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
     for (size_t i = 0; i < targetTabVersion.size(); i++) {
         if (currTabVersion[i] > targetTabVersion[i]) {
             return false;
+        } else if (currTabVersion[i] < targetTabVersion[i]) {
+            return true;
         }
     }
 

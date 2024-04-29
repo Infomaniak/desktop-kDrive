@@ -362,8 +362,8 @@ $binaries = @(
 )
 
 $testers = @(
-"kDrive_test_common.exe"
-# "kDrive_test_parms.exe",
+"kDrive_test_common.exe",
+"kDrive_test_parms.exe"
 # "kDrive_test_syncengine.exe"
 )
 
