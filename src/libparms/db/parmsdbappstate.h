@@ -35,4 +35,4 @@
 #define UPDATE_APP_STATE_REQUEST_ID "update_value_with_key"
 #define UPDATE_APP_STATE_REQUEST "UPDATE app_state SET value=?2 WHERE key=?1;"
 
-#define APP_STATE_KEY_DEFAULT_AppStateKeyTest "Test"
+#define APP_STATE_KEY_DEFAULT_Test "Test"

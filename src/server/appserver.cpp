@@ -1790,7 +1790,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_UTILITY_SET_APPSTATE: {
-            AppStateKey key = AppStateKeyUnknown;
+            AppStateKey key = AppStateKey::Unknown;
             QString value;
             QDataStream paramsStream(params);
             paramsStream >> key;
@@ -1807,7 +1807,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_UTILITY_GET_APPSTATE: {
-            AppStateKey key = AppStateKeyUnknown;
+            AppStateKey key = AppStateKey::Unknown;
             QString defaultValue;
             QDataStream paramsStream(params);
             paramsStream >> key;

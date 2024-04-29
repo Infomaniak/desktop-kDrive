@@ -359,9 +359,9 @@ struct ItemType {
         IoError ioError{IoErrorSuccess};
 };
 
-enum AppStateKey {
+enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp and ideally testparmsdb.cpp
-    AppStateKeyUnknown,  // Used for initialization, will throw error if used
-    AppStateKeyTest      // To be removed after the implementation of the first key
+    Unknown,  // Used for initialization, will throw error if used
+    Test      // To be removed after the implementation of the first key
 };
 }  // namespace KDC
