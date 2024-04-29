@@ -816,7 +816,7 @@ ExitCode GuiRequests::setLaunchOnStartup(bool enabled) {
         return ExitCodeSystemError;
     }
 
-    ExitCode exitCode;
+    ExitCode exitCode = ExitCodeUnknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -833,7 +833,7 @@ ExitCode GuiRequests::getAppState(AppStateKey key, QString &value) {
         return ExitCodeSystemError;
     }
 
-    ExitCode exitCode;
+    ExitCode exitCode = ExitCodeUnknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> value;

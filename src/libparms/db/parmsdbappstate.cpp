@@ -26,6 +26,7 @@ namespace KDC {
 bool ParmsDb::createAppState() {
     int errId = 0;
     std::string error;
+
     ASSERT(queryCreate(CREATE_APP_STATE_TABLE_ID));
     if (!queryPrepare(CREATE_APP_STATE_TABLE_ID, CREATE_APP_STATE_TABLE, false, errId, error)) {
         queryFree(CREATE_APP_STATE_TABLE_ID);
@@ -35,13 +36,15 @@ bool ParmsDb::createAppState() {
         queryFree(CREATE_APP_STATE_TABLE_ID);
         return sqlFail(CREATE_APP_STATE_TABLE_ID, error);
     }
-
     queryFree(CREATE_APP_STATE_TABLE_ID);
+
+    return true;
 }
 
 bool ParmsDb::prepareAppState() {
     int errId = 0;
     std::string error;
+
     ASSERT(queryCreate(INSERT_APP_STATE_REQUEST_ID));
     if (!queryPrepare(INSERT_APP_STATE_REQUEST_ID, INSERT_APP_STATE_REQUEST, false, errId, error)) {
         queryFree(INSERT_APP_STATE_REQUEST_ID);
@@ -59,6 +62,8 @@ bool ParmsDb::prepareAppState() {
         queryFree(UPDATE_APP_STATE_REQUEST_ID);
         return sqlFail(UPDATE_APP_STATE_REQUEST_ID, error);
     }
+
+    return true;
 }
 
 bool ParmsDb::insertDefaultAppState() {
@@ -98,6 +103,7 @@ bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
         return false;
     }
     if (!found) {
+        LOG_WARN(_logger, "AppStateKey not found: " << key);
         return true;
     }
     ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, value));
@@ -108,20 +114,18 @@ bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
 
 bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &found) {
     std::string existingValue;
-    int errId;
+    int errId = 0;
     std::string error;
     if (!selectAppState(key, existingValue, found)) {
-        LOG_WARN(_logger, "Error in selectAppState");
         return false;
     }
 
     if (!found) {
-        LOG_FATAL(_logger, "Key not found in app state: " << key);
         return true;
     }
 
     const std::scoped_lock lock(_mutex);
-    if (found) {  // UPDATE
+    if (found) { 
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
         ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, key));
         ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, value));
@@ -131,6 +135,7 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
         }
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
     }
+
     return true;
 }
 
