@@ -360,7 +360,7 @@ struct ItemType {
 };
 
 typedef enum {
-    //Adding a new key here requires to add it in insertDefaultAppState in parmsdb.cpp
+    //Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
     AppStateKeyTest // To be removed after the implementation of the first key
 } AppStateKey;
 }  // namespace KDC

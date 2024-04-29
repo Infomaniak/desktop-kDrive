@@ -141,6 +141,10 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertDefaultSelfRestarterData();
         bool insertDefaultAppState();
         bool updateExclusionTemplates();
+
+        bool createAppState();
+        bool prepareAppState();
+
 #ifdef __APPLE__
         bool updateExclusionApps();
 #endif
