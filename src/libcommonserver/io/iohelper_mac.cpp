@@ -26,8 +26,8 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#include <sys/stat.h>
 #include <sys/xattr.h>
+#include <sys/stat.h>
 
 namespace KDC {
 
@@ -49,35 +49,6 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, IoError &ioError) noexcept {
-    exists = true;
-    ioError = IoErrorSuccess;
-
-    struct stat sb;
-
-    if (lstat(path.string().c_str(), &sb) < 0) {
-        exists = (errno != ENOENT) && (errno != ENAMETOOLONG);
-        ioError = posixError2ioError(errno);
-
-        return _isExpectedError(ioError);
-    }
-
-    if (sb.st_flags & UF_HIDDEN) {
-        buf->isHidden = true;
-    }
-
-    buf->inode = sb.st_ino;
-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-    buf->creationTime = sb.st_birthtime;
-#else
-    buf->creationTime = sb.st_ctime;
-#endif
-    buf->modtime = sb.st_mtime;
-    buf->size = sb.st_size;
-
-    return true;
-}
-
 bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
     return true;
 }
@@ -95,9 +66,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, Io
     }
 
     FileStat filestat;
-    bool exists = false;
-
-    if (!getFileStat(filepath.string().c_str(), &filestat, exists, ioError)) {
+    if (!getFileStat(filepath.string().c_str(), &filestat, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(filepath, ioError).c_str());
         return false;
     }
@@ -110,7 +79,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, Io
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
     return (error == IoErrorNoSuchFileOrDirectory) || (error == IoErrorAttrNotFound) || (error == IoErrorAccessDenied);
-};
+}
 }  // namespace
 
 bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, std::string &value, IoError &ioError) noexcept {

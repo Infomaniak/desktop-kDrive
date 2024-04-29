@@ -39,6 +39,7 @@ static const std::string mimeTypeImageJpeg = "image/jpeg";
 
 // Link content types
 static const std::string mimeTypeSymlink = "inode/symlink";
+static const std::string mimeTypeSymlinkFolder = "inode/folder_symlink";
 static const std::string mimeTypeHardlink = "inode/hardlink";
 static const std::string mimeTypeFinderAlias = "application/x-macos";
 static const std::string mimeTypeJunction = "inode/junction";

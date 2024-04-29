@@ -920,12 +920,13 @@ void UpdateTreeWorker::updateNodeId(std::shared_ptr<Node> node, const NodeId &ne
     node->setId(newId);
     node->parentNode()->insertChildren(node);
 
-    if (ParametersCache::instance()->parameters().extendedLog()) {
-        LOGW_SYNCPAL_DEBUG(_logger,
-                          Utility::s2ws(Utility::side2Str(_side)).c_str()
-                              << L" update tree: Node ID changed from '" << Utility::s2ws(oldId).c_str()
-                              << L"' to '" << Utility::s2ws(newId).c_str()
-                              << L"' for node '" << SyncName2WStr(node->name()).c_str() << L"'.");
+    if (newId != oldId) {
+        if (ParametersCache::instance()->parameters().extendedLog()) {
+            LOGW_SYNCPAL_DEBUG(_logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
+                                            << L" update tree: Node ID changed from '" << Utility::s2ws(oldId).c_str()
+                                            << L"' to '" << Utility::s2ws(newId).c_str() << L"' for node '"
+                                            << SyncName2WStr(node->name()).c_str() << L"'.");
+        }
     }
 }
 

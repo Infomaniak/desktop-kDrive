@@ -163,6 +163,7 @@ void UploadJob::setData(bool &canceled) {
     }
 
     _linkType = itemType.linkType;
+    _targetType = itemType.targetType;
 
     if (IoHelper::isLink(_linkType)) {
         LOG_DEBUG(_logger, "Read link data - type=" << _linkType);
@@ -181,8 +182,7 @@ std::string UploadJob::getContentType(bool &canceled) {
     canceled = false;
 
     if (_linkType == LinkTypeSymlink) {
-        // TODO: Manage file & folder symlinks separately
-        return mimeTypeSymlink;
+        return _targetType == NodeTypeFile ? mimeTypeSymlink : mimeTypeSymlinkFolder;
     } else if (_linkType == LinkTypeHardlink) {
         return mimeTypeHardlink;
     } else if (_linkType == LinkTypeFinderAlias) {

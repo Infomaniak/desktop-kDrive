@@ -139,8 +139,8 @@ struct GetItemChecker {
                                             NodeType fileType) noexcept;
 
         Result checkItemIsNotFound(const SyncPath &path) noexcept;
-        Result checkSuccessfullRetrievalOfDanglingLink(const SyncPath &path, const SyncPath &targetPath,
-                                                       LinkType linkType) noexcept;
+        Result checkSuccessfullRetrievalOfDanglingLink(const SyncPath &path, const SyncPath &targetPath, LinkType linkType,
+                                                       NodeType targetType) noexcept;
 
         Result checkAccessIsDenied(const SyncPath &path) noexcept;
 

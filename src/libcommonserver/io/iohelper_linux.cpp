@@ -19,8 +19,8 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 
-#include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 namespace KDC {
 
@@ -36,36 +36,6 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     }
 
     nodeId = std::to_string(sb.st_ino);
-    return true;
-}
-
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, IoError &ioError) noexcept {
-    exists = true;
-    ioError = IoErrorSuccess;
-
-    struct stat sb;
-
-    if (lstat(path.string().c_str(), &sb) < 0) {
-        exists = (errno != ENOENT) && (errno != ENAMETOOLONG);
-        ioError = posixError2ioError(errno);
-
-        return _isExpectedError(ioError);
-    }
-
-    buf->isHidden = false;  // lstat does not provide this information on Linux system
-    if (!_checkIfIsHiddenFile(path, buf->isHidden, ioError)) {
-        return false;
-    }
-
-    buf->inode = sb.st_ino;
-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-    buf->creationTime = sb.st_birthtime;
-#else
-    buf->creationTime = sb.st_ctime;
-#endif
-    buf->modtime = sb.st_mtime;
-    buf->size = sb.st_size;
-
     return true;
 }
 
