@@ -213,7 +213,7 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return true;
 }
 
-bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError ioError) noexcept {
+bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
     read = false;
     write = false;
     exec = false;
