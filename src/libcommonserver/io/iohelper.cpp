@@ -25,6 +25,9 @@
 #include <filesystem>
 #include <system_error>
 
+#if defined(__APPLE__) || defined(__unix__)
+#include <sys/stat.h>
+#endif
 
 #include <log4cplus/loggingmacros.h>  // LOGW_WARN
 
@@ -407,6 +410,54 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
 }
+
+#if defined(__APPLE__) || defined(__unix__)
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
+    ioError = IoErrorSuccess;
+
+    struct stat sb;
+
+    if (lstat(path.string().c_str(), &sb) < 0) {
+        ioError = posixError2ioError(errno);
+        return _isExpectedError(ioError);
+    }
+
+#if defined(__APPLE__)
+    buf->isHidden = false;
+    if (sb.st_flags & UF_HIDDEN) {
+        buf->isHidden = true;
+    }
+#elif defined(__unix__)
+    if (!_checkIfIsHiddenFile(path, buf->isHidden, ioError)) {
+        return false;
+    }
+#endif
+
+    buf->inode = sb.st_ino;
+#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+    buf->creationTime = sb.st_birthtime;
+#else
+    buf->creationTime = sb.st_ctime;
+#endif
+    buf->modtime = sb.st_mtime;
+    buf->size = sb.st_size;
+    if (S_ISLNK(sb.st_mode)) {
+        // Symlink
+        struct stat sbTarget;
+        if (stat(path.string().c_str(), &sbTarget) < 0) {
+            // Cannot access target => undetermined
+            buf->nodeType = NodeTypeUnknown;
+        } else {
+            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+        }
+    } else {
+        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+    }
+
+    return true;
+}
+#endif
+
 
 bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, time_t previousMtime, bool &changed,
                                   IoError &ioError) noexcept {

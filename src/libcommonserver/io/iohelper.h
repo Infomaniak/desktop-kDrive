@@ -88,7 +88,10 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getFileStat(const SyncPath &path, FileStat *filestat, IoError &ioError) noexcept;
+        static bool getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept;
+#if defined(__APPLE__) || defined(__unix__)
+        static bool getFileStatUnix(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept;
+#endif
 
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
