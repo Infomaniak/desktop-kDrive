@@ -29,5 +29,8 @@ jobs:
       - name: Execute common tests
         run : ./build-macos/client/bin/kDrive_test_common
 
+      - name: Execute parms tests
+        run : ./build-macos/client/bin/kDrive_test_parms
+
       - name: Clean-up generated code
         run : rm -rf build-macos
