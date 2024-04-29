@@ -423,12 +423,13 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     return true;
 }
 
-static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists,
-                                log4cplus::Logger logger) noexcept {  // Return false if we should try the fallback method
-    IoError ioError = IoErrorSuccess;
+static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
+                                log4cplus::Logger logger) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
+                                                                      // should call _isExpectedError.
+    ioError = IoErrorSuccess;
     WCHAR szFilePath[MAX_PATH_LENGTH_WIN_LONG];
     lstrcpyW(szFilePath, path.native().c_str());
-
+    bool exists = false;
     // Get security info
     PACL pfileACL = NULL;
     PSECURITY_DESCRIPTOR psecDesc = NULL;
@@ -445,16 +446,13 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
             write = false;
             exec = false;
             exists = false;
-            return true;  // Expected error if access is denied
         }
 
         if (exists) {
-            LOGW_INFO(logger, L"GetNamedSecurityInfo failed: " << Utility::formatIoError(path, ioError).c_str()
-                                                               << L" | DWORD error: " << result);
-            return false;  // Unexpected error if the file exists but we can't get the security info (and it's not an access
-                           // denied)
+            LOGW_INFO(logger, L"GetNamedSecurityInfo failed: " << Utility::formatIoError(path, ioError).c_str() << L", errDowrd= "
+                                                               << result);
         }
-        return true;  // Expected error if the file doesn't exist
+        return false;  // Caller should call _isExpectedError
     }
 
     // Get rights for trustee
@@ -468,8 +466,9 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         write = false;
         exec = false;
         exists = false;
-        LOGW_INFO(logger, L"GetEffectiveRightsFromAcl failed: " << Utility::formatIoError(path, ioError).c_str());
-        return true;  // Expected error if access is denied
+        LOGW_INFO(logger, L"GetEffectiveRightsFromAcl failed: " << Utility::formatIoError(path, ioError).c_str()
+                                                                << L", errDowrd= " << result);
+        return false;  // Caller should call _isExpectedError
     }
 
     if (result == ERROR_INVALID_SID) {  // Access denied, try to force read control and get the rights
@@ -481,9 +480,8 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     }
 
     if (ioError != IoErrorSuccess) {
-        LOGW_INFO(logger,
-                  L"Unexpected error: " << Utility::formatIoError(path, ioError).c_str() << L" | DWORD error: " << result);
-        return false;  // Unexpected error if we can't get the rights
+        LOGW_INFO(logger, L"Unexpected error: " << Utility::formatIoError(path, ioError).c_str() << L", errDowrd= " << result);
+        return false;  // Caller should call _isExpectedError
     }
 
     bool readCtrl = (rights & READ_CONTROL) == READ_CONTROL;  // Check if we have read control (needed to read the permissions)
@@ -504,7 +502,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
             write = false;
             exec = false;
             exists = false;
-            return true;  // Expected error if access is denied
+            return false;  // Expected error if access is denied
         }
     }
 
@@ -515,16 +513,14 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     return true;
 }
 
-bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept {
+bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
     // !!! When Full control to file/directory is denied to the user, the function will return as if the file/directory does not exist.
-
     read = false;
     write = false;
     exec = false;
-    exists = false;
     // Preferred method
     if (_getAndSetRightsMethod == 0 && Utility::_trustee.ptstrName) {
-        if (getRightsWindowsApi(path, read, write, exec, exists, logger())) {
+        if (getRightsWindowsApi(path, read, write, exec, ioError, logger()) || _isExpectedError(ioError)) {
             return true;
         }
         LOGW_WARN(logger(), L"Failed to get rights using Windows API, falling back to std::filesystem.");
@@ -539,7 +535,6 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     }
 
     // Fallback method.
-    IoError ioError;
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
@@ -549,9 +544,8 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         return false;
     }
 
-    exists = ioError != IoErrorNoSuchFileOrDirectory;
-    if (!exists) {
-        return true;
+    if (ioError != IoErrorSuccess) {
+        return _isExpectedError(ioError);
     }
     const bool isSymlink = itemType.linkType == LinkTypeSymlink;
 
@@ -560,16 +554,10 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
     ioError = stdError2ioError(ec);
     if (ioError != IoErrorSuccess) {
-        exists = ioError != IoErrorNoSuchFileOrDirectory;
-        if (!exists) {
-            return true;
-        }
-
         LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
-        return false;
+        return _isExpectedError(ioError);
     }
 
-    exists = true;
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
     write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
     exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
@@ -601,13 +589,15 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
             grantedPermission |= FILE_GENERIC_EXECUTE;
         }
         bool res = false;
-        res = setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger());
+        res = setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger()) || _isExpectedError(ioError);
         if (res) {
-            res &= setRightsWindowsApi(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger());
+            res &= setRightsWindowsApi(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger()) || _isExpectedError(ioError);
         }
+
         if (res) {
             return true;
         }
+
         LOGW_WARN(logger(), L"Failed to set rights using Windows API, falling back to std::filesystem.");
         sentry_value_t event = sentry_value_new_event();
         sentry_value_t exc = sentry_value_new_exception(

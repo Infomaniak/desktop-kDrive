@@ -267,7 +267,7 @@ struct IoHelper {
          \param exists is a boolean indicating whether the item exists.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept;
+        static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept;
 
         //! Set the rights of the item indicated by `path`.
         /*!
