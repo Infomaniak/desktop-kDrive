@@ -836,7 +836,9 @@ ExitCode GuiRequests::getAppState(AppStateKey key, QString &value) {
     ExitCode exitCode = ExitCodeUnknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
-    resultStream >> value;
+    if (exitCode == ExitCodeOk) {
+        resultStream >> value;
+    }
 
     return exitCode;
 }
