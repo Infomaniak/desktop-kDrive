@@ -321,18 +321,28 @@ AppServer::AppServer(int &argc, char **argv)
 
     // Check last crash to avoid crash loop
     if (_crashRecovered) {
+        bool found = false;
         LOG_WARN(_logger, "Server auto restart after a crash.");
         if (serverCrashedRecently()) {
             LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
-            QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed!"), QMessageBox::Ok);
-            KDC::ParmsDb::instance()->setValueForKey("lastServerSelfRestart", "0");
+            QMessageBox::warning(0, QString(APPLICATION_NAME), _crashMessage, QMessageBox::Ok);
+            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, "0", found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+                addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+                throw std::runtime_error("Failed to update last server self restart.");
+            }
             QTimer::singleShot(0, this, quit);
             return;
         }
         long timestamp =
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
         std::string timestampStr = std::to_string(timestamp);
-        KDC::ParmsDb::instance()->setValueForKey("lastServerSelfRestart", timestampStr);
+        KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, timestampStr, found);
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, timestampStr, found) || !found) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+            throw std::runtime_error("Failed to update last server self restart.");
+        }
     }
 
     // Start client
@@ -2056,8 +2066,12 @@ void AppServer::onRestartClientReceived() {
     // Check last start time
     if (clientCrashedRecently()) {
         LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
-        KDC::ParmsDb::instance()->setValueForKey("lastClientSelfRestart", "0");
-        QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed"), QMessageBox::Ok);
+        bool found = false;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestart, "0", found) || !found) {
+            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        }
+        QMessageBox::warning(0, QString(APPLICATION_NAME), _crashMessage, QMessageBox::Ok);
         QTimer::singleShot(0, this, &AppServer::quit);
         return;
     } else {
@@ -2065,7 +2079,15 @@ void AppServer::onRestartClientReceived() {
         long timestamp =
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
         std::string timestampStr = std::to_string(timestamp);
-        KDC::ParmsDb::instance()->setValueForKey("lastClientSelfRestart", timestampStr);
+        bool found = false;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestart, timestampStr, found) || !found) {
+            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+            QMessageBox::warning(0, QString(APPLICATION_NAME), _crashMessage, QMessageBox::Ok);
+            QTimer::singleShot(0, this, &AppServer::quit);
+            return;
+        }
+
         if (!startClient()) {
             LOG_WARN(_logger, "Error in startClient");
         }
@@ -2857,7 +2879,13 @@ bool AppServer::serverCrashedRecently(int seconds) {
 
     int64_t lastServerCrash = 0;
     std::string lastServerCrashStr;
-    KDC::ParmsDb::instance()->selectValueForKey("lastServerSelfRestart", lastServerCrashStr);
+    bool found = false;
+
+    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestart, lastServerCrashStr, found) || !found) {
+        addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        return false;
+    }
 
     if (lastServerCrashStr.empty()) {
         return false;
@@ -2885,7 +2913,13 @@ bool AppServer::clientCrashedRecently(int seconds) {
 
     int64_t lastClientCrash = 0;
     std::string lastClientCrashStr;
-    KDC::ParmsDb::instance()->selectValueForKey("lastClientSelfRestart", lastClientCrashStr);
+    bool found = false;
+
+    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestart, lastClientCrashStr, found) || !found) {
+        addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        return false;
+    }
 
     if (lastClientCrashStr.empty()) {
         return false;

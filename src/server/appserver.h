@@ -131,6 +131,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
+        QString _crashMessage = tr("kDrive application will close due to a fatal error.");
 
 
 #if defined(WITH_CRASHREPORTER)

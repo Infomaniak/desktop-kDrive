@@ -132,8 +132,8 @@ class PARMS_EXPORT ParmsDb : public Db {
         ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test);
 
         bool insertDefaultParameters();
-        bool insertDefaultSelfRestarterData();
         bool insertDefaultAppState();
+        bool insertDefaultAppState(AppStateKey key, const std::string &value);
         bool updateExclusionTemplates();
 
         bool createAppState();

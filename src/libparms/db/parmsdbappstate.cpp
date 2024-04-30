@@ -65,13 +65,25 @@ bool ParmsDb::prepareAppState() {
 }
 
 bool ParmsDb::insertDefaultAppState() {
+    if (!insertDefaultAppState(AppStateKey::LastServerSelfRestart, APP_STATE_KEY_DEFAULT_LastServerSelfRestart)) {
+        return false;
+    }
+
+    if (!insertDefaultAppState(AppStateKey::LastClientSelfRestart, APP_STATE_KEY_DEFAULT_LastClientSelfRestart)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::insertDefaultAppState(AppStateKey key, const std::string &value) {
     const std::scoped_lock lock(_mutex);
     int errId = 0;
     std::string error;
     bool found = false;
 
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(AppStateKey::Test)));
+    ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
     if (!queryNext(SELECT_APP_STATE_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
@@ -80,8 +92,8 @@ bool ParmsDb::insertDefaultAppState() {
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
     if (!found) {
         ASSERT(queryResetAndClearBindings(INSERT_APP_STATE_REQUEST_ID));
-        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 1, static_cast<int>(AppStateKey::Test)));
-        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 2, APP_STATE_KEY_DEFAULT_Test));
+        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
+        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 2, value));
         if (!queryExec(INSERT_APP_STATE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << INSERT_APP_STATE_REQUEST_ID);
             return false;
@@ -89,6 +101,7 @@ bool ParmsDb::insertDefaultAppState() {
     }
     return true;
 }
+
 
 bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
     const std::scoped_lock lock(_mutex);
@@ -123,7 +136,7 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
     }
 
     const std::scoped_lock lock(_mutex);
-    if (found) { 
+    if (found) {
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
         ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
         ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, value));
