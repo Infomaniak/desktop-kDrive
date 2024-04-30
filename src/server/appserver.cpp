@@ -2893,7 +2893,7 @@ bool AppServer::serverCrashedRecently(int seconds) {
 
     try {
         lastServerCrash = std::stoll(lastServerCrashStr);
-    } catch (const std::exception &e) {
+    } catch (const std::invalid_argument &e) {
         LOG_WARN(_logger, "Error in std::stoll: " << e.what());
         return false;
     }
@@ -2927,7 +2927,7 @@ bool AppServer::clientCrashedRecently(int seconds) {
 
     try {
         lastClientCrash = std::stoll(lastClientCrashStr);
-    } catch (const std::exception &e) {
+    } catch (const std::invalid_argument &e) {
         LOG_WARN(_logger, "Error in std::stoll: " << e.what());
         return false;
     }
