@@ -1404,7 +1404,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
     bool execPermission = false;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::getRights(absoluteLocalFilePath, readPermission, writePermission, execPermission, ioError)) {
-        LOGW_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absoluteLocalFilePath).c_str());
+        LOGW_WARN(_logger, L"Error in Utility::getRights: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
     exists = ioError != IoErrorNoSuchFileOrDirectory;

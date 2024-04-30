@@ -123,8 +123,8 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
 
     std::error_code ec;
     std::filesystem::perms perms = std::filesystem::status(path, ec).permissions();
-    if (ec.value() != 0) {
-        bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
+    if (ec) {
+        const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
         ioError = stdError2ioError(ec);
         if (!exists) {
             ioError = IoErrorNoSuchFileOrDirectory;

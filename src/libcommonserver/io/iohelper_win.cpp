@@ -449,7 +449,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         }
 
         if (exists) {
-            LOGW_INFO(logger, L"GetNamedSecurityInfo failed: " << Utility::formatIoError(path, ioError).c_str() << L", errDowrd= "
+            LOGW_INFO(logger, L"GetNamedSecurityInfo failed: " << Utility::formatIoError(path, ioError).c_str() << L", DWORD error: "
                                                                << result);
         }
         return false;  // Caller should call _isExpectedError
@@ -467,7 +467,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         exec = false;
         exists = false;
         LOGW_INFO(logger, L"GetEffectiveRightsFromAcl failed: " << Utility::formatIoError(path, ioError).c_str()
-                                                                << L", errDowrd= " << result);
+                                                                << L", DWORD error: " << result);
         return false;  // Caller should call _isExpectedError
     }
 
@@ -480,7 +480,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     }
 
     if (ioError != IoErrorSuccess) {
-        LOGW_INFO(logger, L"Unexpected error: " << Utility::formatIoError(path, ioError).c_str() << L", errDowrd= " << result);
+        LOGW_INFO(logger, L"Unexpected error: " << Utility::formatIoError(path, ioError).c_str() << L", DWORD error: " << result);
         return false;  // Caller should call _isExpectedError
     }
 

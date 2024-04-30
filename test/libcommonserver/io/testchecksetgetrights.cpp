@@ -39,7 +39,7 @@ void TestIo::testCheckSetAndGetRights() {
 #endif
     const TemporaryDirectory temporaryDirectory;
 
-    // Test if the rights are correctly set and get on a directory
+    // Test if the rights are correctly set on a directory and if it can be retrieved successfully.
     {
         const SyncPath path = temporaryDirectory.path / "changePerm";
 
