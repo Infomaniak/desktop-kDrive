@@ -464,8 +464,9 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     if (result == ERROR_INVALID_SID) {  // Access denied, try to force read control and get the rights
         if (setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger)) {
             GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
-            LocalFree(psecDesc);
             result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
+            LocalFree(psecDesc);
+
             setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger);
             ioError = dWordError2ioError(result);
         }
@@ -481,8 +482,8 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         if (setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError,
                                 logger)) {  // Try to force read control
             GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
-            LocalFree(psecDesc);
             GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
+            LocalFree(psecDesc);
             setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError,
                                 logger);  // Revoke read control after reading the permissions
             readCtrl = (rights & READ_CONTROL) == READ_CONTROL;
