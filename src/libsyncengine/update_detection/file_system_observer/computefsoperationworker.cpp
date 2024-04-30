@@ -840,7 +840,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str()
                                          << L" still exists on local replica. Snapshot not up to date, restarting sync.");
 #ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "ComputeFSOperationWorker::checkIfOkToDelete",
+    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "ComputeFSOperationWorker::checkIfOkToDelete",
                                                         "Unwanted local delete operation averted"));
 #endif
 
