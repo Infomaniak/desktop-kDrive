@@ -501,31 +501,6 @@
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID "select_migration_selectivesync"
 #define SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST "SELECT syncDbId, path, type FROM migration_selectivesync;"
 
-//
-// key_value
-//
-
-#define CREATE_KEY_VALUE_TABLE_ID "create_key_value"
-#define CREATE_KEY_VALUE_TABLE              \
-    "CREATE TABLE IF NOT EXISTS key_value(" \
-    "key TEXT PRIMARY KEY,"                 \
-    "value TEXT);"
-
-
-#define INSERT_KEY_VALUE_REQUEST_ID "insert_key_value"
-#define INSERT_KEY_VALUE_REQUEST          \
-    "INSERT INTO key_value (key, value) " \
-    "VALUES (?1, ?2);"
-
-#define SELECT_VALUE_FROM_KEY_REQUEST_ID "select_value_from_key"
-#define SELECT_VALUE_FROM_KEY_REQUEST "SELECT value FROM key_value WHERE key=?1;"
-
-#define UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID "update_value_with_key"
-#define UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST "UPDATE key_value SET value=?2 WHERE key=?1;"
-
-#define DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID "delete_value_with_key"
-#define DELETE_VALUE_WITH_KEY_CLIENT_REQUEST "DELETE FROM key_value WHERE key=?1;"
-
 namespace KDC {
 
 std::shared_ptr<ParmsDb> ParmsDb::_instance = nullptr;
@@ -903,19 +878,9 @@ bool ParmsDb::create(bool &retry) {
         return sqlFail(CREATE_ERROR_TABLE_ID, error);
     }
     queryFree(CREATE_ERROR_TABLE_ID);
-
-    // key value
-    ASSERT(queryCreate(CREATE_KEY_VALUE_TABLE_ID));
-    if (!queryPrepare(CREATE_KEY_VALUE_TABLE_ID, CREATE_KEY_VALUE_TABLE, false, errId, error)) {
-        queryFree(CREATE_KEY_VALUE_TABLE_ID);
-        return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
-    }
-    if (!queryExec(CREATE_KEY_VALUE_TABLE_ID, errId, error)) {
-        queryFree(CREATE_KEY_VALUE_TABLE_ID);
-        return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
-    }
-
-    queryFree(CREATE_KEY_VALUE_TABLE_ID);
+    
+    // app state
+    createAppState();
 
     // Migration old selectivesync table
     ASSERT(queryCreate(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID));
@@ -1271,31 +1236,9 @@ bool ParmsDb::prepare() {
         queryFree(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID);
         return sqlFail(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
     }
-
-    // key value
-    ASSERT(queryCreate(INSERT_KEY_VALUE_REQUEST_ID));
-    if (!queryPrepare(INSERT_KEY_VALUE_REQUEST_ID, INSERT_KEY_VALUE_REQUEST, false, errId, error)) {
-        queryFree(INSERT_KEY_VALUE_REQUEST_ID);
-        return sqlFail(INSERT_KEY_VALUE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(SELECT_VALUE_FROM_KEY_REQUEST_ID));
-    if (!queryPrepare(SELECT_VALUE_FROM_KEY_REQUEST_ID, SELECT_VALUE_FROM_KEY_REQUEST, false, errId, error)) {
-        queryFree(SELECT_VALUE_FROM_KEY_REQUEST_ID);
-        return sqlFail(SELECT_VALUE_FROM_KEY_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-    if (!queryPrepare(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
-        return sqlFail(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-    if (!queryPrepare(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, DELETE_VALUE_WITH_KEY_CLIENT_REQUEST, false, errId, error)) {
-        queryFree(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
-        return sqlFail(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, error);
-    }
+    
+    // App state
+    prepareAppState();
 
     if (!initData()) {
         LOG_WARN(_logger, "Error in initParameters");
@@ -1376,17 +1319,8 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
     if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.1")) {
         LOG_DEBUG(_logger, "Upgrade < 3.6.1 DB");
 
-        queryFree(CREATE_KEY_VALUE_TABLE_ID);
-        ASSERT(queryCreate(CREATE_KEY_VALUE_TABLE_ID));
-        if (!queryPrepare(CREATE_KEY_VALUE_TABLE_ID, CREATE_KEY_VALUE_TABLE, false, errId, error)) {
-            queryFree(CREATE_KEY_VALUE_TABLE_ID);
-            return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
-        }
-        if (!queryExec(CREATE_KEY_VALUE_TABLE_ID, errId, error)) {
-            queryFree(CREATE_KEY_VALUE_TABLE_ID);
-            return sqlFail(CREATE_KEY_VALUE_TABLE_ID, error);
-        }
-        queryFree(CREATE_KEY_VALUE_TABLE_ID);
+        createAppState();
+
     }
 
     return true;
@@ -1409,6 +1343,12 @@ bool ParmsDb::initData() {
         LOG_WARN(_logger, "Error in insertDefaultParameters");
         return false;
     }
+
+    if (!insertDefaultAppState()) {
+        LOG_WARN(_logger, "Error in insertDefaultAppState");
+        return false;
+    }
+
 
     // Update exclusion templates
     if (!updateExclusionTemplates()) {
@@ -3252,79 +3192,6 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
         migrationSelectiveSyncList.push_back(MigrationSelectiveSync(syncDbId, SyncPath(path), type));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
-
-    return true;
-}
-
-bool ParmsDb::selectValueForKey(const std::string &key, std::string &value, const std::string &defaultValue) {
-    const std::scoped_lock lock(_mutex);
-
-    ASSERT(queryResetAndClearBindings(SELECT_VALUE_FROM_KEY_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_VALUE_FROM_KEY_REQUEST_ID, 1, key));
-    bool found = false;
-    if (!queryNext(SELECT_VALUE_FROM_KEY_REQUEST_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << SELECT_VALUE_FROM_KEY_REQUEST_ID);
-        value = defaultValue;
-        return false;
-    }
-    if (!found) {
-        value = defaultValue;
-        return true;
-    }
-
-    ASSERT(queryStringValue(SELECT_VALUE_FROM_KEY_REQUEST_ID, 0, value));
-    ASSERT(queryResetAndClearBindings(SELECT_VALUE_FROM_KEY_REQUEST_ID));
-
-    return true;
-}
-
-bool ParmsDb::setValueForKey(const std::string &key, const std::string &value) {
-    if (value.empty()) {
-        return deleteKeyValueEntry(key);
-    }
-
-    std::string existingValue;
-    int errId;
-    std::string error;
-    bool found = selectValueForKey(key, existingValue);
-    found = found && !existingValue.empty();
-    const std::scoped_lock lock(_mutex);
-    if (found) {  // UPDATE
-        ASSERT(queryResetAndClearBindings(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-        ASSERT(queryBindValue(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, 1, key));
-        ASSERT(queryBindValue(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, 2, value));
-        if (!queryExec(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, errId, error)) {
-            LOG_WARN(_logger, "Error running query: " << UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
-            return false;
-        }
-        ASSERT(queryResetAndClearBindings(UPDATE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-    } else {  // INSERT
-        ASSERT(queryResetAndClearBindings(INSERT_KEY_VALUE_REQUEST_ID));
-        ASSERT(queryBindValue(INSERT_KEY_VALUE_REQUEST_ID, 1, key));
-        ASSERT(queryBindValue(INSERT_KEY_VALUE_REQUEST_ID, 2, value));
-
-        if (!queryExec(INSERT_KEY_VALUE_REQUEST_ID, errId, error)) {
-            LOG_WARN(_logger, "Error running query: " << INSERT_KEY_VALUE_REQUEST_ID);
-            return false;
-        }
-        ASSERT(queryResetAndClearBindings(INSERT_KEY_VALUE_REQUEST_ID));
-    }
-    return true;
-}
-
-bool ParmsDb::deleteKeyValueEntry(const std::string &key) {
-    const std::scoped_lock lock(_mutex);
-
-    int errId;
-    std::string error;
-
-    ASSERT(queryResetAndClearBindings(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, 1, key));
-    if (!queryExec(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID);
-        return false;
-    }
-    ASSERT(queryResetAndClearBindings(DELETE_VALUE_WITH_KEY_CLIENT_REQUEST_ID));
 
     return true;
 }

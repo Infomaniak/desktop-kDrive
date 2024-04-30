@@ -788,6 +788,19 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         return;
     }
 
+    if (directDownloadJobsMapIt->second->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+        Error error;
+        error.setLevel(ErrorLevelNode);
+        error.setSyncDbId(syncDbId());
+        error.setRemoteNodeId(directDownloadJobsMapIt->second->remoteNodeId());
+        error.setPath(directDownloadJobsMapIt->second->localPath());
+        error.setExitCode(ExitCodeBackError);
+        error.setExitCause(ExitCauseNotFound);
+        addError(error);
+
+        vfsCancelHydrate(directDownloadJobsMapIt->second->localPath());
+    }
+
     _syncPathToDownloadJobMap.erase(directDownloadJobsMapIt->second->affectedFilePath());
     _directDownloadJobsMap.erase(directDownloadJobsMapIt);
 }
@@ -855,7 +868,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         job->setVfsUpdateFetchStatusCallback(vfsUpdateFetchStatusCallback);
 
 #ifdef __APPLE__
-        // Not done in Windows case: the pin state and the status must not be set by the download job because hydratation could be
+        // Not done in Windows case: the pin state and the status must not be set by the download job because hydration could be
         // asked for a move and so, the file place will change just after the dl.
         std::function<bool(const SyncPath &, PinState)> vfsSetPinStateCallback =
             std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);

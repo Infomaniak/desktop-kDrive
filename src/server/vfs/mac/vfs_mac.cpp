@@ -547,6 +547,10 @@ bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     return !error;
 }
 
+void VfsMac::cancelHydrate(const QString &filePath) {
+    _connector->vfsCancelHydrate(filePath);
+}
+
 bool VfsMac::isDehydratedPlaceholder(const QString &initFilePath, bool isAbsolutePath /*= false*/) {
     SyncPath filePath(isAbsolutePath ? QStr2Path(initFilePath) : _vfsSetupParams._localPath / QStr2Path(initFilePath));
 

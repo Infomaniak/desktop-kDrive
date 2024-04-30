@@ -122,9 +122,8 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
-        bool selectValueForKey(const std::string &key, std::string &value, const std::string &defaultValue = "");
-        bool setValueForKey(const std::string &key, const std::string &value); // update or insert
-        bool deleteKeyValueEntry(const std::string &key);
+        bool selectAppState(AppStateKey key, std::string &value, bool& found);
+        bool updateAppState(AppStateKey key, const std::string &value, bool& found);  // update or insert
 
     private:
         static std::shared_ptr<ParmsDb> _instance;
@@ -134,7 +133,12 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertDefaultParameters();
         bool insertDefaultSelfRestarterData();
+        bool insertDefaultAppState();
         bool updateExclusionTemplates();
+
+        bool createAppState();
+        bool prepareAppState();
+
 #ifdef __APPLE__
         bool updateExclusionApps();
 #endif

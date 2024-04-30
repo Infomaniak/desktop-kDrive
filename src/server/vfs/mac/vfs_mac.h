@@ -70,6 +70,7 @@ class VfsMac : public Vfs {
         bool convertToPlaceholder(const QString &path, const SyncFileItem &item, bool &needRestart) override;
         bool updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled,
                                bool &finished) override;
+        void cancelHydrate(const QString &filePath) override;
         bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
         virtual void clearFileAttributes(const QString &path) override;
 

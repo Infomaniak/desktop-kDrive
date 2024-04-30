@@ -1791,15 +1791,16 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCodeOk;
             break;
         }
-        case REQUEST_NUM_UTILITY_SET_KEYVALUE: {
-            QString key;
+        case REQUEST_NUM_UTILITY_SET_APPSTATE: {
+            AppStateKey key = AppStateKey::Unknown;
             QString value;
             QDataStream paramsStream(params);
             paramsStream >> key;
             paramsStream >> value;
 
-            if (!ParmsDb::instance()->setValueForKey(key.toStdString(), value.toStdString())) {
-                LOG_WARN(_logger, "Error in ParmsDb::setKeyValue");
+            bool found = true;
+            if (!ParmsDb::instance()->updateAppState(key, value.toStdString(), found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
                 resultStream << ExitCodeDbError;
                 break;
             }
@@ -1807,16 +1808,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCodeOk;
             break;
         }
-        case REQUEST_NUM_UTILITY_GET_KEYVALUE: {
-            QString key;
+        case REQUEST_NUM_UTILITY_GET_APPSTATE: {
+            AppStateKey key = AppStateKey::Unknown;
             QString defaultValue;
             QDataStream paramsStream(params);
             paramsStream >> key;
-            paramsStream >> defaultValue;
-
             std::string value;
-            if (!ParmsDb::instance()->selectValueForKey(key.toStdString(), value, defaultValue.toStdString())) {
-                LOG_WARN(_logger, "Error in ParmsDb::getValueFromKeyValue");
+            bool found = false;
+            if (!ParmsDb::instance()->selectAppState(key, value, found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
                 resultStream << ExitCodeDbError;
                 break;
             }
