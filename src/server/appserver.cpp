@@ -1789,6 +1789,40 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCodeOk;
             break;
         }
+        case REQUEST_NUM_UTILITY_SET_APPSTATE: {
+            AppStateKey key = AppStateKey::Unknown;
+            QString value;
+            QDataStream paramsStream(params);
+            paramsStream >> key;
+            paramsStream >> value;
+
+            bool found = true;
+            if (!ParmsDb::instance()->updateAppState(key, value.toStdString(), found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+                resultStream << ExitCodeDbError;
+                break;
+            }
+
+            resultStream << ExitCodeOk;
+            break;
+        }
+        case REQUEST_NUM_UTILITY_GET_APPSTATE: {
+            AppStateKey key = AppStateKey::Unknown;
+            QString defaultValue;
+            QDataStream paramsStream(params);
+            paramsStream >> key;
+            std::string value;
+            bool found = false;
+            if (!ParmsDb::instance()->selectAppState(key, value, found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+                resultStream << ExitCodeDbError;
+                break;
+            }
+
+            resultStream << ExitCodeOk;
+            resultStream << QString::fromStdString(value);
+            break;
+        }
         case REQUEST_NUM_SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId;
             bool value;
@@ -2038,8 +2072,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
 
     if (message == showSynthesisMsg) {
         showSynthesis();
-    }
-    else if (message == showSettingsMsg) {
+    } else if (message == showSettingsMsg) {
         showSettings();
     }
 }

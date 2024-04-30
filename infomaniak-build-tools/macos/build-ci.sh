@@ -77,25 +77,20 @@ fi
 # Configure infomaniakdrive
 cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
-	-DCODE_SIGN_INJECT_BASE_ENTITLEMENTS="$CODE_SIGN_INJECT_BASE_ENTITLEMENTS" \
 	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DNO_SHIBBOLETH=1 \
-	-DSPARKLE_INCLUDE_DIR="$SPARKLE_DIR/Sparkle.framework/Headers" \
 	-DSPARKLE_LIBRARY="$SPARKLE_DIR/Sparkle.framework" \
 	-DOPENSSL_ROOT_DIR="/usr/local/" \
 	-DOPENSSL_INCLUDE_DIR="/usr/local/include/" \
 	-DOPENSSL_CRYPTO_LIBRARY="/usr/local/lib/libcrypto.dylib" \
 	-DOPENSSL_SSL_LIBRARY="/usr/local/lib/libssl.dylib" \
 	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
-	-DQTKEYCHAIN_LIBRARY="/usr/local/lib/libqt6keychain.dylib" \
-	-DQTKEYCHAIN_INCLUDE_DIR="/usr/local/include/qt6keychain/" \
 	-DQTDIR="$QTDIR" \
 	-DWITH_CRASHREPORTER=0 \
 	-DBUILD_UNIT_TESTS=1 \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
 
-# Install it
-make install
+# Build kDrive sources
+make
 popd
