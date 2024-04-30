@@ -580,9 +580,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         } else {
             grantedPermission |= FILE_GENERIC_EXECUTE;
         }
-        bool res = false;
-        res =
-            setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger()) || _isExpectedError(ioError);
+        bool res = setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger()) || _isExpectedError(ioError);
         if (res) {
             res &= setRightsWindowsApi(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger()) ||
                    _isExpectedError(ioError);
