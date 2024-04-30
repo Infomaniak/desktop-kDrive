@@ -306,6 +306,8 @@ void TestParmsDb::testAppState(void) {
         ParmsDb::instance()->updateAppState(AppStateKey::Unknown, "value 2", found));  // Test for unknown key (not in db)
     CPPUNIT_ASSERT(!found);
 
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::Unknown, value, found));
+    CPPUNIT_ASSERT(!found);
 
     int i = 0;
     do {

@@ -125,13 +125,13 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsActivationDone = false;
         bool _vfsConnectionDone = false;
         bool _crashRecovered = false;
+        QString _crashMessage = tr("kDrive application will close due to a fatal error.");
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
-        QString _crashMessage = tr("kDrive application will close due to a fatal error.");
 
 
 #if defined(WITH_CRASHREPORTER)

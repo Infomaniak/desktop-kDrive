@@ -102,7 +102,6 @@ bool ParmsDb::insertDefaultAppState(AppStateKey key, const std::string &value) {
     return true;
 }
 
-
 bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
     const std::scoped_lock lock(_mutex);
     found = false;
@@ -147,6 +146,5 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
     }
     return true;
-}
-
+} 
 }  // namespace KDC
