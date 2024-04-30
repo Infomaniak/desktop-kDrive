@@ -39,7 +39,7 @@ jobs:
         shell: cmd
 
       - name: Execute common tests
-        run: ./build-Release/install/bin/kDrive_test_common.exe
+        run: ./build-windows/install/bin/kDrive_test_common.exe
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
