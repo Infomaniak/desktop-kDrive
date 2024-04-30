@@ -25,14 +25,10 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/linux/build-ci-amd64.sh
 
-      # - name: Grant test_common execute permission
-      #   run : chmod +x ./build-linux/build/bin/kDrive_test_common
       - name: Execute common tests
         run : ./kDrive_test_common
         working-directory: ${{env.bin-directory}}
 
-      # - name: Grant test_parms execute permission
-      #   run : chmod +x ./build-linux/build/bin/kDrive_test_parms
       - name: Execute parms tests
         run : ./kDrive_test_parms
         working-directory: ${{env.bin-directory}}
