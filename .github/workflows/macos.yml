@@ -11,6 +11,8 @@ concurrency:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      bin-directory: ./build-macos/install
 
     steps:
       - name: Checkout the code
@@ -27,10 +29,12 @@ jobs:
         run : ./infomaniak-build-tools/macos/build-ci.sh
 
       - name: Execute common tests
-        run : ./build-macos/install/kDrive_test_common
+        run : ./kDrive_test_common
+        working-directory: ${{env.bin-directory}}
 
       - name: Execute parms tests
-        run : ./build-macos/install/kDrive_test_parms
+        run : ./kDrive_test_parms
+        working-directory: ${{env.bin-directory}}
 
       - name: Clean-up generated code
         run : rm -rf build-macos
