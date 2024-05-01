@@ -879,7 +879,7 @@ bool ParmsDb::create(bool &retry) {
     queryFree(CREATE_ERROR_TABLE_ID);
     
     // app state
-    createAppState();
+    if(!createAppState()) return false;
 
     // Migration old selectivesync table
     ASSERT(queryCreate(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID));
@@ -1237,7 +1237,7 @@ bool ParmsDb::prepare() {
     }
     
     // App state
-    prepareAppState();
+    if(!prepareAppState()) return false;
 
     if (!initData()) {
         LOG_WARN(_logger, "Error in initParameters");
