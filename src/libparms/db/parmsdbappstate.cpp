@@ -17,7 +17,6 @@
  */
 
 #include "parmsdb.h"
-#include "parmsdbappstate.h"
 #include "libcommonserver/utility/asserts.h"
 
 constexpr char CREATE_APP_STATE_TABLE_ID[] = "create_app_state";
