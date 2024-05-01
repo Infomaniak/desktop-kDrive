@@ -32,8 +32,8 @@ if(WIN32)
 endif()
 
 if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
-    include_directories("F:/Projects/cppunit/include")
+    include_directories("C:/Projects/log4cplus/include")
+    include_directories("C:/Projects/cppunit/include")
 else()
     include_directories("/usr/local/include")
 endif()
@@ -63,9 +63,9 @@ endif()
 if (WIN32)
     target_link_libraries(${testcommon_NAME}
         debug
-        "F:/Projects/cppunit/lib/cppunitd.lib"
+        "C:/Projects/cppunit/lib/cppunitd.lib"
         optimized
-        "F:/Projects/cppunit/lib/cppunit.lib")
+        "C:/Projects/cppunit/lib/cppunit.lib")
 elseif(APPLE)
     target_link_libraries(${testcommon_NAME}
         "/usr/local/lib/libcppunit.dylib")
