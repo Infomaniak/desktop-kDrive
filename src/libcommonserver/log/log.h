@@ -164,9 +164,7 @@ class COMMONSERVER_EXPORT Log {
         static const std::wstring instanceName;
         static const std::wstring rfName;
         static const std::wstring rfPattern;
-        static const int rfMaxFileSize;
         static const int rfMaxBackupIdx;
-        static const int logsPurgeRate;  // Delay after which the logs are purged, expressed in days.
 
     private:
         Log(const log4cplus::tstring &filePath);

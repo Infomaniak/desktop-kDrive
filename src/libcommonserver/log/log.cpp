@@ -19,6 +19,7 @@
 #include "log.h"
 #include "customrollingfileappender.h"
 #include "utility/utility.h"
+#include "libcommon/utility/utility.h"
 
 #include <log4cplus/initializer.h>
 #include <log4cplus/fileappender.h>
@@ -31,9 +32,7 @@ namespace KDC {
 const std::wstring Log::instanceName = L"Main";
 const std::wstring Log::rfName = L"RollingFileAppender";
 const std::wstring Log::rfPattern = L"%D{%Y-%m-%d %H:%M:%S:%q} [%-0.-1p] (%t) %b:%L - %m%n";
-const int Log::rfMaxFileSize = 500;  // MB
 const int Log::rfMaxBackupIdx = 4;   // Max number of backup files
-const int Log::logsPurgeRate = 7;    // days
 
 std::shared_ptr<Log> Log::_instance = nullptr;
 
@@ -77,9 +76,10 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
         _logger.setLogLevel(log4cplus::OFF_LOG_LEVEL);
     }
 
-    // Set purge duration
+    // Set purge rate
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
-    static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get())->setExpire(purgeOldLogs ? Log::logsPurgeRate * 24 : 0);
+    static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get())
+        ->setExpire(purgeOldLogs ? CommonUtility::logsPurgeRate * 24 : 0);
 
     return true;
 }
@@ -87,7 +87,7 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
 Log::Log(const log4cplus::tstring &filePath) {
     // Instantiate an appender object
     CustomRollingFileAppender *rfAppender =
-        new CustomRollingFileAppender(filePath, Log::rfMaxFileSize * 1024 * 1024, Log::rfMaxBackupIdx, true, true);
+        new CustomRollingFileAppender(filePath, CommonUtility::logMaxSize, Log::rfMaxBackupIdx, true, true);
 
     // Unicode management
     std::locale loc(std::locale(), new std::codecvt_utf8<wchar_t>);

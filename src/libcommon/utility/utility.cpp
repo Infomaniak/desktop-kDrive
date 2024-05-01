@@ -73,6 +73,9 @@
 
 namespace KDC {
 
+const int CommonUtility::logsPurgeRate = 7;               // days
+const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
+
 SyncPath CommonUtility::_workingDirPath = "";
 
 static const QString englishCode = "en";
