@@ -100,7 +100,6 @@ static const QString showSynthesisMsg = "showSynthesis";
 static const QString showSettingsMsg = "showSettings";
 static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
-
 // Helpers for displaying messages. Note that there is no console on Windows.
 #ifdef Q_OS_WIN
 static void displayHelpText(const QString &t)  // No console on Windows.
@@ -323,7 +322,7 @@ AppServer::AppServer(int &argc, char **argv)
         LOG_WARN(_logger, "Server auto restart after a crash.");
         if (serverCrashedRecently()) {
             LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
-            QMessageBox::warning(0, QString(APPLICATION_NAME), _crashMessage, QMessageBox::Ok);
+            QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
             if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, "0", found) || !found) {
                 LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
                 addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
@@ -2070,7 +2069,7 @@ void AppServer::onRestartClientReceived() {
             addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         }
-        QMessageBox::warning(0, QString(APPLICATION_NAME), _crashMessage, QMessageBox::Ok);
+        QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
         QTimer::singleShot(0, this, &AppServer::quit);
         return;
     } else {
@@ -2082,7 +2081,7 @@ void AppServer::onRestartClientReceived() {
         if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestart, timestampStr, found) || !found) {
             addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-            QMessageBox::warning(0, QString(APPLICATION_NAME), _crashMessage, QMessageBox::Ok);
+            QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
             QTimer::singleShot(0, this, &AppServer::quit);
             return;
         }
