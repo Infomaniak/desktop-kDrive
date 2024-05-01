@@ -82,12 +82,13 @@ void TestIo::testCheckSetAndGetRights() {
                 }
 
                 result = IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError);
+                result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Failed to get base rights */);
                 }
-              
-                if (!(ioError == IoErrorSuccess && isReadable == rightsSet.read && isWritable == rightsSet.write &&
+
+                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write &&
                       isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
@@ -102,12 +103,13 @@ void TestIo::testCheckSetAndGetRights() {
                 }
 
                 result = IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError);
+                result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Failed to get target rights */);
                 }
 
-                if (!(ioError == IoErrorSuccess && isReadable == rightsSet.read && isWritable == rightsSet.write &&
+                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write &&
                       isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set target rights mismatch with get target rights */);
@@ -116,6 +118,7 @@ void TestIo::testCheckSetAndGetRights() {
         }
         // Restore the rights
         IoHelper::setRights(path, true, true, true, ioError);
+#ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the wndows API
 #endif
     }
@@ -145,12 +148,14 @@ void TestIo::testCheckSetAndGetRights() {
                     IoHelper::setRights(filepath, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Failed to set base rights */);
                 }
+
                 result = IoHelper::getRights(filepath, isReadable, isWritable, isExecutable, ioError);
+                result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(filepath, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Failed to get base rights */);
                 }
-                if (!(ioError == IoErrorSuccess && isReadable == rightsSet.read && isWritable == rightsSet.write &&
+                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write &&
                       isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(filepath, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
@@ -164,12 +169,13 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Failed to set target rights */);
                 }
                 result = IoHelper::getRights(filepath, isReadable, isWritable, isExecutable, ioError);
+                result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(filepath, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Failed to get target rights */);
                 }
-              
-                if (!(ioError == IoErrorSuccess && isReadable == rightsSet.read && isWritable == rightsSet.write &&
+
+                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write &&
                       isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(filepath, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set target rights mismatch with get target rights */);

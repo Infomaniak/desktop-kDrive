@@ -445,6 +445,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
                                                                      << result << L"'");
         }
         return false;  // Caller should call _isExpectedError
+    }
 
     // Get rights for trustee
     ACCESS_MASK rights = 0;
