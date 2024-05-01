@@ -799,7 +799,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     bool readPermission = false;
     bool writePermission = false;
     bool execPermission = false;
-    if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, exists)) {
+    if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, ioError)) {
         LOGW_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absolutePath).c_str());
         setExitCause(ExitCauseFileAccessError);
         return ExitCodeSystemError;
@@ -840,7 +840,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str()
                                          << L" still exists on local replica. Snapshot not up to date, restarting sync.");
 #ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "ComputeFSOperationWorker::checkIfOkToDelete",
+    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "ComputeFSOperationWorker::checkIfOkToDelete",
                                                         "Unwanted local delete operation averted"));
 #endif
 
