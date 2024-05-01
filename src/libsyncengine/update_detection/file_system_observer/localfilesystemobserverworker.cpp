@@ -161,11 +161,12 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (exists) {
             bool readPermission = false;
             bool execPermission = false;
-            if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, exists)) {
+            if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, ioError)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absolutePath).c_str());
                 invalidateSnapshot();
                 return;
             }
+            exists = ioError != IoErrorNoSuchFileOrDirectory;
         }
 
         if (!exists || !writePermission) {
@@ -583,9 +584,11 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     bool readPermission = false;
     bool writePermission = false;
     bool execPermission = false;
-    if (!IoHelper::getRights(absoluteParentDirPath, readPermission, writePermission, execPermission, exists)) {
+    IoError ioError = IoErrorSuccess;
+    if (!IoHelper::getRights(absoluteParentDirPath, readPermission, writePermission, execPermission, ioError)) {
         LOGW_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absoluteParentDirPath).c_str());
         setExitCause(ExitCauseFileAccessError);
+        exists = ioError != IoErrorNoSuchFileOrDirectory;
         return ExitCodeSystemError;
     }
 
@@ -741,11 +744,12 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                     bool readPermission = false;
                     bool writePermission = false;
                     bool execPermission = false;
-                    if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, exists)) {
+                    if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, ioError)) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::getRights: " << formatPath(absolutePath).c_str());
                         dirIt.disable_recursion_pending();
                         continue;
                     }
+                    exists = ioError != IoErrorNoSuchFileOrDirectory;
 
                     if (!exists) {
                         LOGW_SYNCPAL_DEBUG(_logger,

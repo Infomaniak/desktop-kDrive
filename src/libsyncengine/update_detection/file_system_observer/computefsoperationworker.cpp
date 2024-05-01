@@ -799,7 +799,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     bool readPermission = false;
     bool writePermission = false;
     bool execPermission = false;
-    if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, exists)) {
+    if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, ioError)) {
         LOGW_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absolutePath).c_str());
         setExitCause(ExitCauseFileAccessError);
         return ExitCodeSystemError;
