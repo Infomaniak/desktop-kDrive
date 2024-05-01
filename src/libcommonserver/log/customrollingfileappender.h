@@ -38,7 +38,7 @@ class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
         void rollover(bool alreadyLocked = false);
 
     private:
-        int _expire;
+        int _expire = 0;
         std::chrono::time_point<std::chrono::system_clock> _lastExpireCheck;
 
         void checkForExpiredFiles() noexcept(false);

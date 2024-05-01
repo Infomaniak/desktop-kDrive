@@ -161,6 +161,13 @@ class COMMONSERVER_EXPORT Log {
         inline log4cplus::Logger getLogger() { return _logger; }
         bool configure(bool useLog, LogLevel logLevel, bool purgeOldLogs);
 
+        static const std::wstring instanceName;
+        static const std::wstring rfName;
+        static const std::wstring rfPattern;
+        static const int rfMaxFileSize;
+        static const int rfMaxBackupIdx;
+        static const int logsPurgeRate;  // Delay after which the logs are purged, expressed in days.
+
     private:
         Log(const log4cplus::tstring &filePath);
 
