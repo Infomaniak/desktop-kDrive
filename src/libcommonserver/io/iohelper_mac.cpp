@@ -213,40 +213,36 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return true;
 }
 
-bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept {
+bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
     read = false;
     write = false;
     exec = false;
-    exists = false;
 
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     if (!success) {
-        LOGW_WARN(logger(),
-                  L"Failed to check if the item is a symlink: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError).c_str());
         return false;
     }
-    exists = itemType.ioError != IoErrorNoSuchFileOrDirectory;
-    if (!exists) {
-        return true;
+    ioError = itemType.ioError;
+    if (ioError != IoErrorSuccess) {
+        return _isExpectedError(ioError);
     }
-    const bool isSymlink = itemType.linkType = LinkTypeSymlink;
+    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
 
     std::error_code ec;
     std::filesystem::perms perms =
         isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
-    if (ec.value() != 0) {
-        exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
+    if (ec) {
+       const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
+        ioError = stdError2ioError(ec);
         if (!exists) {
-            // Path doesn't exist
-            return true;
+            ioError = IoErrorNoSuchFileOrDirectory;
         }
-
-        LOGW_WARN(logger(), L"Failed to get permissions - " << Utility::formatStdError(path, ec).c_str());
-        return false;
+        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
+        return _isExpectedError(ioError);
     }
 
-    exists = true;
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
     write = isLocked(path) ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
     exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
