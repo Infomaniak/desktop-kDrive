@@ -398,7 +398,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     QVBoxLayout *versionVBox = new QVBoxLayout();
     versionVBox->setContentsMargins(0, 0, 0, 0);
-    versionVBox->setSpacing(0);
+    versionVBox->setSpacing(6);
     versionBox->addLayout(versionVBox);
     versionBox->setStretchFactor(versionVBox, 1);
 
