@@ -18,22 +18,17 @@
 
 #pragma once
 
-#define CREATE_APP_STATE_TABLE_ID "create_app_state"
-#define CREATE_APP_STATE_TABLE              \
-    "CREATE TABLE IF NOT EXISTS app_state(" \
-    "key INTEGER PRIMARY KEY,"              \
-    "value TEXT);"
+constexpr char CREATE_APP_STATE_TABLE_ID[] = "create_app_state";
+constexpr char CREATE_APP_STATE_TABLE[] = "CREATE TABLE IF NOT EXISTS app_state(key INTEGER PRIMARY KEY, value TEXT);";
 
-#define INSERT_APP_STATE_REQUEST_ID "insert_app_state"
-#define INSERT_APP_STATE_REQUEST          \
-    "INSERT INTO app_state (key, value) " \
-    "VALUES (?1, ?2);"
+constexpr char INSERT_APP_STATE_REQUEST_ID[] = "insert_app_state";
+constexpr char INSERT_APP_STATE_REQUEST[] = "INSERT INTO app_state (key, value) VALUES (?1, ?2);";
 
-#define SELECT_APP_STATE_REQUEST_ID "select_value_from_key"
-#define SELECT_APP_STATE_REQUEST "SELECT value FROM app_state WHERE key=?1;"
+constexpr char SELECT_APP_STATE_REQUEST_ID[] = "select_value_from_key";
+constexpr char SELECT_APP_STATE_REQUEST[] = "SELECT value FROM app_state WHERE key=?1;";
 
-#define UPDATE_APP_STATE_REQUEST_ID "update_value_with_key"
-#define UPDATE_APP_STATE_REQUEST "UPDATE app_state SET value=?2 WHERE key=?1;"
+constexpr char UPDATE_APP_STATE_REQUEST_ID[] = "update_value_with_key";
+constexpr char UPDATE_APP_STATE_REQUEST[] = "UPDATE app_state SET value=?2 WHERE key=?1;";
 
-#define APP_STATE_KEY_DEFAULT_LastServerSelfRestart "0"
-#define APP_STATE_KEY_DEFAULT_LastClientSelfRestart "0"
+constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestart[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestart[] = "0";
