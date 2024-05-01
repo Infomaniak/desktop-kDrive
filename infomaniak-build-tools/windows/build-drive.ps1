@@ -398,6 +398,7 @@ if ($ci)
 	{
 		Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
 	}
+	Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 	exit $LASTEXITCODE
 }
 
