@@ -50,3 +50,5 @@ cmake -B$BUILDDIR -H$BASEPATH \
 
 make -j4
 make DESTDIR=$APPDIR install
+
+cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
