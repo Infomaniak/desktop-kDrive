@@ -125,7 +125,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsActivationDone = false;
         bool _vfsConnectionDone = false;
         bool _crashRecovered = false;
-        QString _crashMessage = tr("kDrive application will close due to a fatal error.");
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;

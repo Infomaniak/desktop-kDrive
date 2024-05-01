@@ -98,6 +98,8 @@ static const char optionsC[] =
 
 static const QString showSynthesisMsg = "showSynthesis";
 static const QString showSettingsMsg = "showSettings";
+static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
+
 
 // Helpers for displaying messages. Note that there is no console on Windows.
 #ifdef Q_OS_WIN
