@@ -19,8 +19,8 @@
 # Parameters :
 Param(
 # BuildType	: The type of build (Debug will run the tests, Release will sign the app)
-[ValidateSet('Release', 'Debug')]
-[string] $buildType = "Release",
+[ValidateSet('Release', 'RelWithDebInfo')]
+[string] $buildType = "RelWithDebInfo",
 
 # Path	: The path to the root CMakeLists.txt
 [string] $path = $PWD.Path,
@@ -52,11 +52,11 @@ Param(
 
 # CMake will treat any backslash as escape character and return an error
 $path = $path.Replace('\', '/')
-$contentPath = "$path/build-$buildType"
+$contentPath = "$path/build-windows"
 $buildPath = "$contentPath/build"
 $installPath = "$contentPath/install"
 $extPath = "$path/extensions/windows/cfapi/"
-$vfsDir = $extPath + "x64/" + $buildType
+$vfsDir = $extPath + "x64/Release"
 
 # NSIS needs the path to use backslash
 $iconPath = "$buildPath\src\gui\kdrive-win.ico".Replace('/', '\')
@@ -70,14 +70,13 @@ $archivePath = "$installPath/bin"
 $archiveName = "kDrive.7z"
 
 # NSIS needs the path to use backslash
-$archiveDataPath = ('{0}\build-{1}\{2}' -f $path.Replace('/', '\'), $buildType, $archiveName)
+$archiveDataPath = ('{0}\build-windows\{1}' -f $path.Replace('/', '\'), $archiveName)
 
 $sourceTranslation = "$installPath/i18n"
 $sourceFiles = "$archivePath/*"
 $target = "$contentPath/$archiveName"
 
-$date = Get-Date -Format "yyyyMMdd"
-$buildVersion = if ($buildType -eq 'Release') { $date } else { "0" }
+$buildVersion = Get-Date -Format "yyyyMMdd"
 $aumid = if ($upload) {$env:KDC_PHYSICAL_AUMID} else {$env:KDC_VIRTUAL_AUMID}
 
 #################################################################################################
@@ -99,17 +98,17 @@ function Clean {
 
 function Get-Thumbprint {
    param (
-        [bool] $upload
+		[bool] $upload
    )
 
    $thumbprint = 
    If ($upload)
    {
-        Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
+		Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -match "EV" } | Select -ExpandProperty Thumbprint
    } 
    Else
    {
-        Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
+		Get-ChildItem Cert:\CurrentUser\My | Where-Object { $_.Subject -match "Infomaniak" -and $_.Issuer -notmatch "EV" } | Select -ExpandProperty Thumbprint
    }
    return $thumbprint
 }
@@ -186,42 +185,42 @@ switch -regex ($clean.ToLower())
 {
 	"b(uild)?" 
 	{
-        Write-Host "Removing kDrive built files" -f Yellow
+		Write-Host "Removing kDrive built files" -f Yellow
 		Clean $buildPath
-        Write-Host "Done, exiting" -f Yellow
+		Write-Host "Done, exiting" -f Yellow
 		exit 
 	}
 
 	"ext"
 	{
-        Write-Host "Removing extension files" -f Yellow
+		Write-Host "Removing extension files" -f Yellow
 		Clean $vfsDir
-        Write-Host "Done, exiting" -f Yellow
+		Write-Host "Done, exiting" -f Yellow
 		exit
 	}
 
 	"all"
 	{
-        Write-Host "Removing all generated files" -f Yellow 
+		Write-Host "Removing all generated files" -f Yellow 
 		Clean $contentPath
 		Clean $vfsDir
-        Write-Host "Done, exiting" -f Yellow
+		Write-Host "Done, exiting" -f Yellow
 		exit
 	}
 
 	"re(make)?"
 	{
-        Write-Host "Removing all generated files" -f Yellow
+		Write-Host "Removing all generated files" -f Yellow
 		Clean $contentPath
 		Clean $vfsDir
-        Write-Host "Done, rebuilding" -f Yellow
+		Write-Host "Done, rebuilding" -f Yellow
 	}
 	default {}
 }
 
 if (!$thumbprint)
 {
-    $thumbprint = Get-Thumbprint $upload
+	$thumbprint = Get-Thumbprint $upload
 }
 
 if ($upload)
@@ -234,8 +233,8 @@ if ($upload)
 		exit 1
 	}
 
-    Write-Host "Preparing for full upload build." -f Green
-    Clean $contentPath
+	Write-Host "Preparing for full upload build." -f Green
+	Clean $contentPath
 	Clean $vfsDir
 }
 
@@ -248,13 +247,13 @@ if ($upload)
 if (!$aumid)
 {
 	Write-Host "The AUMID value could not be read from env.
-                Exiting." -f Red
+				Exiting." -f Red
 	exit 1
 }
 
 if (!(Test-Path "$vfsDir\vfs.dll") -or $ext)
 {
-	msbuild "$extPath\kDriveExt.sln" /p:Configuration=$buildType /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
+	msbuild "$extPath\kDriveExt.sln" /p:Configuration=Release /p:Platform=x64 /p:PublishDir="$extPath\FileExplorerExtensionPackage\AppPackages\" /p:DeployOnBuild=true
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 	
 	Copy-Item -Path "$extPath\Vfs\..\Common\debug.h" -Destination "$path\src\server\vfs\win\."
@@ -293,7 +292,7 @@ $flags = @(
 
 if ($ci)
 {
-    $flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
+	$flags += ("'-DBUILD_UNIT_TESTS:BOOL=TRUE'")
 }
 
 $args += $flags
@@ -363,30 +362,13 @@ $binaries = @(
 )
 
 $testers = @(
-"kDrive_test_common.exe"
-# "kDrive_test_parms.exe",
+"kDrive_test_common.exe",
+"kDrive_test_parms.exe"
 # "kDrive_test_syncengine.exe"
 )
 
 $dependencies = @(
-"$QTDIR/bin/Qt6Core.dll",
-"$QTDIR/bin/Qt6Gui.dll",
-"$QTDIR/bin/Qt6Network.dll",
-"$QTDIR/bin/Qt6Positioning.dll",
-"$QTDIR/bin/Qt6PrintSupport.dll",
-"$QTDIR/bin/Qt6Qml.dll",
-"$QTDIR/bin/Qt6QmlModels.dll",
-"$QTDIR/bin/Qt6Quick.dll",
-"$QTDIR/bin/Qt6QuickWidgets.dll",
-"$QTDIR/bin/Qt6Sql.dll",
-"$QTDIR/bin/Qt6Svg.dll",
-"$QTDIR/bin/Qt6WebChannel.dll",
-"$QTDIR/bin/Qt6WebEngineCore.dll",
-"$QTDIR/bin/Qt6WebEngineWidgets.dll",
-"$QTDIR/bin/Qt6Widgets.dll",
-"$QTDIR/bin/Qt6Xml.dll",
-"$QTDIR/bin/Qt6Core5Compat.dll",
-"${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1.dll",
+"${env:ProgramFiles(x86)}//zlib-1.2.11/bin/zlib1.dll",
 "${env:ProgramFiles(x86)}/libzip/bin/zip.dll",
 "${env:ProgramFiles(x86)}/log4cplus/bin/log4cplusU.dll",
 "${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64.dll",
@@ -413,10 +395,10 @@ foreach ($file in $dependencies)
 
 if ($ci)
 {
-    foreach ($file in $testers)
-    {
-        Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
-    }
+	foreach ($file in $testers)
+	{
+		Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
+	}
 	exit $LASTEXITCODE
 }
 
@@ -467,6 +449,6 @@ else
 
 if ($upload)
 {
-    Write-Host "Packaging done"
+	Write-Host "Packaging done"
 	Write-Host "Run the upload script to generate the update file and upload the new version"
 }

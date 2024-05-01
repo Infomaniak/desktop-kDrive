@@ -7,6 +7,7 @@ IF(APPLE)
     SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
 ENDIF(APPLE)
 
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
 set(BIN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(BUILD_SHARED_LIBS FALSE)
 
@@ -161,7 +162,7 @@ if (WIN32)
 endif(WIN32)
 
 if (APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -g")
 endif()
 
 # Handle Translations, pick all client_* files from trans directory.

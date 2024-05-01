@@ -20,6 +20,9 @@
 
 #include "libcommon/utility/types.h"
 #include "libcommonserver/log/log.h"
+#ifdef _WIN32
+#include <AccCtrl.h>
+#endif
 
 namespace KDC {
 
@@ -58,9 +61,9 @@ struct IoHelper {
         inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
 
 #ifdef _WIN32
-        static int _getRightsMethod;
+        static int _getAndSetRightsMethod;
 #endif
-
+        
         static IoError stdError2ioError(int error) noexcept;
         static IoError stdError2ioError(const std::error_code &ec) noexcept;
         static IoError posixError2ioError(int error) noexcept;
@@ -319,8 +322,27 @@ struct IoHelper {
          */
         static bool checkIfFileIsDehydrated(const SyncPath &path, bool &isDehydrated, IoError &ioError) noexcept;
 
-        // TODO: docstring and unit tests
-        static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept;
+        //! Get the rights of the item indicated by `path`.
+        /*!
+         \param path is the file system path of the item.
+         \param read is a boolean indicating whether the item is readable.
+         \param write is a boolean indicating whether the item is writable.
+         \param exec is a boolean indicating whether the item is executable.
+         \param exists is a boolean indicating whether the item exists.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept;
+
+        //! Set the rights of the item indicated by `path`.
+        /*!
+         \param path is the file system path of the item.
+         \param read is a boolean indicating whether the item should be readable.
+         \param write is a boolean indicating whether the item should be writable.
+         \param exec is a boolean indicating whether the item should be executable.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
     protected:
         friend class DirectoryIterator;
@@ -349,6 +371,8 @@ struct IoHelper {
 #endif
         static bool _setTargetType(ItemType &itemType) noexcept;
         static bool _checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
+
+        static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 };
 
 }  // namespace KDC

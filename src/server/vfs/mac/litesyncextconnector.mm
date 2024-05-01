@@ -1128,7 +1128,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
                         }
 
                         if (![fileHandle writeData:buffer error:&error]) {
-                            LOGW_ERROR(_logger, L"Error while writting to file - path=" << QStr2WStr(filePath).c_str()
+                            LOGW_ERROR(_logger, L"Error while writing to file - path=" << QStr2WStr(filePath).c_str()
                                                                                         << L" error=" << error);
                             break;
                         }
@@ -1162,7 +1162,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
             }
 
             // Set file dates
-            bool exists;
+            bool exists = false;
             if (!Utility::setFileDates(QStr2Path(filePath), std::make_optional<KDC::SyncTime>(creationDate), std::nullopt,
                                        exists)) {
                 LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - path=" << QStr2WStr(filePath).c_str());
@@ -1182,6 +1182,14 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
         }
     }
 
+    return true;
+}
+
+bool LiteSyncExtConnector::vfsCancelHydrate(const QString &filePath) {
+    if (!_private->updateFetchStatus(filePath, QString("CANCEL"))) {
+        LOGW_WARN(_logger, L"Call to updateFetchStatus failed - path=" << QStr2WStr(filePath).c_str());
+        return false;
+    }
     return true;
 }
 

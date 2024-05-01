@@ -847,7 +847,45 @@ ExitCode GuiRequests::setLaunchOnStartup(bool enabled) {
         return ExitCodeSystemError;
     }
 
-    ExitCode exitCode;
+    ExitCode exitCode = ExitCodeUnknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::getAppState(AppStateKey key, QString &value) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << key;
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_APPSTATE, params, results)) {
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode = ExitCodeUnknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    if (exitCode == ExitCodeOk) {
+        resultStream >> value;
+    }
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::updateAppState(AppStateKey key, const QString &value) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << key;
+    paramsStream << value;
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SET_APPSTATE, params, results)) {
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode = ExitCodeUnknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 

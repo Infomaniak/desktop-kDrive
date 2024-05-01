@@ -126,10 +126,6 @@ AppServer::AppServer(int &argc, char **argv)
       _versionAsked(false),
       _clearSyncNodesAsked(false),
       _debugMode(false) {
-#ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppServer", "Start"));
-#endif
-
     _startedAt.start();
 
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
@@ -351,6 +347,7 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
+
 }
 
 AppServer::~AppServer() {
@@ -1832,6 +1829,40 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCodeOk;
             break;
         }
+        case REQUEST_NUM_UTILITY_SET_APPSTATE: {
+            AppStateKey key = AppStateKey::Unknown;
+            QString value;
+            QDataStream paramsStream(params);
+            paramsStream >> key;
+            paramsStream >> value;
+
+            bool found = true;
+            if (!ParmsDb::instance()->updateAppState(key, value.toStdString(), found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+                resultStream << ExitCodeDbError;
+                break;
+            }
+
+            resultStream << ExitCodeOk;
+            break;
+        }
+        case REQUEST_NUM_UTILITY_GET_APPSTATE: {
+            AppStateKey key = AppStateKey::Unknown;
+            QString defaultValue;
+            QDataStream paramsStream(params);
+            paramsStream >> key;
+            std::string value;
+            bool found = false;
+            if (!ParmsDb::instance()->selectAppState(key, value, found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+                resultStream << ExitCodeDbError;
+                break;
+            }
+
+            resultStream << ExitCodeOk;
+            resultStream << QString::fromStdString(value);
+            break;
+        }
         case REQUEST_NUM_SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId;
             bool value;
@@ -2101,8 +2132,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
 
     if (message == showSynthesisMsg) {
         showSynthesis();
-    }
-    else if (message == showSettingsMsg) {
+    } else if (message == showSettingsMsg) {
         showSettings();
     }
 }
@@ -3727,7 +3757,7 @@ void AppServer::addError(const Error &error) {
         }
 
 #ifdef NDEBUG
-        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppServer::addError", "Sockets defuncted error"));
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", "Sockets defuncted error"));
 #endif
     }
 
@@ -3744,8 +3774,7 @@ void AppServer::addError(const Error &error) {
         sentry_set_user(sentryUser);
 
         sentry_capture_event(
-            sentry_value_new_message_event(error.exitCode() != ExitCodeOk ? SENTRY_LEVEL_WARNING : SENTRY_LEVEL_INFO,
-                                           "AppServer::addError", error.errorString().c_str()));
+            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", error.errorString().c_str()));
 
         sentry_remove_user();
     }

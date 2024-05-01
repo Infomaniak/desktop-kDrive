@@ -100,7 +100,7 @@ struct VariantPrinter {
 log4cplus::Logger Utility::_logger;
 
 #ifdef _WIN32
-PSID Utility::_psid = NULL;
+std::unique_ptr<BYTE[]> Utility::_psid = nullptr;
 TRUSTEE Utility::_trustee = {0};
 #endif
 

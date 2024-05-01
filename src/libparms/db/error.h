@@ -49,42 +49,56 @@ class PARMS_EXPORT Error {
               const SyncPath &destinationPath = "");
 
         inline int64_t dbId() const { return _dbId; }
+        inline void setDbId(int64_t val) { _dbId = val; }
         inline int64_t time() const { return _time; }
-        inline void setTime(int64_t time) { _time = time; }
+        inline void setTime(int64_t val) { _time = val; }
         inline ErrorLevel level() const { return _level; }
+        inline void setLevel(ErrorLevel val) { _level = val; }
         inline const std::string &functionName() const { return _functionName; }
+        inline void setFunctionName(const std::string &val) { _functionName = val; }
         inline int syncDbId() const { return _syncDbId; }
+        inline void setSyncDbId(int val) { _syncDbId = val; }
         inline const std::string &workerName() const { return _workerName; }
+        inline void setWorkerName(const std::string &val) { _workerName = val; }
         inline ExitCode exitCode() const { return _exitCode; }
+        inline void setExitCode(ExitCode val) { _exitCode = val; }
         inline ExitCause exitCause() const { return _exitCause; }
+        inline void setExitCause(ExitCause val) { _exitCause = val; }
         inline const NodeId &localNodeId() const { return _localNodeId; }
+        inline void setLocalNodeId(const NodeId &val) { _localNodeId = val; }
         inline const NodeId &remoteNodeId() const { return _remoteNodeId; }
+        inline void setRemoteNodeId(const NodeId &val) { _remoteNodeId = val; }
         inline NodeType nodeType() const { return _nodeType; }
+        inline void setNodeType(NodeType val) { _nodeType = val; }
         inline const SyncPath &path() const { return _path; }
+        inline void setPath(const SyncPath &val) { _path = val; }
         inline const SyncPath &destinationPath() const { return _destinationPath; }
+        inline void setDestinationPath(const SyncPath &val) { _destinationPath = val; }
         inline ConflictType conflictType() const { return _conflictType; }
+        inline void setConflictType(ConflictType val) { _conflictType = val; }
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
+        inline void setInconsistencyType(InconsistencyType val) { _inconsistencyType = val; }
         inline CancelType cancelType() const { return _cancelType; }
-        inline void setCancelType(CancelType newCancelType) { _cancelType = newCancelType; }
+        inline void setCancelType(CancelType val) { _cancelType = val; }
 
         std::string errorString() const;
 
     private:
-        int64_t _dbId;
-        int64_t _time;
-        ErrorLevel _level;
+        int64_t _dbId{0};
+        int64_t _time{0};
+        ErrorLevel _level{ErrorLevelUnknown};
         std::string _functionName;
-        int _syncDbId;
+        int _syncDbId{0};
         std::string _workerName;
-        ExitCode _exitCode;
-        ExitCause _exitCause;
+        ExitCode _exitCode{ExitCodeUnknown};
+        ExitCause _exitCause{ExitCauseUnknown};
         NodeId _localNodeId;
         NodeId _remoteNodeId;
-        NodeType _nodeType;
+        NodeType _nodeType{NodeTypeUnknown};
         SyncPath _path;
-        ConflictType _conflictType;
-        InconsistencyType _inconsistencyType;
-        CancelType _cancelType;
+        ConflictType _conflictType{ConflictTypeNone};
+        InconsistencyType _inconsistencyType{InconsistencyTypeNone};
+        CancelType _cancelType{CancelTypeNone};
         SyncPath _destinationPath;
 };
 
