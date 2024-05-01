@@ -11,6 +11,8 @@ concurrency:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+    env:
+      bin-directory: ./build-linux/build/bin
 
     steps:
       - name: Checkout the PR
@@ -23,10 +25,13 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/linux/build-ci-amd64.sh
 
-      - name: Grant test_common execute permission
-        run : chmod +x ./build-linux/build/bin/kDrive_test_common
       - name: Execute common tests
-        run : ./build-linux/build/bin/kDrive_test_common
+        run : ./kDrive_test_common
+        working-directory: ${{env.bin-directory}}
+
+      - name: Execute parms tests
+        run : ./kDrive_test_parms
+        working-directory: ${{env.bin-directory}}
 
       - name: Clean-up generated code
         run : rm -rf build-linux
