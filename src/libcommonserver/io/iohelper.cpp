@@ -538,7 +538,6 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, I
     return ioError == IoErrorSuccess;
 }
 
-
 // DirectoryIterator
 
 IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError)
@@ -621,7 +620,6 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
 void IoHelper::DirectoryIterator::disableRecursionPending() {
     _dirIterator.disable_recursion_pending();
 }
-
 
 #ifndef _WIN32
 //See iohelper_win.cpp for the Windows implementation
