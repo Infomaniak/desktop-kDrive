@@ -1317,7 +1317,7 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
 
     if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.1")) {
         LOG_DEBUG(_logger, "Upgrade < 3.6.1 DB");
-        createAppState();
+        if(createAppState()) return false;
     }
 
     return true;
