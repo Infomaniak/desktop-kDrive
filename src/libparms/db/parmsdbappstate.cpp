@@ -65,18 +65,18 @@ bool ParmsDb::prepareAppState() {
 }
 
 bool ParmsDb::insertDefaultAppState() {
-    if (!insertDefaultAppState(AppStateKey::LastServerSelfRestart, APP_STATE_KEY_DEFAULT_LastServerSelfRestart)) {
+    if (!insertAppState(AppStateKey::LastServerSelfRestart, APP_STATE_KEY_DEFAULT_LastServerSelfRestart)) {
         return false;
     }
 
-    if (!insertDefaultAppState(AppStateKey::LastClientSelfRestart, APP_STATE_KEY_DEFAULT_LastClientSelfRestart)) {
+    if (!insertAppState(AppStateKey::LastClientSelfRestart, APP_STATE_KEY_DEFAULT_LastClientSelfRestart)) {
         return false;
     }
 
     return true;
 }
 
-bool ParmsDb::insertDefaultAppState(AppStateKey key, const std::string &value) {
+bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
     const std::scoped_lock lock(_mutex);
     int errId = 0;
     std::string error;
