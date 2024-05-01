@@ -359,25 +359,25 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     LPWSTR pathw = pathwPtr.get();
     pathw[pathLen] = L'\0';
 
-    DWORD valueReturned = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACLold,
-                                               nullptr, &pSecurityDescriptor);
-    ioError = dWordError2ioError(valueReturned);
-    if (valueReturned != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(valueReturned);
-        LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str()
-                                                             << L" | DWORD error: " << valueReturned);
+    DWORD result = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACLold, nullptr,
+                                        &pSecurityDescriptor);
+    ioError = dWordError2ioError(result);
+    if (result != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(result);
+        LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result
+                                                                   << L"'");
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
         // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
         return false;
     }
 
-    valueReturned = SetEntriesInAcl(1, &explicitAccess, pACLold, &pACLnew);
-    ioError = dWordError2ioError(valueReturned);
-    if (valueReturned != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(valueReturned);
-        LOGW_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatIoError(path, ioError).c_str() << L" | DWORD error: "
-                                                        << valueReturned);
+    result = SetEntriesInAcl(1, &explicitAccess, pACLold, &pACLnew);
+    ioError = dWordError2ioError(result);
+    if (result != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(result);
+        LOGW_WARN(logger,
+                  L"Error in SetEntriesInAcl: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
         // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -394,12 +394,12 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
         return false;
     }
 
-    valueReturned = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACLnew, nullptr);
-    ioError = dWordError2ioError(valueReturned);
-    if (valueReturned != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(valueReturned);
-        LOGW_WARN(logger, L"Error in SetNamedSecurityInfo: " << Utility::formatIoError(path, ioError).c_str()
-                                                             << L" | DWORD error: " << valueReturned);
+    result = SetNamedSecurityInfo(pathw, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, pACLnew, nullptr);
+    ioError = dWordError2ioError(result);
+    if (result != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(result);
+        LOGW_WARN(logger, L"Error in SetNamedSecurityInfo: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result
+                                                                   << L"'");
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
         // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -439,8 +439,8 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         }
 
         if (exists) {
-            LOGW_INFO(logger, L"GetNamedSecurityInfo failed: " << Utility::formatIoError(path, ioError).c_str()
-                                                               << L", DWORD error: " << result);
+            LOGW_INFO(logger, L"GetNamedSecurityInfo failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
+                                                                     << result << L"'");
         }
         return false;  // Caller should call _isExpectedError
     }
@@ -456,8 +456,8 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         write = false;
         exec = false;
         exists = false;
-        LOGW_INFO(logger, L"GetEffectiveRightsFromAcl failed: " << Utility::formatIoError(path, ioError).c_str()
-                                                                << L", DWORD error: " << result);
+        LOGW_INFO(logger, L"GetEffectiveRightsFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
+                                                                      << result << L"'");
         return false;  // Caller should call _isExpectedError
     }
 
@@ -473,7 +473,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     }
 
     if (ioError != IoErrorSuccess) {
-        LOGW_INFO(logger, L"Unexpected error: " << Utility::formatIoError(path, ioError).c_str() << L", DWORD error: " << result);
+        LOGW_INFO(logger, L"Unexpected error: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
         return false;  // Caller should call _isExpectedError
     }
 
@@ -580,7 +580,8 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         } else {
             grantedPermission |= FILE_GENERIC_EXECUTE;
         }
-        bool res = setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger()) || _isExpectedError(ioError);
+        bool res =
+            setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger()) || _isExpectedError(ioError);
         if (res) {
             res &= setRightsWindowsApi(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger()) ||
                    _isExpectedError(ioError);
