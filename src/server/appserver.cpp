@@ -126,10 +126,6 @@ AppServer::AppServer(int &argc, char **argv)
       _versionAsked(false),
       _clearSyncNodesAsked(false),
       _debugMode(false) {
-#ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppServer", "Start"));
-#endif
-
     _startedAt.start();
 
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
@@ -3698,7 +3694,7 @@ void AppServer::addError(const Error &error) {
         }
 
 #ifdef NDEBUG
-        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_INFO, "AppServer::addError", "Sockets defuncted error"));
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", "Sockets defuncted error"));
 #endif
     }
 
@@ -3715,8 +3711,7 @@ void AppServer::addError(const Error &error) {
         sentry_set_user(sentryUser);
 
         sentry_capture_event(
-            sentry_value_new_message_event(error.exitCode() != ExitCodeOk ? SENTRY_LEVEL_WARNING : SENTRY_LEVEL_INFO,
-                                           "AppServer::addError", error.errorString().c_str()));
+            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", error.errorString().c_str()));
 
         sentry_remove_user();
     }
