@@ -47,7 +47,7 @@ namespace KDC {
 
 struct COMMONSERVER_EXPORT Utility {
 #ifdef _WIN32
-        static PSID _psid;
+        static std::unique_ptr<BYTE[]> _psid;
         static TRUSTEE _trustee;
 #endif
 
