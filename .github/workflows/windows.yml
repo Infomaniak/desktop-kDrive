@@ -11,6 +11,8 @@ concurrency:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
+    env:
+      bin-directory: ./build-windows/install/bin/
 
     steps:
       - name: Checkout the PR
@@ -39,7 +41,12 @@ jobs:
         shell: cmd
 
       - name: Execute common tests
-        run: ./build-windows/install/bin/kDrive_test_common.exe
+        run: ./kDrive_test_common.exe
+        working-directory: ${{env.bin-directory}}
+
+      - name: Execute parms tests
+        run: ./kDrive_test_parms.exe
+        working-directory: ${{env.bin-directory}}
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
