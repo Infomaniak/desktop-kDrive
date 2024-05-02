@@ -441,7 +441,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         }
 
         if (exists) {
-            LOGW_INFO(logger, L"GetNamedSecurityInfo failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
+            LOGW_WARN(logger, L"GetNamedSecurityInfo failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
                                                                      << result << L"'");
         }
         return false;  // Caller should call _isExpectedError
@@ -476,10 +476,12 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
 
     if (ioError != IoErrorSuccess) {
         if (retry) {
+            LOGW_INFO(logger, L"GetEffectiveRightsFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
+                                                                          << result << L"', retrying...");
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
             return getRightsWindowsApi(path, read, write, exec, ioError, logger, false);
         }
-        LOGW_INFO(logger, L"Unexpected error: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
+        LOGW_WARN(logger, L"Unexpected error: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
         return false;  // Caller should call _isExpectedError
     }
 
