@@ -95,7 +95,7 @@ sudo make install
 
 ## Poco
 
-Poco installation requires the previous OpenSSL installation to be complete
+> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
 
 ```bash
 cd ~/Projects
