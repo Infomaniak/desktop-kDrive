@@ -98,6 +98,7 @@ static const char optionsC[] =
 
 static const QString showSynthesisMsg = "showSynthesis";
 static const QString showSettingsMsg = "showSettings";
+static const QString crashMsg = SharedTools::QtSingleApplication::tr("kDrive application will close due to a fatal error.");
 
 // Helpers for displaying messages. Note that there is no console on Windows.
 #ifdef Q_OS_WIN
@@ -317,16 +318,28 @@ AppServer::AppServer(int &argc, char **argv)
 
     // Check last crash to avoid crash loop
     if (_crashRecovered) {
+        bool found = false;
         LOG_WARN(_logger, "Server auto restart after a crash.");
         if (serverCrashedRecently()) {
             LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
-            KDC::ParmsDb::instance()->updateLastServerSelfRestartTime();
-            QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed!"), QMessageBox::Ok);
-            KDC::ParmsDb::instance()->updateLastServerSelfRestartTime(0);
+            QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
+            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, "0", found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+                addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+                throw std::runtime_error("Failed to update last server self restart.");
+            }
             QTimer::singleShot(0, this, quit);
             return;
         }
-        KDC::ParmsDb::instance()->updateLastServerSelfRestartTime();
+        long timestamp =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        std::string timestampStr = std::to_string(timestamp);
+        KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, timestampStr, found);
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, timestampStr, found) || !found) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+            throw std::runtime_error("Failed to update last server self restart.");
+        }
     }
 
     // Start client
@@ -2051,13 +2064,28 @@ void AppServer::onRestartClientReceived() {
     // Check last start time
     if (clientCrashedRecently()) {
         LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
-        KDC::ParmsDb::instance()->updateLastClientSelfRestartTime(0);
-        QMessageBox::warning(0, QString(APPLICATION_NAME), tr("kDrive application crashed"), QMessageBox::Ok);
+        bool found = false;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestart, "0", found) || !found) {
+            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        }
+        QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
         QTimer::singleShot(0, this, &AppServer::quit);
         return;
     } else {
         CommServer::instance()->setHasQuittedProperly(false);
-        KDC::ParmsDb::instance()->updateLastClientSelfRestartTime();
+        long timestamp =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        std::string timestampStr = std::to_string(timestamp);
+        bool found = false;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestart, timestampStr, found) || !found) {
+            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+            QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
+            QTimer::singleShot(0, this, &AppServer::quit);
+            return;
+        }
+
         if (!startClient()) {
             LOG_WARN(_logger, "Error in startClient");
         }
@@ -2847,8 +2875,27 @@ bool AppServer::serverCrashedRecently(int seconds) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    int64_t lastServerCrash;
-    KDC::ParmsDb::instance()->selectLastServerSelfRestartTime(lastServerCrash);
+    int64_t lastServerCrash = 0;
+    std::string lastServerCrashStr;
+    bool found = false;
+
+    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestart, lastServerCrashStr, found) || !found) {
+        addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        return false;
+    }
+
+    if (lastServerCrashStr.empty()) {
+        return false;
+    }
+
+    try {
+        lastServerCrash = std::stoll(lastServerCrashStr);
+    } catch (const std::invalid_argument &e) {
+        LOG_WARN(_logger, "Error in std::stoll: " << e.what());
+        return false;
+    }
+
     const auto diff = nowSeconds - lastServerCrash;
     if (diff > seconds) {
         return false;
@@ -2863,7 +2910,26 @@ bool AppServer::clientCrashedRecently(int seconds) {
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     int64_t lastClientCrash = 0;
-    KDC::ParmsDb::instance()->selectLastClientSelfRestartTime(lastClientCrash);
+    std::string lastClientCrashStr;
+    bool found = false;
+
+    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestart, lastClientCrashStr, found) || !found) {
+        addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        return false;
+    }
+
+    if (lastClientCrashStr.empty()) {
+        return false;
+    }
+
+    try {
+        lastClientCrash = std::stoll(lastClientCrashStr);
+    } catch (const std::invalid_argument &e) {
+        LOG_WARN(_logger, "Error in std::stoll: " << e.what());
+        return false;
+    }
+
     const auto diff = nowSeconds - lastClientCrash;
     if (diff > seconds) {
         return false;
