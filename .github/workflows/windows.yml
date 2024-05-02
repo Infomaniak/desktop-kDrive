@@ -42,11 +42,15 @@ jobs:
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
-
+        
       - name: Execute common tests
-        run: ./kDrive_test_common.exe
+        run: | 
+          for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+          do
+            ./kDrive_test_common.exe
+          done
         working-directory: ${{env.bin-directory}}
-
+        
       - name: Execute parms tests
         run: ./kDrive_test_parms.exe
         working-directory: ${{env.bin-directory}}
