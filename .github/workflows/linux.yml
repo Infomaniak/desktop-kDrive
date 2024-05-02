@@ -34,6 +34,8 @@ jobs:
         with:
           name: linux-common-log
           path: /tmp/kDrive-logdir/$(date +"%Y%m%d_%H%M"/)/_kDriveTestCommon.log
+          retention-days: 2
+          overwrite: true
 
       - name: Execute parms tests
         run : ./kDrive_test_parms
@@ -44,6 +46,8 @@ jobs:
         with:
           name: linux-common-log
           path: /tmp/kDrive-logdir/$(date +"%Y%m%d_%H%M"/)/_kDriveTestParms.log
+          retention-days: 2
+          overwrite: true
 
       - name: Clean-up generated code
         run : rm -rf build-linux
