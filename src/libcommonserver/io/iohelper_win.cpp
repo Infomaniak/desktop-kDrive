@@ -416,7 +416,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 }
 
 static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
-                                log4cplus::Logger logger) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
+                                log4cplus::Logger logger, bool retry = true) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
                                                                       // should call _isExpectedError.
     ioError = IoErrorSuccess;
     WCHAR szFilePath[MAX_PATH_LENGTH_WIN_LONG];
@@ -472,9 +472,13 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
             setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger);
             ioError = dWordError2ioError(result);
         }
-    }
+    } 
 
     if (ioError != IoErrorSuccess) {
+        if (retry) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            return getRightsWindowsApi(path, read, write, exec, ioError, logger, false);
+        }
         LOGW_INFO(logger, L"Unexpected error: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
         return false;  // Caller should call _isExpectedError
     }
