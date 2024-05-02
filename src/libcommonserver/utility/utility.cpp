@@ -787,6 +787,7 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
     }
 
     if (itemType.ioError == IoErrorNoSuchFileOrDirectory || itemType.ioError == IoErrorAccessDenied) {
+        ioError = itemType.ioError;
         LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirIt->path(), ioError).c_str());
         return true;
     }
