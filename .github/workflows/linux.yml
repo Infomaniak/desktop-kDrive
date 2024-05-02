@@ -25,6 +25,9 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/linux/build-ci-amd64.sh
 
+      - name: Set the log directory name
+        run : echo "logdir=$(date +"%Y%m%d_%H%M")" >> $GITHUB_ENV
+
       - name: Execute common tests
         run : ./kDrive_test_common
         working-directory: ${{env.bin-directory}}
@@ -33,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-common-log
-          path: /tmp/kDrive-logdir/$(date +"%Y%m%d_%H%M"/)/_kDriveTestCommon.log
+          path: /tmp/kDrive-logdir/${{ env.logdir }}/_kDriveTestCommon.log
           retention-days: 2
           overwrite: true
 
@@ -45,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-common-log
-          path: /tmp/kDrive-logdir/$(date +"%Y%m%d_%H%M"/)/_kDriveTestParms.log
+          path: /tmp/kDrive-logdir/${{ env.logdir }}/_kDriveTestParms.log
           retention-days: 2
           overwrite: true
 
