@@ -360,8 +360,11 @@ struct ItemType {
 };
 
 enum class AppStateKey {
-    // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp and ideally testparmsdb.cpp
-    Unknown,  // Used for initialization, will throw error if used
-    Test      // To be removed after the implementation of the first key
+    // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
+    LastServerSelfRestart,
+    LastClientSelfRestart,
+
+    Unknown,  //!\ keep in last position (For tests) /!\\ Used for initialization, will throw error if used.
 };
+
 }  // namespace KDC
