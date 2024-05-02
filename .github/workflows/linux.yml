@@ -20,35 +20,26 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Clean the log directory
+        run : rm -rf /tmp/kDrive-logdir/*
+
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
       - name: Build kDrive desktop
-        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh
-
-      - name: Set the log directory name
-        run : echo "logdir=$(date +"%Y%m%d_%H%M")" >> $GITHUB_ENV
 
       - name: Execute common tests
         run : ./kDrive_test_common
         working-directory: ${{env.bin-directory}}
 
-      - name: Upload common tests log artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: log-common
-          path: /tmp/kDrive-logdir/${{ env.logdir }}/_kDriveTestCommon.log
-          retention-days: 3
-          overwrite: true
-
       - name: Execute parms tests
         run : ./kDrive_test_parms
         working-directory: ${{env.bin-directory}}
 
-      - name: Upload parms tests log artifact
+      - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: log-parms
-          path: /tmp/kDrive-logdir/${{ env.logdir }}/_kDriveTestParms.log
+          name: tests-logs
+          path: /tmp/kDrive-logdir/*
           retention-days: 3
           overwrite: true
 
