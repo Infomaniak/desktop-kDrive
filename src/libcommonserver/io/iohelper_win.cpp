@@ -511,6 +511,8 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     read = (rights & FILE_GENERIC_READ) == FILE_GENERIC_READ;
     write = (rights & FILE_GENERIC_WRITE) == FILE_GENERIC_WRITE;
     exec = (rights & FILE_EXECUTE) == FILE_EXECUTE;
+    LOG_DEBUG(logger, L"Rights: path='" << Utility::formatSyncPath(path).c_str() << L"', read='" << read << L"', write='" << write
+                                        << L"', exec='" << exec << L"'");
     return true;
 }
 
@@ -621,7 +623,7 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
                     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError());
-        return ioError == IoErrorNoSuchFileOrDirectory;
+        return _isExpectedError(ioError);
     }
 
     BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
@@ -637,7 +639,7 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
             return true;
         } else {
             ioError = dWordError2ioError(dwError);
-            return ioError == IoErrorNoSuchFileOrDirectory;
+            return _isExpectedError(ioError);
         }
     }
     CloseHandle(hFile);
