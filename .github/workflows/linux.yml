@@ -43,6 +43,7 @@ jobs:
           path: /tmp/kDrive-logdir/*
           retention-days: 3
           overwrite: true
+        if: always()
 
       - name: Clean-up generated code
         run : rm -rf build-linux

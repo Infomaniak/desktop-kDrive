@@ -49,6 +49,7 @@ jobs:
           path: ${{ env.logdir_path }}/*
           retention-days: 3
           overwrite: true
+        if: always()
 
       - name: Clean-up generated code
         run : rm -rf build-macos

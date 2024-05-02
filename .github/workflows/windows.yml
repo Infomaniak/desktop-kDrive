@@ -58,6 +58,7 @@ jobs:
           path: C:/Windows/Temp/kDrive-logdir/*
           retention-days: 3
           overwrite: true
+        if: always()
 
       - name: Clean-up generated code
         run : powershell ./infomaniak-build-tools/windows/build-drive.ps1 -clean all
