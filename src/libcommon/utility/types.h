@@ -37,6 +37,8 @@ typedef std::string NodeId;
 typedef std::filesystem::path SyncPath;
 typedef std::filesystem::path::string_type SyncName;
 typedef std::filesystem::path::value_type SyncChar;
+typedef std::filesystem::directory_entry DirectoryEntry;
+typedef std::filesystem::directory_options DirectoryOptions;
 
 typedef std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring> SigValueType;
 
@@ -344,6 +346,7 @@ typedef enum {
     IoErrorIsADirectory,
     IoErrorNoSuchFileOrDirectory,
     IoErrorResultOutOfRange,
+    IoErrorInvalidDirectoryIterator,
     IoErrorUnknown
 } IoError;
 
@@ -360,8 +363,11 @@ struct ItemType {
 };
 
 enum class AppStateKey {
-    // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp and ideally testparmsdb.cpp
-    Unknown,  // Used for initialization, will throw error if used
-    Test      // To be removed after the implementation of the first key
+    // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
+    LastServerSelfRestart,
+    LastClientSelfRestart,
+
+    Unknown,  //!\ keep in last position (For tests) /!\\ Used for initialization, will throw error if used.
 };
+
 }  // namespace KDC

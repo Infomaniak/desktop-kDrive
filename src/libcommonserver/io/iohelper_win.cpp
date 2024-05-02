@@ -62,8 +62,10 @@ IoError dWordError2ioError(DWORD error) noexcept {
         case ERROR_FILE_NOT_FOUND:
         case ERROR_INVALID_DRIVE:
         case ERROR_PATH_NOT_FOUND:
+        case ERROR_INVALID_NAME:
             return IoErrorNoSuchFileOrDirectory;
         default:
+            LOG_WARN(Log::instance()->getLogger(), L"Unknown IO error - error=" << error);
             return IoErrorUnknown;
     }
 }  // namespace
@@ -549,7 +551,6 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
         return _isExpectedError(ioError);
     }
-
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
     write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
     exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);

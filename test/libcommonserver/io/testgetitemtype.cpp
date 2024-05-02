@@ -207,8 +207,8 @@ void TestIo::testGetItemTypeSimpleCases() {
 
 #ifdef _WIN32
         ItemType itemType;
-        CPPUNIT_ASSERT(!_testObj->getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoErrorUnknown);
+        CPPUNIT_ASSERT(_testObj->getItemType(path, itemType)); // Invalid name is considered as IoErrorNoSuchFileOrDirectory (expected error)
+        CPPUNIT_ASSERT(itemType.ioError == IoErrorNoSuchFileOrDirectory); 
         CPPUNIT_ASSERT(itemType.nodeType == NodeTypeUnknown);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeNone);
         CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
