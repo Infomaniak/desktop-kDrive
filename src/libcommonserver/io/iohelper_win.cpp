@@ -446,7 +446,6 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         }
         return false;  // Caller should call _isExpectedError
     }
-
     // Get rights for trustee
     ACCESS_MASK rights = 0;
     result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
@@ -464,6 +463,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     }
 
     if (result == ERROR_INVALID_SID) {  // Access denied, try to force read control and get the rights
+        LOG_WARN(logger, L"Invalid SID: path='" << Utility::formatSyncPath(path).c_str() << L"',DWORD err='" << result << L"'");
         if (setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger)) {
             GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
             result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
@@ -487,6 +487,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
 
     bool readCtrl = (rights & READ_CONTROL) == READ_CONTROL;  // Check if we have read control (needed to read the permissions)
     if (!readCtrl) {
+        LOGW_INFO(logger, L"Access denied: path='" << Utility::formatSyncPath(path).c_str() << L"',DWORD err='" << result << L"', trying to force read control.");
         if (setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError,
                                 logger)) {  // Try to force read control
             GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
