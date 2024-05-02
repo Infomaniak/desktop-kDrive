@@ -133,6 +133,13 @@ static bool init_private() {
 
     initTrusteeWithUserSID();
 
+    const char *getUseRightsFallbackMethod = std::getenv("KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD");
+    if (getUseRightsFallbackMethod) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Use getRights fallback method");
+        std::string getUseRightsFallbackMethodStr(getUseRightsFallbackMethod);
+        IoHelper::_getRightsMethod = 1;
+    }
+
     return true;
 }
 
