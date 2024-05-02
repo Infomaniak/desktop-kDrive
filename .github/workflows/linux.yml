@@ -29,9 +29,21 @@ jobs:
         run : ./kDrive_test_common
         working-directory: ${{env.bin-directory}}
 
+      - name: Upload common tests log artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-common-log
+          path: /tmp/kDrive-logdir/$(date +"%Y%m%d_%H%M"/)/_kDriveTestCommon.log
+
       - name: Execute parms tests
         run : ./kDrive_test_parms
         working-directory: ${{env.bin-directory}}
+
+      - name: Upload parms tests log artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-common-log
+          path: /tmp/kDrive-logdir/$(date +"%Y%m%d_%H%M"/)/_kDriveTestParms.log
 
       - name: Clean-up generated code
         run : rm -rf build-linux
