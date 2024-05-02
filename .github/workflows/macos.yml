@@ -28,13 +28,35 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/macos/build-ci.sh
 
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(dirname "$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"/kDrive-logdir" >> $GITHUB_ENV
+
+      - name: Set the log directory name
+        run : echo "logdir=$(date +"%Y%m%d_%H%M")" >> $GITHUB_ENV
+
       - name: Execute common tests
         run : ./kDrive_test_common
         working-directory: ${{env.bin-directory}}
 
+      - name: Upload common tests log artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-common
+          path: ${{ env.logdir_path }}/${{ env.logdir }}/_kDriveTestCommon.log
+          retention-days: 3
+          overwrite: true
+
       - name: Execute parms tests
         run : ./kDrive_test_parms
         working-directory: ${{env.bin-directory}}
+
+      - name: Upload parms tests log artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: log-parms
+          path: ${{ env.logdir_path }}/${{ env.logdir }}/_kDriveTestParms.log
+          retention-days: 3
+          overwrite: true
 
       - name: Clean-up generated code
         run : rm -rf build-macos
