@@ -29,7 +29,7 @@ jobs:
         run : ./infomaniak-build-tools/macos/build-ci.sh
 
       - name: Get the path to kDrive-logdir
-        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)/kDrive-logdir" >> $GITHUB_ENV
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)/kDrive-logdir"" >> $GITHUB_ENV
 
       - name: Clean the log directory
         run : rm -rf ${{ env.logdir_path }}/*
