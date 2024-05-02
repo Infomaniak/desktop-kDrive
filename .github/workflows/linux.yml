@@ -35,9 +35,9 @@ jobs:
       - name: Upload common tests log artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-common-log
+          name: log-common
           path: /tmp/kDrive-logdir/${{ env.logdir }}/_kDriveTestCommon.log
-          retention-days: 2
+          retention-days: 3
           overwrite: true
 
       - name: Execute parms tests
@@ -47,9 +47,9 @@ jobs:
       - name: Upload parms tests log artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-common-log
+          name: log-parms
           path: /tmp/kDrive-logdir/${{ env.logdir }}/_kDriveTestParms.log
-          retention-days: 2
+          retention-days: 3
           overwrite: true
 
       - name: Clean-up generated code
