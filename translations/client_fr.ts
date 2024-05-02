@@ -629,7 +629,7 @@ Sélectionnez ceux que vous souhaitez synchroniser:</translation>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="1196"/>
         <source>REMOVE ALL SYNCHRONIZATIONS</source>
-        <translation>SUPPRIMER TOUTES LES SYNCHRONISATIONS</translation>
+        <translation>SUPPRIMER TOUTES LES SYNC.</translation>
     </message>
     <message>
         <location filename="../src/gui/clientgui.cpp" line="1197"/>

@@ -780,8 +780,9 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
     ioError = IoErrorSuccess;
 
     ItemType itemType;
-    if (!IoHelper::getItemType(dirIt->path(), itemType)) {
-        ioError = itemType.ioError;
+    bool result = IoHelper::getItemType(dirIt->path(), itemType);
+    ioError = itemType.ioError;
+    if (!result) {
         LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirIt->path(), ioError).c_str());
         return false;
     }
