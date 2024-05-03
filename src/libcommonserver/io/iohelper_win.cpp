@@ -443,7 +443,6 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     // Get rights for trustee
     ACCESS_MASK rights = 0;
     EXPLICIT_ACCESS *explicitAccessList = nullptr;
-    // PULONG explicitAccessCount = new ULONG(0);
     auto explicitAccessCount = std::make_unique<ULONG>(0);
     result = GetExplicitEntriesFromAcl(pfileACL, explicitAccessCount.get(), &explicitAccessList);
     ioError = dWordError2ioError(result);
@@ -506,7 +505,6 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         Utility::_trustee.ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
     }
-
     // Fallback method.
     ItemType itemType;
     const bool success = getItemType(path, itemType);
