@@ -22,6 +22,7 @@
 #include "custommessagebox.h"
 #include "enablestateholder.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommongui/commclient.h"
 
@@ -137,7 +138,7 @@ void DebuggingDialog::initUI() {
 
     _deleteLogsCheckBox = new CustomCheckBox(this);
     _deleteLogsCheckBox->setObjectName("deleteLogsCheckBox");
-    _deleteLogsCheckBox->setText(tr("Delete logs older than %1 days").arg(ClientGui::logsPurgeRate));
+    _deleteLogsCheckBox->setText(tr("Delete logs older than %1 days").arg(CommonUtility::logsPurgeRate));
     deleteLogsHBox->addWidget(_deleteLogsCheckBox);
 
     mainLayout->addStretch();

@@ -165,10 +165,8 @@ class PassiveUpdateNotifier : public KDCUpdater {
     public:
         explicit PassiveUpdateNotifier(const QUrl &url);
         bool handleStartup() Q_DECL_OVERRIDE { return false; }
-        void backgroundCheckForUpdate() Q_DECL_OVERRIDE;
 
     private:
         void versionInfoArrived(const UpdateInfo &info) Q_DECL_OVERRIDE;
-        QByteArray _runningAppVersion;
 };
 }  // namespace KDC

@@ -561,7 +561,7 @@ void AppClient::setupLogging() {
 
         logger->setupTemporaryFolderLogDir();
         if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
-            logger->setLogExpire(std::chrono::hours(ClientGui::logsPurgeRate * 24));  // C++20 offers std::chrono::day.
+            logger->setLogExpire(std::chrono::hours(CommonUtility::logsPurgeRate * 24));  // C++20 offers std::chrono::day.
         } else {
             logger->setLogExpire(std::chrono::hours(0));
         }
