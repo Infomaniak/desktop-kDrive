@@ -176,14 +176,14 @@ class COMMONSERVER_EXPORT Log {
          * \return True if the archive was generated successfully, false otherwise.
          */
         ExitCode generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const SyncPath &archiveName,
-                                            ExitCause &exitCause, std::function<void(int64_t)> progressCallback = nullptr);
+                                            ExitCause &exitCause, std::function<void(int)> progressCallback = nullptr);
 
     private:
         Log(const log4cplus::tstring &filePath);
         ExitCode copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, ExitCause &exitCause);
         ExitCode copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause);
         ExitCode compressLogs(const SyncPath &directoryToCompress, ExitCause &exitCause,
-                              std::function<void(int64_t)> progressCallback = nullptr);
+                              std::function<void(int)> progressCallback = nullptr);
         ExitCode generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);
 
         static std::shared_ptr<Log> _instance;

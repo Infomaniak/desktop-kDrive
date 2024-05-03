@@ -163,7 +163,7 @@ int Log::getLogEstimatedSize(IoError &ioError) {
 }
 
 ExitCode Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const SyncPath &archiveName,
-                                         ExitCause &exitCause, std::function<void(int64_t)> progressCallback) {
+                                         ExitCause &exitCause, std::function<void(int)> progressCallback) {
     // Get the log directory path
     SyncPath logPath;
     exitCause = ExitCauseUnknown;
@@ -408,7 +408,7 @@ ExitCode Log::copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, ExitCa
 }
 
 ExitCode Log::compressLogs(const SyncPath &directoryToCompress, ExitCause &exitCause,
-                           std::function<void(int64_t)> progressCallback) {
+                           std::function<void(int)> progressCallback) {
     IoHelper::DirectoryIterator dir;
     IoError ioError = IoErrorUnknown;
     if (!IoHelper::getDirectoryIterator(directoryToCompress, false, ioError, dir)) {
