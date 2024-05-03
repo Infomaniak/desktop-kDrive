@@ -334,11 +334,10 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
 }
 
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
-                                log4cplus::Logger logger,
-                                bool resetAcl = false) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
-                                                                   // should call _isExpectedError
-    PACL pACLold = nullptr;                                        // Current ACL
-    PACL pACLnew = nullptr;                                        // New ACL
+                                log4cplus::Logger logger) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
+                                                                      // should call _isExpectedError
+    PACL pACLold = nullptr;                                           // Current ACL
+    PACL pACLnew = nullptr;                                           // New ACL
     PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
     EXPLICIT_ACCESS explicitAccess;
     ZeroMemory(&explicitAccess, sizeof(explicitAccess));
@@ -412,32 +411,6 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     LocalFree(pSecurityDescriptor);
     LocalFree(pACLnew);
     // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
-
-    // Check that the newACL is set correctly
-
-    result = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACLold, nullptr,
-                                  &pSecurityDescriptor);
-    ioError = dWordError2ioError(result);
-    if (result != ERROR_SUCCESS) {
-        ioError = dWordError2ioError(result);
-        LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result
-                                                                   << L"'");
-        LocalFree(pSecurityDescriptor);
-        LocalFree(pACLnew);
-        // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
-        return false;
-    }
-
-    if (!IsValidAcl(pACLold)) {
-        ioError = IoErrorUnknown;
-        LOGW_WARN(logger, L"Invalid new ACL: " << Utility::formatSyncPath(path).c_str());
-
-        LocalFree(pSecurityDescriptor);
-        // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
-        return false;
-    }
-    LocalFree(pSecurityDescriptor);
-
     return true;
 }
 
@@ -446,139 +419,65 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
                                 bool retry = true) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
                                                                // should call _isExpectedError.
     ioError = IoErrorSuccess;
+    read = false;
+    write = false;
+    exec = false;
+
     WCHAR szFilePath[MAX_PATH_LENGTH_WIN_LONG];
     lstrcpyW(szFilePath, path.native().c_str());
-    bool exists = false;
+
     // Get security info
-    PACL pfileACL = NULL;
-    PSECURITY_DESCRIPTOR psecDesc = NULL;
-    DWORD result =
-        GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
+    PACL pfileACL = nullptr;
+    PSECURITY_DESCRIPTOR psecDesc = nullptr;
+    DWORD result = GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pfileACL,
+                                        nullptr, &psecDesc);
     LocalFree(psecDesc);
+
     ioError = dWordError2ioError(result);
-
     if (ioError != IoErrorSuccess) {
-        exists = ioError != IoErrorNoSuchFileOrDirectory;
-
-        if (ioError == IoErrorAccessDenied) {
-            read = false;
-            write = false;
-            exec = false;
-            exists = false;
-        }
-
-        if (exists) {
-            LOGW_WARN(logger, L"GetNamedSecurityInfo failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
-                                                                     << result << L"'");
-        }
+        LOGW_WARN(logger,
+                  L"GetNamedSecurityInfo failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
         return false;  // Caller should call _isExpectedError
     }
 
     // Get rights for trustee
     ACCESS_MASK rights = 0;
-    /* result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
-    ioError = dWordError2ioError(result);
-    exists = ioError != IoErrorNoSuchFileOrDirectory;
-
-    if (ioError == IoErrorAccessDenied) {
-        read = false;
-        write = false;
-        exec = false;
-        exists = false;
-        LOGW_INFO(logger, L"GetEffectiveRightsFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
-                                                                      << result << L"'");
-        return false;  // Caller should call _isExpectedError
-    }*/
-
     EXPLICIT_ACCESS *explicitAccessList = nullptr;
-    PULONG explicitAccessCount = new ULONG(0);
-    read = false;
-    write = false;
-    exec = false;
-
-    result = GetExplicitEntriesFromAcl(pfileACL, explicitAccessCount, &explicitAccessList);
+    // PULONG explicitAccessCount = new ULONG(0);
+    auto explicitAccessCount = std::make_unique<ULONG>(0);
+    result = GetExplicitEntriesFromAcl(pfileACL, explicitAccessCount.get(), &explicitAccessList);
     ioError = dWordError2ioError(result);
     if (ioError != IoErrorSuccess) {
-        exists = ioError != IoErrorNoSuchFileOrDirectory;
-        if (exists) {
-            LOGW_WARN(logger, L"GetExplicitEntriesFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
-                                                                          << result << L"'");
-        }
+        LOGW_WARN(logger, L"GetExplicitEntriesFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
+                                                                      << result << L"'");
         LocalFree(explicitAccessList);
-
         return false;  // Caller should call _isExpectedError
     }
 
     for (ULONG i = 0; i < *explicitAccessCount; i++) {
-        EXPLICIT_ACCESS &ea = explicitAccessList[i];
-        if (ea.Trustee.TrusteeForm == Utility::_trustee.TrusteeForm && ea.Trustee.TrusteeType == Utility::_trustee.TrusteeType) {
-            if (wcscmp(ea.Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
-                if (ea.grfAccessMode == GRANT_ACCESS) {
-                    rights |= ea.grfAccessPermissions;
+        if (explicitAccessList[i].Trustee.TrusteeForm == Utility::_trustee.TrusteeForm &&
+            explicitAccessList[i].Trustee.TrusteeType == Utility::_trustee.TrusteeType) {
+            if (wcscmp(explicitAccessList[i].Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
+                if (explicitAccessList[i].grfAccessMode == GRANT_ACCESS) {
+                    rights |= explicitAccessList[i].grfAccessPermissions;
                 }
             }
         }
     }
 
     for (ULONG i = 0; i < *explicitAccessCount; i++) {
-        EXPLICIT_ACCESS &ea = explicitAccessList[i];
-        if (ea.Trustee.TrusteeForm == Utility::_trustee.TrusteeForm && ea.Trustee.TrusteeType == Utility::_trustee.TrusteeType) {
-            if (wcscmp(ea.Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
+        if (explicitAccessList[i].Trustee.TrusteeForm == Utility::_trustee.TrusteeForm &&
+            explicitAccessList[i].Trustee.TrusteeType == Utility::_trustee.TrusteeType) {
+            if (wcscmp(explicitAccessList[i].Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
                 if (explicitAccessList[i].grfAccessMode == DENY_ACCESS) {
-                    rights &= ~ea.grfAccessPermissions;
+                    rights &= ~explicitAccessList[i].grfAccessPermissions;
                 }
             }
         }
     }
-    
+
     LocalFree(explicitAccessList);
 
-    /*
-    if (result == ERROR_INVALID_SID) {  // Access denied, try to force read control and get the rights
-        LOG_WARN(logger, L"Invalid SID: path='" << Utility::formatSyncPath(path).c_str() << L"',DWORD err='" << result << L"'");
-        if (setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError, logger)) {
-            GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
-            result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
-            LocalFree(psecDesc);
-            setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger);
-            ioError = dWordError2ioError(result);
-        }
-    }
-
-    if (ioError != IoErrorSuccess) {
-        if (retry) {
-            LOGW_INFO(logger, L"GetEffectiveRightsFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
-                                                                          << result << L"', retrying...");
-            return getRightsWindowsApi(path, read, write, exec, ioError, logger, false);
-        }
-        LOGW_WARN(logger, L"Unexpected error: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
-        return false;  // Caller should call _isExpectedError
-    }
-
-    bool readCtrl = (rights & READ_CONTROL) == READ_CONTROL;  // Check if we have read control (needed to read the permissions)
-    if (!readCtrl) {
-        LOGW_INFO(logger, L"Access denied: path='" << Utility::formatSyncPath(path).c_str() << L"',DWORD err='" << result
-                                                   << L"', trying to force read control.");
-        if (setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::GRANT_ACCESS, ioError,
-                                logger)) {  // Try to force read control
-            GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
-            GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
-            LocalFree(psecDesc);
-            setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError,
-                                logger);  // Revoke read control after reading the permissions
-            readCtrl = (rights & READ_CONTROL) == READ_CONTROL;
-        }
-        if (!readCtrl) {
-            ioError = IoErrorAccessDenied;
-            LOGW_INFO(logger, L"Access denied: " << Utility::formatIoError(path, ioError).c_str());
-            read = false;
-            write = false;
-            exec = false;
-            exists = false;
-            return false;  // Expected error if access is denied
-        }
-    }
-    */
     read = (rights & FILE_GENERIC_READ) == FILE_GENERIC_READ;
     write = (rights & FILE_GENERIC_WRITE) == FILE_GENERIC_WRITE;
     exec = (rights & FILE_EXECUTE) == FILE_EXECUTE;
