@@ -18,6 +18,10 @@
 
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
+
+#include <log4cplus/loggingmacros.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -47,28 +51,16 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
     isHidden = false;
     ioError = IoErrorSuccess;
 
-    bool exists = false;
-    if (!checkIfPathExists(path, exists, ioError)) {  // For consistency with MacOSX and Windows.
-        return false;
-    }
-
     isHidden = path.filename().string()[0] == '.';
 
     return true;
 }
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
+    (void)(itemPath);
+
     isDehydrated = false;
     ioError = IoErrorSuccess;
-
-    bool exists = false;
-    if (!checkIfPathExists(itemPath, exists, ioError)) {
-        return false;
-    }
-
-    if (!exists) {
-        ioError = IoErrorNoSuchFileOrDirectory;
-    }
 
     return true;
 }
@@ -79,8 +71,22 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     exec = false;
     exists = false;
 
+    ItemType itemType;
+    const bool success = getItemType(path, itemType);
+    if (!success) {
+        LOGW_WARN(logger(),
+                  L"Failed to check if the item is a symlink: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        return false;
+    }
+    exists = itemType.ioError != IoErrorNoSuchFileOrDirectory;
+    if (!exists) {
+        return true;
+    }
+    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
+
     std::error_code ec;
-    std::filesystem::perms perms = std::filesystem::status(path, ec).permissions();
+    std::filesystem::perms perms =
+        isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
     if (ec.value() != 0) {
         exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
         if (!exists) {
@@ -88,6 +94,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             return true;
         }
 
+        LOGW_WARN(logger(), L"Failed to get permissions - " << Utility::formatStdError(path, ec).c_str());
         return false;
     }
 
