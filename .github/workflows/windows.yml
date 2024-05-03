@@ -45,26 +45,6 @@ jobs:
         
       - name: Execute common tests
         run: ./kDrive_test_common.exe
-        working-directory: ${{env.bin-directory}}
-
-      - name: Execute common tests
-        run: ./kDrive_test_common.exe
-        working-directory: ${{env.bin-directory}}
-        
-      - name: Execute common tests
-        run: ./kDrive_test_common.exe
-        working-directory: ${{env.bin-directory}}
-
-      - name: Execute common tests
-        run: ./kDrive_test_common.exe
-        working-directory: ${{env.bin-directory}}
-
-      - name: Execute common tests
-        run: ./kDrive_test_common.exe
-        working-directory: ${{env.bin-directory}}
-
-      - name: Execute common tests
-        run: ./kDrive_test_common.exe
         working-directory: ${{env.bin-directory}}        
         
       - name: Execute parms tests
