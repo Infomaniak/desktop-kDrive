@@ -99,6 +99,8 @@ struct COMMON_EXPORT CommonUtility {
         static bool isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr);
 #endif
 
+        static std::string envVarValue(const std::string &name);
+
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
 };
