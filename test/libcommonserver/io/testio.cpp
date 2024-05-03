@@ -37,7 +37,7 @@ TemporaryDirectory::TemporaryDirectory() {
 }
 
 TemporaryDirectory::~TemporaryDirectory() {
-    //std::filesystem::remove_all(path);
+    std::filesystem::remove_all(path);
 }
 
 IoHelperTests::IoHelperTests() : IoHelper() {}
