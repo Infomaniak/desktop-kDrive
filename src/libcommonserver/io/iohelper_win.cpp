@@ -455,24 +455,20 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     }
 
     for (ULONG i = 0; i < *explicitAccessCount; i++) {
-        if (explicitAccessList[i].Trustee.TrusteeForm == Utility::_trustee.TrusteeForm &&
-            explicitAccessList[i].Trustee.TrusteeType == Utility::_trustee.TrusteeType) {
-            if (wcscmp(explicitAccessList[i].Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
-                if (explicitAccessList[i].grfAccessMode == GRANT_ACCESS) {
-                    rights |= explicitAccessList[i].grfAccessPermissions;
-                }
-            }
+        if (explicitAccessList[i].grfAccessMode == GRANT_ACCESS &&
+            explicitAccessList[i].Trustee.TrusteeForm == Utility::_trustee.TrusteeForm &&
+            explicitAccessList[i].Trustee.TrusteeType == Utility::_trustee.TrusteeType &&
+            wcscmp(explicitAccessList[i].Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
+            rights |= explicitAccessList[i].grfAccessPermissions;
         }
     }
 
     for (ULONG i = 0; i < *explicitAccessCount; i++) {
-        if (explicitAccessList[i].Trustee.TrusteeForm == Utility::_trustee.TrusteeForm &&
-            explicitAccessList[i].Trustee.TrusteeType == Utility::_trustee.TrusteeType) {
-            if (wcscmp(explicitAccessList[i].Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
-                if (explicitAccessList[i].grfAccessMode == DENY_ACCESS) {
-                    rights &= ~explicitAccessList[i].grfAccessPermissions;
-                }
-            }
+        if (explicitAccessList[i].grfAccessMode == DENY_ACCESS &&
+            explicitAccessList[i].Trustee.TrusteeForm == Utility::_trustee.TrusteeForm &&
+            explicitAccessList[i].Trustee.TrusteeType == Utility::_trustee.TrusteeType &&
+            wcscmp(explicitAccessList[i].Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
+            rights &= ~explicitAccessList[i].grfAccessPermissions;
         }
     }
 
