@@ -164,7 +164,7 @@ class COMMONSERVER_EXPORT Log {
         /*! Returns the estimated size of the log files in bytes.
          * Actual size may be different due to compression.
          * \param ioError The error object to be filled in case of error.
-         * \return The estimated size of the log files in bytes.
+         * \return The estimated size of the log files in bytes, or -1 in case of error.
          */
         int getLogEstimatedSize(IoError &ioError);
 
