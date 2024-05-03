@@ -580,7 +580,6 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
 
 ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParentDirPath) {
     // Check if root dir exists
-    bool exists = false;
     bool readPermission = false;
     bool writePermission = false;
     bool execPermission = false;
@@ -588,11 +587,10 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     if (!IoHelper::getRights(absoluteParentDirPath, readPermission, writePermission, execPermission, ioError)) {
         LOGW_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absoluteParentDirPath).c_str());
         setExitCause(ExitCauseFileAccessError);
-        exists = ioError != IoErrorNoSuchFileOrDirectory;
         return ExitCodeSystemError;
     }
 
-    if (!exists) {
+    if (ioError == IoErrorNoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger, L"Sync localpath " << Path2WStr(absoluteParentDirPath).c_str() << L" doesn't exist");
         setExitCause(ExitCauseSyncDirDoesntExist);
         return ExitCodeSystemError;
