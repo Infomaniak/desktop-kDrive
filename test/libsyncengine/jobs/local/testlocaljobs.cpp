@@ -28,6 +28,7 @@
 #include "db/parmsdb.h"
 #include "keychainmanager/keychainmanager.h"
 #include "libcommonserver/network/proxy.h"
+#include "libcommon/utility/utility.h"
 
 using namespace CppUnit;
 
@@ -36,22 +37,23 @@ namespace KDC {
 static const SyncPath localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci");
 
 void KDC::TestLocalJobs::setUp() {
-    const char *userIdStr = std::getenv("KDRIVE_TEST_CI_USER_ID");
-    const char *accountIdStr = std::getenv("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const char *driveIdStr = std::getenv("KDRIVE_TEST_CI_DRIVE_ID");
-    const char *localPathStr = std::getenv("KDRIVE_TEST_CI_LOCAL_PATH");
-    const char *remotePathStr = std::getenv("KDRIVE_TEST_CI_REMOTE_PATH");
-    const char *apiTokenStr = std::getenv("KDRIVE_TEST_CI_API_TOKEN");
-    const char *remoteDirIdStr = std::getenv("KDRIVE_TEST_CI_REMOTE_DIR_ID");
+    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
+    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
+    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
+    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
+    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
+    const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
+    const std::string remoteDirIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_DIR_ID");
 
-    if (!userIdStr || !accountIdStr || !driveIdStr || !localPathStr || !remotePathStr || !apiTokenStr || !remoteDirIdStr) {
+    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
+        apiTokenStr.empty() || remoteDirIdStr.empty()) {
         throw std::runtime_error("Some environment variables are missing!");
     }
 
     // Insert api token into keystore
     std::string keychainKey("123");
     KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiTokenStr);
+    KeyChainManager::instance()->writeToken(keychainKey, apiTokenStr.c_str());
 
     // Create parmsDb
     bool alreadyExists;
@@ -61,20 +63,20 @@ void KDC::TestLocalJobs::setUp() {
     ParmsDb::instance()->setAutoDelete(true);
 
     // Insert user, account, drive & sync
-    int userId(atoi(userIdStr));
+    int userId(atoi(userIdStr.c_str()));
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr));
+    int accountId(atoi(accountIdStr.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    int driveId = atoi(driveIdStr);
+    int driveId = atoi(driveIdStr.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    Sync sync(1, drive.dbId(), std::string(localPathStr), std::string(remotePathStr));
+    Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
     ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
@@ -84,7 +86,7 @@ void KDC::TestLocalJobs::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.6.0");
     _syncPal->_syncDb->setAutoDelete(true);
 }
 

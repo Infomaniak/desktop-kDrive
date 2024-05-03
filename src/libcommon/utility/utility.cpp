@@ -661,6 +661,26 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
     return true;
 }
 
+std::string CommonUtility::envVarValue(const std::string &name) {
+#ifdef _WIN32
+    char *value = nullptr;
+    size_t sz = 0;
+    if (_dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
+        std::string valueStr(value);
+        free(value);
+        return valueStr;
+    }
+#else
+    char *value = std::getenv(name.c_str());
+    if (value) {
+        return std::string(value);
+        // Don't free "value"
+    }
+#endif
+
+    return std::string();
+}
+
 #ifdef __APPLE__
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();

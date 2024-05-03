@@ -664,7 +664,8 @@ SyncPath Utility::binRelativePath() {
     SyncPath path(resourcesPath);
 
 #ifdef __unix__
-    if (getenv("APPIMAGE") != NULL) {
+    const std::string value = CommonUtility::envVarValue("APPIMAGE");
+    if (!value.empty()) {
         path = path / "usr/bin";
     }
 #endif
@@ -810,12 +811,11 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
 }
 
 bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
-    const char *xdgDesktopEnv = std::getenv("XDG_CURRENT_DESKTOP");
-    if (!xdgDesktopEnv) {
+    const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
+    if (xdgCurrentDesktop.empty()) {
         return false;
     }
 
-    std::string xdgCurrentDesktop(xdgDesktopEnv);
     // ':' is the separator in the env variable, like "ubuntu:GNOME"
     size_t colon_pos = xdgCurrentDesktop.find(':');
 
