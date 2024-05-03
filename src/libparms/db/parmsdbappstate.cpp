@@ -17,9 +17,22 @@
  */
 
 #include "parmsdb.h"
-#include "parmsdbappstate.h"
 #include "libcommonserver/utility/asserts.h"
 
+constexpr char CREATE_APP_STATE_TABLE_ID[] = "create_app_state";
+constexpr char CREATE_APP_STATE_TABLE[] = "CREATE TABLE IF NOT EXISTS app_state(key INTEGER PRIMARY KEY, value TEXT);";
+
+constexpr char INSERT_APP_STATE_REQUEST_ID[] = "insert_app_state";
+constexpr char INSERT_APP_STATE_REQUEST[] = "INSERT INTO app_state (key, value) VALUES (?1, ?2);";
+
+constexpr char SELECT_APP_STATE_REQUEST_ID[] = "select_value_from_key";
+constexpr char SELECT_APP_STATE_REQUEST[] = "SELECT value FROM app_state WHERE key=?1;";
+
+constexpr char UPDATE_APP_STATE_REQUEST_ID[] = "update_value_with_key";
+constexpr char UPDATE_APP_STATE_REQUEST[] = "UPDATE app_state SET value=?2 WHERE key=?1;";
+
+constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestart[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestart[] = "0";
 
 namespace KDC {
 
@@ -65,13 +78,25 @@ bool ParmsDb::prepareAppState() {
 }
 
 bool ParmsDb::insertDefaultAppState() {
+    if (!insertAppState(AppStateKey::LastServerSelfRestart, APP_STATE_KEY_DEFAULT_LastServerSelfRestart)) {
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LastClientSelfRestart, APP_STATE_KEY_DEFAULT_LastClientSelfRestart)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
     const std::scoped_lock lock(_mutex);
     int errId = 0;
     std::string error;
     bool found = false;
 
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(AppStateKey::Test)));
+    ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
     if (!queryNext(SELECT_APP_STATE_REQUEST_ID, found)) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
@@ -80,8 +105,8 @@ bool ParmsDb::insertDefaultAppState() {
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
     if (!found) {
         ASSERT(queryResetAndClearBindings(INSERT_APP_STATE_REQUEST_ID));
-        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 1, static_cast<int>(AppStateKey::Test)));
-        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 2, APP_STATE_KEY_DEFAULT_Test));
+        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
+        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 2, value));
         if (!queryExec(INSERT_APP_STATE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << INSERT_APP_STATE_REQUEST_ID);
             return false;
@@ -123,7 +148,7 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
     }
 
     const std::scoped_lock lock(_mutex);
-    if (found) { 
+    if (found) {
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
         ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
         ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, value));
@@ -134,6 +159,5 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
     }
     return true;
-}
-
+} 
 }  // namespace KDC

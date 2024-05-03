@@ -17,7 +17,7 @@ set(testcommon_SRCS
     db/testdb.h db/testdb.cpp
     # io
     io/testio.h io/testio.cpp io/testgetitemtype.cpp io/testgetfilesize.cpp io/testcheckifpathexists.cpp io/testgetnodeid.cpp io/testgetfilestat.cpp io/testisfileaccessible.cpp io/testfilechanged.cpp
-    io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testchecksetgetrights.cpp io/testcheckdirectoryiterator.cpp
+    io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testcheckdirectoryiterator.cpp io/testchecksetgetrights.cpp
 )
 
 if (USE_OUR_OWN_SQLITE3)

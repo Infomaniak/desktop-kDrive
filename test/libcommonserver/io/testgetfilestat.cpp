@@ -259,8 +259,8 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size == 0u);
         CPPUNIT_ASSERT(fileStat.type == NodeTypeUnknown);
-        CPPUNIT_ASSERT(fileStat.modtime == 0);
-        CPPUNIT_ASSERT(fileStat.creationTime == 0);
+        CPPUNIT_ASSERT(fileStat.modtime == 0u);
+        CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
 #else
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));

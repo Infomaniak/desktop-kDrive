@@ -19,19 +19,24 @@
 #include "testio.h"
 
 #include <filesystem>
+#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/testutility.h"
+
 
 using namespace CppUnit;
 
 namespace KDC {
 
 void TestIo::testCheckDirectoryIterator() {
+#ifdef _WIN32
+    Utility::init();  // Initialize the utility library, needed to access/change the permissions on Windows
+#endif
     testCheckDirectoryIteratorNonExistingPath();
     testCheckDirectoryIteratorExistingPath();
     testCheckDirectoryRecursive();
     testCheckDirectoryIteratotNextAfterEndOfDir();
-    testCheckDirectoryIteratorPermission();
     testCheckDirectoryIteratorUnexpectedDelete();
+    testCheckDirectoryIteratorPermission();
     testCheckDirectoryPermissionLost();
 }
 
@@ -39,7 +44,7 @@ void TestIo::testCheckDirectoryIteratorNonExistingPath() {
     // Check that the directory iterator returns an error when the path does not exist
     {
         IoError error;
-        const DirectoryIterator it("C:\\nonexistingpath", false, error);
+        const IoHelper::DirectoryIterator it("C:\\nonexistingpath", false, error);
 
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, error);
     }
@@ -47,7 +52,7 @@ void TestIo::testCheckDirectoryIteratorNonExistingPath() {
     // Check that the directory iterator returns an error when the path syntax is invalid
     {
         IoError error;
-        const DirectoryIterator it("C:\\nonexistingpath\\*\\", false, error);
+        const IoHelper::DirectoryIterator it("C:\\nonexistingpath\\*\\", false, error);
 
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, error);
     }
@@ -74,12 +79,13 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
     {
         IoError error;
 
-        DirectoryIterator it(emptyDir, false, error);
+        IoHelper::DirectoryIterator it(emptyDir, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT(!it.next(entry, error));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+        bool endOfDirectory = false;
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+        CPPUNIT_ASSERT(endOfDirectory);
     }
 
     // Check that the directory iterator is valid when the path is a directory with one file and return the file on first call
@@ -87,17 +93,18 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         const SyncPath directoryWithOneFile = tempDir.path / "chekDirIt/oneFile_dir";
 
         IoError error;
-        DirectoryIterator it(directoryWithOneFile, false, error);
+        IoHelper::DirectoryIterator it(directoryWithOneFile, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT(it.next(entry, error));
-
+        bool endOfDirectory = false;
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+        CPPUNIT_ASSERT(!endOfDirectory);
 
         CPPUNIT_ASSERT_EQUAL(directoryWithOneFile / "oneFile.txt", entry.path());
 
-        CPPUNIT_ASSERT(!it.next(entry, error));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+        CPPUNIT_ASSERT(endOfDirectory);
     }
 
     // Check that the directory iterator is valid when the path is a directory with one child directory
@@ -105,15 +112,15 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
         const SyncPath directoryWithOneChildDirectory = tempDir.path / "chekDirIt/oneDir_dir";
 
         IoError error;
-        DirectoryIterator it(directoryWithOneChildDirectory, false, error);
+        IoHelper::DirectoryIterator it(directoryWithOneChildDirectory, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT(it.next(entry, error));
+        bool endOfDirectory = false;
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+        CPPUNIT_ASSERT(!endOfDirectory);
 
         CPPUNIT_ASSERT_EQUAL(directoryWithOneChildDirectory / "testDir1", entry.path());
-
-        CPPUNIT_ASSERT(!it.next(entry, error));
     }
 }
 
@@ -133,31 +140,37 @@ void TestIo::testCheckDirectoryRecursive(void) {
     // Check that the directory iterator do not search recursively when the recursive flag is false
     {
         IoError error;
-        DirectoryIterator it(recursiveDir, false, error);
+        IoHelper::DirectoryIterator it(recursiveDir, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         DirectoryEntry entry;
+        bool endOfDirectory = false;
+
         for (int i = 0; i < 4; i++) {
-            CPPUNIT_ASSERT(it.next(entry, error));
+            CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+            CPPUNIT_ASSERT(!endOfDirectory);
         }
 
-        CPPUNIT_ASSERT(!it.next(entry, error));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+        CPPUNIT_ASSERT(endOfDirectory);
     }
 
     // Check that the directory iterator searches recursively when the recursive flag is true
     {
         IoError error;
-        DirectoryIterator it(recursiveDir, true, error);
+        IoHelper::DirectoryIterator it(recursiveDir, true, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
+        bool endOfDirectory = false;
         DirectoryEntry entry;
+
         for (int i = 0; i < 8; i++) {
-            CPPUNIT_ASSERT(it.next(entry, error));
+            CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+            CPPUNIT_ASSERT(!endOfDirectory);
         }
 
-        CPPUNIT_ASSERT(!it.next(entry, error));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+        CPPUNIT_ASSERT(endOfDirectory);
     }
 }
 
@@ -173,64 +186,62 @@ void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
     // Check that the directory iterator returns an EOF on everycall to next after EOF
     {
         IoError error;
-        DirectoryIterator it(oneFileDir, false, error);
+        IoHelper::DirectoryIterator it(oneFileDir, false, error);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, error);
 
         // Read the only file in the directory
+        bool endOfDirectory = false;
         DirectoryEntry entry;
 
-        CPPUNIT_ASSERT(it.next(entry, error));
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+        CPPUNIT_ASSERT(!endOfDirectory);
 
         // Expecting EOF
         for (int i = 0; i < 3; i++) {
-            CPPUNIT_ASSERT(!it.next(entry, error));
-            CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, error);
+            CPPUNIT_ASSERT(it.next(entry, endOfDirectory, error));
+            CPPUNIT_ASSERT(endOfDirectory);
         }
     }
 }
 
 void TestIo::testCheckDirectoryIteratorPermission() {
-    TemporaryDirectory tempDir;
-
-    const SyncPath noPermissionDir = tempDir.path / "chekDirIt/noPermission";
-    const SyncPath noPermissionFile = noPermissionDir / "file.txt";
-
-    std::filesystem::create_directories(noPermissionDir);
-    std::ofstream file(noPermissionFile);
-    file << "file";
-    file.close();
-
-    std::filesystem::permissions(
-        noPermissionFile,
-        std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
-        std::filesystem::perm_options::remove);
-    // Check that the directory iterator shows a directory with no permission when `skip_permission_denied` is false
     {
+        // Check that the directory iterator skips each directory with no permission
+        TemporaryDirectory tempDir;
+        const SyncPath noPermissionDir = tempDir.path / "chekDirIt/noPermission";
+        const SyncPath noPermissionFile = noPermissionDir / "file.txt";
+
         IoError ioError = IoErrorSuccess;
-        DirectoryIterator it(noPermissionDir, false, ioError);
+
+        CPPUNIT_ASSERT(IoHelper::createDirectory(noPermissionDir.parent_path(), ioError));
+        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT(IoHelper::createDirectory(noPermissionDir, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
+        std::ofstream file(noPermissionFile);
+        file << "file";
+        file.close();
+
+
+        bool result = IoHelper::setRights(noPermissionDir, false, false, false, ioError);
+        result &= ioError == IoErrorSuccess;
+        if (!result) {
+            IoHelper::setRights(noPermissionDir, true, true, true, ioError);
+            CPPUNIT_ASSERT(false /*setRights failed*/);
+        }
+
+        IoHelper::DirectoryIterator it(noPermissionDir, false, ioError);
+
         DirectoryEntry entry;
-        CPPUNIT_ASSERT(it.next(entry, ioError));
-        CPPUNIT_ASSERT_EQUAL(noPermissionFile, entry.path());
+        bool endOfDirectory = false;
+        bool success = it.next(entry, endOfDirectory, ioError);
+
+        IoHelper::setRights(noPermissionDir, true, true, true, ioError);
+
+
+        CPPUNIT_ASSERT(success);
+        CPPUNIT_ASSERT(endOfDirectory);
     }
-
-    // Check that the directory iterator skips each directory with no permission when `skip_permission_denied` is true
-    {
-        IoError ioError = IoErrorSuccess;
-        DirectoryIterator it(noPermissionDir, false, ioError, DirectoryOptions::skip_permission_denied);
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
-
-        DirectoryEntry entry;
-        CPPUNIT_ASSERT(!it.next(entry, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
-    }
-
-    // Restor permissions for noPermissionDir to allow deletion
-    std::filesystem::permissions(
-        noPermissionFile,
-        std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
-        std::filesystem::perm_options::add);
 }
 
 void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
@@ -249,25 +260,28 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
     // Check that the directory iterator is consistent when a parent directory is deleted
     {
         IoError ioError = IoErrorSuccess;
-        DirectoryIterator it(path, true, ioError);
+        IoHelper::DirectoryIterator it(path, true, ioError);
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT(it.next(entry, ioError));
+        bool endOfDirectory = false;
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, ioError));
+        CPPUNIT_ASSERT(!endOfDirectory);
 
         std::filesystem::remove_all(path);
 
-        CPPUNIT_ASSERT(!it.next(entry, ioError));
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorNoSuchFileOrDirectory, ioError);
 
-        CPPUNIT_ASSERT(!it.next(entry, ioError));
+        CPPUNIT_ASSERT(it.next(entry, endOfDirectory, ioError));
         CPPUNIT_ASSERT_EQUAL(IoError::IoErrorInvalidDirectoryIterator, ioError);
     }
 }
 
 void TestIo::testCheckDirectoryPermissionLost(void) {
     const TemporaryDirectory temporaryDirectory;
-    const SyncPath permLostRoot = temporaryDirectory.path.string() + "/chekDirIt/permissionLost";
+    const SyncPath chekDirItDir = temporaryDirectory.path / "chekDirIt";
+    const SyncPath permLostRoot = chekDirItDir / "permissionLost";
     const SyncPath subDir = permLostRoot / "subDir1";
     const SyncPath filePath = subDir / "file.txt";
 
@@ -276,32 +290,40 @@ void TestIo::testCheckDirectoryPermissionLost(void) {
     file << "file";
     file.close();
 
-
-    // Check that the directory iterator is consistent when a parent directory loses permission
+    // Check that the directory iterator is consistent when a parent directory lose permission
     {
         IoError ioError = IoErrorSuccess;
-        DirectoryIterator it(permLostRoot, true, ioError,
-                             DirectoryOptions::skip_permission_denied);  // Skip permission denied to true, when false it is the
-                                                                         // user responsibility to check the permission
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorSuccess, ioError);
+        IoHelper::DirectoryIterator it(permLostRoot, true, ioError);
 
         // Remove permission (after iterator is created)
-        std::filesystem::permissions(
-            filePath, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
-            std::filesystem::perm_options::remove);
+        bool result = IoHelper::setRights(subDir, false, false, false, ioError);
+        result &= ioError == IoErrorSuccess;
+        if (!result) {
+            IoHelper::setRights(subDir, true, true, true, ioError);
+            CPPUNIT_ASSERT(false /*setRights failed*/);
+        }
 
         DirectoryEntry entry;
-        CPPUNIT_ASSERT(it.next(entry, ioError));
+        bool endOfDirectory = false;
 
-        CPPUNIT_ASSERT(!it.next(entry, ioError));
-        CPPUNIT_ASSERT_EQUAL(IoError::IoErrorEndOfDirectory, ioError);
+        result = it.next(entry, endOfDirectory, ioError);
+        result &= ioError == IoErrorSuccess;
 
-        // Restore permission to allow subdir removal
-        std::filesystem::permissions(
-            filePath, std::filesystem::perms::owner_all | std::filesystem::perms::group_all | std::filesystem::perms::others_all,
-            std::filesystem::perm_options::add);
+        if (!result) {
+            IoHelper::setRights(subDir, true, true, true, ioError);
+            IoHelper::setRights(filePath, true, true, true, ioError);
+        }
 
-        std::filesystem::remove_all(permLostRoot);
+        CPPUNIT_ASSERT(result /*result = it.next(entry, endOfDirectory, ioError);*/);
+
+        result = it.next(entry, endOfDirectory, ioError);
+        result &= ioError == IoErrorSuccess;
+
+        IoHelper::setRights(subDir, true, true, true, ioError);
+        IoHelper::setRights(filePath, true, true, true, ioError);
+
+        CPPUNIT_ASSERT(result /*result = it.next(entry, endOfDirectory, ioError);*/);
+        CPPUNIT_ASSERT(endOfDirectory);
     }
 }
 

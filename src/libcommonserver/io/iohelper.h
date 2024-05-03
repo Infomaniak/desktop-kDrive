@@ -28,32 +28,30 @@ namespace KDC {
 
 struct FileStat;
 
-class DirectoryIterator {
-    public:
-        DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError,
-                          DirectoryOptions option = DirectoryOptions::none);
-
-        DirectoryIterator() = default;
-        //! Get the next directory entry.
-        /*!
-          \param nextEntry is set with the next directory entry.
-          \param ioError holds the error returned when an underlying OS API call fails.
-          \return true if no error occurred, false otherwise.
-        */
-        bool next(DirectoryEntry &nextEntry, IoError &ioError);
-        void disableRecursionPending();
-
-    private:
-        bool _recursive = false;
-        bool _skipPermissionDenied = false;
-        bool _firstElement = true;
-        bool _invalid = false;
-        SyncPath _directoryPath;
-        std::filesystem::recursive_directory_iterator _dirIterator;
-};
 
 struct IoHelper {
-        
+    public:
+        class DirectoryIterator {
+            public:
+                DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError);
+
+                DirectoryIterator() = default;
+                //! Get the next directory entry.
+                /*!
+                  \param nextEntry is set with the next directory entry.
+                  \param ioError holds the error returned when an underlying OS API call fails.
+                  \return true if no error occurred, false otherwise.
+                */
+                bool next(DirectoryEntry &nextEntry, bool &endOfDirectory, IoError &ioError);
+                void disableRecursionPending();
+
+            private:
+                bool _recursive = false;
+                bool _firstElement = true;
+                bool _invalid = false;
+                SyncPath _directoryPath;
+                std::filesystem::recursive_directory_iterator _dirIterator;
+        };
 
     public:
         IoHelper(){};
@@ -244,7 +242,7 @@ struct IoHelper {
         static bool deleteDirectory(const SyncPath &path, IoError &ioError) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the directory.
-        /*! 
+        /*!
          \param path is the file system path of the directory to iterate over.
          \param recursive is a boolean indicating whether the iterator should be recursive or not.
          \param ioError holds the error returned when an underlying OS API call fails.
@@ -272,7 +270,7 @@ struct IoHelper {
         */
         static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
 
-        
+
 #ifdef __APPLE__
         // From `man xattr`:
         // Extended attributes are arbitrary metadata stored with a file, but separate from the
