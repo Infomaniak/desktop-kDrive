@@ -431,12 +431,12 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     PSECURITY_DESCRIPTOR psecDesc = nullptr;
     DWORD result = GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pfileACL,
                                         nullptr, &psecDesc);
-    LocalFree(psecDesc);
 
     ioError = dWordError2ioError(result);
     if (ioError != IoErrorSuccess) {
         LOGW_WARN(logger,
                   L"GetNamedSecurityInfo failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
+        LocalFree(psecDesc);
         return false;  // Caller should call _isExpectedError
     }
 
@@ -451,6 +451,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         LOGW_WARN(logger, L"GetExplicitEntriesFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
                                                                       << result << L"'");
         LocalFree(explicitAccessList);
+        LocalFree(psecDesc);
         return false;  // Caller should call _isExpectedError
     }
 
@@ -477,6 +478,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     }
 
     LocalFree(explicitAccessList);
+    LocalFree(psecDesc);
 
     read = (rights & FILE_GENERIC_READ) == FILE_GENERIC_READ;
     write = (rights & FILE_GENERIC_WRITE) == FILE_GENERIC_WRITE;
