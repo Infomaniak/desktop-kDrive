@@ -334,7 +334,8 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
 }
 
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
-                                log4cplus::Logger logger) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
+                                log4cplus::Logger logger,
+                                bool resetAcl = false) noexcept {    // Always return false if ioError != IoErrorSuccess, caller
                                                                       // should call _isExpectedError
     PACL pACLold = nullptr;                                           // Current ACL
     PACL pACLnew = nullptr;                                           // New ACL
@@ -412,6 +413,31 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     LocalFree(pACLnew);
     // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
 
+    //Check that the newACL is set correctly
+
+    result = GetNamedSecurityInfo(pathw_c, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, nullptr, nullptr, &pACLold, nullptr,
+                                  &pSecurityDescriptor);
+    ioError = dWordError2ioError(result);
+    if (result != ERROR_SUCCESS) {
+        ioError = dWordError2ioError(result);
+        LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result
+                                                                   << L"'");
+        LocalFree(pSecurityDescriptor);
+        LocalFree(pACLnew);
+        // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
+        return false;
+    }
+
+    if (!IsValidAcl(pACLold)) {
+        ioError = IoErrorUnknown;
+        LOGW_WARN(logger, L"Invalid new ACL: " << Utility::formatSyncPath(path).c_str());
+
+        LocalFree(pSecurityDescriptor);
+        // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
+        return false;
+    }
+    LocalFree(pSecurityDescriptor);
+
     return true;
 }
 
@@ -468,7 +494,6 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
             GetNamedSecurityInfo(szFilePath, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION, NULL, NULL, &pfileACL, NULL, &psecDesc);
             result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
             LocalFree(psecDesc);
-
             setRightsWindowsApi(path, READ_CONTROL, ACCESS_MODE::REVOKE_ACCESS, ioError, logger);
             ioError = dWordError2ioError(result);
         }
@@ -478,7 +503,6 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         if (retry) {
             LOGW_INFO(logger, L"GetEffectiveRightsFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
                                                                           << result << L"', retrying...");
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
             return getRightsWindowsApi(path, read, write, exec, ioError, logger, false);
         }
         LOGW_WARN(logger, L"Unexpected error: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
