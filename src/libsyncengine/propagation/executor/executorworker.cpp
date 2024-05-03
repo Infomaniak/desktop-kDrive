@@ -1622,8 +1622,16 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
     return !hasError;
 }
 
-bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue) {
+bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue, bool downloadImpossible) {
     _executorExitCode = ExitCodeOk;
+
+    if (jobExitCause == ExitCauseNotFound && !downloadImpossible) {
+        // The operation failed because the destination does not exist anymore
+        _executorExitCode = ExitCodeDataError;
+        LOG_DEBUG(_logger, "Destination does not exist anymore, restarting sync.");
+        return false;
+    }
+
     if (jobExitCause == ExitCauseQuotaExceeded) {
         _syncPal->pause();
     } else {
@@ -1693,13 +1701,13 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) remoteNodeId = *syncOp->correspondingNode()->id();
     }
 
+    auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
     if (const bool isInconsistencyIssue = job->exitCause() == ExitCauseInvalidName;
         job->exitCode() == ExitCodeBackError && details::isManagedBackError(job->exitCause())) {
-        return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue);
+        return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue, networkJob->isDownloadImpossible());
     }
 
     if (job->exitCode() != ExitCodeOk) {
-        auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
         if (networkJob && (networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
                            networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT)) {
             handleForbiddenAction(syncOp, relativeLocalPath);

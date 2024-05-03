@@ -44,6 +44,8 @@ class AbstractNetworkJob : public AbstractJob {
         inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         virtual void abort() override;
 
+        inline bool isDownloadImpossible() const { return _downloadImpossible; }
+
     protected:
         virtual void runJob() noexcept override;
         virtual void addRawHeader(const std::string &key, const std::string &value) final;
@@ -116,6 +118,8 @@ class AbstractNetworkJob : public AbstractJob {
         static bool isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept;
 
         std::unordered_map<std::string, std::string> _rawHeaders;
+
+        bool _downloadImpossible {false};
 };
 
 }  // namespace KDC
