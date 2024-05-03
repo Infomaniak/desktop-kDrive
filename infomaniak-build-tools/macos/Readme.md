@@ -11,6 +11,7 @@
 	- [OpenSSL](#openssl)
 	- [Poco](#poco)
 	- [xxHash](#xxhash)
+	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
 	- [Notarytool](#notarytool)
@@ -158,6 +159,8 @@ sudo cp openssl.multi/* /usr/local/lib/
 
 ## Poco
 
+> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+
 Download and build Poco :
 
 ```bash
@@ -185,6 +188,33 @@ mkdir build
 cd build
 cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15"
 sudo cmake --build . --target install
+```
+
+## libzip  
+
+> :warning: because the cmake builds in multi-architecture, `libzip` and its dependencies (in this case `zstd` must be installed in multi-architecture as well)
+
+Install `zstd` for multi-architecture :
+```bash
+cd ~/Projects
+curl -o zstd-1.5.6.tar.gz -L https://github.com/facebook/zstd/archive/v1.5.6.tar.gz
+tar xzf zstd-1.5.6.tar.gz
+mkdir -p zstd-1.5.6/build/cmake/build && cd zstd-1.5.6/build/cmake/build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ..
+cmake --build . --config Release
+sudo cmake --build . --config Release --target install
+```
+
+Clone and install libzip
+```bash
+cd ~/Projects
+git clone https://github.com/nih-at/libzip.git
+cd libzip
+git checkout tags/v1.10.1
+mkdir build && cd build
+cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -Dzstd_SHARED_LIBRARY="/usr/local/lib/libzstd.1.5.6.dylib" -Dzstd_INCLUDE_DIR="/usr/local/include" ..
+make
+sudo make install
 ```
 
 ## Sparkle
