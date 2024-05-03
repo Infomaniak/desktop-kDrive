@@ -87,9 +87,8 @@ void TestIo::testCheckSetAndGetRights() {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Failed to get base rights */);
                 }
-
-                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write &&
-                      isExecutable == rightsSet.execute)) {
+ 
+                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
@@ -109,8 +108,7 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Failed to get target rights */);
                 }
 
-                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write &&
-                      isExecutable == rightsSet.execute)) {
+                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set target rights mismatch with get target rights */);
                 }
@@ -155,8 +153,7 @@ void TestIo::testCheckSetAndGetRights() {
                     IoHelper::setRights(filepath, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Failed to get base rights */);
                 }
-                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write &&
-                      isExecutable == rightsSet.execute)) {
+                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(filepath, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
@@ -175,8 +172,7 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Failed to get target rights */);
                 }
 
-                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write &&
-                      isExecutable == rightsSet.execute)) {
+                if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(filepath, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set target rights mismatch with get target rights */);
                 }

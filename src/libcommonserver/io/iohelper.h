@@ -330,7 +330,7 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept;
-        
+
         //! Set the rights of the item indicated by `path`.
         /*!
          \param path is the file system path of the item.
