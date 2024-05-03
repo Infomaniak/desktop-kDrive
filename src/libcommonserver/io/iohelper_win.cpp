@@ -582,8 +582,6 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     read = (rights & FILE_GENERIC_READ) == FILE_GENERIC_READ;
     write = (rights & FILE_GENERIC_WRITE) == FILE_GENERIC_WRITE;
     exec = (rights & FILE_EXECUTE) == FILE_EXECUTE;
-    LOG_DEBUG(logger, L"Rights: path='" << Utility::formatSyncPath(path).c_str() << L"', read='" << read << L"', write='" << write
-                                        << L"', exec='" << exec << L"'");
     return true;
 }
 

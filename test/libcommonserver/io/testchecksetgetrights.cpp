@@ -87,8 +87,7 @@ void TestIo::testCheckSetAndGetRights() {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Failed to get base rights */);
                 }
-                std::cout << "Error: " << isReadable << " " << isWritable << " " << isExecutable << " " << rightsSet.read << " "
-                          << rightsSet.write << " " << rightsSet.execute << std::endl;
+ 
                 if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
@@ -109,8 +108,6 @@ void TestIo::testCheckSetAndGetRights() {
                     CPPUNIT_ASSERT(false /* Failed to get target rights */);
                 }
 
-                std::cout << "Error: " << isReadable << " " << isWritable << " " << isExecutable << " " << rightsSet.read << " "
-                          << rightsSet.write << " " << rightsSet.execute << std::endl;
                 if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
                     CPPUNIT_ASSERT(false /* Set target rights mismatch with get target rights */);
