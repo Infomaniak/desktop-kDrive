@@ -272,15 +272,6 @@ if (APPLE)
     target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE} ${SERVICE_MANAGEMENT_LIBRARY})
 endif()
 
-if(WITH_CRASHREPORTER)
-    target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE} crashreporter-handler)
-
-    if(UNIX AND NOT MAC)
-        find_package(Threads REQUIRED)
-        target_link_libraries( ${APPLICATION_CLIENT_EXECUTABLE} ${CMAKE_THREAD_LIBS_INIT})
-    endif()
-endif()
-
 if(ZLIB_FOUND)
   target_link_libraries("${APPLICATION_CLIENT_EXECUTABLE}" ZLIB::ZLIB)
 endif(ZLIB_FOUND)

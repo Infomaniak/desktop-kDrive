@@ -29,11 +29,6 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
-
-#if defined(WITH_CRASHREPORTER)
-#include <libcrashreporter-handler/Handler.h>
-#endif
-
 #include <QDir>
 #include <QFileInfo>
 #include <QMenu>
@@ -148,10 +143,6 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     KDC::GuiUtility::setStyle(qApp);
 
     CommonUtility::setupTranslations(QApplication::instance(), ParametersCache::instance()->parametersInfo().language());
-
-#if defined(WITH_CRASHREPORTER)
-    _crashHandler.reset(new CrashReporter::Handler(QDir::tempPath(), true, CRASHREPORTER_EXECUTABLE));
-#endif
 
     _updaterClient.reset(new UpdaterClient);
 

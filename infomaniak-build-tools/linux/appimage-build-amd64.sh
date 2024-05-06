@@ -59,7 +59,6 @@ cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
-    -DWITH_CRASHREPORTER=0 \
     -DBUILD_UNIT_TESTS=0 \
     "${CMAKE_PARAMS[@]}" \
     /src

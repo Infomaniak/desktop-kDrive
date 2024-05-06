@@ -228,7 +228,6 @@ In the project build settings, paste the following lines in the Initial Configur
 -DKDRIVE_THEME_DIR=/Users/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/bin
 -DBUILD_TESTING=OFF
--DWITH_CRASHREPORTER=OFF
 %{CMAKE_OSX_ARCHITECTURES:DefaultFlag}
 ```
 
