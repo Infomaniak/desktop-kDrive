@@ -189,7 +189,7 @@ sudo cmake --build . --target install
 
 ## Sparkle
 
-Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.3.1) version 2.3.1 and copy the Sparkle directory in `~` and name it "Sparkle"  
+Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.2) version 2.6.2 and copy the Sparkle directory in `~` and name it "Sparkle"  
 Copy and paste **Sparkle.Frameworks** in `~/Library/Frameworks` (create the directory is needed)
 
 ## Packages
