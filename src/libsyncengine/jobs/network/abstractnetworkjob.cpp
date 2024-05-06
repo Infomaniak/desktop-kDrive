@@ -498,6 +498,7 @@ bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
     bool receiveOk = receiveResponse(session, uri);
     if (!receiveOk && _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         // Special cases where the file exist in DB but not in storage
+        _downloadImpossible = true;
         return true;
     }
     return receiveOk;

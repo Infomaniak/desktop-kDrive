@@ -70,7 +70,7 @@ class ExecutorWorker : public OperationProcessor {
 
         void waitForAllJobsToFinish(bool &hasError);
         bool deleteFinishedAsyncJobs();
-        bool handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue);
+        bool handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue, bool downloadImpossible);
         bool handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath);
         void handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath);
         void sendProgress();
