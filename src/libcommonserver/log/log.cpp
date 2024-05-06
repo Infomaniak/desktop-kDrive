@@ -342,7 +342,7 @@ ExitCode Log::copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, ExitCa
             continue;
         }
 
-        if (!includeOldLogs && entry.path().filename().string().find(".gz") != std::string::npos) {
+        if (!includeOldLogs && entry.path().filename().extension() == L".gz") {
             LOG_WARN(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string().c_str());
             continue;
         }
@@ -387,8 +387,9 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
     DirectoryEntry entry;
 
     if (progressMonitoring) {
+        progressCallback(0);
         bool endOfDirectory = false;
-        while (dir.next(entry, endOfDirectory, ioError)) {
+        while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
             nbFiles++;
         }
         if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {

@@ -68,7 +68,7 @@ void TestLog::testGetLogEstimatedSize(void) {
 }
 
 void TestLog::testCopyLogsTo(void) {
-    {
+    {  // Test with old logs
         TemporaryDirectory tempDir;
         LOG_DEBUG(_logger, "Ensure that the log file is created (test)");
 
@@ -79,7 +79,7 @@ void TestLog::testCopyLogsTo(void) {
         CPPUNIT_ASSERT(logDirsize >= 0);
 
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = Log::instance()->copyLogsTo(tempDir.path, false, cause);
+        ExitCode exitCode = Log::instance()->copyLogsTo(tempDir.path, true, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
@@ -87,6 +87,41 @@ void TestLog::testCopyLogsTo(void) {
         IoHelper::getDirectorySize(tempDir.path, tempDirSize, err);
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT_EQUAL(logDirsize, tempDirSize);
+    }
+
+    {  // Test without old logs
+        TemporaryDirectory tempDir;
+        SyncPath logDir = Log::instance()->getLogFilePath().parent_path();
+
+        // create a fake log file
+        std::ofstream logFile(tempDir.path / "test.log");
+        for (int i = 0; i < 10; i++) {
+            logFile << "Test log line " << i << std::endl;
+        }
+        logFile.close();
+
+        // compress the log file
+        ExitCause cause = ExitCauseUnknown;
+        ExitCode exitCode = Log::instance()->compressLogFiles(tempDir.path, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+
+        // copy the compressed log file to the log directory
+        IoError err = IoErrorSuccess;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path / "test.log.gz", logDir / "test.log.gz", err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::deleteDirectory(tempDir.path / "test.log.gz", err));
+
+        exitCode = Log::instance()->copyLogsTo(tempDir.path, false, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+
+        // Check we do not have test.log.gz in the temp directory
+        bool exists = false;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(tempDir.path / "test.log.gz", exists, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, err);
+        CPPUNIT_ASSERT_EQUAL(false, exists);
     }
 }
 
@@ -157,6 +192,33 @@ void TestLog::testCompressLogs(void) {
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(logDir / "test.log.gz", exists, err));
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT_EQUAL(true, exists);
+    }
+
+    {  // test the progress bar
+        TemporaryDirectory tempDir;
+        for (int i = 0; i < 30; i++) {
+            std::ofstream logFile(tempDir.path / ("test" + std::to_string(i) + ".log"));
+            for (int j = 0; j < 10; j++) {
+                logFile << "Test log line " << j << std::endl;
+            }
+            logFile.close();
+        }
+
+        int percent = 0;
+        int oldPercent = 0;
+        std::function<void(int)> progress = [&percent, &oldPercent](int p) {
+            percent = p;
+            CPPUNIT_ASSERT(percent >= oldPercent);
+            oldPercent = percent;
+        };
+
+        ExitCause cause = ExitCauseUnknown;
+
+        ExitCode exitCode = Log::instance()->compressLogFiles(tempDir.path, cause, progress);
+
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+        CPPUNIT_ASSERT_EQUAL(100, percent);
     }
 }
 
