@@ -162,8 +162,6 @@ typedef enum {
     ExitCauseSocketsDefuncted,  // macOS: sockets defuncted by kernel
     ExitCauseNoSearchPermission,
     ExitCauseNotFound
-
-
 } ExitCause;
 
 // Conflict types ordered by priority

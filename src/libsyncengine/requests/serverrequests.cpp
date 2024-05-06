@@ -876,7 +876,7 @@ ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
 
 bool ServerRequests::isDisplayableError(const Error &error) {
     return ((error.exitCode() != ExitCodeNetworkError                           // Not ExitCodeNetworkError except
-             || error.exitCause() == ExitCauseNetworkTimeout                    //      ExitCauseNetworkTimeout
+             /*|| error.exitCause() == ExitCauseNetworkTimeout*/                //      ExitCauseNetworkTimeout
              || error.exitCause() == ExitCauseSocketsDefuncted)                 //      ExitCauseSocketsDefuncted
             && error.exitCode() != ExitCodeInconsistencyError                   // Not ExitCodeInconsistencyError
             && (error.exitCode() != ExitCodeDataError                           // Not ExitCodeDataError except
