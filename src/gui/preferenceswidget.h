@@ -19,8 +19,7 @@
 #pragma once
 
 #include "customcombobox.h"
-#include "parameterswidget.h"
-#include "libcommon/info/parametersinfo.h"
+#include "widgetwithcustomtooltip.h"
 
 #include <QColor>
 #include <QLabel>
@@ -33,7 +32,7 @@ namespace KDC {
 class ActionWidget;
 class ClientGui;
 
-class PreferencesWidget : public ParametersWidget {
+class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
 
     public:
@@ -50,29 +49,29 @@ class PreferencesWidget : public ParametersWidget {
     private:
         std::shared_ptr<ClientGui> _gui;
 
-        QLineEdit *_folderConfirmationAmountLineEdit;
-        QPushButton *_updateButton;
-        CustomComboBox *_languageSelectorComboBox;
-        QLabel *_generalLabel;
-        QLabel *_folderConfirmationLabel;
-        QLabel *_folderConfirmationAmountLabel;
-        QLabel *_darkThemeLabel;
-        QLabel *_monochromeLabel;
-        QLabel *_launchAtStartupLabel;
-        QLabel *_moveToTrashLabel;
-        QLabel *_languageSelectorLabel;
-        QLabel *_shortcutsLabel;
-        QLabel *_advancedLabel;
-        QLabel *_debuggingLabel;
-        QLabel *_debuggingFolderLabel;
-        QLabel *_filesToExcludeLabel;
-        QLabel *_proxyServerLabel;
-        QLabel *_liteSyncLabel;
-        QLabel *_versionLabel;
-        QLabel *_updateStatusLabel;
-        QLabel *_showReleaseNoteLabel;
-        QLabel *_versionNumberLabel;
-        ActionWidget *_displayErrorsWidget;
+        QLineEdit *_folderConfirmationAmountLineEdit{nullptr};
+        QPushButton *_updateButton{nullptr};
+        CustomComboBox *_languageSelectorComboBox{nullptr};
+        QLabel *_generalLabel{nullptr};
+        QLabel *_folderConfirmationLabel{nullptr};
+        QLabel *_folderConfirmationAmountLabel{nullptr};
+        QLabel *_darkThemeLabel{nullptr};
+        QLabel *_monochromeLabel{nullptr};
+        QLabel *_launchAtStartupLabel{nullptr};
+        QLabel *_moveToTrashLabel{nullptr};
+        QLabel *_languageSelectorLabel{nullptr};
+        QLabel *_shortcutsLabel{nullptr};
+        QLabel *_advancedLabel{nullptr};
+        QLabel *_debuggingLabel{nullptr};
+        QLabel *_debuggingFolderLabel{nullptr};
+        QLabel *_filesToExcludeLabel{nullptr};
+        QLabel *_proxyServerLabel{nullptr};
+        QLabel *_liteSyncLabel{nullptr};
+        QLabel *_versionLabel{nullptr};
+        QLabel *_updateStatusLabel{nullptr};
+        QLabel *_showReleaseNoteLabel{nullptr};
+        QLabel *_versionNumberLabel{nullptr};
+        ActionWidget *_displayErrorsWidget{nullptr};
 
         void showEvent(QShowEvent *event) override;
 

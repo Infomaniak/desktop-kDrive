@@ -25,7 +25,6 @@
 #include "debuggingdialog.h"
 #include "fileexclusiondialog.h"
 #include "proxyserverdialog.h"
-#include "bandwidthdialog.h"
 #include "aboutdialog.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
@@ -42,6 +41,10 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 #include "resourcesmanagerdialog.h"
+
+#ifdef Q_OS_WIN
+#include "libcommon/info/parametersinfo.h"
+#endif
 
 #include <QBoxLayout>
 #include <QDesktopServices>
@@ -70,33 +73,7 @@ static const QString italianCode = "it";
 Q_LOGGING_CATEGORY(lcPreferencesWidget, "gui.preferenceswidget", QtInfoMsg)
 
 PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : ParametersWidget(parent),
-      _gui(gui),
-      _folderConfirmationAmountLineEdit(nullptr),
-      _updateButton(nullptr),
-      _languageSelectorComboBox(nullptr),
-      _generalLabel(nullptr),
-      _folderConfirmationLabel(nullptr),
-      _folderConfirmationAmountLabel(nullptr),
-      _darkThemeLabel(nullptr),
-      _monochromeLabel(nullptr),
-      _launchAtStartupLabel(nullptr),
-      _moveToTrashLabel(nullptr),
-      _languageSelectorLabel(nullptr),
-      _shortcutsLabel(nullptr),
-      _advancedLabel(nullptr),
-      _debuggingLabel(nullptr),
-      _debuggingFolderLabel(nullptr),
-      _filesToExcludeLabel(nullptr),
-      _proxyServerLabel(nullptr)
-      //    , _resourcesLabel(nullptr)
-      ,
-      _liteSyncLabel(nullptr),
-      _versionLabel(nullptr),
-      _updateStatusLabel(nullptr),
-      _showReleaseNoteLabel(nullptr),
-      _versionNumberLabel(nullptr),
-      _displayErrorsWidget(nullptr) {
+    : LargeWidgetWithCustomToolTip(parent), _gui(gui) {
     setContentsMargins(0, 0, 0, 0);
 
     /*
