@@ -90,10 +90,7 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
     return true;
 }
 
-Log::Log(const log4cplus::tstring &filePath) {
-    // Save the log file path
-    _filePath = filePath;
-
+Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
     // Instantiate an appender object
     CustomRollingFileAppender *rfAppender = new CustomRollingFileAppender(filePath, LOGGER_APP_RF_MAX_FILE_SIZE * 1024 * 1024,
                                                                           LOGGER_APP_RF_MAX_BACKUP_IDX, true, true);
@@ -475,7 +472,7 @@ ExitCode Log::generateUserDescriptionFile(const SyncPath &outputPath, ExitCause 
     file << "User ID(s): ";
 
     std::vector<User> userList;
-    try { 
+    try {
         if (ParmsDb::instance()->selectAllUsers(userList)) {
             for (const User &user : userList) {
                 file << user.userId() << " | ";
@@ -485,14 +482,9 @@ ExitCode Log::generateUserDescriptionFile(const SyncPath &outputPath, ExitCause 
             file << "Unable to retrieve user ID(s)" << std::endl;
             LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
         }
-    } catch (const std::runtime_error &e) {
-        file << "Unable to retrieve user ID(s) - " << e.what() << std::endl;
-        LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers: " << e.what());
-    }
 
-    file << "Drive ID(s): ";
-    std::vector<Drive> driveList;
-    try {
+        file << "Drive ID(s): ";
+        std::vector<Drive> driveList;
         if (ParmsDb::instance()->selectAllDrives(driveList)) {
             for (const Drive &drive : driveList) {
                 file << drive.driveId() << " | ";
@@ -503,8 +495,9 @@ ExitCode Log::generateUserDescriptionFile(const SyncPath &outputPath, ExitCause 
             LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers");
         }
     } catch (const std::runtime_error &e) {
-        file << "Unable to retrieve drive ID(s) - " << e.what() << std::endl;
-        LOG_WARN(_logger, "Error in ParmsDb::selectAllUsers: " << e.what());
+        LOG_WARN(_logger, "Error in generateUserDescriptionFile: " << e.what());
+        file << "Unable to retrieve user ID(s) - " << e.what() << std::endl;
+        file << "Drive ID(s): Unable to retrieve drive ID(s) - " << e.what() << std::endl;
     }
 
     file.close();
