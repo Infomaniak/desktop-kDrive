@@ -50,7 +50,9 @@
 #include <QDesktopServices>
 #include <QGraphicsColorizeEffect>
 #include <QIntValidator>
+#include <QLineEdit>
 #include <QLabel>
+#include <QPushButton>
 
 namespace KDC {
 
@@ -72,6 +74,48 @@ static const QString italianCode = "it";
 
 Q_LOGGING_CATEGORY(lcPreferencesWidget, "gui.preferenceswidget", QtInfoMsg)
 
+FolderConfirmation::FolderConfirmation(QBoxLayout *folderConfirmationBox) {
+    QHBoxLayout *folderConfirmation1HBox = new QHBoxLayout();
+    folderConfirmation1HBox->setContentsMargins(0, 0, 0, 0);
+    folderConfirmation1HBox->setSpacing(0);
+    folderConfirmationBox->addLayout(folderConfirmation1HBox);
+
+    _label = new QLabel();
+    _label->setWordWrap(true);
+    folderConfirmation1HBox->addWidget(_label);
+    folderConfirmation1HBox->setStretchFactor(_label, 1);
+
+    _switch = new CustomSwitch();
+    _switch->setLayoutDirection(Qt::RightToLeft);
+    _switch->setAttribute(Qt::WA_MacShowFocusRect, false);
+    _switch->setCheckState(ParametersCache::instance()->parametersInfo().useBigFolderSizeLimit() ? Qt::Checked : Qt::Unchecked);
+    folderConfirmation1HBox->addWidget(_switch);
+
+    QHBoxLayout *folderConfirmation2HBox = new QHBoxLayout();
+    folderConfirmation2HBox->setContentsMargins(0, 0, 0, 0);
+    folderConfirmation2HBox->setSpacing(textHSpacing);
+    folderConfirmationBox->addLayout(folderConfirmation2HBox);
+
+    _amountLineEdit = new QLineEdit();
+    _amountLineEdit->setAttribute(Qt::WA_MacShowFocusRect, false);
+    _amountLineEdit->setEnabled(ParametersCache::instance()->parametersInfo().useBigFolderSizeLimit());
+    _amountLineEdit->setText(QString::number(ParametersCache::instance()->parametersInfo().bigFolderSizeLimit()));
+    _amountLineEdit->setValidator(new QIntValidator(0, 999999));
+    _amountLineEdit->setMinimumWidth(amountLineEditWidth);
+    _amountLineEdit->setMaximumWidth(amountLineEditWidth);
+    folderConfirmation2HBox->addWidget(_amountLineEdit);
+
+    _amountLabel = new QLabel();
+    _amountLabel->setObjectName("folderConfirmationAmountLabel");
+    folderConfirmation2HBox->addWidget(_amountLabel);
+    folderConfirmation2HBox->addStretch();
+}
+
+void FolderConfirmation::retranslateUi() {
+    _label->setText(tr("Ask for confirmation before synchronizing folders greater than"));
+    _amountLabel->setText(tr("MB"));
+}
+
 PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
     : LargeWidgetWithCustomToolTip(parent), _gui(gui) {
     setContentsMargins(0, 0, 0, 0);
@@ -83,11 +127,11 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
      *      generalBloc
      *          folderConfirmationBox
      *              folderConfirmation1HBox
-     *                  folderConfirmationLabel
-     *                  folderConfirmationSwitch
+     *                  _folderConfirmation->_label
+     *                  _folderConfirmation->_switch
      *              folderConfirmation2HBox
-     *                  _folderConfirmationAmountLineEdit
-     *                  folderConfirmationAmountLabel
+     *                  _folderConfirmation->_amountLineEdit
+     *                  _folderConfirmation->_amountLabel
      *          darkThemeBox
      *              darkThemeLabel
      *              darkThemeSwitch
@@ -115,9 +159,6 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
      *          proxyServerWidget
      *              proxyServerVBox
      *                  proxyServerLabel
-     *          bandwidthWidget
-     *              bandwidthVBox
-     *                  bandwidthLabel
      *      versionLabel
      *      versionBloc
      *          versionBox
@@ -152,43 +193,8 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     // Folder synchronization confirmation
     QBoxLayout *folderConfirmationBox = generalBloc->addLayout(QBoxLayout::Direction::TopToBottom);
+    _folderConfirmation = std::unique_ptr<FolderConfirmation>(new FolderConfirmation(folderConfirmationBox));
 
-    QHBoxLayout *folderConfirmation1HBox = new QHBoxLayout();
-    folderConfirmation1HBox->setContentsMargins(0, 0, 0, 0);
-    folderConfirmation1HBox->setSpacing(0);
-    folderConfirmationBox->addLayout(folderConfirmation1HBox);
-
-    _folderConfirmationLabel = new QLabel(this);
-    _folderConfirmationLabel->setWordWrap(true);
-    folderConfirmation1HBox->addWidget(_folderConfirmationLabel);
-    folderConfirmation1HBox->setStretchFactor(_folderConfirmationLabel, 1);
-
-    CustomSwitch *folderConfirmationSwitch = new CustomSwitch(this);
-    folderConfirmationSwitch->setLayoutDirection(Qt::RightToLeft);
-    folderConfirmationSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
-    folderConfirmationSwitch->setCheckState(
-        ParametersCache::instance()->parametersInfo().useBigFolderSizeLimit() ? Qt::Checked : Qt::Unchecked);
-    folderConfirmation1HBox->addWidget(folderConfirmationSwitch);
-
-    QHBoxLayout *folderConfirmation2HBox = new QHBoxLayout();
-    folderConfirmation2HBox->setContentsMargins(0, 0, 0, 0);
-    folderConfirmation2HBox->setSpacing(textHSpacing);
-    folderConfirmationBox->addLayout(folderConfirmation2HBox);
-
-    _folderConfirmationAmountLineEdit = new QLineEdit(this);
-    _folderConfirmationAmountLineEdit->setAttribute(Qt::WA_MacShowFocusRect, false);
-    _folderConfirmationAmountLineEdit->setEnabled(ParametersCache::instance()->parametersInfo().useBigFolderSizeLimit());
-    _folderConfirmationAmountLineEdit->setText(
-        QString::number(ParametersCache::instance()->parametersInfo().bigFolderSizeLimit()));
-    _folderConfirmationAmountLineEdit->setValidator(new QIntValidator(0, 999999, this));
-    _folderConfirmationAmountLineEdit->setMinimumWidth(amountLineEditWidth);
-    _folderConfirmationAmountLineEdit->setMaximumWidth(amountLineEditWidth);
-    folderConfirmation2HBox->addWidget(_folderConfirmationAmountLineEdit);
-
-    _folderConfirmationAmountLabel = new QLabel(this);
-    _folderConfirmationAmountLabel->setObjectName("folderConfirmationAmountLabel");
-    folderConfirmation2HBox->addWidget(_folderConfirmationAmountLabel);
-    folderConfirmation2HBox->addStretch();
     generalBloc->addSeparator();
 
     // Dark theme activation
@@ -350,35 +356,20 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     liteSyncVBox->addWidget(_liteSyncLabel);
 #endif
 
-    //
-    // Resources manager bloc
-    //
-    /*
-        QVBoxLayout *resourcesManagerVBox = nullptr;
-        ClickableWidget *resourcesManagerWidget = advancedBloc->addActionWidget(&resourcesManagerVBox);
-
-        _resourcesLabel = new QLabel(this);
-        _resourcesLabel->setObjectName("boldTextLabel");
-        _resourcesLabel->setVisible(true);
-        _resourcesLabel->setText(tr("Manage resources"));
-        resourcesManagerVBox->addWidget(_resourcesLabel);
-    */
+    // Version
     _versionLabel = new QLabel(this);
     _versionLabel->setObjectName("blocLabel");
     vBox->addWidget(_versionLabel);
-
     PreferencesBlocWidget *versionBloc = new PreferencesBlocWidget(this);
     vBox->addWidget(versionBloc);
-
-    // Version
     QBoxLayout *versionBox = versionBloc->addLayout(QBoxLayout::Direction::LeftToRight);
-
     QVBoxLayout *versionVBox = new QVBoxLayout();
     versionVBox->setContentsMargins(0, 0, 0, 0);
     versionVBox->setSpacing(0);
     versionBox->addLayout(versionVBox);
     versionBox->setStretchFactor(versionVBox, 1);
 
+    // Status
     _updateStatusLabel = new QLabel(this);
     _updateStatusLabel->setObjectName("boldTextLabel");
     _updateStatusLabel->setWordWrap(true);
@@ -411,8 +402,9 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     LanguageChangeFilter *languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
 
-    connect(folderConfirmationSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onFolderConfirmationSwitchClicked);
-    connect(_folderConfirmationAmountLineEdit, &QLineEdit::textEdited, this,
+    connect(_folderConfirmation->customSwitch(), &CustomSwitch::clicked, this,
+            &PreferencesWidget::onFolderConfirmationSwitchClicked);
+    connect(_folderConfirmation->amountLineEdit(), &QLineEdit::textEdited, this,
             &PreferencesWidget::onFolderConfirmationAmountTextEdited);
     if (darkThemeSwitch) {
         connect(darkThemeSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onDarkThemeSwitchClicked);
@@ -488,7 +480,7 @@ void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
         return;
     }
 
-    _folderConfirmationAmountLineEdit->setEnabled(checked);
+    _folderConfirmation->amountLineEdit()->setEnabled(checked);
 
     clearUndecidedLists();
 }
@@ -734,8 +726,7 @@ void PreferencesWidget::onStartInstaller() {
 void PreferencesWidget::retranslateUi() {
     _displayErrorsWidget->setText(tr("Some process failed to run."));
     _generalLabel->setText(tr("General"));
-    _folderConfirmationLabel->setText(tr("Ask for confirmation before synchronizing folders greater than"));
-    _folderConfirmationAmountLabel->setText(tr("MB"));
+    _folderConfirmation->retranslateUi();
     if (_darkThemeLabel) {
         _darkThemeLabel->setText(tr("Activate dark theme"));
     }
@@ -766,7 +757,6 @@ void PreferencesWidget::retranslateUi() {
         tr("<a style=\"%1\" href=\"%2\">Open debugging folder</a>").arg(CommonUtility::linkStyle, debuggingFolderLink));
     _filesToExcludeLabel->setText(tr("Files to exclude"));
     _proxyServerLabel->setText(tr("Proxy server"));
-//    _bandwidthLabel->setText(tr("Bandwidth"));
 #ifdef Q_OS_MAC
     _liteSyncLabel->setText(tr("Lite Sync"));
 #endif

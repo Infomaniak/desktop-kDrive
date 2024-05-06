@@ -22,15 +22,32 @@
 #include "widgetwithcustomtooltip.h"
 
 #include <QColor>
-#include <QLabel>
-#include <QLineEdit>
-#include <QLineEdit>
-#include <QPushButton>
+
+class QBoxLayout;
+class QLabel;
+class QLineEdit;
+class QPushButton;
 
 namespace KDC {
 
 class ActionWidget;
 class ClientGui;
+class CustomSwitch;
+
+struct FolderConfirmation : public QObject {
+        Q_OBJECT
+    public:
+        explicit FolderConfirmation(QBoxLayout *folderConfirmationBox);
+        void retranslateUi();
+        CustomSwitch *customSwitch() { return _switch; };
+        QLineEdit *amountLineEdit() { return _amountLineEdit; };
+
+    private:
+        QLabel *_label{nullptr};
+        QLabel *_amountLabel{nullptr};
+        QLineEdit *_amountLineEdit{nullptr};
+        CustomSwitch *_switch{nullptr};
+};
 
 class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
@@ -49,12 +66,10 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
     private:
         std::shared_ptr<ClientGui> _gui;
 
-        QLineEdit *_folderConfirmationAmountLineEdit{nullptr};
+        std::unique_ptr<FolderConfirmation> _folderConfirmation;
         QPushButton *_updateButton{nullptr};
         CustomComboBox *_languageSelectorComboBox{nullptr};
         QLabel *_generalLabel{nullptr};
-        QLabel *_folderConfirmationLabel{nullptr};
-        QLabel *_folderConfirmationAmountLabel{nullptr};
         QLabel *_darkThemeLabel{nullptr};
         QLabel *_monochromeLabel{nullptr};
         QLabel *_launchAtStartupLabel{nullptr};
