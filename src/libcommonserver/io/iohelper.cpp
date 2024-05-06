@@ -348,7 +348,6 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     DirectoryEntry entry;
     ioError = IoErrorSuccess;
     bool endOfDirectory = false;
-
     size = 0;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         uint64_t entrySize;
@@ -356,6 +355,10 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         entrySize = _fileSize(entry.path(), ec);
         if (!ec) {
             size += entrySize;
+        } else {
+            LOG_WARN(Log::instance()->getLogger(), "Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
+            ioError = stdError2ioError(ec);
+            return _isExpectedError(ioError);
         }
     }
 
