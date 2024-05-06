@@ -30,6 +30,7 @@ class TestLog : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCopyParmsDbTo);
         CPPUNIT_TEST(testCompressLogs);
         CPPUNIT_TEST(testGenerateUserDescriptionFile);
+        CPPUNIT_TEST(testGenerateLogsSupportArchive);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -45,6 +46,7 @@ class TestLog : public CppUnit::TestFixture {
         void testCopyParmsDbTo(void);
         void testCompressLogs(void);
         void testGenerateUserDescriptionFile(void);
+        void testGenerateLogsSupportArchive(void);
 };
 
 }  // namespace KDC

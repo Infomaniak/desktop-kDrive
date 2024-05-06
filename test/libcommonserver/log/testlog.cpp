@@ -111,9 +111,11 @@ void TestLog::testCopyLogsTo(void) {
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path / "test.log.gz", logDir / "test.log.gz", err));
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
 
-        CPPUNIT_ASSERT_EQUAL(true, IoHelper::deleteDirectory(tempDir.path / "test.log.gz", err));
+        IoHelper::deleteDirectory(tempDir.path / "test.log.gz", err);
 
         exitCode = Log::instance()->copyLogsTo(tempDir.path, false, cause);
+        IoHelper::deleteDirectory(logDir / "test.log.gz", err);
+
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
@@ -246,6 +248,24 @@ void TestLog::testGenerateUserDescriptionFile(void) {
         }
         CPPUNIT_ASSERT(count >= 5);
         file.close();
+    }
+}
+
+void TestLog::testGenerateLogsSupportArchive(void) {
+    {
+        TemporaryDirectory tempDir;
+        const SyncPath archiveFile = tempDir.path / "logs_support.tar.gz";
+        ExitCause cause = ExitCauseUnknown;
+
+        ExitCode code = Log::instance()->generateLogsSupportArchive(true, tempDir.path, archiveFile.filename(), cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
+
+        bool exists = false;
+        IoError err = IoErrorSuccess;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(archiveFile, exists, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(true, exists);
     }
 }
 
