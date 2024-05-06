@@ -259,7 +259,6 @@ void DrivePreferencesWidget::setDrive(int driveDbId, bool unresolvedErrors) {
 
     updateUserInfo();
     updateFoldersBlocs();
-    ParametersWidget::setEnabled(!driveInfoMapIt->second.isBeingDeleted());
 }
 
 void DrivePreferencesWidget::reset() {
@@ -282,8 +281,8 @@ void DrivePreferencesWidget::refreshStatus() {
 
     if (const auto driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId); driveInfoMapIt != _gui->driveInfoMap().cend()) {
         const auto &driveInfo = driveInfoMapIt->second;
-        if (!_mainVBox->isEnabled() && !driveInfo.isBeingDeleted()) {
-            // Re-enable the drive preferences widget after a deletion attempt.
+        if (!driveInfo.isBeingDeleted()) {
+            // Re-enable the drive preferences widget after a failed deletion attempt.
             setCustomToolTipText("");
             GuiUtility::setEnabledRecursively(this, true);
         }
@@ -1043,8 +1042,17 @@ void DrivePreferencesWidget::onDriveBeingRemoved() {
     assert(driveInfoIt != _gui->driveInfoMap().cend());
     driveInfoIt->second.setIsBeingDeleted(true);
 
+    // Lock all GUI drive-related actions during drive deletion.
+    for (auto *child : findChildren<QWidget *>()) {
+        GuiUtility::setEnabledRecursively<QWidget>(child, false);
+    }
+
+    const QList<PreferencesBlocWidget *> folderBlocList = findChildren<PreferencesBlocWidget *>(folderBlocName);
+    for (PreferencesBlocWidget *folderBloc : folderBlocList) {
+        folderBloc->setToolTipsEnabled(false);
+    }
+
     setCustomToolTipText(tr("This drive is being deleted."));
-    ParametersWidget::setEnabled(false);
     update();
 }
 
