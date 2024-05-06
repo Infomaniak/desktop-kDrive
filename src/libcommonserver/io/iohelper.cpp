@@ -297,7 +297,11 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
         return false;
     }
 
-    return filestat.isHidden;
+    if (ioError != IoErrorSuccess) {
+        return _isExpectedError(ioError);
+    }
+
+    isHidden = filestat.isHidden;
 #endif
 
     return true;
