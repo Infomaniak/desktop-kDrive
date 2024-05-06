@@ -439,6 +439,10 @@ bool DownloadJob::handleResponse(std::istream &is) {
 }
 
 bool DownloadJob::createLink(const std::string &mimeType, const std::string &data) {
+    // Delete in case it already exists (EDIT operation)
+    std::error_code ec;
+    std::filesystem::remove_all(_localpath, ec);
+
     if (mimeType == mimeTypeSymlink || mimeType == mimeTypeSymlinkFolder) {
         // Create symlink
         const auto targetPath = Str2Path(data);

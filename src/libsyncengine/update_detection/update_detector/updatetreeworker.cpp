@@ -1016,8 +1016,10 @@ bool UpdateTreeWorker::integrityCheck() {
 }
 
 void UpdateTreeWorker::drawUpdateTree() {
-    static const char *drawUpdateTreeEnv = std::getenv("KDRIVE_DEBUG_DRAW_UPDATETREE");
-    if (!drawUpdateTreeEnv) return;
+    const std::string drawUpdateTree = CommonUtility::envVarValue("KDRIVE_DEBUG_DRAW_UPDATETREE");
+    if (drawUpdateTree.empty()) {
+        return;
+    }
 
     SyncName treeStr;
     drawUpdateTreeRow(_updateTree->rootNode(), treeStr);

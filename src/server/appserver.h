@@ -192,7 +192,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void startSyncPals();
         void stopSyncTask(int syncDbId);  // Long task which can block GUI: post-poned in the event loop by means of timer
         void stopAllSyncsTask(const std::vector<int> &syncDbIdList);  // Idem.
-        void deleteAccount(int accountDbId);
+        void deleteAccountIfNeeded(int accountDbId);                  // Remove the account if no drive is associated to it.
+        void deleteDrive(int driveDbId, int accountDbId);
 
         static void addError(const Error &error);
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
