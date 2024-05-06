@@ -18,85 +18,23 @@
 
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
+
+#include <log4cplus/loggingmacros.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 
 namespace KDC {
 
-bool IoHelper::fileExists(const std::error_code &ec) noexcept {
-    return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
-}
-
-bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
-    struct stat sb;
-
-    if (lstat(path.string().c_str(), &sb) < 0) {
-        return false;
-    }
-
-    nodeId = std::to_string(sb.st_ino);
-    return true;
-}
-
-bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
-    return true;
-}
-
-bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept {
-    isHidden = false;
-    ioError = IoErrorSuccess;
-
-    bool exists = false;
-    if (!checkIfPathExists(path, exists, ioError)) {  // For consistency with MacOSX and Windows.
-        return false;
-    }
-
-    isHidden = path.filename().string()[0] == '.';
-
-    return true;
-}
-
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
+    (void)(itemPath);
+
     isDehydrated = false;
     ioError = IoErrorSuccess;
 
-    bool exists = false;
-    if (!checkIfPathExists(itemPath, exists, ioError)) {
-        return false;
-    }
-
-    if (!exists) {
-        ioError = IoErrorNoSuchFileOrDirectory;
-    }
-
     return true;
 }
-
-bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept {
-    read = false;
-    write = false;
-    exec = false;
-    exists = false;
-
-    std::error_code ec;
-    std::filesystem::perms perms = std::filesystem::status(path, ec).permissions();
-    if (ec.value() != 0) {
-        exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
-        if (!exists) {
-            // Path doesn't exist
-            return true;
-        }
-
-        return false;
-    }
-
-    exists = true;
-    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
-    write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
-    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
-    return true;
-}
-
 
 }  // namespace KDC
