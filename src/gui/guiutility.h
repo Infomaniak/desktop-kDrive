@@ -104,6 +104,8 @@ bool getLinuxDesktopType(QString &type, QString &version);
 #endif
 template <class C>
 void setEnabledRecursively(C *root, bool enabled) {
+    if (!root) return;
+
     root->setEnabled(enabled);
     for (auto *child : root->template findChildren<QLayout *>()) {
         setEnabledRecursively(child, enabled);
