@@ -43,10 +43,6 @@
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/jobmanager.h"
 
-#if defined(WITH_CRASHREPORTER)
-#include <libcrashreporter-handler/Handler.h>
-#endif
-
 #include <iostream>
 #include <filesystem>
 #ifdef Q_OS_UNIX
@@ -257,9 +253,6 @@ AppServer::AppServer(int &argc, char **argv)
     // Setup proxy
     setupProxy();
 
-#if defined(WITH_CRASHREPORTER)
-    _crashHandler.reset(new CrashReporter::Handler(QDir::tempPath(), true, CRASHREPORTER_EXECUTABLE));
-#endif
 
 #ifdef PLUGINDIR
     // Setup extra plugin search path

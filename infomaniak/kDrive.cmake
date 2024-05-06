@@ -60,10 +60,6 @@ set( WIN_SETUP_BITMAP_PATH "${CMAKE_SOURCE_DIR}/admin/win/nsi" )
 
 set( APPLICATION_LICENSE    "${KDRIVE_THEME_DIR}/license.txt" )
 
-option( WITH_CRASHREPORTER "Build crashreporter" OFF )  # Temporarily disabled
-set( CRASHREPORTER_SUBMIT_URL "https://www.infomaniak.com/report/drive/crash" CACHE STRING "URL for crash reporter" )
-set( CRASHREPORTER_ICON ":/infomaniak.png" )
-
 set( DEBUGREPORTER_SUBMIT_URL "https://www.infomaniak.com/report/drive/logs" CACHE STRING "URL for debug reporter" )
 
 if( APPLE )

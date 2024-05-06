@@ -219,7 +219,7 @@ sudo make install
 
 ## Sparkle
 
-Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.3.1) version 2.3.1 and copy the Sparkle directory in `~` and name it "Sparkle"  
+Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.2) version 2.6.2 and copy the Sparkle directory in `~` and name it "Sparkle"  
 Copy and paste **Sparkle.Frameworks** in `~/Library/Frameworks` (create the directory is needed)
 
 ## Packages
@@ -258,7 +258,6 @@ In the project build settings, paste the following lines in the Initial Configur
 -DKDRIVE_THEME_DIR=/Users/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/bin
 -DBUILD_TESTING=OFF
--DWITH_CRASHREPORTER=OFF
 %{CMAKE_OSX_ARCHITECTURES:DefaultFlag}
 ```
 

@@ -44,11 +44,6 @@
 #include <QThread>
 #include <QTimer>
 
-namespace CrashReporter {
-
-class Handler;
-
-}
 namespace KDC {
 
 class Theme;
@@ -131,11 +126,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
-
-
-#if defined(WITH_CRASHREPORTER)
-        QScopedPointer<CrashReporter::Handler> _crashHandler;
-#endif
 
         // options from command line:
         bool _debugMode;
