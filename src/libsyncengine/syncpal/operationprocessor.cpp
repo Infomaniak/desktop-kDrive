@@ -81,6 +81,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shar
         }
         if (found) {
             dbNodeId = tmpDbNodeId;
+            node->setIdb(dbNodeId);
         }
     }
 
