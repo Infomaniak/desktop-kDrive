@@ -174,7 +174,6 @@ In the project build settings, paste the following lines in the Initial Configur
 -DKDRIVE_THEME_DIR=/home/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_GCC_64bit-Debug/bin
 -DBUILD_TESTING=OFF
--DWITH_CRASHREPORTER=OFF
 ```
 
 ### Debugging
