@@ -281,8 +281,8 @@ void DrivePreferencesWidget::refreshStatus() {
 
     if (const auto driveInfoMapIt = _gui->driveInfoMap().find(_driveDbId); driveInfoMapIt != _gui->driveInfoMap().cend()) {
         const auto &driveInfo = driveInfoMapIt->second;
-        if (!_mainVBox->isEnabled() && !driveInfo.isBeingDeleted()) {
-            // Re-enable the drive preferences widget after a deletion attempt.
+        if (!driveInfo.isBeingDeleted()) {
+            // Re-enable the drive preferences widget after a failed deletion attempt.
             setCustomToolTipText("");
             GuiUtility::setEnabledRecursively(this, true);
         }
@@ -1043,7 +1043,6 @@ void DrivePreferencesWidget::onDriveBeingRemoved() {
     driveInfoIt->second.setIsBeingDeleted(true);
 
     // Lock all GUI drive-related actions during drive deletion.
-    GuiUtility::setEnabledRecursively<QLayout>(_mainVBox, false);
     for (auto *child : findChildren<QWidget *>()) {
         GuiUtility::setEnabledRecursively<QWidget>(child, false);
     }
