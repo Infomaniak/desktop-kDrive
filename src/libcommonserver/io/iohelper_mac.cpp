@@ -32,45 +32,21 @@ namespace KDC {
 
 bool isLocked(const SyncPath &path);
 
-bool IoHelper::fileExists(const std::error_code &ec) noexcept {
-    return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
-}
-
-bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
-    struct stat sb;
-
-    if (lstat(path.string().c_str(), &sb) < 0) {
-        return false;
-    }
-
-    nodeId = std::to_string(sb.st_ino);
-
-    return true;
-}
-
-bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
-    return true;
-}
-
-bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, IoError &ioError) noexcept {
-    static const std::string VolumesFolder = "/Volumes";
-
-    isHidden = false;
+bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
+    isDehydrated = false;
     ioError = IoErrorSuccess;
 
-    if (filepath == VolumesFolder) {
-        // `VolumesFolder` is always hidden on MacOSX whereas kDrive needs to consider it as visible.
-        isHidden = false;
-        return true;
-    }
+    static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
 
-    FileStat filestat;
-    if (!getFileStat(filepath.string().c_str(), &filestat, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(filepath, ioError).c_str());
+    std::string value;
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);
+    if (!result) {
         return false;
     }
 
-    isHidden = filestat.isHidden || filepath.filename().string()[0] == '.';
+    if (!value.empty()) {
+        isDehydrated = (value != "F");
+    }
 
     return true;
 }
@@ -146,65 +122,6 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
 
     // XAttr has been set
     ioError = IoErrorSuccess;
-    return true;
-}
-
-bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
-    isDehydrated = false;
-    ioError = IoErrorSuccess;
-
-    static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
-
-    std::string value;
-    const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);
-    if (!result) {
-        return false;
-    }
-
-    if (!value.empty()) {
-        isDehydrated = (value != "F");
-    }
-
-    return true;
-}
-
-bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept {
-    read = false;
-    write = false;
-    exec = false;
-    exists = false;
-
-    ItemType itemType;
-    const bool success = getItemType(path, itemType);
-    if (!success) {
-        LOGW_WARN(logger(),
-                  L"Failed to check if the item is a symlink: " << Utility::formatIoError(path, itemType.ioError).c_str());
-        return false;
-    }
-    exists = itemType.ioError != IoErrorNoSuchFileOrDirectory;
-    if (!exists) {
-        return true;
-    }
-    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
-
-    std::error_code ec;
-    std::filesystem::perms perms =
-        isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
-    if (ec.value() != 0) {
-        exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
-        if (!exists) {
-            // Path doesn't exist
-            return true;
-        }
-
-        LOGW_WARN(logger(), L"Failed to get permissions - " << Utility::formatStdError(path, ec).c_str());
-        return false;
-    }
-
-    exists = true;
-    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
-    write = isLocked(path) ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
-    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
     return true;
 }
 

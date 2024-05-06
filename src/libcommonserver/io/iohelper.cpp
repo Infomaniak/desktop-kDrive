@@ -167,8 +167,142 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
     itemType.targetType = isDir ? NodeTypeDirectory : NodeTypeFile;
 
     return true;
-};
+}
 
+#if defined(__APPLE__) || defined(__unix__)
+bool IoHelper::fileExists(const std::error_code &ec) noexcept {
+    return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
+}
+
+bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
+    struct stat sb;
+
+    if (lstat(path.string().c_str(), &sb) < 0) {
+        return false;
+    }
+
+    nodeId = std::to_string(sb.st_ino);
+    return true;
+}
+
+bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
+    return true;
+}
+
+bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept {
+    read = false;
+    write = false;
+    exec = false;
+    exists = false;
+
+    ItemType itemType;
+    const bool success = getItemType(path, itemType);
+    if (!success) {
+        LOGW_WARN(logger(),
+                  L"Failed to check if the item is a symlink: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        return false;
+    }
+    exists = itemType.ioError != IoErrorNoSuchFileOrDirectory;
+    if (!exists) {
+        return true;
+    }
+    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
+
+    std::error_code ec;
+    std::filesystem::perms perms =
+        isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
+    if (ec.value() != 0) {
+        exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
+        if (!exists) {
+            // Path doesn't exist
+            return true;
+        }
+
+        LOGW_WARN(logger(), L"Failed to get permissions - " << Utility::formatStdError(path, ec).c_str());
+        return false;
+    }
+
+    exists = true;
+    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
+    write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
+    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
+    return true;
+}
+
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
+    ioError = IoErrorSuccess;
+
+    struct stat sb;
+
+    if (lstat(path.string().c_str(), &sb) < 0) {
+        ioError = posixError2ioError(errno);
+        return _isExpectedError(ioError);
+    }
+
+#if defined(__APPLE__)
+    buf->isHidden = false;
+    if (sb.st_flags & UF_HIDDEN) {
+        buf->isHidden = true;
+    }
+#elif defined(__unix__)
+    if (!_checkIfIsHiddenFile(path, buf->isHidden, ioError)) {
+        return false;
+    }
+#endif
+
+    buf->inode = sb.st_ino;
+#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+    buf->creationTime = sb.st_birthtime;
+#else
+    buf->creationTime = sb.st_ctime;
+#endif
+    buf->modtime = sb.st_mtime;
+    buf->size = sb.st_size;
+    if (S_ISLNK(sb.st_mode)) {
+        // Symlink
+        struct stat sbTarget;
+        if (stat(path.string().c_str(), &sbTarget) < 0) {
+            // Cannot access target => undetermined
+            buf->nodeType = NodeTypeUnknown;
+        } else {
+            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+        }
+    } else {
+        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+    }
+
+    return true;
+}
+
+bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept {
+    ioError = IoErrorSuccess;
+
+    isHidden = path.filename().string()[0] == '.';
+    if (isHidden) {
+        return true;
+    }
+
+#ifdef __APPLE__
+    static const std::string VolumesFolder = "/Volumes";
+
+    if (path == VolumesFolder) {
+        // `VolumesFolder` is always hidden on MacOSX whereas kDrive needs to consider it as visible.
+        isHidden = false;
+        return true;
+    }
+
+    FileStat filestat;
+    if (!getFileStat(path, &filestat, ioError)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError).c_str());
+        return false;
+    }
+
+    return filestat.isHidden;
+#endif
+
+    return true;
+}
+#endif
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is a symbolic link.
@@ -410,54 +544,6 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
 }
-
-#if defined(__APPLE__) || defined(__unix__)
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
-    ioError = IoErrorSuccess;
-
-    struct stat sb;
-
-    if (lstat(path.string().c_str(), &sb) < 0) {
-        ioError = posixError2ioError(errno);
-        return _isExpectedError(ioError);
-    }
-
-#if defined(__APPLE__)
-    buf->isHidden = false;
-    if (sb.st_flags & UF_HIDDEN) {
-        buf->isHidden = true;
-    }
-#elif defined(__unix__)
-    if (!_checkIfIsHiddenFile(path, buf->isHidden, ioError)) {
-        return false;
-    }
-#endif
-
-    buf->inode = sb.st_ino;
-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-    buf->creationTime = sb.st_birthtime;
-#else
-    buf->creationTime = sb.st_ctime;
-#endif
-    buf->modtime = sb.st_mtime;
-    buf->size = sb.st_size;
-    if (S_ISLNK(sb.st_mode)) {
-        // Symlink
-        struct stat sbTarget;
-        if (stat(path.string().c_str(), &sbTarget) < 0) {
-            // Cannot access target => undetermined
-            buf->nodeType = NodeTypeUnknown;
-        } else {
-            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeTypeDirectory : NodeTypeFile;
-        }
-    } else {
-        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeTypeDirectory : NodeTypeFile;
-    }
-
-    return true;
-}
-#endif
-
 
 bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, time_t previousMtime, bool &changed,
                                   IoError &ioError) noexcept {
