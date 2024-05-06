@@ -84,7 +84,7 @@ QSize DriveSelectionWidget::sizeHint() const {
 void DriveSelectionWidget::clear() {
     _currentDriveDbId = 0;
     _downIconLabel->setVisible(false);
-    setDriveIcon();
+    setDriveIcon(defaultDriveColor);
     retranslateUi();
 }
 
@@ -188,17 +188,17 @@ void DriveSelectionWidget::setDriveIcon() {
     }
 
     ExitCode exitCode;
-    QColor defaultDriveColor;
-    exitCode = GuiRequests::getDriveDefaultColor(defaultDriveColor);
+    QColor driveColor;
+    exitCode = GuiRequests::getDriveDefaultColor(driveColor);
     if (exitCode != ExitCodeOk) {
         qCWarning(lcDriveSelectionWidget()) << "Error in Requests::getDriveDefaultColor";
         return;
     }
 
-    setDriveIcon(defaultDriveColor);
+    setDriveIcon(driveColor);
 }
 
-void DriveSelectionWidget::setDriveIcon(const QColor &color = defaultDriveColor) {
+void DriveSelectionWidget::setDriveIcon(const QColor &color) {
     if (_driveIconLabel) {
         _driveIconLabel->setPixmap(
             KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", color).pixmap(_driveIconSize));
