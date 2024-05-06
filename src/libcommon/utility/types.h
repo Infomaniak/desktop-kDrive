@@ -344,6 +344,7 @@ typedef enum {
     IoErrorFileNameTooLong,
     IoErrorInvalidArgument,
     IoErrorIsADirectory,
+    IoErrorIsAFile,
     IoErrorNoSuchFileOrDirectory,
     IoErrorResultOutOfRange,
     IoErrorInvalidDirectoryIterator,

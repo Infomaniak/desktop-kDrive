@@ -163,10 +163,16 @@ class COMMONSERVER_EXPORT Log {
 
         /*! Returns the estimated size of the log files in bytes.
          * Actual size may be different due to compression.
+         * \param size The estimated size of the log files in bytes.
          * \param ioError The error object to be filled in case of error.
-         * \return The estimated size of the log files in bytes, or -1 in case of error.
+         * \return True if the size was retrieved successfully, false otherwise.
          */
-        int getLogEstimatedSize(IoError &ioError);
+        bool getLogEstimatedSize(uint64_t& size, IoError &ioError);
+
+        /*! Returns the path of the log file.
+         * \return The path of the log file.
+         */
+        SyncPath getLogFilePath() const;
 
         /*! Generates a support archive containing the logs and the parms.db file.
          * \param includeOldLogs If true, the old logs will be included in the archive.
@@ -179,15 +185,26 @@ class COMMONSERVER_EXPORT Log {
                                             ExitCause &exitCause, std::function<void(int)> progressCallback = nullptr);
 
     private:
+        friend class TestLog;
         Log(const log4cplus::tstring &filePath);
         ExitCode copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, ExitCause &exitCause);
         ExitCode copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause);
-        ExitCode compressLogs(const SyncPath &directoryToCompress, ExitCause &exitCause,
+
+        /*! Compresses the log files in the given directory.
+        * This method will not create an archive, it will only compress the files in the directory.
+        * The compressed files will have the same name as the original files with the .gz extension.
+        * \param directoryToCompress The directory containing the log files to compress.
+        * \param exitCause The exit cause to be filled in case of error.
+        * \param progressCallback The callback to be called with the progress percentage.
+        * \return The exit code of the operation.
+        */
+        ExitCode compressLogFiles(const SyncPath &directoryToCompress, ExitCause &exitCause,
                               std::function<void(int)> progressCallback = nullptr);
         ExitCode generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);
 
         static std::shared_ptr<Log> _instance;
         log4cplus::Logger _logger;
+        SyncPath _filePath;
 };
 
 }  // namespace KDC

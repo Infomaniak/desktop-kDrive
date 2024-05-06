@@ -19,8 +19,12 @@
 #include "testincludes.h"
 #include "testlog.h"
 #include "libcommonserver/log/log.h"
-
+#include "test_utility/temporarydirectory.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommon/utility/utility.h"
 #include <log4cplus/loggingmacros.h>
+
+#include <iostream>  //TO DO remove
 
 using namespace CppUnit;
 
@@ -43,6 +47,144 @@ void TestLog::testLog() {
     LOG4CPLUS_DEBUG(_logger, L"家屋香袈睷晦");
 
     CPPUNIT_ASSERT(true);
+}
+
+void TestLog::testGetLogEstimatedSize(void) {
+    IoError err = IoErrorSuccess;
+    uint64_t size = 0;
+    LOG_DEBUG(_logger, "Ensure that the log file is created (test)");
+    const bool res = Log::instance()->getLogEstimatedSize(size, err);
+
+    CPPUNIT_ASSERT_EQUAL(true, res);
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+    CPPUNIT_ASSERT(size >= 0);
+    for (int i = 0; i < 100; i++) {
+        LOG_DEBUG(_logger, "Test debug log");
+    }
+    uint64_t newSize = 0;
+    Log::instance()->getLogEstimatedSize(newSize, err);
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+    CPPUNIT_ASSERT(newSize > size);
+}
+
+void TestLog::testCopyLogsTo(void) {
+    {
+        TemporaryDirectory tempDir;
+        LOG_DEBUG(_logger, "Ensure that the log file is created (test)");
+
+        IoError err = IoErrorSuccess;
+        uint64_t logDirsize = 0;
+        Log::instance()->getLogEstimatedSize(logDirsize, err);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT(logDirsize >= 0);
+
+        ExitCause cause = ExitCauseUnknown;
+        ExitCode exitCode = Log::instance()->copyLogsTo(tempDir.path, false, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+
+        uint64_t tempDirSize = 0;
+        IoHelper::getDirectorySize(tempDir.path, tempDirSize, err);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(logDirsize, tempDirSize);
+    }
+}
+
+void TestLog::testCopyParmsDbTo(void) {
+    {
+        TemporaryDirectory tempDir;
+        const SyncPath parmsDbName = ".parms.db";
+        const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
+
+        uint64_t parmsDbSize = 0;
+        IoError err = IoErrorSuccess;
+        IoHelper::getFileSize(parmsDbPath, parmsDbSize, err);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT(parmsDbSize >= 0);
+
+        ExitCause cause = ExitCauseUnknown;
+        ExitCode exitCode = Log::instance()->copyParmsDbTo(tempDir.path, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+
+        uint64_t tempDirSize = 0;
+        IoHelper::getDirectorySize(tempDir.path, tempDirSize, err);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(parmsDbSize, tempDirSize);
+    }
+}
+
+void TestLog::testCompressLogs(void) {
+    {
+        TemporaryDirectory tempDir;
+
+        std::ofstream logFile(tempDir.path / "test.log");
+        for (int i = 0; i < 10000; i++) {
+            logFile << "Test log line " << i << std::endl;
+        }
+        logFile.close();
+
+        const SyncPath logDir = tempDir.path / "log";
+        IoError err = IoErrorSuccess;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::createDirectory(logDir, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+
+        const SyncPath logFilePath = logDir / "test.log";
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path / "test.log", logFilePath, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+
+        uint64_t logDirSize = 0;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::getDirectorySize(logDir, logDirSize, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT(logDirSize >= 0);
+
+        ExitCause cause = ExitCauseUnknown;
+        ExitCode exitCode = Log::instance()->compressLogFiles(tempDir.path, cause);
+
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+
+        uint64_t tempDirSize = 0;
+        IoHelper::getDirectorySize(tempDir.path, tempDirSize, err);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT(tempDirSize < logDirSize);
+
+        bool exists = false;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(tempDir.path / "test.log.gz", exists, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(true, exists);
+
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(logDir / "test.log.gz", exists, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(true, exists);
+    }
+}
+
+void TestLog::testGenerateUserDescriptionFile(void) {
+    {
+        TemporaryDirectory tempDir;
+        const SyncPath userDescriptionFile = tempDir.path / "user_description.txt";
+        ExitCause cause = ExitCauseUnknown;
+        ExitCode code = Log::instance()->generateUserDescriptionFile(userDescriptionFile, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
+
+        bool exists = false;
+        IoError err = IoErrorSuccess;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(userDescriptionFile, exists, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(true, exists);
+
+        // Chack there is at least 5 lines in the file
+        std::ifstream file(userDescriptionFile);
+        std::string line;
+        int count = 0;
+        while (std::getline(file, line)) {
+            count++;
+        }
+        CPPUNIT_ASSERT(count >= 5);
+        file.close();
+    }
 }
 
 }  // namespace KDC

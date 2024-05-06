@@ -183,6 +183,16 @@ struct IoHelper {
         */
         static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
 
+        //! Get the size of the directory indicated by `path`, in bytes.
+        /*!
+          \param path is the file system path of a directory.
+          \param size holds the size in bytes of the directory indicated by path in case of success.
+          \param ioError holds the error associated to a failure of the underlying OS API call, if any.
+          \return true if no unexpected error occurred, false otherwise. If path indicates a File,
+            the function returns false and ioError is set with IoErrorIsADirectory.
+        */
+        static bool getDirectorySize(const SyncPath &path, uint64_t &size, IoError &ioError);
+
         //! Check if the file indicated by `path` is accessible.
         //! This is especially useful on Windows where the OS will send a CREATE event while the file is still being copied.
         /*!

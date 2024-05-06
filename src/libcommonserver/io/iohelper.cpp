@@ -323,6 +323,50 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
     return true;
 }
 
+bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &ioError) {
+    ItemType itemType;
+    const bool success = getItemType(path, itemType);
+    ioError = itemType.ioError;
+    if (!success || ioError != IoErrorSuccess) {
+        return _isExpectedError(ioError);
+    }
+
+    assert(ioError != IoErrorUnknown);
+
+    if (itemType.nodeType != NodeTypeDirectory) {
+        ioError = IoErrorIsAFile;
+        return false;
+    }
+
+    IoHelper::DirectoryIterator dir;
+    IoHelper::getDirectoryIterator(path, true, ioError, dir);
+    if (ioError != IoErrorSuccess) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        return _isExpectedError(ioError);
+    }
+
+    DirectoryEntry entry;
+    ioError = IoErrorSuccess;
+    bool endOfDirectory = false;
+
+    size = 0;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        uint64_t entrySize;
+        std::error_code ec;
+        entrySize = _fileSize(entry.path(), ec);
+        if (!ec) {
+            size += entrySize;
+        }
+    }
+
+    if (!endOfDirectory) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        return _isExpectedError(ioError);
+    }
+
+    return true;
+}
+
 bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     std::error_code ec;
     directoryPath = _tempDirectoryPath(ec);  // The std::filesystem implementation returns an empty path on error.
@@ -622,7 +666,7 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
 }
 
 #ifndef _WIN32
-//See iohelper_win.cpp for the Windows implementation
+// See iohelper_win.cpp for the Windows implementation
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     return _setRightsStd(path, read, write, exec, ioError);
 }
