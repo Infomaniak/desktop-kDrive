@@ -25,7 +25,7 @@
 #include "libcommonserver/db/db.h"
 #include <log4cplus/loggingmacros.h>
 
-#include <iostream>  //TO DO remove
+#include <iostream>
 
 using namespace CppUnit;
 
