@@ -132,6 +132,12 @@ void TestLog::testCopyLogsTo(void) {
 
 void TestLog::testCopyParmsDbTo(void) {
     {
+        if (!_parmsDbFileExist()) {
+            std::cout << std::endl << "No .parms.db file, this test will not be relevant (skipped)." << std::endl;
+            LOG_WARN(_logger, "No .parms.db file, this test will not be relevant (skipped).");
+            return;
+        }
+
         TemporaryDirectory tempDir;
         const SyncPath parmsDbName = ".parms.db";
         const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
@@ -139,6 +145,9 @@ void TestLog::testCopyParmsDbTo(void) {
         uint64_t parmsDbSize = 0;
         IoError err = IoErrorSuccess;
         IoHelper::getFileSize(parmsDbPath, parmsDbSize, err);
+
+        
+
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(parmsDbSize >= 0);
 
@@ -255,6 +264,12 @@ void TestLog::testGenerateUserDescriptionFile(void) {
 }
 
 void TestLog::testGenerateLogsSupportArchive(void) {
+    if (!_parmsDbFileExist()) {
+        std::cout << std::endl << "No .parms.db file, this test will not be relevant (skipped)." << std::endl;
+        LOG_WARN(_logger, "No .parms.db file, this test will not be relevant (skipped).");
+        return;
+    }
+
     {
         TemporaryDirectory tempDir;
         const SyncPath archiveFile = tempDir.path / "logs_support.tar.gz";
@@ -270,6 +285,20 @@ void TestLog::testGenerateLogsSupportArchive(void) {
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT_EQUAL(true, exists);
     }
+}
+
+bool TestLog::_parmsDbFileExist() {
+    const SyncPath parmsDbName = ".parms.db";
+    const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
+
+    IoError err = IoErrorSuccess;
+    bool exists = false;
+
+    if (!IoHelper::checkIfPathExists(parmsDbPath, exists, err)) {
+        return false;
+    }
+
+    return exists;
 }
 
 }  // namespace KDC

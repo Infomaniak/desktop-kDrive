@@ -47,6 +47,9 @@ class TestLog : public CppUnit::TestFixture {
         void testCompressLogs(void);
         void testGenerateUserDescriptionFile(void);
         void testGenerateLogsSupportArchive(void);
+
+    private:
+        bool _parmsDbFileExist();
 };
 
 }  // namespace KDC
