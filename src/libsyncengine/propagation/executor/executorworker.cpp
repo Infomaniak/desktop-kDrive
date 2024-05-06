@@ -2138,6 +2138,9 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
         updateTree->insertNode(node);
 
         newCorrespondingParentNode->insertChildren(node);
+
+        // Affected node does not have a valid DB ID yet, update it
+        syncOp->affectedNode()->setIdb(newDbNodeId);
     }
 
     return true;
