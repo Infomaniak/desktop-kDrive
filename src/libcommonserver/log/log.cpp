@@ -118,9 +118,9 @@ Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
 bool Log::getLogEstimatedSize(uint64_t &size, IoError &ioError) {
     const SyncPath logPath = _filePath.parent_path();
     ioError = IoErrorSuccess;
-
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
-        bool result = IoHelper::getDirectorySize(logPath, size, ioError);
+        bool tooDeep = false;
+        bool result = IoHelper::getDirectorySize(logPath, size, 0, tooDeep, ioError);
         if (result && ioError == IoErrorSuccess) {
             return true;
         }

@@ -323,7 +323,8 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
     return true;
 }
 
-bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &ioError) {
+bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, unsigned int maxDepth, bool &skipedTooDeep,
+                                IoError &ioError) {
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
@@ -350,6 +351,19 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     bool endOfDirectory = false;
     size = 0;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.is_directory()) {
+            if (maxDepth == 0) {
+                LOG_WARN(Log::instance()->getLogger(), "Max depth reached in getDirectorySize, skipping deeper directories: "
+                                                           << Utility::formatSyncPath(path).c_str());
+                skipedTooDeep = true;
+                continue;
+            }
+            uint64_t entrySize;
+            if (!getDirectorySize(entry.path(), entrySize, maxDepth - 1, skipedTooDeep, ioError)) {
+                return false;
+            }
+            size += entrySize;
+        }
         uint64_t entrySize;
         std::error_code ec;
         entrySize = _fileSize(entry.path(), ec);

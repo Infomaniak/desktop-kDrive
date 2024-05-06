@@ -87,7 +87,8 @@ void TestLog::testCopyLogsTo(void) {
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
         uint64_t tempDirSize = 0;
-        IoHelper::getDirectorySize(tempDir.path, tempDirSize, err);
+        bool tooDeep = false;
+        IoHelper::getDirectorySize(tempDir.path, tempDirSize, 0, tooDeep, err);
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT_EQUAL(logDirsize, tempDirSize);
     }
@@ -157,7 +158,8 @@ void TestLog::testCopyParmsDbTo(void) {
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
         uint64_t tempDirSize = 0;
-        IoHelper::getDirectorySize(tempDir.path, tempDirSize, err);
+        bool tooDeep = false;
+        IoHelper::getDirectorySize(tempDir.path, tempDirSize, 0, tooDeep, err);
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT_EQUAL(parmsDbSize, tempDirSize);
     }
@@ -183,7 +185,9 @@ void TestLog::testCompressLogs(void) {
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
 
         uint64_t logDirSize = 0;
-        CPPUNIT_ASSERT_EQUAL(true, IoHelper::getDirectorySize(logDir, logDirSize, err));
+        bool tooDeep = false;
+
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::getDirectorySize(logDir, logDirSize, 0, tooDeep, err));
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(logDirSize >= 0);
 
@@ -194,7 +198,7 @@ void TestLog::testCompressLogs(void) {
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
         uint64_t tempDirSize = 0;
-        IoHelper::getDirectorySize(tempDir.path, tempDirSize, err);
+        IoHelper::getDirectorySize(tempDir.path, tempDirSize, 0, tooDeep, err);
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(tempDirSize < logDirSize);
 
