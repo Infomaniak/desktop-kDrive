@@ -184,6 +184,7 @@ struct IoHelper {
         static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
 
         //! Get the size of the directory indicated by `path`, in bytes.
+        //! This funciton is recursive.
         /*!
           \param path is the file system path of a directory.
           \param size holds the size in bytes of the directory indicated by path in case of success.
