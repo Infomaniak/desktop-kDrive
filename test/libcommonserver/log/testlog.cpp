@@ -22,6 +22,7 @@
 #include "test_utility/temporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/db/db.h"
 #include <log4cplus/loggingmacros.h>
 
 #include <iostream>  //TO DO remove
@@ -32,6 +33,8 @@ namespace KDC {
 
 void TestLog::setUp() {
     _logger = Log::instance()->getLogger();
+    bool alreadyExist = false;
+    Db::makeDbName(alreadyExist);
 }
 
 void TestLog::tearDown() {}
