@@ -20,21 +20,48 @@
 
 #include "libcommon/utility/types.h"
 #include "libcommonserver/log/log.h"
+#ifdef _WIN32
+#include <AccCtrl.h>
+#endif
 
 namespace KDC {
 
 struct FileStat;
 
+
 struct IoHelper {
+    public:
+        class DirectoryIterator {
+            public:
+                DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError);
+
+                DirectoryIterator() = default;
+                //! Get the next directory entry.
+                /*!
+                  \param nextEntry is set with the next directory entry.
+                  \param ioError holds the error returned when an underlying OS API call fails.
+                  \return true if no error occurred, false otherwise.
+                */
+                bool next(DirectoryEntry &nextEntry, bool &endOfDirectory, IoError &ioError);
+                void disableRecursionPending();
+
+            private:
+                bool _recursive = false;
+                bool _firstElement = true;
+                bool _invalid = false;
+                SyncPath _directoryPath;
+                std::filesystem::recursive_directory_iterator _dirIterator;
+        };
+
     public:
         IoHelper(){};
 
         inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
 
 #ifdef _WIN32
-        static int _getRightsMethod;
+        static int _getAndSetRightsMethod;
 #endif
-
+        
         static IoError stdError2ioError(int error) noexcept;
         static IoError stdError2ioError(const std::error_code &ec) noexcept;
         static IoError posixError2ioError(int error) noexcept;
@@ -206,6 +233,44 @@ struct IoHelper {
          */
         static bool createDirectory(const SyncPath &path, IoError &ioError) noexcept;
 
+        //! Remove a directory located under the specified path.
+        /*!
+         \param path is the file system path of the directory to remove.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool deleteDirectory(const SyncPath &path, IoError &ioError) noexcept;
+
+        //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the directory.
+        /*!
+         \param path is the file system path of the directory to iterate over.
+         \param recursive is a boolean indicating whether the iterator should be recursive or not.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \param iterator is the directory iterator that is set with the directory iterator for the specified path.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
+                                         DirectoryIterator &iterator) noexcept;
+
+        //! Create a directory entry for the specified path.
+        /*!
+         * \param path is the file system path of the directory entry to create.
+         * \param ioError holds the error returned when an underlying OS API call fails.
+         * \entry is the directory entry that is set with the directory entry for the specified path.
+         * \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept;
+
+        //! Copy the item indicated by `sourcePath` to the location indicated by `destinationPath`.
+        /*!
+          \param sourcePath is the file system path of the item to copy.
+          \param destinationPath is the file system path of the location to copy the item to.
+          \param ioError holds the error associated to a failure of the underlying OS API call, if any.
+          \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+
+
 #ifdef __APPLE__
         // From `man xattr`:
         // Extended attributes are arbitrary metadata stored with a file, but separate from the
@@ -255,10 +320,31 @@ struct IoHelper {
          */
         static bool checkIfFileIsDehydrated(const SyncPath &path, bool &isDehydrated, IoError &ioError) noexcept;
 
-        // TODO: docstring and unit tests
-        static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept;
+        //! Get the rights of the item indicated by `path`.
+        /*!
+         \param path is the file system path of the item.
+         \param read is a boolean indicating whether the item is readable.
+         \param write is a boolean indicating whether the item is writable.
+         \param exec is a boolean indicating whether the item is executable.
+         \param exists is a boolean indicating whether the item exists.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept;
+
+        //! Set the rights of the item indicated by `path`.
+        /*!
+         \param path is the file system path of the item.
+         \param read is a boolean indicating whether the item should be readable.
+         \param write is a boolean indicating whether the item should be writable.
+         \param exec is a boolean indicating whether the item should be executable.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+        */
+        static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
     protected:
+        friend class DirectoryIterator;
+
         // These functions default to the std::filesystem functions.
         // They can be modified in tests.
         static std::function<bool(const SyncPath &path, std::error_code &ec)> _isDirectory;
@@ -283,6 +369,8 @@ struct IoHelper {
 #endif
         static bool _setTargetType(ItemType &itemType) noexcept;
         static bool _checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
+
+        static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 };
 
 }  // namespace KDC
