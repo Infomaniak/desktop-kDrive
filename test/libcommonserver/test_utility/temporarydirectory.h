@@ -24,7 +24,7 @@ namespace KDC {
 
 struct TemporaryDirectory {
         std::filesystem::path path;
-        TemporaryDirectory(std::string testType = "undef");
+        TemporaryDirectory(const std::string& testType = "undef");
         ~TemporaryDirectory();
 };
 

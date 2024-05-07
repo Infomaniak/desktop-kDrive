@@ -9,7 +9,7 @@ set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 set(testcommon_SRCS
     ../test.cpp
     test.cpp
-    ../test_utility/temporarydirectory.h ../test_utility/temporarydirectory.cpp
+    test_utility/temporarydirectory.h test_utility/temporarydirectory.cpp
     # Utility
     utility/testutility.h utility/testutility.cpp
     # Log

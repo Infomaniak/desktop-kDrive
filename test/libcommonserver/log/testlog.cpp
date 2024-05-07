@@ -19,7 +19,7 @@
 #include "testincludes.h"
 #include "testlog.h"
 #include "libcommonserver/log/log.h"
-#include "test_utility/temporarydirectory.h"
+#include "libcommonserver/test_utility/temporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/db/db.h"
