@@ -38,10 +38,6 @@ if (NOT BUILD_LIBRARIES_ONLY)
     endif()
     add_subdirectory(server)
 
-    if (WITH_CRASHREPORTER)
-        add_subdirectory(3rdparty/libcrashreporter-qt)
-        add_subdirectory(crashreporter)
-    endif()
 endif(NOT BUILD_LIBRARIES_ONLY)
 
 find_program(KRAZY2_EXECUTABLE krazy2)

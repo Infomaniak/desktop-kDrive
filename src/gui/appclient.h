@@ -31,12 +31,6 @@
 #include <QTimer>
 #include <QLoggingCategory>
 
-namespace CrashReporter {
-
-class Handler;
-
-}
-
 namespace KDC {
 
 Q_DECLARE_LOGGING_CATEGORY(lcAppClient)
@@ -129,11 +123,6 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool _logFlush = false;
         bool _logDebug = false;
         bool _debugMode = false;
-
-#if defined(WITH_CRASHREPORTER)
-        QScopedPointer<CrashReporter::Handler> _crashHandler;
-#endif
-
         QScopedPointer<UpdaterClient> _updaterClient;
 
     private slots:

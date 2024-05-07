@@ -294,12 +294,10 @@ Then copy the following list of `CMake` variables in "Initial CMake Parameters" 
 -DCMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=/debug /INCREMENTAL
 -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 -DCMAKE_INSTALL_PREFIX:PATH=%{ActiveProject:RunConfig:Executable:Path}/..
--DCRASHREPORTER_SUBMIT_URL:STRING=https://www.infomaniak.com/report/drive/crash
 -DKDRIVE_THEME_DIR:STRING=F:/projects/desktop-kDrive/infomaniak
 -DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins
 -DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include
 -DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib
--DWITH_CRASHREPORTER:BOOL=OFF
 -DBUILD_TESTING=OFF
 ```
 
@@ -337,7 +335,7 @@ Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projec
     ```bash
     -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client 
     -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak 
-    -DWITH_CRASHREPORTER=OFF -DBUILD_UNIT_TESTS:BOOL=ON 
+    -DBUILD_UNIT_TESTS:BOOL=ON 
     -DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.2.3/msvc2019_64 
     -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY 
     -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include" 
