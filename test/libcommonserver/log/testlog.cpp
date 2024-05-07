@@ -58,7 +58,7 @@ void TestLog::testGetLogEstimatedSize(void) {
     LOG_DEBUG(_logger, "Ensure that the log file is created (test)");
     const bool res = Log::instance()->getLogEstimatedSize(size, err);
 
-    CPPUNIT_ASSERT_EQUAL(true, res);
+    CPPUNIT_ASSERT(res);
     CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
     CPPUNIT_ASSERT(size >= 0);
     for (int i = 0; i < 100; i++) {
@@ -123,7 +123,7 @@ void TestLog::testCopyLogsTo(void) {
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
-        // Check we do not have test.log.gz in the temp directory
+        // Check that `test.log.gz` does not exist anymore.
         bool exists = false;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(tempDir.path / "test.log.gz", exists, err));
         CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, err);

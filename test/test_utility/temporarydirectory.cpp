@@ -20,7 +20,7 @@
 
 namespace KDC {
 
-TemporaryDirectory::TemporaryDirectory(std::string testType) {
+TemporaryDirectory::TemporaryDirectory(const std::string &testType) {
     const std::time_t now = std::time(nullptr);
     const std::tm tm = *std::localtime(&now);
     std::ostringstream woss;

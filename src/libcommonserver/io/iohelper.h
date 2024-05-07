@@ -183,7 +183,7 @@ struct IoHelper {
         */
         static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
 
-        //! Get the size of the directory indicated by `path`, in bytes.
+        //! Get the size of the directory indicated by `path` expressed in bytes.
         //! This funciton is recursiv.
         /*!
           \param path is the file system path of a directory.

@@ -121,7 +121,7 @@ bool Log::getLogEstimatedSize(uint64_t &size, IoError &ioError) {
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
         bool tooDeep = false;
         bool result = IoHelper::getDirectorySize(logPath, size, 0, tooDeep, ioError);
-        if (result && ioError == IoErrorSuccess) {
+        if (ioError == IoErrorSuccess) {
             return true;
         }
     }
@@ -139,7 +139,7 @@ ExitCode Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &ou
     const SyncPath tempDirectory =
         logPath / "send_log_directory_temp" / ("tempLogArchive_" + CommonUtility::generateRandomStringAlphaNum(10));
     exitCause = ExitCauseUnknown;
-    IoError ioError;
+    IoError ioError = IoErrorSuccess;
 
     // Create temp folder
     if (!IoHelper::createDirectory(tempDirectory.parent_path(), ioError) && ioError != IoErrorDirectoryExists) {
@@ -156,7 +156,7 @@ ExitCode Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &ou
     if (!IoHelper::createDirectory(tempDirectory, ioError)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::createDirectory: " << Utility::formatIoError(tempDirectory, ioError).c_str());
-        IoError ignoreError;
+        IoError ignoreError = IoErrorSuccess;
         IoHelper::deleteDirectory(tempDirectory.parent_path(), ignoreError);
         if (ioError == IoErrorDiskFull) {
             exitCause = ExitCauseNotEnoughDiskSpace;
@@ -221,7 +221,7 @@ ExitCode Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &ou
     bool endOfDirectory = false;
     DirectoryEntry entry;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        std::string entryPath = entry.path().string();
+        const std::string entryPath = entry.path().string();
         zip_source_t *source = zip_source_file(archive, entryPath.c_str(), 0, ZIP_LENGTH_TO_END);
         if (source == nullptr) {
             LOG_WARN(Log::instance()->getLogger(), "Error in zip_source_file: " << zip_strerror(archive));
@@ -373,7 +373,7 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
         return ExitCodeSystemError;
     }
 
-    bool progressMonitoring = progressCallback != nullptr;
+   const  bool progressMonitoring = progressCallback != nullptr;
     float nbFiles = 0;
     DirectoryEntry entry;
 
@@ -394,7 +394,7 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
     float progress = 0.0;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        std::string entryPath = entry.path().string();
+       const std::string entryPath = entry.path().string();
         if (entryPath.find(".gz") != std::string::npos) {
             continue;
         }
@@ -428,7 +428,7 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
         }
         if (progressMonitoring) {
             progress++;
-            int64_t progressPercent = 100.0 * progress / nbFiles;
+            const int64_t progressPercent = 100.0 * progress / nbFiles;
             progressCallback(progressPercent);
         }
     }
