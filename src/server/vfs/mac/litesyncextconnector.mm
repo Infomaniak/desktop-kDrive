@@ -1053,7 +1053,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     // Set file dates
     bool exists = false;
     if (!Utility::setFileDates(QStr2Path(path), std::make_optional<KDC::SyncTime>(fileStat->st_birthtimespec.tv_sec),
-                               std::make_optional<KDC::SyncTime>(fileStat->st_mtimespec.tv_sec), exists)) {
+                               std::make_optional<KDC::SyncTime>(fileStat->st_mtimespec.tv_sec), false, exists)) {
         LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - path=" << QStr2WStr(path).c_str());
         return false;
     }
@@ -1163,7 +1163,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
 
             // Set file dates
             bool exists;
-            if (!Utility::setFileDates(QStr2Path(filePath), std::make_optional<KDC::SyncTime>(creationDate), std::nullopt,
+            if (!Utility::setFileDates(QStr2Path(filePath), std::make_optional<KDC::SyncTime>(creationDate), std::nullopt, false,
                                        exists)) {
                 LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - path=" << QStr2WStr(filePath).c_str());
                 return false;
@@ -1297,7 +1297,7 @@ bool LiteSyncExtConnector::vfsUpdateMetadata(const QString &absoluteFilePath, co
     // Set file dates
     bool exists;
     if (!Utility::setFileDates(QStr2Path(absoluteFilePath), fileStat->st_birthtimespec.tv_sec, fileStat->st_mtimespec.tv_sec,
-                               exists)) {
+                               false, exists)) {
         LOGW_WARN(_logger, L"Call to Utility::setFileDates failed - path=" << QStr2WStr(absoluteFilePath).c_str());
         return false;
     }

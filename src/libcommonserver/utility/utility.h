@@ -56,7 +56,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool enoughSpace(const SyncPath &path);
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
         static bool setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool &exists);
+                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
         static bool isCreationDateValid(uint64_t creationDate);
 
         static std::wstring s2ws(const std::string &str);

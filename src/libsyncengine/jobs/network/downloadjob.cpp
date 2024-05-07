@@ -195,13 +195,6 @@ bool DownloadJob::handleResponse(std::istream &is) {
         // Read link data
         getStringFromStream(is, linkData);
         isLink = true;
-
-#ifdef __APPLE__
-        if (mimeType == mimeTypeSymlink) {
-            // Dates cannot be set on macOS symlinks
-            _ignoreDateTime = true;
-        }
-#endif
     }
 
     // Process download
@@ -395,7 +388,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
     if (!_ignoreDateTime) {
         bool exists = false;
         if (!Utility::setFileDates(_localpath, std::make_optional<KDC::SyncTime>(_creationTime),
-                                   std::make_optional<KDC::SyncTime>(_modtimeIn), exists)) {
+                                   std::make_optional<KDC::SyncTime>(_modtimeIn), isLink, exists)) {
             LOGW_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(_localpath).c_str());
             // Do nothing (remote file will be updated during the next sync)
 #ifdef NDEBUG

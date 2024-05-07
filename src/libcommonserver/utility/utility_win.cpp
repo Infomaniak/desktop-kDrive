@@ -295,7 +295,9 @@ static void UnixTimevalToFileTime(struct timeval t, LPFILETIME pft) {
 }
 
 static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool &exists) {
+                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
+    (void)symlink;
+
     exists = true;
 
     FILETIME creationTime;
