@@ -209,7 +209,6 @@ ExitCode Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &ou
     }
 
     IoHelper::DirectoryIterator dir;
-    DirectoryEntry entry;
     if (!IoHelper::getDirectoryIterator(tempDirectory, false, ioError, dir)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in DirectoryIterator: " << Utility::formatIoError(tempDirectory, ioError).c_str());
@@ -220,6 +219,7 @@ ExitCode Log::generateLogsSupportArchive(bool includeOldLogs, const SyncPath &ou
     }
 
     bool endOfDirectory = false;
+    DirectoryEntry entry;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         std::string entryPath = entry.path().string();
         zip_source_t *source = zip_source_file(archive, entryPath.c_str(), 0, ZIP_LENGTH_TO_END);
