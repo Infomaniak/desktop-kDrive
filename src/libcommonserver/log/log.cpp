@@ -292,8 +292,6 @@ ExitCode Log::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause) {
                  "Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
         if (ioError == IoErrorNoSuchFileOrDirectory) {
             exitCause = ExitCauseFileAccessError;
-        } else {
-            exitCause = ExitCauseUnknown;
         }
         return ExitCodeSystemError;
     }
@@ -304,12 +302,9 @@ ExitCode Log::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause) {
 
         if (ioError == IoErrorDiskFull) {
             exitCause = ExitCauseNotEnoughDiskSpace;
-        } else {
-            exitCause = ExitCauseUnknown;
         }
         return ExitCodeSystemError;
     }
-    exitCause = ExitCauseUnknown;
     return ExitCodeOk;
 }
 
@@ -317,11 +312,11 @@ ExitCode Log::copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, ExitCa
     SyncPath logPath = _filePath.parent_path();
     IoError ioError = IoErrorUnknown;
     IoHelper::DirectoryIterator dir;
+    exitCause = ExitCauseUnknown;
 
     if (!IoHelper::getDirectoryIterator(logPath, false, ioError, dir)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in DirectoryIterator: " << Utility::formatIoError(logPath, ioError).c_str());
-        exitCause = ExitCauseUnknown;
         return ExitCodeSystemError;
     }
 
@@ -343,22 +338,17 @@ ExitCode Log::copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, ExitCa
                      "Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
             if (ioError == IoErrorDiskFull) {
                 exitCause = ExitCauseNotEnoughDiskSpace;
-                return ExitCodeSystemError;
-            } else {
-                exitCause = ExitCauseUnknown;
-                return ExitCodeSystemError;
             }
+            return ExitCodeSystemError;
         }
     }
 
     if (!endOfDirectory) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in DirectoryIterator: " << Utility::formatIoError(logPath, ioError).c_str());
-        exitCause = ExitCauseUnknown;
         return ExitCodeSystemError;
     }
 
-    exitCause = ExitCauseUnknown;
     return ExitCodeOk;
 }
 
@@ -366,14 +356,15 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
                                std::function<void(int)> progressCallback) {
     IoHelper::DirectoryIterator dir;
     IoError ioError = IoErrorUnknown;
+    exitCause = ExitCauseUnknown;
+
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
-        exitCause = ExitCauseUnknown;
         return ExitCodeSystemError;
     }
 
-   const  bool progressMonitoring = progressCallback != nullptr;
+    const bool progressMonitoring = progressCallback != nullptr;
     float nbFiles = 0;
     DirectoryEntry entry;
 
@@ -386,7 +377,6 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
         if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
             LOG_WARN(Log::instance()->getLogger(),
                      "Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
-            exitCause = ExitCauseUnknown;
             return ExitCodeSystemError;
         }
     }
@@ -394,7 +384,7 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
     float progress = 0.0;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-       const std::string entryPath = entry.path().string();
+        const std::string entryPath = entry.path().string();
         if (entryPath.find(".gz") != std::string::npos) {
             continue;
         }
@@ -403,7 +393,6 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
         const bool success = IoHelper::getItemType(entryPath, itemType);
         ioError = itemType.ioError;
         if (!success) {
-            exitCause = ExitCauseUnknown;
             return ExitCodeSystemError;
         }
 
@@ -416,14 +405,12 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
             LOG_WARN(Log::instance()->getLogger(),
                      "Error in compressFile for " << entryPath.c_str() << " to " << destPath.toStdString().c_str());
 
-            exitCause = ExitCauseUnknown;
             return ExitCodeSystemError;
         }
 
         if (!IoHelper::deleteDirectory(entry.path(), ioError)) {  // Delete the original file
             LOG_WARN(Log::instance()->getLogger(),
                      "Error in IoHelper::deleteDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
-            exitCause = ExitCauseUnknown;
             return ExitCodeSystemError;
         }
         if (progressMonitoring) {
@@ -436,7 +423,6 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
     if (!endOfDirectory) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
-        exitCause = ExitCauseUnknown;
         return ExitCodeSystemError;
     }
 
@@ -444,14 +430,11 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
 }
 
 ExitCode Log::generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause) {
-    std::string osName;
-    std::string osArch;
-    std::string appVersion;
-    std::string userId;
+    exitCause = ExitCauseUnknown;
 
-    osName = CommonUtility::platformName().toStdString();
-    osArch = CommonUtility::platformArch().toStdString();
-    appVersion = CommonUtility::userAgentString();
+    std::string osName = CommonUtility::platformName().toStdString();
+    std::string osArch = CommonUtility::platformArch().toStdString();
+    std::string appVersion = CommonUtility::userAgentString();
 
     IoError ioError = IoErrorUnknown;
     std::ofstream file(outputPath.string());
