@@ -328,7 +328,7 @@ ExitCode Log::copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, ExitCa
             continue;
         }
 
-        if (!includeOldLogs && entry.path().filename().extension() == L".gz") {
+        if (!includeOldLogs && entry.path().filename().extension() == Str(".gz")) {
             LOG_WARN(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string().c_str());
             continue;
         }
