@@ -42,7 +42,7 @@ struct LargeFolderConfirmation : public QObject {  // Derived from QObject becau
     public:
         explicit LargeFolderConfirmation(QBoxLayout *folderConfirmationBox);
         void retranslateUi();
-        // If this switch is on, a confirmation is asked for synchromizing large folders.
+        // If this switch is on, a confirmation is asked for synchronizing large folders.
         const CustomSwitch *customSwitch() const { return _switch; };
         // A user-defined size expressed in MBs above which the confirmation is actually required.
         const QLineEdit *amountLineEdit() const { return _amountLineEdit; };
@@ -55,8 +55,8 @@ struct LargeFolderConfirmation : public QObject {  // Derived from QObject becau
         CustomSwitch *_switch{nullptr};
 };
 
-// A struct holding together the up-to-date status of the application, an update button, the application version
-// with an hyperlink to the release notes.
+// A struct holding together the up-to-date status of the application, an update button
+// and the application version with an hyperlink to the release notes.
 struct VersionWidget {
         explicit VersionWidget(QBoxLayout *parentBox, const QString &versionNumberLinkText);
         void updateStatus(QString status, bool updateAvailable, const QString &releaseNoteLinkText);
