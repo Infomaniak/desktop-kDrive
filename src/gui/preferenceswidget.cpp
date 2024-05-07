@@ -184,37 +184,21 @@ void VersionWidget::setUpdateButtonText(const QString &text) {
     _updateButton->setText(text);
 }
 
-CustomComboBox *_languageSelectorComboBox{nullptr};
-QLabel *_generalLabel{nullptr};
-QLabel *_darkThemeLabel{nullptr};
-QLabel *_monochromeLabel{nullptr};
-QLabel *_launchAtStartupLabel{nullptr};
-QLabel *_moveToTrashLabel{nullptr};
-QLabel *_languageSelectorLabel{nullptr};
-QLabel *_shortcutsLabel{nullptr};
-QLabel *_advancedLabel{nullptr};
-QLabel *_debuggingLabel{nullptr};
-QLabel *_debuggingFolderLabel{nullptr};
-QLabel *_filesToExcludeLabel{nullptr};
-QLabel *_proxyServerLabel{nullptr};
-QLabel *_liteSyncLabel{nullptr};
-ActionWidget *_displayErrorsWidget{nullptr};
-
 PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
     : LargeWidgetWithCustomToolTip(parent),
       _gui(gui),
+      _languageSelectorComboBox{new CustomComboBox()},
       _generalLabel{new QLabel()},
       _monochromeLabel{new QLabel()},
       _launchAtStartupLabel{new QLabel()},
       _moveToTrashLabel{new QLabel()},
       _languageSelectorLabel{new QLabel()},
-      _languageSelectorComboBox{new CustomComboBox()},
       _advancedLabel{new QLabel()},
       _debuggingLabel{new QLabel()},
       _debuggingFolderLabel{new QLabel()},
       _filesToExcludeLabel{new QLabel()},
       _proxyServerLabel{new QLabel()},
-      _displayErrorsWidget{new ActionWidget(":/client/resources/icons/actions/warning.svg", QString())} {
+      _displayErrorsWidget{new ActionWidget(":/client/resources/icons/actions/warning.svg", "")} {
     setContentsMargins(0, 0, 0, 0);
 
     /*
