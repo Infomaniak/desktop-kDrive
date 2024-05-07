@@ -86,7 +86,6 @@ cmake \
 	-DOPENSSL_SSL_LIBRARY="/usr/local/lib/libssl.dylib" \
 	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
 	-DQTDIR="$QTDIR" \
-	-DWITH_CRASHREPORTER=0 \
 	-DBUILD_UNIT_TESTS=1 \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
