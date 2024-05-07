@@ -120,7 +120,7 @@ bool Log::getLogEstimatedSize(uint64_t &size, IoError &ioError) {
     ioError = IoErrorSuccess;
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
         bool tooDeep = false;
-        bool result = IoHelper::getDirectorySize(logPath, size, 0, tooDeep, ioError);
+        bool result = IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoErrorSuccess) {
             return true;
         }
