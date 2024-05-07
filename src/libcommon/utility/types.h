@@ -348,6 +348,7 @@ typedef enum {
     IoErrorNoSuchFileOrDirectory,
     IoErrorResultOutOfRange,
     IoErrorInvalidDirectoryIterator,
+    IoErrorMaxDepthExceeded,
     IoErrorUnknown
 } IoError;
 
