@@ -34,19 +34,46 @@ class ActionWidget;
 class ClientGui;
 class CustomSwitch;
 
-struct FolderConfirmation : public QObject {
+// A data class holding the switch widget and the line edit field
+// which let users confirm the synchronization of a folder whose size
+// is above a user-defined threshold (amount).
+struct LargeFolderConfirmation : public QObject {  // Derived from QObject because retranslateUi calls tr()
         Q_OBJECT
     public:
-        explicit FolderConfirmation(QBoxLayout *folderConfirmationBox);
+        explicit LargeFolderConfirmation(QBoxLayout *folderConfirmationBox);
         void retranslateUi();
-        CustomSwitch *customSwitch() { return _switch; };
-        QLineEdit *amountLineEdit() { return _amountLineEdit; };
+        // If this switch is on, a confirmation is asked for synchromizing large folders.
+        const CustomSwitch *customSwitch() const { return _switch; };
+        // A user-defined size expressed in MBs above which the confirmation is actually required.
+        const QLineEdit *amountLineEdit() const { return _amountLineEdit; };
+        void setAmountLineEditEnabled(bool enabled);
 
     private:
         QLabel *_label{nullptr};
         QLabel *_amountLabel{nullptr};
         QLineEdit *_amountLineEdit{nullptr};
         CustomSwitch *_switch{nullptr};
+};
+
+// A struct holding together the up-to-date status of the application, an update button, the application version
+// with an hyperlink to the release notes.
+struct VersionWidget {
+        explicit VersionWidget(QBoxLayout *parentBox, const QString &versionNumberLinkText);
+        void updateStatus(QString status, bool updateAvailable, const QString &releaseNoteLinkText);
+        void setVersionLabelText(const QString &text);
+
+        const QPushButton *updateButton() const { return _updateButton; };
+        void setUpdateButtonText(const QString &text);
+        const QLabel *updateStatusLabel() const { return _updateStatusLabel; };
+        const QLabel *showReleaseNoteLabel() const { return _showReleaseNoteLabel; };
+        const QLabel *versionNumberLabel() const { return _versionNumberLabel; };
+
+    private:
+        QLabel *_versionLabel{nullptr};
+        QLabel *_updateStatusLabel{nullptr};
+        QLabel *_showReleaseNoteLabel{nullptr};
+        QLabel *_versionNumberLabel{nullptr};
+        QPushButton *_updateButton{nullptr};
 };
 
 class PreferencesWidget : public LargeWidgetWithCustomToolTip {
@@ -66,8 +93,8 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
     private:
         std::shared_ptr<ClientGui> _gui;
 
-        std::unique_ptr<FolderConfirmation> _folderConfirmation;
-        QPushButton *_updateButton{nullptr};
+        std::unique_ptr<LargeFolderConfirmation> _largeFolderConfirmation;
+        std::unique_ptr<VersionWidget> _versionWidget;
         CustomComboBox *_languageSelectorComboBox{nullptr};
         QLabel *_generalLabel{nullptr};
         QLabel *_darkThemeLabel{nullptr};
@@ -82,10 +109,6 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         QLabel *_filesToExcludeLabel{nullptr};
         QLabel *_proxyServerLabel{nullptr};
         QLabel *_liteSyncLabel{nullptr};
-        QLabel *_versionLabel{nullptr};
-        QLabel *_updateStatusLabel{nullptr};
-        QLabel *_showReleaseNoteLabel{nullptr};
-        QLabel *_versionNumberLabel{nullptr};
         ActionWidget *_displayErrorsWidget{nullptr};
 
         void showEvent(QShowEvent *event) override;
@@ -107,7 +130,6 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onDebuggingWidgetClicked();
         void onFilesToExcludeWidgetClicked();
         void onProxyServerWidgetClicked();
-        void onResourcesManagerWidgetClicked();
         void onLiteSyncWidgetClicked();
         void onLinkActivated(const QString &link);
         void onUpdateInfo();

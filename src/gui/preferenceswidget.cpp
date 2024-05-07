@@ -40,7 +40,6 @@
 #include "libcommon/theme/theme.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
-#include "resourcesmanagerdialog.h"
 
 #ifdef Q_OS_WIN
 #include "libcommon/info/parametersinfo.h"
@@ -74,18 +73,18 @@ static const QString italianCode = "it";
 
 Q_LOGGING_CATEGORY(lcPreferencesWidget, "gui.preferenceswidget", QtInfoMsg)
 
-FolderConfirmation::FolderConfirmation(QBoxLayout *folderConfirmationBox) {
+LargeFolderConfirmation::LargeFolderConfirmation(QBoxLayout *folderConfirmationBox)
+    : _label{new QLabel()}, _switch{new CustomSwitch()}, _amountLabel{new QLabel()} {
     QHBoxLayout *folderConfirmation1HBox = new QHBoxLayout();
     folderConfirmation1HBox->setContentsMargins(0, 0, 0, 0);
     folderConfirmation1HBox->setSpacing(0);
     folderConfirmationBox->addLayout(folderConfirmation1HBox);
 
-    _label = new QLabel();
     _label->setWordWrap(true);
     folderConfirmation1HBox->addWidget(_label);
     folderConfirmation1HBox->setStretchFactor(_label, 1);
 
-    _switch = new CustomSwitch();
+
     _switch->setLayoutDirection(Qt::RightToLeft);
     _switch->setAttribute(Qt::WA_MacShowFocusRect, false);
     _switch->setCheckState(ParametersCache::instance()->parametersInfo().useBigFolderSizeLimit() ? Qt::Checked : Qt::Unchecked);
@@ -105,15 +104,85 @@ FolderConfirmation::FolderConfirmation(QBoxLayout *folderConfirmationBox) {
     _amountLineEdit->setMaximumWidth(amountLineEditWidth);
     folderConfirmation2HBox->addWidget(_amountLineEdit);
 
-    _amountLabel = new QLabel();
     _amountLabel->setObjectName("folderConfirmationAmountLabel");
     folderConfirmation2HBox->addWidget(_amountLabel);
     folderConfirmation2HBox->addStretch();
 }
 
-void FolderConfirmation::retranslateUi() {
+void LargeFolderConfirmation::retranslateUi() {
     _label->setText(tr("Ask for confirmation before synchronizing folders greater than"));
     _amountLabel->setText(tr("MB"));
+}
+
+void LargeFolderConfirmation::setAmountLineEditEnabled(bool enabled) {
+    _amountLineEdit->setEnabled(enabled);
+}
+
+VersionWidget::VersionWidget(QBoxLayout *parentBox, const QString &versionNumberLabel)
+    : _versionLabel{new QLabel()},
+      _updateStatusLabel{new QLabel()},
+      _updateButton{new QPushButton()},
+      _versionNumberLabel{new QLabel(versionNumberLabel)} {
+    _versionLabel->setObjectName("blocLabel");
+    parentBox->addWidget(_versionLabel);
+
+    PreferencesBlocWidget *versionBloc = new PreferencesBlocWidget();
+    parentBox->addWidget(versionBloc);
+    QBoxLayout *versionBox = versionBloc->addLayout(QBoxLayout::Direction::LeftToRight);
+    QVBoxLayout *versionVBox = new QVBoxLayout();
+    versionVBox->setContentsMargins(0, 0, 0, 0);
+    versionVBox->setSpacing(0);
+    versionBox->addLayout(versionVBox);
+    versionBox->setStretchFactor(versionVBox, 1);
+
+    // Status
+    _updateStatusLabel->setObjectName("boldTextLabel");
+    _updateStatusLabel->setWordWrap(true);
+    _updateStatusLabel->setVisible(false);
+    versionVBox->addWidget(_updateStatusLabel);
+
+    _showReleaseNoteLabel = new QLabel();
+    _showReleaseNoteLabel->setObjectName("boldTextLabel");
+    _showReleaseNoteLabel->setWordWrap(true);
+    _showReleaseNoteLabel->setVisible(false);
+    versionVBox->addWidget(_showReleaseNoteLabel);
+
+    _versionNumberLabel->setContextMenuPolicy(Qt::PreventContextMenu);
+    versionVBox->addWidget(_versionNumberLabel);
+
+    QLabel *copyrightLabel = new QLabel(QString("Copyright %1").arg(APPLICATION_VENDOR));
+    copyrightLabel->setObjectName("description");
+    versionVBox->addWidget(copyrightLabel);
+
+    _updateButton->setObjectName("defaultbutton");
+    _updateButton->setFlat(true);
+    versionBox->addWidget(_updateButton);
+}
+
+void VersionWidget::updateStatus(QString status, bool updateAvailable, const QString &releaseNoteLinkText) {
+    if (status.isEmpty()) {
+        _updateStatusLabel->setVisible(false);
+        _showReleaseNoteLabel->setVisible(false);
+    } else {
+        _updateStatusLabel->setVisible(true);
+        _updateStatusLabel->setText(status);
+
+        if (updateAvailable) {
+            _showReleaseNoteLabel->setVisible(true);
+
+            _showReleaseNoteLabel->setText(releaseNoteLinkText);
+        }
+    }
+
+    _updateButton->setVisible(updateAvailable);
+}
+
+void VersionWidget::setVersionLabelText(const QString &text) {
+    _versionLabel->setText(text);
+}
+
+void VersionWidget::setUpdateButtonText(const QString &text) {
+    _updateButton->setText(text);
 }
 
 PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
@@ -127,11 +196,11 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
      *      generalBloc
      *          folderConfirmationBox
      *              folderConfirmation1HBox
-     *                  _folderConfirmation->_label
-     *                  _folderConfirmation->_switch
+     *                  _largeFolderConfirmation->_label
+     *                  _largeFolderConfirmation->_switch
      *              folderConfirmation2HBox
-     *                  _folderConfirmation->_amountLineEdit
-     *                  _folderConfirmation->_amountLabel
+     *                  _largeFolderConfirmation->_amountLineEdit
+     *                  _largeFolderConfirmation->_amountLabel
      *          darkThemeBox
      *              darkThemeLabel
      *              darkThemeSwitch
@@ -159,13 +228,15 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
      *          proxyServerWidget
      *              proxyServerVBox
      *                  proxyServerLabel
-     *      versionLabel
+     *      _versionWidget->versionLabel
      *      versionBloc
      *          versionBox
      *              versionVBox
-     *                  versionNumberLabel
+     *                  _versionWidget->_versionNumberLabel
+     *                  _versionWidget->_showReleaseNoteLabel
      *                  copyrightLabel
-     *              _updateButton
+     *                  _versionWidget->_updateStatusLabel
+     *              _versionWidget->_updateButton
      */
 
     QVBoxLayout *vBox = new QVBoxLayout();
@@ -184,16 +255,16 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     //
     // General bloc
     //
-    _generalLabel = new QLabel(this);
+    _generalLabel = new QLabel();
     _generalLabel->setObjectName("blocLabel");
     vBox->addWidget(_generalLabel);
 
-    PreferencesBlocWidget *generalBloc = new PreferencesBlocWidget(this);
+    PreferencesBlocWidget *generalBloc = new PreferencesBlocWidget();
     vBox->addWidget(generalBloc);
 
-    // Folder synchronization confirmation
+    // Synchronization confirmation for large folders
     QBoxLayout *folderConfirmationBox = generalBloc->addLayout(QBoxLayout::Direction::TopToBottom);
-    _folderConfirmation = std::unique_ptr<FolderConfirmation>(new FolderConfirmation(folderConfirmationBox));
+    _largeFolderConfirmation = std::unique_ptr<LargeFolderConfirmation>(new LargeFolderConfirmation(folderConfirmationBox));
 
     generalBloc->addSeparator();
 
@@ -202,11 +273,11 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     if (!OldUtility::isMac()) {
         QBoxLayout *darkThemeBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
-        _darkThemeLabel = new QLabel(this);
+        _darkThemeLabel = new QLabel();
         darkThemeBox->addWidget(_darkThemeLabel);
         darkThemeBox->addStretch();
 
-        darkThemeSwitch = new CustomSwitch(this);
+        darkThemeSwitch = new CustomSwitch();
         darkThemeSwitch->setLayoutDirection(Qt::RightToLeft);
         darkThemeSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
         darkThemeSwitch->setCheckState(ParametersCache::instance()->parametersInfo().darkTheme() ? Qt::Checked : Qt::Unchecked);
@@ -217,11 +288,11 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     // Monochrome icons activation
     QBoxLayout *monochromeIconsBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
-    _monochromeLabel = new QLabel(this);
+    _monochromeLabel = new QLabel();
     monochromeIconsBox->addWidget(_monochromeLabel);
     monochromeIconsBox->addStretch();
 
-    CustomSwitch *monochromeSwitch = new CustomSwitch(this);
+    CustomSwitch *monochromeSwitch = new CustomSwitch();
     monochromeSwitch->setLayoutDirection(Qt::RightToLeft);
     monochromeSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
     monochromeSwitch->setCheckState(ParametersCache::instance()->parametersInfo().monoIcons() ? Qt::Checked : Qt::Unchecked);
@@ -231,11 +302,11 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     // Launch kDrive at startup
     QBoxLayout *launchAtStartupBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
-    _launchAtStartupLabel = new QLabel(this);
+    _launchAtStartupLabel = new QLabel();
     launchAtStartupBox->addWidget(_launchAtStartupLabel);
     launchAtStartupBox->addStretch();
 
-    CustomSwitch *launchAtStartupSwitch = new CustomSwitch(this);
+    CustomSwitch *launchAtStartupSwitch = new CustomSwitch();
     launchAtStartupSwitch->setLayoutDirection(Qt::RightToLeft);
     launchAtStartupSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
     bool hasSystemLauchAtStartup = false;
@@ -261,11 +332,11 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     // Move file to trash
     QBoxLayout *moveToTrashBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
-    _moveToTrashLabel = new QLabel(this);
+    _moveToTrashLabel = new QLabel();
     moveToTrashBox->addWidget(_moveToTrashLabel);
     moveToTrashBox->addStretch();
 
-    CustomSwitch *moveToTrashSwitch = new CustomSwitch(this);
+    CustomSwitch *moveToTrashSwitch = new CustomSwitch();
     moveToTrashSwitch->setLayoutDirection(Qt::RightToLeft);
     moveToTrashSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
     moveToTrashSwitch->setCheckState(ParametersCache::instance()->parametersInfo().moveToTrash() ? Qt::Checked : Qt::Unchecked);
@@ -275,11 +346,11 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     // Languages
     QBoxLayout *languageSelectorBox = generalBloc->addLayout(QBoxLayout::Direction::LeftToRight);
 
-    _languageSelectorLabel = new QLabel(this);
+    _languageSelectorLabel = new QLabel();
     languageSelectorBox->addWidget(_languageSelectorLabel);
     languageSelectorBox->addStretch();
 
-    _languageSelectorComboBox = new CustomComboBox(this);
+    _languageSelectorComboBox = new CustomComboBox();
     _languageSelectorComboBox->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
     _languageSelectorComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     _languageSelectorComboBox->setAttribute(Qt::WA_MacShowFocusRect, false);
@@ -310,21 +381,21 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     //
     // Advanced bloc
     //
-    _advancedLabel = new QLabel(this);
+    _advancedLabel = new QLabel();
     _advancedLabel->setObjectName("blocLabel");
     vBox->addWidget(_advancedLabel);
 
-    PreferencesBlocWidget *advancedBloc = new PreferencesBlocWidget(this);
+    PreferencesBlocWidget *advancedBloc = new PreferencesBlocWidget();
     vBox->addWidget(advancedBloc);
 
     // Debugging informations
     QVBoxLayout *debuggingVBox = nullptr;
     ClickableWidget *debuggingWidget = advancedBloc->addActionWidget(&debuggingVBox);
 
-    _debuggingLabel = new QLabel(this);
+    _debuggingLabel = new QLabel();
     debuggingVBox->addWidget(_debuggingLabel);
 
-    _debuggingFolderLabel = new QLabel(this);
+    _debuggingFolderLabel = new QLabel();
     _debuggingFolderLabel->setVisible(ParametersCache::instance()->parametersInfo().useLog());
     _debuggingFolderLabel->setAttribute(Qt::WA_NoMousePropagation);
     _debuggingFolderLabel->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -335,7 +406,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     QVBoxLayout *filesToExcludeVBox = nullptr;
     ClickableWidget *filesToExcludeWidget = advancedBloc->addActionWidget(&filesToExcludeVBox);
 
-    _filesToExcludeLabel = new QLabel(this);
+    _filesToExcludeLabel = new QLabel();
     filesToExcludeVBox->addWidget(_filesToExcludeLabel);
     advancedBloc->addSeparator();
 
@@ -343,7 +414,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     QVBoxLayout *proxyServerVBox = nullptr;
     ClickableWidget *proxyServerWidget = advancedBloc->addActionWidget(&proxyServerVBox);
 
-    _proxyServerLabel = new QLabel(this);
+    _proxyServerLabel = new QLabel();
     proxyServerVBox->addWidget(_proxyServerLabel);
     advancedBloc->addSeparator();
 
@@ -352,49 +423,14 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     QVBoxLayout *liteSyncVBox = nullptr;
     ClickableWidget *liteSyncWidget = advancedBloc->addActionWidget(&liteSyncVBox);
 
-    _liteSyncLabel = new QLabel(this);
+    _liteSyncLabel = new QLabel();
     liteSyncVBox->addWidget(_liteSyncLabel);
 #endif
 
     // Version
-    _versionLabel = new QLabel(this);
-    _versionLabel->setObjectName("blocLabel");
-    vBox->addWidget(_versionLabel);
-    PreferencesBlocWidget *versionBloc = new PreferencesBlocWidget(this);
-    vBox->addWidget(versionBloc);
-    QBoxLayout *versionBox = versionBloc->addLayout(QBoxLayout::Direction::LeftToRight);
-    QVBoxLayout *versionVBox = new QVBoxLayout();
-    versionVBox->setContentsMargins(0, 0, 0, 0);
-    versionVBox->setSpacing(0);
-    versionBox->addLayout(versionVBox);
-    versionBox->setStretchFactor(versionVBox, 1);
-
-    // Status
-    _updateStatusLabel = new QLabel(this);
-    _updateStatusLabel->setObjectName("boldTextLabel");
-    _updateStatusLabel->setWordWrap(true);
-    _updateStatusLabel->setVisible(false);
-    versionVBox->addWidget(_updateStatusLabel);
-
-    _showReleaseNoteLabel = new QLabel(this);
-    _showReleaseNoteLabel->setObjectName("boldTextLabel");
-    _showReleaseNoteLabel->setWordWrap(true);
-    _showReleaseNoteLabel->setVisible(false);
-    versionVBox->addWidget(_showReleaseNoteLabel);
-
-    _versionNumberLabel = new QLabel(
-        tr("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING), this);
-    _versionNumberLabel->setContextMenuPolicy(Qt::PreventContextMenu);
-    versionVBox->addWidget(_versionNumberLabel);
-
-    QLabel *copyrightLabel = new QLabel(QString("Copyright %1").arg(APPLICATION_VENDOR), this);
-    copyrightLabel->setObjectName("description");
-    versionVBox->addWidget(copyrightLabel);
-
-    _updateButton = new QPushButton(this);
-    _updateButton->setObjectName("defaultbutton");
-    _updateButton->setFlat(true);
-    versionBox->addWidget(_updateButton);
+    static const QString versionNumberLinkText =
+        tr("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING);
+    _versionWidget = std::unique_ptr<VersionWidget>(new VersionWidget(vBox, versionNumberLinkText));
 
     vBox->addStretch();
 
@@ -402,9 +438,9 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     LanguageChangeFilter *languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
 
-    connect(_folderConfirmation->customSwitch(), &CustomSwitch::clicked, this,
+    connect(_largeFolderConfirmation->customSwitch(), &CustomSwitch::clicked, this,
             &PreferencesWidget::onFolderConfirmationSwitchClicked);
-    connect(_folderConfirmation->amountLineEdit(), &QLineEdit::textEdited, this,
+    connect(_largeFolderConfirmation->amountLineEdit(), &QLineEdit::textEdited, this,
             &PreferencesWidget::onFolderConfirmationAmountTextEdited);
     if (darkThemeSwitch) {
         connect(darkThemeSwitch, &CustomSwitch::clicked, this, &PreferencesWidget::onDarkThemeSwitchClicked);
@@ -420,13 +456,12 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     connect(_debuggingFolderLabel, &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
     connect(filesToExcludeWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onFilesToExcludeWidgetClicked);
     connect(proxyServerWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onProxyServerWidgetClicked);
-//    connect(resourcesManagerWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onResourcesManagerWidgetClicked);
 #ifdef Q_OS_MAC
     connect(liteSyncWidget, &ClickableWidget::clicked, this, &PreferencesWidget::onLiteSyncWidgetClicked);
 #endif
-    connect(_updateStatusLabel, &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
-    connect(_showReleaseNoteLabel, &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
-    connect(_versionNumberLabel, &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
+    connect(_versionWidget->updateStatusLabel(), &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
+    connect(_versionWidget->showReleaseNoteLabel(), &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
+    connect(_versionWidget->versionNumberLabel(), &QLabel::linkActivated, this, &PreferencesWidget::onLinkActivated);
     connect(_displayErrorsWidget, &ActionWidget::clicked, this, &PreferencesWidget::displayErrors);
 }
 
@@ -457,21 +492,9 @@ void PreferencesWidget::clearUndecidedLists() {
 }
 
 void PreferencesWidget::updateStatus(QString status, bool updateAvailable) {
-    if (status.isEmpty()) {
-        _updateStatusLabel->setVisible(false);
-        _showReleaseNoteLabel->setVisible(false);
-    } else {
-        _updateStatusLabel->setVisible(true);
-        _updateStatusLabel->setText(status);
-
-        if (updateAvailable) {
-            _showReleaseNoteLabel->setVisible(true);
-            QString releaseNoteLinkText =
-                tr("<a style=\"%1\" href=\"%2\">Show release note</a>").arg(CommonUtility::linkStyle, releaseNoteLink);
-            _showReleaseNoteLabel->setText(releaseNoteLinkText);
-        }
-    }
-    _updateButton->setVisible(updateAvailable);
+    static const QString releaseNoteLinkText =
+        tr("<a style=\"%1\" href=\"%2\">Show release note</a>").arg(CommonUtility::linkStyle, releaseNoteLink);
+    _versionWidget->updateStatus(status, updateAvailable, releaseNoteLinkText);
 }
 
 void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
@@ -480,13 +503,13 @@ void PreferencesWidget::onFolderConfirmationSwitchClicked(bool checked) {
         return;
     }
 
-    _folderConfirmation->amountLineEdit()->setEnabled(checked);
+    _largeFolderConfirmation->setAmountLineEditEnabled(checked);
 
     clearUndecidedLists();
 }
 
 void PreferencesWidget::onFolderConfirmationAmountTextEdited(const QString &text) {
-    qint64 lValue = text.toLongLong();
+    const qint64 lValue = text.toLongLong();
     ParametersCache::instance()->parametersInfo().setBigFolderSizeLimit(lValue);
     if (!ParametersCache::instance()->saveParametersInfo()) {
         return;
@@ -524,7 +547,7 @@ void PreferencesWidget::onLanguageChange() {
     CustomComboBox *combo = qobject_cast<CustomComboBox *>(sender());
     if (!combo) return;
 
-    Language language = static_cast<Language>(combo->currentData().toInt());
+    const Language language = static_cast<Language>(combo->currentData().toInt());
 
     ParametersCache::instance()->parametersInfo().setLanguage(language);
     if (!ParametersCache::instance()->saveParametersInfo()) {
@@ -581,13 +604,6 @@ void PreferencesWidget::onProxyServerWidgetClicked() {
     dialog.exec();
 }
 
-void PreferencesWidget::onResourcesManagerWidgetClicked() {
-    EnableStateHolder _(this);
-
-    ResourcesManagerDialog dialog(this);
-    dialog.exec();
-}
-
 void PreferencesWidget::onLiteSyncWidgetClicked() {
     EnableStateHolder _(this);
 
@@ -634,8 +650,8 @@ void PreferencesWidget::onLinkActivated(const QString &link) {
         os = "-linux";
 #endif
 
-        Language appLanguage = ParametersCache::instance()->parametersInfo().language();
-        QString languageCode = KDC::CommonUtility::languageCode(appLanguage);
+        const Language &appLanguage = ParametersCache::instance()->parametersInfo().language();
+        const QString &languageCode = KDC::CommonUtility::languageCode(appLanguage);
 
         if (KDC::CommonUtility::languageCodeIsEnglish(languageCode)) {
             QDesktopServices::openUrl(QUrl(QString("%1-%2%3.html").arg(APPLICATION_STORAGE_URL, version, os)));
@@ -644,7 +660,7 @@ void PreferencesWidget::onLinkActivated(const QString &link) {
         }
     } else {
         // URL link
-        QUrl url = QUrl(link);
+        const QUrl url = QUrl(link);
         if (url.isValid()) {
             if (!QDesktopServices::openUrl(url)) {
                 qCWarning(lcPreferencesWidget) << "QDesktopServices::openUrl failed for " << link;
@@ -694,8 +710,9 @@ void PreferencesWidget::onUpdateInfo() {
 
         connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &PreferencesWidget::onUpdateInfo,
                 Qt::UniqueConnection);
-        connect(_updateButton, &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller, Qt::UniqueConnection);
-        connect(_updateButton, &QPushButton::clicked, qApp, &QApplication::quit, Qt::UniqueConnection);
+        connect(_versionWidget->updateButton(), &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller,
+                Qt::UniqueConnection);
+        connect(_versionWidget->updateButton(), &QPushButton::clicked, qApp, &QApplication::quit, Qt::UniqueConnection);
 
         updateStatus(statusString, downloadCompleted);
     }
@@ -708,7 +725,8 @@ void PreferencesWidget::onUpdateInfo() {
             return;
         }
 
-        connect(_updateButton, &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller, Qt::UniqueConnection);
+        connect(_versionWidget->updateButton(), &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller,
+                Qt::UniqueConnection);
 
         updateStatus(statusString, updateFound);
     }
@@ -726,7 +744,7 @@ void PreferencesWidget::onStartInstaller() {
 void PreferencesWidget::retranslateUi() {
     _displayErrorsWidget->setText(tr("Some process failed to run."));
     _generalLabel->setText(tr("General"));
-    _folderConfirmation->retranslateUi();
+    _largeFolderConfirmation->retranslateUi();
     if (_darkThemeLabel) {
         _darkThemeLabel->setText(tr("Activate dark theme"));
     }
@@ -737,14 +755,13 @@ void PreferencesWidget::retranslateUi() {
 
     _languageSelectorComboBox->blockSignals(true);  // To avoid triggering more LanguageChange events
     _languageSelectorComboBox->clear();
-    // QString systemLanguage = QLocale::system().uiLanguages().isEmpty() ? QString() : QLocale::system().uiLanguages().first();
     _languageSelectorComboBox->addItem(tr("Default"), LanguageDefault);
     _languageSelectorComboBox->addItem(tr("English"), LanguageEnglish);
     _languageSelectorComboBox->addItem(tr("French"), LanguageFrench);
     _languageSelectorComboBox->addItem(tr("German"), LanguageGerman);
     _languageSelectorComboBox->addItem(tr("Spanish"), LanguageSpanish);
     _languageSelectorComboBox->addItem(tr("Italian"), LanguageItalian);
-    int languageIndex = _languageSelectorComboBox->findData(ParametersCache::instance()->parametersInfo().language());
+    const int languageIndex = _languageSelectorComboBox->findData(ParametersCache::instance()->parametersInfo().language());
     _languageSelectorComboBox->setCurrentIndex(languageIndex);
     _languageSelectorComboBox->blockSignals(false);
 
@@ -760,7 +777,7 @@ void PreferencesWidget::retranslateUi() {
 #ifdef Q_OS_MAC
     _liteSyncLabel->setText(tr("Lite Sync"));
 #endif
-    _versionLabel->setText(tr("Version"));
+    _versionWidget->setVersionLabelText(tr("Version"));
 
     bool isKDCUpdater;
     try {
@@ -807,7 +824,7 @@ void PreferencesWidget::retranslateUi() {
         updateStatus(statusString, updateFound);
     }
 #endif
-    _updateButton->setText(tr("UPDATE"));
+    _versionWidget->setUpdateButtonText(tr("UPDATE"));
 }
 
 }  // namespace KDC
