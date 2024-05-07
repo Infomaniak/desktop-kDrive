@@ -365,7 +365,7 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
     }
 
     const bool progressMonitoring = progressCallback != nullptr;
-    float nbFiles = 0;
+    int nbFiles = 0;
     DirectoryEntry entry;
 
     if (progressMonitoring) {
@@ -381,7 +381,7 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
         }
     }
 
-    float progress = 0.0;
+    int progress = 0;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         const std::string entryPath = entry.path().string();
@@ -415,7 +415,7 @@ ExitCode Log::compressLogFiles(const SyncPath &directoryToCompress, ExitCause &e
         }
         if (progressMonitoring) {
             progress++;
-            const int64_t progressPercent = 100.0 * progress / nbFiles;
+            const int progressPercent = 100.0 * (double)progress / (double)nbFiles;
             progressCallback(progressPercent);
         }
     }
