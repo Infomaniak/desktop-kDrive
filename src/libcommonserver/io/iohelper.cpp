@@ -357,16 +357,15 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
                 ioError = IoErrorMaxDepthExceeded;
                 return _isExpectedError(ioError);
             }
-            uint64_t entrySize;
+            uint64_t entrySize = 0;
             if (!getDirectorySize(entry.path(), entrySize, ioError, maxDepth - 1)) {
                 return false;
             }
             size += entrySize;
             continue;
         }
-        uint64_t entrySize;
         std::error_code ec;
-        entrySize = _fileSize(entry.path(), ec);
+        uint64_t entrySize = _fileSize(entry.path(), ec);
         if (!ec) {
             size += entrySize;
         } else {
