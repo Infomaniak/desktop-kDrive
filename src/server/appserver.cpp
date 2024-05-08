@@ -316,7 +316,7 @@ AppServer::AppServer(int &argc, char **argv)
         if (serverCrashedRecently()) {
             LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
             QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
-            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, "0", found) || !found) {
+            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, "0", found) || !found) {
                 LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
                 addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
                 throw std::runtime_error("Failed to update last server self restart.");
@@ -327,8 +327,8 @@ AppServer::AppServer(int &argc, char **argv)
         long timestamp =
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
         std::string timestampStr = std::to_string(timestamp);
-        KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, timestampStr, found);
-        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestart, timestampStr, found) || !found) {
+        KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
             addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
             throw std::runtime_error("Failed to update last server self restart.");
@@ -2058,7 +2058,7 @@ void AppServer::onRestartClientReceived() {
     if (clientCrashedRecently()) {
         LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
         bool found = false;
-        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestart, "0", found) || !found) {
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, "0", found) || !found) {
             addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         }
@@ -2071,7 +2071,7 @@ void AppServer::onRestartClientReceived() {
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
         std::string timestampStr = std::to_string(timestamp);
         bool found = false;
-        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestart, timestampStr, found) || !found) {
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found) || !found) {
             addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
             QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
@@ -2872,7 +2872,7 @@ bool AppServer::serverCrashedRecently(int seconds) {
     std::string lastServerCrashStr;
     bool found = false;
 
-    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestart, lastServerCrashStr, found) || !found) {
+    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, lastServerCrashStr, found) || !found) {
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
@@ -2906,7 +2906,7 @@ bool AppServer::clientCrashedRecently(int seconds) {
     std::string lastClientCrashStr;
     bool found = false;
 
-    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestart, lastClientCrashStr, found) || !found) {
+    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, lastClientCrashStr, found) || !found) {
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
