@@ -2343,34 +2343,34 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
     <name>KDC::SocketApi</name>
     <message>
         <location filename="../src/server/socketapi.cpp" line="790"/>
-        <location filename="../src/server/socketapi.cpp" line="998"/>
-        <location filename="../src/server/socketapi.cpp" line="1044"/>
-        <source>Copy private link to clipboard</source>
-        <translation>Privaten Link in die Zwischenablage kopieren</translation>
+        <location filename="../src/server/socketapi.cpp" line="997"/>
+        <location filename="../src/server/socketapi.cpp" line="1040"/>
+        <source>Copy private share link</source>
+        <translation>Link zur privaten Freigabe kopieren</translation>
     </message>
     <message>
         <location filename="../src/server/socketapi.cpp" line="977"/>
-        <location filename="../src/server/socketapi.cpp" line="1025"/>
+        <location filename="../src/server/socketapi.cpp" line="1024"/>
         <source>Resharing this file is not allowed</source>
         <translation>Die erneute Freigabe dieser Datei ist nicht erlaubt</translation>
     </message>
     <message>
         <location filename="../src/server/socketapi.cpp" line="978"/>
-        <location filename="../src/server/socketapi.cpp" line="1026"/>
+        <location filename="../src/server/socketapi.cpp" line="1025"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Die erneute Freigabe dieses Ordners ist nicht erlaubt</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="989"/>
-        <location filename="../src/server/socketapi.cpp" line="993"/>
+        <location filename="../src/server/socketapi.cpp" line="988"/>
+        <location filename="../src/server/socketapi.cpp" line="992"/>
+        <location filename="../src/server/socketapi.cpp" line="1034"/>
         <location filename="../src/server/socketapi.cpp" line="1036"/>
-        <location filename="../src/server/socketapi.cpp" line="1040"/>
-        <source>Copy public link to clipboard</source>
-        <translation>Öffentlichen Link in die Zwischenablage kopieren</translation>
+        <source>Copy public share link</source>
+        <translation>Öffentlichen Freigabelink kopieren</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1191"/>
-        <location filename="../src/server/socketapi.cpp" line="1261"/>
+        <location filename="../src/server/socketapi.cpp" line="1187"/>
+        <location filename="../src/server/socketapi.cpp" line="1257"/>
         <source>Open in browser</source>
         <translation>Im Browser öffnen</translation>
     </message>
@@ -2809,23 +2809,23 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
 <context>
     <name>utility</name>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1351"/>
+        <location filename="../src/server/socketapi.cpp" line="1347"/>
         <source>Cancel free up local space</source>
         <translation>Lokalen Speicherplatz freigeben abbrechen</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1356"/>
-        <location filename="../src/server/socketapi.cpp" line="1358"/>
+        <location filename="../src/server/socketapi.cpp" line="1352"/>
+        <location filename="../src/server/socketapi.cpp" line="1354"/>
         <source>Cancel make available locally</source>
         <translation>Lokal verfügbar machen abbrechen</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1347"/>
+        <location filename="../src/server/socketapi.cpp" line="1343"/>
         <source>Free up local space</source>
         <translation>Lokalen Speicherplatz freigeben</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1343"/>
+        <location filename="../src/server/socketapi.cpp" line="1339"/>
         <source>Always make available locally</source>
         <translation>Immer lokal verfügbar machen</translation>
     </message>

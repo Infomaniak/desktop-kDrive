@@ -2343,34 +2343,34 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
     <name>KDC::SocketApi</name>
     <message>
         <location filename="../src/server/socketapi.cpp" line="790"/>
-        <location filename="../src/server/socketapi.cpp" line="998"/>
-        <location filename="../src/server/socketapi.cpp" line="1044"/>
-        <source>Copy private link to clipboard</source>
-        <translation>Copier le lien privé vers le presse-papier</translation>
+        <location filename="../src/server/socketapi.cpp" line="997"/>
+        <location filename="../src/server/socketapi.cpp" line="1040"/>
+        <source>Copy private share link</source>
+        <translation>Copier le lien de partage privé</translation>
     </message>
     <message>
         <location filename="../src/server/socketapi.cpp" line="977"/>
-        <location filename="../src/server/socketapi.cpp" line="1025"/>
+        <location filename="../src/server/socketapi.cpp" line="1024"/>
         <source>Resharing this file is not allowed</source>
         <translation>Le partage de ce fichier n&apos;est pas autorisé</translation>
     </message>
     <message>
         <location filename="../src/server/socketapi.cpp" line="978"/>
-        <location filename="../src/server/socketapi.cpp" line="1026"/>
+        <location filename="../src/server/socketapi.cpp" line="1025"/>
         <source>Resharing this folder is not allowed</source>
         <translation>Le partage de ce dossier n&apos;est pas autorisé</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="989"/>
-        <location filename="../src/server/socketapi.cpp" line="993"/>
+        <location filename="../src/server/socketapi.cpp" line="988"/>
+        <location filename="../src/server/socketapi.cpp" line="992"/>
+        <location filename="../src/server/socketapi.cpp" line="1034"/>
         <location filename="../src/server/socketapi.cpp" line="1036"/>
-        <location filename="../src/server/socketapi.cpp" line="1040"/>
-        <source>Copy public link to clipboard</source>
-        <translation>Copier le lien public dans le presse-papiers</translation>
+        <source>Copy public share link</source>
+        <translation>Copier le lien de partage public</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1191"/>
-        <location filename="../src/server/socketapi.cpp" line="1261"/>
+        <location filename="../src/server/socketapi.cpp" line="1187"/>
+        <location filename="../src/server/socketapi.cpp" line="1257"/>
         <source>Open in browser</source>
         <translation>Ouvrir dans le navigateur web</translation>
     </message>
@@ -2859,18 +2859,18 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <translation>Démarrage de la synchronisation</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1347"/>
+        <location filename="../src/server/socketapi.cpp" line="1343"/>
         <source>Free up local space</source>
         <translation>Libérer de l’espace local</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1351"/>
+        <location filename="../src/server/socketapi.cpp" line="1347"/>
         <source>Cancel free up local space</source>
         <translation>Annuler libérer l&apos;espace local</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1356"/>
-        <location filename="../src/server/socketapi.cpp" line="1358"/>
+        <location filename="../src/server/socketapi.cpp" line="1352"/>
+        <location filename="../src/server/socketapi.cpp" line="1354"/>
         <source>Cancel make available locally</source>
         <translation>Annuler rendre disponible localement</translation>
     </message>
@@ -2909,7 +2909,7 @@ You can add one from the kDrive settings.</source>
 Ajoutez-en un depuis la configuration du kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/server/socketapi.cpp" line="1343"/>
+        <location filename="../src/server/socketapi.cpp" line="1339"/>
         <source>Always make available locally</source>
         <translation>Rendre toujours disponible localement</translation>
     </message>
