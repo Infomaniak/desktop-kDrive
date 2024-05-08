@@ -1155,7 +1155,7 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
 
     // Quit
     QWidgetAction *exitAction = new QWidgetAction(this);
-    MenuItemWidget *exitMenuItemWidget = new MenuItemWidget(tr("Quit application"));
+    MenuItemWidget *exitMenuItemWidget = new MenuItemWidget(tr("Quit kDrive"));
     exitMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/error-sync.svg");
     exitAction->setDefaultWidget(exitMenuItemWidget);
     connect(exitAction, &QWidgetAction::triggered, this, &SynthesisPopover::onExit);
