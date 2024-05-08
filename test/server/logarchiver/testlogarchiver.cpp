@@ -254,7 +254,7 @@ void TestLogArchiver::testGenerateUserDescriptionFile(void) {
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(exists);
 
-        // Chack there is at least 5 lines in the file
+        // Check if there is at least 5 lines in the file
         std::ifstream file(userDescriptionFile);
         std::string line;
         int count = 0;
