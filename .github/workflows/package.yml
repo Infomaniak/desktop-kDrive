@@ -2,16 +2,21 @@ name: Package kDrive desktop on all platforms
 
 on:
   workflow_dispatch:
-    BRANCH:
-      description: 'Branch to use'
-      required: true
-      default: 'main'
-      type: choice
-      options:
-      - main
-      - develop
-      - RELEASE-*
-      - KDESKTOP-834-CI-workflows-for-nightly-builds # Remove after testing
+    inputs:
+      BRANCH:
+        description: 'Branch to use'
+        required: true
+        default: 'main'
+        type: choice
+        options:
+        - main
+        - develop
+        - RELEASE-*
+        - KDESKTOP-834-CI-workflows-for-nightly-builds # Remove after testing
+  push:
+    branches:
+      - 'RELEASE-**'
+      - 'KDESKTOP-834-CI-workflows-for-nightly-builds' # Remove after testing
 
 concurrency:
   group: packaging
@@ -20,7 +25,35 @@ concurrency:
 jobs:
   package-Linux:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
-
+    env:
+      BRANCH_NAME: ${{ github.ref_name || inputs.BRANCH }} 
     steps:
-      - name: test the workflow
-        run : pwd
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          submodules: recursive
+
+      - name: Grant building script execute permission
+        run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
+      - name: Build kDrive desktop
+        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh
+
+      - name: Grant packaging script execute permission
+        run : chmod +x ./infomaniak-build-tools/linux/package-ci-amd64.sh
+      - name: Build kDrive desktop
+        run : ./infomaniak-build-tools/linux/package-ci-amd64.sh
+
+  package-MacOS:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+    env:
+      BRANCH_NAME: ${{ github.ref_name || inputs.BRANCH }} 
+    steps:
+      - name: Checkout the PR
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          submodules: recursive
+
+      - name: Build and package kDrive desktop
+        run : ./infomaniak-build-tools/macos/build-drive.sh
