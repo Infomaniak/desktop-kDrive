@@ -72,7 +72,7 @@ void TestLogArchiver::testGetLogEstimatedSize(void) {
 }
 
 void TestLogArchiver::testCopyLogsTo(void) {
-    {  // Test with old logs
+    {  // Test with archivedLogs
         TemporaryDirectory tempDir;
         LOG_DEBUG(_logger, "Ensure that the log file is created (test)");
 
@@ -94,7 +94,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
         CPPUNIT_ASSERT_EQUAL(logDirsize, tempDirSize);
     }
 
-    {  // Test without old logs
+    {  // Test without archivedLogs
         TemporaryDirectory tempDir;
         SyncPath logDir = Log::instance()->getLogFilePath().parent_path();
 

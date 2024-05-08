@@ -47,7 +47,8 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t& size, IoError& ioError) {
     return false;
 }
 
-ExitCode LogArchiver::generateLogsSupportArchive(bool includeOldLogs, const SyncPath& outputPath, const SyncPath& archiveName,
+ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath& outputPath,
+                                                 const SyncPath& archiveName,
                                                  ExitCause& exitCause, std::function<void(int)> progressCallback) {
     // Get the log directory path
     const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
@@ -195,7 +196,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeOldLogs, const Sync
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::copyLogsTo(const SyncPath& outputPath, bool includeOldLogs, ExitCause& exitCause) {
+ExitCode LogArchiver::copyLogsTo(const SyncPath& outputPath, bool includeArchivedLogs, ExitCause& exitCause) {
     exitCause = ExitCauseUnknown;
     SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
     

@@ -32,18 +32,18 @@ class LogArchiver {
         static bool getLogDirEstimatedSize(uint64_t &size, IoError &ioError);
 
         /*! Generates a support archive containing the logs and the parms.db file.
-         * \param includeOldLogs If true, the old logs will be included in the archive.
+         * \param includeArchivedLogs If true, the archived logs from previous sessions will be included.
          * \param outputPath The path where the archive will be generated.
          * \param archiveName The name of the archive.
          * \param ioError The error object to be filled in case of error.
          * \return True if the archive was generated successfully, false otherwise.
          */
-        static ExitCode generateLogsSupportArchive(bool includeOldLogs, const SyncPath &outputPath, const SyncPath &archiveName,
+        static ExitCode generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputPath, const SyncPath &archiveName,
                                             ExitCause &exitCause, std::function<void(int)> progressCallback = nullptr);
 
     private:
         friend class TestLogArchiver;
-        static ExitCode copyLogsTo(const SyncPath &outputPath, bool includeOldLogs, ExitCause &exitCause);
+        static ExitCode copyLogsTo(const SyncPath &outputPath, bool includeArchivedLogs, ExitCause &exitCause);
         static ExitCode copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause);
 
         /*! Compresses the log files in the given directory.
