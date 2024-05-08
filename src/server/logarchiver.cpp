@@ -82,7 +82,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         return ExitCodeSystemError;
     }
 
-    ExitCode exitCode = _copyLogsTo(tempDirectory, includeOldLogs, exitCause);
+    ExitCode exitCode = _copyLogsTo(tempDirectory, includeArchivedLogs, exitCause);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to copy logs to temp folder: " << exitCause);
         IoHelper::deleteDirectory(tempDirectory.parent_path(), ioError);
@@ -217,7 +217,7 @@ ExitCode LogArchiver::_copyLogsTo(const SyncPath& outputPath, bool includeArchiv
             continue;
         }
 
-        if (!includeOldLogs && entry.path().filename().extension() == Str(".gz")) {
+        if (!includeArchivedLogs && entry.path().filename().extension() == Str(".gz")) {
             LOG_WARN(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string().c_str());
             continue;
         }
