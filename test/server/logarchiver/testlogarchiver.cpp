@@ -18,7 +18,7 @@
 
 #include "testincludes.h"
 #include "testlogarchiver.h"
-#include "server/logArchiver.h"
+#include "server/logarchiver.h"
 #include "libcommonserver/log/log.h"
 #include "test_utility/temporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
