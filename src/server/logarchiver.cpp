@@ -147,7 +147,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
             return ExitCodeUnknown;
         }
 
-        std::string entryName = entry.path().filename().string();
+        const std::string entryName = entry.path().filename().string();
         if (zip_file_add(archive, entryName.c_str(), source, ZIP_FL_OVERWRITE) < 0) {
             LOG_WARN(Log::instance()->getLogger(), "Error in zip_file_add: " << zip_strerror(archive));
             IoHelper::deleteDirectory(tempDirectory.parent_path(), ioError);
