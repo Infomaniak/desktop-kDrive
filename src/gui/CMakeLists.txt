@@ -60,7 +60,6 @@ set(client_SRCS
     adddrivesmartsyncwidget.h adddrivesmartsyncwidget.cpp
     adddrivewizard.h adddrivewizard.cpp
     appclient.h appclient.cpp
-    bandwidthdialog.h bandwidthdialog.cpp
     basefoldertreeitemwidget.h basefoldertreeitemwidget.cpp
     bigfoldersdialog.h bigfoldersdialog.cpp
     bottomwidget.h bottomwidget.cpp
@@ -114,7 +113,6 @@ set(client_SRCS
     menuwidgetlite.h menuwidgetlite.cpp
     parameterscache.h parameterscache.cpp
     parametersdialog.h parametersdialog.cpp
-    parameterswidget.h parameterswidget.cpp
     preferencesblocwidget.h preferencesblocwidget.cpp
     preferencesmenubarwidget.h preferencesmenubarwidget.cpp
     preferenceswidget.h preferenceswidget.cpp
