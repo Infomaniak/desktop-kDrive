@@ -83,7 +83,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
         CPPUNIT_ASSERT(logDirsize >= 0);
 
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = LogArchiver::copyLogsTo(tempDir.path, true, cause);
+        ExitCode exitCode = LogArchiver::_copyLogsTo(tempDir.path, true, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
@@ -107,7 +107,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
 
         // compress the log file
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause);
+        ExitCode exitCode = LogArchiver::_compressLogFiles(tempDir.path, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
@@ -118,7 +118,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
 
         IoHelper::deleteDirectory(tempDir.path / "test.log.gz", err);
 
-        exitCode = LogArchiver::copyLogsTo(tempDir.path, false, cause);
+        exitCode = LogArchiver::_copyLogsTo(tempDir.path, false, cause);
         IoHelper::deleteDirectory(logDir / "test.log.gz", err);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
@@ -153,7 +153,7 @@ void TestLogArchiver::testCopyParmsDbTo(void) {
         CPPUNIT_ASSERT(parmsDbSize >= 0);
 
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = LogArchiver::copyParmsDbTo(tempDir.path, cause);
+        ExitCode exitCode = LogArchiver::_copyParmsDbTo(tempDir.path, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
@@ -192,7 +192,7 @@ void TestLogArchiver::testCompressLogs(void) {
         CPPUNIT_ASSERT(logDirSize >= 0);
 
         ExitCause cause = ExitCauseUnknown;
-        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause);
+        const ExitCode exitCode = LogArchiver::_compressLogFiles(tempDir.path, cause);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
@@ -231,7 +231,7 @@ void TestLogArchiver::testCompressLogs(void) {
         };
 
         ExitCause cause = ExitCauseUnknown;
-        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause, progress);
+        const ExitCode exitCode = LogArchiver::_compressLogFiles(tempDir.path, cause, progress);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
@@ -244,7 +244,7 @@ void TestLogArchiver::testGenerateUserDescriptionFile(void) {
         TemporaryDirectory tempDir;
         const SyncPath userDescriptionFile = tempDir.path / "user_description.txt";
         ExitCause cause = ExitCauseUnknown;
-        ExitCode code = LogArchiver::generateUserDescriptionFile(userDescriptionFile, cause);
+        ExitCode code = LogArchiver::_generateUserDescriptionFile(userDescriptionFile, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
 
