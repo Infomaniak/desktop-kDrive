@@ -879,7 +879,10 @@ bool ParmsDb::create(bool &retry) {
     queryFree(CREATE_ERROR_TABLE_ID);
     
     // app state
-    if(!createAppState()) return false;
+    if (!createAppState()) {
+        LOG_WARN(_logger, "Error in createAppState");
+        return false;
+    }
 
     // Migration old selectivesync table
     ASSERT(queryCreate(CREATE_MIGRATION_SELECTIVESYNC_TABLE_ID));
@@ -1237,7 +1240,10 @@ bool ParmsDb::prepare() {
     }
     
     // App state
-    if(!prepareAppState()) return false;
+    if (!prepareAppState()) {
+        LOG_WARN(_logger, "Error in prepareAppState");
+        return false;
+    }
 
     if (!initData()) {
         LOG_WARN(_logger, "Error in initParameters");
@@ -1317,7 +1323,10 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
 
     if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.1")) {
         LOG_DEBUG(_logger, "Upgrade < 3.6.1 DB");
-        if(createAppState()) return false;
+        if (!createAppState()) {
+            LOG_WARN(_logger, "Error in createAppState");
+            return false;
+        }
     }
 
     return true;

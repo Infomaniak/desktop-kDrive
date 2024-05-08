@@ -24,7 +24,7 @@
 #include "preferencesblocwidget.h"
 #include "folderitemwidget.h"
 #include "foldertreeitemwidget.h"
-#include "parameterswidget.h"
+#include "widgetwithcustomtooltip.h"
 
 #include <QBoxLayout>
 #include <QColor>
@@ -40,7 +40,7 @@ namespace KDC {
 class CustomPushButton;
 class ClientGui;
 
-class DrivePreferencesWidget : public ParametersWidget {
+class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         Q_OBJECT
 
     public:
