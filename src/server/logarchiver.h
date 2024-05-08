@@ -43,8 +43,8 @@ class LogArchiver {
 
     private:
         friend class TestLogArchiver;
-        static ExitCode _copyLogsTo(const SyncPath &outputPath, bool includeArchivedLogs, ExitCause &exitCause);
-        static ExitCode _copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause);
+        static ExitCode copyLogsTo(const SyncPath &outputPath, bool includeArchivedLogs, ExitCause &exitCause);
+        static ExitCode copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause);
 
         /*! Compresses the log files in the given directory.
          * This method will not create an archive, it will only compress the files in the directory.
@@ -54,7 +54,7 @@ class LogArchiver {
          * \param progressCallback The callback to be called with the progress percentage.
          * \return The exit code of the operation.
          */
-        static ExitCode _compressLogFiles(const SyncPath &directoryToCompress, ExitCause &exitCause,
+        static ExitCode compressLogFiles(const SyncPath &directoryToCompress, ExitCause &exitCause,
                                   std::function<void(int)> progressCallback = nullptr);
 
         /*! Generates a file containing the user description.
@@ -63,7 +63,7 @@ class LogArchiver {
          * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to ExitCauseUnknown;
          * \return The exit code of the operation.
          */
-        static ExitCode _generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);
+        static ExitCode generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);
 };
 
 }  // namespace KDC

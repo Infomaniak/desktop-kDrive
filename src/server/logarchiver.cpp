@@ -82,7 +82,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         return ExitCodeSystemError;
     }
 
-    ExitCode exitCode = _copyLogsTo(tempLogArchiveDir, includeArchivedLogs, exitCause);
+    ExitCode exitCode = copyLogsTo(tempLogArchiveDir, includeArchivedLogs, exitCause);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to copy logs to temp folder: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
@@ -90,7 +90,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     }
 
     // Copy .parmsdb to temp folder
-    exitCode = _copyParmsDbTo(tempLogArchiveDir / ".parms.db", exitCause);
+    exitCode = copyParmsDbTo(tempLogArchiveDir / ".parms.db", exitCause);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to copy .parms.db to temp folder: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
@@ -98,7 +98,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     }
 
     // Generate user description file
-    exitCode = _generateUserDescriptionFile(tempLogArchiveDir, exitCause);
+    exitCode = generateUserDescriptionFile(tempLogArchiveDir, exitCause);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to generate user description file: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
@@ -106,7 +106,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     }
 
     // compress all the files in the folder
-    exitCode = _compressLogFiles(tempLogArchiveDir, exitCause, progressCallback);
+    exitCode = compressLogFiles(tempLogArchiveDir, exitCause, progressCallback);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to compress logs: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
@@ -199,7 +199,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::_copyLogsTo(const SyncPath& outputPath, bool includeArchivedLogs, ExitCause& exitCause) {
+ExitCode LogArchiver::copyLogsTo(const SyncPath& outputPath, bool includeArchivedLogs, ExitCause& exitCause) {
     exitCause = ExitCauseUnknown;
     SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
     
@@ -243,7 +243,7 @@ ExitCode LogArchiver::_copyLogsTo(const SyncPath& outputPath, bool includeArchiv
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::_copyParmsDbTo(const SyncPath& outputPath, ExitCause& exitCause) {
+ExitCode LogArchiver::copyParmsDbTo(const SyncPath& outputPath, ExitCause& exitCause) {
     const SyncPath parmsDbName = ".parms.db";
     const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
     DirectoryEntry entryParmsDb;
@@ -273,7 +273,7 @@ ExitCode LogArchiver::_copyParmsDbTo(const SyncPath& outputPath, ExitCause& exit
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::_compressLogFiles(const SyncPath& directoryToCompress, ExitCause& exitCause,
+ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, ExitCause& exitCause,
                                std::function<void(int)> progressCallback) {
     IoHelper::DirectoryIterator dir;
     IoError ioError = IoErrorUnknown;
@@ -350,7 +350,7 @@ ExitCode LogArchiver::_compressLogFiles(const SyncPath& directoryToCompress, Exi
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::_generateUserDescriptionFile(const SyncPath& outputPath, ExitCause& exitCause) {
+ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath& outputPath, ExitCause& exitCause) {
     exitCause = ExitCauseUnknown;
 
     std::string osName = CommonUtility::platformName().toStdString();

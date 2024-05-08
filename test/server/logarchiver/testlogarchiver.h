@@ -49,7 +49,7 @@ class TestLogArchiver : public CppUnit::TestFixture {
         void testGenerateLogsSupportArchive(void);
 
     private:
-        bool _parmsDbFileExist();
+        bool parmsDbFileExist();
 };
 
 }  // namespace KDC

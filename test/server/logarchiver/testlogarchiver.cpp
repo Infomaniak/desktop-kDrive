@@ -83,7 +83,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
         CPPUNIT_ASSERT(logDirsize >= 0);
 
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = LogArchiver::_copyLogsTo(tempDir.path, true, cause);
+        ExitCode exitCode = LogArchiver::copyLogsTo(tempDir.path, true, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
@@ -107,7 +107,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
 
         // compress the log file
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = LogArchiver::_compressLogFiles(tempDir.path, cause);
+        ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
@@ -118,7 +118,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
 
         IoHelper::deleteDirectory(tempDir.path / "test.log.gz", err);
 
-        exitCode = LogArchiver::_copyLogsTo(tempDir.path, false, cause);
+        exitCode = LogArchiver::copyLogsTo(tempDir.path, false, cause);
         IoHelper::deleteDirectory(logDir / "test.log.gz", err);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
@@ -134,7 +134,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
 
 void TestLogArchiver::testCopyParmsDbTo(void) {
     {
-        if (!_parmsDbFileExist()) {
+        if (!parmsDbFileExist()) {
             std::cout << std::endl << "No .parms.db file, this test will not be relevant (skipped)." << std::endl;
             LOG_WARN(_logger, "No .parms.db file, this test will not be relevant (skipped).");
             return;
@@ -153,7 +153,7 @@ void TestLogArchiver::testCopyParmsDbTo(void) {
         CPPUNIT_ASSERT(parmsDbSize >= 0);
 
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = LogArchiver::_copyParmsDbTo(tempDir.path, cause);
+        ExitCode exitCode = LogArchiver::copyParmsDbTo(tempDir.path, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
@@ -192,7 +192,7 @@ void TestLogArchiver::testCompressLogs(void) {
         CPPUNIT_ASSERT(logDirSize >= 0);
 
         ExitCause cause = ExitCauseUnknown;
-        const ExitCode exitCode = LogArchiver::_compressLogFiles(tempDir.path, cause);
+        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
@@ -231,7 +231,7 @@ void TestLogArchiver::testCompressLogs(void) {
         };
 
         ExitCause cause = ExitCauseUnknown;
-        const ExitCode exitCode = LogArchiver::_compressLogFiles(tempDir.path, cause, progress);
+        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause, progress);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
@@ -244,7 +244,7 @@ void TestLogArchiver::testGenerateUserDescriptionFile(void) {
         TemporaryDirectory tempDir;
         const SyncPath userDescriptionFile = tempDir.path / "user_description.txt";
         ExitCause cause = ExitCauseUnknown;
-        ExitCode code = LogArchiver::_generateUserDescriptionFile(userDescriptionFile, cause);
+        ExitCode code = LogArchiver::generateUserDescriptionFile(userDescriptionFile, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
 
@@ -267,7 +267,7 @@ void TestLogArchiver::testGenerateUserDescriptionFile(void) {
 }
 
 void TestLogArchiver::testGenerateLogsSupportArchive(void) {
-    if (!_parmsDbFileExist()) {
+    if (!parmsDbFileExist()) {
         std::cout << std::endl << "No .parms.db file, this test will not be relevant (skipped)." << std::endl;
         LOG_WARN(_logger, "No .parms.db file, this test will not be relevant (skipped).");
         return;
@@ -290,7 +290,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
     }
 }
 
-bool TestLogArchiver::_parmsDbFileExist() {
+bool TestLogArchiver::parmsDbFileExist() {
     const SyncPath parmsDbName = ".parms.db";
     const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
 
