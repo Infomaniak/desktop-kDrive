@@ -115,7 +115,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
 
     // Generate the archive
     int err = 0;
-    zip_t* archive = zip_open((logPath / "send_log_directory_temp" / archiveName).string().c_str(), ZIP_CREATE | ZIP_EXCL, &err);
+    zip_t* archive = zip_open((tempDirectory / archiveName).string().c_str(), ZIP_CREATE | ZIP_EXCL, &err);
     if (err != ZIP_ER_OK) {
         LOG_WARN(Log::instance()->getLogger(), "Error in zip_open: " << zip_strerror(archive));
         IoHelper::deleteDirectory(tempDirectory.parent_path(), ioError);
@@ -137,6 +137,9 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     bool endOfDirectory = false;
     DirectoryEntry entry;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.path().filename() == archiveName) {
+            continue;
+        }
         const std::string entryPath = entry.path().string();
         zip_source_t* source = zip_source_file(archive, entryPath.c_str(), 0, ZIP_LENGTH_TO_END);
         if (source == nullptr) {
@@ -176,10 +179,10 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     }
 
     // Copy the archive to the output path
-    if (!IoHelper::copyFileOrDirectory(logPath / "send_log_directory_temp" / archiveName, outputPath / archiveName, ioError)) {
+    if (!IoHelper::copyFileOrDirectory(tempDirectory / archiveName, outputPath / archiveName, ioError)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::copyFileOrDirectory : "
-                     << Utility::formatIoError(logPath / "send_log_directory_temp" / archiveName, ioError).c_str());
+                     << Utility::formatIoError(tempDirectory/ archiveName, ioError).c_str());
         IoHelper::deleteDirectory(tempDirectory.parent_path(), ioError);
 
         exitCause = ExitCauseUnknown;
