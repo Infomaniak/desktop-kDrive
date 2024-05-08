@@ -62,7 +62,7 @@ static const QString folderBlocName("folderBloc");
 Q_LOGGING_CATEGORY(lcDrivePreferencesWidget, "gui.drivepreferenceswidget", QtInfoMsg)
 
 DrivePreferencesWidget::DrivePreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : ParametersWidget(parent), _gui(gui) {
+    : LargeWidgetWithCustomToolTip(parent), _gui(gui) {
     setContentsMargins(0, 0, 0, 0);
 
     /*
@@ -306,7 +306,7 @@ void DrivePreferencesWidget::showEvent(QShowEvent *event) {
             folderItemWidget->closeFolderView();
         }
     }
-    ParametersWidget::showEvent(event);
+    LargeWidgetWithCustomToolTip::showEvent(event);
 }
 
 void DrivePreferencesWidget::onVfsConversionCompleted(int syncDbId) {
