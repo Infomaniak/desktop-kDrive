@@ -442,39 +442,26 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
 
     // Get rights for trustee
     ACCESS_MASK rights = 0;
-    EXPLICIT_ACCESS *explicitAccessList = nullptr;
-    auto explicitAccessCount = std::make_unique<ULONG>(0);
-    result = GetExplicitEntriesFromAcl(pfileACL, explicitAccessCount.get(), &explicitAccessList);
+    result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
     ioError = dWordError2ioError(result);
-    if (ioError != IoErrorSuccess) {
-        LOGW_WARN(logger, L"GetExplicitEntriesFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
-                                                                      << result << L"'");
-        LocalFree(explicitAccessList);
+    if (result == ERROR_INVALID_ACL) { // The GetEffectiveRightsFromAcl function fails and returns ERROR_INVALID_ACL if the specified ACL contains an inherited access-denied ACE.
+        LOGW_INFO(logger, L"getRightsWindowsApi: path='" << Utility::formatSyncPath(path) << L"', the specified ACL contains an inherited access - denied ACE. Considerring the file as not existing.");
+        read = false;
+        write = false;
+        exec = false;
+        ioError = IoErrorNoSuchFileOrDirectory;
+        LocalFree(psecDesc);
+        return true;
+    }
+
+    if (result != ERROR_SUCCESS) {
+        LOGW_WARN(logger, L"GetEffectiveRightsFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result
+                                                                       << L"'");
         LocalFree(psecDesc);
         return false;  // Caller should call _isExpectedError
     }
 
-    for (ULONG i = 0; i < *explicitAccessCount; i++) {
-        if (explicitAccessList[i].grfAccessMode == GRANT_ACCESS &&
-            explicitAccessList[i].Trustee.TrusteeForm == Utility::_trustee.TrusteeForm &&
-            explicitAccessList[i].Trustee.TrusteeType == Utility::_trustee.TrusteeType &&
-            wcscmp(explicitAccessList[i].Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
-            rights |= explicitAccessList[i].grfAccessPermissions;
-        }
-    }
-
-    for (ULONG i = 0; i < *explicitAccessCount; i++) {
-        if (explicitAccessList[i].grfAccessMode == DENY_ACCESS &&
-            explicitAccessList[i].Trustee.TrusteeForm == Utility::_trustee.TrusteeForm &&
-            explicitAccessList[i].Trustee.TrusteeType == Utility::_trustee.TrusteeType &&
-            wcscmp(explicitAccessList[i].Trustee.ptstrName, Utility::_trustee.ptstrName) == 0) {
-            rights &= ~explicitAccessList[i].grfAccessPermissions;
-        }
-    }
-
-    LocalFree(explicitAccessList);
     LocalFree(psecDesc);
-
     read = (rights & FILE_GENERIC_READ) == FILE_GENERIC_READ;
     write = (rights & FILE_GENERIC_WRITE) == FILE_GENERIC_WRITE;
     exec = (rights & FILE_EXECUTE) == FILE_EXECUTE;
