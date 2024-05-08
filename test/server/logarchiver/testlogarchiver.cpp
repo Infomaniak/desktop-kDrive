@@ -192,7 +192,7 @@ void TestLogArchiver::testCompressLogs(void) {
         CPPUNIT_ASSERT(logDirSize >= 0);
 
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause);
+        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
@@ -231,8 +231,7 @@ void TestLogArchiver::testCompressLogs(void) {
         };
 
         ExitCause cause = ExitCauseUnknown;
-
-        ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause, progress);
+        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause, progress);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
