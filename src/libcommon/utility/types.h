@@ -163,8 +163,6 @@ typedef enum {
     ExitCauseNoSearchPermission,
     ExitCauseNotFound,
     ExitCauseQuotaExceeded
-
-
 } ExitCause;
 
 // Conflict types ordered by priority

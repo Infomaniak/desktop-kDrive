@@ -50,7 +50,7 @@ class LogArchiver {
          * This method will not create an archive, it will only compress the files in the directory.
          * The compressed files will have the same name as the original files with the .gz extension.
          * \param directoryToCompress The directory containing the log files to compress.
-         * \param exitCause The exit cause to be filled in case of error.
+         * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to ExitCauseUnknown;
          * \param progressCallback The callback to be called with the progress percentage.
          * \return The exit code of the operation.
          */
