@@ -205,11 +205,11 @@ void TestLogArchiver::testCompressLogs(void) {
         bool exists = false;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(tempDir.path / "test.log.gz", exists, err));
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
-        CPPUNIT_ASSERT_EQUAL(true, exists);
+        CPPUNIT_ASSERT(exists);
 
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(logDir / "test.log.gz", exists, err));
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
-        CPPUNIT_ASSERT_EQUAL(true, exists);
+        CPPUNIT_ASSERT(exists);
     }
 
     {  // test the progress bar
@@ -253,7 +253,7 @@ void TestLogArchiver::testGenerateUserDescriptionFile(void) {
         IoError err = IoErrorSuccess;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(userDescriptionFile, exists, err));
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
-        CPPUNIT_ASSERT_EQUAL(true, exists);
+        CPPUNIT_ASSERT(exists);
 
         // Chack there is at least 5 lines in the file
         std::ifstream file(userDescriptionFile);
@@ -287,7 +287,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
         IoError err = IoErrorSuccess;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(archiveFile, exists, err));
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
-        CPPUNIT_ASSERT_EQUAL(true, exists);
+        CPPUNIT_ASSERT(exists);
     }
 }
 
