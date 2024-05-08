@@ -1,0 +1,26 @@
+name: Package kDrive desktop on all platforms
+
+on:
+  workflow_dispatch:
+    BRANCH:
+      description: 'Branch to use'
+      required: true
+      default: 'main'
+      type: choice
+      options:
+      - main
+      - develop
+      - RELEASE-*
+      - KDESKTOP-834-CI-workflows-for-nightly-builds # Remove after testing
+
+concurrency:
+  group: packaging
+  cancel-in-progress: true
+
+jobs:
+  package-Linux:
+    runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
+
+    steps:
+      - name: test the workflow
+        run : pwd
