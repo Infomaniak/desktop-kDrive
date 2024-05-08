@@ -39,8 +39,7 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t& size, IoError& ioError) {
     SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
 
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
-        bool tooDeep = false;
-        bool result = IoHelper::getDirectorySize(logPath, size, ioError);
+        IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoErrorSuccess) {
             return true;
         }
