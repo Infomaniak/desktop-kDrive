@@ -56,6 +56,13 @@ class LogArchiver {
          */
         static ExitCode _compressLogFiles(const SyncPath &directoryToCompress, ExitCause &exitCause,
                                   std::function<void(int)> progressCallback = nullptr);
+
+        /*! Generates a file containing the user description.
+         * The file will contain: Current OS, current architecture, current version, current user(s), current drive(s).
+         * \param outputPath The path where the file will be generated.
+         * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to ExitCauseUnknown;
+         * \return The exit code of the operation.
+         */
         static ExitCode _generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);
 };
 
