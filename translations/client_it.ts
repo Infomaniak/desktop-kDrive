@@ -2517,6 +2517,11 @@ Per favore, utilizza il seguente link per inviare i log al supporto: &lt;a style
         <translation>Per 1 altra settimana</translation>
     </message>
     <message>
+        <location filename="../src/gui/synthesispopover.cpp" line="1158"/>
+        <source>Quit kDrive</source>
+        <translation>Esci da kDrive</translation>
+    </message>
+    <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1415"/>
         <source>Show errors and informations</source>
         <translation>Mostra errori e informazioni</translation>
@@ -2596,11 +2601,6 @@ Per favore, utilizza il seguente link per inviare i log al supporto: &lt;a style
         <location filename="../src/gui/synthesispopover.cpp" line="1150"/>
         <source>Need help</source>
         <translation>Hai bisogno di aiuto?</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/synthesispopover.cpp" line="1158"/>
-        <source>Quit application</source>
-        <translation>Esci dall&apos;applicazione</translation>
     </message>
     <message>
         <location filename="../src/gui/synthesispopover.cpp" line="1403"/>
