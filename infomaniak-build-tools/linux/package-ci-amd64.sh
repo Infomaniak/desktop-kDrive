@@ -9,7 +9,7 @@ export QT_BASE_DIR=$HOME/Qt/6.2.3/gcc_64
 export QTDIR=$QT_BASE_DIR
 export QMAKE=$QT_BASE_DIR/bin/qmake
 export PATH=$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH
-export LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$APPDIR/usr/lib:/usr/local/lib:/usr/local/lib64:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
 mkdir -p $APP_DIR/usr/plugins
