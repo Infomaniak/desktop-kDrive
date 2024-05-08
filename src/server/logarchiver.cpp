@@ -206,7 +206,6 @@ ExitCode LogArchiver::_copyLogsTo(const SyncPath& outputPath, bool includeArchiv
     IoError ioError = IoErrorSuccess;
     IoHelper::DirectoryIterator dir;
     if (!IoHelper::getDirectoryIterator(logPath, false, ioError, dir)) {
-        LOG_INFO(Log::instance()->getLogger(), "");
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in DirectoryIterator: " << Utility::formatIoError(logPath, ioError).c_str());
         return ExitCodeSystemError;
@@ -216,12 +215,12 @@ ExitCode LogArchiver::_copyLogsTo(const SyncPath& outputPath, bool includeArchiv
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) {
-            LOG_WARN(Log::instance()->getLogger(), "Ignoring temp directory " << entry.path().filename().string().c_str());
+            LOG_INFO(Log::instance()->getLogger(), "Ignoring temp directory " << entry.path().filename().string().c_str());
             continue;
         }
 
         if (!includeArchivedLogs && entry.path().filename().extension() == Str(".gz")) {
-            LOG_WARN(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string().c_str());
+            LOG_INFO(Log::instance()->getLogger(), "Ignoring old log file " << entry.path().filename().string().c_str());
             continue;
         }
 
