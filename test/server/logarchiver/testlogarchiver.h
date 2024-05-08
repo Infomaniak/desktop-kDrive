@@ -22,9 +22,15 @@ using namespace CppUnit;
 
 namespace KDC {
 
-class TestLog : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestLog);
+class TestLogArchiver : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestLogArchiver);
         CPPUNIT_TEST(testLog);
+        CPPUNIT_TEST(testGetLogEstimatedSize);
+        CPPUNIT_TEST(testCopyLogsTo);
+        CPPUNIT_TEST(testCopyParmsDbTo);
+        CPPUNIT_TEST(testCompressLogs);
+        CPPUNIT_TEST(testGenerateUserDescriptionFile);
+        CPPUNIT_TEST(testGenerateLogsSupportArchive);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -35,9 +41,15 @@ class TestLog : public CppUnit::TestFixture {
         log4cplus::Logger _logger;
 
         void testLog(void);
+        void testGetLogEstimatedSize(void);
+        void testCopyLogsTo(void);
+        void testCopyParmsDbTo(void);
+        void testCompressLogs(void);
+        void testGenerateUserDescriptionFile(void);
+        void testGenerateLogsSupportArchive(void);
 
     private:
-        bool _parmsDbFileExist();
+        bool parmsDbFileExist();
 };
 
 }  // namespace KDC

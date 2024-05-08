@@ -16,28 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <log4cplus/logger.h>
-
-using namespace CppUnit;
+#include <string>
+#include <filesystem>
+#include <sstream> 
 
 namespace KDC {
 
-class TestLog : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestLog);
-        CPPUNIT_TEST(testLog);
-        CPPUNIT_TEST_SUITE_END();
-
-    public:
-        void setUp(void);
-        void tearDown(void);
-
-    protected:
-        log4cplus::Logger _logger;
-
-        void testLog(void);
-
-    private:
-        bool _parmsDbFileExist();
+struct TemporaryDirectory {
+        std::filesystem::path path;
+        TemporaryDirectory(const std::string& testType = "undef");
+        ~TemporaryDirectory();
 };
 
 }  // namespace KDC

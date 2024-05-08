@@ -26,20 +26,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-TemporaryDirectory::TemporaryDirectory() {
-    const std::time_t now = std::time(nullptr);
-    const std::tm tm = *std::localtime(&now);
-    std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M");
-
-    path = std::filesystem::temp_directory_path() / ("kdrive_io_unit_tests_" + woss.str());
-    std::filesystem::create_directory(path);
-}
-
-TemporaryDirectory::~TemporaryDirectory() {
-    std::filesystem::remove_all(path);
-}
-
 IoHelperTests::IoHelperTests() : IoHelper() {}
 
 void IoHelperTests::setIsDirectoryFunction(std::function<bool(const SyncPath &path, std::error_code &ec)> f) {

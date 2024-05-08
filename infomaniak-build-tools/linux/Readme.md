@@ -10,6 +10,7 @@
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
     - [xxHash](#xxhash)
+    - [libzip](#libzip)
 - [Build in Debug](#build-in-debug)
     - [Qt Creator](#using-qt-creator)
         - [Configuration](#configuration)
@@ -94,7 +95,7 @@ sudo make install
 
 ## Poco
 
-Poco installation requires the previous OpenSSL installation to be complete
+> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
 
 ```bash
 cd ~/Projects
@@ -151,6 +152,21 @@ mkdir build
 cd build
 cmake ..
 sudo cmake --build . --target install
+```
+
+## libzip
+
+Clone and install libzip
+
+```bash
+cd ~/Projects
+git clone https://github.com/nih-at/libzip.git
+cd libzip
+git checkout tags/v1.10.1
+mkdir build && cd build
+cmake ..
+make
+make install
 ```
 
 # Build in Debug

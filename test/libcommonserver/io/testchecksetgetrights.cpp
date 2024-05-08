@@ -25,7 +25,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static struct RightsSet {
+struct RightsSet {
         RightsSet(int rights) : read(rights & 4), write(rights & 2), execute(rights & 1){};
         RightsSet(bool read, bool write, bool execute) : read(read), write(write), execute(execute){};
         bool read;
