@@ -31,8 +31,11 @@ constexpr char SELECT_APP_STATE_REQUEST[] = "SELECT value FROM app_state WHERE k
 constexpr char UPDATE_APP_STATE_REQUEST_ID[] = "update_value_with_key";
 constexpr char UPDATE_APP_STATE_REQUEST[] = "UPDATE app_state SET value=?2 WHERE key=?1;";
 
-constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestart[] = "0";
-constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestart[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadeDate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath[] = "";
+constexpr char APP_STATE_KEY_DEFAULT_LogUploadStatus[] = "N";
 
 namespace KDC {
 
@@ -78,11 +81,28 @@ bool ParmsDb::prepareAppState() {
 }
 
 bool ParmsDb::insertDefaultAppState() {
-    if (!insertAppState(AppStateKey::LastServerSelfRestart, APP_STATE_KEY_DEFAULT_LastServerSelfRestart)) {
+    if (!insertAppState(AppStateKey::LastServerSelfRestartDate, APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate)) {
+        LOG_WARN(_logger, "Error inserting default value for LastServerSelfRestartDate");
         return false;
     }
 
-    if (!insertAppState(AppStateKey::LastClientSelfRestart, APP_STATE_KEY_DEFAULT_LastClientSelfRestart)) {
+    if (!insertAppState(AppStateKey::LastClientSelfRestartDate, APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate)) {
+        LOG_WARN(_logger, "Error inserting default value for LastClientSelfRestartDate");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LastSuccessfulLogUploadeDate, APP_STATE_KEY_DEFAULT_LastLogUploadeDate)) {
+        LOG_WARN(_logger, "Error inserting default value for LastSuccessfulLogUploadeDate");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LastLogUploadArchivePath, APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath)) {
+        LOG_WARN(_logger, "Error inserting default value for LastLogUploadArchivePath");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LogUploadStatus, APP_STATE_KEY_DEFAULT_LogUploadStatus)) {
+        LOG_WARN(_logger, "Error inserting default value for LogUploadStatus");
         return false;
     }
 
@@ -101,8 +121,8 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
     }
-
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
+
     if (!found) {
         ASSERT(queryResetAndClearBindings(INSERT_APP_STATE_REQUEST_ID));
         ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
@@ -159,5 +179,5 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
     }
     return true;
-} 
+}
 }  // namespace KDC
