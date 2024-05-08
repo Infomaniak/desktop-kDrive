@@ -460,57 +460,6 @@
     </message>
 </context>
 <context>
-    <name>KDC::BandwidthDialog</name>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="80"/>
-        <source>Bandwidth</source>
-        <translation>Bande passante</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="88"/>
-        <source>Download bandwidth</source>
-        <translation>Bande passante de téléchargement</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="101"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="149"/>
-        <source>No limit</source>
-        <translation>Aucune limite</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="114"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="162"/>
-        <source>Limit to</source>
-        <translation>Limiter à</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="136"/>
-        <source>Upload bandwidth</source>
-        <translation>Bande passante de téléversement</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="191"/>
-        <source>SAVE</source>
-        <translation>ENREGISTRER</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="198"/>
-        <source>CANCEL</source>
-        <translation>ANNULER</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="267"/>
-        <source>Do you want to save your modifications?</source>
-        <translation>Voulez-vous enregistrer vos modifications ?</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="128"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="176"/>
-        <source>KB/s</source>
-        <translation>Ko/s</translation>
-    </message>
-</context>
-<context>
     <name>KDC::BaseFolderTreeItemWidget</name>
     <message>
         <location filename="../src/gui/basefoldertreeitemwidget.cpp" line="105"/>

@@ -253,6 +253,10 @@ AppServer::AppServer(int &argc, char **argv)
     // Setup proxy
     setupProxy();
 
+    // Setup auto start
+    if (ParametersCache::instance()->parameters().autoStart() && !OldUtility::hasLaunchOnStartup(_theme->appName(), _logger)) {
+        OldUtility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true, _logger);
+    }
 
 #ifdef PLUGINDIR
     // Setup extra plugin search path

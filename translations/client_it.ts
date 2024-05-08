@@ -461,57 +461,6 @@
     </message>
 </context>
 <context>
-    <name>KDC::BandwidthDialog</name>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="80"/>
-        <source>Bandwidth</source>
-        <translation>Larghezza di banda</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="88"/>
-        <source>Download bandwidth</source>
-        <translation>Larghezza di banda in download</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="101"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="149"/>
-        <source>No limit</source>
-        <translation>Nessun limite</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="114"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="162"/>
-        <source>Limit to</source>
-        <translation>Limita a</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="136"/>
-        <source>Upload bandwidth</source>
-        <translation>Larghezza di banda in upload</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="191"/>
-        <source>SAVE</source>
-        <translation>SALVA</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="198"/>
-        <source>CANCEL</source>
-        <translation>ANNULLA</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="267"/>
-        <source>Do you want to save your modifications?</source>
-        <translation>Salvare le modifiche?</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="128"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="176"/>
-        <source>KB/s</source>
-        <translation>KB/s</translation>
-    </message>
-</context>
-<context>
     <name>KDC::BaseFolderTreeItemWidget</name>
     <message>
         <location filename="../src/gui/basefoldertreeitemwidget.cpp" line="105"/>
