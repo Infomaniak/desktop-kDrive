@@ -39,7 +39,7 @@ jobs:
           ref: ${{ env.BRANCH_NAME }}
           submodules: recursive
 
-            - name: Restore extension packages
+      - name: Restore extension packages
         run : nuget restore extensions/windows/cfapi/kDriveExt.sln
 
       - name: Import Windows virtual certificate
