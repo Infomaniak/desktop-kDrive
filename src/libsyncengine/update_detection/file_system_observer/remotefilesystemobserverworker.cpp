@@ -626,7 +626,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                     LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(name).c_str() << L" ("
                                                                    << Utility::s2ws(id).c_str() << L") edited at:" << modtime);
                 }
-            } else if (action == trashAction || action == moveOutAction || action == deleteAction || rightsRemoved) {
+            } else if (action == trashAction || action == moveOutAction || rightsRemoved) {
                 if (action == moveOutAction && movedItems.find(id) != movedItems.end()) {
                     // Ignore move out action
                     continue;
@@ -645,7 +645,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                     return ExitCodeBackError;
                 }
             } else if (action == accessAction || action == restoreFileShareCreate || action == restoreFileShareDelete ||
-                       action == restoreShareLinkCreate || action == restoreShareLinkDelete) {
+                       action == restoreShareLinkCreate || action == restoreShareLinkDelete || action == deleteAction) {
                 // Ignore these actions
             } else {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on file: " << SyncName2WStr(name).c_str() << L" ("
