@@ -66,5 +66,7 @@ jobs:
       - name: Build and package kDrive desktop
         run : ./infomaniak-build-tools/macos/build-drive.sh
 
+      - name: Grant upload script execute permission
+        run : chmod +x ./infomaniak-build-tools/macos/upload-ci.sh
       - name: Upload kDrive desktop
         run : ./infomaniak-build-tools/macos/upload-ci.sh
