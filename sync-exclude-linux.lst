@@ -4,6 +4,8 @@
 .parms.db-wal
 .sync_*.db-shm
 .sync_*.db-wal
+.sentry-native_client
+.sentry-native_server
 *_conflict_*_*_*
 *_blacklisted_*_*_*
 *~
@@ -13,6 +15,7 @@
 ~*.tmp
 *.idlk
 *.lock
+*.lck
 *.part
 .~lock.*
 *.symform
