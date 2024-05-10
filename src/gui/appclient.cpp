@@ -196,7 +196,9 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     }
 }
 
-AppClient::~AppClient() {}
+AppClient::~AppClient() {
+    CommClient::instance()->stop();
+}
 
 void AppClient::showSynthesisDialog() {
     _gui->showSynthesisDialog();

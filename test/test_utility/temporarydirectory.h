@@ -16,25 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "parameterswidget.h"
-#include "customdialog.h"
+#include <string>
+#include <filesystem>
+#include <sstream> 
 
 namespace KDC {
 
-ParametersWidget::ParametersWidget(QWidget *parent) : LargeWidgetWithCustomToolTip(parent) {}
-
-void ParametersWidget::setEnabled(bool val) {
-    // Disable all parent CustomDialog
-    QWidget *nextParent = parentWidget();
-    while (nextParent) {
-        CustomDialog *customDialog = qobject_cast<CustomDialog *>(nextParent);
-        if (customDialog) {
-            customDialog->setEnabled(val);
-            break;
-        }
-
-        nextParent = nextParent->parentWidget();
-    }
-}
+struct TemporaryDirectory {
+        std::filesystem::path path;
+        TemporaryDirectory(const std::string& testType = "undef");
+        ~TemporaryDirectory();
+};
 
 }  // namespace KDC

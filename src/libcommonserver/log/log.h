@@ -20,9 +20,10 @@
 
 #include "libcommonserver/commonserverlib.h"
 #include "libcommon/utility/types.h"
-
 #include <log4cplus/logger.h>
+#include <zip.h>
 #include <sentry.h>
+#include <log4cplus/loggingmacros.h>
 
 namespace KDC {
 
@@ -161,11 +162,18 @@ class COMMONSERVER_EXPORT Log {
         inline log4cplus::Logger getLogger() { return _logger; }
         bool configure(bool useLog, LogLevel logLevel, bool purgeOldLogs);
 
+        /*! Returns the path of the log file.
+         * \return The path of the log file.
+         */
+        SyncPath getLogFilePath() const;
+
     private:
+        friend class TestLog;
         Log(const log4cplus::tstring &filePath);
 
         static std::shared_ptr<Log> _instance;
         log4cplus::Logger _logger;
+        SyncPath _filePath;
 };
 
 }  // namespace KDC

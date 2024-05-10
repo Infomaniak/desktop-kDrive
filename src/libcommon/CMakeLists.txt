@@ -5,6 +5,7 @@ find_package(Poco 1.12.5 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.0 REQUIRED)
 find_package(sentry REQUIRED)
 find_package(xxHash 0.8.1 REQUIRED)
+find_package(libzip 1.10.1 REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
 
@@ -60,6 +61,7 @@ if (WIN32)
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
         "C:/Program Files (x86)/log4cplus/include"
+        "C:/Program Files (x86)/libzip/include"
         ${CMAKE_SOURCE_DIR}/src/3rdparty/keychain/include)
 else()
     target_include_directories(${libcommon_NAME} PUBLIC
@@ -74,7 +76,9 @@ target_link_libraries(${libcommon_NAME}
     Qt6::Core Qt6::Gui Qt6::Widgets Qt6::Network Qt6::Sql
     Poco::Foundation Poco::JSON Poco::Util
     sentry::sentry
-    keychain)
+    keychain
+    libzip::zip
+    )
 
 if (WIN32)
     target_link_libraries(${libcommon_NAME}

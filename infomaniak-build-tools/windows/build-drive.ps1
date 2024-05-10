@@ -366,7 +366,8 @@ $testers = @(
 )
 
 $dependencies = @(
-"${env:ProgramFiles(x86)}//zlib-1.2.11/bin/zlib1.dll",
+"${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1.dll",
+"${env:ProgramFiles(x86)}/libzip/bin/zip.dll",
 "${env:ProgramFiles(x86)}/log4cplus/bin/log4cplusU.dll",
 "${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64.dll",
 "${env:ProgramFiles}/OpenSSL/bin/libssl-3-x64.dll",

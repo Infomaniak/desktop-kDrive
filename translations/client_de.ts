@@ -460,57 +460,7 @@
 </translation>
     </message>
 </context>
-<context>
-    <name>KDC::BandwidthDialog</name>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="80"/>
-        <source>Bandwidth</source>
-        <translation>Bandbreite</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="88"/>
-        <source>Download bandwidth</source>
-        <translation>Download-Bandbreite</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="101"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="149"/>
-        <source>No limit</source>
-        <translation>Keine Begrenzung</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="114"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="162"/>
-        <source>Limit to</source>
-        <translation>Begrenzen auf</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="136"/>
-        <source>Upload bandwidth</source>
-        <translation>Upload-Bandbreite</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="191"/>
-        <source>SAVE</source>
-        <translation>SPEICHERN</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="198"/>
-        <source>CANCEL</source>
-        <translation>ABBRECHEN</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="267"/>
-        <source>Do you want to save your modifications?</source>
-        <translation>Wollen Sie Ihre Änderungen speichern?</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="128"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="176"/>
-        <source>KB/s</source>
-        <translation>KB/s</translation>
-    </message>
-</context>
+
 <context>
     <name>KDC::BaseFolderTreeItemWidget</name>
     <message>

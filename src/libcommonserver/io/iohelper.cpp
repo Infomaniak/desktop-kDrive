@@ -323,6 +323,66 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
     return true;
 }
 
+bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &ioError, unsigned int maxDepth) {
+    size = 0;
+    ItemType itemType;
+    const bool success = getItemType(path, itemType);
+    ioError = itemType.ioError;
+    if (!success || ioError != IoErrorSuccess) {
+        return _isExpectedError(ioError);
+    }
+
+    assert(ioError != IoErrorUnknown);
+
+    if (itemType.nodeType != NodeTypeDirectory) {
+        ioError = IoErrorIsAFile;
+        return false;
+    }
+
+    IoHelper::DirectoryIterator dir;
+    IoHelper::getDirectoryIterator(path, true, ioError, dir);
+    if (ioError != IoErrorSuccess) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        return _isExpectedError(ioError);
+    }
+
+    DirectoryEntry entry;
+    ioError = IoErrorSuccess;
+    bool endOfDirectory = false;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.is_directory()) {
+            if (maxDepth == 0) {
+                LOG_WARN(Log::instance()->getLogger(), "Max depth reached in getDirectorySize, skipping deeper directories: "
+                                                           << Utility::formatSyncPath(path).c_str());
+                ioError = IoErrorMaxDepthExceeded;
+                return _isExpectedError(ioError);
+            }
+            uint64_t entrySize = 0;
+            if (!getDirectorySize(entry.path(), entrySize, ioError, maxDepth - 1)) {
+                return false;
+            }
+            size += entrySize;
+            continue;
+        }
+        std::error_code ec;
+        uint64_t entrySize = _fileSize(entry.path(), ec);
+        if (!ec) {
+            size += entrySize;
+        } else {
+            LOG_WARN(Log::instance()->getLogger(), "Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
+            ioError = stdError2ioError(ec);
+            return _isExpectedError(ioError);
+        }
+    }
+
+    if (!endOfDirectory) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        return _isExpectedError(ioError);
+    }
+
+    return true;
+}
+
 bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     std::error_code ec;
     directoryPath = _tempDirectoryPath(ec);  // The std::filesystem implementation returns an empty path on error.
@@ -622,7 +682,7 @@ void IoHelper::DirectoryIterator::disableRecursionPending() {
 }
 
 #ifndef _WIN32
-//See iohelper_win.cpp for the Windows implementation
+// See iohelper_win.cpp for the Windows implementation
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
     return _setRightsStd(path, read, write, exec, ioError);
 }
