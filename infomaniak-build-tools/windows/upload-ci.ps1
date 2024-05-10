@@ -27,6 +27,9 @@ else
     $minorVersion = $version.Substring(0, 5)
 
     $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$app&directory_path=$mainVersion/$minorVersion&conflict=version"
+    $headers = @{
+        Authorization="Bearer $env:KDRIVE_TOKEN"
+    }
 
-    Invoke-RestMethod -Method "POST" -Uri $uri -Header "Authorization: Bearer $env:KDRIVE_TOKEN" -ContentType 'application/octet-stream' -InFile $app
+    Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $app
 }
