@@ -355,8 +355,7 @@ Set-Content -Path "$buildPath/NSIS.template.nsi" -Value $scriptContent
 
 $binaries = @(
 "kDrive.exe",
-"kDrive_client.exe",
-"kDrive_crash_reporter.exe"
+"kDrive_client.exe"
 )
 
 $testers = @(
