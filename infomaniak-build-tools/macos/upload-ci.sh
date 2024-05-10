@@ -18,8 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-VERSION= $(grep "KDRIVE_VERSION_FULL" "build-macos/client/version.h" | awk '{print $3}')
-$APP_NAME=kDrive-${VERSION}.pkg
+VERSION=$(grep "KDRIVE_VERSION_FULL" "build-macos/client/version.h" | awk '{print $3}')
+APP_NAME=kDrive-${VERSION}.pkg
+
 cd build-macos/install
 
 if [ -z ${KDRIVE_TOKEN+x} ]; then
