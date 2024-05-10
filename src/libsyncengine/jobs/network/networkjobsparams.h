@@ -118,33 +118,34 @@ static const std::string urlKey = "url";
 static const std::string symbolicLinkKey = "symbolic_link";
 
 /// Action type
-static const std::string createAction = "file_create";
-static const std::string renameAction = "file_rename";
-static const std::string editAction = "file_update";
-static const std::string accessAction = "file_access";
-static const std::string trashAction = "file_trash";            // The file has been put into the trash
-static const std::string deleteAction = "file_delete";          // The file has been completely deleted from the trash
-static const std::string moveInAction = "file_move";
-static const std::string moveOutAction = "file_move_out";
-static const std::string restoreAction = "file_restore";
-static const std::string restoreFileShareCreate = "file_share_create";
-static const std::string restoreFileShareDelete = "file_share_delete";
-static const std::string restoreShareLinkCreate = "share_link_create";
-static const std::string restoreShareLinkDelete = "share_link_delete";
-//// Rights
-/// TODO : implement all rights
-static const std::string accessRightInsert = "acl_insert";
-static const std::string accessRightUpdate = "acl_update";
-static const std::string accessRightRemove = "acl_remove";
-static const std::string accessRightUserInsert = "acl_user_insert";
-static const std::string accessRightUserUpdate = "acl_user_update";
-static const std::string accessRightUserRemove = "acl_user_remove";
-static const std::string accessRightTeamInsert = "acl_team_insert";
-static const std::string accessRightTeamUpdate = "acl_team_update";
-static const std::string accessRightTeamRemove = "acl_team_remove";
-static const std::string accessRightMainUsersInsert = "acl_main_users_insert";
-static const std::string accessRightMainUsersUpdate = "acl_main_users_update";
-static const std::string accessRightMainUsersRemove = "acl_main_users_remove";
+enum class ActionCode {
+    actionCodeCreate,
+    actionCodeRename,
+    actionCodeEdit,
+    actionCodeAccess,
+    actionCodeTrash,    // The file has been put into the trash
+    actionCodeDelete,   // The file has been completely deleted from the trash
+    actionCodeMoveIn,
+    actionCodeMoveOut,
+    actionCodeRestore,
+    actionCodeRestoreFileShareCreate,
+    actionCodeRestoreFileShareDelete,
+    actionCodeRestoreShareLinkCreate,
+    actionCodeRestoreShareLinkDelete,
+    actionCodeAccessRightInsert,
+    actionCodeAccessRightUpdate,
+    actionCodeAccessRightRemove,
+    actionCodeAccessRightUserInsert,
+    actionCodeAccessRightUserUpdate,
+    actionCodeAccessRightUserRemove,
+    actionCodeAccessRightTeamInsert,
+    actionCodeAccessRightTeamUpdate,
+    actionCodeAccessRightTeamRemove,
+    actionCodeAccessRightMainUsersInsert,
+    actionCodeAccessRightMainUsersUpdate,
+    actionCodeAccessRightMainUsersRemove,
+    actionCodeUnknown
+};
 
 /// Visibility
 static const std::string isRootKey = "is_root";
@@ -160,7 +161,6 @@ static const std::string codeKey = "code";
 static const std::string descriptionKey = "description";
 static const std::string contextKey = "context";
 /// Error codes
-
 enum class NetworkErrorCode {
     forbiddenError,
     notAuthorized,
@@ -186,6 +186,7 @@ enum class NetworkErrorReason {
     unknownReason  // None of the handled reasons
 };
 
+ActionCode getActionCode(const std::string &action) noexcept;
 NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept;
 NetworkErrorReason getNetworkErrorReason(const std::string &errorCode) noexcept;
 

@@ -21,6 +21,41 @@
 #include <map>
 
 namespace KDC {
+
+ActionCode getActionCode(const std::string &action) noexcept {
+    static const std::unordered_map<std::string, ActionCode> actionMap = {
+        {"file_create", ActionCode::actionCodeCreate},
+        {"file_rename", ActionCode::actionCodeRename},
+        {"file_update", ActionCode::actionCodeEdit},
+        {"file_access", ActionCode::actionCodeAccess},
+        {"file_trash", ActionCode::actionCodeTrash},
+        {"file_delete", ActionCode::actionCodeDelete},
+        {"file_move", ActionCode::actionCodeMoveIn},
+        {"file_move_out", ActionCode::actionCodeMoveOut},
+        {"file_restore", ActionCode::actionCodeRestore},
+        {"file_share_create", ActionCode::actionCodeRestoreFileShareCreate},
+        {"file_share_delete", ActionCode::actionCodeRestoreFileShareDelete},
+        {"share_link_create", ActionCode::actionCodeRestoreShareLinkCreate},
+        {"share_link_delete", ActionCode::actionCodeRestoreShareLinkDelete},
+        {"acl_insert", ActionCode::actionCodeAccessRightInsert},
+        {"acl_update", ActionCode::actionCodeAccessRightUpdate},
+        {"acl_remove", ActionCode::actionCodeAccessRightRemove},
+        {"acl_user_insert", ActionCode::actionCodeAccessRightUserInsert},
+        {"acl_user_update", ActionCode::actionCodeAccessRightUserUpdate},
+        {"acl_user_remove", ActionCode::actionCodeAccessRightUserRemove},
+        {"acl_team_insert", ActionCode::actionCodeAccessRightTeamInsert},
+        {"acl_team_update", ActionCode::actionCodeAccessRightTeamUpdate},
+        {"acl_team_remove", ActionCode::actionCodeAccessRightTeamRemove},
+        {"acl_main_users_insert", ActionCode::actionCodeAccessRightMainUsersInsert},
+        {"acl_main_users_update", ActionCode::actionCodeAccessRightMainUsersUpdate},
+        {"acl_main_users_remove", ActionCode::actionCodeAccessRightMainUsersRemove}
+    };
+
+    if (const auto it = actionMap.find(action); it != actionMap.cend()) return it->second;
+
+    return ActionCode::actionCodeUnknown;
+};
+
 NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {
     static const std::map<std::string, NetworkErrorCode, std::less<std::string>> errorCodeMap = {
         {"forbidden_error", NetworkErrorCode::forbiddenError},
@@ -50,5 +85,6 @@ NetworkErrorReason getNetworkErrorReason(const std::string &errorReason) noexcep
     if (const auto it = errorReasonMap.find(errorReason); it != errorReasonMap.cend()) return it->second;
 
     return NetworkErrorReason::unknownReason;
-};
+}
+
 }  // namespace KDC
