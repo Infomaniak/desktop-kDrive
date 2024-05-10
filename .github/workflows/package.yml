@@ -55,5 +55,8 @@ jobs:
           ref: ${{ env.BRANCH_NAME }}
           submodules: recursive
 
+      - name: Unlock keychain to use the certificate
+        run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
+
       - name: Build and package kDrive desktop
         run : ./infomaniak-build-tools/macos/build-drive.sh
