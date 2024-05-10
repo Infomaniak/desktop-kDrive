@@ -46,7 +46,7 @@ jobs:
 
       - name: Grant packaging script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/package-ci-amd64.sh
-      - name: Build kDrive desktop
+      - name: Package and upload kDrive desktop
         run : ./infomaniak-build-tools/linux/package-ci-amd64.sh
 
   package-MacOS:
@@ -65,3 +65,6 @@ jobs:
 
       - name: Build and package kDrive desktop
         run : ./infomaniak-build-tools/macos/build-drive.sh
+
+      - name: Upload kDrive desktop
+        run : ./infomaniak-build-tools/macos/upload-ci.sh
