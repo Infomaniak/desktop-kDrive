@@ -11,12 +11,10 @@ on:
         options:
         - main
         - develop
-        - RELEASE-*
-        - KDESKTOP-834-CI-workflows-for-nightly-builds # Remove after testing
+        - RELEASE-**
   push:
     branches:
       - 'RELEASE-**'
-      - 'KDESKTOP-834-CI-workflows-for-nightly-builds' # Remove after testing
 
 concurrency:
   group: packaging
@@ -36,7 +34,7 @@ jobs:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
-          ref: ${{ env.BRANCH_NAME }}
+          ref: ${{ env.BRANCH_NAME }} # actions/checkout might not access wildcards, this needs to be tested by having the workflow in a RELEASE branch.
           submodules: recursive
 
       - name: Restore extension packages
@@ -59,7 +57,7 @@ jobs:
           powershell ./infomaniak-build-tools/windows/build-drive.ps1
         shell: cmd
 
-      - name: Upload package to kDrive
+      - name: Upload to kDrive
         run: powershell ./infomaniak-build-tools/windows/upload-ci.ps1
 
       - name: Clean-up generated code
@@ -83,8 +81,11 @@ jobs:
 
       - name: Grant packaging script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/package-ci-amd64.sh
-      - name: Package and upload kDrive desktop
+      - name: Package kDrive desktop and upload to kDrive
         run : ./infomaniak-build-tools/linux/package-ci-amd64.sh
+
+      - name: Clean-up generated code
+        run : rm -rf build-linux
 
   package-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
@@ -105,5 +106,8 @@ jobs:
 
       - name: Grant upload script execute permission
         run : chmod +x ./infomaniak-build-tools/macos/upload-ci.sh
-      - name: Upload kDrive desktop
+      - name: Upload to kDrive
         run : ./infomaniak-build-tools/macos/upload-ci.sh
+
+      - name: Clean-up generated code
+        run : rm -rf build-macos
