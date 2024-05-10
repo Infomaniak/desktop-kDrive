@@ -482,89 +482,33 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             return ExitCodeOk;
         }
 
-        // Check new actions
-        std::string actionStr;
         Poco::JSON::Object::Ptr actionObj = it->extract<Poco::JSON::Object::Ptr>();
-        if (!JsonParserUtility::extractValue(actionObj, actionKey, actionStr)) {
-            return ExitCodeBackError;
-        }
-        ActionCode actionCode = getActionCode(actionStr);
-
-        int idInt = 0;
-        if (!JsonParserUtility::extractValue(actionObj, fileIdKey, idInt)) {
-            return ExitCodeBackError;
-        }
-        NodeId id = std::to_string(idInt);
-
-        int parentIdInt = 0;
-        if (!JsonParserUtility::extractValue(actionObj, parentIdKey, parentIdInt)) {
-            return ExitCodeBackError;
-        }
-        NodeId parentId = std::to_string(parentIdInt);
-
-        SyncName path;
-        if (!JsonParserUtility::extractValue(actionObj, pathKey, path)) {
-            return ExitCodeBackError;
-        }
-        SyncName name = path.substr(path.find_last_of('/') + 1);  // +1 to ignore the last "/"
-
-        SyncName destPath;
-        if (!JsonParserUtility::extractValue(actionObj, destinationKey, destPath, false)) {
-            return ExitCodeBackError;
-        }
-        SyncName destName = destPath.substr(destPath.find_last_of('/') + 1);  // +1 to ignore the last "/"
-
-        SyncTime createdAt = 0;
-        if (!JsonParserUtility::extractValue(actionObj, createdAtKey, createdAt, false)) {
-            return ExitCodeBackError;
-        }
-
-        SyncTime modtime = 0;
-        if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, modtime, false)) {
-            return ExitCodeBackError;
-        }
-
-        std::string tmp;
-        if (!JsonParserUtility::extractValue(actionObj, fileTypeKey, tmp)) {
-            return ExitCodeBackError;
-        }
-        NodeType type = tmp == fileKey ? NodeTypeFile : NodeTypeDirectory;
-
-        int64_t size = 0;
-        if (type == NodeTypeFile) {
-            if (!JsonParserUtility::extractValue(actionObj, sizeKey, size, false)) {
-                return ExitCodeBackError;
-            }
+        ActionInfo actionInfo;
+        if (ExitCode exitCode = extractActionInfo(actionObj, actionInfo); exitCode != ExitCodeOk) {
+            return exitCode;
         }
 
         // Check unsupported characters
-        if (hasUnsupportedCharacters(name, id, type)) {
+        if (hasUnsupportedCharacters(actionInfo.name, actionInfo.nodeId, actionInfo.type)) {
             continue;
         }
 
-        bool canWrite = true;
-        Poco::JSON::Object::Ptr capabilitiesObj = actionObj->getObject(capabilitiesKey);
-        if (capabilitiesObj) {
-            if (!JsonParserUtility::extractValue(capabilitiesObj, canWriteKey, canWrite)) {
-                return ExitCodeBackError;
-            }
+        SyncName usedName = actionInfo.name;
+        if (!actionInfo.destName.empty()) {
+            usedName = actionInfo.destName;
         }
-
-        SyncName usedName = name;
-        if (!destName.empty()) {
-            usedName = destName;
-        }
-        SnapshotItem item(id, parentId, usedName, createdAt, modtime, type, size, canWrite);
+        SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime
+                          , actionInfo.type, actionInfo.size, actionInfo.canWrite);
 
         bool isWarning = false;
         if (ExclusionTemplateCache::instance()->isExcludedTemplate(item.name(), isWarning)) {
             if (isWarning) {
-                Error error(_syncPal->syncDbId(), "", id, type, path, ConflictTypeNone, InconsistencyTypeNone,
+                Error error(_syncPal->syncDbId(), "", actionInfo.nodeId, actionInfo.type, actionInfo.path, ConflictTypeNone, InconsistencyTypeNone,
                             CancelTypeExcludedByTemplate);
                 _syncPal->addError(error);
             }
             // Remove it from snapshot
-            _snapshot->removeItem(id);
+            _snapshot->removeItem(actionInfo.nodeId);
             continue;
         }
 
@@ -577,7 +521,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         bool rightsAdded = false;
 
         // Process action
-        switch (actionCode) {
+        switch (actionInfo.actionCode) {
             // Item added
             case ActionCode::actionCodeAccessRightInsert:
             case ActionCode::actionCodeAccessRightUpdate:
@@ -589,20 +533,25 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             case ActionCode::actionCodeAccessRightMainUsersUpdate:
             {
                 bool hasRights = false;
-                if (hasAccessRights(id, hasRights, createdAt, modtime) != ExitCodeOk) {
+                int64_t createdAt = 0;
+                int64_t modtime = 0;
+                if (hasAccessRights(actionInfo.nodeId, hasRights, createdAt, modtime) != ExitCodeOk) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                                   << SyncName2WStr(name).c_str() << L" (" << Utility::s2ws(id).c_str()
+                                                   << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
                                                    << L")");
                     invalidateSnapshot();
                     return ExitCodeBackError;
                 }
                 if (!hasRights) break;  // Current user does not have the right to access this item, ignore action.
+
+                item.setCreatedAt(createdAt);
+                item.setLastModified(modtime);
             }
             case ActionCode::actionCodeMoveIn:
             case ActionCode::actionCodeRestore:
-                if (type == NodeTypeDirectory) {
+                if (actionInfo.type == NodeTypeDirectory) {
                     // Retrieve all children
-                    ExitCode exitCode = exploreDirectory(id);
+                    ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
                     ExitCause exitCause = this->exitCause();
 
                     if (exitCode == ExitCodeNetworkError && exitCause == ExitCauseNetworkTimeout) {
@@ -613,32 +562,32 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                         return exitCode;
                     }
                 }
-                if (actionCode == ActionCode::actionCodeMoveIn) {
+                if (actionInfo.actionCode == ActionCode::actionCodeMoveIn) {
                     // Keep track of moved items
-                    movedItems.insert(id);
+                    movedItems.insert(actionInfo.nodeId);
                 }
             case ActionCode::actionCodeCreate:
                 if (_snapshot->updateItem(item)) {
                     LOGW_SYNCPAL_INFO(_logger, L"File/directory updated: " << SyncName2WStr(usedName).c_str() << L" ("
-                                                                           << Utility::s2ws(id).c_str() << L")"
-                                                                           << L" with action: " << Utility::s2ws(actionStr).c_str());
+                                                                           << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
                 }
                 break;
 
             // Item renamed
             case ActionCode::actionCodeRename:
-                _syncPal->removeItemFromTmpBlacklist(id, ReplicaSideRemote);
+                _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
                 if (_snapshot->updateItem(item)) {
-                    LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(name).c_str() << L" ("
-                                                                   << Utility::s2ws(id).c_str() << L") renamed");
+                    LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                                   << Utility::s2ws(actionInfo.nodeId).c_str() << L") renamed");
                 }
                 break;
 
             // Item edited
             case ActionCode::actionCodeEdit:
                 if (_snapshot->updateItem(item)) {
-                    LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(name).c_str() << L" ("
-                                                                   << Utility::s2ws(id).c_str() << L") edited at:" << modtime);
+                    LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                                   << Utility::s2ws(actionInfo.nodeId).c_str()
+                                                                   << L") edited at:" << actionInfo.modtime);
                 }
                 break;
 
@@ -649,9 +598,9 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             case ActionCode::actionCodeAccessRightMainUsersRemove:
             {
                 bool hasRights = false;
-                if (hasAccessRights(id, hasRights, createdAt, modtime) != ExitCodeOk) {
+                if (hasAccessRights(actionInfo.nodeId, hasRights, actionInfo.createdAt, actionInfo.modtime) != ExitCodeOk) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                                   << SyncName2WStr(name).c_str() << L" (" << Utility::s2ws(id).c_str()
+                                                   << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
                                                    << L")");
                     invalidateSnapshot();
                     return ExitCodeBackError;
@@ -659,20 +608,20 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                 if (hasRights) break;  // Current user still have the right to access this item, ignore action.
             }
             case ActionCode::actionCodeMoveOut:
-                if (movedItems.find(id) != movedItems.end()) {
+                if (movedItems.find(actionInfo.nodeId) != movedItems.end()) {
                     // Ignore move out action if destination is inside the synced folder.
                     break;
                 }
             case ActionCode::actionCodeTrash:
-                _syncPal->removeItemFromTmpBlacklist(id, ReplicaSideRemote);
-                if (_snapshot->removeItem(id)) {
+                _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
+                if (_snapshot->removeItem(actionInfo.nodeId)) {
                     if (ParametersCache::instance()->parameters().extendedLog()) {
-                        LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from remote snapshot: " << SyncName2WStr(name).c_str() << L" ("
-                                                                                           << Utility::s2ws(id).c_str() << L")");
+                        LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from remote snapshot: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                                                           << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
                     }
                 } else {
-                    LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(name).c_str() << L" ("
-                                                                        << Utility::s2ws(id).c_str() << L")");
+                    LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                                        << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
                     invalidateSnapshot();
                     return ExitCodeBackError;
                 }
@@ -689,8 +638,66 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                 break;
 
             default:
-                LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on file: " << SyncName2WStr(name).c_str() << L" ("
-                                                                                    << Utility::s2ws(id).c_str() << L")");
+                LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on file: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                                                    << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
+        }
+    }
+
+    return ExitCodeOk;
+}
+
+ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo) {
+    std::string tmpStr;
+    if (!JsonParserUtility::extractValue(actionObj, actionKey, tmpStr)) {
+        return ExitCodeBackError;
+    }
+    actionInfo.actionCode = getActionCode(tmpStr);
+
+    int64_t tmpInt = 0;
+    if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) {
+        return ExitCodeBackError;
+    }
+    actionInfo.nodeId = std::to_string(tmpInt);
+
+    if (!JsonParserUtility::extractValue(actionObj, parentIdKey, tmpInt)) {
+        return ExitCodeBackError;
+    }
+    actionInfo.parentNodeId = std::to_string(tmpInt);
+
+    if (!JsonParserUtility::extractValue(actionObj, pathKey, actionInfo.path)) {
+        return ExitCodeBackError;
+    }
+    actionInfo.name = actionInfo.path.substr(actionInfo.path.find_last_of('/') + 1);  // +1 to ignore the last "/"
+
+    SyncName tmpSyncName;
+    if (!JsonParserUtility::extractValue(actionObj, destinationKey, tmpSyncName, false)) {
+        return ExitCodeBackError;
+    }
+    actionInfo.destName = tmpSyncName.substr(tmpSyncName.find_last_of('/') + 1);  // +1 to ignore the last "/"
+
+    if (!JsonParserUtility::extractValue(actionObj, createdAtKey, actionInfo.createdAt, false)) {
+        return ExitCodeBackError;
+    }
+
+    if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, actionInfo.modtime, false)) {
+        return ExitCodeBackError;
+    }
+
+    if (!JsonParserUtility::extractValue(actionObj, fileTypeKey, tmpStr)) {
+        return ExitCodeBackError;
+    }
+    actionInfo.type = tmpStr == fileKey ? NodeTypeFile : NodeTypeDirectory;
+
+    if (actionInfo.type == NodeTypeFile) {
+        if (!JsonParserUtility::extractValue(actionObj, sizeKey, actionInfo.size, false)) {
+            return ExitCodeBackError;
+        }
+    }
+
+    Poco::JSON::Object::Ptr capabilitiesObj = actionObj->getObject(capabilitiesKey);
+    if (capabilitiesObj) {
+        if (!JsonParserUtility::extractValue(capabilitiesObj, canWriteKey, actionInfo.canWrite)) {
+            return ExitCodeBackError;
         }
     }
 

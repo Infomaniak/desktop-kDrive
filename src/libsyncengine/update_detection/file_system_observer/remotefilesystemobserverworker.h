@@ -45,7 +45,21 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitCode sendLongPoll(bool &changes);
 
+        struct ActionInfo {
+            ActionCode actionCode {ActionCode::actionCodeUnknown};
+            NodeId nodeId;
+            NodeId parentNodeId;
+            SyncName name;
+            SyncName path;
+            SyncName destName;
+            SyncTime createdAt {0};
+            SyncTime modtime {0};
+            NodeType type {NodeTypeUnknown};
+            int64_t size {0};
+            bool canWrite {true};
+        };
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
+        ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
 
         ExitCode hasAccessRights(const NodeId &nodeId, bool &hasRights, SyncTime &createdAt, SyncTime &modtime);
 
