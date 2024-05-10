@@ -18,11 +18,18 @@
 
 #include "testincludes.h"
 
+
+#ifdef __APPLE__
 #include "vfs/mac/testlitesyncextconnector.h"
+#endif
+#include "logarchiver/testlogarchiver.h"
 
 namespace KDC {
+#ifdef __APPLE__
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
-}
+#endif
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
+}  // namespace KDC
 
 int main(int, char **) {
     return runTestSuite("_kDriveTestServer.log");

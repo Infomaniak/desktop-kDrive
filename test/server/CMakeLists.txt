@@ -7,7 +7,12 @@ set(testserver_NAME ${APPLICATION_NAME}_test_server)
 
 set(testserver_SRCS
     ../test.cpp
+    ../test_utility/temporarydirectory.cpp
+    ../../src/server/logarchiver.h
+    ../../src/server/logarchiver.cpp
     test.cpp
+    logarchiver/testlogarchiver.h
+    logarchiver/testlogarchiver.cpp
 )
 
 if(APPLE)

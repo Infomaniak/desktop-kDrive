@@ -15,21 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "temporarydirectory.h"
 
-#pragma once
-
-#include "widgetwithcustomtooltip.h"
 
 namespace KDC {
 
-class ParametersWidget : public LargeWidgetWithCustomToolTip {
-        Q_OBJECT
+TemporaryDirectory::TemporaryDirectory(const std::string &testType) {
+    const std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    std::ostringstream woss;
+    woss << std::put_time(&tm, "%Y%m%d_%H%M");
 
-    public:
-        explicit ParametersWidget(QWidget *parent);
+    path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
+    std::filesystem::create_directory(path);
+}
 
-    public slots:
-        void setEnabled(bool);
-};
+TemporaryDirectory::~TemporaryDirectory() {
+    std::filesystem::remove_all(path);
+}
+
 
 }  // namespace KDC
