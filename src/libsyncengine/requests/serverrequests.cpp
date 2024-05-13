@@ -986,10 +986,19 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCodeOk;
 }
 
-ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &exitCause, std::function<void(char, int)> progressCallback) {
+ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &exitCause,
+                                          std::function<void(char, int)> progressCallback) {
     const bool progressMonitoring = progressCallback != nullptr;
     exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;
+
+    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "A0", found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        // I do not return here because it is not a critical error, especially in this context where we are trying to send logs
+    }
+    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
 
     // Generate archive name: <drive id 1>-<drive id 2>...-<drive id N>-yyyyMMdd-HHmmss.zip
     std::string archiveName;
@@ -997,12 +1006,18 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
 
     if (!ParmsDb::instance()->selectAllDrives(driveList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
+        if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        }
         exitCause = ExitCauseDbAccessError;
         return ExitCodeDbError;
     }
 
     if (driveList.empty()) {
         LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
+        if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        }
         exitCause = ExitCauseLoginError;
         return ExitCodeInvalidToken;  // Currently, we can't send logs if no drive is found
     }
@@ -1024,6 +1039,9 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
     if (!IoHelper::createDirectory(tempFolder, ioError) && ioError != IoErrorDirectoryExists) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::createDirectory : " << Utility::formatIoError(tempFolder, ioError).c_str());
+        if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        }
         if (ioError == IoErrorDiskFull) {
             exitCause = ExitCauseNotEnoughDiskSpace;
         } else {
@@ -1034,7 +1052,14 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
 
     std::function<void(int)> progressCallbackArchivingWrapper = nullptr;
     if (progressMonitoring) {
-        progressCallbackArchivingWrapper = [progressCallback](int percent) { progressCallback('A', percent); };
+        progressCallbackArchivingWrapper = [progressCallback](int percent) {
+            progressCallback('A', percent);
+            std::string LogUploadStatus = "A" + std::to_string(percent);
+            if (bool found = false;
+                ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, LogUploadStatus, found) || !found) {
+                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+            }
+        };
     }
 
     exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, tempFolder, archiveName, exitCause,
@@ -1042,16 +1067,31 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in LogArchiver::generateLogsSupportArchive: " << exitCode << " : " << exitCause);
+        if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        }
         IoHelper::deleteDirectory(tempFolder, ioError);
         return exitCode;
     }
+    SyncPath archivePath = (tempFolder / archiveName).string();
+    if (bool found = false;
+        ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, archivePath.string(), found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
 
     // Upload archive
-    // TODO: implement log upload backend
     std::function<void(int)> progressCallbackUploadingWrapper = nullptr;
     if (progressMonitoring) {
-        progressCallbackUploadingWrapper = [progressCallback](int percent) { progressCallback('U', percent); };
-        for (int i = 0; i < 100; i++) {
+        progressCallbackUploadingWrapper = [progressCallback](int percent) {
+            progressCallback('U', percent);
+            std::string logUploadStatus = "U" + std::to_string(percent);
+            if (bool found = false;
+                ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) || !found) {
+                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+            }
+        };
+
+        for (int i = 0; i < 100; i++) { // Fake progress waiting for the real upload implementation
             progressCallback('U', i);
             Utility::msleep(100);
         }
@@ -1061,11 +1101,26 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
 
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
-        IoHelper::deleteDirectory(tempFolder, ioError);
+        if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        }
+        // We do not delete the archive here, The path is stored in the app state and the user can try to upload it manually
         return exitCode;
     }
 
     IoHelper::deleteDirectory(tempFolder, ioError);
+    long timestamp = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+    std::string uploadDate = std::to_string(timestamp);
+    if (bool found = false;
+        ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadeDate, uploadDate, found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
+    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "S", found) || !found) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
+    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) || !found) { // The archive is deleted
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
     return ExitCodeOk;
 }
 
