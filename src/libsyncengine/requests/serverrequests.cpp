@@ -1020,9 +1020,9 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, SyncPath &arc
     archiveName += woss.str() + ".zip";
 
     // Create temp folder
-    const SyncPath tempFolder = CommonUtility::getAppSupportDir() / "tempLogSend";
+    const SyncPath tempFolder = CommonUtility::getAppSupportDir() / "logUploadTemp";
     IoError ioError = IoErrorSuccess;
-    if (!IoHelper::createDirectory(tempFolder, ioError) && (ioError == IoErrorDirectoryExists || ioError == IoErrorSuccess)) {
+    if (!IoHelper::createDirectory(tempFolder, ioError) && ioError != IoErrorDirectoryExists) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::createDirectory : " << Utility::formatIoError(tempFolder, ioError).c_str());
         if (ioError == IoErrorDiskFull) {
@@ -1041,14 +1041,31 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, SyncPath &arc
     exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, tempFolder, archiveName, exitCause,
                                                        progressCallbackArchivingWrapper);
     if (exitCode != ExitCodeOk) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Log::generateLogsSupportArchive");
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogArchiver::generateLogsSupportArchive");
         IoHelper::deleteDirectory(tempFolder, ioError);
         return exitCode;
     }
 
+    // Upload archive
+    // TODO: implement log upload backend
+    std::function<void(int)> progressCallbackUploadingWrapper = nullptr;
+    if (progressMonitoring) {
+        progressCallbackUploadingWrapper = [progressCallback](int percent) { progressCallback('U', percent); };
+        for (int i = 0; i < 100; i++) {
+            progressCallback('U', i);
+            Utility::msleep(100);
+        }
+    }
+
+    exitCode = ExitCodeOk;  // TODO: implement log upload backend
+
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(Log::instance()->getLogger(), "Error during log upload");
+        IoHelper::deleteDirectory(tempFolder, ioError);
+        return exitCode;
+    }
 
     IoHelper::deleteDirectory(tempFolder, ioError);
-    exitCause = ExitCauseUnknown;
     return ExitCodeOk;
 }
 
