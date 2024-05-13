@@ -454,7 +454,13 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     ACCESS_MASK rights = 0;
     result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
     ioError = dWordError2ioError(result);
-    if (result == ERROR_INVALID_ACL) { // The GetEffectiveRightsFromAcl function fails and returns ERROR_INVALID_ACL if the specified ACL contains an inherited access-denied ACE.
+
+    /* The GetEffectiveRightsFromAcl function fails and returns ERROR_INVALID_ACL if the specified ACL contains an inherited access-denied ACE.
+     * see: https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-geteffectiverightsfromacla
+     * From my personal test on Windows 11 Pro 23H2, the function does work as expected and returns the rights for the trustee even if the ACL contains an inherited access-denied ACE.
+     * If we get ERROR_INVALID_ACL, we will consider to be in the case described in the documentation and consider the file as not existing (we can't get the rights).
+     */
+    if (result == ERROR_INVALID_ACL) { 
         LOGW_INFO(logger, L"getRightsWindowsApi: path='" << Utility::formatSyncPath(path) << L"', the specified ACL contains an inherited access - denied ACE. Considerring the file as not existing.");
         read = false;
         write = false;
