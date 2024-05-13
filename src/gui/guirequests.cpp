@@ -861,7 +861,7 @@ ExitCode GuiRequests::updateAppState(AppStateKey key, const QString &value) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getAproximateLogSize(uint64_t &size) {
+ExitCode GuiRequests::getLogDirEstimatedSize(uint64_t &size) {
     QByteArray results;
     if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results)) {
         return ExitCodeSystemError;
