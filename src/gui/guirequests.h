@@ -124,6 +124,7 @@ struct GuiRequests {
         static ExitCode getAppState(AppStateKey key, QString &value);
         static ExitCode updateAppState(AppStateKey key, const QString &value);
         static ExitCode getAproximateLogSize(uint64_t &size);
+        static ExitCode sendLogToSupport(bool sendArchivedLogs);
 };
 
 }  // namespace KDC

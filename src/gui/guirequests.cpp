@@ -875,6 +875,23 @@ ExitCode GuiRequests::getAproximateLogSize(uint64_t &size) {
     return exitCode;
 }
 
+ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << sendArchivedLogs;
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SEND_LOG_TO_SUPPORT, params, results,
+                                         COMM_SHORT_TIMEOUT)) {  // Short timeout because the operation is asynchronous
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+
+    return exitCode;
+}
 ExitCode GuiRequests::getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                     bool withPath /*= false*/) {
     QByteArray params;
