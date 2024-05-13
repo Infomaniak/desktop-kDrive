@@ -1041,7 +1041,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, SyncPath &arc
     exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, tempFolder, archiveName, exitCause,
                                                        progressCallbackArchivingWrapper);
     if (exitCode != ExitCodeOk) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in LogArchiver::generateLogsSupportArchive");
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in LogArchiver::generateLogsSupportArchive: " << exitCode << " : " << exitCause);
         IoHelper::deleteDirectory(tempFolder, ioError);
         return exitCode;
     }
@@ -1060,7 +1061,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, SyncPath &arc
     exitCode = ExitCodeOk;  // TODO: implement log upload backend
 
     if (exitCode != ExitCodeOk) {
-        LOG_WARN(Log::instance()->getLogger(), "Error during log upload");
+        LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
         IoHelper::deleteDirectory(tempFolder, ioError);
         return exitCode;
     }
