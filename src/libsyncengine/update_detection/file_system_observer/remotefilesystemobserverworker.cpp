@@ -328,10 +328,13 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     bool error = false;
     bool ignore = false;
     std::unordered_set<SyncName> existingFiles;
+    uint64_t itemCount = 0;
     while (job->getItem(item, error, ignore)) {
         if (ignore) {
             continue;
         }
+
+        itemCount++;
 
         if (error) {
             LOG_SYNCPAL_WARN(_logger, "Failed to parse CSV reply");
@@ -389,6 +392,11 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
         if (_snapshot->isOrphan(*nodeIdIt)) {
+            LOG_SYNCPAL_DEBUG(_logger,
+                              L"Node " << SyncName2WStr(_snapshot->name(*nodeIdIt)).c_str()
+                                       << L" (" << Utility::s2ws(*nodeIdIt).c_str()
+                                       << L") is orphan. Removing it from "
+                                       << Utility::s2ws(Utility::side2Str(_snapshot->side())).c_str() << L" snapshot.");
             _snapshot->removeItem(*nodeIdIt);
         }
         nodeIdIt++;
@@ -396,7 +404,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     LOG_SYNCPAL_DEBUG(_logger,
-                      "End reply parsing in " << elapsed_seconds.count() << "s for " << _snapshot->nbItems() << " items");
+                      "End reply parsing in " << elapsed_seconds.count() << "s for " << itemCount << " items");
 
     return ExitCodeOk;
 }
@@ -533,9 +541,10 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             case ActionCode::actionCodeAccessRightMainUsersUpdate:
             {
                 bool hasRights = false;
-                int64_t createdAt = 0;
-                int64_t modtime = 0;
-                if (hasAccessRights(actionInfo.nodeId, hasRights, createdAt, modtime) != ExitCodeOk) {
+                SyncTime createdAt = 0;
+                SyncTime modtime = 0;
+                int64_t size = 0;
+                if (getFileInfo(actionInfo.nodeId, hasRights, createdAt, modtime, size) != ExitCodeOk) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
                                                    << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
                                                    << L")");
@@ -546,10 +555,17 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
 
                 item.setCreatedAt(createdAt);
                 item.setLastModified(modtime);
+                item.setSize(size);
+                [[fallthrough]];
             }
             case ActionCode::actionCodeMoveIn:
             case ActionCode::actionCodeRestore:
-                if (actionInfo.type == NodeTypeDirectory) {
+            case ActionCode::actionCodeCreate:
+                if (_snapshot->updateItem(item)) {
+                    LOGW_SYNCPAL_INFO(_logger, L"File/directory updated: " << SyncName2WStr(usedName).c_str() << L" ("
+                                                                           << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
+                }
+                if (actionInfo.type == NodeTypeDirectory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
                     // Retrieve all children
                     ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
                     ExitCause exitCause = this->exitCause();
@@ -565,11 +581,6 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                 if (actionInfo.actionCode == ActionCode::actionCodeMoveIn) {
                     // Keep track of moved items
                     movedItems.insert(actionInfo.nodeId);
-                }
-            case ActionCode::actionCodeCreate:
-                if (_snapshot->updateItem(item)) {
-                    LOGW_SYNCPAL_INFO(_logger, L"File/directory updated: " << SyncName2WStr(usedName).c_str() << L" ("
-                                                                           << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
                 }
                 break;
 
@@ -598,7 +609,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             case ActionCode::actionCodeAccessRightMainUsersRemove:
             {
                 bool hasRights = false;
-                if (hasAccessRights(actionInfo.nodeId, hasRights, actionInfo.createdAt, actionInfo.modtime) != ExitCodeOk) {
+                if (getFileInfo(actionInfo.nodeId, hasRights, actionInfo.createdAt, actionInfo.modtime, actionInfo.size) != ExitCodeOk) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
                                                    << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
                                                    << L")");
@@ -606,12 +617,14 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
                     return ExitCodeBackError;
                 }
                 if (hasRights) break;  // Current user still have the right to access this item, ignore action.
+                [[fallthrough]];
             }
             case ActionCode::actionCodeMoveOut:
                 if (movedItems.find(actionInfo.nodeId) != movedItems.end()) {
                     // Ignore move out action if destination is inside the synced folder.
                     break;
                 }
+                [[fallthrough]];
             case ActionCode::actionCodeTrash:
                 _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
                 if (_snapshot->removeItem(actionInfo.nodeId)) {
@@ -704,11 +717,11 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     return ExitCodeOk;
 }
 
-ExitCode RemoteFileSystemObserverWorker::hasAccessRights(const NodeId &nodeId, bool &hasRights, SyncTime &createdAt,
-                                                         SyncTime &modtime) {
+ExitCode RemoteFileSystemObserverWorker::getFileInfo(const NodeId &nodeId, bool &hasRights, SyncTime &createdAt,
+                                                         SyncTime &modtime, int64_t &size) {
     GetFileInfoJob job(_syncPal->driveDbId(), nodeId);
     job.runSynchronously();
-    if (job.hasHttpError()) {
+    if (job.hasHttpError() || job.exitCode() != ExitCodeOk) {
         if (job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
             job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
             hasRights = false;
@@ -720,6 +733,7 @@ ExitCode RemoteFileSystemObserverWorker::hasAccessRights(const NodeId &nodeId, b
 
     createdAt = job.creationTime();
     modtime = job.modtime();
+    size = job.size();
     hasRights = true;
     return ExitCodeOk;
 }

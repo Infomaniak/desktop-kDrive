@@ -61,7 +61,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
         ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
 
-        ExitCode hasAccessRights(const NodeId &nodeId, bool &hasRights, SyncTime &createdAt, SyncTime &modtime);
+        ExitCode getFileInfo(const NodeId &nodeId, bool &hasRights, SyncTime &createdAt, SyncTime &modtime, int64_t &size);
 
         bool hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
 

@@ -51,6 +51,16 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
             if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
                 return false;
             }
+            std::string tmp;
+            if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
+                return false;
+            }
+            bool isDir = tmp == dirKey;
+            if (!isDir) {
+                if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
+                    return false;
+                }
+            }
 
             std::string symbolicLink;
             if (JsonParserUtility::extractValue(dataObj, symbolicLinkKey, symbolicLink, false)) {
