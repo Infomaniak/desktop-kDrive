@@ -1859,9 +1859,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     LOG_DEBUG(_logger, "Log transfert progress : " << status << " | " << progress << " %");
                 };
 
-                SyncPath archivePath;
                 ExitCause exitCause = ExitCauseUnknown;
-                ExitCode exitCode = ServerRequests::sendLogToSupport(includeArchivedLogs, archivePath, exitCause, progressFunc);
+                ExitCode exitCode = ServerRequests::sendLogToSupport(includeArchivedLogs, exitCause, progressFunc);
 
                 if (exitCode != ExitCodeOk) {
                     LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);

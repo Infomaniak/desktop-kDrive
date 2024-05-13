@@ -986,8 +986,7 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCodeOk;
 }
 
-ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, SyncPath &archivePath, ExitCause &exitCause,
-                                          std::function<void(char, int)> progressCallback) {
+ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &exitCause, std::function<void(char, int)> progressCallback) {
     const bool progressMonitoring = progressCallback != nullptr;
     exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;
