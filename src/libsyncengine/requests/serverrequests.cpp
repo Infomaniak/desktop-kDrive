@@ -1123,6 +1123,10 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
     return ExitCodeOk;
 }
 
+ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
+    return ExitCode();// TODO: implement cancelLogToSupport 
+}
+
 ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
     // Get drive data
     std::shared_ptr<CreateDirJob> job = nullptr;

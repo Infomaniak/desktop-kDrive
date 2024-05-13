@@ -1873,6 +1873,20 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             });
             break;
         }
+        case REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT: {
+            resultStream << ExitCodeOk;  // Return immediately, progress and error will be report via addError and signal
+
+            QTimer::singleShot(100, [this]() {
+                ExitCause exitCause = ExitCauseUnknown;
+                ExitCode exitcode = ServerRequests::cancelLogToSupport(exitCause);
+                if (exitcode != ExitCodeOk) {
+                    LOG_WARN(_logger, "Error in Requests::cancelLogToSupport : " << exitcode << " | " << exitCause);
+                    addError(Error(ERRID, exitcode, exitCause));
+                }
+                sendLogUploadStatusUpdated('C', 0);
+            });
+            break;
+        }
         case REQUEST_NUM_SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId;
             bool value;

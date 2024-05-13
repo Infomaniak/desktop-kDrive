@@ -894,6 +894,18 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
 
     return exitCode;
 }
+
+ExitCode GuiRequests::cancelLogToSupport() {
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT, QByteArray(), results)) {
+        return ExitCodeSystemError;
+    }
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    ExitCode exitCode = ExitCodeOk;
+    resultStream >> exitCode;
+    return exitCode;
+}
+
 ExitCode GuiRequests::getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                     bool withPath /*= false*/) {
     QByteArray params;
