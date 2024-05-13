@@ -421,8 +421,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
 // Always return false if ioError != IoErrorSuccess, caller should call _isExpectedError.
 static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
-                                log4cplus::Logger logger,
-                                bool retry = true) noexcept {  
+                                log4cplus::Logger logger, bool retry = true) noexcept {
     ioError = IoErrorSuccess;
     read = false;
     write = false;
@@ -557,14 +556,16 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         } else {
             grantedPermission |= FILE_GENERIC_EXECUTE;
         }
+        // clang-format off
         bool res = setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger(),
-                                       _setRightsWindowsApiInheritance) ||
-                   _isExpectedError(ioError);
+                                       _setRightsWindowsApiInheritance) 
+            || _isExpectedError(ioError);
         if (res) {
             res &= setRightsWindowsApi(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger(),
-                                       _setRightsWindowsApiInheritance) ||
-                   _isExpectedError(ioError);
+                                       _setRightsWindowsApiInheritance) 
+                || _isExpectedError(ioError);
         }
+        // clang-format on
 
         if (res) {
             return true;
