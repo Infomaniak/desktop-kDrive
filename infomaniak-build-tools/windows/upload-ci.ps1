@@ -38,7 +38,7 @@ else
     $minorVersion = $version.Substring(0, 5)
     $date = $version.Substring(6)
 
-    for ($file in $files)
+    foreach ($file in $files)
     {
         $size = (Get-ChildItem $file | % {[int]($_.length)})
         $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$mainVersion/$minorVersion/$date&conflict=version"
