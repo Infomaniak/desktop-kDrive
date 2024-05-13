@@ -123,6 +123,7 @@ struct GuiRequests {
         static ExitCode setLaunchOnStartup(bool enabled);
         static ExitCode getAppState(AppStateKey key, QString &value);
         static ExitCode updateAppState(AppStateKey key, const QString &value);
+        static ExitCode getAproximateLogSize(uint64_t &size);
 };
 
 }  // namespace KDC

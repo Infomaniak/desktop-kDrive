@@ -861,6 +861,20 @@ ExitCode GuiRequests::updateAppState(AppStateKey key, const QString &value) {
     return exitCode;
 }
 
+ExitCode GuiRequests::getAproximateLogSize(uint64_t &size) {
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results)) {
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> size;
+
+    return exitCode;
+}
+
 ExitCode GuiRequests::getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                     bool withPath /*= false*/) {
     QByteArray params;
