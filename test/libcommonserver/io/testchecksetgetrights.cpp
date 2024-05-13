@@ -51,9 +51,11 @@ void TestIo::testCheckSetAndGetRights() {
         bool isWritable = false;
         bool isExecutable = false;
 
-        // Test for a directory without any change on rights (ie: the default rights). Assumed that there is no inherited rights
+#ifdef _WIN32
+        // Test for a directory without any Explicit ACE (ie no inherited rights)
         CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
+#endif
 
         /* Test all the possible rights and all the possible order of rights modification. ie:
          *  | READ | WRITE | EXECUTE | |
@@ -140,9 +142,11 @@ void TestIo::testCheckSetAndGetRights() {
         bool isWritable = false;
         bool isExecutable = false;
 
-        // Test for a file without any change on rights (ie: the default rights). Assumed that there is no inherited rights
+#ifdef _WIN32
+        // Test for a file without any Explicit ACE (ie no inherited rights)
         CPPUNIT_ASSERT(IoHelper::getRights(filepath, isReadable, isWritable, isExecutable, ioError));
         CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
+#endif
 
 
         /* Test all the possible rights and all the possible order of rights modification. ie:
@@ -385,7 +389,7 @@ void TestIo::testCheckSetAndGetRights() {
         CPPUNIT_ASSERT(file.is_open());
         file << "testCheckSetAndGetRights";
         file.close();
-        
+
         bool isReadable = false;
         bool isWritable = false;
         bool isExecutable = false;
