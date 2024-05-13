@@ -24,6 +24,7 @@
 #include "migration/migrationparams.h"
 #include "updater/kdcupdater.h"
 #include "socketapi.h"
+#include "logarchiver.h"
 #include "keychainmanager/keychainmanager.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/types.h"
@@ -1827,6 +1828,23 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             resultStream << ExitCodeOk;
             resultStream << QString::fromStdString(value);
+            break;
+        }
+        case REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE: {
+            uint64_t logSize = 0;
+            IoError ioError = IoErrorSuccess;
+            bool res = LogArchiver::getLogDirEstimatedSize(logSize, ioError);
+            if (ioError != IoErrorSuccess) {
+                LOG_WARN(_logger,
+                         "Error in LogArchiver::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError).c_str());
+
+                addError(Error(ERRID, ExitCodeSystemError, ExitCauseUnknown));
+                resultStream << ExitCodeSystemError;
+                resultStream << 0;
+            } else {
+                resultStream << ExitCodeOk;
+                resultStream << logSize;
+            }
             break;
         }
         case REQUEST_NUM_UTILITY_SEND_LOG_TO_SUPPORT: {

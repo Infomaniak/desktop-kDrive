@@ -37,19 +37,22 @@ namespace KDC {
 
 bool LogArchiver::getLogDirEstimatedSize(uint64_t& size, IoError& ioError) {
     SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
-
+    bool result = false;
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
-        IoHelper::getDirectorySize(logPath, size, ioError);
+        result = IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoErrorSuccess) {
             return true;
         }
     }
-    return false;
+    LOG_WARN(Log::instance()->getLogger(),
+             "Error in LogArchiver::getLogDirEstimatedSize: " << Utility::formatIoError(logPath, ioError).c_str());
+
+    return result;
 }
 
 ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath& outputPath,
-                                                 const SyncPath& archiveName,
-                                                 ExitCause& exitCause, std::function<void(int)> progressCallback) {
+                                                 const SyncPath& archiveName, ExitCause& exitCause,
+                                                 std::function<void(int)> progressCallback) {
     // Get the log directory path
     const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
     const SyncPath tempLogArchiveDir =
@@ -180,8 +183,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
 
     // Copy the archive to the output path
     if (!IoHelper::copyFileOrDirectory(tempLogArchiveDir / archiveName, outputPath / archiveName, ioError)) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in IoHelper::copyFileOrDirectory : "
+        LOG_WARN(Log::instance()->getLogger(), "Error in IoHelper::copyFileOrDirectory : "
                                                    << Utility::formatIoError(tempLogArchiveDir / archiveName, ioError).c_str());
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
 
@@ -202,7 +204,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
 ExitCode LogArchiver::copyLogsTo(const SyncPath& outputPath, bool includeArchivedLogs, ExitCause& exitCause) {
     exitCause = ExitCauseUnknown;
     SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
-    
+
     IoError ioError = IoErrorSuccess;
     IoHelper::DirectoryIterator dir;
     if (!IoHelper::getDirectoryIterator(logPath, false, ioError, dir)) {
@@ -274,7 +276,7 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath& outputPath, ExitCause& exitC
 }
 
 ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, ExitCause& exitCause,
-                               std::function<void(int)> progressCallback) {
+                                       std::function<void(int)> progressCallback) {
     IoHelper::DirectoryIterator dir;
     IoError ioError = IoErrorUnknown;
     exitCause = ExitCauseUnknown;
