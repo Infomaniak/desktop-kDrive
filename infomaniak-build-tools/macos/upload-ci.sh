@@ -20,17 +20,24 @@
 
 VERSION=$(grep "KDRIVE_VERSION_FULL" "build-macos/client/version.h" | awk '{print $3}')
 APP_NAME=kDrive-${VERSION}.pkg
+mv build-macos/install/$APP_NAME build-macos
+cd build-macos
 
-cd build-macos/install
+tar -cvf kDrive-debug-macos.tar kDrive.dSYM kDrive_client.dSYM
 
 if [ -z ${KDRIVE_TOKEN+x} ]; then
 	echo "No kDrive token found, Package will not be uploaded."
 else
-	APP_SIZE=$(ls -l $APP_NAME | awk '{print $5}')
 
-	curl -X POST \
-		-H "Authorization: Bearer $KDRIVE_TOKEN" \
-		-H "Content-Type: application/octet-stream" \
-		--data-binary @$APP_NAME \
-		"https://api.infomaniak.com/3/drive/$KDRIVE_ID/upload?directory_id=$KDRIVE_DIR_ID&total_size=$APP_SIZE&file_name=$APP_NAME&directory_path=${VERSION:0:3}/${VERSION:0:5}&conflict=version"
+	FILES=($APP_NAME "kDrive-debug-macos.tar")
+
+	for FILE in ${FILES[@]}; do
+		SIZE=$(ls -l $FILE | awk '{print $5}')
+
+		curl -X POST \
+			-H "Authorization: Bearer $KDRIVE_TOKEN" \
+			-H "Content-Type: application/octet-stream" \
+			--data-binary @$FILE \
+			"https://api.infomaniak.com/3/drive/$KDRIVE_ID/upload?directory_id=$KDRIVE_DIR_ID&total_size=$SIZE&file_name=$FILE&directory_path=${VERSION:0:3}/${VERSION:0:5}/${VERSION:6}&conflict=version"
+	done
 fi
