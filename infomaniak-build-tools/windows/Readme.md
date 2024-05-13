@@ -10,6 +10,7 @@
     - [log4cplus](#log4cplus)
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
+    - [libzip](#libzip)
     - [C++ Redistributable](#redistributable)
     - [NSIS](#nsis)
     - [7za](#7za)
@@ -206,6 +207,23 @@ copy zlib.pdb lib\
 mkdir bin
 copy zlib1.dll bin\
 copy zlib1.pdb bin\
+```
+
+## libzip
+
+> :warning: **`libzip` requires [zlib](#zlib) to be installed.**
+
+Clone and install libzip
+
+```bash
+cd F:\Projects
+git clone https://github.com/nih-at/libzip.git
+cd libzip
+git checkout tags/v1.10.1
+mkdir build && cd build
+cmake .. -DZLIB_LIBRARY="C:\Program Files (x86)\zlib-1.2.11\lib\zlib.lib"
+cmake --build . --target install --config Debug
+cmake --build . --target install --config Release
 ```
 
 ## Redistributable

@@ -163,8 +163,6 @@ typedef enum {
     ExitCauseNoSearchPermission,
     ExitCauseNotFound,
     ExitCauseQuotaExceeded
-
-
 } ExitCause;
 
 // Conflict types ordered by priority
@@ -344,9 +342,11 @@ typedef enum {
     IoErrorFileNameTooLong,
     IoErrorInvalidArgument,
     IoErrorIsADirectory,
+    IoErrorIsAFile,
     IoErrorNoSuchFileOrDirectory,
     IoErrorResultOutOfRange,
     IoErrorInvalidDirectoryIterator,
+    IoErrorMaxDepthExceeded,
     IoErrorUnknown
 } IoError;
 

@@ -19,6 +19,12 @@
 #include "log.h"
 #include "customrollingfileappender.h"
 #include "utility/utility.h"
+#include "libparms/db/user.h"
+#include "libparms/db/parmsdb.h"
+#include "libparms/db/drive.h"
+
+#include "libcommonserver/io/iohelper.h"
+#include "libcommon/utility/utility.h"
 
 #include <log4cplus/initializer.h>
 #include <log4cplus/fileappender.h>
@@ -84,7 +90,7 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
     return true;
 }
 
-Log::Log(const log4cplus::tstring &filePath) {
+Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
     // Instantiate an appender object
     CustomRollingFileAppender *rfAppender = new CustomRollingFileAppender(filePath, LOGGER_APP_RF_MAX_FILE_SIZE * 1024 * 1024,
                                                                           LOGGER_APP_RF_MAX_BACKUP_IDX, true, true);
@@ -109,4 +115,7 @@ Log::Log(const log4cplus::tstring &filePath) {
     LOG_INFO(_logger, "Logger initialization done");
 }
 
+SyncPath Log::getLogFilePath() const {
+    return _filePath;
+}
 }  // namespace KDC

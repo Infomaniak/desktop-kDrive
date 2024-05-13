@@ -5,6 +5,7 @@ find_package(Poco 1.12.5 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(log4cplus 2.1.0 REQUIRED)
 find_package(xxHash 0.8.1 REQUIRED)
+find_package(libzip 1.10.1 REQUIRED)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -64,7 +65,10 @@ if (WIN32)
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include")
+        "C:/Program Files (x86)/log4cplus/include"
+        "C:/Program Files (x86)/libzip/include"
+    )
+
 else()
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -83,9 +87,11 @@ endif()
 # Link
 target_link_libraries(${libcommonserver_NAME}
     ${libcommon_NAME}
+    ${libparms_NAME}
     ${SQLITE3_LIBRARIES}
     Poco::Foundation Poco::Net Poco::JSON Poco::Util
-    OpenSSL::SSL OpenSSL::Crypto)
+    OpenSSL::SSL OpenSSL::Crypto
+    libzip::zip)
 
 if (WIN32)
     target_link_libraries(${libcommonserver_NAME}

@@ -26,6 +26,7 @@ ELSEIF(WIN32)
         "C:/Program Files (x86)/log4cplus"
         "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/xxHash"
+        "C:/Program Files (x86)/libzip"
     )
 ENDIF()
 
@@ -65,8 +66,6 @@ add_definitions(
     -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
     -DQT_DEPRECATED_WARNINGS
 )
-
-set(SYSCONFDIR ${SYSCONF_INSTALL_DIR})
 
 if (APPLE)
     set(DATADIR ${DATA_INSTALL_DIR})
@@ -236,8 +235,9 @@ elseif(BUILD_CLIENT)
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
 
         # Default sync exclude list
-        message(STATUS "sync-exclude-win.lst installed in ${CMAKE_INSTALL_BINDIR}")
-        install(FILES sync-exclude-win.lst DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
+        message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin")
+        file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
 
         # Vfs
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
@@ -262,7 +262,7 @@ elseif(BUILD_CLIENT)
     else()
         # Default sync exclude list
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-            install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
+            file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
         else()
             install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
         endif()

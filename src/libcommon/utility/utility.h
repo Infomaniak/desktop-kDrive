@@ -55,6 +55,7 @@ struct COMMON_EXPORT CommonUtility {
         static qint64 freeDiskSpace(const QString &path);
         static void crash();
         static QString platformName();
+        static QString platformArch();
         static QByteArray IntToArray(qint32 source);
         static int ArrayToInt(QByteArray source);
         static QString escape(const QString &in);

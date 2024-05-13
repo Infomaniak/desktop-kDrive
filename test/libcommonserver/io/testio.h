@@ -19,17 +19,12 @@
 #pragma once
 
 #include "testincludes.h"
+#include "test_utility/temporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 
 using namespace CppUnit;
 
 namespace KDC {
-
-struct TemporaryDirectory {
-        SyncPath path;
-        TemporaryDirectory();
-        ~TemporaryDirectory();
-};
 
 struct IoHelperTests : public IoHelper {
         IoHelperTests();

@@ -19,8 +19,13 @@
 #include "testincludes.h"
 #include "testlog.h"
 #include "libcommonserver/log/log.h"
-
+#include "test_utility/temporarydirectory.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommon/utility/utility.h"
+#include "libcommonserver/db/db.h"
 #include <log4cplus/loggingmacros.h>
+
+#include <iostream>
 
 using namespace CppUnit;
 
@@ -28,6 +33,8 @@ namespace KDC {
 
 void TestLog::setUp() {
     _logger = Log::instance()->getLogger();
+    bool alreadyExist = false;
+    Db::makeDbName(alreadyExist);
 }
 
 void TestLog::tearDown() {}
@@ -44,5 +51,4 @@ void TestLog::testLog() {
 
     CPPUNIT_ASSERT(true);
 }
-
 }  // namespace KDC

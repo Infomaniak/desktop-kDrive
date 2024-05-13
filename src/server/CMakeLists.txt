@@ -41,6 +41,7 @@ set(server_SRCS
     ../libcommonserver/vfs.h ../libcommonserver/vfs.cpp
     ../libcommonserver/plugin.h ../libcommonserver/plugin.cpp
     navigationpanehelper.h navigationpanehelper.cpp
+    logarchiver.h logarchiver.cpp
     socketapi.h socketapi.cpp
     socketlistener.h socketlistener.cpp
     appserver.h appserver.cpp

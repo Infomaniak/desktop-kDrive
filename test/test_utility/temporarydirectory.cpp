@@ -15,29 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "temporarydirectory.h"
 
-#include <log4cplus/logger.h>
-
-using namespace CppUnit;
 
 namespace KDC {
 
-class TestLog : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestLog);
-        CPPUNIT_TEST(testLog);
-        CPPUNIT_TEST_SUITE_END();
+TemporaryDirectory::TemporaryDirectory(const std::string &testType) {
+    const std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    std::ostringstream woss;
+    woss << std::put_time(&tm, "%Y%m%d_%H%M");
 
-    public:
-        void setUp(void);
-        void tearDown(void);
+    path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
+    std::filesystem::create_directory(path);
+}
 
-    protected:
-        log4cplus::Logger _logger;
+TemporaryDirectory::~TemporaryDirectory() {
+    std::filesystem::remove_all(path);
+}
 
-        void testLog(void);
-
-    private:
-        bool _parmsDbFileExist();
-};
 
 }  // namespace KDC

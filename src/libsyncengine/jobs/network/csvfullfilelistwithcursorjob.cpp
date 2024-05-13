@@ -1,3 +1,4 @@
+
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -63,6 +64,7 @@ bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool
     bool prevCharDoubleQuotes = false;
     bool readNextLine = true;
     std::string tmp;
+    uint doubleQuoteCount = 0;
     while (readNextLine) {
         readNextLine = false;
 
@@ -78,6 +80,7 @@ bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool
                 tmp.clear();
                 index++;
             } else if (c == '"') {
+                doubleQuoteCount++;
                 if (!readingDoubleQuotedValue) {
                     readingDoubleQuotedValue = true;
                 } else {
@@ -92,6 +95,12 @@ bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool
             } else {
                 tmp.push_back(c);
             }
+        }
+
+        if (doubleQuoteCount > 2) {
+            LOGW_WARN(_logger, L"Item name contains double quote, ignoring it.");
+            ignore = true;
+            return true;
         }
 
         // File name could have line return in it. If so, read next line and continue parsing
