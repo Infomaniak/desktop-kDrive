@@ -394,19 +394,16 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
         if (_snapshot->isOrphan(*nodeIdIt)) {
-            LOG_SYNCPAL_DEBUG(_logger,
-                              L"Node " << SyncName2WStr(_snapshot->name(*nodeIdIt)).c_str()
-                                       << L" (" << Utility::s2ws(*nodeIdIt).c_str()
-                                       << L") is orphan. Removing it from "
-                                       << Utility::s2ws(Utility::side2Str(_snapshot->side())).c_str() << L" snapshot.");
+            LOG_SYNCPAL_DEBUG(_logger, L"Node " << SyncName2WStr(_snapshot->name(*nodeIdIt)).c_str() << L" ("
+                                                << Utility::s2ws(*nodeIdIt).c_str() << L") is orphan. Removing it from "
+                                                << Utility::s2ws(Utility::side2Str(_snapshot->side())).c_str() << L" snapshot.");
             _snapshot->removeItem(*nodeIdIt);
         }
         nodeIdIt++;
     }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    LOG_SYNCPAL_DEBUG(_logger,
-                      "End reply parsing in " << elapsed_seconds.count() << "s for " << itemCount << " items");
+    LOG_SYNCPAL_DEBUG(_logger, "End reply parsing in " << elapsed_seconds.count() << "s for " << itemCount << " items");
 
     return ExitCodeOk;
 }
@@ -485,7 +482,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr actionArray) {
     if (!actionArray) return ExitCodeOk;
 
-    std::unordered_set<NodeId> movedItems;
+    std::set<NodeId, std::equal_to<>> movedItems;
 
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
         if (stopAsked()) {
@@ -593,10 +590,10 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     return ExitCodeOk;
 }
 
-ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName, const ActionInfo &actionInfo
-                                                       , std::unordered_set<NodeId> &movedItems) {
-    SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime
-                      , actionInfo.type, actionInfo.size, actionInfo.canWrite);
+ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName, const ActionInfo &actionInfo,
+                                                       std::set<NodeId, std::equal_to<>> &movedItems) {
+    SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime,
+                      actionInfo.type, actionInfo.size, actionInfo.canWrite);
 
     // Process action
     switch (actionInfo.actionCode) {
@@ -608,16 +605,15 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case actionCodeAccessRightTeamInsert:
         case actionCodeAccessRightTeamUpdate:
         case actionCodeAccessRightMainUsersInsert:
-        case actionCodeAccessRightMainUsersUpdate:
-        {
+        case actionCodeAccessRightMainUsersUpdate: {
             bool hasRights = false;
             SyncTime createdAt = 0;
             SyncTime modtime = 0;
             int64_t size = 0;
             if (getFileInfo(actionInfo.nodeId, hasRights, createdAt, modtime, size) != ExitCodeOk) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                               << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
-                                               << L")");
+                                               << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                               << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
                 invalidateSnapshot();
                 return ExitCodeBackError;
             }
@@ -631,10 +627,8 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case actionCodeMoveIn:
         case actionCodeRestore:
         case actionCodeCreate:
-            if (_snapshot->updateItem(item)) {
-                LOGW_SYNCPAL_INFO(_logger, L"File/directory updated: " << SyncName2WStr(usedName).c_str() << L" ("
-                                                                       << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
-            }
+            _snapshot->updateItem(item);
+
             if (actionInfo.type == NodeTypeDirectory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
                 // Retrieve all children
                 ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
@@ -655,35 +649,27 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         // Item renamed
         case actionCodeRename:
             _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
-            if (_snapshot->updateItem(item)) {
-                LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                                               << Utility::s2ws(actionInfo.nodeId).c_str() << L") renamed");
-            }
+            _snapshot->updateItem(item);
             break;
 
         // Item edited
         case actionCodeEdit:
-            if (_snapshot->updateItem(item)) {
-                LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                                               << Utility::s2ws(actionInfo.nodeId).c_str()
-                                                               << L") edited at:" << actionInfo.modtime);
-            }
+            _snapshot->updateItem(item);
             break;
 
         // Item removed
         case actionCodeAccessRightRemove:
         case actionCodeAccessRightUserRemove:
         case actionCodeAccessRightTeamRemove:
-        case actionCodeAccessRightMainUsersRemove:
-        {
+        case actionCodeAccessRightMainUsersRemove: {
             bool hasRights = false;
             SyncTime createdAt = 0;
             SyncTime modtime = 0;
             int64_t size = 0;
             if (getFileInfo(actionInfo.nodeId, hasRights, createdAt, modtime, size) != ExitCodeOk) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                               << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
-                                               << L")");
+                                               << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                               << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
                 invalidateSnapshot();
                 return ExitCodeBackError;
             }
@@ -696,12 +682,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             [[fallthrough]];
         case actionCodeTrash:
             _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
-            if (_snapshot->removeItem(actionInfo.nodeId)) {
-                if (ParametersCache::instance()->parameters().extendedLog()) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from remote snapshot: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                                                                       << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
-                }
-            } else {
+            if (!_snapshot->removeItem(actionInfo.nodeId)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
                                                                     << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
                 invalidateSnapshot();
@@ -721,7 +702,8 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
 
         default:
             LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on file: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                                                                << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
+                                                                                << Utility::s2ws(actionInfo.nodeId).c_str()
+                                                                                << L")");
     }
 
 
@@ -729,7 +711,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
 }
 
 ExitCode RemoteFileSystemObserverWorker::getFileInfo(const NodeId &nodeId, bool &hasRights, SyncTime &createdAt,
-                                                         SyncTime &modtime, int64_t &size) {
+                                                     SyncTime &modtime, int64_t &size) {
     GetFileInfoJob job(_syncPal->driveDbId(), nodeId);
     job.runSynchronously();
     if (job.hasHttpError() || job.exitCode() != ExitCodeOk) {
