@@ -19,10 +19,9 @@
 #include "networkjobsparams.h"
 
 #include <map>
+#include <unordered_map>
 
 namespace KDC {
-
-using enum ActionCode;
 
 struct StringHash {
         using is_transparent = void; // Enables heterogeneous operations.
@@ -35,36 +34,36 @@ struct StringHash {
 
 ActionCode getActionCode(const std::string &action) noexcept {
     static const std::unordered_map<std::string, ActionCode, StringHash, std::equal_to<>> actionMap = {
-        {"file_create", actionCodeCreate},
-        {"file_rename", actionCodeRename},
-        {"file_update", actionCodeEdit},
-        {"file_access", actionCodeAccess},
-        {"file_trash", actionCodeTrash},
-        {"file_delete", actionCodeDelete},
-        {"file_move", actionCodeMoveIn},
-        {"file_move_out", actionCodeMoveOut},
-        {"file_restore", actionCodeRestore},
-        {"file_share_create", actionCodeRestoreFileShareCreate},
-        {"file_share_delete", actionCodeRestoreFileShareDelete},
-        {"share_link_create", actionCodeRestoreShareLinkCreate},
-        {"share_link_delete", actionCodeRestoreShareLinkDelete},
-        {"acl_insert", actionCodeAccessRightInsert},
-        {"acl_update", actionCodeAccessRightUpdate},
-        {"acl_remove", actionCodeAccessRightRemove},
-        {"acl_user_insert", actionCodeAccessRightUserInsert},
-        {"acl_user_update", actionCodeAccessRightUserUpdate},
-        {"acl_user_remove", actionCodeAccessRightUserRemove},
-        {"acl_team_insert", actionCodeAccessRightTeamInsert},
-        {"acl_team_update", actionCodeAccessRightTeamUpdate},
-        {"acl_team_remove", actionCodeAccessRightTeamRemove},
-        {"acl_main_users_insert", actionCodeAccessRightMainUsersInsert},
-        {"acl_main_users_update", actionCodeAccessRightMainUsersUpdate},
-        {"acl_main_users_remove", actionCodeAccessRightMainUsersRemove}
+        {"file_create", ActionCode::actionCodeCreate},
+        {"file_rename", ActionCode::actionCodeRename},
+        {"file_update", ActionCode::actionCodeEdit},
+        {"file_access", ActionCode::actionCodeAccess},
+        {"file_trash", ActionCode::actionCodeTrash},
+        {"file_delete", ActionCode::actionCodeDelete},
+        {"file_move", ActionCode::actionCodeMoveIn},
+        {"file_move_out", ActionCode::actionCodeMoveOut},
+        {"file_restore", ActionCode::actionCodeRestore},
+        {"file_share_create", ActionCode::actionCodeRestoreFileShareCreate},
+        {"file_share_delete", ActionCode::actionCodeRestoreFileShareDelete},
+        {"share_link_create", ActionCode::actionCodeRestoreShareLinkCreate},
+        {"share_link_delete", ActionCode::actionCodeRestoreShareLinkDelete},
+        {"acl_insert", ActionCode::actionCodeAccessRightInsert},
+        {"acl_update", ActionCode::actionCodeAccessRightUpdate},
+        {"acl_remove", ActionCode::actionCodeAccessRightRemove},
+        {"acl_user_insert", ActionCode::actionCodeAccessRightUserInsert},
+        {"acl_user_update", ActionCode::actionCodeAccessRightUserUpdate},
+        {"acl_user_remove", ActionCode::actionCodeAccessRightUserRemove},
+        {"acl_team_insert", ActionCode::actionCodeAccessRightTeamInsert},
+        {"acl_team_update", ActionCode::actionCodeAccessRightTeamUpdate},
+        {"acl_team_remove", ActionCode::actionCodeAccessRightTeamRemove},
+        {"acl_main_users_insert", ActionCode::actionCodeAccessRightMainUsersInsert},
+        {"acl_main_users_update", ActionCode::actionCodeAccessRightMainUsersUpdate},
+        {"acl_main_users_remove", ActionCode::actionCodeAccessRightMainUsersRemove}
     };
 
     if (const auto it = actionMap.find(action); it != actionMap.cend()) return it->second;
 
-    return actionCodeUnknown;
+    return ActionCode::actionCodeUnknown;
 };
 
 NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept {

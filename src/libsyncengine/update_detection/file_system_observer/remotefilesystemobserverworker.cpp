@@ -44,8 +44,6 @@
 
 namespace KDC {
 
-using enum ActionCode;
-
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                                const std::string &shortName)
     : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSideRemote), _driveDbId(syncPal->_driveDbId) {}
@@ -598,14 +596,14 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
     // Process action
     switch (actionInfo.actionCode) {
         // Item added
-        case actionCodeAccessRightInsert:
-        case actionCodeAccessRightUpdate:
-        case actionCodeAccessRightUserInsert:
-        case actionCodeAccessRightUserUpdate:
-        case actionCodeAccessRightTeamInsert:
-        case actionCodeAccessRightTeamUpdate:
-        case actionCodeAccessRightMainUsersInsert:
-        case actionCodeAccessRightMainUsersUpdate: {
+        case ActionCode::actionCodeAccessRightInsert:
+        case ActionCode::actionCodeAccessRightUpdate:
+        case ActionCode::actionCodeAccessRightUserInsert:
+        case ActionCode::actionCodeAccessRightUserUpdate:
+        case ActionCode::actionCodeAccessRightTeamInsert:
+        case ActionCode::actionCodeAccessRightTeamUpdate:
+        case ActionCode::actionCodeAccessRightMainUsersInsert:
+        case ActionCode::actionCodeAccessRightMainUsersUpdate: {
             bool hasRights = false;
             SyncTime createdAt = 0;
             SyncTime modtime = 0;
@@ -624,9 +622,9 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             item.setSize(size);
             [[fallthrough]];
         }
-        case actionCodeMoveIn:
-        case actionCodeRestore:
-        case actionCodeCreate:
+        case ActionCode::actionCodeMoveIn:
+        case ActionCode::actionCodeRestore:
+        case ActionCode::actionCodeCreate:
             _snapshot->updateItem(item);
 
             if (actionInfo.type == NodeTypeDirectory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
@@ -647,21 +645,21 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             break;
 
         // Item renamed
-        case actionCodeRename:
+        case ActionCode::actionCodeRename:
             _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
             _snapshot->updateItem(item);
             break;
 
         // Item edited
-        case actionCodeEdit:
+        case ActionCode::actionCodeEdit:
             _snapshot->updateItem(item);
             break;
 
         // Item removed
-        case actionCodeAccessRightRemove:
-        case actionCodeAccessRightUserRemove:
-        case actionCodeAccessRightTeamRemove:
-        case actionCodeAccessRightMainUsersRemove: {
+        case ActionCode::actionCodeAccessRightRemove:
+        case ActionCode::actionCodeAccessRightUserRemove:
+        case ActionCode::actionCodeAccessRightTeamRemove:
+        case ActionCode::actionCodeAccessRightMainUsersRemove: {
             bool hasRights = false;
             SyncTime createdAt = 0;
             SyncTime modtime = 0;
@@ -676,11 +674,11 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             if (hasRights) break;  // Current user still have the right to access this item, ignore action.
             [[fallthrough]];
         }
-        case actionCodeMoveOut:
+        case ActionCode::actionCodeMoveOut:
             // Ignore move out action if destination is inside the synced folder.
             if (movedItems.find(actionInfo.nodeId) != movedItems.end()) break;
             [[fallthrough]];
-        case actionCodeTrash:
+        case ActionCode::actionCodeTrash:
             _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
             if (!_snapshot->removeItem(actionInfo.nodeId)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
@@ -691,12 +689,12 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             break;
 
         // Ignored actions
-        case actionCodeAccess:
-        case actionCodeDelete:
-        case actionCodeRestoreFileShareCreate:
-        case actionCodeRestoreFileShareDelete:
-        case actionCodeRestoreShareLinkCreate:
-        case actionCodeRestoreShareLinkDelete:
+        case ActionCode::actionCodeAccess:
+        case ActionCode::actionCodeDelete:
+        case ActionCode::actionCodeRestoreFileShareCreate:
+        case ActionCode::actionCodeRestoreFileShareDelete:
+        case ActionCode::actionCodeRestoreShareLinkCreate:
+        case ActionCode::actionCodeRestoreShareLinkDelete:
             // Ignore these actions
             break;
 
