@@ -373,7 +373,8 @@ enum class AppStateKey {
      * "U" means "Uploading" (ie. U80 means 80% of the uploading is done)
      * "S" means "Success" (ie. S means the archiving and upload where successful)
      * "F" means "Failed"
-     * "N" means "None" (ie. N means no upload is in progress)*/
+     * "N" means "None" (ie. N means we never tried to upload the logs)
+     */
     LogUploadStatus,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
