@@ -333,6 +333,12 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return IoHelper::getXAttrValue(itemPath.native(), FILE_ATTRIBUTE_OFFLINE, isDehydrated, ioError);
 }
 
+static bool setRightsWindowsApiInheritance = false;
+
+void IoHelper::_setRightsWindowsInheritance(bool inherit) {
+    setRightsWindowsApiInheritance = inherit;
+}
+
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
                                                                       // should call _isExpectedError
@@ -344,7 +350,11 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
     explicitAccess.grfAccessPermissions = permission;
     explicitAccess.grfAccessMode = accessMode;
-    explicitAccess.grfInheritance = NO_INHERITANCE;
+    if (!setRightsWindowsApiInheritance) {
+        explicitAccess.grfInheritance = NO_INHERITANCE;
+    } else {
+        explicitAccess.grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
+    }
     explicitAccess.Trustee.pMultipleTrustee = nullptr;
     explicitAccess.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
     explicitAccess.Trustee.TrusteeForm = Utility::_trustee.TrusteeForm;
