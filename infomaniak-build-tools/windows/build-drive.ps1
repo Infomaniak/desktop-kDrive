@@ -442,8 +442,17 @@ if (Test-Path -Path $installerPath)
 else
 {
 	Write-Host ("$installerPath not found. Unable to sign final installer.") -f Red
-	exit $LASTEXITCODE
+	exit 1
 }
+
+#################################################################################################
+#																								#
+#											CLEAN-UP											#
+#																								#
+#################################################################################################
+
+Copy-Item -Path "$buildPath\bin\kDrive*.pdb" -Destination $contentPath
+Remove-Item $archivePath\$archiveName
 
 if ($upload)
 {
