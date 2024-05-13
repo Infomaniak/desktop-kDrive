@@ -93,6 +93,7 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
 }  // namespace
 
 int IoHelper::_getAndSetRightsMethod = 0;
+bool IoHelper::_setRightsWindowsApiInheritance = false;
 
 bool IoHelper::fileExists(const std::error_code &ec) noexcept {
     return (ec.value() != ERROR_FILE_NOT_FOUND) && (ec.value() != ERROR_PATH_NOT_FOUND) && (ec.value() != ERROR_INVALID_DRIVE);
@@ -333,14 +334,9 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return IoHelper::getXAttrValue(itemPath.native(), FILE_ATTRIBUTE_OFFLINE, isDehydrated, ioError);
 }
 
-static bool setRightsWindowsApiInheritance = false;
-
-void IoHelper::_setRightsWindowsInheritance(bool inherit) {
-    setRightsWindowsApiInheritance = inherit;
-}
-
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
-                                log4cplus::Logger logger) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
+                                log4cplus::Logger logger,
+                                bool inherite = false) noexcept {             // Always return false if ioError != IoErrorSuccess, caller
                                                                       // should call _isExpectedError
     PACL pACLold = nullptr;                                           // Current ACL
     PACL pACLnew = nullptr;                                           // New ACL
@@ -350,7 +346,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
     explicitAccess.grfAccessPermissions = permission;
     explicitAccess.grfAccessMode = accessMode;
-    if (!setRightsWindowsApiInheritance) {
+    if (!inherite) {
         explicitAccess.grfInheritance = NO_INHERITANCE;
     } else {
         explicitAccess.grfInheritance = SUB_CONTAINERS_AND_OBJECTS_INHERIT;
@@ -557,10 +553,12 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         } else {
             grantedPermission |= FILE_GENERIC_EXECUTE;
         }
-        bool res =
-            setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger()) || _isExpectedError(ioError);
+        bool res = setRightsWindowsApi(path, grantedPermission, ACCESS_MODE::SET_ACCESS, ioError, logger(),
+                                       _setRightsWindowsApiInheritance) ||
+                   _isExpectedError(ioError);
         if (res) {
-            res &= setRightsWindowsApi(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger()) ||
+            res &= setRightsWindowsApi(path, deniedPermission, ACCESS_MODE::DENY_ACCESS, ioError, logger(),
+                                       _setRightsWindowsApiInheritance) ||
                    _isExpectedError(ioError);
         }
 

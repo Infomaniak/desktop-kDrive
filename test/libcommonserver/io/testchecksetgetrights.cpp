@@ -314,7 +314,7 @@ void TestIo::testCheckSetAndGetRights() {
          *  |  0   |   0   |    0    | v
          *  ...
          */
-        IoHelper::_setRightsWindowsInheritance(true);
+        IoHelper::_setRightsWindowsApiInheritance = true; 
         for (int baseRigths = 0; baseRigths < 7;
              baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
             for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
@@ -323,7 +323,7 @@ void TestIo::testCheckSetAndGetRights() {
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Failed to set base rights */);
                 }
 
@@ -331,13 +331,13 @@ void TestIo::testCheckSetAndGetRights() {
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Failed to get base rights */);
                 }
 
                 if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
 
@@ -346,20 +346,20 @@ void TestIo::testCheckSetAndGetRights() {
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Failed to set target rights */);
                 }
                 result = IoHelper::getRights(subFolderPath, isReadable, isWritable, isExecutable, ioError);
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Failed to get target rights */);
                 }
 
                 if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Set target rights mismatch with get target rights */);
                 }
             }
@@ -367,7 +367,7 @@ void TestIo::testCheckSetAndGetRights() {
 
         // Restore the rights
         IoHelper::setRights(path, true, true, true, ioError);
-        IoHelper::_setRightsWindowsInheritance(false);
+        IoHelper::_setRightsWindowsApiInheritance = false; 
         CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
 
 
@@ -413,7 +413,7 @@ void TestIo::testCheckSetAndGetRights() {
          *  |  0   |   0   |    0    | v
          *  ...
          */
-        IoHelper::_setRightsWindowsInheritance(true);
+        IoHelper::_setRightsWindowsApiInheritance = true; 
         for (int baseRigths = 0; baseRigths < 7;
              baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
             for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
@@ -422,7 +422,7 @@ void TestIo::testCheckSetAndGetRights() {
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Failed to set base rights */);
                 }
 
@@ -430,12 +430,12 @@ void TestIo::testCheckSetAndGetRights() {
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Failed to get base rights */);
                 }
                 if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Set base rights mismatch  with get base rights */);
                 }
 
@@ -444,20 +444,20 @@ void TestIo::testCheckSetAndGetRights() {
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Failed to set target rights */);
                 }
                 result = IoHelper::getRights(filePath, isReadable, isWritable, isExecutable, ioError);
                 result &= ioError == IoErrorSuccess;
                 if (!result) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Failed to get target rights */);
                 }
 
                 if (!(isReadable == rightsSet.read && isWritable == rightsSet.write && isExecutable == rightsSet.execute)) {
                     IoHelper::setRights(path, true, true, true, ioError);
-                    IoHelper::_setRightsWindowsInheritance(false);
+                    IoHelper::_setRightsWindowsApiInheritance = false; 
                     CPPUNIT_ASSERT(false /* Set target rights mismatch with get target rights */);
                 }
             }
@@ -465,7 +465,7 @@ void TestIo::testCheckSetAndGetRights() {
 
         // Restore the rights
         IoHelper::setRights(path, true, true, true, ioError);
-        IoHelper::_setRightsWindowsInheritance(false);
+        IoHelper::_setRightsWindowsApiInheritance = false; 
         CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the wndows API
 #endif
     }

@@ -386,7 +386,7 @@ struct IoHelper {
         static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
 #ifdef _WIN32
-        static void _setRightsWindowsInheritance(bool inherit); // For windows tests only
+        static bool _setRightsWindowsApiInheritance; // For windows tests only
 #endif
 };
 
