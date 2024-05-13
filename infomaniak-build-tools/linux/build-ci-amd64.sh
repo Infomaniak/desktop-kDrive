@@ -53,7 +53,7 @@ cmake -B$BUILDDIR -H$BASEPATH \
     -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
     -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
     -DQT_FEATURE_neon=OFF \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBIN_INSTALL_DIR=$BUILDDIR/client \
