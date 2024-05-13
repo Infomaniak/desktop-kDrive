@@ -337,7 +337,6 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
 // Always return false if ioError != IoErrorSuccess, caller should call _isExpectedError
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger, bool inherite = false) noexcept {
-    
     PACL pACLold = nullptr;  // Current ACL
     PACL pACLnew = nullptr;  // New ACL
     PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
