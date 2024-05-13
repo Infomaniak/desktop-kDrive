@@ -24,14 +24,12 @@ export QT_BASE_DIR="~/Qt/6.2.3"
 export QTDIR="$QT_BASE_DIR/gcc_64"
 export BASEPATH=$PWD
 export CONTENTDIR="$BASEPATH/build-linux"
-export INSTALLDIR="$CONTENTDIR/install"
 export BUILDDIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
 
 mkdir -p $APPDIR
 mkdir -p $BUILDDIR
-mkdir -p $INSTALLDIR
 
 export QMAKE=$QTDIR/bin/qmake
 export PATH=$QTDIR/bin:$QTDIR/libexec:$PATH
@@ -55,7 +53,7 @@ cmake -B$BUILDDIR -H$BASEPATH \
     -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
     -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
     -DQT_FEATURE_neon=OFF \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBIN_INSTALL_DIR=$BUILDDIR/client \
@@ -66,6 +64,15 @@ cmake -B$BUILDDIR -H$BASEPATH \
     "${CMAKE_PARAMS[@]}" \
 
 make -j4
+
+objcopy --only-keep-debug ./bin/kDrive $CONTENTDIR/kDrive-amd64.dbg
+objcopy --strip-debug ./bin/kDrive
+objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive-amd64.dbg ./bin/kDrive
+
+objcopy --only-keep-debug ./bin/kDrive_client $CONTENTDIR/kDrive_client-amd64.dbg
+objcopy --strip-debug ./bin/kDrive_client
+objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive_client-amd64.dbg ./bin/kDrive_client
+
 make DESTDIR=$APPDIR install
 
-cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
+# cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
