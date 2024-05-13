@@ -375,7 +375,7 @@ enum class AppStateKey {
      * "F" means "Failed" (ie. F means the upload failed)
      * "N" means "None" (ie. N means no upload is in progress)*/
     LogUploadStatus,
-    Unknown  //!\ keep in last position (For tests) /!\\ 
+    Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
 
 }  // namespace KDC
