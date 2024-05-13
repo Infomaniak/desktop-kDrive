@@ -45,6 +45,7 @@
 #include "libsyncengine/jobs/network/getsizejob.h"
 #include "libsyncengine/olddb/oldsyncdb.h"
 #include "utility/jsonparserutility.h"
+#include "server/logarchiver.h"
 
 #include <QDir>
 #include <QUuid>
@@ -982,6 +983,72 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
         return ExitCodeDataError;
     }
 
+    return ExitCodeOk;
+}
+
+ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, SyncPath &archivePath, ExitCause &exitCause,
+                                          std::function<void(char, int)> progressCallback) {
+    const bool progressMonitoring = progressCallback != nullptr;
+    exitCause = ExitCauseUnknown;
+    ExitCode exitCode = ExitCodeOk;
+
+    // Generate archive name: <drive id 1>-<drive id 2>...-<drive id N>-yyyyMMdd-HHmmss.zip
+    std::string archiveName;
+    std::vector<Drive> driveList;
+
+    if (!ParmsDb::instance()->selectAllDrives(driveList)) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
+        exitCause = ExitCauseDbAccessError;
+        return ExitCodeDbError;
+    }
+
+    if (driveList.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
+        exitCause = ExitCauseLoginError;
+        return ExitCodeInvalidToken;  // Currently, we can't send logs if no drive is found
+    }
+
+    for (auto drive : driveList) {
+        archiveName += std::to_string(drive.driveId()) + "-";
+    }
+
+    const std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    std::ostringstream woss;
+    woss << std::put_time(&tm, "%Y%m%d_%H%M%S");
+
+    archiveName += woss.str() + ".zip";
+
+    // Create temp folder
+    const SyncPath tempFolder = CommonUtility::getAppSupportDir() / "tempLogSend";
+    IoError ioError = IoErrorSuccess;
+    if (!IoHelper::createDirectory(tempFolder, ioError) && (ioError == IoErrorDirectoryExists || ioError == IoErrorSuccess)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in IoHelper::createDirectory : " << Utility::formatIoError(tempFolder, ioError).c_str());
+        if (ioError == IoErrorDiskFull) {
+            exitCause = ExitCauseNotEnoughDiskSpace;
+        } else {
+            exitCause = ExitCauseUnknown;
+        }
+        return ExitCodeSystemError;
+    }
+
+    std::function<void(int)> progressCallbackArchivingWrapper = nullptr;
+    if (progressMonitoring) {
+        progressCallbackArchivingWrapper = [progressCallback](int percent) { progressCallback('A', percent); };
+    }
+
+    exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, tempFolder, archiveName, exitCause,
+                                                       progressCallbackArchivingWrapper);
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Log::generateLogsSupportArchive");
+        IoHelper::deleteDirectory(tempFolder, ioError);
+        return exitCode;
+    }
+
+
+    IoHelper::deleteDirectory(tempFolder, ioError);
+    exitCause = ExitCauseUnknown;
     return ExitCodeOk;
 }
 

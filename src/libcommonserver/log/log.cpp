@@ -19,11 +19,6 @@
 #include "log.h"
 #include "customrollingfileappender.h"
 #include "utility/utility.h"
-#include "libparms/db/user.h"
-#include "libparms/db/parmsdb.h"
-#include "libparms/db/drive.h"
-
-#include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 
 #include <log4cplus/initializer.h>

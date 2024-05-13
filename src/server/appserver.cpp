@@ -357,7 +357,6 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
-
 }
 
 AppServer::~AppServer() {
@@ -1830,6 +1829,31 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << QString::fromStdString(value);
             break;
         }
+        case REQUEST_NUM_UTILITY_SEND_LOG_TO_SUPPORT: {
+            bool includeArchivedLogs = false;
+            QDataStream paramsStream(params);
+            paramsStream >> includeArchivedLogs;
+            resultStream << ExitCodeOk;  // Return immediately, progress and error will be report via addError and signal
+
+            QTimer::singleShot(100, [this, includeArchivedLogs]() {
+                std::function<void(char, int64_t)> progressFunc = [this](char status, int progress) {
+                    sendLogUploadStatusUpdated(status, progress);
+                    LOG_DEBUG(_logger, "Log transfert progress : " << status << " | " << progress << " %");
+                };
+
+                SyncPath archivePath;
+                ExitCause exitCause = ExitCauseUnknown;
+                ExitCode exitCode = ServerRequests::sendLogToSupport(includeArchivedLogs, archivePath, exitCause, progressFunc);
+
+                if (exitCode != ExitCodeOk) {
+                    LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);
+                    addError(Error(ERRID, exitCode, exitCause));
+                }
+
+                sendLogUploadStatusUpdated(exitCode == ExitCodeOk ? 'F' : 'S', 0);
+            });
+            break;
+        }
         case REQUEST_NUM_SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId;
             bool value;
@@ -1999,6 +2023,16 @@ void AppServer::sendErrorsCleared(int syncDbId) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
     CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_ERRORS_CLEARED, params, id);
+}
+
+void AppServer::sendLogUploadStatusUpdated(char status, int percent) {
+    int id;
+
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << status;
+    paramsStream << percent;
+    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {
@@ -3757,7 +3791,8 @@ void AppServer::addError(const Error &error) {
         }
 
 #ifdef NDEBUG
-        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", "Sockets defuncted error"));
+        sentry_capture_event(
+            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", "Sockets defuncted error"));
 #endif
     }
 
