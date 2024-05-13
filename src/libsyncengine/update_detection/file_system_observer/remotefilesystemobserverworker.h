@@ -60,6 +60,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         };
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
         ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
+        ExitCode processAction(const SyncName &usedName, const ActionInfo &actionInfo, std::unordered_set<NodeId> &movedItems);
 
         ExitCode getFileInfo(const NodeId &nodeId, bool &hasRights, SyncTime &createdAt, SyncTime &modtime, int64_t &size);
 

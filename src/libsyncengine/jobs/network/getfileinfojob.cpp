@@ -35,49 +35,47 @@ GetFileInfoJob::GetFileInfoJob(int driveDbId, const NodeId &nodeId)
 }
 
 bool GetFileInfoJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
+    if (!AbstractTokenNetworkJob::handleResponse(is)) return false;
+
+    if (!jsonRes()) return true;
+
+    Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
+    if (!dataObj) return true;
+
+    if (!JsonParserUtility::extractValue(dataObj, parentIdKey, _parentNodeId)) {
         return false;
     }
-
-    if (jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            if (!JsonParserUtility::extractValue(dataObj, parentIdKey, _parentNodeId)) {
-                return false;
-            }
-            if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime)) {
-                return false;
-            }
-            if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
-                return false;
-            }
-            std::string tmp;
-            if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
-                return false;
-            }
-            bool isDir = tmp == dirKey;
-            if (!isDir) {
-                if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
-                    return false;
-                }
-            }
-
-            std::string symbolicLink;
-            if (JsonParserUtility::extractValue(dataObj, symbolicLinkKey, symbolicLink, false)) {
-                _isLink = !symbolicLink.empty();
-            }
-
-            if (_withPath) {
-                std::string str;
-                if (!JsonParserUtility::extractValue(dataObj, pathKey, str)) {
-                    return false;
-                }
-                if (Utility::startsWith(str, "/")) {
-                    str.erase(0, 1);
-                }
-                _path = str;
-            }
+    if (!JsonParserUtility::extractValue(dataObj, createdAtKey, _creationTime)) {
+        return false;
+    }
+    if (!JsonParserUtility::extractValue(dataObj, lastModifiedAtKey, _modtime)) {
+        return false;
+    }
+    std::string tmp;
+    if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
+        return false;
+    }
+    bool isDir = tmp == dirKey;
+    if (!isDir) {
+        if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
+            return false;
         }
+    }
+
+    std::string symbolicLink;
+    if (JsonParserUtility::extractValue(dataObj, symbolicLinkKey, symbolicLink, false)) {
+        _isLink = !symbolicLink.empty();
+    }
+
+    if (_withPath) {
+        std::string str;
+        if (!JsonParserUtility::extractValue(dataObj, pathKey, str)) {
+            return false;
+        }
+        if (Utility::startsWith(str, "/")) {
+            str.erase(0, 1);
+        }
+        _path = str;
     }
 
     return true;

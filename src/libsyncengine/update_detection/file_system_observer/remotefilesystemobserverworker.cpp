@@ -44,6 +44,8 @@
 
 namespace KDC {
 
+using enum ActionCode;
+
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                                const std::string &shortName)
     : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSideRemote), _driveDbId(syncPal->_driveDbId) {}
@@ -505,14 +507,12 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         if (!actionInfo.destName.empty()) {
             usedName = actionInfo.destName;
         }
-        SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime
-                          , actionInfo.type, actionInfo.size, actionInfo.canWrite);
 
         bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcludedTemplate(item.name(), isWarning)) {
+        if (ExclusionTemplateCache::instance()->isExcludedTemplate(usedName, isWarning)) {
             if (isWarning) {
-                Error error(_syncPal->syncDbId(), "", actionInfo.nodeId, actionInfo.type, actionInfo.path, ConflictTypeNone, InconsistencyTypeNone,
-                            CancelTypeExcludedByTemplate);
+                Error error(_syncPal->syncDbId(), "", actionInfo.nodeId, actionInfo.type, actionInfo.path, ConflictTypeNone,
+                            InconsistencyTypeNone, CancelTypeExcludedByTemplate);
                 _syncPal->addError(error);
             }
             // Remove it from snapshot
@@ -526,133 +526,9 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
             usedName = newName;
         }
 #endif
-        bool rightsAdded = false;
 
-        // Process action
-        switch (actionInfo.actionCode) {
-            // Item added
-            case ActionCode::actionCodeAccessRightInsert:
-            case ActionCode::actionCodeAccessRightUpdate:
-            case ActionCode::actionCodeAccessRightUserInsert:
-            case ActionCode::actionCodeAccessRightUserUpdate:
-            case ActionCode::actionCodeAccessRightTeamInsert:
-            case ActionCode::actionCodeAccessRightTeamUpdate:
-            case ActionCode::actionCodeAccessRightMainUsersInsert:
-            case ActionCode::actionCodeAccessRightMainUsersUpdate:
-            {
-                bool hasRights = false;
-                SyncTime createdAt = 0;
-                SyncTime modtime = 0;
-                int64_t size = 0;
-                if (getFileInfo(actionInfo.nodeId, hasRights, createdAt, modtime, size) != ExitCodeOk) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                                   << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
-                                                   << L")");
-                    invalidateSnapshot();
-                    return ExitCodeBackError;
-                }
-                if (!hasRights) break;  // Current user does not have the right to access this item, ignore action.
-
-                item.setCreatedAt(createdAt);
-                item.setLastModified(modtime);
-                item.setSize(size);
-                [[fallthrough]];
-            }
-            case ActionCode::actionCodeMoveIn:
-            case ActionCode::actionCodeRestore:
-            case ActionCode::actionCodeCreate:
-                if (_snapshot->updateItem(item)) {
-                    LOGW_SYNCPAL_INFO(_logger, L"File/directory updated: " << SyncName2WStr(usedName).c_str() << L" ("
-                                                                           << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
-                }
-                if (actionInfo.type == NodeTypeDirectory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
-                    // Retrieve all children
-                    ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
-                    ExitCause exitCause = this->exitCause();
-
-                    if (exitCode == ExitCodeNetworkError && exitCause == ExitCauseNetworkTimeout) {
-                        _syncPal->addError(Error(ERRID, exitCode, exitCause));
-                    }
-
-                    if (exitCode != ExitCodeOk) {
-                        return exitCode;
-                    }
-                }
-                if (actionInfo.actionCode == ActionCode::actionCodeMoveIn) {
-                    // Keep track of moved items
-                    movedItems.insert(actionInfo.nodeId);
-                }
-                break;
-
-            // Item renamed
-            case ActionCode::actionCodeRename:
-                _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
-                if (_snapshot->updateItem(item)) {
-                    LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                                                   << Utility::s2ws(actionInfo.nodeId).c_str() << L") renamed");
-                }
-                break;
-
-            // Item edited
-            case ActionCode::actionCodeEdit:
-                if (_snapshot->updateItem(item)) {
-                    LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                                                   << Utility::s2ws(actionInfo.nodeId).c_str()
-                                                                   << L") edited at:" << actionInfo.modtime);
-                }
-                break;
-
-            // Item removed
-            case ActionCode::actionCodeAccessRightRemove:
-            case ActionCode::actionCodeAccessRightUserRemove:
-            case ActionCode::actionCodeAccessRightTeamRemove:
-            case ActionCode::actionCodeAccessRightMainUsersRemove:
-            {
-                bool hasRights = false;
-                if (getFileInfo(actionInfo.nodeId, hasRights, actionInfo.createdAt, actionInfo.modtime, actionInfo.size) != ExitCodeOk) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                                   << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
-                                                   << L")");
-                    invalidateSnapshot();
-                    return ExitCodeBackError;
-                }
-                if (hasRights) break;  // Current user still have the right to access this item, ignore action.
-                [[fallthrough]];
-            }
-            case ActionCode::actionCodeMoveOut:
-                if (movedItems.find(actionInfo.nodeId) != movedItems.end()) {
-                    // Ignore move out action if destination is inside the synced folder.
-                    break;
-                }
-                [[fallthrough]];
-            case ActionCode::actionCodeTrash:
-                _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
-                if (_snapshot->removeItem(actionInfo.nodeId)) {
-                    if (ParametersCache::instance()->parameters().extendedLog()) {
-                        LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from remote snapshot: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                                                                           << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
-                    }
-                } else {
-                    LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                                                        << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
-                    invalidateSnapshot();
-                    return ExitCodeBackError;
-                }
-                break;
-
-            // Ignored actions
-            case ActionCode::actionCodeAccess:
-            case ActionCode::actionCodeDelete:
-            case ActionCode::actionCodeRestoreFileShareCreate:
-            case ActionCode::actionCodeRestoreFileShareDelete:
-            case ActionCode::actionCodeRestoreShareLinkCreate:
-            case ActionCode::actionCodeRestoreShareLinkDelete:
-                // Ignore these actions
-                break;
-
-            default:
-                LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on file: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                                                                    << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
+        if (ExitCode exitCode = processAction(usedName, actionInfo, movedItems); exitCode != ExitCodeOk) {
+            return exitCode;
         }
     }
 
@@ -713,6 +589,141 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
             return ExitCodeBackError;
         }
     }
+
+    return ExitCodeOk;
+}
+
+ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName, const ActionInfo &actionInfo
+                                                       , std::unordered_set<NodeId> &movedItems) {
+    SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime
+                      , actionInfo.type, actionInfo.size, actionInfo.canWrite);
+
+    // Process action
+    switch (actionInfo.actionCode) {
+        // Item added
+        case actionCodeAccessRightInsert:
+        case actionCodeAccessRightUpdate:
+        case actionCodeAccessRightUserInsert:
+        case actionCodeAccessRightUserUpdate:
+        case actionCodeAccessRightTeamInsert:
+        case actionCodeAccessRightTeamUpdate:
+        case actionCodeAccessRightMainUsersInsert:
+        case actionCodeAccessRightMainUsersUpdate:
+        {
+            bool hasRights = false;
+            SyncTime createdAt = 0;
+            SyncTime modtime = 0;
+            int64_t size = 0;
+            if (getFileInfo(actionInfo.nodeId, hasRights, createdAt, modtime, size) != ExitCodeOk) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
+                                               << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
+                                               << L")");
+                invalidateSnapshot();
+                return ExitCodeBackError;
+            }
+            if (!hasRights) break;  // Current user does not have the right to access this item, ignore action.
+
+            item.setCreatedAt(createdAt);
+            item.setLastModified(modtime);
+            item.setSize(size);
+            [[fallthrough]];
+        }
+        case actionCodeMoveIn:
+        case actionCodeRestore:
+        case actionCodeCreate:
+            if (_snapshot->updateItem(item)) {
+                LOGW_SYNCPAL_INFO(_logger, L"File/directory updated: " << SyncName2WStr(usedName).c_str() << L" ("
+                                                                       << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
+            }
+            if (actionInfo.type == NodeTypeDirectory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
+                // Retrieve all children
+                ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
+                ExitCause exitCause = this->exitCause();
+
+                if (exitCode == ExitCodeNetworkError && exitCause == ExitCauseNetworkTimeout) {
+                    _syncPal->addError(Error(ERRID, exitCode, exitCause));
+                }
+
+                if (exitCode != ExitCodeOk) return exitCode;
+            }
+            if (actionInfo.actionCode == ActionCode::actionCodeMoveIn) {
+                // Keep track of moved items
+                movedItems.insert(actionInfo.nodeId);
+            }
+            break;
+
+        // Item renamed
+        case actionCodeRename:
+            _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
+            if (_snapshot->updateItem(item)) {
+                LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                               << Utility::s2ws(actionInfo.nodeId).c_str() << L") renamed");
+            }
+            break;
+
+        // Item edited
+        case actionCodeEdit:
+            if (_snapshot->updateItem(item)) {
+                LOGW_SYNCPAL_INFO(_logger, L"File/directory: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                               << Utility::s2ws(actionInfo.nodeId).c_str()
+                                                               << L") edited at:" << actionInfo.modtime);
+            }
+            break;
+
+        // Item removed
+        case actionCodeAccessRightRemove:
+        case actionCodeAccessRightUserRemove:
+        case actionCodeAccessRightTeamRemove:
+        case actionCodeAccessRightMainUsersRemove:
+        {
+            bool hasRights = false;
+            SyncTime createdAt = 0;
+            SyncTime modtime = 0;
+            int64_t size = 0;
+            if (getFileInfo(actionInfo.nodeId, hasRights, createdAt, modtime, size) != ExitCodeOk) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
+                                               << SyncName2WStr(actionInfo.name).c_str() << L" (" << Utility::s2ws(actionInfo.nodeId).c_str()
+                                               << L")");
+                invalidateSnapshot();
+                return ExitCodeBackError;
+            }
+            if (hasRights) break;  // Current user still have the right to access this item, ignore action.
+            [[fallthrough]];
+        }
+        case actionCodeMoveOut:
+            // Ignore move out action if destination is inside the synced folder.
+            if (movedItems.find(actionInfo.nodeId) != movedItems.end()) break;
+            [[fallthrough]];
+        case actionCodeTrash:
+            _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
+            if (_snapshot->removeItem(actionInfo.nodeId)) {
+                if (ParametersCache::instance()->parameters().extendedLog()) {
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from remote snapshot: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                                                       << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
+                }
+            } else {
+                LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                                    << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
+                invalidateSnapshot();
+                return ExitCodeBackError;
+            }
+            break;
+
+        // Ignored actions
+        case actionCodeAccess:
+        case actionCodeDelete:
+        case actionCodeRestoreFileShareCreate:
+        case actionCodeRestoreFileShareDelete:
+        case actionCodeRestoreShareLinkCreate:
+        case actionCodeRestoreShareLinkDelete:
+            // Ignore these actions
+            break;
+
+        default:
+            LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on file: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                                                                << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
+    }
+
 
     return ExitCodeOk;
 }
