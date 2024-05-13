@@ -334,12 +334,12 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return IoHelper::getXAttrValue(itemPath.native(), FILE_ATTRIBUTE_OFFLINE, isDehydrated, ioError);
 }
 
+// Always return false if ioError != IoErrorSuccess, caller should call _isExpectedError
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
-                                log4cplus::Logger logger,
-                                bool inherite = false) noexcept {             // Always return false if ioError != IoErrorSuccess, caller
-                                                                      // should call _isExpectedError
-    PACL pACLold = nullptr;                                           // Current ACL
-    PACL pACLnew = nullptr;                                           // New ACL
+                                log4cplus::Logger logger, bool inherite = false) noexcept {
+    
+    PACL pACLold = nullptr;  // Current ACL
+    PACL pACLnew = nullptr;  // New ACL
     PSECURITY_DESCRIPTOR pSecurityDescriptor = nullptr;
     EXPLICIT_ACCESS explicitAccess;
     ZeroMemory(&explicitAccess, sizeof(explicitAccess));
@@ -420,10 +420,10 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     return true;
 }
 
+// Always return false if ioError != IoErrorSuccess, caller should call _isExpectedError.
 static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
                                 log4cplus::Logger logger,
-                                bool retry = true) noexcept {  // Always return false if ioError != IoErrorSuccess, caller
-                                                               // should call _isExpectedError.
+                                bool retry = true) noexcept {  
     ioError = IoErrorSuccess;
     read = false;
     write = false;
@@ -451,13 +451,18 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
     ioError = dWordError2ioError(result);
 
-    /* The GetEffectiveRightsFromAcl function fails and returns ERROR_INVALID_ACL if the specified ACL contains an inherited access-denied ACE.
-     * see: https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-geteffectiverightsfromacla
-     * From my personal test on Windows 11 Pro 23H2, the function does work as expected and returns the rights for the trustee even if the ACL contains an inherited access-denied ACE.
-     * If we get ERROR_INVALID_ACL, we will consider to be in the case described in the documentation and consider the file as not existing (we can't get the rights).
+    /* The GetEffectiveRightsFromAcl function fails and returns ERROR_INVALID_ACL if the specified ACL contains an inherited
+     * access-denied ACE. see: https://learn.microsoft.com/en-us/windows/win32/api/aclapi/nf-aclapi-geteffectiverightsfromacla
+     * From my personal test on Windows 11 Pro 23H2, the function does work as expected and returns the rights for the trustee
+     * even if the ACL contains an inherited access-denied ACE. If we get ERROR_INVALID_ACL, we will consider to be in the case
+     * described in the documentation and consider the file as not existing (we can't get the rights).
      */
-    if (result == ERROR_INVALID_ACL) { 
-        LOGW_INFO(logger, L"getRightsWindowsApi: path='" << Utility::formatSyncPath(path) << L"', the specified ACL contains an inherited access - denied ACE. Considerring the file as not existing.");
+    if (result == ERROR_INVALID_ACL) {
+        LOGW_INFO(
+            logger,
+            L"getRightsWindowsApi: path='"
+                << Utility::formatSyncPath(path)
+                << L"', the specified ACL contains an inherited access - denied ACE. Considerring the file as not existing.");
         read = false;
         write = false;
         exec = false;
@@ -467,8 +472,8 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     }
 
     if (result != ERROR_SUCCESS) {
-        LOGW_WARN(logger, L"GetEffectiveRightsFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result
-                                                                       << L"'");
+        LOGW_WARN(logger, L"GetEffectiveRightsFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
+                                                                      << result << L"'");
         LocalFree(psecDesc);
         return false;  // Caller should call _isExpectedError
     }
