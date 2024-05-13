@@ -1842,8 +1842,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 resultStream << ExitCodeSystemError;
                 resultStream << 0;
             } else {
+                // Needed because of the different type def on Windows, Linux  and MacOS (long long or long)
+                qint64 sizeQt = static_cast<qint64>(logSize);
                 resultStream << ExitCodeOk;
-                resultStream << logSize;
+                resultStream << sizeQt;
             }
             break;
         }

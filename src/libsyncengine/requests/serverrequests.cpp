@@ -994,7 +994,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
 
     if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "A0", found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-        // I do not return here because it is not a critical error, especially in this context where we are trying to send logs
+        // Do not return here because it is not a critical error, especially in this context where we are trying to send logs
     }
     if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
@@ -1030,7 +1030,6 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
     const std::tm tm = *std::localtime(&now);
     std::ostringstream woss;
     woss << std::put_time(&tm, "%Y%m%d_%H%M%S");
-
     archiveName += woss.str() + ".zip";
 
     // Create temp folder

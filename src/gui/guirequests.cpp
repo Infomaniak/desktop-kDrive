@@ -866,11 +866,13 @@ ExitCode GuiRequests::getLogDirEstimatedSize(uint64_t &size) {
     if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results)) {
         return ExitCodeSystemError;
     }
-
+    qint64 sizeQt = 0;
     ExitCode exitCode;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
-    resultStream >> size;
+    resultStream >> sizeQt;
+    // Needed because of the different type def on Windows, Linux  and MacOS (long long or long)
+    size = static_cast<uint64_t>(sizeQt);
 
     return exitCode;
 }
