@@ -75,4 +75,4 @@ objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive_client-amd64.dbg ./bin/kDrive_cli
 
 make DESTDIR=$APPDIR install
 
-# cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
+cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
