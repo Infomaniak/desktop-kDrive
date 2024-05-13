@@ -206,7 +206,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             bool changed = false;
             IoError ioError = IoErrorSuccess;
             const bool success = IoHelper::checkIfFileChanged(absolutePath, _snapshot->size(nodeId),
-                                                              _snapshot->lastModifed(nodeId), changed, ioError);
+                                                              _snapshot->lastModified(nodeId), changed, ioError);
             if (!success) {
                 LOGW_SYNCPAL_WARN(
                     _logger, L"Error in IoHelper::checkIfFileChanged: " << Utility::formatIoError(absolutePath, ioError).c_str());
@@ -344,7 +344,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             continue;
         }
 
-        if (fileStat.modtime > _snapshot->lastModifed(nodeId)) {
+        if (fileStat.modtime > _snapshot->lastModified(nodeId)) {
             // This is an edit operation
 #ifdef __APPLE__
             if (_syncPal->_vfsMode == VirtualFileModeMac) {
