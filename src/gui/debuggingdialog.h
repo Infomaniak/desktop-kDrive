@@ -27,6 +27,7 @@
 
 #include <QPushButton>
 #include <QLabel>
+#include <QProgressBar>
 
 namespace KDC {
 
@@ -47,6 +48,11 @@ class DebuggingDialog : public CustomDialog {
         CustomCheckBox *_extendedLogCheckBox;
         CustomCheckBox *_deleteLogsCheckBox;
         QPushButton *_saveButton;
+        QPushButton *_logUploadButton;
+        QPushButton *_cancelLogUploadButton;
+        QProgressBar *_logUploadProgressBar;
+        QLabel *_sendLogStatusLabel;
+
         bool _recordDebugging;
         bool _extendedLog;
         LogLevel _minLogLevel;
@@ -64,6 +70,10 @@ class DebuggingDialog : public CustomDialog {
         void onDeleteLogsCheckBoxClicked(bool checked = false);
         void onExit();
         void onSaveButtonTriggered(bool checked = false);
+        void onLogUploadButtonTriggered();
+        void onCancelLogUploadButtonTriggered();
+        void onSendLogConfirmed(bool allLog);
+        void onLogUploadStatusUpdated(char status, int progress);
 };
 
 }  // namespace KDC

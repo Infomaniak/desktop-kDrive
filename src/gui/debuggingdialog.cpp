@@ -18,6 +18,7 @@
 
 #include "debuggingdialog.h"
 #include "clientgui.h"
+#include "guirequests.h"
 #include "parameterscache.h"
 #include "custommessagebox.h"
 #include "enablestateholder.h"
@@ -142,6 +143,48 @@ void DebuggingDialog::initUI() {
 
     mainLayout->addStretch();
 
+    // Send Logs
+    auto *sendLogsLabel = new QLabel(this);
+    sendLogsLabel->setObjectName("boldTextLabel");
+    sendLogsLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    sendLogsLabel->setText(tr("Send logs to Infomaniak support"));
+    mainLayout->addWidget(sendLogsLabel);
+
+    auto *sendLogsHBox = new QHBoxLayout();
+    sendLogsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    mainLayout->addLayout(sendLogsHBox);
+    mainLayout->addSpacing(debugLevelSelectBoxVMargin);
+
+    _logUploadButton = new QPushButton(this);
+    _logUploadButton->setObjectName("defaultbutton");
+    _logUploadButton->setFlat(true);
+    _logUploadButton->setText(tr("SEND LOGS"));
+    _logUploadButton->setEnabled(true);
+    sendLogsHBox->addWidget(_logUploadButton);
+
+    _cancelLogUploadButton = new QPushButton(this);
+    _cancelLogUploadButton->setObjectName("nondefaultbutton");
+    _cancelLogUploadButton->setFlat(true);
+    _cancelLogUploadButton->setText(tr("CANCEL"));
+    _cancelLogUploadButton->hide();
+    sendLogsHBox->addWidget(_cancelLogUploadButton);
+
+    _logUploadProgressBar = new QProgressBar(this);
+    _logUploadProgressBar->setObjectName("sendLogProgressBar");
+    _logUploadProgressBar->setMinimum(0);
+    _logUploadProgressBar->setMaximum(100);
+    _logUploadProgressBar->setValue(1);
+    _logUploadProgressBar->hide();
+    sendLogsHBox->addWidget(_logUploadProgressBar);
+
+    _sendLogStatusLabel = new QLabel(this);
+    _sendLogStatusLabel->setObjectName("sendLogStatusLabel");
+    _sendLogStatusLabel->setText(tr("Sending logs..."));
+    _sendLogStatusLabel->hide();
+    sendLogsHBox->addWidget(_sendLogStatusLabel);
+
+    sendLogsHBox->addStretch();
+
     // Add dialog buttons
     QHBoxLayout *buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
@@ -168,6 +211,11 @@ void DebuggingDialog::initUI() {
     connect(_deleteLogsCheckBox, &CustomCheckBox::clicked, this, &DebuggingDialog::onDeleteLogsCheckBoxClicked);
     connect(_extendedLogCheckBox, &CustomCheckBox::clicked, this, &DebuggingDialog::onExtendedLogCheckBoxClicked);
     connect(_saveButton, &QPushButton::clicked, this, &DebuggingDialog::onSaveButtonTriggered);
+
+    connect(_logUploadButton, &QPushButton::clicked, this, &DebuggingDialog::onLogUploadButtonTriggered);
+    connect(_cancelLogUploadButton, &QPushButton::clicked, this, &DebuggingDialog::onCancelLogUploadButtonTriggered);
+    connect(_gui.get(), &ClientGui::logUploadStatusUpdated, this, &DebuggingDialog::onLogUploadStatusUpdated);
+
     connect(cancelButton, &QPushButton::clicked, this, &DebuggingDialog::onExit);
     connect(this, &CustomDialog::exit, this, &DebuggingDialog::onExit);
 }
@@ -249,5 +297,121 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
 
     accept();
 }
+
+void DebuggingDialog::onLogUploadButtonTriggered() {
+    uint64_t size;
+
+    if (ExitCode exitCode = GuiRequests::getLogDirEstimatedSize(size); exitCode != ExitCode::ExitCodeOk) {
+        onSendLogConfirmed(true);  // Send all logs by default if we can't get the aproximate size
+        return;
+    }
+
+    CustomMessageBox msgBox(QMessageBox::Question, tr("Do you want to send all logs? The estimated size is %1 MB").arg(size),
+                            QMessageBox::Yes | QMessageBox::No, this);
+    msgBox.setDefaultButton(QMessageBox::Yes);
+    int ret = msgBox.exec();
+    if (ret != QDialog::Rejected) {
+        if (ret == QMessageBox::Yes) {
+            onSendLogConfirmed(true);
+        } else {
+            onSendLogConfirmed(false);
+        }
+    }
+}
+
+void DebuggingDialog::onCancelLogUploadButtonTriggered() {
+    ExitCode exitCode = GuiRequests::cancelLogUploadToSupport();
+    if (exitCode == ExitCode::ExitCodeOk) {
+        onLogUploadStatusUpdated('C', 0);
+    }
+}
+
+void DebuggingDialog::onSendLogConfirmed(bool allLog) {
+    _logUploadButton->setEnabled(false);
+    _logUploadProgressBar->setValue(0);
+    _sendLogStatusLabel->setText(tr("Sending logs..."));
+    _logUploadProgressBar->show();
+    _cancelLogUploadButton->show();
+    _sendLogStatusLabel->show();
+
+    ExitCode exitCode = GuiRequests::sendLogToSupport(allLog);
+    if (exitCode != ExitCode::ExitCodeOk) {
+        onLogUploadStatusUpdated('F', 0);
+    }
+}
+
+
+void DebuggingDialog::onLogUploadStatusUpdated(char status, int progress) {
+    QString archivePath;
+    switch (status) {
+        case 'A':
+            _sendLogStatusLabel->setText(tr("1/2 | Compression"));
+            _sendLogStatusLabel->show();
+            _logUploadProgressBar->setValue(progress);
+            _logUploadProgressBar->show();
+            _logUploadButton->setEnabled(false);
+            _cancelLogUploadButton->show();
+            _cancelLogUploadButton->setEnabled(true);
+            break;
+        case 'U':
+            _sendLogStatusLabel->setText(tr("2/2 | Upload"));
+            _sendLogStatusLabel->show();
+            _logUploadProgressBar->setValue(progress);
+            _logUploadProgressBar->show();
+            _logUploadButton->setEnabled(false);
+            _cancelLogUploadButton->show();
+            _cancelLogUploadButton->setEnabled(true);
+            break;
+        case 'S':
+            _sendLogStatusLabel->setText(tr("Logs sent"));
+            _sendLogStatusLabel->show();
+            _logUploadProgressBar->hide();
+            _cancelLogUploadButton->hide();
+            _logUploadButton->setEnabled(true);
+            break;
+        case 'F':
+            if (ExitCode exitCode = GuiRequests::getAppState(AppStateKey::LastLogUploadArchivePath, archivePath);
+                exitCode == ExitCode::ExitCodeOk && !archivePath.isEmpty()) {
+                _sendLogStatusLabel->setText(tr("Failed to send logs. Archive path: %1").arg(archivePath));
+            } else {
+                _sendLogStatusLabel->setText(tr("Failed to send logs"));
+            }
+            _sendLogStatusLabel->show();
+            _logUploadProgressBar->hide();
+            _cancelLogUploadButton->hide();
+            _logUploadButton->setEnabled(true);
+            break;
+        case 'C':
+            if (progress == 0) {
+                _sendLogStatusLabel->setText(tr("Canceling logs upload..."));
+                _cancelLogUploadButton->show();
+                _cancelLogUploadButton->setEnabled(false);
+                _logUploadButton->setEnabled(false);
+            } else {
+                if (ExitCode exitCode = GuiRequests::getAppState(AppStateKey::LastLogUploadArchivePath, archivePath);
+                    exitCode == ExitCode::ExitCodeOk && !archivePath.isEmpty()) {
+                    _sendLogStatusLabel->setText(tr("Logs upload canceled. Archive path: %1").arg(archivePath));
+                } else {
+                    _sendLogStatusLabel->setText(tr("Logs upload canceled"));
+                }
+                _cancelLogUploadButton->hide();
+                _logUploadButton->setEnabled(true);
+            }
+            _sendLogStatusLabel->show();
+            _logUploadProgressBar->hide();
+            break;
+        case 'N':
+            _sendLogStatusLabel->hide();
+            _logUploadProgressBar->hide();
+            _cancelLogUploadButton->hide();
+            _logUploadButton->setEnabled(true);
+            _logUploadButton->show();
+            break;
+        default:
+            _sendLogStatusLabel->setText(tr("Sending logs..."));
+            break;
+    }
+}
+
 
 }  // namespace KDC
