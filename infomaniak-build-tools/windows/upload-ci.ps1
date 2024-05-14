@@ -41,7 +41,7 @@ else
     foreach ($file in $files)
     {
         $size = (Get-ChildItem $file | % {[int]($_.length)})
-        $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$mainVersion/$minorVersion/$date&conflict=version"
+        $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$mainVersion/$minorVersion/$date/windows&conflict=version"
 
         Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
     }
