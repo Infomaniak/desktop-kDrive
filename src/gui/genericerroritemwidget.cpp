@@ -68,7 +68,7 @@ void GenericErrorItemWidget::init() {
     }
 
     // Right layout
-    QLabel *fileDateLabel = new QLabel(this);
+    auto fileDateLabel = new QLabel(this);
     fileDateLabel->setObjectName("fileDateLabel");
     fileDateLabel->setText(QDateTime::fromSecsSinceEpoch(_errorInfo.getTime()).toString(dateFormat));
 

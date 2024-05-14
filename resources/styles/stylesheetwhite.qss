@@ -1239,7 +1239,7 @@ KDC--AbstractFileItemWidget QLabel#fileNameLabel
 {
     color: #444444;
     font-family: "Suisse Int'l";
-    font-weight: $$medium_font$$;
+    font-weight: $$medium_font$$; /* medium */
     font-size: 14px;
 }
 
@@ -1247,7 +1247,7 @@ KDC--AbstractFileItemWidget QLabel#errorLabel
 {
     color: #666666;
     font-family: "Suisse Int'l";
-    font-weight: $$normal_font$$;
+    font-weight: $$normal_font$$; /* normal */
     font-size: 12px;
 }
 
@@ -1255,7 +1255,7 @@ KDC--AbstractFileItemWidget QLabel#filePathLabel
 {
     color: #0098FF;
     font-family: "Suisse Int'l";
-    font-weight: $$normal_font$$;
+    font-weight: $$normal_font$$; /* normal */
     font-size: 11px;
 }
 
@@ -1263,7 +1263,7 @@ KDC--AbstractFileItemWidget QLabel#fileDateLabel
 {
     color: #666666;
     font-family: "Suisse Int'l";
-    font-weight: $$normal_font$$;
+    font-weight: $$normal_font$$; /* normal */
     font-size: 12px;
 }
 

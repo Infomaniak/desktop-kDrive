@@ -38,10 +38,13 @@ static const int boxVSpacing = 10;
 static const int shadowBlurRadius = 20;
 static const QSize iconSize = QSize(15, 15);
 
+static const QColor folderIconColorLight = QColor("#666666");
+static const QColor folderIconColorDark = QColor("#C0C0C0");
+
 AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
-    QVBoxLayout *mainLayout = new QVBoxLayout(this);
+    auto mainLayout = new QVBoxLayout(this);
     mainLayout->setSpacing(boxVSpacing);
     setLayout(mainLayout);
 
@@ -51,11 +54,13 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : 
     _topLayout->setAlignment(Qt::AlignVCenter);
 
     _fileTypeIconLabel = new QLabel(this);
+    _fileTypeIconLabel->setObjectName("fileNameLabel");
     _fileTypeIconLabel->setMinimumSize(iconSize);
     _fileTypeIconLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     _topLayout->addWidget(_fileTypeIconLabel);
 
     _filenameLabel = new QLabel(this);
+    _filenameLabel->setObjectName("fileNameLabel");
     _filenameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _filenameLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     _filenameLabel->setMinimumHeight(16);
@@ -71,6 +76,7 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : 
     _middleLayout->setAlignment(Qt::AlignVCenter);
 
     _messageLabel = new QLabel(this);
+    _messageLabel->setObjectName("errorLabel");
     _messageLabel->setWordWrap(true);
     _messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _messageLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
@@ -82,11 +88,13 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : 
     _bottomLayout->setAlignment(Qt::AlignVCenter);
 
     _driveIconLabel = new QLabel(this);
+    _driveIconLabel->setObjectName("errorLabel");
     _driveIconLabel->setMinimumSize(iconSize);
     _driveIconLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     _bottomLayout->addWidget(_driveIconLabel);
 
     _pathLabel = new QLabel(this);
+    _pathLabel->setObjectName("filePathLabel");
     _pathLabel->setContextMenuPolicy(Qt::PreventContextMenu);
     _pathLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     _pathLabel->setMinimumHeight(16);
@@ -97,7 +105,7 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : 
     mainLayout->addLayout(_bottomLayout);
 
     // Shadow
-    QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
+    auto effect = new QGraphicsDropShadowEffect(this);
     effect->setBlurRadius(shadowBlurRadius);
     effect->setOffset(0);
     setGraphicsEffect(effect);
@@ -114,7 +122,7 @@ QSize AbstractFileItemWidget::sizeHint() const {
     int height = _filenameLabel->sizeHint().height() + _messageLabel->sizeHint().height() + _pathLabel->sizeHint().height() +
                  2 * boxVSpacing;
 
-    return QSize(width(), height);
+    return {width(), height};
 }
 
 void AbstractFileItemWidget::setFilePath(const QString &filePath, NodeType type /*= NodeTypeFile*/) {
@@ -123,8 +131,6 @@ void AbstractFileItemWidget::setFilePath(const QString &filePath, NodeType type 
 }
 
 void AbstractFileItemWidget::setDriveName(const QString &driveName, const QString &localPath) {
-    _driveIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg").pixmap(iconSize));
     QString str = QString("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle, localPath, driveName);
     _pathLabel->setText(str);
 }
@@ -136,7 +142,7 @@ void AbstractFileItemWidget::setPathIconColor(const QColor &color) {
 
 void AbstractFileItemWidget::setMessage(const QString &str) {
     _messageLabel->setText(str);
-    QVBoxLayout *mainLayout = qobject_cast<QVBoxLayout *>(layout());
+    auto mainLayout = qobject_cast<QVBoxLayout *>(layout());
     mainLayout->insertLayout(1, _middleLayout);
 }
 
@@ -155,7 +161,7 @@ void AbstractFileItemWidget::paintEvent(QPaintEvent *event) {
     Q_UNUSED(event);
 
     // Update shadow color
-    QGraphicsDropShadowEffect *effect = qobject_cast<QGraphicsDropShadowEffect *>(graphicsEffect());
+    auto effect = qobject_cast<QGraphicsDropShadowEffect *>(graphicsEffect());
     if (effect) {
         effect->setColor(KDC::GuiUtility::getShadowColor());
     }
@@ -177,18 +183,22 @@ void AbstractFileItemWidget::setFileTypeIcon(const QString &ressourcePath) {
 
 void AbstractFileItemWidget::setFileName(const QString &path, NodeType type) {
     setFileTypeIcon(CommonUtility::getFileIconPathFromFileName(path, type));
-    QString test = QFileInfo(path).fileName();
     _filenameLabel->setText(QFileInfo(path).fileName());
 }
 
 void AbstractFileItemWidget::setPath(const QString &path) {
+    QColor color = GuiUtility::isDarkTheme() ? folderIconColorDark : folderIconColorLight;
     _driveIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg").pixmap(iconSize));
+        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", color).pixmap(iconSize));
 
-    QString printablePath = "/" + path;
+    QFileInfo fInfo(path);
+    QString printablePath;
+    if (!fInfo.isAbsolute()) printablePath = "/";
+    printablePath += path;
     if (printablePath.size() > filePathMaxSize) {
         printablePath = printablePath.left(filePathMaxSize) + "...";
     }
+    printablePath = QDir::toNativeSeparators(printablePath);
     QString pathStr = QString("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle, path, printablePath);
 
     _pathLabel->setText(pathStr);
