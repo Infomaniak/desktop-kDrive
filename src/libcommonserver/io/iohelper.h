@@ -356,6 +356,7 @@ struct IoHelper {
 
     protected:
         friend class DirectoryIterator;
+        friend class TestIo;
 
         // These functions default to the std::filesystem functions.
         // They can be modified in tests.
@@ -383,6 +384,10 @@ struct IoHelper {
         static bool _checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
 
         static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
+
+#ifdef _WIN32
+        static bool _setRightsWindowsApiInheritance; // For windows tests only
+#endif
 };
 
 }  // namespace KDC

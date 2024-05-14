@@ -4,11 +4,19 @@ set(CMAKE_CXX_STANDARD 17)
 project(client)
 
 IF(APPLE)
-    SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    IF(CMAKE_BUILD_TYPE_LOWER MATCHES "(release|relwithdebinfo)")
+        SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    ELSE()
+        execute_process(COMMAND uname -m OUTPUT_VARIABLE OSX_ARCH)
+        string(REPLACE "\n" "" OSX_ARCH ${OSX_ARCH})
+        SET(CMAKE_OSX_ARCHITECTURES "${OSX_ARCH}" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    ENDIF()
+    message(STATUS "CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
 ENDIF(APPLE)
 
 set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
 set(BIN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(INSTALL_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/install")
 set(BUILD_SHARED_LIBS FALSE)
 
 include("${CMAKE_CURRENT_LIST_DIR}/THEME.cmake")
@@ -66,8 +74,6 @@ add_definitions(
     -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
     -DQT_DEPRECATED_WARNINGS
 )
-
-set(SYSCONFDIR ${SYSCONF_INSTALL_DIR})
 
 if (APPLE)
     set(DATADIR ${DATA_INSTALL_DIR})
@@ -237,8 +243,9 @@ elseif(BUILD_CLIENT)
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
 
         # Default sync exclude list
-        message(STATUS "sync-exclude-win.lst installed in ${CMAKE_INSTALL_BINDIR}")
-        install(FILES sync-exclude-win.lst DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
+        message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin")
+        file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
 
         # Vfs
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
@@ -263,7 +270,7 @@ elseif(BUILD_CLIENT)
     else()
         # Default sync exclude list
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-            install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
+            file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
         else()
             install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
         endif()
