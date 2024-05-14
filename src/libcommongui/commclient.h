@@ -48,6 +48,7 @@ class CommClient : public QObject {
 
         bool connectToServer(quint16 commPort);
         bool execute(RequestNum num, const QByteArray &params, QByteArray &results, int timeout = COMM_SHORT_TIMEOUT);
+        void stop();
         static bool isConnected() { return _instance != nullptr; }
 
     signals:
