@@ -32,9 +32,9 @@ The macOS extension is made in **Objective-C/C++**
 ### Minimum Requirements
 | System | With LiteSync | Without LiteSync | ARM
 |---|---|---|---|
-| Linux | No LiteSync support | KDE / Gnome<br>Ubuntu 19.04, Fedora 38 | KDE / Gnome<br>Ubuntu 19.04, Fedora 38
+| Linux | No LiteSync support | KDE / Gnome<br>Ubuntu 20.04, Fedora 39 | KDE / Gnome<br>Ubuntu 20.04, Fedora 39
 | macOS | macOS 10.15 | macOS 10.15 | ARM Friendly since 3.3.3<br>no more Rosetta 2
-| Windows | x86_64 (64bits), NTFS<br>Windows 10 1709 (October 2017)<br>Windows 11 compatible | Windows 10 1507 (RTM)<br>Windows Server 2016 and up | Windows 11 Insider
+| Windows | x86_64 (64bits), NTFS<br>Windows 10 1709 (October 2017)<br>Windows 11 compatible | Windows 10 1507 (RTM)<br>Windows Server 2016 and up | No Windows-ARM support
 
 ### Libraries
 The kDrive Desktop Application is using the following libraries :
