@@ -551,12 +551,15 @@ void ClientGui::resetSystray() {
 
     if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
         connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
-    } else if (_actionSynthesis && _actionPreferences && _actionQuit){
+    }
+#ifdef Q_OS_LINUX
+    else if (_actionSynthesis && _actionPreferences && _actionQuit){
         connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
         connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
         connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
         connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
     }
+#endif
 
     _tray->show();
 }
@@ -1344,11 +1347,13 @@ void ClientGui::onRefreshStatusNeeded() {
 
 void ClientGui::retranslateUi()
 {
+#ifdef Q_OS_LINUX
     if (_actionSynthesis && _actionPreferences && _actionQuit){
         _actionSynthesis->setText(QString(tr("Synthesis")));
         _actionPreferences->setText(QString(tr("Preferences")));
         _actionQuit->setText(QString(tr("Quit")));
     }
+#endif
 }
 
 void ClientGui::activateLoadInfo(bool value) {
