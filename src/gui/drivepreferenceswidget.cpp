@@ -819,7 +819,7 @@ void DrivePreferencesWidget::onAddLocalFolder(bool checked) {
 
     while (true) {
         if (nextStep == SelectLocalFolder) {
-            LocalFolderDialog localFolderDialog(localFolderPath, this);
+            LocalFolderDialog localFolderDialog(_gui, localFolderPath, this);
 
             localFolderDialog.setSmartSync(smartSync);
             connect(&localFolderDialog, &LocalFolderDialog::openFolder, this, &DrivePreferencesWidget::onOpenFolder);

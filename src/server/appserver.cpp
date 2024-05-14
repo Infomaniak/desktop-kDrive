@@ -255,9 +255,11 @@ AppServer::AppServer(int &argc, char **argv)
     setupProxy();
 
     // Setup auto start
+#ifdef NDEBUG
     if (ParametersCache::instance()->parameters().autoStart() && !OldUtility::hasLaunchOnStartup(_theme->appName(), _logger)) {
         OldUtility::setLaunchOnStartup(_theme->appName(), _theme->appClientName(), true, _logger);
     }
+#endif
 
 #ifdef PLUGINDIR
     // Setup extra plugin search path

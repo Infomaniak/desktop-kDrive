@@ -536,10 +536,6 @@ void ClientGui::resetSystray() {
     QIcon testIcon = Theme::instance()->folderOfflineIcon(/*systray?*/ true, /*currently visible?*/ false);
     _tray->setIcon(testIcon);
 
-    QAction *actionSynthesis = nullptr;
-    QAction *actionPreferences = nullptr;
-    QAction *actionQuit = nullptr;
-
     if (_tray->geometry().width() == 0) {
         _tray->setContextMenu(new QMenu());
 #ifdef Q_OS_LINUX
@@ -547,13 +543,10 @@ void ClientGui::resetSystray() {
         QString version;
         if (KDC::GuiUtility::getLinuxDesktopType(type, version)) {
             if (type.contains("GNOME") && version.toDouble() >= 40) {
-                actionSynthesis = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"),
-                                                                  QString(tr("Synthesis")));
-                actionPreferences = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"),
-                                                                    QString(tr("Preferences")));
+                _actionSynthesis = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
+                _actionPreferences = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
                 _tray->contextMenu()->addSeparator();
-                actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"),
-                                                             QString(tr("Quit")));
+                _actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
             }
         }
 #endif
@@ -561,11 +554,15 @@ void ClientGui::resetSystray() {
 
     if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
         connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
-    } else {
-        connect(actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
-        connect(actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
-        connect(actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
     }
+#ifdef Q_OS_LINUX
+    else if (_actionSynthesis && _actionPreferences && _actionQuit){
+        connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
+        connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
+        connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
+        connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
+    }
+#endif
 
     _tray->show();
 }
@@ -1349,6 +1346,17 @@ void ClientGui::onExecuteSyncAction(ActionType type, ActionTarget target, int db
 void ClientGui::onRefreshStatusNeeded() {
     // resetSystray();
     computeOverallSyncStatus();
+}
+
+void ClientGui::retranslateUi()
+{
+#ifdef Q_OS_LINUX
+    if (_actionSynthesis && _actionPreferences && _actionQuit){
+        _actionSynthesis->setText(QString(tr("Synthesis")));
+        _actionPreferences->setText(QString(tr("Preferences")));
+        _actionQuit->setText(QString(tr("Quit")));
+    }
+#endif
 }
 
 void ClientGui::activateLoadInfo(bool value) {
