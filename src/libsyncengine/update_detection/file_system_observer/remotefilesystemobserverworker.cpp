@@ -359,7 +359,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         auto insertInfo = existingFiles.insert(Str2SyncName(item.parentId()) + item.name());
         if (!insertInfo.second) {
             // Item with exact same name already exist in parent folder
-            LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(),
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
                               L"Item \"" << SyncName2WStr(item.name()).c_str() << L"\" already exist in directory \""
                                          << SyncName2WStr(_snapshot->name(item.parentId())).c_str() << L"\"");
 
@@ -392,7 +392,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     auto nodeIdIt = nodeIds.begin();
     while (nodeIdIt != nodeIds.end()) {
         if (_snapshot->isOrphan(*nodeIdIt)) {
-            LOG_SYNCPAL_DEBUG(_logger, L"Node " << SyncName2WStr(_snapshot->name(*nodeIdIt)).c_str() << L" ("
+            LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_snapshot->name(*nodeIdIt)).c_str() << L"' ("
                                                 << Utility::s2ws(*nodeIdIt).c_str() << L") is orphan. Removing it from "
                                                 << Utility::s2ws(Utility::side2Str(_snapshot->side())).c_str() << L" snapshot.");
             _snapshot->removeItem(*nodeIdIt);
@@ -705,7 +705,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             break;
 
         default:
-            LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on file: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
+            LOGW_SYNCPAL_DEBUG(_logger, L"Unknown operation received on item: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
                                                                                 << Utility::s2ws(actionInfo.nodeId).c_str()
                                                                                 << L")");
     }

@@ -86,7 +86,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     }
 
     if (ParametersCache::instance()->parameters().extendedLog()) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"File/directory: " << SyncName2WStr(newItem.name()).c_str() << L" ("
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(newItem.name()).c_str() << L" ("
                                                                      << Utility::s2ws(newItem.id()).c_str() << L") updated at:"
                                                                      << newItem.lastModified());
     }
