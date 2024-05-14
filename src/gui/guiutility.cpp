@@ -544,13 +544,14 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
     layout->activate();
 }
 
-bool GuiUtility::isSyncFolderValid(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap, QWidget *parent) {
-    QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
-    SyncPath directoryPath = QStr2Path(dirPath);
+bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap,
+                                         QWidget *parent) {
+    const QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
+    const SyncPath directoryPath = QStr2Path(dirPath);
 
-    for (auto &sync : syncInfoMap) {
-        QString syncFolderName = sync.second.name();
-        SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
+    for (const auto &sync : syncInfoMap) {
+        const QString syncFolderName = sync.second.name();
+        const SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
 
         bool warn = false;
         QString warningMsg;

@@ -249,7 +249,7 @@ void LocalFolderDialog::selectFolder(const QString &startDirPath) {
     QString dirPath = QFileDialog::getExistingDirectory(this, tr("Select folder"), startDirPath,
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (!dirPath.isEmpty()) {
-        if (!GuiUtility::isSyncFolderValid(dirPath, _gui->syncInfoMap(), this)) {
+        if (!GuiUtility::warnOnInvalidSyncFolder(dirPath, _gui->syncInfoMap(), this)) {
             return;
         }
 
