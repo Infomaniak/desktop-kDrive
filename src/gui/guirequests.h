@@ -125,6 +125,6 @@ struct GuiRequests {
         static ExitCode updateAppState(AppStateKey key, const QString &value);
         static ExitCode getLogDirEstimatedSize(uint64_t &size);
         static ExitCode sendLogToSupport(bool sendArchivedLogs);
-        static ExitCode cancelLogToSupport();
+        static ExitCode cancelLogUploadToSupport();
 };
 }  // namespace KDC

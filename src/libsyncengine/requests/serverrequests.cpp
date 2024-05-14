@@ -992,20 +992,25 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;
 
-    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "A0", found) || !found) {
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "A0", found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         // Do not return here because it is not a critical error, especially in this context where we are trying to send logs
     }
-    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) || !found) {
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
 
     const SyncPath tempFolder = CommonUtility::getAppSupportDir() / "logUploadTemp";
     IoError ioError = IoErrorSuccess;
-    if (!IoHelper::createDirectory(tempFolder, ioError) && ioError != IoErrorDirectoryExists) {
+    IoHelper::createDirectory(tempFolder, ioError);
+    if (ioError == IoErrorDirectoryExists) {
+        IoHelper::deleteDirectory(tempFolder, ioError);
+        IoHelper::createDirectory(tempFolder, ioError);
+    }
+    if (ioError != IoErrorSuccess) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in IoHelper::createDirectory : " << Utility::formatIoError(tempFolder, ioError).c_str());
-        if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+        if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         }
         if (ioError == IoErrorDiskFull) {
@@ -1021,7 +1026,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
         progressCallbackArchivingWrapper = [progressCallback](int percent) {
             std::string LogUploadStatus = "A" + std::to_string(percent);
             if (bool found = false;
-                ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, LogUploadStatus, found) || !found) {
+                !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, LogUploadStatus, found) || !found) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
             }
             return progressCallback('A', percent);
@@ -1035,7 +1040,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in LogArchiver::generateLogsSupportArchive: " << exitCode << " : " << exitCause);
         if (bool found = false; exitCode != ExitCodeOperationCanceled &&
-                                (ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found)) {
+                                (!ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         }
 
@@ -1044,7 +1049,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     }
 
     if (bool found = false;
-        ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, archivePath.string(), found) || !found) {
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, archivePath.string(), found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
 
@@ -1054,7 +1059,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
         progressCallbackUploadingWrapper = [progressCallback](int percent) {
             std::string logUploadStatus = "U" + std::to_string(percent);
             if (bool found = false;
-                ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) || !found) {
+                !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) || !found) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
             }
             return progressCallback('U', percent);
@@ -1074,7 +1079,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
         if (bool found = false; exitCode != ExitCodeOperationCanceled &&
-                                (ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found)) {
+                                (!ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         }
         // We do not delete the archive here, The path is stored in the app state and the user can try to upload it manually
@@ -1086,13 +1091,13 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     std::string uploadDate = std::to_string(timestamp);
     if (bool found = false;
-        ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadeDate, uploadDate, found) || !found) {
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadeDate, uploadDate, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
-    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "S", found) || !found) {
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "S", found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
-    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) ||
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) ||
                             !found) {  // The archive is deleted
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
@@ -1102,7 +1107,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
     std::string logUploadStatus;
-    if (bool found = false; ParmsDb::instance()->selectAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) || !found) {
+    if (bool found = false;
+        !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
         return ExitCodeDbError;
     }
@@ -1110,15 +1116,15 @@ ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
         return ExitCodeOk;
     }
 
-    if (logUploadStatus == "C1"){
-        return ExitCodeOperationCanceled; // The user has already canceled the operation
+    if (logUploadStatus == "C1") {
+        return ExitCodeOperationCanceled;  // The user has already canceled the operation
     }
 
     if (logUploadStatus[0] != 'A' && logUploadStatus[0] != 'U') {
         return ExitCodeInvalidOperation;  // The operation is not in progress
     }
 
-    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "C0", found) || !found) {
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "C0", found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
         return ExitCodeDbError;
     }

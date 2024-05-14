@@ -893,7 +893,7 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
     return exitCode;
 }
 
-ExitCode GuiRequests::cancelLogToSupport() {
+ExitCode GuiRequests::cancelLogUploadToSupport() {
     QByteArray results;
     if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT, QByteArray(), results)) {
         return ExitCodeSystemError;
