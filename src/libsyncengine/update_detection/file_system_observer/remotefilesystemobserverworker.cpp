@@ -593,6 +593,18 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
     SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime,
                       actionInfo.type, actionInfo.size, actionInfo.canWrite);
 
+    const auto hasRights = [=](const NodeId &nodeId, bool &rightsOk
+                               , SyncTime &createdAt, SyncTime &modtime, int64_t &size) -> ExitCode {
+        ExitCode exitCode = ExitCodeOk;
+        if (exitCode = getFileInfo(nodeId, rightsOk, createdAt, modtime, size); exitCode != ExitCodeOk) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
+                                           << SyncName2WStr(actionInfo.name).c_str() << L" ("
+                                           << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
+            invalidateSnapshot();
+        }
+        return exitCode;
+    };
+
     // Process action
     switch (actionInfo.actionCode) {
         // Item added
@@ -604,18 +616,15 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case ActionCode::actionCodeAccessRightTeamUpdate:
         case ActionCode::actionCodeAccessRightMainUsersInsert:
         case ActionCode::actionCodeAccessRightMainUsersUpdate: {
-            bool hasRights = false;
+            bool rightsOk = false;
             SyncTime createdAt = 0;
             SyncTime modtime = 0;
             int64_t size = 0;
-            if (getFileInfo(actionInfo.nodeId, hasRights, createdAt, modtime, size) != ExitCodeOk) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                               << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                               << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
-                invalidateSnapshot();
-                return ExitCodeBackError;
+            if (ExitCode exitCode = hasRights(actionInfo.nodeId, rightsOk, createdAt, modtime, size)
+                    ; exitCode != ExitCodeOk) {
+                return exitCode;
             }
-            if (!hasRights) break;  // Current user does not have the right to access this item, ignore action.
+            if (!rightsOk) break;  // Current user does not have the right to access this item, ignore action.
 
             item.setCreatedAt(createdAt);
             item.setLastModified(modtime);
@@ -660,18 +669,15 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case ActionCode::actionCodeAccessRightUserRemove:
         case ActionCode::actionCodeAccessRightTeamRemove:
         case ActionCode::actionCodeAccessRightMainUsersRemove: {
-            bool hasRights = false;
+            bool rightsOk = false;
             SyncTime createdAt = 0;
             SyncTime modtime = 0;
             int64_t size = 0;
-            if (getFileInfo(actionInfo.nodeId, hasRights, createdAt, modtime, size) != ExitCodeOk) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                               << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                               << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
-                invalidateSnapshot();
-                return ExitCodeBackError;
+            if (ExitCode exitCode = hasRights(actionInfo.nodeId, rightsOk, createdAt, modtime, size)
+                    ; exitCode != ExitCodeOk) {
+                return exitCode;
             }
-            if (hasRights) break;  // Current user still have the right to access this item, ignore action.
+            if (rightsOk) break;  // Current user still have the right to access this item, ignore action.
             [[fallthrough]];
         }
         case ActionCode::actionCodeMoveOut:
