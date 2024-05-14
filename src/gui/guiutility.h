@@ -20,6 +20,7 @@
 #define GUIUTILITY_H
 
 #include "common/utility.h"
+#include "info/syncinfoclient.h"
 #include "libcommon/utility/types.h"
 
 #include <QApplication>
@@ -98,6 +99,7 @@ bool openFolder(const QString &path);
 QWidget *getTopLevelWidget(QWidget *widget);
 void forceUpdate(QWidget *widget);
 void invalidateLayout(QLayout *layout);
+bool isSyncFolderValid(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap, QWidget *parent);
 
 #ifdef Q_OS_LINUX
 bool getLinuxDesktopType(QString &type, QString &version);

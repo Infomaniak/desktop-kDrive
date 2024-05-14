@@ -45,8 +45,9 @@ static const int warningBoxSpacing = 10;
 
 Q_LOGGING_CATEGORY(lcLocalFolderDialog, "gui.localfolderdialog", QtInfoMsg)
 
-LocalFolderDialog::LocalFolderDialog(const QString &localFolderPath, QWidget *parent)
+LocalFolderDialog::LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent)
     : CustomDialog(true, parent),
+      _gui(gui),
       _localFolderPath(localFolderPath),
       _continueButton(nullptr),
       _folderSelectionWidget(nullptr),
@@ -248,6 +249,10 @@ void LocalFolderDialog::selectFolder(const QString &startDirPath) {
     QString dirPath = QFileDialog::getExistingDirectory(this, tr("Select folder"), startDirPath,
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (!dirPath.isEmpty()) {
+        if (!GuiUtility::isSyncFolderValid(dirPath, _gui->syncInfoMap(), this)) {
+            return;
+        }
+
         QDir dir(dirPath);
         _localFolderPath = dir.canonicalPath();
         updateUI();

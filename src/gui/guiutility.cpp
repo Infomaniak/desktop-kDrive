@@ -20,6 +20,7 @@
 #include "common/utility.h"
 #include "appclient.h"
 #include "parameterscache.h"
+#include "custommessagebox.h"
 #include "libcommon/utility/utility.h"
 #include "libcommongui/utility/utility.h"
 
@@ -541,6 +542,45 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
     }
     layout->invalidate();
     layout->activate();
+}
+
+bool GuiUtility::isSyncFolderValid(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap, QWidget *parent) {
+    QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
+    SyncPath directoryPath = QStr2Path(dirPath);
+
+    for (auto &sync : syncInfoMap) {
+        QString syncFolderName = sync.second.name();
+        SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
+
+        bool warn = false;
+        QString warningMsg;
+        if (syncLocalPath == directoryPath) {
+            warn = true;
+            warningMsg = QCoreApplication::translate(
+                             "utility", "Folder <b>%1</b> cannot be selected because another sync is using the same folder.")
+                             .arg(selectedFolderName);
+        } else if (CommonUtility::isSubDir(directoryPath, syncLocalPath)) {
+            warn = true;
+            warningMsg =
+                QCoreApplication::translate(
+                    "utility", "Folder <b>%1</b> cannot be selected because it contains the synchronized folder <b>%2</b>.")
+                    .arg(selectedFolderName, syncFolderName);
+        } else if (CommonUtility::isSubDir(syncLocalPath, directoryPath)) {
+            warn = true;
+            warningMsg = QCoreApplication::translate(
+                             "utility",
+                             "Folder <b>%1</b> cannot be selected because it is contained in the synchronized folder <b>%2</b>.")
+                             .arg(selectedFolderName, syncFolderName);
+        }
+
+        if (warn) {
+            CustomMessageBox msgBox(QMessageBox::Warning, warningMsg, QMessageBox::Ok, parent);
+            msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(parent));
+            return false;
+        }
+    }
+
+    return true;
 }
 
 #ifdef Q_OS_LINUX
