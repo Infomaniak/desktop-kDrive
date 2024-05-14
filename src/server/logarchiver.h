@@ -33,13 +33,15 @@ class LogArchiver {
 
         /*! Generates a support archive containing the logs and the parms.db file.
          * \param includeArchivedLogs If true, the archived logs from previous sessions will be included.
-         * \param outputPath The path where the archive will be generated.
-         * \param archiveName The name of the archive.
-         * \param ioError The error object to be filled in case of error.
+         * \param outputDir The path where the archive will be generated.
+         * \param progressCallback The callback to be called with the progress percentage.
+         * \param archivePath The path to the generated archive.
+         * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to ExitCauseUnknown;
+         * \param test If true, the archive will be generated with a random name.
          * \return True if the archive was generated successfully, false otherwise.
          */
-        static ExitCode generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputPath, const SyncPath &archiveName,
-                                            ExitCause &exitCause, std::function<void(int)> progressCallback = nullptr);
+        static ExitCode generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputDir, std::function<void(int)> progressCallback,
+                                            SyncPath & archivePath, ExitCause &exitCause, bool test = false);
 
     private:
         friend class TestLogArchiver;

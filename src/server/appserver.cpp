@@ -1860,7 +1860,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 };
 
                 ExitCause exitCause = ExitCauseUnknown;
-                ExitCode exitCode = ServerRequests::sendLogToSupport(includeArchivedLogs, exitCause, progressFunc);
+                ExitCode exitCode = ServerRequests::sendLogToSupport(includeArchivedLogs, progressFunc, exitCause);
 
                 if (exitCode != ExitCodeOk) {
                     LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);

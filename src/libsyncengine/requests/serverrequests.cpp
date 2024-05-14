@@ -986,8 +986,7 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCodeOk;
 }
 
-ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &exitCause,
-                                          std::function<void(char, int)> progressCallback) {
+ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function<void(char,int)> progressCallback, ExitCause &exitCause) {
     const bool progressMonitoring = progressCallback != nullptr;
     exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;
@@ -1000,39 +999,6 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
 
-    // Generate archive name: <drive id 1>-<drive id 2>...-<drive id N>-yyyyMMdd-HHmmss.zip
-    std::string archiveName;
-    std::vector<Drive> driveList;
-
-    if (!ParmsDb::instance()->selectAllDrives(driveList)) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
-        if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-        }
-        exitCause = ExitCauseDbAccessError;
-        return ExitCodeDbError;
-    }
-
-    if (driveList.empty()) {
-        LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
-        if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-        }
-        exitCause = ExitCauseLoginError;
-        return ExitCodeInvalidToken;  // Currently, we can't send logs if no drive is found
-    }
-
-    for (auto drive : driveList) {
-        archiveName += std::to_string(drive.driveId()) + "-";
-    }
-
-    const std::time_t now = std::time(nullptr);
-    const std::tm tm = *std::localtime(&now);
-    std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M%S");
-    archiveName += woss.str() + ".zip";
-
-    // Create temp folder
     const SyncPath tempFolder = CommonUtility::getAppSupportDir() / "logUploadTemp";
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::createDirectory(tempFolder, ioError) && ioError != IoErrorDirectoryExists) {
@@ -1061,8 +1027,9 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
         };
     }
 
-    exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, tempFolder, archiveName, exitCause,
-                                                       progressCallbackArchivingWrapper);
+    SyncPath archivePath;
+    exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, tempFolder, progressCallbackArchivingWrapper,
+                                                       archivePath, exitCause);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in LogArchiver::generateLogsSupportArchive: " << exitCode << " : " << exitCause);
@@ -1072,7 +1039,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
         IoHelper::deleteDirectory(tempFolder, ioError);
         return exitCode;
     }
-    SyncPath archivePath = (tempFolder / archiveName).string();
+
     if (bool found = false;
         ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, archivePath.string(), found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
@@ -1090,7 +1057,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
             }
         };
 
-        for (int i = 0; i < 100; i++) { // Fake progress waiting for the real upload implementation
+        for (int i = 0; i < 100; i++) {  // Fake progress waiting for the real upload implementation
             progressCallback('U', i);
             Utility::msleep(100);
         }
@@ -1108,7 +1075,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
     }
 
     IoHelper::deleteDirectory(tempFolder, ioError);
-    long timestamp = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+    long timestamp =
+        std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     std::string uploadDate = std::to_string(timestamp);
     if (bool found = false;
         ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadeDate, uploadDate, found) || !found) {
@@ -1117,14 +1085,15 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, ExitCause &ex
     if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "S", found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
-    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) || !found) { // The archive is deleted
+    if (bool found = false; ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) ||
+                            !found) {  // The archive is deleted
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
     return ExitCodeOk;
 }
 
 ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
-    return ExitCode();// TODO: implement cancelLogToSupport 
+    return ExitCode();  // TODO: implement cancelLogToSupport
 }
 
 ExitCode ServerRequests::createDir(int driveDbId, const QString &parentNodeId, const QString &dirName, QString &newNodeId) {
