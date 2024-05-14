@@ -139,7 +139,13 @@ struct SYNCENGINE_EXPORT ServerRequests {
         static bool isDisplayableError(const Error &error);
         static bool isAutoResolvedError(const Error &error);
         static ExitCode getUserFromSyncDbId(int syncDbId, User &user);
-        static ExitCode sendLogToSupport(bool sendAllLogs, std::function<void(char,int)> progressCallback, ExitCause &exitCause);
+
+        /* Send log to support
+         * \param sendAllLogs If true, all logs will be sent, else only the last session logs will be sent.
+         * \param progressCallback The callback to be called with the progress percentage, the function returns false if the user cancels the operation (else true).
+         * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to ExitCauseUnknown;
+         */
+        static ExitCode sendLogToSupport(bool sendAllLogs, std::function<bool(char, int)> progressCallback, ExitCause &exitCause);
         static ExitCode cancelLogToSupport(ExitCause &exitCause);
 
     private:
