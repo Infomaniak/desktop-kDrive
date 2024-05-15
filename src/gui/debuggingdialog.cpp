@@ -299,14 +299,30 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
 }
 
 void DebuggingDialog::onLogUploadButtonTriggered() {
-    uint64_t size;
+    uint64_t size = 0;
 
     if (ExitCode exitCode = GuiRequests::getLogDirEstimatedSize(size); exitCode != ExitCode::ExitCodeOk) {
         onSendLogConfirmed(true);  // Send all logs by default if we can't get the aproximate size
         return;
     }
 
-    CustomMessageBox msgBox(QMessageBox::Question, tr("Do you want to send all logs? The estimated size is %1 MB").arg(size),
+    QString sizeUnit = tr("bytes");
+    float displaySize = 0;
+    if (size >= std::pow(10, 3) && size < std::pow(10,6)) {
+        displaySize = std::floor(size / std::pow(10, 3));  // Convert to KB
+        sizeUnit = tr("KB");
+    } else if (size >= std::pow(10, 6) && size < std::pow(10, 9)) {
+        displaySize = size / std::pow(10, 6);  // Convert to MB
+        sizeUnit = tr("MB");
+    } else if (size >= std::pow(10, 9)) {
+        displaySize = size / std::pow(10, 9);  // Convert to GB
+        sizeUnit = tr("GB");
+    } else {
+        displaySize = size;
+    }
+
+    CustomMessageBox msgBox(QMessageBox::Question,
+                            tr("Do you want to send all logs? The estimated size is %1 %2").arg(displaySize).arg(sizeUnit),
                             QMessageBox::Yes | QMessageBox::No, this);
     msgBox.setDefaultButton(QMessageBox::Yes);
     int ret = msgBox.exec();
