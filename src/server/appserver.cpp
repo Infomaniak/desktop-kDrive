@@ -1866,7 +1866,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                  */
                 std::function<bool(char, int)> progressFunc = [this](char status, int progress) {
                     sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
-                    this->processEvents(QEventLoop::AllEvents, 100);  // Process events to avoid blocking the GUI (cancel button)
+                    processEvents(QEventLoop::AllEvents, 100);     // Process events to avoid blocking the GUI (cancel button)
                     LOG_DEBUG(_logger, "Log transfert progress : " << status << " | " << progress << " %");
 
                     std::string logUploadStatus = "";
@@ -1885,7 +1885,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     LOG_DEBUG(_logger, "Log transfert canceled");
                     sendLogUploadStatusUpdated('C', 1);
                     return;
-                }else if (exitCode != ExitCodeOk) {
+                } else if (exitCode != ExitCodeOk) {
                     LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);
                     addError(Error(ERRID, exitCode, exitCause));
                 }
