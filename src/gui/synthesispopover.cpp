@@ -90,30 +90,7 @@ const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsD
 Q_LOGGING_CATEGORY(lcSynthesisPopover, "gui.synthesispopover", QtInfoMsg)
 
 SynthesisPopover::SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugMode, QWidget *parent)
-    : QDialog(parent),
-      _gui(gui),
-      _debugMode(debugMode),
-      _sysTrayIconRect(QRect()),
-      _backgroundMainColor(QColor()),
-      _errorsButton(nullptr),
-      _infosButton(nullptr),
-      _menuButton(nullptr),
-      _driveSelectionWidget(nullptr),
-      _progressBarWidget(nullptr),
-      _statusBarWidget(nullptr),
-      _buttonsBarWidget(nullptr),
-      _stackedWidget(nullptr),
-      _defaultSynchronizedPageWidget(nullptr),
-      _notificationsDisabled(NotificationsDisabledNever),
-      _notificationsDisabledUntilDateTime(QDateTime()),
-      _notImplementedLabel(nullptr),
-      _notImplementedLabel2(nullptr),
-      _defaultTitleLabel(nullptr),
-      _defaultTextLabel(nullptr),
-      _defaultTextLabelType(defaultTextLabelTypeNoSyncFolder),
-      _localFolderUrl(QUrl()),
-      _remoteFolderUrl(QUrl()),
-      _lastRefresh(0) {
+    : QDialog(parent), _gui(gui), _debugMode(debugMode) {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -666,20 +643,24 @@ void SynthesisPopover::refreshStatusBar(int driveDbId) {
 void SynthesisPopover::refreshErrorsButton() {
     bool drivesWithErrors = false;
     bool drivesWithInfos = false;
-    for (auto const &driveInfoMapElt : _gui->driveInfoMap()) {
-        drivesWithErrors = drivesWithErrors || _gui->driveErrorsCount(driveInfoMapElt.first, true) > 0;
-        drivesWithInfos = drivesWithInfos || _gui->driveErrorsCount(driveInfoMapElt.first, false) > 0;
+
+    for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
+        std::map<int, SyncInfoClient> syncInfoMap;
+        _gui->loadSyncInfoMap(driveId, syncInfoMap);
+        if (syncInfoMap.empty()) {
+            driveInfo.setUnresolvedErrorsCount(0);
+            driveInfo.setAutoresolvedErrorsCount(0);
+        };
+
+        drivesWithErrors = drivesWithErrors || _gui->driveErrorsCount(driveId, true) > 0;
+        drivesWithInfos = drivesWithInfos || _gui->driveErrorsCount(driveId, false) > 0;
     }
 
+    _errorsButton->setVisible(_gui->hasGeneralErrors() || drivesWithErrors);
     if (_gui->hasGeneralErrors() || drivesWithErrors) {
         _infosButton->setVisible(false);
-        _errorsButton->setVisible(true);
-    } else if (drivesWithInfos) {
-        _errorsButton->setVisible(false);
-        _infosButton->setVisible(true);
     } else {
-        _errorsButton->setVisible(false);
-        _infosButton->setVisible(false);
+        _infosButton->setVisible(drivesWithInfos);
     }
 }
 
@@ -772,25 +753,22 @@ void SynthesisPopover::onConfigRefreshed() {
         std::map<int, SyncInfoClient> syncInfoMap;
         _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
 
-        if (syncInfoMap.size() == 0) {
+        if (syncInfoMap.empty()) {
             _statusBarWidget->reset();
         }
 
         // Manage removed drives
-        int index = DriveInfoClient::SynthesisStackedWidgetFirstAdded;
-        while (index < _stackedWidget->count()) {
-            QWidget *widget = _stackedWidget->widget(index);
-            bool found = false;
-            auto driveInfoIt = _gui->driveInfoMap().begin();
-            while (driveInfoIt != _gui->driveInfoMap().end()) {
-                if (driveInfoIt->second.synchronizedListWidget() == widget) {
-                    found = true;
-                    index++;
+        for (int widgetIndex = DriveInfoClient::SynthesisStackedWidgetFirstAdded; widgetIndex < _stackedWidget->count();) {
+            QWidget *widget = _stackedWidget->widget(widgetIndex);
+            bool driveIsFound = false;
+            for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
+                if (driveInfo.synchronizedListWidget() == widget) {
+                    driveIsFound = true;
+                    ++widgetIndex;
                     break;
                 }
-                driveInfoIt++;
             }
-            if (!found) {
+            if (!driveIsFound) {
                 _stackedWidget->removeWidget(widget);
             }
         }
