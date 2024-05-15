@@ -1016,7 +1016,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
         return ExitCodeSystemError;
     }
 
-    std::function<bool(int)> progressCallbackArchivingWrapper = [safeProgressCallback](int percent) {
+    std::function<bool(int)> progressCallbackArchivingWrapper = [&safeProgressCallback](int percent) {
         return safeProgressCallback('A', percent);
     };
 
@@ -1037,7 +1037,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     }
 
     // Upload archive
-    std::function<bool(int)> progressCallbackUploadingWrapper = [safeProgressCallback](int percent) {
+    std::function<bool(int)> progressCallbackUploadingWrapper = [&safeProgressCallback](int percent) {
         return safeProgressCallback('U', percent);
     };
 
