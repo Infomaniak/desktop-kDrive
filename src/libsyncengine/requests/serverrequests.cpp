@@ -990,7 +990,11 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
                                           ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;
-    progressCallback('A', 0);
+    std::function<bool(char, int)> safeProgressCallback =
+        progressCallback != nullptr ? std::function<bool(char, int)>([progressCallback](char status, int percent) { return progressCallback(status, percent); })
+                                    : std::function<bool(char, int)>([](char, int) { return true; });
+    
+    safeProgressCallback('A', 0);
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
@@ -1012,10 +1016,9 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
         return ExitCodeSystemError;
     }
 
-    std::function<bool(int)> progressCallbackArchivingWrapper =
-        (progressCallback != nullptr)
-            ? std::function<bool(int)>([progressCallback](int percent) { return progressCallback('A', percent); })
-            : std::function<bool(int)>([](int) { return true; });
+    std::function<bool(int)> progressCallbackArchivingWrapper = [safeProgressCallback](int percent) {
+        return safeProgressCallback('A', percent);
+    };
 
 
     SyncPath archivePath;
@@ -1034,10 +1037,9 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     }
 
     // Upload archive
-    std::function<bool(int)> progressCallbackUploadingWrapper =
-        progressCallback != nullptr
-            ? std::function<bool(int)>([progressCallback](int percent) { return progressCallback('U', percent); })
-            : std::function<bool(int)>([](int) { return true; });
+    std::function<bool(int)> progressCallbackUploadingWrapper = [safeProgressCallback](int percent) {
+        return safeProgressCallback('U', percent);
+    };
 
     for (int i = 0; i < 100; i++) {  // TODO: Remove | Fake progress waiting for the real upload implementation
         if (!progressCallbackUploadingWrapper(i)) {
