@@ -593,24 +593,6 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
     SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime,
                       actionInfo.type, actionInfo.size, actionInfo.canWrite);
 
-    const auto hasRights = [=](const NodeId &nodeId, bool &rightsOk
-                               , SnapshotItem &item) -> ExitCode {
-        ExitCode exitCode = ExitCodeOk;
-        SyncTime createdAt = 0;
-        SyncTime modtime = 0;
-        int64_t size = 0;
-        if (exitCode = getFileInfo(nodeId, rightsOk, createdAt, modtime, size); exitCode != ExitCodeOk) {
-            LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                           << SyncName2WStr(actionInfo.name).c_str() << L" ("
-                                           << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
-            invalidateSnapshot();
-        }
-        item.setCreatedAt(createdAt);
-        item.setLastModified(modtime);
-        item.setSize(size);
-        return exitCode;
-    };
-
     // Process action
     switch (actionInfo.actionCode) {
         // Item added
@@ -623,8 +605,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case ActionCode::actionCodeAccessRightMainUsersInsert:
         case ActionCode::actionCodeAccessRightMainUsersUpdate: {
             bool rightsOk = false;
-            if (ExitCode exitCode = hasRights(actionInfo.nodeId, rightsOk, item)
-                    ; exitCode != ExitCodeOk) {
+            if (ExitCode exitCode = checkRightsAndUpdateItem(actionInfo.nodeId, rightsOk, item); exitCode != ExitCodeOk) {
                 return exitCode;
             }
             if (!rightsOk) break;  // Current user does not have the right to access this item, ignore action.
@@ -634,7 +615,6 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case ActionCode::actionCodeRestore:
         case ActionCode::actionCodeCreate:
             _snapshot->updateItem(item);
-
             if (actionInfo.type == NodeTypeDirectory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
                 // Retrieve all children
                 ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
@@ -669,8 +649,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case ActionCode::actionCodeAccessRightTeamRemove:
         case ActionCode::actionCodeAccessRightMainUsersRemove: {
             bool rightsOk = false;
-            if (ExitCode exitCode = hasRights(actionInfo.nodeId, rightsOk, item)
-                    ; exitCode != ExitCodeOk) {
+            if (ExitCode exitCode = checkRightsAndUpdateItem(actionInfo.nodeId, rightsOk, item); exitCode != ExitCodeOk) {
                 return exitCode;
             }
             if (rightsOk) break;  // Current user still have the right to access this item, ignore action.
@@ -710,8 +689,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
     return ExitCodeOk;
 }
 
-ExitCode RemoteFileSystemObserverWorker::getFileInfo(const NodeId &nodeId, bool &hasRights, SyncTime &createdAt,
-                                                     SyncTime &modtime, int64_t &size) {
+ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem) {
     GetFileInfoJob job(_syncPal->driveDbId(), nodeId);
     job.runSynchronously();
     if (job.hasHttpError() || job.exitCode() != ExitCodeOk) {
@@ -721,12 +699,16 @@ ExitCode RemoteFileSystemObserverWorker::getFileInfo(const NodeId &nodeId, bool 
             return ExitCodeOk;
         }
 
+        LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
+                                       << SyncName2WStr(snapshotItem.name()).c_str() << L" ("
+                                       << Utility::s2ws(snapshotItem.id()).c_str() << L")");
+        invalidateSnapshot();
         return ExitCodeBackError;
     }
 
-    createdAt = job.creationTime();
-    modtime = job.modtime();
-    size = job.size();
+    snapshotItem.setCreatedAt(job.creationTime());
+    snapshotItem.setLastModified(job.modtime());
+    snapshotItem.setSize(job.size());
     hasRights = true;
     return ExitCodeOk;
 }
