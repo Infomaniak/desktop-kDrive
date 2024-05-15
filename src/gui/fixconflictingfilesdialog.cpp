@@ -52,6 +52,15 @@ FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *par
     initUi();
 }
 
+FixConflictingFilesDialog::~FixConflictingFilesDialog() {
+    while (_fileListWidget->count() > 0) {
+        auto currentItem = _fileListWidget->currentItem();
+        auto w = _fileListWidget->itemWidget(currentItem);
+        w->deleteLater();
+        delete _fileListWidget->takeItem(0);
+    }
+}
+
 void FixConflictingFilesDialog::onLinkActivated(const QString &link) {
     if (link == learnMoreLink) {
         if (!QDesktopServices::openUrl(QUrl(Theme::instance()->conflictHelpUrl()))) {

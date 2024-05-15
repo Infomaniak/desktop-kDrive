@@ -34,6 +34,7 @@ class FixConflictingFilesDialog : public CustomDialog {
 
     public:
         FixConflictingFilesDialog(int driveDbId, QWidget *parent = nullptr);
+        ~FixConflictingFilesDialog();
 
         inline bool keepLocalVersion() const { return _keepLocalVersion; }
 
