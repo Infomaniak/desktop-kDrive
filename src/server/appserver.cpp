@@ -1865,12 +1865,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                  * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
                  */
                 std::function<bool(char, int)> progressFunc = [this](char status, int progress) {
-                    sendLogUploadStatusUpdated(status, progress);
-                    this->processEvents(QEventLoop::AllEvents, 100);
+                    sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
+                    this->processEvents(QEventLoop::AllEvents, 100);  // Process events to avoid blocking the GUI (cancel button)
                     LOG_DEBUG(_logger, "Log transfert progress : " << status << " | " << progress << " %");
-                    std::string logUploadStatus;
+
+                    std::string logUploadStatus = "";
                     if (bool found = false;
-                        !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) || !found) {
+                        !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) ||
+                        !found) {  // Check if the user canceled the upload
                         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
                     }
                     return logUploadStatus != "C0" && logUploadStatus != "C1";
@@ -1881,10 +1883,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
                 if (exitCode == ExitCodeOperationCanceled) {
                     LOG_DEBUG(_logger, "Log transfert canceled");
-                    if (bool found = false;
-                        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "C1", found) || !found) {
-                        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-                    }
                     sendLogUploadStatusUpdated('C', 1);
                     return;
                 }
@@ -1893,7 +1891,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);
                     addError(Error(ERRID, exitCode, exitCause));
                 }
-
                 sendLogUploadStatusUpdated(exitCode == ExitCodeOk ? 'S' : 'F', 0);
             });
             break;
@@ -2113,6 +2110,14 @@ void AppServer::sendLogUploadStatusUpdated(char status, int percent) {
     paramsStream << status;
     paramsStream << percent;
     CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
+
+    std::string logUploadStatus;  // Save progress in the database
+    logUploadStatus += status + std::to_string(percent);
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) || !found) {
+        LOG_WARN(_logger, "Error in ParmsDb::updateAppState with key=" << static_cast<int>(AppStateKey::LogUploadStatus));
+        // Don't fail because it is not a critical error, especially in this context where we are trying to send logs
+    }
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {
