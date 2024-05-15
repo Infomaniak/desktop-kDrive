@@ -1921,7 +1921,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 if (exitCode != ExitCodeOk) {
                     LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport : " << exitCode << " | " << exitCause);
                     addError(Error(ERRID, exitCode, exitCause));
-                    sendLogUploadStatusUpdated('F', 0);  // Considered as a failure, if the operation was not canceled, the gui
+                    sendLogUploadStatusUpdated('F', 0);  // Considered as a failure, in case the operation was not canceled, the gui
                                                          // will receive updated status quickly.
                     return;
                 }

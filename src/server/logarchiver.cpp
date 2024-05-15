@@ -67,7 +67,8 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         try {
             if (!ParmsDb::instance()->selectAllDrives(driveList)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
-                if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+                if (bool found = false;
+                    !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
                     LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
                 }
                 exitCause = ExitCauseDbAccessError;
@@ -76,7 +77,8 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
 
             if (driveList.empty()) {
                 LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
-                if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+                if (bool found = false;
+                    !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
                     LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
                 }
                 exitCause = ExitCauseLoginError;
@@ -304,7 +306,8 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath& outputPath, ExitCause& exitC
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, std::function<bool(int)> progressCallback, ExitCause& exitCause) {
+ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, std::function<bool(int)> progressCallback,
+                                       ExitCause& exitCause) {
     IoHelper::DirectoryIterator dir;
     IoError ioError = IoErrorUnknown;
     exitCause = ExitCauseUnknown;
@@ -315,36 +318,34 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, std:
         return ExitCodeSystemError;
     }
 
-    const bool progressMonitoring = progressCallback != nullptr;
+    std::function<bool(int)> progressCallbackWrapper = progressCallback != nullptr ? progressCallback : [](int) { return true; };
     int nbFiles = 0;
     DirectoryEntry entry;
 
-    if (progressMonitoring) {
-        if (!progressCallback(0)) {
-            LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
-            return ExitCodeOperationCanceled;
-        }
-        bool endOfDirectory = false;
-        while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-            nbFiles++;
-        }
-        if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
-            return ExitCodeSystemError;
-        }
+    if (!progressCallbackWrapper(0)) {
+        LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
+        return ExitCodeOperationCanceled;
     }
 
-    int progress = 0;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        const std::string entryPath = entry.path().string();
-        if (entryPath.find(".gz") != std::string::npos) {
+        nbFiles++;
+    }
+    if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
+        return ExitCodeSystemError;
+    }
+
+
+    int progress = 0;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.path().filename().extension() == Str(".gz")) {
             continue;
         }
 
         ItemType itemType;
-        const bool success = IoHelper::getItemType(entryPath, itemType);
+        const bool success = IoHelper::getItemType(entry.path(), itemType);
         ioError = itemType.ioError;
         if (!success) {
             return ExitCodeSystemError;
@@ -353,12 +354,11 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, std:
         if (itemType.nodeType != NodeTypeFile) {
             continue;
         }
-
-        QString destPath = QString::fromStdString(entryPath + ".gz");
-        if (!CommonUtility::compressFile(QString::fromStdString(entryPath), destPath)) {
+        const std::string entryPathStr = entry.path().string();
+        QString destPath = QString::fromStdString(entryPathStr + ".gz");
+        if (!CommonUtility::compressFile(QString::fromStdString(entryPathStr), destPath)) {
             LOG_WARN(Log::instance()->getLogger(),
-                     "Error in compressFile for " << entryPath.c_str() << " to " << destPath.toStdString().c_str());
-
+                     "Error in compressFile for " << entryPathStr.c_str() << " to " << destPath.toStdString().c_str());
             return ExitCodeSystemError;
         }
 
@@ -367,13 +367,12 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, std:
                      "Error in IoHelper::deleteDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
             return ExitCodeSystemError;
         }
-        if (progressMonitoring) {
-            progress++;
-            const int progressPercent = 100.0 * (double)progress / (double)nbFiles;
-            if (!progressCallback(progressPercent)) {
-                LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
-                return ExitCodeOperationCanceled;
-            }
+
+        progress++;
+        const int progressPercent = 100.0 * (double)progress / (double)nbFiles;
+        if (!progressCallbackWrapper(progressPercent)) {
+            LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
+            return ExitCodeOperationCanceled;
         }
     }
 
