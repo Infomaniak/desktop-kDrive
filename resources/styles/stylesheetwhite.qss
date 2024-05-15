@@ -1233,6 +1233,7 @@ KDC--AccountItemWidget QLabel#statusLabel
 KDC--AbstractFileItemWidget
 {
     qproperty-background_color: #FFFFFF;
+    qproperty-logo_color: #666666;
 }
 
 KDC--AbstractFileItemWidget QLabel#fileNameLabel

@@ -37,28 +37,26 @@ static const int boxVSpacing = 10;
 static const int shadowBlurRadius = 20;
 static const QSize iconSize = QSize(15, 15);
 
-static const QColor folderIconColorLight = QColor(0x666666);
-static const QColor folderIconColorDark = QColor(0xC0C0C0);
-
-AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
+AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/)
+    : QWidget(parent) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
-    auto mainLayout = new QVBoxLayout(this);
+    auto mainLayout = new QVBoxLayout;
     mainLayout->setSpacing(boxVSpacing);
     setLayout(mainLayout);
 
     // Top layout
-    _topLayout = new QHBoxLayout(this);
+    _topLayout = new QHBoxLayout;
     _topLayout->setContentsMargins(0, 0, 0, 0);
     _topLayout->setAlignment(Qt::AlignVCenter);
 
-    _fileTypeIconLabel = new QLabel(this);
+    _fileTypeIconLabel = new QLabel;
     _fileTypeIconLabel->setObjectName("fileNameLabel");
     _fileTypeIconLabel->setMinimumSize(iconSize);
     _fileTypeIconLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     _topLayout->addWidget(_fileTypeIconLabel);
 
-    _filenameLabel = new QLabel(this);
+    _filenameLabel = new QLabel;
     _filenameLabel->setObjectName("fileNameLabel");
     _filenameLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
     _filenameLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
@@ -70,11 +68,11 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : 
     mainLayout->addLayout(_topLayout);
 
     // Middle layout
-    _middleLayout = new QHBoxLayout(this);
+    _middleLayout = new QHBoxLayout;
     _middleLayout->setContentsMargins(0, 0, 0, 0);
     _middleLayout->setAlignment(Qt::AlignVCenter);
 
-    _messageLabel = new QLabel(this);
+    _messageLabel = new QLabel;
     _messageLabel->setObjectName("errorLabel");
     _messageLabel->setWordWrap(true);
     _messageLabel->setTextInteractionFlags(Qt::TextSelectableByMouse);
@@ -82,17 +80,17 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : 
     _middleLayout->addWidget(_messageLabel);
 
     // Bottom layout
-    _bottomLayout = new QHBoxLayout(this);
+    _bottomLayout = new QHBoxLayout;
     _bottomLayout->setContentsMargins(0, 0, 0, 0);
     _bottomLayout->setAlignment(Qt::AlignVCenter);
 
-    _driveIconLabel = new QLabel(this);
+    _driveIconLabel = new QLabel;
     _driveIconLabel->setObjectName("errorLabel");
     _driveIconLabel->setMinimumSize(iconSize);
     _driveIconLabel->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
     _bottomLayout->addWidget(_driveIconLabel);
 
-    _pathLabel = new QLabel(this);
+    _pathLabel = new QLabel;
     _pathLabel->setObjectName("filePathLabel");
     _pathLabel->setContextMenuPolicy(Qt::PreventContextMenu);
     _pathLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
@@ -104,7 +102,7 @@ AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : 
     mainLayout->addLayout(_bottomLayout);
 
     // Shadow
-    auto effect = new QGraphicsDropShadowEffect(this);
+    auto effect = new QGraphicsDropShadowEffect;
     effect->setBlurRadius(shadowBlurRadius);
     effect->setOffset(0);
     setGraphicsEffect(effect);
@@ -156,6 +154,12 @@ void AbstractFileItemWidget::openFolder(const QString &path) {
     }
 }
 
+void AbstractFileItemWidget::setLogoColor(const QColor &color) {
+    _logoColor = color;
+    _driveIconLabel->setPixmap(
+        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor).pixmap(iconSize));
+}
+
 void AbstractFileItemWidget::paintEvent(QPaintEvent *event) {
     Q_UNUSED(event);
 
@@ -186,9 +190,8 @@ void AbstractFileItemWidget::setFileName(const QString &path, NodeType type) {
 }
 
 void AbstractFileItemWidget::setPath(const QString &path) {
-    QColor color = GuiUtility::isDarkTheme() ? folderIconColorDark : folderIconColorLight;
     _driveIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", color).pixmap(iconSize));
+        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", _logoColor).pixmap(iconSize));
 
     const QFileInfo fInfo(path);
     QString printablePath;
