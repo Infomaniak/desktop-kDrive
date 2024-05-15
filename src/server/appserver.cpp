@@ -1885,9 +1885,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     LOG_DEBUG(_logger, "Log transfert canceled");
                     sendLogUploadStatusUpdated('C', 1);
                     return;
-                }
-
-                if (exitCode != ExitCodeOk) {
+                }else if (exitCode != ExitCodeOk) {
                     LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);
                     addError(Error(ERRID, exitCode, exitCause));
                 }
