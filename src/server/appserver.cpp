@@ -1855,78 +1855,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> includeArchivedLogs;
             resultStream << ExitCodeOk;  // Return immediately, progress and error will be report via addError and signal
 
-            QTimer::singleShot(100, [this, includeArchivedLogs]() {
-                if (bool found = false;
-                    !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "N", found) || !found) {  // Reset status
-                    LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-                }
-
-                /* See AppStateKey::LogUploadStatus for status values
-                 * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
-                 */
-                std::function<bool(char, int)> progressFunc = [this](char status, int progress) {
-                    sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
-                    processEvents(QEventLoop::AllEvents, 100);     // Process events to avoid blocking the GUI (cancel button)
-                    LOG_DEBUG(_logger, "Log transfert progress : " << status << " | " << progress << " %");
-
-                    std::string logUploadStatus = "";
-                    if (bool found = false;
-                        !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) ||
-                        !found) {  // Check if the user canceled the upload
-                        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-                    }
-                    return logUploadStatus != "C0" && logUploadStatus != "C1";
-                };
-
-                ExitCause exitCause = ExitCauseUnknown;
-                ExitCode exitCode = ServerRequests::sendLogToSupport(includeArchivedLogs, progressFunc, exitCause);
-
-                if (exitCode == ExitCodeOperationCanceled) {
-                    LOG_DEBUG(_logger, "Log transfert canceled");
-                    sendLogUploadStatusUpdated('C', 1);
-                    return;
-                } else if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);
-                    addError(Error(ERRID, exitCode, exitCause));
-                }
-                sendLogUploadStatusUpdated(exitCode == ExitCodeOk ? 'S' : 'F', 0);
-            });
+            QTimer::singleShot(100, [this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); });
             break;
         }
         case REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT: {
             resultStream << ExitCodeOk;  // Return immediately, progress and error will be report via addError and signal
-
-            QTimer::singleShot(100, [this]() {
-                ExitCause exitCause = ExitCauseUnknown;
-                ExitCode exitCode = ServerRequests::cancelLogToSupport(exitCause);
-                if (exitCode == ExitCodeOperationCanceled) {
-                    LOG_WARN(_logger, "Operation already canceled");
-                    sendLogUploadStatusUpdated('C', 1);
-                    return;
-                }
-
-                if (exitCode == ExitCodeInvalidOperation) {
-                    LOG_WARN(_logger, "Cannot cancel the log upload operation (not started or already finished)");
-                    std::string logUploadStatus = "";
-                    if (bool found = false;
-                        !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) || !found) {
-                        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-                    }
-                    char status = logUploadStatus.size() > 0 ? logUploadStatus[0] : 'N';
-                    int progress = logUploadStatus.size() > 1 ? std::stoi(logUploadStatus.substr(1)) : 0;
-                    sendLogUploadStatusUpdated(status, progress);
-                    return;
-                }
-
-                if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport : " << exitCode << " | " << exitCause);
-                    addError(Error(ERRID, exitCode, exitCause));
-                    sendLogUploadStatusUpdated('F', 0);  // Considered as a failure, in case the operation was not canceled, the gui
-                                                         // will receive updated status quickly.
-                    return;
-                }
-                sendLogUploadStatusUpdated('C', 0);
-            });
+            QTimer::singleShot(100, [this]() { cancelLogUpload(); });
             break;
         }
         case REQUEST_NUM_SYNC_SETSUPPORTSVIRTUALFILES: {
@@ -2116,6 +2050,74 @@ void AppServer::sendLogUploadStatusUpdated(char status, int percent) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState with key=" << static_cast<int>(AppStateKey::LogUploadStatus));
         // Don't fail because it is not a critical error, especially in this context where we are trying to send logs
     }
+}
+
+void AppServer::cancelLogUpload() {
+    ExitCause exitCause = ExitCauseUnknown;
+    ExitCode exitCode = ServerRequests::cancelLogToSupport(exitCause);
+    if (exitCode == ExitCodeOperationCanceled) {
+        LOG_WARN(_logger, "Operation already canceled");
+        sendLogUploadStatusUpdated('C', 1);
+        return;
+    }
+
+    if (exitCode == ExitCodeInvalidOperation) {
+        LOG_WARN(_logger, "Cannot cancel the log upload operation (not started or already finished)");
+        std::string logUploadStatus = "";
+        if (bool found = false;
+            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) || !found) {
+            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        }
+        char status = logUploadStatus.size() > 0 ? logUploadStatus[0] : 'N';
+        int progress = logUploadStatus.size() > 1 ? std::stoi(logUploadStatus.substr(1)) : 0;
+        sendLogUploadStatusUpdated(status, progress);
+        return;
+    }
+
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport : " << exitCode << " | " << exitCause);
+        addError(Error(ERRID, exitCode, exitCause));
+        sendLogUploadStatusUpdated('F', 0);  // Considered as a failure, in case the operation was not canceled, the gui
+                                             // will receive updated status quickly.
+        return;
+    }
+    sendLogUploadStatusUpdated('C', 0);
+}
+
+void AppServer::uploadLog(bool includeArchivedLogs) {
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "N", found) || !found) {  // Reset status
+        LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+    }
+
+    /* See AppStateKey::LogUploadStatus for status values
+     * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
+     */
+    std::function<bool(char, int)> progressFunc = [this](char status, int progress) {
+        sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
+        processEvents(QEventLoop::AllEvents, 100);     // Process events to avoid blocking the GUI (cancel button)
+        LOG_DEBUG(_logger, "Log transfert progress : " << status << " | " << progress << " %");
+
+        std::string logUploadStatus = "";
+        if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadStatus, logUploadStatus, found) ||
+                                !found) {  // Check if the user canceled the upload
+            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        }
+        return logUploadStatus != "C0" && logUploadStatus != "C1";
+    };
+
+    ExitCause exitCause = ExitCauseUnknown;
+    ExitCode exitCode = ServerRequests::sendLogToSupport(includeArchivedLogs, progressFunc, exitCause);
+
+    if (exitCode == ExitCodeOperationCanceled) {
+        LOG_DEBUG(_logger, "Log transfert canceled");
+        sendLogUploadStatusUpdated('C', 1);
+        return;
+    } else if (exitCode != ExitCodeOk) {
+        LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);
+        addError(Error(ERRID, exitCode, exitCause));
+    }
+    sendLogUploadStatusUpdated(exitCode == ExitCodeOk ? 'S' : 'F', 0);
 }
 
 ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {
