@@ -594,14 +594,20 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
                       actionInfo.type, actionInfo.size, actionInfo.canWrite);
 
     const auto hasRights = [=](const NodeId &nodeId, bool &rightsOk
-                               , SyncTime &createdAt, SyncTime &modtime, int64_t &size) -> ExitCode {
+                               , SnapshotItem &item) -> ExitCode {
         ExitCode exitCode = ExitCodeOk;
+        SyncTime createdAt = 0;
+        SyncTime modtime = 0;
+        int64_t size = 0;
         if (exitCode = getFileInfo(nodeId, rightsOk, createdAt, modtime, size); exitCode != ExitCodeOk) {
             LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
                                            << SyncName2WStr(actionInfo.name).c_str() << L" ("
                                            << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
             invalidateSnapshot();
         }
+        item.setCreatedAt(createdAt);
+        item.setLastModified(modtime);
+        item.setSize(size);
         return exitCode;
     };
 
@@ -617,18 +623,11 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case ActionCode::actionCodeAccessRightMainUsersInsert:
         case ActionCode::actionCodeAccessRightMainUsersUpdate: {
             bool rightsOk = false;
-            SyncTime createdAt = 0;
-            SyncTime modtime = 0;
-            int64_t size = 0;
-            if (ExitCode exitCode = hasRights(actionInfo.nodeId, rightsOk, createdAt, modtime, size)
+            if (ExitCode exitCode = hasRights(actionInfo.nodeId, rightsOk, item)
                     ; exitCode != ExitCodeOk) {
                 return exitCode;
             }
             if (!rightsOk) break;  // Current user does not have the right to access this item, ignore action.
-
-            item.setCreatedAt(createdAt);
-            item.setLastModified(modtime);
-            item.setSize(size);
             [[fallthrough]];
         }
         case ActionCode::actionCodeMoveIn:
@@ -670,10 +669,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case ActionCode::actionCodeAccessRightTeamRemove:
         case ActionCode::actionCodeAccessRightMainUsersRemove: {
             bool rightsOk = false;
-            SyncTime createdAt = 0;
-            SyncTime modtime = 0;
-            int64_t size = 0;
-            if (ExitCode exitCode = hasRights(actionInfo.nodeId, rightsOk, createdAt, modtime, size)
+            if (ExitCode exitCode = hasRights(actionInfo.nodeId, rightsOk, item)
                     ; exitCode != ExitCodeOk) {
                 return exitCode;
             }
