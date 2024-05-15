@@ -602,7 +602,7 @@ QLocale GuiUtility::languageToQLocale(Language language) {
 }
 
 QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const QString &dateFormat) {
-    Language lang = ParametersCache::instance()->parametersInfo().language();
+    const Language lang = ParametersCache::instance()->parametersInfo().language();
     return languageToQLocale(lang).toString(dateTime, dateFormat);
 }
 
