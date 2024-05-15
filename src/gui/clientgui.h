@@ -138,6 +138,11 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QSet<int> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
         std::map<int, QList<ErrorInfo>> _errorInfoMap;
+#ifdef Q_OS_LINUX
+        QAction *_actionSynthesis = nullptr;
+        QAction *_actionPreferences = nullptr;
+        QAction *_actionQuit = nullptr;
+#endif
 
         static void raiseDialog(QWidget *raiseWidget);
         void setupSynthesisPopover();
@@ -195,6 +200,8 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
                             int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime);
         void onExecuteSyncAction(ActionType type, ActionTarget target, int dbId);
         void onRefreshStatusNeeded();
+
+        void retranslateUi();
 };
 
 }  // namespace KDC
