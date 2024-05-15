@@ -866,8 +866,9 @@ ExitCode GuiRequests::getLogDirEstimatedSize(uint64_t &size) {
     if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results)) {
         return ExitCodeSystemError;
     }
+
     qint64 sizeQt = 0;
-    ExitCode exitCode;
+    ExitCode exitCode = ExitCodeOk;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
     resultStream >> sizeQt;
@@ -887,7 +888,7 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
         return ExitCodeSystemError;
     }
 
-    ExitCode exitCode;
+    ExitCode exitCode = ExitCodeOk;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 
@@ -896,12 +897,15 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
 
 ExitCode GuiRequests::cancelLogUploadToSupport() {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT, QByteArray(), results,
+                                         COMM_SHORT_TIMEOUT)) {  // Short timeout because the operation is asynchronous
         return ExitCodeSystemError;
     }
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
+
     ExitCode exitCode = ExitCodeOk;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
+
     return exitCode;
 }
 
