@@ -650,7 +650,7 @@ void SynthesisPopover::refreshErrorsButton() {
         if (syncInfoMap.empty()) {
             driveInfo.setUnresolvedErrorsCount(0);
             driveInfo.setAutoresolvedErrorsCount(0);
-        };
+        }
 
         drivesWithErrors = drivesWithErrors || _gui->driveErrorsCount(driveId, true) > 0;
         drivesWithInfos = drivesWithInfos || _gui->driveErrorsCount(driveId, false) > 0;
@@ -741,6 +741,29 @@ void SynthesisPopover::setSynchronizedDefaultPage(QWidget **widget, QWidget *par
     }
 }
 
+void SynthesisPopover::handleRemovedDrives() {
+    std::map<int, SyncInfoClient> syncInfoMap;
+    _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
+
+    if (syncInfoMap.empty()) _statusBarWidget->reset();
+
+    for (int widgetIndex = DriveInfoClient::SynthesisStackedWidgetFirstAdded; widgetIndex < _stackedWidget->count();) {
+        QWidget *widget = _stackedWidget->widget(widgetIndex);
+        bool driveIsFound = false;
+        for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
+            if (driveInfo.synchronizedListWidget() == widget) {
+                driveIsFound = true;
+                ++widgetIndex;
+                break;
+            }
+        }
+        if (!driveIsFound) _stackedWidget->removeWidget(widget);
+    }
+
+    _driveSelectionWidget->selectDrive(_gui->currentDriveDbId());
+    _statusBarWidget->setSeveralSyncs(syncInfoMap.size() > 1);
+}
+
 void SynthesisPopover::onConfigRefreshed() {
 #ifdef CONSOLE_DEBUG
     std::cout << QTime::currentTime().toString("hh:mm:ss").toStdString() << " - SynthesisPopover::onUserListRefreshed"
@@ -749,33 +772,8 @@ void SynthesisPopover::onConfigRefreshed() {
 
     if (_gui->driveInfoMap().empty()) {
         reset();
-    } else {
-        std::map<int, SyncInfoClient> syncInfoMap;
-        _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
-
-        if (syncInfoMap.empty()) {
-            _statusBarWidget->reset();
-        }
-
-        // Manage removed drives
-        for (int widgetIndex = DriveInfoClient::SynthesisStackedWidgetFirstAdded; widgetIndex < _stackedWidget->count();) {
-            QWidget *widget = _stackedWidget->widget(widgetIndex);
-            bool driveIsFound = false;
-            for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
-                if (driveInfo.synchronizedListWidget() == widget) {
-                    driveIsFound = true;
-                    ++widgetIndex;
-                    break;
-                }
-            }
-            if (!driveIsFound) {
-                _stackedWidget->removeWidget(widget);
-            }
-        }
-
-        _driveSelectionWidget->selectDrive(_gui->currentDriveDbId());
-        _statusBarWidget->setSeveralSyncs(syncInfoMap.size() > 1);
-    }
+    } else
+        handleRemovedDrives();
 
     setSynchronizedDefaultPage(&_defaultSynchronizedPageWidget, this);
     refreshErrorsButton();

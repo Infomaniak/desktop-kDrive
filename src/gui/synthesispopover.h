@@ -133,6 +133,7 @@ class SynthesisPopover : public QDialog {
         void reset();
         void addSynchronizedListWidgetItem(DriveInfoClient &driveInfoClient, int row = 0);
         void getDriveErrorList(QList<ErrorsPopup::DriveError> &list);
+        void handleRemovedDrives();
 
     private slots:
         void onOpenErrorsMenu(bool checked = false);
