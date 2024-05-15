@@ -342,6 +342,32 @@ AppServer::AppServer(int &argc, char **argv)
         }
     }
 
+    // Check if a log Upload has been interrupted
+    std::string logUploadStatusStr = "";
+    if (bool found = false;
+        !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadStatus, logUploadStatusStr, found) || !found) {
+        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+        throw std::runtime_error("Failed to get log upload status.");
+    }
+
+    char logUploadStatus = logUploadStatusStr.size() > 0 ? logUploadStatusStr[0] : 'N';
+    int logUploadProgress = logUploadStatusStr.size() > 1 ? std::stoi(logUploadStatusStr.substr(1)) : 0;
+    if (logUploadStatus == 'A' || logUploadStatus == 'U') {
+        LOG_WARN(_logger, "App was closed during log upload, aborting upload");
+        if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+            throw std::runtime_error("Failed to update log upload status.");
+        }
+    } else if (logUploadStatus = 'C' && logUploadProgress == 0) { // If interrupted while cancelling, consider it has been cancelled
+        if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "C1", found) || !found) {
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+            throw std::runtime_error("Failed to update log upload status.");
+        }
+    }
+
     // Start client
     if (!startClient()) {
         LOG_WARN(_logger, "Error in startClient");
