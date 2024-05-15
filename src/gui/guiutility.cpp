@@ -543,6 +543,12 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
     layout->activate();
 }
 
+void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*/) {
+    if (path.size() > maxSize) {
+        path = path.left(maxSize) + "...";
+    }
+}
+
 #ifdef Q_OS_LINUX
 bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
     type = QProcessEnvironment::systemEnvironment().value("XDG_CURRENT_DESKTOP");

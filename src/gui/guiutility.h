@@ -99,6 +99,8 @@ QWidget *getTopLevelWidget(QWidget *widget);
 void forceUpdate(QWidget *widget);
 void invalidateLayout(QLayout *layout);
 
+void makePrintablePath(QString &path, const uint64_t maxSize = 50);
+
 #ifdef Q_OS_LINUX
 bool getLinuxDesktopType(QString &type, QString &version);
 #endif

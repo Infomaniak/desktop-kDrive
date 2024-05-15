@@ -30,7 +30,6 @@
 
 namespace KDC {
 
-static const int filePathMaxSize = 50;
 static const int cornerRadius = 10;
 static const int hMargin = 20;
 static const int vMargin = 5;
@@ -38,8 +37,8 @@ static const int boxVSpacing = 10;
 static const int shadowBlurRadius = 20;
 static const QSize iconSize = QSize(15, 15);
 
-static const QColor folderIconColorLight = QColor("#666666");
-static const QColor folderIconColorDark = QColor("#C0C0C0");
+static const QColor folderIconColorLight = QColor(0x666666);
+static const QColor folderIconColorDark = QColor(0xC0C0C0);
 
 AbstractFileItemWidget::AbstractFileItemWidget(QWidget *parent /*= nullptr*/) : QWidget(parent) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
@@ -191,13 +190,12 @@ void AbstractFileItemWidget::setPath(const QString &path) {
     _driveIconLabel->setPixmap(
         KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/icon-folder-empty.svg", color).pixmap(iconSize));
 
-    QFileInfo fInfo(path);
+    const QFileInfo fInfo(path);
     QString printablePath;
     if (!fInfo.isAbsolute()) printablePath = "/";
     printablePath += path;
-    if (printablePath.size() > filePathMaxSize) {
-        printablePath = printablePath.left(filePathMaxSize) + "...";
-    }
+    GuiUtility::makePrintablePath(printablePath);
+
     printablePath = QDir::toNativeSeparators(printablePath);
     QString pathStr = QString("<a style=\"%1\" href=\"%2\">%3</a>").arg(CommonUtility::linkStyle, path, printablePath);
 
