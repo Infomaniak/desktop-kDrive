@@ -988,7 +988,6 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
 
 ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function<bool(char, int)> progressCallback,
                                           ExitCause &exitCause) {
-    const bool progressMonitoring = progressCallback != nullptr;
     exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;
     progressCallback('A', 0);
@@ -1013,10 +1012,11 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
         return ExitCodeSystemError;
     }
 
-    std::function<bool(int)> progressCallbackArchivingWrapper = nullptr;
-    if (progressMonitoring) {
-        progressCallbackArchivingWrapper = [progressCallback](int percent) { return progressCallback('A', percent); };
-    }
+    std::function<bool(int)> progressCallbackArchivingWrapper =
+        (progressCallback != nullptr)
+            ? std::function<bool(int)>([progressCallback](int percent) { return progressCallback('A', percent); })
+            : std::function<bool(int)>([](int) { return true; });
+
 
     SyncPath archivePath;
     exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, logUploadTempFolder, progressCallbackArchivingWrapper,
@@ -1034,18 +1034,19 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     }
 
     // Upload archive
-    std::function<bool(int)> progressCallbackUploadingWrapper = nullptr;
-    if (progressMonitoring) {
-        progressCallbackUploadingWrapper = [progressCallback](int percent) { return progressCallback('U', percent); };
+    std::function<bool(int)> progressCallbackUploadingWrapper =
+        progressCallback != nullptr
+            ? std::function<bool(int)>([progressCallback](int percent) { return progressCallback('U', percent); })
+            : std::function<bool(int)>([](int) { return true; });
 
-        for (int i = 0; i < 100; i++) {  // TODO: Remove | Fake progress waiting for the real upload implementation
-            if (progressMonitoring && !progressCallbackUploadingWrapper(i)) {
-                exitCode = ExitCodeOperationCanceled;
-                break;
-            }
-            Utility::msleep(100);
+    for (int i = 0; i < 100; i++) {  // TODO: Remove | Fake progress waiting for the real upload implementation
+        if (!progressCallbackUploadingWrapper(i)) {
+            exitCode = ExitCodeOperationCanceled;
+            break;
         }
+        Utility::msleep(100);
     }
+
 
     // TODO: implement real log upload backend
 
