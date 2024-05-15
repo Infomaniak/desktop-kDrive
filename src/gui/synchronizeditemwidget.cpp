@@ -390,33 +390,7 @@ void SynchronizedItemWidget::onDisplayOnDriveActionTriggered(bool checked) {
 void SynchronizedItemWidget::retranslateUi() {
     _folderButton->setToolTip(tr("Show in folder"));
     _menuButton->setToolTip(tr("More actions"));
-    _fileDateLabel->setText(getDateForCurrentLanguage());
-}
-
-QString SynchronizedItemWidget::getDateForCurrentLanguage() {
-    QDateTime dateTime = _item.dateTime();
-    Language lang = ParametersCache::instance()->parametersInfo().language();
-    QLocale qLocale = languageToQLocale(lang);
-    return qLocale.toString(dateTime, dateFormat);
-}
-
-QLocale SynchronizedItemWidget::languageToQLocale(Language language) {
-    QLocale::Country country = locale().country();
-
-    switch (language) {
-        case LanguageSpanish:
-            return {QLocale::Spanish, country};
-        case LanguageEnglish:
-            return {QLocale::English, country};
-        case LanguageFrench:
-            return {QLocale::French, country};
-        case LanguageGerman:
-            return {QLocale::German, country};
-        case LanguageItalian:
-            return {QLocale::Italian, country};
-        default:
-            return locale();
-    }
+    _fileDateLabel->setText(GuiUtility::getDateForCurrentLanguage(_item.dateTime(), dateFormat));
 }
 
 void SynchronizedItemWidget::onWaitingTimerTimeout() {
