@@ -290,7 +290,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
 
     { // Test the generation of the archive
         TemporaryDirectory tempDir;
-        SyncPath archiveFile;
+        SyncPath archivePath;
         ExitCause cause = ExitCauseUnknown;
         int previousPercent = 0;
         std::function<bool(int)> progress = [&previousPercent](int percent) {
@@ -301,14 +301,14 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
             return true;
         };
 
-        ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archiveFile, cause, true);
+        ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archivePath, cause, true);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
-        CPPUNIT_ASSERT_EQUAL(tempDir.path / archiveFile.filename(), archiveFile);
+        CPPUNIT_ASSERT_EQUAL(tempDir.path / archivePath.filename(), archivePath);
 
         bool exists = false;
         IoError err = IoErrorSuccess;
-        CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(archiveFile, exists, err));
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(archivePath, exists, err));
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(exists);
     }
