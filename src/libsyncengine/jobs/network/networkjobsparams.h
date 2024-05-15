@@ -19,6 +19,7 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 namespace KDC {
 static const int threadPoolMinCapacity = 10;

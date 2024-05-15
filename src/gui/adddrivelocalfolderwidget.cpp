@@ -326,37 +326,12 @@ void AddDriveLocalFolderWidget::selectFolder(const QString &startDirPath) {
     QString dirPath = QFileDialog::getExistingDirectory(this, tr("Select folder"), startDirPath,
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (!dirPath.isEmpty()) {
-        QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
-        SyncPath directoryPath = QStr2Path(dirPath);
-
-        for (auto &sync : _gui->syncInfoMap()) {
-            QString syncFolderName = sync.second.name();
-            SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
-
-            bool warn = false;
-            QString warningMsg;
-            if (syncLocalPath == directoryPath) {
-                warn = true;
-                warningMsg = tr("Folder <b>%1</b> cannot be selected because another sync is using the same folder.")
-                                 .arg(selectedFolderName);
-            } else if (CommonUtility::isSubDir(directoryPath, syncLocalPath)) {
-                warn = true;
-                warningMsg = tr("Folder <b>%1</b> cannot be selected because it contains the synchronized folder <b>%2</b>.")
-                                 .arg(selectedFolderName, syncFolderName);
-            } else if (CommonUtility::isSubDir(syncLocalPath, directoryPath)) {
-                warn = true;
-                warningMsg =
-                    tr("Folder <b>%1</b> cannot be selected because it is contained in the synchronized folder <b>%2</b>.")
-                        .arg(selectedFolderName, syncFolderName);
-            }
-
-            if (warn) {
-                CustomMessageBox msgBox(QMessageBox::Warning, warningMsg, QMessageBox::Ok, this);
-                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
-                return;
-            }
+        if (!GuiUtility::warnOnInvalidSyncFolder(dirPath, _gui->syncInfoMap(), this)) {
+            return;
         }
-        _localFolderPath = SyncName2QStr(directoryPath);
+
+        QDir dir(dirPath);
+        _localFolderPath = dir.canonicalPath();
         updateUI();
     }
 }
