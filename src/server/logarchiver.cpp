@@ -318,11 +318,11 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, std:
         return ExitCodeSystemError;
     }
 
-    std::function<bool(int)> progressCallbackWrapper = progressCallback != nullptr ? progressCallback : [](int) { return true; };
+    std::function<bool(int)> safeProgressCallback = progressCallback != nullptr ? progressCallback : [](int) { return true; };
     int nbFiles = 0;
     DirectoryEntry entry;
 
-    if (!progressCallbackWrapper(0)) {
+    if (!safeProgressCallback(0)) {
         LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
         return ExitCodeOperationCanceled;
     }
@@ -370,7 +370,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, std:
 
         progress++;
         const int progressPercent = 100.0 * (double)progress / (double)nbFiles;
-        if (!progressCallbackWrapper(progressPercent)) {
+        if (!safeProgressCallback(progressPercent)) {
             LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
             return ExitCodeOperationCanceled;
         }

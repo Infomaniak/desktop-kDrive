@@ -1079,6 +1079,7 @@ ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
         return ExitCodeDbError;
     }
+
     if (logUploadStatus == "C0") {
         return ExitCodeOk;
     }

@@ -33,11 +33,15 @@ class LogArchiver {
 
         /*! Generates a support archive containing the logs and the parms.db file.
          * \param includeArchivedLogs If true, the archived logs from previous sessions will be included.
-         * \param outputDir The path where the archive will be generated.
-         * \param progressCallback The callback to be called with the progress percentage, the function retruns false if the user
-         * cancels the operation (else true). \param archivePath The path to the generated archive. \param exitCause The exit
-         * cause to be filled in case of error. If no error occurred, it will be set to ExitCauseUnknown; \param test If true, the
-         * archive will be generated with a random name. \return True if the archive was generated successfully, false otherwise.
+         * \param outputDir The path of the directory where the archive will be generated.
+         * \param progressCallback The callback to be called with the progress percentage, the callback retruns false if the user
+         *      cancels the operation (else true). 
+         * \param archivePath The path to the generated archive.
+         * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to
+         *      ExitCauseUnknown;
+         * \param test If true, the archive will be generated with test.zip name.
+         * \return True if the archive
+         * was generated successfully, false otherwise.
          */
         static ExitCode generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputDir,
                                                    std::function<bool(int)> progressCallback, SyncPath &archivePath,
@@ -52,9 +56,11 @@ class LogArchiver {
          * This method will not create an archive, it will only compress the files in the directory.
          * The compressed files will have the same name as the original files with the .gz extension.
          * \param directoryToCompress The directory containing the log files to compress.
-         * \param progressCallback The callback to be called with the progress percentage. The function returns false if the user cancels the operation (else true).
-         * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to
-         * ExitCauseUnknown; \return The exit code of the operation.
+         * \param progressCallback The callback to be called with the progress percentage, the callback retruns false if the user
+         *      cancels the operation (else true). 
+         * \param exitCause The exit cause to be filled in case of error. If no error occurred,
+         *      it will be set to ExitCauseUnknown; 
+         * \return The exit code of the operation.
          */
         static ExitCode compressLogFiles(const SyncPath &directoryToCompress, std::function<bool(int)> progressCallback,
                                          ExitCause &exitCause);
@@ -63,7 +69,8 @@ class LogArchiver {
          * The file will contain: Current OS, current architecture, current version, current user(s), current drive(s).
          * \param outputPath The path where the file will be generated.
          * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to
-         * ExitCauseUnknown; \return The exit code of the operation.
+         *      ExitCauseUnknown; 
+         * \return The exit code of the operation.
          */
         static ExitCode generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);
 };
