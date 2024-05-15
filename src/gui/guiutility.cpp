@@ -590,6 +590,28 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
     return true;
 }
 
+QLocale GuiUtility::languageToQLocale(Language language) {
+    switch (language) {
+        case LanguageSpanish:
+            return QLocale::Spanish;
+        case LanguageEnglish:
+            return QLocale::English;
+        case LanguageFrench:
+            return QLocale::French;
+        case LanguageGerman:
+            return QLocale::German;
+        case LanguageItalian:
+            return QLocale::Italian;
+        default:
+            return QLocale();
+    }
+}
+
+QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const QString &dateFormat) {
+    const Language lang = ParametersCache::instance()->parametersInfo().language();
+    return languageToQLocale(lang).toString(dateTime, dateFormat);
+}
+
 #ifdef Q_OS_LINUX
 bool GuiUtility::getLinuxDesktopType(QString &type, QString &version) {
     type = QProcessEnvironment::systemEnvironment().value("XDG_CURRENT_DESKTOP");

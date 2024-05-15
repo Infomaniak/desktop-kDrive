@@ -103,6 +103,9 @@ bool warnOnInvalidSyncFolder(const QString &dirPath, const std::map<int, SyncInf
 
 void makePrintablePath(QString &path, const uint64_t maxSize = 50);
 
+QLocale languageToQLocale(Language language);
+QString getDateForCurrentLanguage(const QDateTime &dateTime, const QString &dateFormat);
+
 #ifdef Q_OS_LINUX
 bool getLinuxDesktopType(QString &type, QString &version);
 #endif
