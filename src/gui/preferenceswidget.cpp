@@ -38,7 +38,6 @@
 #include "libcommongui/logger.h"
 #include "guirequests.h"
 #include "libcommon/theme/theme.h"
-#include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
 
 #ifdef Q_OS_WIN
@@ -392,7 +391,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     auto advancedBloc = new PreferencesBlocWidget();
     vBox->addWidget(advancedBloc);
 
-    // Debugging informations
+    // Debugging information
     QVBoxLayout *debuggingVBox = nullptr;
     ClickableWidget *debuggingWidget = advancedBloc->addActionWidget(&debuggingVBox);
 

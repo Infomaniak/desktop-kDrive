@@ -101,6 +101,9 @@ void forceUpdate(QWidget *widget);
 void invalidateLayout(QLayout *layout);
 bool warnOnInvalidSyncFolder(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap, QWidget *parent);
 
+QLocale languageToQLocale(Language language);
+QString getDateForCurrentLanguage(const QDateTime &dateTime, const QString &dateFormat);
+
 #ifdef Q_OS_LINUX
 bool getLinuxDesktopType(QString &type, QString &version);
 #endif
