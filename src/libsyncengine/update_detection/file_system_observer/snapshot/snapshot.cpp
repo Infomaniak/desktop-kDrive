@@ -18,6 +18,7 @@
 
 #include "snapshot.h"
 #include "libcommonserver/log/log.h"
+#include "requests/parameterscache.h"
 
 #include <filesystem>
 #include <queue>
@@ -84,6 +85,12 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         startUpdate();
     }
 
+    if (ParametersCache::instance()->parameters().extendedLog()) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(newItem.name()).c_str() << L" ("
+                                                                     << Utility::s2ws(newItem.id()).c_str() << L") updated at:"
+                                                                     << newItem.lastModified());
+    }
+
     return true;
 }
 
@@ -113,6 +120,11 @@ bool Snapshot::removeItem(const NodeId &id) {
     }
 
     _items.erase(id);
+
+    if (ParametersCache::instance()->parameters().extendedLog()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Item " << id.c_str() << "removed from remote snapshot.");
+    }
+
     return true;
 }
 
@@ -253,7 +265,7 @@ bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
     return false;
 }
 
-SyncTime Snapshot::lastModifed(const NodeId &itemId) {
+SyncTime Snapshot::lastModified(const NodeId &itemId) {
     const std::lock_guard<std::recursive_mutex> lock(_mutex);
     SyncTime ret = 0;
     auto it = _items.find(itemId);
@@ -263,7 +275,7 @@ SyncTime Snapshot::lastModifed(const NodeId &itemId) {
     return ret;
 }
 
-bool Snapshot::setLastModifed(const NodeId &itemId, SyncTime newTime) {
+bool Snapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
     const std::lock_guard<std::recursive_mutex> lock(_mutex);
     auto it = _items.find(itemId);
     if (it != _items.end()) {
