@@ -59,7 +59,6 @@ class AbstractFileItemWidget : public QWidget {
         inline QColor backgroundColor() const { return _backgroundColor; }
         inline void setBackgroundColor(const QColor &value) { _backgroundColor = value; }
         inline QColor logoColor() const { return _logoColor; }
-//        inline void setLogoColor(const QColor &value)  { _logoColor = value; }
         void setLogoColor(const QColor &value);
         void paintEvent(QPaintEvent *event) override;
 
