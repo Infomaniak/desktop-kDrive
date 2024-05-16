@@ -89,9 +89,7 @@ SynchronizedItemWidget::SynchronizedItemWidget(const SynchronizedItem &item, QWi
     fileNameLabel->setObjectName("fileNameLabel");
     QFileInfo fileInfo(_item.filePath());
     QString fileName = fileInfo.fileName();
-    if (fileName.size() > fileNameMaxSize) {
-        fileName = fileName.left(fileNameMaxSize) + "...";
-    }
+    GuiUtility::makePrintablePath(fileName, fileNameMaxSize);
     fileNameLabel->setText(fileName);
     vboxText->addStretch();
     vboxText->addWidget(fileNameLabel);

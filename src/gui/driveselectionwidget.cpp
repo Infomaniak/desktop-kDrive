@@ -97,9 +97,8 @@ void DriveSelectionWidget::selectDrive(int driveDbId) {
     }
 
     QString driveName = driveInfoIt->second.name();
-    if (driveName.size() > driveNameMaxSize) {
-        driveName = driveName.left(driveNameMaxSize) + "...";
-    }
+    GuiUtility::makePrintablePath(driveName, driveNameMaxSize);
+
     _driveTextLabel->setText(driveName);
     _downIconLabel->setVisible(true);
     setDriveIcon(driveInfoIt->second.color());

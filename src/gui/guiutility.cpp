@@ -543,6 +543,12 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
     layout->invalidate();
     layout->activate();
 }
+  
+void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*/) {
+    if (path.size() > maxSize) {
+        path = path.left(maxSize) + "...";
+    }
+}
 
 bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap,
                                          QWidget *parent) {

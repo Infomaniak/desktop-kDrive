@@ -42,8 +42,6 @@ static const int undecidedItemBoxVSpacing = 0;
 static const int undecidedItemPathSpacing = 6;
 static const int undecidedItemPathDriveSpacing = 4;
 static const int driveIconSize = 14;
-static const int folderNameMaxSize = 50;
-static const int locationPathMaxSize = 50;
 
 static const char undecidedFolderProperty[] = "undecidedFolder";
 
@@ -120,9 +118,7 @@ BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncI
 
             QLabel *folderName = new QLabel(this);
             folderName->setObjectName("largeNormalBoldTextLabel");
-            if (name.size() > folderNameMaxSize) {
-                name = name.left(folderNameMaxSize) + "...";
-            }
+            GuiUtility::makePrintablePath(name);
             folderName->setText(name);
             folderName->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
             undecidedItemVBox->addWidget(folderName);
@@ -146,9 +142,7 @@ BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncI
 
             QLabel *locationPathLabel = new QLabel(this);
             locationPathLabel->setObjectName("folderPathLabel");
-            if (path.size() > locationPathMaxSize) {
-                path = path.left(locationPathMaxSize) + "...";
-            }
+            GuiUtility::makePrintablePath(path);
             locationPathLabel->setText(path);
             locationPathLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
             undecidedItemPathHBox->addWidget(locationPathLabel);

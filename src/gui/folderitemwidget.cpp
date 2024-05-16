@@ -37,8 +37,6 @@ static const int hSpacing = 10;
 static const int vSpacing = 10;
 static const int expandButtonVMargin = 5;
 static const int statusIconSize = 20;
-static const int folderNameMaxSize = 50;
-static const int folderPathMaxSize = 50;
 
 Q_LOGGING_CATEGORY(lcFolderItemWidget, "gui.folderitemwidget", QtInfoMsg)
 
@@ -163,15 +161,11 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
         updateItem();
         setExpandButton();
         QString name = syncInfoClient->name();
-        if (name.size() > folderNameMaxSize) {
-            name = name.left(folderNameMaxSize) + "...";
-        }
+        GuiUtility::makePrintablePath(name);
         _nameLabel->setText(name);
 
         QString path = syncInfoClient->localPath();
-        if (path.size() > folderPathMaxSize) {
-            path = path.left(folderPathMaxSize) + "...";
-        }
+        GuiUtility::makePrintablePath(path);
         _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path));
     }
 }
@@ -464,9 +458,7 @@ void FolderItemWidget::retranslateUi() {
     setToolTipsEnabled(!isBeingDeleted());
 
     QString path = syncInfoClient->localPath();
-    if (path.size() > folderPathMaxSize) {
-        path = path.left(folderPathMaxSize) + "...";
-    }
+    GuiUtility::makePrintablePath(path);
     _synchroLabel->setText(tr("Synchronized into <a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, path));
 
     if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
