@@ -34,7 +34,7 @@
 
 namespace KDC {
 
-// TODO : this should be unifomized in CustomDialog
+// TODO : this should be unified in CustomDialog
 static const int boxHMargin = 40;
 static const int boxVMargin = 10;
 static const int boxHSpacing = 10;
@@ -93,7 +93,7 @@ void FixConflictingFilesDialog::initUi() {
     mainLayout->setContentsMargins(boxHMargin, 0, boxHMargin, boxVMargin);
 
     // Title
-    QLabel *titleLabel = new QLabel(this);
+    auto titleLabel = new QLabel(this);
     titleLabel->setObjectName("titleLabel");
     titleLabel->setText(tr("Solve conflict(s)"));
 
@@ -101,7 +101,7 @@ void FixConflictingFilesDialog::initUi() {
     mainLayout->addSpacing(titleBoxVMargin);
 
     // Description
-    QLabel *textLabel = new QLabel(this);
+    auto textLabel = new QLabel(this);
     textLabel->setObjectName("textLabel");
     textLabel->setWordWrap(true);
     textLabel->setText(descriptionText());
@@ -111,12 +111,13 @@ void FixConflictingFilesDialog::initUi() {
     mainLayout->addWidget(textLabel);
 
     // Selection buttons
-    QLabel *selectionLabel = new QLabel(this);
+    auto selectionLabel = new QLabel(this);
+    selectionLabel->setObjectName("descriptionLabel");
     selectionLabel->setText(tr("<b>What do you want to do with the %1 conflicted item(s) that is(are) not synced in kDrive?</b>")
                                 .arg(_conflictList.length()));
 
     _keepLocalButton = new CustomRadioButton(this);
-    _keepLocalButton->setText(tr("Synchonize the local version of my item(s) in kDrive."));
+    _keepLocalButton->setText(tr("Synchronize the local version of my item(s) in kDrive."));
     _keepLocalButton->setChecked(true);
 
     _keepRemoteButton = new CustomRadioButton(this);
@@ -126,7 +127,7 @@ void FixConflictingFilesDialog::initUi() {
         _keepRemoteButton->setText(tr("Permanently delete the local version of my item(s)."));
     }
 
-    QVBoxLayout *selectionLayout = new QVBoxLayout(this);
+    auto selectionLayout = new QVBoxLayout(this);
     selectionLayout->setContentsMargins(0, 4 * boxVMargin, 0, boxVMargin);
     selectionLayout->setSpacing(boxHSpacing);
     selectionLayout->addWidget(selectionLabel);
@@ -135,7 +136,8 @@ void FixConflictingFilesDialog::initUi() {
     mainLayout->addLayout(selectionLayout);
 
     // Details
-    QLabel *detailsLabel = new QLabel(this);
+    auto detailsLabel = new QLabel(this);
+    detailsLabel->setObjectName("descriptionLabel");
     detailsLabel->setText(tr("Show item(s)"));
 
     _expandButton = new CustomToolButton(this);
@@ -143,7 +145,7 @@ void FixConflictingFilesDialog::initUi() {
     _expandButton->setIconPath(":/client/resources/icons/actions/chevron-down.svg");
     connect(_expandButton, &CustomToolButton::clicked, this, &FixConflictingFilesDialog::onExpandButtonClicked);
 
-    QHBoxLayout *detailsLabelLayout = new QHBoxLayout(this);
+    auto detailsLabelLayout = new QHBoxLayout(this);
     detailsLabelLayout->addWidget(detailsLabel);
     detailsLabelLayout->addSpacing(5);
     detailsLabelLayout->addWidget(_expandButton);
@@ -158,31 +160,31 @@ void FixConflictingFilesDialog::initUi() {
 
     _stackedWidget = new QStackedWidget(this);
 
-    QWidget *dummyWidget = new QWidget(this);
+    auto dummyWidget = new QWidget(this);
     dummyWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     _stackedWidget->insertWidget(0, dummyWidget);
     _stackedWidget->insertWidget(1, _fileListWidget);
 
-    QVBoxLayout *detailsLayout = new QVBoxLayout(this);
+    auto detailsLayout = new QVBoxLayout(this);
     detailsLayout->setContentsMargins(0, 2 * boxVMargin, 0, boxVMargin);
     detailsLayout->addLayout(detailsLabelLayout);
     detailsLayout->addWidget(_stackedWidget);
     mainLayout->addLayout(detailsLayout);
 
     // Validation buttons
-    QPushButton *validateButton = new QPushButton(this);
+    auto validateButton = new QPushButton(this);
     validateButton->setObjectName("defaultbutton");
     validateButton->setFlat(true);
     validateButton->setText(tr("VALIDATE"));
     connect(validateButton, &QPushButton::clicked, this, &FixConflictingFilesDialog::onValidate);
 
-    QPushButton *cancelButton = new QPushButton(this);
+    auto cancelButton = new QPushButton(this);
     cancelButton->setObjectName("nondefaultbutton");
     cancelButton->setFlat(true);
     cancelButton->setText(tr("CANCEL"));
     connect(cancelButton, &QPushButton::clicked, this, &FixConflictingFilesDialog::reject);
 
-    QHBoxLayout *buttonsLayout = new QHBoxLayout();
+    auto buttonsLayout = new QHBoxLayout();
     buttonsLayout->setContentsMargins(0, 0, 0, boxVMargin);
     buttonsLayout->setSpacing(boxHSpacing);
     buttonsLayout->addWidget(validateButton);
@@ -209,9 +211,9 @@ QString FixConflictingFilesDialog::descriptionText() const {
 void FixConflictingFilesDialog::insertFileItems(const int nbItems) {
     uint64_t max = std::min(_fileListWidget->count() + nbItems, (int)_conflictList.size());
     for (uint64_t i = _fileListWidget->count(); i < max; i++) {
-        FileItemWidget *w = new FileItemWidget(_conflictList[i].destinationPath(), _conflictList[i].nodeType(), this);
+        auto w = new FileItemWidget(_conflictList[i].destinationPath(), _conflictList[i].nodeType(), this);
 
-        QListWidgetItem *listWidgetItem = new QListWidgetItem();
+        auto listWidgetItem = new QListWidgetItem();
         listWidgetItem->setFlags(Qt::NoItemFlags);
         listWidgetItem->setForeground(Qt::transparent);
         _fileListWidget->insertItem(i, listWidgetItem);

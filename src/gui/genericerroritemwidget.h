@@ -42,13 +42,13 @@ class GenericErrorItemWidget : public AbstractFileItemWidget {
         explicit GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg, const ErrorInfo &errorInfo,
                                         QWidget *parent = nullptr);
 
-        virtual void init() override;
+        void init() override;
 
     protected slots:
-        virtual void openFolder(const QString &path) override;
+        void openFolder(const QString &path) override;
 
     private:
-        bool openInWebview() const;
+        [[nodiscard]] bool openInWebview() const;
 
         std::shared_ptr<ClientGui> _gui;
         ErrorInfo _errorInfo;
