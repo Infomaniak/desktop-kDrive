@@ -66,22 +66,7 @@ static const int maxLogFilesToSend = 25;
 
 Q_LOGGING_CATEGORY(lcParametersDialog, "gui.parametersdialog", QtInfoMsg)
 
-ParametersDialog::ParametersDialog(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : CustomDialog(false, parent),
-      _gui(gui),
-      _currentDriveDbId(0),
-      _backgroundMainColor(QColor()),
-      _pageStackedWidget(nullptr),
-      _driveMenuBarWidget(nullptr),
-      _preferencesMenuBarWidget(nullptr),
-      _errorsMenuBarWidget(nullptr),
-      _preferencesWidget(nullptr),
-      _drivePreferencesWidget(nullptr),
-      _drivePreferencesScrollArea(nullptr),
-      _noDrivePagewidget(nullptr),
-      _sendLogsWidget(nullptr),
-      _errorsStackedWidget(nullptr),
-      _defaultTextLabel(nullptr) {
+ParametersDialog::ParametersDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) : CustomDialog(false, parent), _gui(gui) {
     initUI();
 
     connect(this, &ParametersDialog::exit, this, &ParametersDialog::onExit);
@@ -898,55 +883,55 @@ void ParametersDialog::onConfigRefreshed() {
 
     if (_gui->driveInfoMap().empty()) {
         reset();
-    } else {
-        // Clear unused Drive level (SyncPal or Node) errors list
-        int index = DriveInfoClient::ParametersStackedWidgetFirstAdded;
-        while (index < _errorsStackedWidget->count()) {
-            QWidget *widget = _errorsStackedWidget->widget(index);
-            bool found = false;
-            auto driveInfoMapIt = _gui->driveInfoMap().begin();
-            while (driveInfoMapIt != _gui->driveInfoMap().end()) {
-                ErrorTabWidget *errorTabWidget = static_cast<ErrorTabWidget *>(
-                    _errorsStackedWidget->widget(driveInfoMapIt->second.errorTabWidgetStackPosition()));  // position changed
-                if (errorTabWidget == widget) {
-                    found = true;
-                    index++;
-                    break;
-                }
-                driveInfoMapIt++;
-            }
-
-            if (!found) {
-                _errorsStackedWidget->removeWidget(widget);
-                delete widget;
-
-                auto driveInfoMapIt = _gui->driveInfoMap().begin();
-                while (driveInfoMapIt != _gui->driveInfoMap().end()) {
-                    if (driveInfoMapIt->second.errorTabWidgetStackPosition() > index) {
-                        driveInfoMapIt->second.setErrorTabWidgetStackPosition(
-                            driveInfoMapIt->second.errorTabWidgetStackPosition() - 1);
-                    }
-                    driveInfoMapIt++;
-                }
-            }
-        }
-
-        // Create missing Drive level (SyncPal or Node) errors list
-        for (auto &driveInfoMapElt : _gui->driveInfoMap()) {
-            createErrorTabWidgetIfNeeded(driveInfoMapElt.second.dbId());
-            if (driveInfoMapElt.second.errorTabWidgetStackPosition() == 0) {
-                driveInfoMapElt.second.setErrorTabWidgetStackPosition(
-                    _errorsStackedWidget->addWidget(new ErrorTabWidget(driveInfoMapElt.second.dbId(), false, this)));
-            }
-            refreshErrorList(driveInfoMapElt.second.dbId());
-        }
-
-        if (_currentDriveDbId == 0 || _gui->driveInfoMap().find(_currentDriveDbId) == _gui->driveInfoMap().end()) {
-            _currentDriveDbId = _gui->currentDriveDbId();
-        }
-
-        _driveMenuBarWidget->driveSelectionWidget()->selectDrive(_currentDriveDbId);
+        return;
     }
+
+    // Clear unused Drive level (SyncPal or Node) errors list
+    for (int widgetIndex = DriveInfoClient::ParametersStackedWidgetFirstAdded; widgetIndex < _errorsStackedWidget->count();) {
+        QWidget *widget = _errorsStackedWidget->widget(widgetIndex);
+        bool driveIsFound = false;
+        bool driveHasSyncs = false;
+
+        for (const auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
+            ErrorTabWidget *errorTabWidget = static_cast<ErrorTabWidget *>(
+                _errorsStackedWidget->widget(driveInfo.errorTabWidgetStackPosition()));  // position changed
+
+            if (errorTabWidget == widget) {
+                driveIsFound = true;
+                std::map<int, SyncInfoClient> syncInfoMap;
+                _gui->loadSyncInfoMap(_gui->currentDriveDbId(), syncInfoMap);
+                driveHasSyncs = !syncInfoMap.empty();
+
+                ++widgetIndex;
+                break;
+            }
+        }
+
+        if (driveIsFound && driveHasSyncs) continue;
+
+        _errorsStackedWidget->removeWidget(widget);
+        delete widget;
+
+        for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
+            const auto position = driveInfo.errorTabWidgetStackPosition();
+            if (position > widgetIndex) driveInfo.setErrorTabWidgetStackPosition(position - 1);
+        }
+    }
+
+    // Create missing Drive level (SyncPal or Node) errors list
+    for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
+        createErrorTabWidgetIfNeeded(driveInfo.dbId());
+        if (driveInfo.errorTabWidgetStackPosition() == 0) {
+            driveInfo.setErrorTabWidgetStackPosition(_errorsStackedWidget->addWidget(new ErrorTabWidget(driveId, false)));
+        }
+        refreshErrorList(driveId);
+    }
+
+    if (_currentDriveDbId == 0 || _gui->driveInfoMap().find(_currentDriveDbId) == _gui->driveInfoMap().end()) {
+        _currentDriveDbId = _gui->currentDriveDbId();
+    }
+
+    _driveMenuBarWidget->driveSelectionWidget()->selectDrive(_currentDriveDbId);
 }
 
 void ParametersDialog::onUpdateProgress(int syncDbId) {
