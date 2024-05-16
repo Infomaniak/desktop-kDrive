@@ -21,9 +21,16 @@
 #include "parameterscache.h"
 #include "custommessagebox.h"
 #include "enablestateholder.h"
+#include "guirequests.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 #include "libcommon/comm.h"
 #include "libcommongui/commclient.h"
+#include "libcommongui/logger.h"
+#include <QDesktopServices>
+
+#include <sstream>
+#include <fstream>
 
 #include <map>
 
@@ -38,6 +45,11 @@ static const int titleBoxVMargin = 25;
 static const int recordDebuggingBoxVMargin = 20;
 static const int debugLevelLabelBoxVMargin = 10;
 static const int debugLevelSelectBoxVMargin = 20;
+static const QString debuggingFolderLink = "debuggingFolderLink";
+QString heavyLogLabelStr = QObject::tr(
+    "The entire folder is large (%1 %2) and may take some time to share. To reduce the sharing time, we recommend that you "
+    "share only the last kDrive session.");
+Q_LOGGING_CATEGORY(lcDebuggingDialog, "gui.debuggingdialog", QtInfoMsg)
 
 std::map<LogLevel, std::pair<int, QString>> DebuggingDialog::_logLevelMap = {{LogLevelDebug, {0, QString(tr("Debug"))}},
                                                                              {LogLevelInfo, {1, QString(tr("Info"))}},
@@ -58,7 +70,6 @@ DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent
       _deleteLogs(false),
       _needToSave(false) {
     initUI();
-
     _recordDebugging = ParametersCache::instance()->parametersInfo().useLog();
     _extendedLog = ParametersCache::instance()->parametersInfo().extendedLog();
     _minLogLevel = ParametersCache::instance()->parametersInfo().logLevel();
@@ -76,86 +87,242 @@ void DebuggingDialog::initUI() {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     // Title
-    QLabel *titleLabel = new QLabel(this);
+    QLabel *titleLabel = new QLabel();
     titleLabel->setObjectName("titleLabel");
     titleLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    titleLabel->setText(tr("Record debugging information"));
+    titleLabel->setText(tr("Debugging settings"));
     mainLayout->addWidget(titleLabel);
     mainLayout->addSpacing(titleBoxVMargin);
 
-    // Record debugging information
-    QHBoxLayout *recordDebuggingHBox = new QHBoxLayout();
-    recordDebuggingHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    mainLayout->addLayout(recordDebuggingHBox);
-    mainLayout->addSpacing(recordDebuggingBoxVMargin);
+    // Enable Debug Main Box
+    QVBoxLayout *enableDebuggingMainHBox = new QVBoxLayout();
+    enableDebuggingMainHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    mainLayout->addLayout(enableDebuggingMainHBox);
 
-    QLabel *recordDebuggingLabel = new QLabel(this);
+    // Enable Debug Main Box | Top Box
+    QHBoxLayout *enableDebuggingTopHBox = new QHBoxLayout();
+    enableDebuggingMainHBox->addLayout(enableDebuggingTopHBox);
+
+    // Enable Debug Main Box | Top Box | Label (boldTextLabel)
+    QLabel *recordDebuggingLabel = new QLabel();
     recordDebuggingLabel->setObjectName("boldTextLabel");
-    recordDebuggingLabel->setText(tr("Activate the recording of information in a temporary folder"));
-    recordDebuggingHBox->addWidget(recordDebuggingLabel);
-    recordDebuggingHBox->addStretch();
+    recordDebuggingLabel->setText(tr("Save debugging information in a folder on my computer (Recommended)"));
+    enableDebuggingTopHBox->addWidget(recordDebuggingLabel);
 
-    _recordDebuggingSwitch = new CustomSwitch(this);
+    // Enable Debug Main Box | Top Box | Switch
+    _recordDebuggingSwitch = new CustomSwitch();
     _recordDebuggingSwitch->setLayoutDirection(Qt::RightToLeft);
     _recordDebuggingSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
-    recordDebuggingHBox->addWidget(_recordDebuggingSwitch);
+    enableDebuggingTopHBox->addWidget(_recordDebuggingSwitch);
 
-    // Minimum debug level
-    QLabel *debugLevelLabel = new QLabel(this);
-    debugLevelLabel->setObjectName("boldTextLabel");
-    debugLevelLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    debugLevelLabel->setText(tr("Minimum trace level"));
-    mainLayout->addWidget(debugLevelLabel);
-    mainLayout->addSpacing(debugLevelLabelBoxVMargin);
+    // Enable Debug Main Box | Label (normalTextLabel)
+    QLabel *recordDebuggingInfoLabel = new QLabel();
+    recordDebuggingInfoLabel->setObjectName("normalTextLabel");
+    recordDebuggingInfoLabel->setText(tr("This information enables IT support to determine the origin of an incident."));
+    enableDebuggingMainHBox->addWidget(recordDebuggingInfoLabel);
 
-    QHBoxLayout *debugLevelHBox = new QHBoxLayout();
-    debugLevelHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    mainLayout->addLayout(debugLevelHBox);
-    mainLayout->addSpacing(debugLevelSelectBoxVMargin);
+    // Debug info main box  (Can be hidden when debugging is disabled)
+    _debuggingInfoMainWidget = new QWidget();
+    QSizePolicy debuggingInfoMainWidgetSizePolicy = _debuggingInfoMainWidget->sizePolicy();
+    debuggingInfoMainWidgetSizePolicy.setRetainSizeWhenHidden(true);
+    _debuggingInfoMainWidget->setSizePolicy(debuggingInfoMainWidgetSizePolicy);
+    QVBoxLayout *debuggingInfoMainHBox = new QVBoxLayout(_debuggingInfoMainWidget);
+    debuggingInfoMainHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    mainLayout->addWidget(_debuggingInfoMainWidget);
 
-    _debugLevelComboBox = new CustomComboBox(this);
+    // Debug info main box | Link to debug folder
+    _debuggingFolderLabel = new QLabel();
+    _debuggingFolderLabel->setText(
+        tr("<a style=\"%1\" href=\"%2\">Open debugging folder</a>").arg(CommonUtility::linkStyle, debuggingFolderLink));
+    _debuggingFolderLabel->setContentsMargins(0, 0, 0, 10);
+    debuggingInfoMainHBox->addWidget(_debuggingFolderLabel);
+
+    debuggingInfoMainHBox->addSpacing(boxHSpacing);
+
+    // Debug info main box | Debug Level Main Box
+    QVBoxLayout *debugLevelMainBox = new QVBoxLayout();
+    debuggingInfoMainHBox->addLayout(debugLevelMainBox);
+
+    // Debug info main box | Debug Level Main Box | Title box
+    QHBoxLayout *debugLevelTitleHBox = new QHBoxLayout();
+    debugLevelTitleHBox->setAlignment(Qt::AlignLeft);
+    debugLevelMainBox->addLayout(debugLevelTitleHBox);
+
+    // Debug info main box | Debug Level Main Box | Title box | Label (boldTextLabel)
+    QLabel *debugLevelTitleLabel = new QLabel();
+    debugLevelTitleLabel->setObjectName("boldTextLabel");
+    debugLevelTitleLabel->setText(tr("Debug level"));
+    debugLevelTitleHBox->addWidget(debugLevelTitleLabel);
+
+    // Debug info main box | Debug Level Main Box | Title box | Helper
+    CustomToolButton *debugLevelHelpButton = new CustomToolButton();
+    debugLevelHelpButton->setObjectName("helpButton");
+    debugLevelHelpButton->setIconPath(":/client/resources/icons/actions/help.svg");
+    debugLevelHelpButton->setFixedSize(15, 15);
+    debugLevelHelpButton->setEnabled(false);
+    debugLevelHelpButton->setToolTip(tr("The trace level lets you choose the extent of the debugging information recorded"));
+    debugLevelHelpButton->setToolTipDuration(200000);
+    debugLevelTitleHBox->addWidget(debugLevelHelpButton);
+    debugLevelMainBox->addSpacing(boxHSpacing / 2);
+
+    // Debug info main box | Debug Level Main Box | Debug level select box
+    QHBoxLayout *debugLevelSelectionHBox = new QHBoxLayout();
+    debugLevelSelectionHBox->setAlignment(Qt::AlignLeft);
+    debugLevelMainBox->addLayout(debugLevelSelectionHBox);
+
+    // Debug info main box | Debug Level Main Box | Debug level select box | combobox
+    _debugLevelComboBox = new CustomComboBox();
     _debugLevelComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     _debugLevelComboBox->setAttribute(Qt::WA_MacShowFocusRect, false);
     for (auto const &debugLevelElt : _logLevelMap) {
+        QString debugLevelStr = debugLevelElt.second.second;
+        if (debugLevelElt.second.first == 0) {
+            debugLevelStr = debugLevelElt.second.second + QString::fromStdString(" (Recommended)");
+        }
         _debugLevelComboBox->insertItem(debugLevelElt.second.first, debugLevelElt.second.second, debugLevelElt.first);
     }
-    debugLevelHBox->addWidget(_debugLevelComboBox);
-    debugLevelHBox->addSpacing(debugLevelSelectBoxVMargin);
+    debugLevelSelectionHBox->addWidget(_debugLevelComboBox);
 
-    _extendedLogCheckBox = new CustomCheckBox(this);
+    debugLevelSelectionHBox->addSpacing(boxHSpacing);
+
+    // Debug info main box | Debug Level Main Box | Debug level select box | Extended Full Log checkbox
+    QString extendedLogCheckBoxToolTip =
+        tr("The extended full log collects a detailed history that can be used for debugging. Enabling it can slow down the "
+           "kDrive application.");
+    _extendedLogCheckBox = new CustomCheckBox();
     _extendedLogCheckBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     _extendedLogCheckBox->setText(tr("Extended Full Log"));
-    _extendedLogCheckBox->setToolTip(tr("This feature can slow down the application"));
-    debugLevelHBox->addWidget(_extendedLogCheckBox);
+    _extendedLogCheckBox->setToolTip(extendedLogCheckBoxToolTip);
+    debugLevelSelectionHBox->addWidget(_extendedLogCheckBox);
 
-    debugLevelHBox->addStretch();
+    // Debug info main box | Debug Level Main Box | Debug level select box | Helper
+    CustomToolButton *extendedLogHelpButton = new CustomToolButton();
+    extendedLogHelpButton->setObjectName("helpButton");
+    extendedLogHelpButton->setIconPath(":/client/resources/icons/actions/help.svg");
+    extendedLogHelpButton->setFixedSize(15, 15);
+    extendedLogHelpButton->setEnabled(false);
+    extendedLogHelpButton->setToolTip(extendedLogCheckBoxToolTip);
+    extendedLogHelpButton->setToolTipDuration(20000);
+    debugLevelSelectionHBox->addWidget(extendedLogHelpButton);
 
-    // Delete logs
+    debuggingInfoMainHBox->addSpacing(boxHSpacing);
+
+    // Debug info main box | Delete logs | Main box
     QHBoxLayout *deleteLogsHBox = new QHBoxLayout();
-    deleteLogsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    mainLayout->addLayout(deleteLogsHBox);
+    debuggingInfoMainHBox->addLayout(deleteLogsHBox);
 
-    _deleteLogsCheckBox = new CustomCheckBox(this);
+    // Debug info main box | Delete logs | Main box | Checkbox
+    _deleteLogsCheckBox = new CustomCheckBox();
     _deleteLogsCheckBox->setObjectName("deleteLogsCheckBox");
     _deleteLogsCheckBox->setText(tr("Delete logs older than %1 days").arg(ClientGui::logsPurgeRate));
     deleteLogsHBox->addWidget(_deleteLogsCheckBox);
 
-    mainLayout->addStretch();
+    debuggingInfoMainHBox->addSpacing(boxHMargin);
 
+    // Debug info main box | Log upload | Main box
+    QFrame *logUploadFrame = new QFrame();
+    logUploadFrame->setObjectName("logUploadFrame");
+    logUploadFrame->setStyleSheet("QFrame#logUploadFrame {border-radius: 8px; border: 2px solid #E0E0E0;}");
+    logUploadFrame->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QVBoxLayout *logUploadMainBox = new QVBoxLayout(logUploadFrame);
+    logUploadMainBox->setContentsMargins(boxHMargin / 2, 0, boxHMargin / 2, 0);
+    logUploadMainBox->addSpacing(recordDebuggingBoxVMargin);
+    debuggingInfoMainHBox->addWidget(logUploadFrame);
+
+
+    // Log upload | Main box | Label (boldTextLabel)
+    QLabel *logUploadLabel = new QLabel();
+    logUploadLabel->setObjectName("boldTextLabel");
+    logUploadLabel->setText(tr("Share the debug folder with infomaniak support."));
+    logUploadMainBox->addWidget(logUploadLabel);
+
+    // Log upload | Main box | heavy log box
+    _heavyLogBox = new QWidget();
+    QVBoxLayout *heavyLogHBox = new QVBoxLayout(_heavyLogBox);
+    heavyLogHBox->setContentsMargins(0, 0, 0, 0);
+    logUploadMainBox->addWidget(_heavyLogBox);
+    _heavyLogBox->hide();
+
+    // Log upload | Main box | heavy log box | Label (normalTextLabel)
+    _heavyLogLabel = new QLabel();
+    _heavyLogLabel->setObjectName("normalTextLabel");
+    _heavyLogLabel->setText(heavyLogLabelStr.arg("-").arg("---"));
+    _heavyLogBox->hide();  // show only if the log dir is large, see at the end of the function
+    _heavyLogLabel->setWordWrap(true);
+    heavyLogHBox->addWidget(_heavyLogLabel);
+    heavyLogHBox->addSpacing(recordDebuggingBoxVMargin);
+
+    // Log upload | Main box | heavy log box | Checkbox box
+    QHBoxLayout *heavyLogCheckBoxVBox = new QHBoxLayout();
+    heavyLogCheckBoxVBox->setAlignment(Qt::AlignLeft);
+    heavyLogHBox->addLayout(heavyLogCheckBoxVBox);
+
+    QString heavyLogCheckBoxToolTip = tr("The last session is the periode since the last kDrive start.");
+    // Log upload | Main box | heavy log box | Checkbox box | Checkbox
+    CustomCheckBox *heavyLogCheckBox = new CustomCheckBox();
+    heavyLogCheckBox->setObjectName("heavyLogCheckBox");
+    heavyLogCheckBox->setText(tr("Share only the last kDrive session"));
+    heavyLogCheckBox->setChecked(true);
+    heavyLogCheckBox->setToolTip(heavyLogCheckBoxToolTip);
+    heavyLogCheckBox->setToolTipDuration(20000);
+    heavyLogCheckBoxVBox->addWidget(heavyLogCheckBox);
+
+    // Log upload | Main box | heavy log box | Checkbox box | Helper
+    CustomToolButton *heavyLogHelpButton = new CustomToolButton();
+    heavyLogHelpButton->setObjectName("helpButton");
+    heavyLogHelpButton->setIconPath(":/client/resources/icons/actions/help.svg");
+    heavyLogHelpButton->setFixedSize(15, 15);
+    heavyLogHelpButton->setEnabled(false);
+    heavyLogHelpButton->setToolTip(heavyLogCheckBoxToolTip);
+    heavyLogHelpButton->setToolTipDuration(20000);
+    heavyLogCheckBoxVBox->addWidget(heavyLogHelpButton);
+
+    // Log upload | Main box | info box
+    _logUploadInfoWidget = new QWidget();
+    _logUploadInfoHBox = new QHBoxLayout(_logUploadInfoWidget);  // Will be filed depending on the log upload status
+    logUploadMainBox->addWidget(_logUploadInfoWidget);
+
+    logUploadMainBox->addSpacing(boxHSpacing);
+
+    // Log upload | Main box | shared button
+    _sendLogButton = new QPushButton();
+    _sendLogButton->setObjectName("defaultbutton");
+    _sendLogButton->setFlat(true);
+    _sendLogButton->setEnabled(false);
+    _sendLogButton->setIcon(
+        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/share.svg", QColor(255, 255, 255)));
+    _sendLogButton->setIconSize(QSize(16, 16));
+    _sendLogButton->setText(tr("  Loading"));
+    logUploadMainBox->addWidget(_sendLogButton);
+    logUploadMainBox->addSpacing(boxHSpacing);
+
+
+    // Log upload | Main box | cancel button
+    _cancelLogUploadButton = new QPushButton();
+    _cancelLogUploadButton->setObjectName("nondefaultbutton");
+    _cancelLogUploadButton->setFlat(true);
+    _cancelLogUploadButton->setText(tr("Cancel"));
+    _cancelLogUploadButton->setEnabled(false);
+    _cancelLogUploadButton->hide();
+    logUploadMainBox->addWidget(_cancelLogUploadButton);
+
+    logUploadMainBox->addSpacing(recordDebuggingBoxVMargin);
+
+    debuggingInfoMainHBox->addStretch();
     // Add dialog buttons
     QHBoxLayout *buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     buttonsHBox->setSpacing(boxHSpacing);
     mainLayout->addLayout(buttonsHBox);
 
-    _saveButton = new QPushButton(this);
+    _saveButton = new QPushButton();
     _saveButton->setObjectName("defaultbutton");
     _saveButton->setFlat(true);
     _saveButton->setText(tr("SAVE"));
     _saveButton->setEnabled(false);
     buttonsHBox->addWidget(_saveButton);
 
-    QPushButton *cancelButton = new QPushButton(this);
+    QPushButton *cancelButton = new QPushButton();
     cancelButton->setObjectName("nondefaultbutton");
     cancelButton->setFlat(true);
     cancelButton->setText(tr("CANCEL"));
@@ -163,19 +330,210 @@ void DebuggingDialog::initUI() {
     buttonsHBox->addStretch();
 
     connect(_recordDebuggingSwitch, &CustomSwitch::clicked, this, &DebuggingDialog::onRecordDebuggingSwitchClicked);
+    connect(_debuggingFolderLabel, &QLabel::linkActivated, this, &DebuggingDialog::onLinkActivated);
     connect(_debugLevelComboBox, QOverload<int>::of(&QComboBox::activated), this,
             &DebuggingDialog::onDebugLevelComboBoxActivated);
     connect(_deleteLogsCheckBox, &CustomCheckBox::clicked, this, &DebuggingDialog::onDeleteLogsCheckBoxClicked);
     connect(_extendedLogCheckBox, &CustomCheckBox::clicked, this, &DebuggingDialog::onExtendedLogCheckBoxClicked);
+    connect(heavyLogCheckBox, &CustomCheckBox::clicked, this, &DebuggingDialog::onSendArchivedLogsCheckBoxClicked);
+    connect(_sendLogButton, &QPushButton::clicked, this, &DebuggingDialog::onSendLogButtonTriggered);
     connect(_saveButton, &QPushButton::clicked, this, &DebuggingDialog::onSaveButtonTriggered);
+    connect(_cancelLogUploadButton, &QPushButton::clicked, this, &DebuggingDialog ::onCancelLogUploadButtonTriggered);
     connect(cancelButton, &QPushButton::clicked, this, &DebuggingDialog::onExit);
+    connect(_gui.get(), &ClientGui::logUploadStatusUpdated, this, &DebuggingDialog::onLogUploadStatusUpdated);
+
+
     connect(this, &CustomDialog::exit, this, &DebuggingDialog::onExit);
+
+    QTimer::singleShot(0, this, [this]() { initLogUploadLayout(); });
 }
+
+void DebuggingDialog::initLogUploadLayout() {
+    QString logUploadStatusAndPercent = "";
+    QChar logUploadStatus = 'N';
+    QString logUploadPercent = "";
+
+    ExitCode exitCode = GuiRequests::getAppState(AppStateKey::LogUploadStatus, logUploadStatusAndPercent);
+    logUploadStatus = logUploadStatusAndPercent.size() > 0 ? logUploadStatusAndPercent[0] : QChar::fromLatin1('N');
+    logUploadPercent = logUploadStatusAndPercent.size() > 1 ? logUploadStatusAndPercent.mid(1) : "";
+
+    if (exitCode != ExitCode::ExitCodeOk) {
+        qCWarning(lcDebuggingDialog) << "Failed to get log upload status";
+    }
+    onLogUploadStatusUpdated(logUploadStatus.toLatin1(), logUploadPercent.toInt());
+}
+
+void DebuggingDialog::displayHeavyLogBox() {
+    uint64_t logDirSize = 0;
+    ExitCode exitCode = GuiRequests::getLogDirEstimatedSize(logDirSize);
+    if (exitCode != ExitCode::ExitCodeOk) {
+        qCWarning(lcDebuggingDialog) << "Failed to get log dir estimated size";
+    }
+    if (logDirSize > 100000) {
+        _heavyLogBox->setVisible(true);
+    } else {
+        _heavyLogBox->setVisible(false);
+        return;
+    }
+    QString sizeUnit = tr("bytes");
+    float displaySize = 0;
+    if (logDirSize >= std::pow(10, 3) && logDirSize < std::pow(10, 6)) {
+        displaySize = std::floor(logDirSize / std::pow(10, 3));  // Convert to KB
+        sizeUnit = tr("KB");
+    } else if (logDirSize >= std::pow(10, 6) && logDirSize < std::pow(10, 9)) {
+        displaySize = logDirSize / std::pow(10, 6);  // Convert to MB
+        sizeUnit = tr("MB");
+    } else if (logDirSize >= std::pow(10, 9)) {
+        displaySize = logDirSize / std::pow(10, 9);  // Convert to GB
+        sizeUnit = tr("GB");
+    } else {
+        displaySize = logDirSize;
+    }
+    _heavyLogLabel->setText(heavyLogLabelStr.arg(displaySize).arg(sizeUnit));
+}
+
+void DebuggingDialog::setlogUploadInfo(char status) {
+    while (_logUploadInfoHBox->count() > 0) {
+        _logUploadInfoHBox->itemAt(0)->widget()->deleteLater();
+        _logUploadInfoHBox->removeItem(_logUploadInfoHBox->itemAt(0));
+    }
+
+    QLabel *logUploadInfoLabel = new QLabel();
+
+    QString archivePathStr = "";
+    QString lastSuccessfullUploadText = tr("Last successful upload: %1");
+
+    SyncPath archivePath;
+    QString lasSuccessfullUploadDate = "";
+    QString lasSuccessfullUploadDateFormat = "";
+
+    ExitCode exitcode = GuiRequests::getAppState(AppStateKey::LastLogUploadArchivePath, archivePathStr);
+    if (exitcode != ExitCode::ExitCodeOk) {
+        qCWarning(lcDebuggingDialog) << "Failed to get last log upload archive path";
+    }
+
+    exitcode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadeDate, lasSuccessfullUploadDate);
+    if (exitcode != ExitCode::ExitCodeOk) {
+        qCWarning(lcDebuggingDialog) << "Failed to get last log upload date";
+    }
+
+    if (status == 'U' || status == 'A' || status == 'N') {
+        return;
+    }
+
+    if (status == 'F') {
+        QString errorText = tr("Failed to share the log folder");
+        QFrame *errorFrame = new QFrame();
+        QVBoxLayout *errorHBox = new QVBoxLayout(errorFrame);
+        errorHBox->setAlignment(Qt::AlignLeft);
+        QHBoxLayout *errorTitleHBox = new QHBoxLayout(errorFrame);
+        errorTitleHBox->setAlignment(Qt::AlignLeft);
+        QLabel *warningIconLabel = new QLabel();
+        QLabel *errorTitleLabel = new QLabel();
+        QLabel *errorLabel = new QLabel();
+        errorLabel->setTextFormat(Qt::RichText);
+        errorHBox->addLayout(errorTitleHBox);
+        errorFrame->setObjectName("errorFrame");
+        errorFrame->setStyleSheet(
+            "QFrame#errorFrame {border-radius: 8px;  border: 2px solid #E0E0E0; background-color: #F8F8F8;}");
+        _logUploadInfoHBox->addWidget(errorFrame);
+
+        errorHBox->setContentsMargins(10, 10, 10, 10);
+
+        warningIconLabel->setPixmap(
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", QColor(255, 0, 0)).pixmap(20, 20));
+        errorTitleHBox->addWidget(warningIconLabel);
+
+        errorTitleLabel->setObjectName("boldTextLabel");
+        errorTitleLabel->setWordWrap(true);
+        if (archivePathStr.isEmpty()) {
+            errorTitleLabel->setText(errorText + tr(" (Ensure you have at least one drive setup)"));
+            errorTitleHBox->addWidget(errorTitleLabel);
+        } else {
+            archivePath = archivePathStr.toStdString();
+            errorTitleLabel->setText(errorText + tr(" (Connexion interrupted)"));
+            errorTitleHBox->addWidget(errorTitleLabel);
+            errorLabel->setObjectName("normalTextLabel");
+            errorLabel->setContentsMargins(25, 5, 0, 0);
+            errorLabel->setText(tr("Share the folder with SwissTransfer <br>") +
+                                tr(" 1. We automatically compress your log <a style=\"%1\" href=\"%2\">here</a>.<br>")
+                                    .arg(CommonUtility::linkStyle, QString::fromStdString(archivePath.parent_path().string())) +
+                                tr(" 2. Transfer the archive with <a style=\"%1\" href=\"%2\">swisstransfer.com</a><br>")
+                                    .arg(CommonUtility::linkStyle, "https://www.swisstransfer.com/") +
+                                tr(" 3. Share the link with <a style=\"%1\" href=\"%2\"> support@infomaniak.com </a><br>")
+                                    .arg(CommonUtility::linkStyle, "mailto:support@infomaniak.com"));
+            errorLabel->setToolTip(QString::fromStdString(archivePath.parent_path().string()));
+            errorHBox->addWidget(errorLabel);
+            connect(errorLabel, &QLabel::linkActivated, this, &DebuggingDialog::onLinkActivated);
+        }
+        return;
+    }
+
+    QFrame *lastUploadFrame = new QFrame();
+
+    lastUploadFrame->setObjectName("lastUploadFrame");
+    lastUploadFrame->setStyleSheet(
+        "QFrame#lastUploadFrame {border-radius: 8px; border: 1px solid #2C8736; background-color: #E0F8E2;}");
+
+    QVBoxLayout *lastUploadHBox = new QVBoxLayout(lastUploadFrame);
+    lastUploadHBox->setAlignment(Qt::AlignLeft);
+    lastUploadHBox->setContentsMargins(3, 3, 3, 3);
+
+    QHBoxLayout *lastUploadTitleHBox = new QHBoxLayout(lastUploadFrame);
+    lastUploadTitleHBox->setAlignment(Qt::AlignLeft);
+    lastUploadHBox->addLayout(lastUploadTitleHBox);
+
+    QLabel *checkIconLabel = new QLabel();
+    checkIconLabel->setPixmap(
+        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/check.svg", QColor(44, 135, 54)).pixmap(16, 16));
+    lastUploadTitleHBox->addWidget(checkIconLabel);
+
+    QLabel *lastUploadTitleLabel = new QLabel();
+    lastUploadTitleLabel->setObjectName("boldTextLabel");
+    lastUploadTitleLabel->setText(tr("Last upload the %1").arg(lasSuccessfullUploadDate));
+    lastUploadTitleLabel->setStyleSheet("QLabel {color: #2C8736;}");
+    lastUploadTitleHBox->addWidget(lastUploadTitleLabel);
+
+    if (status == 'C') {
+        QFrame *cancelFrame = new QFrame();
+
+        cancelFrame->setObjectName("cancelFrame");
+        cancelFrame->setStyleSheet("QFrame#cancelFrame {border-radius: 8px; background-color: #FFF5D3;}");
+        _logUploadInfoHBox->addWidget(cancelFrame);
+
+        QVBoxLayout *cancelHBox = new QVBoxLayout(cancelFrame);
+        cancelHBox->setAlignment(Qt::AlignLeft);
+        cancelHBox->setContentsMargins(3, 3, 3, 3);
+
+        QHBoxLayout *cancelTitleHBox = new QHBoxLayout(cancelFrame);
+        cancelTitleHBox->setAlignment(Qt::AlignLeft);
+        cancelHBox->addLayout(cancelTitleHBox);
+
+        QLabel *warningIconLabel = new QLabel();
+        warningIconLabel->setPixmap(
+            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", QColor(204, 97, 2)).pixmap(16, 16));
+        cancelTitleHBox->addWidget(warningIconLabel);
+
+        QLabel *cancelTitleLabel = new QLabel();
+        cancelTitleLabel->setObjectName("boldTextLabel");
+        cancelTitleLabel->setStyleSheet("QLabel {color: #CC6102;}");
+        cancelTitleLabel->setText(tr("Sharing has been canceled"));
+        cancelTitleHBox->addWidget(cancelTitleLabel);
+
+        if (!lasSuccessfullUploadDate.isEmpty()) {
+            _logUploadInfoHBox->addWidget(lastUploadFrame);
+        }
+    } else if (status == 'S') {
+        _logUploadInfoHBox->addWidget(lastUploadFrame);
+    }
+    return;
+}
+
 
 void DebuggingDialog::updateUI() {
     _recordDebuggingSwitch->setCheckState(_recordDebugging ? Qt::Checked : Qt::Unchecked);
     _extendedLogCheckBox->setCheckState(_extendedLog ? Qt::Checked : Qt::Unchecked);
-
+    _debuggingInfoMainWidget->setVisible(_recordDebugging);
     _debugLevelComboBox->setEnabled(_recordDebugging);
     _debugLevelComboBox->setCurrentIndex(_recordDebugging ? _minLogLevel : -1);
 
@@ -197,6 +555,7 @@ void DebuggingDialog::setNeedToSave(bool value) {
 
 void DebuggingDialog::onRecordDebuggingSwitchClicked(bool checked) {
     _recordDebugging = checked;
+    _debuggingInfoMainWidget->setVisible(checked);
     updateUI();
     setNeedToSave(true);
 }
@@ -216,6 +575,10 @@ void DebuggingDialog::onDebugLevelComboBoxActivated(int index) {
 void DebuggingDialog::onDeleteLogsCheckBoxClicked(bool checked) {
     _deleteLogs = checked;
     setNeedToSave(true);
+}
+
+void DebuggingDialog::onSendArchivedLogsCheckBoxClicked(bool checked) {
+    _sendArchivedLogs = checked;
 }
 
 void DebuggingDialog::onExit() {
@@ -238,6 +601,16 @@ void DebuggingDialog::onExit() {
     }
 }
 
+void DebuggingDialog::onSendLogButtonTriggered(bool checked) {
+    _sendLogButton->setEnabled(false);
+    GuiRequests::sendLogToSupport(_sendArchivedLogs);
+}
+
+void DebuggingDialog::onCancelLogUploadButtonTriggered(bool checked) {
+    _cancelLogUploadButton->setEnabled(false);
+    GuiRequests::cancelLogUploadToSupport();
+}
+
 void DebuggingDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
@@ -248,6 +621,79 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
     ParametersCache::instance()->saveParametersInfo();
 
     accept();
+}
+
+void DebuggingDialog::onLinkActivated(const QString &link) {
+    QString folderPath = "";
+    if (link == debuggingFolderLink) {
+        folderPath = Logger::instance()->temporaryFolderLogDirPath();
+    } else {
+        folderPath = link;
+    }
+    QUrl debuggingFolderUrl = KDC::GuiUtility::getUrlFromLocalPath(folderPath);
+    if (debuggingFolderUrl.isValid()) {
+        if (!QDesktopServices::openUrl(debuggingFolderUrl)) {
+            qCWarning(lcDebuggingDialog) << "QDesktopServices::openUrl failed for " << debuggingFolderUrl.toString();
+            CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder %1.").arg(debuggingFolderUrl.toString()),
+                                    QMessageBox::Ok, this);
+            msgBox.exec();
+        }
+    } else {
+        qCWarning(lcDebuggingDialog) << "QDesktopServices::openUrl failed for " << debuggingFolderUrl.toString();
+        CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder %1.").arg(debuggingFolderUrl.toString()),
+                                QMessageBox::Ok, this);
+        msgBox.exec();
+    }
+}
+
+void DebuggingDialog::onLogUploadStatusUpdated(char status, int progress) {
+    QString shareText = tr("  Share");
+    switch (status) {
+        case 'N':
+            _sendLogButton->setText(shareText);
+            _sendLogButton->setEnabled(true);
+            _logUploadInfoWidget->hide();
+            _cancelLogUploadButton->hide();
+            displayHeavyLogBox();
+            break;
+        case 'A':
+            _sendLogButton->setText(tr("  Sharing | step 1/2 %1%").arg(progress));
+            _sendLogButton->setEnabled(false);
+            setlogUploadInfo(status);
+            _logUploadInfoWidget->show();
+            _heavyLogBox->hide();
+            _cancelLogUploadButton->show();
+            _cancelLogUploadButton->setEnabled(true);
+            break;
+        case 'U':
+            _sendLogButton->setText(tr("  Sharing | step 2/2 %1%").arg(progress));
+            _sendLogButton->setEnabled(false);
+            setlogUploadInfo(status);
+            _logUploadInfoWidget->show();
+            _heavyLogBox->hide();
+            _cancelLogUploadButton->show();
+            _cancelLogUploadButton->setEnabled(true);
+            break;
+        case 'C':
+            if (progress == 0) {
+                _sendLogButton->setText(tr("  Canceling"));
+                _sendLogButton->setEnabled(false);
+                _cancelLogUploadButton->show();
+                _cancelLogUploadButton->setEnabled(false);
+                break;
+            }
+        case 'F':
+        case 'S':
+            _sendLogButton->setText(shareText);
+            _sendLogButton->setEnabled(true);
+            setlogUploadInfo(status);
+            _logUploadInfoWidget->show();
+            _cancelLogUploadButton->hide();
+            displayHeavyLogBox();
+            break;
+        default:
+            break;
+    }
 }
 
 }  // namespace KDC

@@ -586,7 +586,7 @@ void AppClient::startServerAndDie(bool serverCrashDetected) {
         serverProcess->setArguments(arguments);
     }
     serverProcess->setProgram(pathToExecutable);
-    serverProcess->startDetached();
+    //serverProcess->startDetached(); //TODO : uncomment this line
 
     QTimer::singleShot(0, qApp, SLOT(quit()));
 }

@@ -320,7 +320,7 @@ AppServer::AppServer(int &argc, char **argv)
     if (_crashRecovered) {
         bool found = false;
         LOG_WARN(_logger, "Server auto restart after a crash.");
-        if (serverCrashedRecently()) {
+        if (true || serverCrashedRecently()) { //TODO: remove true
             LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
             QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
             if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, "0", found) || !found) {
@@ -360,7 +360,7 @@ AppServer::AppServer(int &argc, char **argv)
             addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
             throw std::runtime_error("Failed to update log upload status.");
         }
-    } else if (logUploadStatus = 'C' && logUploadProgress == 0) { // If interrupted while cancelling, consider it has been cancelled
+    } else if (logUploadStatus == 'C' && logUploadProgress == 0) { // If interrupted while cancelling, consider it has been cancelled
         if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "C1", found) || !found) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
             addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
@@ -1881,7 +1881,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> includeArchivedLogs;
             resultStream << ExitCodeOk;  // Return immediately, progress and error will be report via addError and signal
 
-            QTimer::singleShot(100, [this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); });
+
+            // QTimer::singleShot(100, [this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); }); //replace by a std::thread
+            std::thread uploadLogThread([this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); });
+            uploadLogThread.detach();
+
             break;
         }
         case REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT: {
@@ -2120,7 +2124,6 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
     std::function<bool(char, int)> progressFunc = [this](char status, int progress) {
-        sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
         processEvents(QEventLoop::AllEvents, 100);     // Process events to avoid blocking the GUI (cancel button)
         LOG_DEBUG(_logger, "Log transfert progress : " << status << " | " << progress << " %");
 
@@ -2129,6 +2132,10 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
                                 !found) {  // Check if the user canceled the upload
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         }
+        if (logUploadStatus != "C0") {
+            sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
+        }
+
         return logUploadStatus != "C0" && logUploadStatus != "C1";
     };
 

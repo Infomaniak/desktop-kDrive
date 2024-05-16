@@ -43,17 +43,29 @@ class DebuggingDialog : public CustomDialog {
         static std::map<LogLevel, std::pair<int, QString>> _logLevelMap;
 
         CustomSwitch *_recordDebuggingSwitch;
+        QWidget *_debuggingInfoMainWidget;
         CustomComboBox *_debugLevelComboBox;
         CustomCheckBox *_extendedLogCheckBox;
         CustomCheckBox *_deleteLogsCheckBox;
         QPushButton *_saveButton;
+        QPushButton *_sendLogButton;
+        QPushButton *_cancelLogUploadButton;
+        QLabel *_debuggingFolderLabel;
+        QWidget *_heavyLogBox;
+        QLabel *_heavyLogLabel;
+        QWidget *_logUploadInfoWidget;
+        QHBoxLayout *_logUploadInfoHBox;
         bool _recordDebugging;
         bool _extendedLog;
         LogLevel _minLogLevel;
         bool _deleteLogs;
         bool _needToSave;
+        bool _sendArchivedLogs = true;
 
         void initUI();
+        void initLogUploadLayout();
+        void displayHeavyLogBox();
+        void setlogUploadInfo(char status);
         void updateUI();
         void setNeedToSave(bool value);
 
@@ -62,8 +74,13 @@ class DebuggingDialog : public CustomDialog {
         void onExtendedLogCheckBoxClicked(bool checked = false);
         void onDebugLevelComboBoxActivated(int index);
         void onDeleteLogsCheckBoxClicked(bool checked = false);
+        void onSendArchivedLogsCheckBoxClicked(bool checked = false);
         void onExit();
+        void onSendLogButtonTriggered(bool checked = false);
+        void onCancelLogUploadButtonTriggered(bool checked = false);
         void onSaveButtonTriggered(bool checked = false);
+        void onLinkActivated(const QString &link);
+        void onLogUploadStatusUpdated(char status, int progress);
 };
 
 }  // namespace KDC

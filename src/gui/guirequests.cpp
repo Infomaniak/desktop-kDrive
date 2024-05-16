@@ -863,7 +863,7 @@ ExitCode GuiRequests::updateAppState(AppStateKey key, const QString &value) {
 
 ExitCode GuiRequests::getLogDirEstimatedSize(uint64_t &size) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCodeSystemError;
     }
 
