@@ -91,8 +91,8 @@ bool ParmsDb::insertDefaultAppState() {
         return false;
     }
 
-    if (!insertAppState(AppStateKey::LastSuccessfulLogUploadeDate, APP_STATE_KEY_DEFAULT_LastLogUploadeDate)) {
-        LOG_WARN(_logger, "Error inserting default value for LastSuccessfulLogUploadeDate");
+    if (!insertAppState(AppStateKey::LastSuccessfulLogUploadDate, APP_STATE_KEY_DEFAULT_LastLogUploadeDate)) {
+        LOG_WARN(_logger, "Error inserting default value for LastSuccessfulLogUploadDate");
         return false;
     }
 

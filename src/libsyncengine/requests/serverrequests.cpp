@@ -1063,7 +1063,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     long long timestamp =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
     std::string uploadDate = std::to_string(timestamp);
-    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadeDate, uploadDate, found) ||
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) ||
                             !found || !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, "", found) ||
                             !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");

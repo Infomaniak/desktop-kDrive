@@ -368,7 +368,7 @@ enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
     LastServerSelfRestartDate,
     LastClientSelfRestartDate,
-    LastSuccessfulLogUploadeDate,
+    LastSuccessfulLogUploadDate,
     LastLogUploadArchivePath,
     /* Log upload status is a string with the first character being the status and the rest being the progress percentage
      * "A" means "Archiving" (ie. A80 means 80% of the archiving is done)
