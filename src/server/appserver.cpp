@@ -2196,6 +2196,21 @@ bool AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncin
     return true;
 }
 
+bool AppServer::vfsCleanUpStatuses(int syncDbId) {
+    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
+        return false;
+    }
+
+    if (!_vfsMap[syncDbId]->cleanUpStatuses()) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in Vfs::cleanUpStatuses for syncDbId=" << syncDbId);
+        return false;
+    }
+
+    return true;
+}
+
 bool AppServer::vfsClearFileAttributes(int syncDbId, const SyncPath &path) {
     if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
@@ -3079,6 +3094,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
         _syncPalMap[sync.dbId()]->setVfsUpdateFetchStatusCallback(&vfsUpdateFetchStatus);
         _syncPalMap[sync.dbId()]->setVfsFileStatusChangedCallback(&vfsFileStatusChanged);
         _syncPalMap[sync.dbId()]->setVfsForceStatusCallback(&vfsForceStatus);
+        _syncPalMap[sync.dbId()]->setVfsCleanUpStatusesCallback(&vfsCleanUpStatuses);
         _syncPalMap[sync.dbId()]->setVfsClearFileAttributesCallback(&vfsClearFileAttributes);
         _syncPalMap[sync.dbId()]->setVfsCancelHydrateCallback(&vfsCancelHydrate);
 

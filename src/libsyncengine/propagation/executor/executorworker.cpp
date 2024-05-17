@@ -202,6 +202,8 @@ void ExecutorWorker::execute() {
         _syncPal->_localFSObserverWorker->invalidateSnapshot();
     }
 
+    _syncPal->vfsCleanUpStatuses();
+
     setExitCause(_executorExitCause);
     setDone(_executorExitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());

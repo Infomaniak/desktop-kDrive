@@ -24,6 +24,8 @@
 #include <sys/stat.h>
 
 #include <QMap>
+#include <QHash>
+#include <QSet>
 #include <QPixmap>
 #include <QString>
 
@@ -45,7 +47,7 @@ class LiteSyncExtConnector {
     public:
         LiteSyncExtConnector(LiteSyncExtConnector &other) = delete;
         void operator=(const LiteSyncExtConnector &) = delete;
-        static LiteSyncExtConnector *instance(log4cplus::Logger logger, ExecuteCommand executeCommand);
+        static LiteSyncExtConnector *instance(log4cplus::Logger logger, ExecuteCommand executeCommand, const QString &localSyncPath);
 
         ~LiteSyncExtConnector();
 
@@ -64,6 +66,7 @@ class LiteSyncExtConnector {
                                   bool &canceled, bool &finished);
         bool vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap);
         bool vfsSetStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false);
+        bool vfsCleanUpStatuses();
         bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress);
         bool vfsSetAppExcludeList(const QString &appList);
         bool vfsGetFetchingAppList(QHash<QString, QString> &appTable);
@@ -76,14 +79,23 @@ class LiteSyncExtConnector {
         void resetConnector(log4cplus::Logger logger, ExecuteCommand executeCommand);
 
     protected:
-        LiteSyncExtConnector(log4cplus::Logger logger, ExecuteCommand executeCommand);
+        LiteSyncExtConnector(log4cplus::Logger logger, ExecuteCommand executeCommand, const QString &localSyncPath);
 
         static LiteSyncExtConnector *_liteSyncExtConnector;
 
     private:
         log4cplus::Logger _logger;
-        LiteSyncExtConnectorPrivate *_private;
+        LiteSyncExtConnectorPrivate *_private {nullptr};
         QMap<int, QString> _folders;
+
+        /**
+         * Keeps track of folder with `syncing` status.
+         * Key: parent folder path.
+         * Value: List of syncing items path.
+         */
+        QHash<QString, QSet<QString>> _syncingFolders;
+        std::mutex _mutex;
+        QString _localSyncPath;
 
         bool sendStatusToFinder(const QString &path, bool isSyncing, int progress, bool isHydrated);
 };
