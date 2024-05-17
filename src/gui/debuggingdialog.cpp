@@ -364,6 +364,11 @@ void DebuggingDialog::initLogUploadLayout() {
 }
 
 void DebuggingDialog::displayHeavyLogBox() {
+    bool sendLogButtonEnabled = _sendLogButton->isEnabled();
+    QString sendLogButtonText = _sendLogButton->text();
+    _sendLogButton->setText("  Loading...");
+    _sendLogButton->setEnabled(false);
+
     uint64_t logDirSize = 0;
     ExitCode exitCode = GuiRequests::getLogDirEstimatedSize(logDirSize);
     if (exitCode != ExitCode::ExitCodeOk) {
@@ -373,6 +378,8 @@ void DebuggingDialog::displayHeavyLogBox() {
         _heavyLogBox->setVisible(true);
     } else {
         _heavyLogBox->setVisible(false);
+        _sendLogButton->setText(sendLogButtonText);
+        _sendLogButton->setEnabled(sendLogButtonEnabled);
         return;
     }
     QString sizeUnit = tr("bytes");
@@ -390,6 +397,8 @@ void DebuggingDialog::displayHeavyLogBox() {
         displaySize = logDirSize;
     }
     _heavyLogLabel->setText(heavyLogLabelStr.arg(displaySize).arg(sizeUnit));
+    _sendLogButton->setText(sendLogButtonText);
+    _sendLogButton->setEnabled(sendLogButtonEnabled);
 }
 
 void DebuggingDialog::setlogUploadInfo(char status) {
@@ -517,7 +526,7 @@ void DebuggingDialog::setlogUploadInfo(char status) {
         QLabel *cancelTitleLabel = new QLabel();
         cancelTitleLabel->setObjectName("boldTextLabel");
         cancelTitleLabel->setStyleSheet("QLabel {color: #CC6102;}");
-        cancelTitleLabel->setText(tr("Sharing has been canceled"));
+        cancelTitleLabel->setText(tr("Sharing has been cancelled"));
         cancelTitleHBox->addWidget(cancelTitleLabel);
 
         if (!lasSuccessfullUploadDate.isEmpty()) {
@@ -676,9 +685,9 @@ void DebuggingDialog::onLogUploadStatusUpdated(char status, int progress) {
             break;
         case 'C':
             if (progress == 0) {
-                _sendLogButton->setText(tr("  Canceling"));
+                _sendLogButton->setText(tr("  Canceling..."));
                 _sendLogButton->setEnabled(false);
-                _cancelLogUploadButton->show();
+                _cancelLogUploadButton->hide();
                 _cancelLogUploadButton->setEnabled(false);
                 break;
             }
