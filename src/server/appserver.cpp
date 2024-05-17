@@ -1883,7 +1883,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> includeArchivedLogs;
             resultStream << ExitCodeOk;  // Return immediately, progress and error will be report via addError and signal
 
-            QTimer::singleShot(100, [this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); });
+            std::thread uploadLogThread([this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); });
+            uploadLogThread.detach();
             break;
         }
         case REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT: {
@@ -2130,7 +2131,6 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
      */
     std::function<bool(LogUploadState, int)> progressFunc = [this](LogUploadState status, int progress) {
         sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
-        processEvents(QEventLoop::AllEvents, 100);     // Process events to avoid blocking the GUI (cancel button)
         LOG_DEBUG(_logger, "Log transfert progress : " << static_cast<int>(status) << " | " << progress << " %");
 
         LogUploadState logUploadState = LogUploadState::None;
