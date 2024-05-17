@@ -126,10 +126,10 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateAppState(AppStateKey key, const std::string &value, bool &found);  // update or insert
 
         template <typename T>
-        inline bool selectAppState(AppStateKey key, T &value, bool &found);
+        bool selectAppState(AppStateKey key, T &value, bool &found);
 
         template <typename T>
-        inline bool updateAppState(AppStateKey key, const T &value, bool &found);  // update or insert
+        bool updateAppState(AppStateKey key, const T &value, bool &found);  // update or insert
 
     private:
         static std::shared_ptr<ParmsDb> _instance;
@@ -151,17 +151,16 @@ class PARMS_EXPORT ParmsDb : public Db {
 };
 
 template <typename T>
-bool ParmsDb::selectAppState(AppStateKey key, T &value, bool &found) {
-    static_assert(std::is_integral<T>::value || std::is_enum<T>::value, "T must be an integral type or enum type");
+inline bool ParmsDb::selectAppState(AppStateKey key, T &value, bool &found) {
+    static_assert(std::is_integral_v<T> || std::is_enum_v<T>, "T must be an integral type or enum type");
     std::string valueStr = "";
-    bool result = selectAppState(key, valueStr, found);
-    if (!result || !found) {
+    if (bool result = selectAppState(key, valueStr, found); !result || !found) {
         return result;
     }
 
     try {
         value = static_cast<T>(std::stoi(valueStr));
-    } catch (std::exception &) {
+    } catch (const std::invalid_argument &) {
         LOG_WARN(_logger, "Error converting value to int in selectAppState: " << valueStr.c_str());
         return false;
     }
@@ -169,12 +168,12 @@ bool ParmsDb::selectAppState(AppStateKey key, T &value, bool &found) {
 };
 
 template <typename T>
-bool ParmsDb::updateAppState(AppStateKey key, const T &value, bool &found) {
-    static_assert(std::is_integral<T>::value || std::is_enum<T>::value, "T must be an integral type or enum type");
+inline bool ParmsDb::updateAppState(AppStateKey key, const T &value, bool &found) {
+    static_assert(std::is_integral_v<T> || std::is_enum_v<T>, "T must be an integral type or enum type");
     try {
         std::string valueStr = std::to_string(static_cast<int>(value));
         return updateAppState(key, valueStr, found);
-    } catch (std::exception &) {
+    } catch (const std::invalid_argument &) {
         LOG_WARN(_logger, "Error converting value to string in updateAppState");
         return false;
     }
