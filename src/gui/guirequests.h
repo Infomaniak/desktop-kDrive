@@ -136,7 +136,7 @@ template <typename T>
 static ExitCode getAppState(AppStateKey key, T &value, bool &found) {
     static_assert(std::is_integral<T>::value || std::is_enum<T>::value, "T must be an integral type or enum type");
     std::string valueStr = "";
-    bool result = getAppState(key, valueStr, found);
+    ExitCode result = getAppState(key, valueStr, found);
     if (!result || !found) {
         return result;
     }
@@ -146,7 +146,7 @@ static ExitCode getAppState(AppStateKey key, T &value, bool &found) {
     } catch (const std::exception) {
         return ExitCodeDbError;
     }
-    return true;
+    return ExitCodeOk;
 };
 
 template <typename T>
