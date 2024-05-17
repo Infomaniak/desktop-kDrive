@@ -161,7 +161,7 @@ bool ParmsDb::selectAppState(AppStateKey key, T &value, bool &found) {
 
     try {
         value = static_cast<T>(std::stoi(valueStr));
-    } catch (const std::exception) {
+    } catch (std::exception) {
         LOG_WARN(_logger, "Error converting value to int in selectAppState: " << valueStr.c_str());
         return false;
     }
@@ -174,7 +174,7 @@ bool ParmsDb::updateAppState(AppStateKey key, const T &value, bool &found) {
     try {
         std::string valueStr = std::to_string(static_cast<int>(value));
         return updateAppState(key, valueStr, found);
-    } catch (const std::exception) {
+    } catch (std::exception) {
         LOG_WARN(_logger, "Error converting value to string in updateAppState");
         return false;
     }
