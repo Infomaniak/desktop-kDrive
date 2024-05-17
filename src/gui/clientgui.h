@@ -151,6 +151,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QString trayTooltipStatusString(SyncStatus status, bool unresolvedConflicts, bool paused);
         void executeSyncAction(ActionType type, int syncDbId);
         void refreshErrorList(int driveDbId);
+        ExitCode loadError(int driveDbId, int syncDbId, ErrorLevel level);
 
 
     private slots:

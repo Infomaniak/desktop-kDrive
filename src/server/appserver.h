@@ -148,7 +148,9 @@ class AppServer : public SharedTools::QtSingleApplication {
                              bool firstInit = false);
         ExitCode stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
-        ExitCode createAndStartVfs(const Sync &sync, ExitCause &exitCause);
+        ExitCode createAndStartVfs(const Sync &sync, ExitCause &exitCause) noexcept;
+        // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
+        ExitCode tryCreateAndStartVfs(Sync &sync) noexcept;
         ExitCode stopVfs(int syncDbId, bool unregister);
 
         ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
@@ -158,6 +160,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
                                                   QSet<QString> &undecidedList, bool &syncUpdated);
         ExitCode clearErrors(int syncDbId, bool autoResolved = false);
+        // Check if the synchronization `sync` is registred in the sync database and
+        // if the `sync` folder does not contain any other sync subfolder.
         ExitCode checkIfSyncIsValid(const Sync &sync);
 
         void sendUserAdded(const UserInfo &userInfo);

@@ -19,12 +19,9 @@
 #include "clientgui.h"
 #include "guiutility.h"
 #include "custommessagebox.h"
-#include "enablestateholder.h"
 #include "appclient.h"
-#include "menuwidget.h"
 #include "guirequests.h"
 #include "parameterscache.h"
-#include "libcommongui/logger.h"
 #include "libcommongui/utility/utility.h"
 #include "libcommon/theme/theme.h"
 
@@ -61,15 +58,11 @@ ClientGui::ClientGui(AppClient *parent)
       _workaroundNoAboutToShowUpdate(false),
       _workaroundFakeDoubleClick(false),
       _workaroundManualVisibility(false),
-      _delayedTrayUpdateTimer(QTimer()),
-      _notificationEnableDate(QDateTime()),
       _app(parent),
       _generalErrorsCounter(0),
       _currentUserDbId(0),
       _currentAccountDbId(0),
-      _currentDriveDbId(0),
-      _driveWithNewErrorSet(QSet<int>()),
-      _refreshErrorListTimer(QTimer()) {
+      _currentDriveDbId(0) {
     connect(qGuiApp, &QGuiApplication::screenAdded, this, &ClientGui::onScreenUpdated);
     connect(qGuiApp, &QGuiApplication::screenRemoved, this, &ClientGui::onScreenUpdated);
 
@@ -538,10 +531,13 @@ void ClientGui::resetSystray() {
         QString version;
         if (KDC::GuiUtility::getLinuxDesktopType(type, version)) {
             if (type.contains("GNOME") && version.toDouble() >= 40) {
-                _actionSynthesis = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
-                _actionPreferences = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
+                _actionSynthesis =
+                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
+                _actionPreferences =
+                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
                 _tray->contextMenu()->addSeparator();
-                _actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
+                _actionQuit =
+                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
             }
         }
 #endif
@@ -551,7 +547,7 @@ void ClientGui::resetSystray() {
         connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
     }
 #ifdef Q_OS_LINUX
-    else if (_actionSynthesis && _actionPreferences && _actionQuit){
+    else if (_actionSynthesis && _actionPreferences && _actionQuit) {
         connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
         connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
         connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
@@ -894,23 +890,27 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onRefreshErrorList() {
-    ExitCode exitCode;
+ExitCode ClientGui::loadError(int driveDbId, int syncDbId, ErrorLevel level) {
+    const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
+    if (exitCode != ExitCodeOk) {
+        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
+    }
 
+    return exitCode;
+}
+
+void ClientGui::onRefreshErrorList() {
     if (_driveWithNewErrorSet.count()) {
         emit refreshStatusNeeded();
     }
 
-    QSet<int>::iterator i = _driveWithNewErrorSet.begin();
-    while (i != _driveWithNewErrorSet.end()) {
-        int driveDbId = *i;
-
+    for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
+        const int driveDbId = *it;
         _errorInfoMap[driveDbId].clear();
+
         if (driveDbId == 0) {
-            // Server level errors
-            exitCode = GuiRequests::getErrorInfoList(ErrorLevelServer, 0, MAX_ERRORS_DISPLAYED, _errorInfoMap[0]);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoListByTime for level=" << ErrorLevelServer;
+            // Server level errors.
+            if (ExitCodeOk != ClientGui::loadError(0, 0, ErrorLevelServer)) {
                 return;
             }
 
@@ -924,39 +924,21 @@ void ClientGui::onRefreshErrorList() {
                 return;
             }
 
-            for (const auto &syncInfoMapIt : _syncInfoMap) {
-                if (syncInfoMapIt.second.driveDbId() == driveDbId) {
-                    //                    if (syncInfoMapIt.second.status() == SyncStatusUndefined) {
-                    //                        continue;
-                    //                    }
-
-                    // Load SyncPal level errors
-                    exitCode = GuiRequests::getErrorInfoList(ErrorLevelSyncPal, syncInfoMapIt.first, MAX_ERRORS_DISPLAYED,
-                                                             _errorInfoMap[driveDbId]);
-                    if (exitCode != ExitCodeOk) {
-                        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoListByTime for level=" << ErrorLevelSyncPal
-                                                 << " syncDbId=" << syncInfoMapIt.first;
-                        return;
-                    }
-
-                    // Load Node level errors
-                    exitCode = GuiRequests::getErrorInfoList(ErrorLevelNode, syncInfoMapIt.first, MAX_ERRORS_DISPLAYED,
-                                                             _errorInfoMap[driveDbId]);
-                    if (exitCode != ExitCodeOk) {
-                        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoListByTime for level=" << ErrorLevelNode
-                                                 << " syncDbId=" << syncInfoMapIt.first;
-                        return;
-                    }
+            for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
+                if (syncInfo.driveDbId() != driveDbId) continue;
+                // Load SyncPal and Node level errors
+                for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
+                    if (ExitCodeOk != loadError(driveDbId, syncDbId, level)) return;
                 }
             }
 
             int unresolvedErrorsCount = 0;
             int autoresolvedErrorsCount = 0;
-            for (auto errorInfo : _errorInfoMap[driveDbId]) {
+            for (const auto &errorInfo : _errorInfoMap[driveDbId]) {
                 if (errorInfo.autoResolved()) {
-                    autoresolvedErrorsCount++;
+                    ++autoresolvedErrorsCount;
                 } else {
-                    unresolvedErrorsCount++;
+                    ++unresolvedErrorsCount;
                 }
             }
             driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
@@ -964,7 +946,7 @@ void ClientGui::onRefreshErrorList() {
             emit errorAdded(driveDbId);
         }
 
-        i = _driveWithNewErrorSet.erase(i);
+        it = _driveWithNewErrorSet.erase(it);
     }
 }
 
@@ -1343,10 +1325,9 @@ void ClientGui::onRefreshStatusNeeded() {
     computeOverallSyncStatus();
 }
 
-void ClientGui::retranslateUi()
-{
+void ClientGui::retranslateUi() {
 #ifdef Q_OS_LINUX
-    if (_actionSynthesis && _actionPreferences && _actionQuit){
+    if (_actionSynthesis && _actionPreferences && _actionQuit) {
         _actionSynthesis->setText(QString(tr("Synthesis")));
         _actionPreferences->setText(QString(tr("Preferences")));
         _actionQuit->setText(QString(tr("Quit")));

@@ -912,6 +912,9 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
+        case ExitCodeSystemError: {
+            return error.exitCause() == ExitCauseSyncDirDoesntExist;
+        }
         case ExitCodeUnknown: {
             return error.inconsistencyType() != InconsistencyTypePathLength && error.cancelType() != CancelTypeAlreadyExistRemote;
         }
