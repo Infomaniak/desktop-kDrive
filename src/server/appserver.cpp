@@ -354,7 +354,7 @@ AppServer::AppServer(int &argc, char **argv)
     char logUploadStatus = logUploadStatusStr.size() > 0 ? logUploadStatusStr[0] : 'N';
     int logUploadProgress = logUploadStatusStr.size() > 1 ? std::stoi(logUploadStatusStr.substr(1)) : 0;
     if (logUploadStatus == 'A' || logUploadStatus == 'U') {
-        LOG_WARN(_logger, "App was closed during log upload, aborting upload");
+        LOG_DEBUG(_logger, "App was closed during log upload, resetting upload status.");
         if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
             addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
