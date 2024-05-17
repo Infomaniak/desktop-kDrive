@@ -57,15 +57,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/test
 )
 
-# disable the crashreporter if libcrashreporter-qt is not available or we're building for ARM
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/libcrashreporter-qt/CMakeLists.txt")
-    set( WITH_CRASHREPORTER OFF )
-endif()
-
-if(NOT WITH_CRASHREPORTER)
-    message(STATUS "Build of crashreporter disabled.")
-endif()
-
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
@@ -167,10 +158,11 @@ if (WIN32)
     add_definitions(-DNTDDI_VERSION=0x0A000003)
 endif(WIN32)
 
-if (APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++ -g")
-elseif (UNIX)
+if (UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+    if (APPLE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    endif()
 endif()
 
 # Handle Translations, pick all client_* files from trans directory.
