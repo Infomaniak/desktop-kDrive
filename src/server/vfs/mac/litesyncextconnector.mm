@@ -1397,7 +1397,7 @@ bool LiteSyncExtConnector::vfsCleanUpStatuses() {
     QHashIterator<QString, QSet<QString>> it(_syncingFolders);
     while (it.hasNext()) {
         LOGW_WARN(_logger, L"TEST_CK - clean up needed for path=" << QStr2WStr(it.key()).c_str());
-        vfsProcessDirStatus(it.key());
+        if (!vfsProcessDirStatus(it.key())) return false;
         it.next();
     }
     _syncingFolders.clear();

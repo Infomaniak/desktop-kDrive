@@ -230,7 +230,7 @@ bool VfsMac::forceStatus(const QString &path, bool isSyncing, int progress, bool
 }
 
 bool VfsMac::cleanUpStatuses() {
-    _connector->vfsCleanUpStatuses();
+    return _connector->vfsCleanUpStatuses();
 }
 
 void VfsMac::clearFileAttributes(const QString &path) {
