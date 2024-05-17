@@ -143,7 +143,7 @@ static ExitCode getAppState(AppStateKey key, T &value, bool &found) {
 
     try {
         value = static_cast<T>(std::stoi(valueStr));
-    } catch (std::exception) {
+    } catch (std::exception &) {
         return ExitCodeDbError;
     }
     return ExitCodeOk;
@@ -155,7 +155,7 @@ static ExitCode updateAppState(AppStateKey key, const T &value, bool &found) {
     try {
         std::string valueStr = std::to_string(static_cast<int>(value));
         return updateAppState(key, valueStr, found);
-    } catch (std::exception) {
+    } catch (std::exception &) {
         return ExitCodeDbError;
     }
 };
