@@ -18,6 +18,7 @@
 
 #include "parmsdb.h"
 #include "libcommonserver/utility/asserts.h"
+#include "libcommon/utility/types.h"
 
 constexpr char CREATE_APP_STATE_TABLE_ID[] = "create_app_state";
 constexpr char CREATE_APP_STATE_TABLE[] = "CREATE TABLE IF NOT EXISTS app_state(key INTEGER PRIMARY KEY, value TEXT);";
@@ -33,9 +34,11 @@ constexpr char UPDATE_APP_STATE_REQUEST[] = "UPDATE app_state SET value=?2 WHERE
 
 constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate[] = "0";
-constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadeDate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath[] = "";
-constexpr char APP_STATE_KEY_DEFAULT_LogUploadStatus[] = "N";
+constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = {static_cast<char>(KDC::LogUploadState::None), '\0'};
+constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
+
 
 namespace KDC {
 
@@ -91,8 +94,8 @@ bool ParmsDb::insertDefaultAppState() {
         return false;
     }
 
-    if (!insertAppState(AppStateKey::LastSuccessfulLogUploadeDate, APP_STATE_KEY_DEFAULT_LastLogUploadeDate)) {
-        LOG_WARN(_logger, "Error inserting default value for LastSuccessfulLogUploadeDate");
+    if (!insertAppState(AppStateKey::LastSuccessfulLogUploadDate, APP_STATE_KEY_DEFAULT_LastLogUploadDate)) {
+        LOG_WARN(_logger, "Error inserting default value for LastSuccessfulLogUploadDate");
         return false;
     }
 
@@ -101,8 +104,13 @@ bool ParmsDb::insertDefaultAppState() {
         return false;
     }
 
-    if (!insertAppState(AppStateKey::LogUploadStatus, APP_STATE_KEY_DEFAULT_LogUploadStatus)) {
-        LOG_WARN(_logger, "Error inserting default value for LogUploadStatus");
+    if (!insertAppState(AppStateKey::LogUploadState, APP_STATE_KEY_DEFAULT_LogUploadState)) {
+        LOG_WARN(_logger, "Error inserting default value for LogUploadState");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LogUploadPercent, APP_STATE_KEY_DEFAULT_LogUploadPercent)) {
+        LOG_WARN(_logger, "Error inserting default value for LogUploadPercent");
         return false;
     }
 
@@ -180,4 +188,5 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
     }
     return true;
 }
+
 }  // namespace KDC

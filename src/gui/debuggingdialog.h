@@ -65,7 +65,7 @@ class DebuggingDialog : public CustomDialog {
         void initUI();
         void initLogUploadLayout();
         void displayHeavyLogBox();
-        void setlogUploadInfo(char status);
+        void setlogUploadInfo(LogUploadState status);
         void updateUI();
         void setNeedToSave(bool value);
 
@@ -80,7 +80,7 @@ class DebuggingDialog : public CustomDialog {
         void onCancelLogUploadButtonTriggered(bool checked = false);
         void onSaveButtonTriggered(bool checked = false);
         void onLinkActivated(const QString &link);
-        void onLogUploadStatusUpdated(char status, int progress);
+        void onLogUploadStatusUpdated(LogUploadState state, int progress);
 };
 
 }  // namespace KDC

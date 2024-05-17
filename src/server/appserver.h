@@ -185,7 +185,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         // See types.h -> AppStateKey for the possible values of status
         void cancelLogUpload();
         void uploadLog(bool includeArchivedLogs);
-        void sendLogUploadStatusUpdated(char status, int percent);
+        void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();
         void stopSyncTask(int syncDbId);  // Long task which can block GUI: post-poned in the event loop by means of timer

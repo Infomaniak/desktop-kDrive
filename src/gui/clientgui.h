@@ -102,7 +102,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void refreshStatusNeeded();
         void folderSizeCompleted(QString nodeId, qint64 size);
         void driveBeingRemoved();
-        void logUploadStatusUpdated(char status, int progress);
+        void logUploadStatusUpdated(LogUploadState state, int progress);
 
     public slots:
         // void onManageRightAndSharingItem(int syncDbId, const QString &filePath);

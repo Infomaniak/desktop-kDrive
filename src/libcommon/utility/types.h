@@ -368,7 +368,7 @@ enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
     LastServerSelfRestartDate,
     LastClientSelfRestartDate,
-    LastSuccessfulLogUploadeDate,
+    LastSuccessfulLogUploadDate,
     LastLogUploadArchivePath,
     /* Log upload status is a string with the first character being the status and the rest being the progress percentage
      * "A" means "Archiving" (ie. A80 means 80% of the archiving is done)
@@ -379,8 +379,18 @@ enum class AppStateKey {
      * "C1" means "Canceled"
      * "N" means "None" (ie. N means we never tried to upload the logs)
      */
-    LogUploadStatus,
+    LogUploadState,
+    LogUploadPercent,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
 
+enum class LogUploadState {
+    None,
+    Archiving,
+    Uploading,
+    Success,
+    Failed,
+    CancelRequested,
+    Canceled,
+};
 }  // namespace KDC

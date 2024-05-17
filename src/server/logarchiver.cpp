@@ -68,7 +68,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
             if (!ParmsDb::instance()->selectAllDrives(driveList)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllDrives");
                 if (bool found = false;
-                    !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+                    !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
                     LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
                 }
                 exitCause = ExitCauseDbAccessError;
@@ -78,7 +78,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
             if (driveList.empty()) {
                 LOG_WARN(Log::instance()->getLogger(), "No drive found - Unable to send log");
                 if (bool found = false;
-                    !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadStatus, "F", found) || !found) {
+                    !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
                     LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
                 }
                 exitCause = ExitCauseLoginError;

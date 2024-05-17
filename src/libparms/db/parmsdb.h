@@ -122,8 +122,14 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
-        bool selectAppState(AppStateKey key, std::string &value, bool& found);
-        bool updateAppState(AppStateKey key, const std::string &value, bool& found);  // update or insert
+        bool selectAppState(AppStateKey key, std::string &value, bool &found);
+        bool updateAppState(AppStateKey key, const std::string &value, bool &found);  // update or insert
+
+        template <typename T>
+        bool selectAppState(AppStateKey key, T &value, bool &found);
+
+        template <typename T>
+        bool updateAppState(AppStateKey key, const T &value, bool &found);  // update or insert
 
     private:
         static std::shared_ptr<ParmsDb> _instance;
@@ -143,5 +149,35 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateExclusionApps();
 #endif
 };
+
+template <typename T>
+inline bool ParmsDb::selectAppState(AppStateKey key, T &value, bool &found) {
+    static_assert(std::is_integral_v<T> || std::is_enum_v<T>, "T must be an integral type or enum type");
+    std::string valueStr = "";
+    if (bool result = selectAppState(key, valueStr, found); !result || !found) {
+        return result;
+    }
+
+    try {
+        value = static_cast<T>(std::stoi(valueStr));
+    } catch (const std::invalid_argument &) {
+        LOG_WARN(_logger, "Error converting value to int in selectAppState: " << valueStr.c_str());
+        return false;
+    }
+    return true;
+};
+
+template <typename T>
+inline bool ParmsDb::updateAppState(AppStateKey key, const T &value, bool &found) {
+    static_assert(std::is_integral_v<T> || std::is_enum_v<T>, "T must be an integral type or enum type");
+    try {
+        std::string valueStr = std::to_string(static_cast<int>(value));
+        return updateAppState(key, valueStr, found);
+    } catch (const std::invalid_argument &) {
+        LOG_WARN(_logger, "Error converting value to string in updateAppState");
+        return false;
+    }
+};
+
 
 }  // namespace KDC

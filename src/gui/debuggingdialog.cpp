@@ -349,18 +349,19 @@ void DebuggingDialog::initUI() {
 }
 
 void DebuggingDialog::initLogUploadLayout() {
-    QString logUploadStatusAndPercent = "";
-    QChar logUploadStatus = 'N';
-    QString logUploadPercent = "";
+    LogUploadState logUploadState = LogUploadState::None;
+    int logUploadPercent = 0;
 
-    ExitCode exitCode = GuiRequests::getAppState(AppStateKey::LogUploadStatus, logUploadStatusAndPercent);
-    logUploadStatus = logUploadStatusAndPercent.size() > 0 ? logUploadStatusAndPercent[0] : QChar::fromLatin1('N');
-    logUploadPercent = logUploadStatusAndPercent.size() > 1 ? logUploadStatusAndPercent.mid(1) : "";
-
+    ExitCode exitCode = GuiRequests::getAppState(AppStateKey::LogUploadState, logUploadState);
     if (exitCode != ExitCode::ExitCodeOk) {
         qCWarning(lcDebuggingDialog) << "Failed to get log upload status";
     }
-    onLogUploadStatusUpdated(logUploadStatus.toLatin1(), logUploadPercent.toInt());
+
+    exitCode = GuiRequests::getAppState(AppStateKey::LogUploadPercent, logUploadPercent);
+    if (exitCode != ExitCode::ExitCodeOk) {
+        qCWarning(lcDebuggingDialog) << "Failed to get log upload percent";
+    }
+    onLogUploadStatusUpdated(logUploadState, logUploadPercent);
 }
 
 void DebuggingDialog::displayHeavyLogBox() {
@@ -401,7 +402,7 @@ void DebuggingDialog::displayHeavyLogBox() {
     _sendLogButton->setEnabled(sendLogButtonEnabled);
 }
 
-void DebuggingDialog::setlogUploadInfo(char status) {
+void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
     while (_logUploadInfoHBox->count() > 0) {
         _logUploadInfoHBox->itemAt(0)->widget()->deleteLater();
         _logUploadInfoHBox->removeItem(_logUploadInfoHBox->itemAt(0));
@@ -421,16 +422,16 @@ void DebuggingDialog::setlogUploadInfo(char status) {
         qCWarning(lcDebuggingDialog) << "Failed to get last log upload archive path";
     }
 
-    exitcode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadeDate, lasSuccessfullUploadDate);
+    exitcode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadDate, lasSuccessfullUploadDate);
     if (exitcode != ExitCode::ExitCodeOk) {
         qCWarning(lcDebuggingDialog) << "Failed to get last log upload date";
     }
 
-    if (status == 'U' || status == 'A' || status == 'N') {
+    if (status == LogUploadState::Uploading || status == LogUploadState::Archiving || status == LogUploadState::None) {
         return;
     }
 
-    if (status == 'F') {
+    if (status == LogUploadState::Failed) {
         QString errorText = tr("Failed to share the log folder");
         QFrame *errorFrame = new QFrame();
         QVBoxLayout *errorHBox = new QVBoxLayout(errorFrame);
@@ -503,7 +504,7 @@ void DebuggingDialog::setlogUploadInfo(char status) {
     lastUploadTitleLabel->setStyleSheet("QLabel {color: #2C8736;}");
     lastUploadTitleHBox->addWidget(lastUploadTitleLabel);
 
-    if (status == 'C') {
+    if (status == LogUploadState::Canceled) {
         QFrame *cancelFrame = new QFrame();
 
         cancelFrame->setObjectName("cancelFrame");
@@ -532,7 +533,7 @@ void DebuggingDialog::setlogUploadInfo(char status) {
         if (!lasSuccessfullUploadDate.isEmpty()) {
             _logUploadInfoHBox->addWidget(lastUploadFrame);
         }
-    } else if (status == 'S') {
+    } else if (status == LogUploadState::Success) {
         _logUploadInfoHBox->addWidget(lastUploadFrame);
     }
     return;
@@ -655,47 +656,48 @@ void DebuggingDialog::onLinkActivated(const QString &link) {
     }
 }
 
-void DebuggingDialog::onLogUploadStatusUpdated(char status, int progress) {
+void DebuggingDialog::onLogUploadStatusUpdated(LogUploadState state, int progress) {
     QString shareText = tr("  Share");
-    switch (status) {
-        case 'N':
+    switch (state) {
+        case LogUploadState::None:
             _sendLogButton->setText(shareText);
             _sendLogButton->setEnabled(true);
             _logUploadInfoWidget->hide();
             _cancelLogUploadButton->hide();
             displayHeavyLogBox();
             break;
-        case 'A':
+        case LogUploadState::Archiving:
             _sendLogButton->setText(tr("  Sharing | step 1/2 %1%").arg(progress));
             _sendLogButton->setEnabled(false);
-            setlogUploadInfo(status);
+            setlogUploadInfo(state);
             _logUploadInfoWidget->show();
             _heavyLogBox->hide();
             _cancelLogUploadButton->show();
             _cancelLogUploadButton->setEnabled(true);
             break;
-        case 'U':
+        case LogUploadState::Uploading:
             _sendLogButton->setText(tr("  Sharing | step 2/2 %1%").arg(progress));
             _sendLogButton->setEnabled(false);
-            setlogUploadInfo(status);
+            setlogUploadInfo(state);
             _logUploadInfoWidget->show();
             _heavyLogBox->hide();
             _cancelLogUploadButton->show();
             _cancelLogUploadButton->setEnabled(true);
             break;
-        case 'C':
+        case LogUploadState::CancelRequested:
             if (progress == 0) {
                 _sendLogButton->setText(tr("  Canceling..."));
                 _sendLogButton->setEnabled(false);
                 _cancelLogUploadButton->hide();
                 _cancelLogUploadButton->setEnabled(false);
-                break;
             }
-        case 'F':
-        case 'S':
+            break;
+        case LogUploadState::Canceled:
+        case LogUploadState::Failed:
+        case LogUploadState::Success:
             _sendLogButton->setText(shareText);
             _sendLogButton->setEnabled(true);
-            setlogUploadInfo(status);
+            setlogUploadInfo(state);
             _logUploadInfoWidget->show();
             _cancelLogUploadButton->hide();
             displayHeavyLogBox();
