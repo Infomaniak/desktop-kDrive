@@ -27,8 +27,6 @@
 #include "drivepreferenceswidget.h"
 #include "preferenceswidget.h"
 
-#include <map>
-
 #include <QByteArray>
 #include <QColor>
 #include <QDialog>
@@ -76,23 +74,23 @@ class ParametersDialog : public CustomDialog {
         enum Page { Drive = 0, Preferences, Errors };
 
         std::shared_ptr<ClientGui> _gui;
-        int _currentDriveDbId;
+        int _currentDriveDbId{0};
 
         // General errors
-        int _errorTabWidgetStackPosition;
+        int _errorTabWidgetStackPosition{0};
 
         QColor _backgroundMainColor;
-        QStackedWidget *_pageStackedWidget;
-        MainMenuBarWidget *_driveMenuBarWidget;
-        PreferencesMenuBarWidget *_preferencesMenuBarWidget;
-        ErrorsMenuBarWidget *_errorsMenuBarWidget;
-        PreferencesWidget *_preferencesWidget;
-        DrivePreferencesWidget *_drivePreferencesWidget;
-        QScrollArea *_drivePreferencesScrollArea;
-        QWidget *_noDrivePagewidget;
-        ActionWidget *_sendLogsWidget;
-        QStackedWidget *_errorsStackedWidget;
-        QLabel *_defaultTextLabel;
+        QStackedWidget *_pageStackedWidget{nullptr};
+        MainMenuBarWidget *_driveMenuBarWidget{nullptr};
+        PreferencesMenuBarWidget *_preferencesMenuBarWidget{nullptr};
+        ErrorsMenuBarWidget *_errorsMenuBarWidget{nullptr};
+        PreferencesWidget *_preferencesWidget{nullptr};
+        DrivePreferencesWidget *_drivePreferencesWidget{nullptr};
+        QScrollArea *_drivePreferencesScrollArea{nullptr};
+        QWidget *_noDrivePagewidget{nullptr};
+        ActionWidget *_sendLogsWidget{nullptr};
+        QStackedWidget *_errorsStackedWidget{nullptr};
+        QLabel *_defaultTextLabel{nullptr};
 
         void initUI();
         QByteArray contents(const QString &path);

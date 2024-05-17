@@ -19,12 +19,10 @@
 #include "genericerroritemwidget.h"
 #include "clientgui.h"
 #include "custommessagebox.h"
+#include "parameterscache.h"
 
-#include <QDir>
 #include <QFileInfo>
 #include <QGraphicsDropShadowEffect>
-#include <QLoggingCategory>
-#include <QPainter>
 #include <QPainterPath>
 
 namespace KDC {
@@ -68,9 +66,10 @@ void GenericErrorItemWidget::init() {
     }
 
     // Right layout
-    QLabel *fileDateLabel = new QLabel(this);
+    auto fileDateLabel = new QLabel(this);
     fileDateLabel->setObjectName("fileDateLabel");
-    fileDateLabel->setText(QDateTime::fromSecsSinceEpoch(_errorInfo.getTime()).toString(dateFormat));
+    const QDateTime dateTime = QDateTime::fromSecsSinceEpoch(_errorInfo.getTime());
+    fileDateLabel->setText(GuiUtility::getDateForCurrentLanguage(dateTime, dateFormat));
 
     addCustomWidget(fileDateLabel);
 }

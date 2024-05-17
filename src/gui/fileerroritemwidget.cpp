@@ -38,7 +38,6 @@ static const int shadowBlurRadius = 20;
 static const QSize statusIconSize = QSize(15, 15);
 static const int fileErrorLabelMaxWidth = 375;
 static const int fileNameMaxSize = 40;
-static const int filePathMaxSize = 50;
 static const QString dateFormat = "d MMM yyyy - HH:mm";
 
 Q_LOGGING_CATEGORY(lcFileErrorItemWidget, "gui.fileerroritemwidget", QtInfoMsg)
@@ -70,9 +69,7 @@ FileErrorItemWidget::FileErrorItemWidget(const SynchronizedItem &item, const Dri
     _fileNameLabel->setObjectName("fileNameLabel");
     QFileInfo fileInfo(_item.filePath());
     QString fileName = fileInfo.fileName();
-    if (fileName.size() > fileNameMaxSize) {
-        fileName = fileName.left(fileNameMaxSize) + "...";
-    }
+    GuiUtility::makePrintablePath(fileName, fileNameMaxSize);
     _fileNameLabel->setText(fileName);
     _fileNameLabel->setWordWrap(true);
     vBoxMiddle->addWidget(_fileNameLabel);
@@ -98,9 +95,7 @@ FileErrorItemWidget::FileErrorItemWidget(const SynchronizedItem &item, const Dri
     _pathLabel = new QLabel(this);
     _pathLabel->setObjectName("filePathLabel");
     QString filePath = driveInfo.name() + dirSeparator + fileInfo.path();
-    if (filePath.size() > filePathMaxSize) {
-        filePath = filePath.left(filePathMaxSize) + "...";
-    }
+    GuiUtility::makePrintablePath(filePath);
     _pathLabel->setText(QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, filePath));
     _pathLabel->setWordWrap(true);
     _pathLabel->setContextMenuPolicy(Qt::PreventContextMenu);

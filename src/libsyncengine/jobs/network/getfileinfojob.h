@@ -33,6 +33,7 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
         inline SyncTime creationTime() const { return _creationTime; }
         inline SyncTime modtime() const { return _modtime; }
         inline bool isLink() const { return _isLink; }
+        inline int64_t size() const { return _size; }
 
         inline void setWithPath(bool val) { _withPath = val; }
         inline SyncPath path() const { return _path; }
@@ -49,10 +50,11 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
         NodeId _nodeId;
         NodeId _parentNodeId;
         std::string _name;
-        SyncTime _creationTime = 0;
-        SyncTime _modtime = 0;
-        bool _isLink = false;
-        bool _withPath = false;
+        SyncTime _creationTime {0};
+        SyncTime _modtime {0};
+        bool _isLink {false};
+        bool _withPath {false};
+        int64_t _size {-1};
         SyncPath _path;
 };
 

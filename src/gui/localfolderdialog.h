@@ -19,6 +19,7 @@
 #pragma once
 
 #include "customdialog.h"
+#include "clientgui.h"
 
 #include <QColor>
 #include <QLabel>
@@ -36,7 +37,7 @@ class LocalFolderDialog : public CustomDialog {
         Q_PROPERTY(QColor warning_icon_color READ warningIconColor WRITE setWarningIconColor)
 
     public:
-        explicit LocalFolderDialog(const QString &localFolderPath, QWidget *parent = nullptr);
+        explicit LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent = nullptr);
 
         inline QString localFolderPath() const { return _localFolderPath; }
         inline void setSmartSync(bool smartSync) { _smartSync = smartSync; }
@@ -46,6 +47,7 @@ class LocalFolderDialog : public CustomDialog {
         void openFolder(const QString &filePath);
 
     private:
+        std::shared_ptr<ClientGui> _gui;
         QString _localFolderPath;
         QPushButton *_continueButton;
         QWidget *_folderSelectionWidget;

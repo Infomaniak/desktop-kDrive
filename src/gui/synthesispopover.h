@@ -27,9 +27,7 @@
 #include "errorspopup.h"
 #include "menuitemwidget.h"
 #include "info/driveinfoclient.h"
-#include "info/syncinfoclient.h"
 #include "info/syncfileiteminfo.h"
-#include "libcommon/info/userinfo.h"
 
 #include <QColor>
 #include <QDateTime>
@@ -94,25 +92,25 @@ class SynthesisPopover : public QDialog {
         QRect _sysTrayIconRect;
 
         QColor _backgroundMainColor;
-        CustomToolButton *_errorsButton;
-        CustomToolButton *_infosButton;
-        CustomToolButton *_menuButton;
-        DriveSelectionWidget *_driveSelectionWidget;
-        ProgressBarWidget *_progressBarWidget;
-        StatusBarWidget *_statusBarWidget;
-        ButtonsBarWidget *_buttonsBarWidget;
-        QStackedWidget *_stackedWidget;
-        QWidget *_defaultSynchronizedPageWidget;
-        NotificationsDisabled _notificationsDisabled;
+        CustomToolButton *_errorsButton{nullptr};
+        CustomToolButton *_infosButton{nullptr};
+        CustomToolButton *_menuButton{nullptr};
+        DriveSelectionWidget *_driveSelectionWidget{nullptr};
+        ProgressBarWidget *_progressBarWidget{nullptr};
+        StatusBarWidget *_statusBarWidget{nullptr};
+        ButtonsBarWidget *_buttonsBarWidget{nullptr};
+        QStackedWidget *_stackedWidget{nullptr};
+        QWidget *_defaultSynchronizedPageWidget{nullptr};
+        NotificationsDisabled _notificationsDisabled{NotificationsDisabledNever};
         QDateTime _notificationsDisabledUntilDateTime;
-        QLabel *_notImplementedLabel;
-        QLabel *_notImplementedLabel2;
-        QLabel *_defaultTitleLabel;
-        QLabel *_defaultTextLabel;
-        int _defaultTextLabelType;
+        QLabel *_notImplementedLabel{nullptr};
+        QLabel *_notImplementedLabel2{nullptr};
+        QLabel *_defaultTitleLabel{nullptr};
+        QLabel *_defaultTextLabel{nullptr};
+        int _defaultTextLabelType{defaultTextLabelTypeNoSyncFolder};
         QUrl _localFolderUrl;
         QUrl _remoteFolderUrl;
-        qint64 _lastRefresh;
+        qint64 _lastRefresh{0};
 
         void changeEvent(QEvent *event) override;
         void paintEvent(QPaintEvent *event) override;
@@ -135,6 +133,7 @@ class SynthesisPopover : public QDialog {
         void reset();
         void addSynchronizedListWidgetItem(DriveInfoClient &driveInfoClient, int row = 0);
         void getDriveErrorList(QList<ErrorsPopup::DriveError> &list);
+        void handleRemovedDrives();
 
     private slots:
         void onOpenErrorsMenu(bool checked = false);
