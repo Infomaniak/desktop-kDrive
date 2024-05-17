@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 project(client)
 
 IF(APPLE)
-    IF(CMAKE_BUILD_TYPE_LOWER MATCHES "(release|relwithdebinfo)")
+    IF(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")
         SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
     ELSE()
         execute_process(COMMAND uname -m OUTPUT_VARIABLE OSX_ARCH)
