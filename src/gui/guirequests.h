@@ -144,7 +144,7 @@ static ExitCode getAppState(AppStateKey key, T &value, bool &found) {
     try {
         value = static_cast<T>(std::stoi(valueStr));
     } catch (const std::exception) {
-        return false;
+        return ExitCodeDbError;
     }
     return true;
 };
@@ -156,7 +156,7 @@ static ExitCode updateAppState(AppStateKey key, const T &value, bool &found) {
         std::string valueStr = std::to_string(static_cast<int>(value));
         return updateAppState(key, valueStr, found);
     } catch (const std::exception) {
-        return false;
+        return ExitCodeDbError;
     }
 };
 }  // namespace KDC
