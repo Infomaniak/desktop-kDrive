@@ -379,8 +379,18 @@ enum class AppStateKey {
      * "C1" means "Canceled"
      * "N" means "None" (ie. N means we never tried to upload the logs)
      */
-    LogUploadStatus,
+    LogUploadState,
+    LogUploadPercent,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
 
+enum class LogUploadState {
+    None,
+    Archiving,
+    Uploading,
+    Success,
+    Failed,
+    CancelRequested,
+    Canceled,
+};
 }  // namespace KDC

@@ -302,12 +302,39 @@ void TestParmsDb::testAppState(void) {
     bool found = true;
     std::string value;
 
-    CPPUNIT_ASSERT(
-        ParmsDb::instance()->updateAppState(AppStateKey::Unknown, "value 2", found));  // Test for unknown key (not in db)
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(AppStateKey::Unknown, std::string("value"),
+                                                       found));  // Test for unknown key (not in db)
     CPPUNIT_ASSERT(!found);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::Unknown, value, found));
     CPPUNIT_ASSERT(!found);
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), 10, found));
+    CPPUNIT_ASSERT(found);
+
+    int valueInt = 0;  // Test for int value
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), valueInt, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(10, valueInt);
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), 10, found));
+    CPPUNIT_ASSERT(found);
+
+    char valueChar = 'a';  // Test for char value
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), 'z', found));
+    CPPUNIT_ASSERT(found);
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), valueChar, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL('z', valueChar);
+
+    ExitCode exitCode = ExitCodeUnknown;  // Test for enum value
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), ExitCodeOk, found));
+    CPPUNIT_ASSERT(found);
+
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), exitCode, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
     int i = 0;
     do {
@@ -316,9 +343,9 @@ void TestParmsDb::testAppState(void) {
             break;
         }
         CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(key, value, found) && found);
-        CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(key, "value 1", found));
+        CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(key, std::string("value"), found));
         CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(key, value, found) && found);
-        CPPUNIT_ASSERT_EQUAL(std::string("value 1"), value);
+        CPPUNIT_ASSERT_EQUAL(std::string("value"), value);
         i++;
     } while (true);
 }
