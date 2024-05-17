@@ -403,6 +403,16 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
     return ioError == IoError::IoErrorSuccess;
 }
 
+bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    SyncPath tempDir;
+    tempDirectoryPath(tempDir, ioError);
+    if (ioError != IoErrorSuccess) {
+        return false;
+    }
+    directoryPath = tempDir /(Str2SyncName(APPLICATION_NAME) + Str2SyncName("-logarchiverdir/"));
+}
+
+
 bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
     exists = false;
     ioError = IoErrorSuccess;
