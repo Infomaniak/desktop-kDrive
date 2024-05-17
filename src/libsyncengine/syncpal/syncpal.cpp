@@ -549,6 +549,14 @@ bool SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress,
     return _vfsForceStatus(_syncDbId, path, isSyncing, progress, isHydrated);
 }
 
+bool SyncPal::vfsCleanUpStatuses() {
+    if (!_vfsCleanUpStatuses) {
+        return false;
+    }
+
+    return _vfsCleanUpStatuses(_syncDbId);
+}
+
 bool SyncPal::vfsClearFileAttributes(const SyncPath &path) {
     if (!_vfsClearFileAttributes) {
         return false;

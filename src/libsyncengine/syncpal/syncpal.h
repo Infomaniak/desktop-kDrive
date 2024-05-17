@@ -122,6 +122,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline void setVfsForceStatusCallback(bool (*vfsForceStatus)(int, const SyncPath &, bool, int, bool)) {
             _vfsForceStatus = vfsForceStatus;
         }
+        inline void setVfsCleanUpStatusesCallback(bool (*vfsCleanUpStatuses)(int)) {
+            _vfsCleanUpStatuses = vfsCleanUpStatuses;
+        }
         inline void setVfsClearFileAttributesCallback(bool (*vfsClearFileAttributes)(int, const SyncPath &)) {
             _vfsClearFileAttributes = vfsClearFileAttributes;
         }
@@ -186,6 +189,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                   bool &finished);
         bool vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status);
         bool vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false);
+        bool vfsCleanUpStatuses();
         bool vfsClearFileAttributes(const SyncPath &path);
         bool vfsCancelHydrate(const SyncPath &path);
 
@@ -261,6 +265,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
                                       bool &canceled, bool &finished);
         bool (*_vfsFileStatusChanged)(int syncDbId, const SyncPath &path, SyncFileStatus status);
         bool (*_vfsForceStatus)(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated);
+        bool (*_vfsCleanUpStatuses)(int syncDbId);
         bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &path);
         bool (*_vfsCancelHydrate)(int syncDbId, const SyncPath &path);
 

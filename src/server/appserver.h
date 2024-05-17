@@ -214,6 +214,7 @@ class AppServer : public SharedTools::QtSingleApplication {
                                          bool &canceled, bool &finished);
         static bool vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFileStatus status);
         static bool vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated = false);
+        static bool vfsCleanUpStatuses(int syncDbId);
         static bool vfsClearFileAttributes(int syncDbId, const SyncPath &path);
         static bool vfsCancelHydrate(int syncDbId, const SyncPath &path);
 

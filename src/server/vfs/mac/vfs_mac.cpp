@@ -45,7 +45,7 @@ VfsMac::VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSe
     IoHelper::setLogger(logger());
 
     try {
-        _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams._executeCommand);
+        _connector = LiteSyncExtConnector::instance(logger(), vfsSetupParams._executeCommand, Path2QStr(vfsSetupParams._localPath));
     } catch (const std::runtime_error &) {
         LOG_WARN(logger(), "Error getting LiteSyncExtConnector instance");
         throw std::runtime_error("Error getting LiteSyncExtConnector instance!");
@@ -227,6 +227,10 @@ bool VfsMac::forceStatus(const QString &path, bool isSyncing, int progress, bool
     }
 
     return _connector->vfsSetStatus(path, isSyncing, progress, isHydrated);
+}
+
+bool VfsMac::cleanUpStatuses() {
+    _connector->vfsCleanUpStatuses();
 }
 
 void VfsMac::clearFileAttributes(const QString &path) {
