@@ -695,9 +695,7 @@ bool LiteSyncExtConnectorPrivate::getFetchingAppList(QHash<QString, QString> &ap
 
 // LiteSyncExtConnector implementation
 LiteSyncExtConnector::LiteSyncExtConnector(log4cplus::Logger logger, ExecuteCommand executeCommand, const QString &localSyncPath)
-    : _logger(logger)
-    , _private(nullptr)
-    , _localSyncPath(localSyncPath) {
+    : _logger(logger), _localSyncPath(localSyncPath) {
     LOG_DEBUG(_logger, "LiteSyncExtConnector creation");
 
     _private = new LiteSyncExtConnectorPrivate(logger, executeCommand);
@@ -707,7 +705,8 @@ LiteSyncExtConnector::LiteSyncExtConnector(log4cplus::Logger logger, ExecuteComm
     }
 }
 
-LiteSyncExtConnector *LiteSyncExtConnector::instance(log4cplus::Logger logger, ExecuteCommand executeCommand, const QString &localSyncPath) {
+LiteSyncExtConnector *LiteSyncExtConnector::instance(log4cplus::Logger logger, ExecuteCommand executeCommand,
+                                                     const QString &localSyncPath) {
     if (_liteSyncExtConnector == nullptr) {
         _liteSyncExtConnector = new LiteSyncExtConnector(logger, executeCommand, localSyncPath);
     }
@@ -1347,9 +1346,7 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, bool isSyncing, int
                                     : (isHydrated ? QString(EXT_ATTR_STATUS_OFFLINE) : QString(EXT_ATTR_STATUS_ONLINE)));
         IoError ioError = IoErrorSuccess;
         if (!setXAttrValue(path, [EXT_ATTR_STATUS UTF8String], status, ioError)) {
-            const std::wstring ioErrorMessage = Utility::s2ws(IoHelper::ioError2StdString(ioError));
-            LOGW_WARN(_logger, L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: "
-                                                                       << ioErrorMessage.c_str());
+            LOGW_WARN(_logger, L"Call to setXAttrValue failed: " << Utility::formatIoError(QStr2Path(path), ioError));
             return false;
         }
 
@@ -1373,11 +1370,10 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, bool isSyncing, int
                     _syncingFolders[parentPath].insert(path);
                 }
                 vfsSetStatus(parentPath, isSyncing, 100, isHydrated);
-            }
-            else {
+            } else {
                 _mutex.lock();
                 _syncingFolders[parentPath].remove(path);
-                if (_syncingFolders[parentPath].size() == 0) {
+                if (_syncingFolders[parentPath].empty()) {
                     _syncingFolders.remove(parentPath);
                     _mutex.unlock();
 
@@ -1396,7 +1392,6 @@ bool LiteSyncExtConnector::vfsCleanUpStatuses() {
     const std::lock_guard<std::mutex> lock(_mutex);
     QHashIterator<QString, QSet<QString>> it(_syncingFolders);
     while (it.hasNext()) {
-        LOGW_WARN(_logger, L"TEST_CK - clean up needed for path=" << QStr2WStr(it.key()).c_str());
         if (!vfsProcessDirStatus(it.key())) return false;
         it.next();
     }
@@ -1428,8 +1423,8 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path) {
 
     QDir dir(path);
     const QFileInfoList infoList = dir.entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
-    bool existsOneStatusSync = false;
-    bool existsOneStatusOnLine = false;
+    bool hasASyncingChild = false;
+    bool hasADehydratedChild = false;
     for (const auto &tmpInfo : qAsConst(infoList)) {
         QString tmpPath(tmpInfo.filePath());
         if (!vfsGetPinState(tmpPath, pinState)) {
@@ -1440,26 +1435,26 @@ bool LiteSyncExtConnector::vfsProcessDirStatus(const QString &path) {
             continue;
         }
 
-        bool isChildPlaceholder;
-        bool isChildHydrated;
-        bool isChildSyncing;
-        int childProgress;
+        bool isChildPlaceholder = false;
+        bool isChildHydrated = false;
+        bool isChildSyncing = false;
+        int childProgress = 0;
         if (!vfsGetStatus(tmpPath, isChildPlaceholder, isChildHydrated, isChildSyncing, childProgress)) {
             continue;
         }
 
         if (isChildSyncing) {
-            existsOneStatusSync = true;
+            hasASyncingChild = true;
             break;
         }
 
         if (!isChildHydrated) {
-            existsOneStatusOnLine = true;
+            hasADehydratedChild = true;
             break;
         }
     }
 
-    if (!vfsSetStatus(path, existsOneStatusSync, 100, !existsOneStatusOnLine)) {
+    if (!vfsSetStatus(path, hasASyncingChild, 100, !hasADehydratedChild)) {
         return false;
     }
 

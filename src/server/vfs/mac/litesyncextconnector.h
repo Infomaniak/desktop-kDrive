@@ -85,8 +85,14 @@ class LiteSyncExtConnector {
 
     private:
         log4cplus::Logger _logger;
-        LiteSyncExtConnectorPrivate *_private;
+        LiteSyncExtConnectorPrivate *_private {nullptr};
         QMap<int, QString> _folders;
+
+        /**
+         * Keeps track of folder with `syncing` status.
+         * Key: parent folder path.
+         * Value: List of syncing items path.
+         */
         QHash<QString, QSet<QString>> _syncingFolders;
         std::mutex _mutex;
         QString _localSyncPath;
