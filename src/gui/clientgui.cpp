@@ -47,22 +47,9 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcClientGui, "gui.clientgui", QtInfoMsg)
 
-ClientGui::ClientGui(AppClient *parent)
-    : QObject(),
-      _tray(nullptr),
-      _synthesisPopover(nullptr),
-      _parametersDialog(nullptr),
-      _addDriveWizard(nullptr),
-      _loginDialog(nullptr),
-      _workaroundShowAndHideTray(false),
-      _workaroundNoAboutToShowUpdate(false),
-      _workaroundFakeDoubleClick(false),
-      _workaroundManualVisibility(false),
-      _app(parent),
-      _generalErrorsCounter(0),
-      _currentUserDbId(0),
-      _currentAccountDbId(0),
-      _currentDriveDbId(0) {
+const int ClientGui::logsPurgeRate = 7;  // days
+
+ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(qGuiApp, &QGuiApplication::screenAdded, this, &ClientGui::onScreenUpdated);
     connect(qGuiApp, &QGuiApplication::screenRemoved, this, &ClientGui::onScreenUpdated);
 
@@ -899,52 +886,54 @@ ExitCode ClientGui::loadError(int driveDbId, int syncDbId, ErrorLevel level) {
     return exitCode;
 }
 
+
 void ClientGui::onRefreshErrorList() {
     if (_driveWithNewErrorSet.count()) {
         emit refreshStatusNeeded();
     }
 
+    // Server level errors.
+    if (_driveWithNewErrorSet.contains(0)) {
+        _errorInfoMap[0].clear();
+        if (ExitCodeOk != ClientGui::loadError(0, 0, ErrorLevelServer)) {
+            return;
+        }
+
+        _generalErrorsCounter = _errorInfoMap[0].count();
+        emit errorAdded(0);
+        _driveWithNewErrorSet.remove(0);
+    }
+
+    // Drive level errors (SyncPal or Node).
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
         const int driveDbId = *it;
         _errorInfoMap[driveDbId].clear();
 
-        if (driveDbId == 0) {
-            // Server level errors.
-            if (ExitCodeOk != ClientGui::loadError(0, 0, ErrorLevelServer)) {
-                return;
-            }
-
-            _generalErrorsCounter = _errorInfoMap[0].count();
-            emit errorAdded(0);
-        } else {
-            // Drive level error (SyncPal or Node)
-            const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
-            if (driveInfoMapIt == _driveInfoMap.end()) {
-                qCWarning(lcClientGui()) << "Drive not found in drive map for driveDbId=" << driveDbId;
-                return;
-            }
-
-            for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
-                if (syncInfo.driveDbId() != driveDbId) continue;
-                // Load SyncPal and Node level errors
-                for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
-                    if (ExitCodeOk != loadError(driveDbId, syncDbId, level)) return;
-                }
-            }
-
-            int unresolvedErrorsCount = 0;
-            int autoresolvedErrorsCount = 0;
-            for (const auto &errorInfo : _errorInfoMap[driveDbId]) {
-                if (errorInfo.autoResolved()) {
-                    ++autoresolvedErrorsCount;
-                } else {
-                    ++unresolvedErrorsCount;
-                }
-            }
-            driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
-            driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
-            emit errorAdded(driveDbId);
+        const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
+        if (driveInfoMapIt == _driveInfoMap.end()) {
+            qCWarning(lcClientGui()) << "Drive not found in drive map for driveDbId=" << driveDbId;
+            return;
         }
+
+        for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
+            if (syncInfo.driveDbId() != driveDbId) continue;
+            for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
+                if (ExitCodeOk != loadError(driveDbId, syncDbId, level)) return;
+            }
+        }
+
+        int unresolvedErrorsCount = 0;
+        int autoresolvedErrorsCount = 0;
+        for (const auto &errorInfo : _errorInfoMap[driveDbId]) {
+            if (errorInfo.autoResolved()) {
+                ++autoresolvedErrorsCount;
+            } else {
+                ++unresolvedErrorsCount;
+            }
+        }
+        driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
+        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
+        emit errorAdded(driveDbId);
 
         it = _driveWithNewErrorSet.erase(it);
     }

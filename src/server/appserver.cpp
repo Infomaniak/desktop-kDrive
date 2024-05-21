@@ -114,15 +114,7 @@ static void displayHelpText(const QString &t) {
 #endif
 
 AppServer::AppServer(int &argc, char **argv)
-    : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv),
-      _navigationPaneHelper(nullptr),
-      _socketApi(nullptr),
-      _appRestartRequired(false),
-      _theme(Theme::instance()),
-      _helpAsked(false),
-      _versionAsked(false),
-      _clearSyncNodesAsked(false),
-      _debugMode(false) {
+    : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv), _theme(Theme::instance()) {
     _startedAt.start();
 
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
@@ -410,7 +402,7 @@ void AppServer::stopSyncTask(int syncDbId) {
     ASSERT(_syncPalMap[syncDbId].use_count() == 1)
     _syncPalMap.erase(syncDbId);
 
-    ASSERT(_vfsMap[syncDbId].use_count() == 1)
+    ASSERT(_vfsMap[syncDbId].use_count() <= 1)  // `use_count` can be zero when the local drive has been removed.
     _vfsMap.erase(syncDbId);
 }
 

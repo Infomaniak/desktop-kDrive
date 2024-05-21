@@ -108,18 +108,18 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
         QScopedPointer<SocketApi> _socketApi;
-        bool _appRestartRequired = false;
-        Theme *_theme;
-        bool _helpAsked = false;
-        bool _versionAsked = false;
-        bool _clearSyncNodesAsked = false;
-        bool _settingsAsked = false;
-        bool _synthesisAsked = false;
-        bool _clearKeychainKeysAsked = false;
-        bool _vfsInstallationDone = false;
-        bool _vfsActivationDone = false;
-        bool _vfsConnectionDone = false;
-        bool _crashRecovered = false;
+        bool _appRestartRequired{false};
+        Theme *_theme{nullptr};
+        bool _helpAsked{false};
+        bool _versionAsked{false};
+        bool _clearSyncNodesAsked{false};
+        bool _settingsAsked{false};
+        bool _synthesisAsked{false};
+        bool _clearKeychainKeysAsked{false};
+        bool _vfsInstallationDone{false};
+        bool _vfsActivationDone{false};
+        bool _vfsConnectionDone{false};
+        bool _crashRecovered{false};
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
@@ -128,7 +128,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
 
         // options from command line:
-        bool _debugMode;
+        bool _debugMode{false};
 
         void parseOptions(const QStringList &);
         void initLogging() noexcept(false);
