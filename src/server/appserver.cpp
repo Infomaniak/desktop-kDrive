@@ -2565,7 +2565,7 @@ ExitCode AppServer::startSyncs(ExitCause &exitCause) {
     return ExitCodeOk;
 }
 
-// Will pause the synchronization in case of errors.
+// This function will pause the synchronization in case of errors.
 ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
     ExitCause exitCause = ExitCauseUnknown;
     ExitCode exitCode = createAndStartVfs(sync, exitCause);
