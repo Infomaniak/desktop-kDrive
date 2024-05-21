@@ -19,6 +19,7 @@
 #include "parmsdb.h"
 #include "libcommonserver/utility/asserts.h"
 #include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
 constexpr char CREATE_APP_STATE_TABLE_ID[] = "create_app_state";
 constexpr char CREATE_APP_STATE_TABLE[] = "CREATE TABLE IF NOT EXISTS app_state(key INTEGER PRIMARY KEY, value TEXT);";
@@ -143,9 +144,10 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
     return true;
 }
 
-bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
+bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found) {
     const std::scoped_lock lock(_mutex);
     found = false;
+    std::string valueStr = "";
 
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
@@ -158,28 +160,42 @@ bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
         LOG_WARN(_logger, "AppStateKey not found: " << static_cast<int>(key));
         return true;
     }
-    ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, value));
+    ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, valueStr));
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
-    return true;
-}
 
-bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &found) {
-    std::string existingValue;
+    if (!CommonUtility::stringToAppStateValue(valueStr, value)) {
+        LOG_WARN(_logger, "Unable to convert value from string in selectAppState");
+        return false;
+    }
+
+    return true;
+};
+
+bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &found) {
+    AppStateValue existingValue;
     int errId = 0;
-    std::string error;
+
     if (!selectAppState(key, existingValue, found)) {
         return false;
     }
 
     if (!found) {
+        LOG_WARN(_logger, "AppStateKey not found: " << static_cast<int>(key));
         return true;
+    }
+
+    std::string valueStr = "";
+    if (!CommonUtility::appStateValueToString(value, valueStr)) {
+        LOG_WARN(_logger, "Unable to convert value to string in updateAppState");
+        return false;
     }
 
     const std::scoped_lock lock(_mutex);
     if (found) {
+        std::string error = "";
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
         ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
-        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, value));
+        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, valueStr));
         if (!queryExec(UPDATE_APP_STATE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << UPDATE_APP_STATE_REQUEST_ID);
             return false;
@@ -187,6 +203,6 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
     }
     return true;
-}
+};
 
 }  // namespace KDC

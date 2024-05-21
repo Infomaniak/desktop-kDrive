@@ -1009,8 +1009,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
     IoHelper::logArchiverDirectoryPath(logUploadTempFolder, ioError);
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(Log::instance()->getLogger(),
-                            "Error in IoHelper::logArchiverDirectoryPath : " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Error in IoHelper::logArchiverDirectoryPath : "
+                                                   << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         return ExitCodeSystemError;
     }
 
@@ -1084,21 +1084,23 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
 ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
-    std::string logUploadStatus;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStatus, found) || !found) {
+    AppStateValue appStateValue;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
         return ExitCodeDbError;
     }
+    LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
 
-    if (logUploadStatus == "C0") {
+
+    if (logUploadState == LogUploadState::CancelRequested) {
         return ExitCodeOk;
     }
 
-    if (logUploadStatus == "C1") {
+    if (logUploadState == LogUploadState::Canceled) {
         return ExitCodeOperationCanceled;  // The user has already canceled the operation
     }
 
-    if (logUploadStatus[0] != 'A' && logUploadStatus[0] != 'U') {
+    if (logUploadState == LogUploadState::Uploading || logUploadState == LogUploadState::Archiving) {
         return ExitCodeInvalidOperation;  // The operation is not in progress
     }
 
