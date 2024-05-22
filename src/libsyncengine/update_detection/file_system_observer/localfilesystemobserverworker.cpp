@@ -619,7 +619,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
     if (ioError == IoErrorNoSuchFileOrDirectory) {
         LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, itemType.ioError).c_str());
+                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, ioError).c_str());
         setExitCause(ExitCauseSyncDirDoesntExist);
         return ExitCodeSystemError;
     }
@@ -766,19 +766,17 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                     toExclude = true;
                 } else {  // Check access permissions
                     nodeId = std::to_string(fileStat.inode);
-                    exists = false;
-                    bool readPermission = false;
-                    bool writePermission = false;
-                    bool execPermission = false;
+                    readPermission = false;
+                    writePermission = false;
+                    execPermission = false;
                     if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, ioError)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in Utility::getRights: " << Utility::formatSyncPath(absolutePath).c_str());
                         dirIt.disable_recursion_pending();
                         continue;
                     }
-                    exists = ioError != IoErrorNoSuchFileOrDirectory;
 
-                    if (!exists) {
+                    if (ioError == IoErrorNoSuchFileOrDirectory) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore: "
                                                         << Utility::formatSyncPath(absolutePath).c_str());
                         dirIt.disable_recursion_pending();

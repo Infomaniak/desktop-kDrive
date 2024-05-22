@@ -722,7 +722,7 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
     return ioError == IoErrorSuccess;
 }
 
-bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
+bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path).c_str());
         ioError = IoErrorInvalidArgument;

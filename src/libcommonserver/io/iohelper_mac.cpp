@@ -32,25 +32,6 @@ namespace KDC {
 
 bool isLocked(const SyncPath &path);
 
-bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
-    isDehydrated = false;
-    ioError = IoErrorSuccess;
-
-    static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
-
-    std::string value;
-    const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);
-    if (!result) {
-        return false;
-    }
-
-    if (!value.empty()) {
-        isDehydrated = (value != "F");
-    }
-
-    return true;
-}
-
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
     return (error == IoErrorNoSuchFileOrDirectory) || (error == IoErrorAttrNotFound) || (error == IoErrorAccessDenied);

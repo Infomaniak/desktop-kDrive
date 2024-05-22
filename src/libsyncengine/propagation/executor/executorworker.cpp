@@ -1839,7 +1839,7 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
             // Exclude file from sync
             if (!_syncPal->vfsFileStatusChanged(newSyncPath, SyncFileStatusIgnored)) {
                 LOGW_SYNCPAL_WARN(_logger,
-                                  L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(fullPath).c_str());
+                                  L"Error in SyncPal::vfsFileStatusChanged: " << Utility::formatSyncPath(newSyncPath).c_str());
             }
 
             cancelType = CancelTypeEdit;

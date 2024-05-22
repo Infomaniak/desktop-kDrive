@@ -265,7 +265,7 @@ bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
     return false;
 }
 
-SyncTime Snapshot::lastModifed(const NodeId &itemId) {
+SyncTime Snapshot::lastModified(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     SyncTime ret = 0;
     auto it = _items.find(itemId);
@@ -275,7 +275,7 @@ SyncTime Snapshot::lastModifed(const NodeId &itemId) {
     return ret;
 }
 
-bool Snapshot::setLastModifed(const NodeId &itemId, SyncTime newTime) {
+bool Snapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
     const std::scoped_lock lock(_mutex);
     auto it = _items.find(itemId);
     if (it != _items.end()) {
