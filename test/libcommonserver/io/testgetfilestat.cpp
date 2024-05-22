@@ -217,12 +217,13 @@ void TestIo::testGetFileStat() {
         FileStat fileStat;
         IoError ioError = IoErrorUnknown;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size == 0u);
         CPPUNIT_ASSERT(fileStat.modtime == 0u);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
+        CPPUNIT_ASSERT(ioError == IoErrorUnknown);
 #else
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);

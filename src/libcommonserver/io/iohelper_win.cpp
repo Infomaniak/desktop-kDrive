@@ -84,8 +84,6 @@ IoError ntStatus2ioError(NTSTATUS status) noexcept {
             return IoErrorInvalidArgument;
         case STATUS_NO_SUCH_FILE:
         case STATUS_NO_SUCH_DEVICE:
-        case STATUS_OBJECT_NAME_NOT_FOUND:
-        case STATUS_OBJECT_NAME_INVALID:
             return IoErrorNoSuchFileOrDirectory;
         default:
             return IoErrorUnknown;
