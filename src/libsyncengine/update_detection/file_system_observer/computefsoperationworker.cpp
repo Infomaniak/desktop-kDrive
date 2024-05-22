@@ -351,7 +351,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     }
                 }
 
-                const SyncTime snapshotLastModified = snapshot->lastModifed(nodeId);
+                const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
                 if (snapshotLastModified != dbLastModified && dbNode.type() == NodeType::NodeTypeFile) {
                     // Edit operation
                     FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeEdit, nodeId, NodeType::NodeTypeFile,
@@ -452,21 +452,21 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 continue;
             }
 
-            NodeType type = snapshot->type(*snapIdIt);
+            const NodeId nodeId = *snapIdIt;
+            const NodeType type = snapshot->type(nodeId);
             if (checkOnlyDir && type != NodeTypeDirectory) {
-                // In first loop, we check only directory
+                // In first loop, we check only directories
                 snapIdIt++;
                 continue;
             }
 
             // Remove directory ID from list so 2nd iteration will be a bit faster
-            NodeId nodeId = *snapIdIt;
             snapIdIt = remainingDbIds.erase(snapIdIt);
 
             if (snapshot->isOrphan(snapshot->parentId(nodeId))) {
                 // Ignore orphans
                 if (ParametersCache::instance()->parameters().extendedLog()) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring ophan node " << SyncName2WStr(snapshot->name(nodeId)).c_str() << L" ("
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring orphan node " << SyncName2WStr(snapshot->name(nodeId)).c_str() << L" ("
                                                                         << Utility::s2ws(nodeId).c_str() << L")");
                 }
                 continue;
@@ -495,7 +495,9 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                     continue;
                 }
 
-                if (type == NodeTypeFile) {
+                const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
+
+                if (type == NodeTypeFile && !isLink) {
                     // On Windows, we receive CREATE event while the file is still being copied
                     // Do not start synchronizing the file while copying is in progress
                     const SyncPath absolutePath = _syncPal->_localPath / snapPath;
@@ -510,7 +512,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
             // Create operation
             FSOpPtr fsOp =
                 std::make_shared<FSOperation>(OperationType::OperationTypeCreate, nodeId, type, snapshot->createdAt(nodeId),
-                                              snapshot->lastModifed(nodeId), snapshotSize, snapPath);
+                                              snapshot->lastModified(nodeId), snapshotSize, snapPath);
             opSet->insertOp(fsOp);
             logOperationGeneration(snapshot->side(), fsOp);
         }
@@ -560,10 +562,16 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
             return ExitCodeOk;
         }
 
+        const bool localSnapshotIsLink = _syncPal->_localSnapshot->isLink(dbNode.nodeIdLocal().value());
+        if (localSnapshotIsLink) {
+            // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
+            return ExitCodeOk;
+        }
+
         int64_t localSnapshotSize = _syncPal->_localSnapshot->size(dbNode.nodeIdLocal().value());
         int64_t remoteSnapshotSize = _syncPal->_remoteSnapshot->size(dbNode.nodeIdRemote().value());
-        SyncTime localSnapshotLastModified = _syncPal->_localSnapshot->lastModifed(dbNode.nodeIdLocal().value());
-        SyncTime remoteSnapshotLastModified = _syncPal->_remoteSnapshot->lastModifed(dbNode.nodeIdRemote().value());
+        SyncTime localSnapshotLastModified = _syncPal->_localSnapshot->lastModified(dbNode.nodeIdLocal().value());
+        SyncTime remoteSnapshotLastModified = _syncPal->_remoteSnapshot->lastModified(dbNode.nodeIdRemote().value());
 
         // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
         if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&

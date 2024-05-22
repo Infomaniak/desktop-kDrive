@@ -50,15 +50,6 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
 
-    const char *userIdStr = std::getenv("KDRIVE_TEST_CI_USER_ID");
-    const char *loginStr = std::getenv("KDRIVE_TEST_CI_LOGIN");
-    const char *driveIdStr = std::getenv("KDRIVE_TEST_CI_DRIVE_ID");
-    const char *remotePathStr = std::getenv("KDRIVE_TEST_CI_REMOTE_PATH");
-
-    if (!userIdStr || !loginStr || !driveIdStr || !remotePathStr) {
-        throw std::runtime_error("Some environment variables are missing!");
-    }
-
     // Reset test directory
     if (std::filesystem::exists(testRootFolderPath)) {
         Poco::File(testRootFolderPath.c_str()).remove(true);  // Make sure the test directory has been deleted

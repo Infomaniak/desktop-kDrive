@@ -59,7 +59,7 @@ bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool
         _ignoreFirstLine = false;
     }
 
-    int index = CSV_INDEX_ID;
+    CsvIndex index = CsvIndexId;
     bool readingDoubleQuotedValue = false;
     bool prevCharDoubleQuotes = false;
     bool readNextLine = true;
@@ -78,7 +78,7 @@ bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool
                     return true;
                 }
                 tmp.clear();
-                index++;
+                index = static_cast<CsvIndex>(static_cast<int>(index) + 1);
             } else if (c == '"') {
                 doubleQuoteCount++;
                 if (!readingDoubleQuotedValue) {
@@ -116,7 +116,7 @@ bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool
         }
     }
 
-    if (index != CSV_INDEX_CAN_WRITE) {
+    if (index < CsvIndexEnd - 1) {
         LOGW_WARN(_logger, L"Invalid item");
         ignore = true;
         return true;
@@ -152,6 +152,8 @@ void CsvFullFileListWithCursorJob::setQueryParameters(Poco::URI &uri, bool &canc
             uri.addQueryParameter("without_ids", str);
         }
     }
+    uri.addQueryParameter("with", "files.is_link");
+
     canceled = false;
 }
 
@@ -189,17 +191,17 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     return true;
 }
 
-bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, const int index, SnapshotItem &item) {
+bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item) {
     switch (index) {
-        case CSV_INDEX_ID: {
+        case CsvIndexId: {
             item.setId(str);
             break;
         }
-        case CSV_INDEX_PARENT_ID: {
+        case CsvIndexParentId: {
             item.setParentId(str);
             break;
         }
-        case CSV_INDEX_NAME: {
+        case CsvIndexName: {
             SyncName name = Str2SyncName(str);
 #ifdef _WIN32
             SyncName newName;
@@ -210,7 +212,7 @@ bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, co
             item.setName(name);
             break;
         }
-        case CSV_INDEX_TYPE: {
+        case CsvIndexType: {
             if (str == "dir") {
                 item.setType(NodeTypeDirectory);
             } else {
@@ -218,7 +220,7 @@ bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, co
             }
             break;
         }
-        case CSV_INDEX_SIZE: {
+        case CsvIndexSize: {
             try {
                 item.setSize(str.empty() ? 0 : std::stoll(str));
             } catch (std::invalid_argument const &ex) {
@@ -234,7 +236,7 @@ bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, co
             }
             break;
         }
-        case CSV_INDEX_CREATED_AT: {
+        case CsvIndexCreatedAt: {
             try {
                 item.setCreatedAt(str.empty() ? 0 : std::stoll(str));
             } catch (std::invalid_argument const &ex) {
@@ -250,7 +252,7 @@ bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, co
             }
             break;
         }
-        case CSV_INDEX_MODTIME: {
+        case CsvIndexModtime: {
             try {
                 item.setLastModified(str.empty() ? 0 : std::stoll(str));
             } catch (std::invalid_argument const &ex) {
@@ -266,8 +268,12 @@ bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, co
             }
             break;
         }
-        case CSV_INDEX_CAN_WRITE: {
+        case CsvIndexCanWrite: {
             item.setCanWrite(str == "1");
+            break;
+        }
+        case CsvIndexIsLink: {
+            item.setIsLink(str == "1");
             break;
         }
         default: {

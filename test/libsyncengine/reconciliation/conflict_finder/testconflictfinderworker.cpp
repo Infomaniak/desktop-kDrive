@@ -346,7 +346,7 @@ void TestConflictFinderWorker::testEditDelete() {
     CPPUNIT_ASSERT(confTest->type() == ConflictType::ConflictTypeEditDelete);
 }
 
-void TestConflictFinderWorker::testMoveDelete() {
+void TestConflictFinderWorker::testMoveDeleteFile() {
     setUpTreesAndDb();
     _syncPal->_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1")->setChangeEvents(OperationTypeMove);
     _syncPal->_remoteUpdateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1")->setChangeEvents(OperationTypeDelete);
@@ -357,6 +357,11 @@ void TestConflictFinderWorker::testMoveDelete() {
     CPPUNIT_ASSERT(confTest->correspondingNode() ==
                    _syncPal->_localUpdateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
     CPPUNIT_ASSERT(confTest->type() == ConflictType::ConflictTypeMoveDelete);
+}
+
+void TestConflictFinderWorker::testMoveDeleteDir() {
+    // TODO : to be implemented but this class needs to be refactored first.
+    // We shouldn't have to setup a SyncPal completely to test one worker.
 }
 
 void TestConflictFinderWorker::testMoveParentDelete() {
@@ -563,6 +568,7 @@ void TestConflictFinderWorker::testCase55c() {
     _syncPal->_conflictQueue->pop();
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveCreate);
 }
+
 /* Move-ParentDelete > Move-Move (Source) */
 void TestConflictFinderWorker::testCase57() {
     // cf p96 figure 5.7 (b)

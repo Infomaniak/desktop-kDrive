@@ -35,9 +35,9 @@ podman machine start build_kdrive
 podman run --rm -it \
 	--privileged \
 	--ulimit nofile=4000000:4000000 \
-	--volume /mnt/src:/src \
-	--volume /mnt/build:/build \
-	--volume /mnt/install:/install \
+	--volume $HOME/Projects/desktop-kDrive:/src \
+	--volume $HOME/Projects/desktop-kDrive/build-linux:/build \
+	--volume $HOME/Projects/desktop-kDrive/build-linux/install:/install \
 	--workdir "/src" \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \

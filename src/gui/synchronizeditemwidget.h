@@ -119,8 +119,6 @@ class SynchronizedItemWidget : public QWidget {
         void onCopyLinkActionTriggered(bool checked = false);
         void onDisplayOnDriveActionTriggered(bool checked = false);
         void retranslateUi();
-        QLocale languageToQLocale(Language language);
-        QString getDateForCurrentLanguage();
         void onWaitingTimerTimeout();
 };
 

@@ -56,7 +56,7 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     bool useContentChecksum =
         !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
-    bool sameSizeAndDate = snapshot->lastModifed(*node->id()) == otherSnapshot->lastModifed(*correspondingNode->id()) &&
+    bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
                            snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
     if (node->type() == NodeType::NodeTypeFile && correspondingNode->type() == node->type() &&
         node->hasChangeEvent((OperationTypeCreate | OperationTypeEdit)) &&

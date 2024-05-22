@@ -29,7 +29,8 @@ class TestConflictFinderWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testEditEdit);
         CPPUNIT_TEST(testMoveCreate);
         CPPUNIT_TEST(testEditDelete);
-        CPPUNIT_TEST(testMoveDelete);
+        CPPUNIT_TEST(testMoveDeleteFile);
+        CPPUNIT_TEST(testMoveDeleteDir);
         CPPUNIT_TEST(testMoveParentDelete);
         CPPUNIT_TEST(testCreateParentDelete);
         CPPUNIT_TEST(testMoveMoveSrc);
@@ -55,7 +56,8 @@ class TestConflictFinderWorker : public CppUnit::TestFixture {
         void testEditEdit();
         void testMoveCreate();
         void testEditDelete();
-        void testMoveDelete();
+        void testMoveDeleteFile();
+        void testMoveDeleteDir();
         void testMoveParentDelete();
         void testCreateParentDelete();
         void testMoveMoveSrc();

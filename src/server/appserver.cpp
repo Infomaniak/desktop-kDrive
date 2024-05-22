@@ -449,20 +449,33 @@ void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
     }
 }
 
-void AppServer::deleteAccount(int accountDbId) {
+void AppServer::deleteAccountIfNeeded(int accountDbId) {
     std::vector<Drive> driveList;
     if (!ParmsDb::instance()->selectAllDrives(accountDbId, driveList)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
         addError(Error(ERRID, ExitCodeDbError, ExitCauseUnknown));
     } else if (driveList.empty()) {
-        ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
+        const ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
         if (exitCode == ExitCodeOk) {
             sendAccountRemoved(accountDbId);
         } else {
-            LOG_WARN(_logger, "Error in Requests::deleteAccount : " << exitCode);
+            LOG_WARN(_logger, "Error in ServerRequests::deleteAccount: " << exitCode);
             addError(Error(ERRID, exitCode, ExitCauseUnknown));
         }
     }
+}
+
+void AppServer::deleteDrive(int driveDbId, int accountDbId) {
+    const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
+    if (exitCode == ExitCodeOk) {
+        sendDriveRemoved(driveDbId);
+    } else {
+        LOG_WARN(_logger, "Error in Requests::deleteDrive : " << exitCode);
+        addError(Error(ERRID, exitCode, ExitCauseUnknown));
+        sendDriveDeletionFailed(driveDbId);
+    }
+
+    deleteAccountIfNeeded(accountDbId);
 }
 
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
@@ -543,17 +556,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            if (syncDbIdList.empty()) {
-                // The user has no synchronizations.
-                break;
-            }
-
             // Stop syncs for this user and remove them from syncPalMap.
             QTimer::singleShot(100, [this, userDbId, syncDbIdList]() {
                 AppServer::stopAllSyncsTask(syncDbIdList);
 
                 // Delete user from DB
-                ExitCode exitCode = ServerRequests::deleteUser(userDbId);
+                const ExitCode exitCode = ServerRequests::deleteUser(userDbId);
                 if (exitCode == ExitCodeOk) {
                     sendUserRemoved(userDbId);
                 } else {
@@ -848,26 +856,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            if (syncDbIdList.empty()) {
-                // The drive's user has no synchronizations.
-                break;
-            }
-
             // Stop syncs for this drive and remove them from syncPalMap
             QTimer::singleShot(100, [this, driveDbId, accountDbId, syncDbIdList]() {
                 AppServer::stopAllSyncsTask(syncDbIdList);
-
-                // Delete drive from DB
-                const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
-                if (exitCode == ExitCodeOk) {
-                    sendDriveRemoved(driveDbId);
-                } else {
-                    LOG_WARN(_logger, "Error in Requests::deleteDrive : " << exitCode);
-                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
-                    sendDriveDeletionFailed(driveDbId);
-                }
-
-                deleteAccount(accountDbId);
+                AppServer::deleteDrive(driveDbId, accountDbId);
             });
 
             break;
@@ -2474,6 +2466,21 @@ bool AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncin
     return true;
 }
 
+bool AppServer::vfsCleanUpStatuses(int syncDbId) {
+    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
+        return false;
+    }
+
+    if (!_vfsMap[syncDbId]->cleanUpStatuses()) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in Vfs::cleanUpStatuses for syncDbId=" << syncDbId);
+        return false;
+    }
+
+    return true;
+}
+
 bool AppServer::vfsClearFileAttributes(int syncDbId, const SyncPath &path) {
     if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
@@ -3397,6 +3404,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
         _syncPalMap[sync.dbId()]->setVfsUpdateFetchStatusCallback(&vfsUpdateFetchStatus);
         _syncPalMap[sync.dbId()]->setVfsFileStatusChangedCallback(&vfsFileStatusChanged);
         _syncPalMap[sync.dbId()]->setVfsForceStatusCallback(&vfsForceStatus);
+        _syncPalMap[sync.dbId()]->setVfsCleanUpStatusesCallback(&vfsCleanUpStatuses);
         _syncPalMap[sync.dbId()]->setVfsClearFileAttributesCallback(&vfsClearFileAttributes);
         _syncPalMap[sync.dbId()]->setVfsCancelHydrateCallback(&vfsCancelHydrate);
 

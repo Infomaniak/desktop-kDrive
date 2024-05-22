@@ -31,16 +31,14 @@ void TestIo::testGetFileStat() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size == 408278u);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.creationTime > 0);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -48,20 +46,18 @@ void TestIo::testGetFileStat() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures";
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT(fileStat.size == 0u);
 #else
         CPPUNIT_ASSERT(fileStat.size > 0u);
 #endif
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeDirectory);
         CPPUNIT_ASSERT(fileStat.creationTime > 0);
         CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeDirectory);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -73,19 +69,17 @@ void TestIo::testGetFileStat() {
         std::filesystem::create_symlink(targetPath, path);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT(fileStat.size == 0u);
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
 #endif
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -94,37 +88,33 @@ void TestIo::testGetFileStat() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const TemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
-        std::filesystem::create_symlink(targetPath, path);
+        std::filesystem::create_directory_symlink(targetPath, path);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT(fileStat.size == 0u);
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
 #endif
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeDirectory);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
     // A non-existing file
     {
         const SyncPath path = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeUnknown);
         CPPUNIT_ASSERT(fileStat.modtime == 0);
         CPPUNIT_ASSERT(fileStat.creationTime == 0);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
     }
 
@@ -133,25 +123,16 @@ void TestIo::testGetFileStat() {
         const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
+        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(!fileStat.isHidden);
+        CPPUNIT_ASSERT(fileStat.size == 0u);
+        CPPUNIT_ASSERT(fileStat.modtime == 0);
+        CPPUNIT_ASSERT(fileStat.creationTime == 0);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
-        CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeUnknown);
-        CPPUNIT_ASSERT(fileStat.modtime == 0);
-        CPPUNIT_ASSERT(fileStat.creationTime == 0);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoErrorInvalidArgument);
 #else
-        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
-        CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeUnknown);
-        CPPUNIT_ASSERT(fileStat.modtime == 0);
-        CPPUNIT_ASSERT(fileStat.creationTime == 0);
         CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
 #endif
     }
@@ -163,28 +144,15 @@ void TestIo::testGetFileStat() {
             path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
         }
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
 
-#ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeUnknown);
         CPPUNIT_ASSERT(fileStat.modtime == 0);
         CPPUNIT_ASSERT(fileStat.creationTime == 0);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
-#else
-        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
-        CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeUnknown);
-        CPPUNIT_ASSERT(fileStat.modtime == 0);
-        CPPUNIT_ASSERT(fileStat.creationTime == 0);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
         CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
-#endif
     }
     // A hidden file
     {
@@ -204,16 +172,14 @@ void TestIo::testGetFileStat() {
 #endif
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
 
         CPPUNIT_ASSERT(fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -231,15 +197,13 @@ void TestIo::testGetFileStat() {
         _testObj->setFileHidden(path, true);
 #endif
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeDirectory);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeDirectory);
     }
     // An existing file with dots and colons in its name
     {
@@ -251,24 +215,20 @@ void TestIo::testGetFileStat() {
         }
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeUnknown);
         CPPUNIT_ASSERT(fileStat.modtime == 0u);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
 #else
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
 #endif
     }
@@ -285,15 +245,13 @@ void TestIo::testGetFileStat() {
         }
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -305,19 +263,21 @@ void TestIo::testGetFileStat() {
         std::filesystem::create_symlink(targetPath, path);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT(fileStat.size == 0u);
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
 #endif
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+#ifdef _WIN32
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
+#else
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
+#endif
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 #if defined(__APPLE__)
@@ -331,15 +291,13 @@ void TestIo::testGetFileStat() {
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -353,15 +311,13 @@ void TestIo::testGetFileStat() {
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -380,15 +336,13 @@ void TestIo::testGetFileStat() {
         std::filesystem::remove(targetPath);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -405,15 +359,13 @@ void TestIo::testGetFileStat() {
         std::filesystem::remove_all(targetPath);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 #endif
@@ -429,18 +381,16 @@ void TestIo::testGetFileStat() {
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
-        CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -453,22 +403,20 @@ void TestIo::testGetFileStat() {
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
-        CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT(fileStat.size == 0u);
 #else
         CPPUNIT_ASSERT(fileStat.size > 0u);
 #endif
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeDirectory);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeDirectory);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -485,21 +433,19 @@ void TestIo::testGetFileStat() {
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::remove);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
 #else
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
 #endif
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 
-        CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -518,25 +464,23 @@ void TestIo::testGetFileStat() {
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::remove);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, exists, ioError));
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
 
-        CPPUNIT_ASSERT(exists);
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
         CPPUNIT_ASSERT(fileStat.size > 0u);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeFile);
         CPPUNIT_ASSERT(fileStat.modtime > 0);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
 #else
         CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.type == NodeTypeUnknown);
         CPPUNIT_ASSERT(fileStat.modtime == 0);
         CPPUNIT_ASSERT(fileStat.creationTime == 0);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
         CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
 #endif
     }

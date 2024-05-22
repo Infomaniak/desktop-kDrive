@@ -481,29 +481,24 @@ qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
     return total;
 }
 
+QString GuiUtility::getFolderPath(const QString &path, NodeType nodeType) {
+    return nodeType == NodeTypeDirectory ? path : QFileInfo(path).path();
+}
+
 bool GuiUtility::openFolder(const QString &dirPath) {
-    if (!dirPath.isEmpty()) {
-        QFileInfo fileInfo(dirPath);
-        if (fileInfo.exists()) {
-            const QUrl url = getUrlFromLocalPath(fileInfo.path());
-            if (url.isValid()) {
-                if (!QDesktopServices::openUrl(url)) {
-                    return false;
-                }
-            }
-        } else if (fileInfo.dir().exists()) {
-            const QUrl url = getUrlFromLocalPath(fileInfo.dir().path());
-            if (url.isValid()) {
-                if (!QDesktopServices::openUrl(url)) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
+    if (dirPath.isEmpty()) return true;
+
+    if (const auto fileInfo = QFileInfo(dirPath); fileInfo.exists()) {
+        const QUrl url = getUrlFromLocalPath(QDir::cleanPath(fileInfo.filePath()));
+        if (url.isValid() && !QDesktopServices::openUrl(url)) return false;
+    } else if (fileInfo.dir().exists()) {
+        const QUrl url = getUrlFromLocalPath(QDir::cleanPath(fileInfo.dir().path()));
+        if (!url.isValid()) return false;
+        if (!QDesktopServices::openUrl(url)) return false;
+    } else {
+        return false;
     }
+
     return true;
 }
 
@@ -542,6 +537,12 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
     }
     layout->invalidate();
     layout->activate();
+}
+  
+void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*/) {
+    if (path.size() > maxSize) {
+        path = path.left(maxSize) + "...";
+    }
 }
 
 bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<int, SyncInfoClient> &syncInfoMap,
@@ -582,6 +583,28 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
     }
 
     return true;
+}
+
+QLocale GuiUtility::languageToQLocale(Language language) {
+    switch (language) {
+        case LanguageSpanish:
+            return QLocale::Spanish;
+        case LanguageEnglish:
+            return QLocale::English;
+        case LanguageFrench:
+            return QLocale::French;
+        case LanguageGerman:
+            return QLocale::German;
+        case LanguageItalian:
+            return QLocale::Italian;
+        default:
+            return QLocale();
+    }
+}
+
+QString GuiUtility::getDateForCurrentLanguage(const QDateTime &dateTime, const QString &dateFormat) {
+    const Language lang = ParametersCache::instance()->parametersInfo().language();
+    return languageToQLocale(lang).toString(dateTime, dateFormat);
 }
 
 #ifdef Q_OS_LINUX

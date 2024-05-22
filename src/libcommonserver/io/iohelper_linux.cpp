@@ -18,100 +18,21 @@
 
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 
-#include <sys/stat.h>
+#include <log4cplus/loggingmacros.h>
+
 #include <sys/types.h>
+#include <sys/stat.h>
 
 namespace KDC {
 
-bool IoHelper::fileExists(const std::error_code &ec) noexcept {
-    return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
-}
-
-bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
-    struct stat sb;
-
-    if (lstat(path.string().c_str(), &sb) < 0) {
-        return false;
-    }
-
-    nodeId = std::to_string(sb.st_ino);
-    return true;
-}
-
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, IoError &ioError) noexcept {
-    exists = true;
-    ioError = IoErrorSuccess;
-
-    struct stat sb;
-
-    if (lstat(path.string().c_str(), &sb) < 0) {
-        exists = (errno != ENOENT) && (errno != ENAMETOOLONG);
-        ioError = posixError2ioError(errno);
-
-        return _isExpectedError(ioError);
-    }
-
-    switch (sb.st_mode & S_IFMT) {
-        case S_IFDIR:
-            buf->type = NodeTypeDirectory;
-            break;
-        case S_IFREG:
-        case S_IFLNK:
-            buf->type = NodeTypeFile;
-            break;
-        default:
-            buf->type = NodeTypeUnknown;
-            break;
-    }
-
-    buf->isHidden = false;  // lstat does not provide this information on Linux system
-    if (!_checkIfIsHiddenFile(path, buf->isHidden, ioError)) {
-        return false;
-    }
-
-    buf->inode = sb.st_ino;
-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-    buf->creationTime = sb.st_birthtime;
-#else
-    buf->creationTime = sb.st_ctime;
-#endif
-    buf->modtime = sb.st_mtime;
-    buf->size = sb.st_size;
-
-    return true;
-}
-
-bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
-    return true;
-}
-
-bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept {
-    isHidden = false;
-    ioError = IoErrorSuccess;
-
-    bool exists = false;
-    if (!checkIfPathExists(path, exists, ioError)) {  // For consistency with MacOSX and Windows.
-        return false;
-    }
-
-    isHidden = path.filename().string()[0] == '.';
-
-    return true;
-}
-
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
+    (void)(itemPath);
+
     isDehydrated = false;
     ioError = IoErrorSuccess;
-
-    bool exists = false;
-    if (!checkIfPathExists(itemPath, exists, ioError)) {
-        return false;
-    }
-
-    if (!exists) {
-        ioError = IoErrorNoSuchFileOrDirectory;
-    }
 
     return true;
 }

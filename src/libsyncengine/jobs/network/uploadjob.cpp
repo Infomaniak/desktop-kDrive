@@ -136,20 +136,12 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     uri.addQueryParameter("total_chunk_hash", "xxh3:" + _contentHash);
     uri.addQueryParameter(lastModifiedAtKey, std::to_string(_modtimeIn));
 
-    if (_linkType == LinkTypeSymlink || _linkType == LinkTypeHardlink || _linkType == LinkTypeFinderAlias ||
-        _linkType == LinkTypeJunction) {
+    if (IoHelper::isLink(_linkType)) {
         uri.addQueryParameter(symbolicLinkKey, Path2Str(_linkTarget));
     }
 
     canceled = false;
 }
-
-namespace details {
-inline bool isLink(LinkType linkType) {
-    return linkType == LinkTypeSymlink || linkType == LinkTypeHardlink ||
-           (linkType == LinkTypeFinderAlias && OldUtility::isMac()) || (linkType == LinkTypeJunction && OldUtility::isWindows());
-}
-}  // namespace details
 
 void UploadJob::setData(bool &canceled) {
     canceled = true;
@@ -171,8 +163,9 @@ void UploadJob::setData(bool &canceled) {
     }
 
     _linkType = itemType.linkType;
+    _targetType = itemType.targetType;
 
-    if (details::isLink(_linkType)) {
+    if (IoHelper::isLink(_linkType)) {
         LOG_DEBUG(_logger, "Read link data - type=" << _linkType);
         if (!readLink()) return;
     } else {
@@ -189,7 +182,7 @@ std::string UploadJob::getContentType(bool &canceled) {
     canceled = false;
 
     if (_linkType == LinkTypeSymlink) {
-        return mimeTypeSymlink;
+        return _targetType == NodeTypeFile ? mimeTypeSymlink : mimeTypeSymlinkFolder;
     } else if (_linkType == LinkTypeHardlink) {
         return mimeTypeHardlink;
     } else if (_linkType == LinkTypeFinderAlias) {

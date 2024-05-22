@@ -31,9 +31,8 @@ void TestIo::testFileChanged() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         bool changed = true;
         CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, changed, ioError));
@@ -45,10 +44,9 @@ void TestIo::testFileChanged() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures";
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
 
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         bool changed = true;
         CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, changed, ioError));
@@ -64,9 +62,8 @@ void TestIo::testFileChanged() {
         std::filesystem::create_symlink(targetPath, path);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         bool changed = true;
         CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, changed, ioError));
@@ -95,9 +92,8 @@ void TestIo::testFileChanged() {
         }
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         // Editing
         {
@@ -121,10 +117,9 @@ void TestIo::testFileChanged() {
         }
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
 
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
@@ -145,10 +140,9 @@ void TestIo::testFileChanged() {
         { std::ofstream ofs(path); }
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
 
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         _testObj->setFileHidden(path, true);
         bool changed = true;

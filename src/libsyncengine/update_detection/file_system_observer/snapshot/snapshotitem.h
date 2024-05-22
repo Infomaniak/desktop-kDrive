@@ -31,17 +31,16 @@ class SnapshotItem {
         SnapshotItem();
         SnapshotItem(const NodeId &id);
         SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt, SyncTime lastModified,
-                     NodeType type, int64_t size, bool canWrite = true, const std::string &contentChecksum = "",
-                     bool canShare = true);
+                     NodeType type, int64_t size, bool isLink = false, bool canWrite = true, bool canShare = true);
         SnapshotItem(const SnapshotItem &other);
 
-        inline NodeId id() const { return _id; }
+        inline const NodeId & id() const { return _id; }
         inline void setId(const NodeId &id) { _id = id; }
-        inline NodeId parentId() const { return _parentId; }
+        inline const NodeId & parentId() const { return _parentId; }
         inline void setParentId(const NodeId &newParentId) { _parentId = newParentId; }
         inline const std::unordered_set<NodeId> &childrenIds() const { return _childrenIds; }
         inline void setChildrenIds(const std::unordered_set<NodeId> &newChildrenIds) { _childrenIds = newChildrenIds; }
-        inline SyncName name() const { return _name; }
+        inline const SyncName & name() const { return _name; }
         inline void setName(const SyncName &newName) { _name = newName; }
         inline SyncTime createdAt() const { return _createdAt; }
         inline void setCreatedAt(SyncTime newCreatedAt) { _createdAt = newCreatedAt; }
@@ -51,7 +50,9 @@ class SnapshotItem {
         inline void setType(NodeType type) { _type = type; }
         inline int64_t size() const { return _size; }
         inline void setSize(uint64_t newSize) { _size = newSize; }
-        inline std::string contentChecksum() const { return _contentChecksum; }
+        inline bool isLink() const { return _isLink; }
+        inline void setIsLink(bool isLink) { _isLink = isLink; }
+        inline const std::string & contentChecksum() const { return _contentChecksum; }
         inline void setContentChecksum(const std::string &newChecksum) { _contentChecksum = newChecksum; }
         inline bool canWrite() const { return _canWrite; }
         inline void setCanWrite(bool canWrite) { _canWrite = canWrite; }
@@ -71,6 +72,7 @@ class SnapshotItem {
         SyncTime _lastModified = 0;
         NodeType _type = NodeTypeUnknown;
         int64_t _size = 0;
+        bool _isLink = false;
         std::string _contentChecksum;
         bool _canWrite = true;
         bool _canShare = true;

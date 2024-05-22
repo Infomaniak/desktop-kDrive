@@ -787,7 +787,7 @@ void SocketApi::openPrivateLink(const QString &link) {
 void SocketApi::command_GET_STRINGS(const QString &argument, SocketListener *listener) {
     static std::array<std::pair<const char *, QString>, 2> strings{{
         {"CONTEXT_MENU_TITLE", KDC::Theme::instance()->appNameGUI()},
-        {"COPY_PRIVATE_LINK_MENU_TITLE", tr("Copy private link to clipboard")},
+        {"COPY_PRIVATE_LINK_MENU_TITLE", tr("Copy private share link")},
     }};
     listener->sendMessage(QString("GET_STRINGS%1BEGIN").arg(MSG_CDE_SEPARATOR));
     for (auto key_value : strings) {
@@ -984,18 +984,17 @@ void SocketApi::sendSharingContextMenuOptions(const FileData &fileData, SocketLi
         bool canCreateDefaultPublicLink = publicLinksEnabled;
 
         if (canCreateDefaultPublicLink) {
-            listener->sendMessage(QString("MENU_ITEM%1COPY_PUBLIC_LINK%2")
-                                      .arg(MSG_CDE_SEPARATOR)
-                                      .arg(flagString + tr("Copy public link to clipboard")));
+            listener->sendMessage(
+                QString("MENU_ITEM%1COPY_PUBLIC_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy public share link")));
         } else if (publicLinksEnabled) {
             listener->sendMessage(QString("MENU_ITEM%1MANAGE_PUBLIC_LINKS%2")
                                       .arg(MSG_CDE_SEPARATOR)
-                                      .arg(flagString + tr("Copy public link to clipboard")));
+                                      .arg(flagString + tr("Copy public share link")));
         }
     }
 
     listener->sendMessage(
-        QString("MENU_ITEM%1COPY_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy private link to clipboard")));
+        QString("MENU_ITEM%1COPY_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy private share link")));
 }
 
 void SocketApi::addSharingContextMenuOptions(const FileData &fileData, QTextStream &response) {
@@ -1032,16 +1031,13 @@ void SocketApi::addSharingContextMenuOptions(const FileData &fileData, QTextStre
         bool canCreateDefaultPublicLink = publicLinksEnabled;
 
         if (canCreateDefaultPublicLink) {
-            response
-                << QString("%1COPY_PUBLIC_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy public link to clipboard"));
+            response << QString("%1COPY_PUBLIC_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy public share link"));
         } else if (publicLinksEnabled) {
-            response << QString("%1MANAGE_PUBLIC_LINKS%2")
-                            .arg(MSG_CDE_SEPARATOR)
-                            .arg(flagString + tr("Copy public link to clipboard"));
+            response << QString("%1MANAGE_PUBLIC_LINKS%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy public share link"));
         }
     }
 
-    response << QString("%1COPY_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy private link to clipboard"));
+    response << QString("%1COPY_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy private share link"));
 }
 
 void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *listener) {
