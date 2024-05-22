@@ -213,7 +213,7 @@ void TestIo::testGetFileStat() {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
         }
-
+         
         FileStat fileStat;
         IoError ioError = IoErrorUnknown;
 #ifdef _WIN32
