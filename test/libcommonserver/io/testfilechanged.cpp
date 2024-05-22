@@ -329,6 +329,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         const TemporaryDirectory temporaryDirectory;
         const SyncPath path = ".non_existing_hidden_file.txt";
 
+
         bool isHidden = false;
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
@@ -337,7 +338,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     }
 #endif
 
-#if defined(__APPLE__) || defined(WIN32)    // checkIfIsHiddenFile does not trigger an error on Linux
+#if defined(__APPLE__) || defined(WIN32)  // checkIfIsHiddenFile does not trigger an error on Linux
     // A non-existing file with a very long path causes an error.
     {
         const std::string pathSegment(50, 'a');
@@ -351,7 +352,7 @@ void TestIo::testCheckIfIsHiddenFile() {
 #ifdef _WIN32
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
-#elif defined(__MAC__)
+#elif defined(__APPLE__)
         CPPUNIT_ASSERT(!_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT_EQUAL(IoErrorFileNameTooLong, ioError);
 #elif defined(__unix__)
