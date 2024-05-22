@@ -1309,7 +1309,6 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
         return ExitCodeDbError;
     }
 
-    bool found = false;
     for (const Error &error : errorList) {
         if (isConflictsWithLocalRename(error.conflictType())) {
             // For conflict type that rename local file
@@ -1333,19 +1332,14 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
                 return ExitCodeSystemError;
             }
 
-            if (ioError != IoErrorSuccess) {
-                LOGW_DEBUG(Log::instance()->getLogger(),
-                           "Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError).c_str());
-                continue;
-            }
-
             // If conflict file still exists, keep the error.
-            if (found) {
+            if (found || ioError != IoErrorNoSuchFileOrDirectory) {
                 continue;
             }
         }
 
         if (isAutoResolvedError(error) == autoResolved) {
+            bool found = false;
             if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError for dbId=" << error.dbId());
                 return ExitCodeDbError;

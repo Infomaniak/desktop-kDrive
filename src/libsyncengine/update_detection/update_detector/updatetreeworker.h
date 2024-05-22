@@ -112,6 +112,7 @@ class UpdateTreeWorker : public ISyncWorker {
 
         ExitCode getNewPathAfterMove(const SyncPath &path, SyncPath &newPath);
         ExitCode updateNodeWithDb(const std::shared_ptr<Node> parentNode);
+        ExitCode updateTmpNode(const std::shared_ptr<Node> tmpNode);
         ExitCode getOriginPath(const std::shared_ptr<Node> node, SyncPath &path);
         ExitCode updateNameFromDbForMoveOp(const std::shared_ptr<Node> node, FSOpPtr moveOp);
 
@@ -131,7 +132,17 @@ class UpdateTreeWorker : public ISyncWorker {
         std::shared_ptr<Node> getOrCreateNodeFromPath(const SyncPath &path);
         void mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
 
+        /**
+         * Check that there is no temporary node remaining in the update tree
+         * @return true if no temporary node is found
+         */
         bool integrityCheck();
+
+        /**
+         * Draw the update tree in the log file for debugging purpose
+         */
+        void drawUpdateTree();
+        void drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncName &treeStr, uint64_t depth = 0);
 
         friend class TestUpdateTreeWorker;
 };

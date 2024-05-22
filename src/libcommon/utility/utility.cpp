@@ -73,6 +73,9 @@
 
 namespace KDC {
 
+const int CommonUtility::logsPurgeRate = 7;               // days
+const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
+
 SyncPath CommonUtility::_workingDirPath = "";
 
 static const QString englishCode = "en";
@@ -665,6 +668,26 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
     std::error_code ec;
     std::filesystem::remove_all(tmpPath, ec);
     return true;
+}
+
+std::string CommonUtility::envVarValue(const std::string &name) {
+#ifdef _WIN32
+    char *value = nullptr;
+    size_t sz = 0;
+    if (_dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
+        std::string valueStr(value);
+        free(value);
+        return valueStr;
+    }
+#else
+    char *value = std::getenv(name.c_str());
+    if (value) {
+        return std::string(value);
+        // Don't free "value"
+    }
+#endif
+
+    return std::string();
 }
 
 #ifdef __APPLE__

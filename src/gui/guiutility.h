@@ -95,7 +95,15 @@ QUrl getUrlFromLocalPath(const QString &path);
 int getQFontWeightFromQSSFontWeight(int weight);
 qint64 folderSize(const QString &dirPath);
 qint64 folderDiskSize(const QString &dirPath);
+
+// Returns `path` if `nodeType` is `NodeTypeDirectory`, else the parent folder path.
+QString getFolderPath(const QString &path, NodeType nodeType);
+
+// Opens the folder indicated by `path`, if `path` is valid, otherwise tries to open the parent folder.
+// Returns true if `path` is empty, or if the folder indicated by `path` is successfully open,
+// or if the parent folder is successfully open. Returns false otherwise.
 bool openFolder(const QString &path);
+
 QWidget *getTopLevelWidget(QWidget *widget);
 void forceUpdate(QWidget *widget);
 void invalidateLayout(QLayout *layout);

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/io/iohelper_win.h"
@@ -116,6 +117,12 @@ static bool init_private() {
     }
 
     initTrusteeWithUserSID();
+
+    const std::string useGetRightsFallbackMethod = CommonUtility::envVarValue("KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD");
+    if (!useGetRightsFallbackMethod.empty()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Use getRights fallback method");
+        IoHelper::_getRightsMethod = 1;
+    }
 
     return true;
 }
@@ -271,7 +278,9 @@ static void UnixTimevalToFileTime(struct timeval t, LPFILETIME pft) {
 }
 
 static bool setFileDates_private(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool &exists) {
+                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
+    (void)symlink;
+
     exists = true;
 
     FILETIME creationTime;

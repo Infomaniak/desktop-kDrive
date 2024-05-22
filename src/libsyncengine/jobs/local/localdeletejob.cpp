@@ -27,7 +27,7 @@
 #include <utility/utility.h>
 
 #ifdef _WIN32
-#include "objbase.h"
+#include <objbase.h>
 #endif
 
 namespace KDC {
@@ -75,8 +75,8 @@ bool LocalDeleteJob::canRun() {
     }
 
     if (!exists) {
-        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart. - path="
-                                << Path2WStr(_absolutePath).c_str());
+        LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart: "
+                                << Utility::formatSyncPath(_absolutePath).c_str());
         _exitCode = ExitCodeNeedRestart;
         _exitCause = ExitCauseUnexpectedFileSystemEvent;
         return false;
@@ -98,8 +98,8 @@ bool LocalDeleteJob::canRun() {
         if (job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
             job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
             itemFound = false;
-            LOGW_DEBUG(_logger, L"Item " << Path2WStr(_absolutePath).c_str()
-                                         << L" not found on remote replica. This is normal and expected.");
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
+                                          << L" not found on remote replica. This is normal and expected.");
         }
     }
 
@@ -108,8 +108,8 @@ bool LocalDeleteJob::canRun() {
         // For item moved in a blacklisted folder, we need to delete them even if they still exist on remote replica
         if (_relativePath == job.path().relative_path()) {
             // Item is found at the same path on remote
-            LOGW_DEBUG(_logger, L"Item " << Path2WStr(_absolutePath).c_str()
-                                         << L" still exist on remote replica. Aborting current sync and restart.");
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
+                                          << L" still exists on remote replica. Aborting current sync and restarting.");
             _exitCode = ExitCodeDataError;  // We need to rebuild the remote snapshot from scratch
             _exitCause = ExitCauseInvalidSnapshot;
             return false;
@@ -128,27 +128,27 @@ void LocalDeleteJob::runJob() {
         bool success = Utility::moveItemToTrash(_absolutePath);
         _exitCode = ExitCodeOk;
         if (!success) {
-            LOGW_WARN(_logger, L"Failed to move item " << Path2WStr(_absolutePath).c_str() << L" to trash");
+            LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" to trash");
             _exitCode = ExitCodeSystemError;
             _exitCause = ExitCauseMoveToTrashFailed;
             return;
         }
         if (ParametersCache::instance()->parameters().extendedLog()) {
-            LOGW_DEBUG(_logger, L"Item " << Path2WStr(_absolutePath).c_str() << L" was moved to trash");
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" was moved to trash");
         }
     } else {
-        LOGW_DEBUG(_logger, L"Delete item " << Path2WStr(_absolutePath).c_str());
+        LOGW_DEBUG(_logger, L"Delete item: " << Utility::formatSyncPath(_absolutePath).c_str());
         std::error_code ec;
-        if (std::filesystem::remove_all(_absolutePath, ec) > 0) {
-            LOGW_INFO(_logger, L"Item " << Path2WStr(_absolutePath).c_str() << L" deleted");
-            _exitCode = ExitCodeOk;
-        } else {
-            LOGW_WARN(_logger, L"Failed to delete item " << Path2WStr(_absolutePath).c_str() << L": "
-                                                         << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
+        std::filesystem::remove_all(_absolutePath, ec);
+        if (ec.value() != 0) {
+            LOGW_WARN(_logger, L"Failed to delete: " << Utility::formatStdError(_absolutePath, ec).c_str());
             _exitCode = ExitCodeSystemError;
             _exitCause = ExitCauseFileAccessError;
             return;
         }
+
+        LOGW_INFO(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" deleted");
+        _exitCode = ExitCodeOk;
     }
 }
 

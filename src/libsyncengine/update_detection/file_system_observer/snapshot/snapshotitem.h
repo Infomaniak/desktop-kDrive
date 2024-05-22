@@ -31,8 +31,7 @@ class SnapshotItem {
         SnapshotItem();
         SnapshotItem(const NodeId &id);
         SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt, SyncTime lastModified,
-                     NodeType type, int64_t size, bool canWrite = true, const std::string &contentChecksum = "",
-                     bool canShare = true);
+                     NodeType type, int64_t size, bool isLink = false, bool canWrite = true, bool canShare = true);
         SnapshotItem(const SnapshotItem &other);
 
         inline const NodeId & id() const { return _id; }
@@ -51,7 +50,9 @@ class SnapshotItem {
         inline void setType(NodeType type) { _type = type; }
         inline int64_t size() const { return _size; }
         inline void setSize(uint64_t newSize) { _size = newSize; }
-        inline const std::string & contentChecksum() const { return _contentChecksum; }
+        inline bool isLink() const { return _isLink; }
+        inline void setIsLink(bool isLink) { _isLink = isLink; }
+        inline std::string & contentChecksum() const { return _contentChecksum; }
         inline void setContentChecksum(const std::string &newChecksum) { _contentChecksum = newChecksum; }
         inline bool canWrite() const { return _canWrite; }
         inline void setCanWrite(bool canWrite) { _canWrite = canWrite; }
@@ -71,6 +72,7 @@ class SnapshotItem {
         SyncTime _lastModified = 0;
         NodeType _type = NodeTypeUnknown;
         int64_t _size = 0;
+        bool _isLink = false;
         std::string _contentChecksum;
         bool _canWrite = true;
         bool _canShare = true;

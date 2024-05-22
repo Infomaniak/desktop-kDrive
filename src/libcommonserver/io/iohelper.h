@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/utility.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/log/log.h"
 #ifdef _WIN32
@@ -101,8 +102,8 @@ struct IoHelper {
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
          \param nodeId is set with the node identifier of the item indicated by path, if the item exists, otherwise an empty
-         string. The node identifier is the nodeid of the item on Linux and Mac systems; the Windows file id otherwise. \return
-         true if no unexpected error occurred, false otherwise.
+         string. The node identifier is the nodeid of the item on Linux and Mac systems; the Windows file id otherwise.
+         \return true if no unexpected error occurred, false otherwise.
          */
         static bool getNodeId(const SyncPath &path, NodeId &nodeId) noexcept;
 
@@ -110,11 +111,14 @@ struct IoHelper {
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
          \param filestat is set with the file status of the item indicated by path, if the item exists and the status could be
-         succesfully retrieved, nullptr otherwise. \param exists is set with true if path indicates an existing item (e.g., a
-         dangling symlink is an existing item of file type), false otherwise. \param ioError holds the error returned when an
-         underlying OS API call fails. \return true if no unexpected error occurred, false otherwise.
+         succesfully retrieved, nullptr otherwise.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
          */
-        static bool getFileStat(const SyncPath &path, FileStat *filestat, bool &exists, IoError &ioError) noexcept;
+        static bool getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept;
+#if defined(__APPLE__) || defined(__unix__)
+        static bool getFileStatUnix(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept;
+#endif
 
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
@@ -127,7 +131,8 @@ struct IoHelper {
          \param previousMtime is the previous modification date to be checked against.
          \param ioError holds the error returned when an underlying OS API call fails.
          \param changed is a boolean set with true if the check is successful and the file has changed with respect to size or
-         modification time. False otherwise. \return true if no unexpected error occurred, false otherwise.
+         modification time. False otherwise.
+         \return true if no unexpected error occurred, false otherwise.
          */
         static bool checkIfFileChanged(const SyncPath &path, int64_t previousSize, time_t previousMtime, bool &changed,
                                        IoError &ioError) noexcept;
@@ -135,10 +140,10 @@ struct IoHelper {
         //! Check if the item indicated by path is hidden.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
-         \param isHidden is a boolean set true if the item indicated by path is hidden, or if the check failed.
-            Typically, a file or directory is hidden if it is not visible in a file finder or in a terminal using a sheer `ls`
-         command. \param ioError holds the error returned when an underlying OS API call fails. \return true if no unexpected
-         error occurred, false otherwise.
+         \param isHidden is a boolean set true if the item indicated by path is hidden, or if the check failed. Typically, a file
+         or directory is hidden if it is not visible in a file finder or in a terminal using a sheer `ls` command.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
          */
         static bool checkIfIsHiddenFile(const SyncPath &path, bool checkAncestors, bool &isHidden, IoError &ioError) noexcept;
         static bool checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept;
@@ -167,8 +172,9 @@ struct IoHelper {
          \param path is the file system path indicating the item to check.
          \param nodeId is node identifier that is checked against the identifier indicated by path.
          \param exists is a boolean set with true if an item indicated by the path exists with the specified node identifier,
-         false otherwise. \param ioError holds the error returned when an underlying OS API call fails. \return true if no
-         unexpected error occurred, false otherwise.
+         false otherwise.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
          */
         static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &exists,
                                                     IoError &ioError) noexcept;
@@ -178,8 +184,8 @@ struct IoHelper {
           \param path is the file system path of a file.
           \param size holds the size in bytes of the file indicated by path in case of success.
           \param ioError holds the error associated to a failure of the underlying OS API call, if any.
-          \return true if no unexpected error occurred, false otherwise. If path indicates a directory,
-            the function returns false and ioError is set with IoErrorIsADirectory.
+          \return true if no unexpected error occurred, false otherwise. If path indicates a directory, the function returns false
+          and ioError is set with IoErrorIsADirectory.
         */
         static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
 
@@ -208,10 +214,11 @@ struct IoHelper {
         /*!
           \param targetPath is the file system path of the item to link. This can be a path to a directory.
           \param path is the file system path of the symlink to create.
+          \param isFolder is a boolean set with true if the targetPath is a directory
           \param ioError holds the error associated to a failure of the underlying OS API call, if any.
           \return true if no unexpected error occurred, false otherwise.
         */
-        static bool createSymlink(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept;
+        static bool createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept;
 
 #ifdef __APPLE__
         //! Create a Finder alias file for the specified target under the specified path.
@@ -231,8 +238,10 @@ struct IoHelper {
         /*!
          \param path is the file system path of the item to check for.
          \param isDirectory is boolean that is set to true if the type of the item indicated by path is `NodeTypeFile`, false
-         otherwise. \param ioError holds the error returned when an underlying OS API call fails. Defaults to false. \return true
-         if no unexpected error occurred, false otherwise. If the return value is false, isDirectory is also set with false.
+         otherwise.
+         \param ioError holds the error returned when an underlying OS API call fails. Defaults to false.
+         \return true if no unexpected error occurred, false otherwise. If the return value is false, isDirectory is also set with
+         false.
          */
         static bool checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoError &ioError) noexcept;
 
@@ -241,7 +250,7 @@ struct IoHelper {
          \param path is the file system path of the directory to create.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise. If path indicates an existing directory, then the function
-                returns false and sets ioError with IoErrorDirectoryExists.
+         returns false and sets ioError with IoErrorDirectoryExists.
          */
         static bool createDirectory(const SyncPath &path, IoError &ioError) noexcept;
 
@@ -353,6 +362,12 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
         */
         static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
+
+        static inline bool isLink(LinkType linkType) {
+            return linkType == LinkTypeSymlink || linkType == LinkTypeHardlink ||
+                   (linkType == LinkTypeFinderAlias && OldUtility::isMac()) ||
+                   (linkType == LinkTypeJunction && OldUtility::isWindows());
+        }
 
     protected:
         friend class DirectoryIterator;

@@ -43,8 +43,8 @@ class AddDriveConfirmationWidget : public QWidget {
         void terminated(bool next = true);
 
     private:
-        QLabel *_logoTextIconLabel;
-        QLabel *_descriptionLabel;
+        QLabel *_logoTextIconLabel{nullptr};
+        QLabel *_descriptionLabel{nullptr};
         QColor _logoColor;
         KDC::GuiUtility::WizardAction _action;
 

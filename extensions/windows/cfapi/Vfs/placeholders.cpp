@@ -76,7 +76,6 @@ bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
         // Links are not managed by MS Cloud File API
-        TRACE_DEBUG(L"Links are not managed: %ls", filePath);
         return true;
     }
 
@@ -113,7 +112,6 @@ bool Placeholders::revert(const PCWSTR filePath) {
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
         // Links are not managed by MS Cloud File API
-        TRACE_DEBUG(L"Links are not managed: %ls", filePath);
         return true;
     }
 
@@ -149,7 +147,6 @@ bool Placeholders::update(const PCWSTR filePath, const WIN32_FIND_DATA *findData
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
         // Links are not managed by MS Cloud File API
-        TRACE_DEBUG(L"Links are not managed: %ls", filePath);
         return true;
     }
 
@@ -208,7 +205,6 @@ bool Placeholders::getStatus(const PCWSTR filePath, bool *isPlaceholder, bool *i
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
         // Links are not managed by MS Cloud File API
-        TRACE_DEBUG(L"Links are not managed: %ls", filePath);
         if (isPlaceholder) {
             *isPlaceholder = false;
         }
@@ -267,7 +263,6 @@ bool Placeholders::setStatus(const PCWSTR path, bool syncOngoing) {
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
         // Links are not managed by MS Cloud File API
-        TRACE_DEBUG(L"Links are not managed: %ls", path);
         return true;
     }
 
@@ -305,7 +300,6 @@ bool Placeholders::getInfo(const PCWSTR path, CF_PLACEHOLDER_STANDARD_INFO &info
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
         // Links are not managed by MS Cloud File API
-        TRACE_DEBUG(L"Links are not managed: %ls", path);
         info.PinState = CF_PIN_STATE_UNSPECIFIED;
         return true;
     }
@@ -346,7 +340,6 @@ bool Placeholders::setPinState(const PCWSTR path, CF_PIN_STATE state) {
 
     if (dwFlagsAndAttributes & FILE_FLAG_OPEN_REPARSE_POINT) {
         // Links are not managed by MS Cloud File API
-        TRACE_DEBUG(L"Links are not managed: %ls", path);
         return true;
     }
 

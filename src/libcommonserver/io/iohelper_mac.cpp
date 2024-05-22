@@ -21,101 +21,32 @@
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"  // Path2WStr
-
+#include "libcommonserver/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
 
-#include <sys/stat.h>
 #include <sys/xattr.h>
+#include <sys/stat.h>
 
 namespace KDC {
 
 bool isLocked(const SyncPath &path);
 
-bool IoHelper::fileExists(const std::error_code &ec) noexcept {
-    return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
-}
+bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
+    isDehydrated = false;
+    ioError = IoErrorSuccess;
 
-bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
-    struct stat sb;
+    static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
 
-    if (lstat(path.string().c_str(), &sb) < 0) {
+    std::string value;
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);
+    if (!result) {
         return false;
     }
 
-    nodeId = std::to_string(sb.st_ino);
-
-    return true;
-}
-
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, IoError &ioError) noexcept {
-    exists = true;
-    ioError = IoErrorSuccess;
-
-    struct stat sb;
-
-    if (lstat(path.string().c_str(), &sb) < 0) {
-        exists = (errno != ENOENT) && (errno != ENAMETOOLONG);
-        ioError = posixError2ioError(errno);
-
-        return _isExpectedError(ioError);
+    if (!value.empty()) {
+        isDehydrated = (value != "F");
     }
-
-    switch (sb.st_mode & S_IFMT) {
-        case S_IFDIR:
-            buf->type = NodeTypeDirectory;
-            break;
-        case S_IFREG:
-        case S_IFLNK:
-            buf->type = NodeTypeFile;
-            break;
-        default:
-            buf->type = NodeTypeUnknown;
-            break;
-    }
-
-    if (sb.st_flags & UF_HIDDEN) {
-        buf->isHidden = true;
-    }
-
-    buf->inode = sb.st_ino;
-#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
-    buf->creationTime = sb.st_birthtime;
-#else
-    buf->creationTime = sb.st_ctime;
-#endif
-    buf->modtime = sb.st_mtime;
-    buf->size = sb.st_size;
-
-    return true;
-}
-
-bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
-    return true;
-}
-
-bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, IoError &ioError) noexcept {
-    static const std::string VolumesFolder = "/Volumes";
-
-    isHidden = false;
-    ioError = IoErrorSuccess;
-
-    if (filepath == VolumesFolder) {
-        // `VolumesFolder` is always hidden on MacOSX whereas kDrive needs to consider it as visible.
-        isHidden = false;
-        return true;
-    }
-
-    FileStat filestat;
-    bool exists = false;
-
-    if (!getFileStat(filepath.string().c_str(), &filestat, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(filepath, ioError).c_str());
-        return false;
-    }
-
-    isHidden = filestat.isHidden || filepath.filename().string()[0] == '.';
 
     return true;
 }
@@ -123,7 +54,7 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, Io
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
     return (error == IoErrorNoSuchFileOrDirectory) || (error == IoErrorAttrNotFound) || (error == IoErrorAccessDenied);
-};
+}
 }  // namespace
 
 bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, std::string &value, IoError &ioError) noexcept {

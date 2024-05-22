@@ -44,7 +44,7 @@ void ConflictFinderWorker::findConflicts() {
     std::vector<std::shared_ptr<Node>> localMoveDirNodes;
     findConflictsInTree(_syncPal->_localUpdateTree, _syncPal->_remoteUpdateTree, localMoveDirNodes, remoteMoveDirNodes);
 
-    // Move Move Cycle
+    // Move-Move Cycle
     std::optional<std::vector<Conflict>> moveMoveCycleList =
         determineMoveMoveCycleConflicts(localMoveDirNodes, remoteMoveDirNodes);
     if (moveMoveCycleList) {
@@ -222,7 +222,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
         // remove it from queue
         queue.pop();
 
-        // visit childrens
+        // visit children
         for (auto &childElt : node->children()) {
             auto child = childElt.second;
             if (!visited[child]) {
@@ -448,7 +448,7 @@ std::optional<std::vector<std::shared_ptr<Node>>> ConflictFinderWorker::findChan
         // remove it from queue
         queue.pop_front();
 
-        // visit childrens
+        // visit children
         for (auto child : node->children()) {
             if (!visited[child.second]) {
                 visited[child.second] = true;
