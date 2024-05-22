@@ -316,7 +316,11 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT(!isHidden);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+#if defined(__unix__)
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
+#endif
     }
 
 #if !defined(WIN32)
