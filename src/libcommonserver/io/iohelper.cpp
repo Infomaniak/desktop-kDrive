@@ -411,7 +411,6 @@ bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioErro
     }
     const SyncName logArchiverDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-logarchiverdir/"));
     directoryPath = tempDir / logArchiverDirName;
-    return true;
 }
 
 
