@@ -76,7 +76,6 @@ DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent
     _deleteLogs = ParametersCache::instance()->parametersInfo().purgeOldLogs();
 
     ClientGui::restoreGeometry(this);
-    setMinimumHeight(800);
     setResizable(true);
 
     updateUI();
@@ -123,21 +122,25 @@ void DebuggingDialog::initUI() {
 
     // Debug info main box  (Can be hidden when debugging is disabled)
     _debuggingInfoMainWidget = new QWidget();
-    QSizePolicy debuggingInfoMainWidgetSizePolicy = _debuggingInfoMainWidget->sizePolicy();
-    debuggingInfoMainWidgetSizePolicy.setRetainSizeWhenHidden(true);
-    _debuggingInfoMainWidget->setSizePolicy(debuggingInfoMainWidgetSizePolicy);
-    QVBoxLayout *debuggingInfoMainHBox = new QVBoxLayout(_debuggingInfoMainWidget);
-    debuggingInfoMainHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    mainLayout->addWidget(_debuggingInfoMainWidget);
 
     // Debug info main box | Link to debug folder
-    _debuggingFolderLabel = new QLabel();
+    _debuggingFolderLabel = new QLabel(_debuggingInfoMainWidget);
     _debuggingFolderLabel->setText(
         tr("<a style=\"%1\" href=\"%2\">Open debugging folder</a>").arg(CommonUtility::linkStyle, debuggingFolderLink));
-    _debuggingFolderLabel->setContentsMargins(0, 0, 0, 10);
-    debuggingInfoMainHBox->addWidget(_debuggingFolderLabel);
+    _debuggingFolderLabel->setContentsMargins(boxHMargin, 0, 0, 10);
+    mainLayout->addWidget(_debuggingFolderLabel);
+    mainLayout->addSpacing(boxHSpacing);
 
-    debuggingInfoMainHBox->addSpacing(boxHSpacing);
+    // Scollable main widget
+    QWidget *scrollableMainWidget = new QWidget();
+
+    // Scrollable main widget | Main layout
+    QVBoxLayout *scrollableMainLayout = new QVBoxLayout(scrollableMainWidget);
+
+    // Debug info main box  (Can be hidden when debugging is disabled)
+    QVBoxLayout *debuggingInfoMainHBox = new QVBoxLayout(_debuggingInfoMainWidget);
+    debuggingInfoMainHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    scrollableMainLayout->addWidget(_debuggingInfoMainWidget);
 
     // Debug info main box | Debug Level Main Box
     QVBoxLayout *debugLevelMainBox = new QVBoxLayout();
@@ -309,6 +312,16 @@ void DebuggingDialog::initUI() {
     logUploadMainBox->addSpacing(recordDebuggingBoxVMargin);
 
     debuggingInfoMainHBox->addStretch();
+
+    // Scrollable main widget | Scroll area
+    QScrollArea *scrollArea = new QScrollArea(this);
+    scrollArea->setWidget(scrollableMainWidget);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    scrollArea->setBackgroundRole(QPalette::Base);
+    mainLayout->addWidget(scrollArea);
+
     // Add dialog buttons
     QHBoxLayout *buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
