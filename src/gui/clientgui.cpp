@@ -47,8 +47,6 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcClientGui, "gui.clientgui", QtInfoMsg)
 
-const int ClientGui::logsPurgeRate = 7;  // days
-
 ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(qGuiApp, &QGuiApplication::screenAdded, this, &ClientGui::onScreenUpdated);
     connect(qGuiApp, &QGuiApplication::screenRemoved, this, &ClientGui::onScreenUpdated);
