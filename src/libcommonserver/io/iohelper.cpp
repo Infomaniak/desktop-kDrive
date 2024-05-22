@@ -191,46 +191,6 @@ bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) 
     return true;
 }
 
-bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, bool &exists) noexcept {
-    read = false;
-    write = false;
-    exec = false;
-    exists = false;
-
-    ItemType itemType;
-    const bool success = getItemType(path, itemType);
-    if (!success) {
-        LOGW_WARN(logger(),
-                  L"Failed to check if the item is a symlink: " << Utility::formatIoError(path, itemType.ioError).c_str());
-        return false;
-    }
-    exists = itemType.ioError != IoErrorNoSuchFileOrDirectory;
-    if (!exists) {
-        return true;
-    }
-    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
-
-    std::error_code ec;
-    std::filesystem::perms perms =
-        isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
-    if (ec.value() != 0) {
-        exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
-        if (!exists) {
-            // Path doesn't exist
-            return true;
-        }
-
-        LOGW_WARN(logger(), L"Failed to get permissions - " << Utility::formatStdError(path, ec).c_str());
-        return false;
-    }
-
-    exists = true;
-    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
-    write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
-    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
-    return true;
-}
-
 bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoErrorSuccess;
 
