@@ -37,7 +37,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
         CPPUNIT_ASSERT(_testObj->checkIfFileIsDehydrated(path, isDehydrated, ioError));
 #if defined(__APPLE__)
         CPPUNIT_ASSERT_EQUAL(IoErrorAttrNotFound, ioError);
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(_WIN32)
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 #endif
         CPPUNIT_ASSERT(!isDehydrated);
