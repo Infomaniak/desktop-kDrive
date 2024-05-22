@@ -121,7 +121,7 @@ static bool init_private() {
     const std::string useGetRightsFallbackMethod = CommonUtility::envVarValue("KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD");
     if (!useGetRightsFallbackMethod.empty()) {
         LOG_DEBUG(Log::instance()->getLogger(), "Use getRights fallback method");
-        IoHelper::_getRightsMethod = 1;
+        IoHelper::_getAndSetRightsMethod = 1;
     }
 
     return true;
