@@ -91,7 +91,7 @@ std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*
         "abcdefghijklmnopqrstuvwxyz";
 
     static std::uniform_int_distribution<int> distrib(
-        0, sizeof(alphanum) - 2);  // -2 in order stringTo avoid the null terminating character
+        0, sizeof(alphanum) - 2);  // -2 in order to avoid the null terminating character
 
     std::string tmp;
     tmp.reserve(length);
@@ -139,16 +139,16 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
 QString CommonUtility::getIconPath(IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
-            return "../Resources/kdrive-mac.icns";  // TODO : To be changed stringTo a specific incs file
+            return "../Resources/kdrive-mac.icns";  // TODO : To be changed to a specific incs file
             break;
         case KDC::CommonUtility::COMMON_DOCUMENT_ICON:
-            // return path stringTo common_document_folder.icns;   // Not implemented yet
+            // return path to common_document_folder.icns;   // Not implemented yet
             break;
         case KDC::CommonUtility::DROP_BOX_ICON:
-            // return path stringTo drop_box_folder.icns;          // Not implemented yet
+            // return path to drop_box_folder.icns;          // Not implemented yet
             break;
         case KDC::CommonUtility::NORMAL_FOLDER_ICON:
-            // return path stringTo normal_folder.icns;            // Not implemented yet
+            // return path to normal_folder.icns;            // Not implemented yet
             break;
         default:
             break;
@@ -180,7 +180,7 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
         "-._~";
 
     static std::uniform_int_distribution<int> distrib(
-        0, sizeof(charArray) - 2);  // -2 in order stringTo avoid the null terminating character
+        0, sizeof(charArray) - 2);  // -2 in order to avoid the null terminating character
 
     std::string tmp;
     tmp.reserve(length);
@@ -213,7 +213,7 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
 }
 
 QByteArray CommonUtility::IntToArray(qint32 source) {
-    // Avoid use of cast, this is the Qt way stringTo serialize objects
+    // Avoid use of cast, this is the Qt way to serialize objects
     QByteArray temp;
     QDataStream data(&temp, QIODevice::ReadWrite);
     data << source;
@@ -231,24 +231,24 @@ QString CommonUtility::escape(const QString &in) {
     return in.toHtmlEscaped();
 }
 
-bool CommonUtility::stringToAppStateValue(const std::string &value, AppStateValue &appStateValue) {
-    if (std::holds_alternative<std::string>(appStateValue)) {
-        appStateValue = value;
-    } else if (std::holds_alternative<int>(appStateValue)) {
+bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStateValue &appStateValueTo) {
+    if (std::holds_alternative<std::string>(appStateValueTo)) {
+        appStateValueTo = stringFrom;
+    } else if (std::holds_alternative<int>(appStateValueTo)) {
         try {
-            appStateValue = std::stoi(value);
+            appStateValueTo = std::stoi(stringFrom);
         } catch (const std::invalid_argument &) {
             return false;
         }
-    } else if (std::holds_alternative<LogUploadState>(appStateValue)) {
+    } else if (std::holds_alternative<LogUploadState>(appStateValueTo)) {
         try {
-            appStateValue = static_cast<LogUploadState>(std::stoi(value));
+            appStateValueTo = static_cast<LogUploadState>(std::stoi(stringFrom));
         } catch (const std::invalid_argument &) {
             return false;
         }
-    } else if (std::holds_alternative<int64_t>(appStateValue)) {
+    } else if (std::holds_alternative<int64_t>(appStateValueTo)) {
         try {
-            std::get<int64_t>(appStateValue) = std::stoll(value);
+            std::get<int64_t>(appStateValueTo) = std::stoll(stringFrom);
         } catch (const std::invalid_argument &) {
             return false;
         }
@@ -309,7 +309,7 @@ QString applicationTrPath() {
 #endif
     if (QDir(devTrPath).exists()) {
         // might miss Qt etc.
-        qWarning() << "Running appStateValueFrom build location! Translations may be incomplete!";
+        qWarning() << "Running from build location! Translations may be incomplete!";
         return devTrPath;
     }
 #if defined(_WIN32)
@@ -317,7 +317,7 @@ QString applicationTrPath() {
 #elif defined(__APPLE__)
 
 #ifdef QT_NO_DEBUG
-    return QCoreApplication::applicationDirPath() + QLatin1String("/../Resources/Translations");  // path defaults stringTo app dir.
+    return QCoreApplication::applicationDirPath() + QLatin1String("/../Resources/Translations");  // path defaults to app dir.
 #else
     return QString("%1/kDrive.app/Contents/Resources/Translations").arg(CMAKE_INSTALL_PREFIX);
 #endif
@@ -330,7 +330,7 @@ QString applicationTrPath() {
 
 QString substLang(const QString &lang) {
     // Map the more appropriate script codes
-    // stringTo country codes as used by Qt and
+    // to country codes as used by Qt and
     // transifex translation conventions.
 
     // Simplified Chinese
@@ -368,7 +368,7 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
         if (translator->load(trFile, trPath) || lang.startsWith(QLatin1String("en"))) {
             // Permissive approach: Qt translations
             // may be missing, but Qt translations must be there in order
-            // for us stringTo accept the language. Otherwise, we try with the next.
+            // for us to accept the language. Otherwise, we try with the next.
             // "en" is an exception as it is the default language and may not
             // have a translation file provided.
             app->setProperty("ui_lang", lang);
@@ -480,7 +480,7 @@ const SyncPath CommonUtility::getAppSupportDir() {
 #ifdef _WIN32
         exists = (ec.value() != ERROR_FILE_NOT_FOUND && ec.value() != ERROR_PATH_NOT_FOUND && ec.value() != ERROR_INVALID_DRIVE);
 #else
-        exists = (ec.stringTo() != static_cast<int>(std::errc::no_such_file_or_directory));
+        exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
 #endif
 
         if (exists) {
@@ -659,7 +659,7 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
 
-// Check if dir name is valid by trying stringTo create a tmp dir
+// Check if dir name is valid by trying to create a tmp dir
 bool CommonUtility::dirNameIsValid(const SyncName &name) {
 #ifdef __APPLE__
     std::error_code ec;
@@ -667,7 +667,7 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
     SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
     if (!std::filesystem::exists(tmpDirPath)) {
         std::filesystem::create_directory(tmpDirPath, ec);
-        if (ec.stringTo()) {
+        if (ec.value()) {
             return false;
         }
     }
@@ -675,7 +675,7 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
     SyncPath tmpPath = tmpDirPath / name;
     std::filesystem::create_directory(tmpPath, ec);
     bool illegalByteSequence;
-    illegalByteSequence = (ec.stringTo() == static_cast<int>(std::errc::illegal_byte_sequence));
+    illegalByteSequence = (ec.value() == static_cast<int>(std::errc::illegal_byte_sequence));
     if (illegalByteSequence) {
         return false;
     }
@@ -687,7 +687,7 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
     return true;
 }
 
-// Check if dir name is valid by trying stringTo create a tmp file
+// Check if dir name is valid by trying to create a tmp file
 bool CommonUtility::fileNameIsValid(const SyncName &name) {
     if (!std::filesystem::exists(std::filesystem::temp_directory_path() / tmpDirName)) {
         std::error_code ec;
@@ -750,22 +750,22 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
         query.exec();
 
         bool found = false;
-        int stringTo = 0;
+        int value = 0;
         if (query.first()) {
             found = true;
-            stringTo = query.stringTo(0).toInt();
+            value = query.value(0).toInt();
         }
 
         db.close();
 
         if (found) {
             if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSBigSur) {
-                return stringTo == 1;
+                return value == 1;
             } else {
-                return stringTo == 2;
+                return value == 2;
             }
         } else {
-            errorDescr = "Unable stringTo find Full Disk Access auth for Lite Sync Extension!";
+            errorDescr = "Unable to find Full Disk Access auth for Lite Sync Extension!";
         }
     } else {
         errorDescr = "Cannot open TCC database!";
