@@ -844,8 +844,7 @@ ExitCode GuiRequests::getAppState(AppStateKey key, AppStateValue &value) {
     QString valueQStr;
     resultStream >> valueQStr;
 
-    std::string valueStr = valueQStr.toStdString();
-    if (!CommonUtility::stringToAppStateValue(valueStr, value)) {
+    if (std::string valueStr = valueQStr.toStdString(); !CommonUtility::stringToAppStateValue(valueStr, value)) {
         return ExitCodeSystemError;
     }
 
