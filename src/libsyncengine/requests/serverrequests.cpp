@@ -1012,8 +1012,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
     IoHelper::logArchiverDirectoryPath(logUploadTempFolder, ioError);
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(Log::instance()->getLogger(),
-                            "Error in IoHelper::logArchiverDirectoryPath : " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Error in IoHelper::logArchiverDirectoryPath : "
+                                                   << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         return ExitCodeSystemError;
     }
 
@@ -1081,9 +1081,9 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     woss << std::put_time(&tm, "%D at %Hh%M");
     uploadDate = woss.str();
 
-    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) ||
-                            !found || !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string(""), found) ||
-                            !found) {
+    if (bool found = false;
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) || !found ||
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string(""), found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
     return ExitCodeOk;
@@ -1091,21 +1091,21 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
 ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
-    std::string logUploadStatus;
+    LogUploadState logUploadStatus = LogUploadState::None;
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStatus, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
         return ExitCodeDbError;
     }
 
-    if (logUploadStatus == "C0") {
+    if (logUploadStatus == LogUploadState::CancelRequested) {
         return ExitCodeOk;
     }
 
-    if (logUploadStatus == "C1") {
+    if (logUploadStatus == LogUploadState::Canceled) {
         return ExitCodeOperationCanceled;  // The user has already canceled the operation
     }
 
-    if (logUploadStatus[0] != 'A' && logUploadStatus[0] != 'U') {
+    if (logUploadStatus != LogUploadState::Archiving && logUploadStatus  != LogUploadState::Uploading) {
         return ExitCodeInvalidOperation;  // The operation is not in progress
     }
 

@@ -320,7 +320,7 @@ AppServer::AppServer(int &argc, char **argv)
     if (_crashRecovered) {
         bool found = false;
         LOG_WARN(_logger, "Server auto restart after a crash.");
-        if (true || serverCrashedRecently()) { //TODO: remove true
+        if (true || serverCrashedRecently()) {  // TODO: remove true
             LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
             QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
             if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, std::string("0"), found) ||
@@ -2125,12 +2125,12 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
                             !found) {  // Reset status
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
     }
+    sendLogUploadStatusUpdated(LogUploadState::Archiving, 0);  // Send progress to the client
 
     /* See AppStateKey::LogUploadState for status values
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
     std::function<bool(LogUploadState, int)> progressFunc = [this](LogUploadState status, int progress) {
-        sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
         LOG_DEBUG(_logger, "Log transfert progress : " << static_cast<int>(status) << " | " << progress << " %");
 
         LogUploadState logUploadState = LogUploadState::None;
@@ -2138,7 +2138,11 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
                                 !found) {  // Check if the user canceled the upload
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         }
-        return logUploadState != LogUploadState::Canceled && logUploadState != LogUploadState::CancelRequested;
+        bool canceled = logUploadState == LogUploadState::Canceled || logUploadState == LogUploadState::CancelRequested;
+        if (!canceled) {
+            sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
+        }
+        return !canceled;
     };
 
     ExitCause exitCause = ExitCauseUnknown;

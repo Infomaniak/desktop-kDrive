@@ -76,6 +76,7 @@ DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent
     _deleteLogs = ParametersCache::instance()->parametersInfo().purgeOldLogs();
 
     ClientGui::restoreGeometry(this);
+    setMinimumHeight(800);
     setResizable(true);
 
     updateUI();
@@ -85,7 +86,6 @@ void DebuggingDialog::initUI() {
     setObjectName("DebuggingDialog");
 
     QVBoxLayout *mainLayout = this->mainLayout();
-
     // Title
     QLabel *titleLabel = new QLabel();
     titleLabel->setObjectName("titleLabel");
@@ -233,7 +233,7 @@ void DebuggingDialog::initUI() {
     // Log upload | Main box | Label (boldTextLabel)
     QLabel *logUploadLabel = new QLabel();
     logUploadLabel->setObjectName("boldTextLabel");
-    logUploadLabel->setText(tr("Share the debug folder with infomaniak support."));
+    logUploadLabel->setText(tr("Share the debug folder with Infomaniak support."));
     logUploadMainBox->addWidget(logUploadLabel);
 
     // Log upload | Main box | heavy log box
@@ -357,6 +357,20 @@ void DebuggingDialog::initLogUploadLayout() {
         qCWarning(lcDebuggingDialog) << "Failed to get log upload status";
     }
 
+    if (logUploadState == LogUploadState::Canceled) {
+        QString LastSuccessfulLogUploadDate = "";
+        exitCode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadDate, LastSuccessfulLogUploadDate);
+        if (exitCode != ExitCode::ExitCodeOk) {
+            qCWarning(lcDebuggingDialog) << "Failed to get last successful log upload date";
+        }
+        if (LastSuccessfulLogUploadDate.size() == 0) {
+            logUploadState = LogUploadState::None;
+        } else {
+            logUploadState = LogUploadState::Success;
+        }
+    }
+
+
     exitCode = GuiRequests::getAppState(AppStateKey::LogUploadPercent, logUploadPercent);
     if (exitCode != ExitCode::ExitCodeOk) {
         qCWarning(lcDebuggingDialog) << "Failed to get log upload percent";
@@ -408,14 +422,8 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
         _logUploadInfoHBox->removeItem(_logUploadInfoHBox->itemAt(0));
     }
 
-    QLabel *logUploadInfoLabel = new QLabel();
-
     QString archivePathStr = "";
-    QString lastSuccessfullUploadText = tr("Last successful upload: %1");
-
-    SyncPath archivePath;
     QString lasSuccessfullUploadDate = "";
-    QString lasSuccessfullUploadDateFormat = "";
 
     ExitCode exitcode = GuiRequests::getAppState(AppStateKey::LastLogUploadArchivePath, archivePathStr);
     if (exitcode != ExitCode::ExitCodeOk) {
@@ -432,37 +440,51 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
     }
 
     if (status == LogUploadState::Failed) {
-        QString errorText = tr("Failed to share the log folder");
         QFrame *errorFrame = new QFrame();
-        QVBoxLayout *errorHBox = new QVBoxLayout(errorFrame);
-        errorHBox->setAlignment(Qt::AlignLeft);
-        QHBoxLayout *errorTitleHBox = new QHBoxLayout(errorFrame);
-        errorTitleHBox->setAlignment(Qt::AlignLeft);
-        QLabel *warningIconLabel = new QLabel();
-        QLabel *errorTitleLabel = new QLabel();
-        QLabel *errorLabel = new QLabel();
-        errorLabel->setTextFormat(Qt::RichText);
-        errorHBox->addLayout(errorTitleHBox);
         errorFrame->setObjectName("errorFrame");
         errorFrame->setStyleSheet(
             "QFrame#errorFrame {border-radius: 8px;  border: 2px solid #E0E0E0; background-color: #F8F8F8;}");
-        _logUploadInfoHBox->addWidget(errorFrame);
 
+        QVBoxLayout *errorHBox = new QVBoxLayout(errorFrame);
+        errorHBox->setAlignment(Qt::AlignLeft);
         errorHBox->setContentsMargins(10, 10, 10, 10);
 
+        _logUploadInfoHBox->addWidget(errorFrame);
+
+        QHBoxLayout *errorTitleHBox = new QHBoxLayout();
+        // take all the space it needs
+        errorTitleHBox->setAlignment(Qt::AlignLeft);
+        errorTitleHBox->setContentsMargins(0, 0, 0, 0);
+        errorHBox->addLayout(errorTitleHBox);
+
+        QLabel *warningIconLabel = new QLabel();
         warningIconLabel->setPixmap(
             KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", QColor(255, 0, 0)).pixmap(20, 20));
+
         errorTitleHBox->addWidget(warningIconLabel);
 
+        QLabel *errorTitleLabel = new QLabel();
         errorTitleLabel->setObjectName("boldTextLabel");
-        errorTitleLabel->setWordWrap(true);
-        if (archivePathStr.isEmpty()) {
-            errorTitleLabel->setText(errorText + tr(" (Ensure you have at least one drive setup)"));
+
+        QString errorText = tr("Failed to share");
+        QLabel *errorLabel = new QLabel();
+        errorTitleLabel->setWordWrap(false);
+        errorTitleLabel->setMinimumHeight(20);
+        if (archivePathStr.isEmpty()) {  // We don't pass the archiving step, most likely because there is no drive setup
+            errorTitleLabel->setText(errorText);
             errorTitleHBox->addWidget(errorTitleLabel);
+            errorLabel->setObjectName("normalTextLabel");
+            errorLabel->setTextFormat(Qt::RichText);
+            errorLabel->setContentsMargins(25, 5, 0, 0);
+            errorLabel->setText(tr("1. Check that you are logged in <br>2. Check that you have configured at least one kDrive"));
+            errorHBox->addWidget(errorLabel);
+
         } else {
-            archivePath = archivePathStr.toStdString();
+            SyncPath archivePath = archivePathStr.toStdString();
             errorTitleLabel->setText(errorText + tr(" (Connexion interrupted)"));
             errorTitleHBox->addWidget(errorTitleLabel);
+
+            errorLabel->setTextFormat(Qt::RichText);
             errorLabel->setObjectName("normalTextLabel");
             errorLabel->setContentsMargins(25, 5, 0, 0);
             errorLabel->setText(tr("Share the folder with SwissTransfer <br>") +
@@ -538,7 +560,6 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
     }
     return;
 }
-
 
 void DebuggingDialog::updateUI() {
     _recordDebuggingSwitch->setCheckState(_recordDebugging ? Qt::Checked : Qt::Unchecked);
