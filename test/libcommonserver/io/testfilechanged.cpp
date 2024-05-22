@@ -337,6 +337,7 @@ void TestIo::testCheckIfIsHiddenFile() {
     }
 #endif
 
+#if defined(__APPLE__) || defined(WIN32)    // checkIfIsHiddenFile does not trigger an error on Linux
     // A non-existing file with a very long path causes an error.
     {
         const std::string pathSegment(50, 'a');
@@ -356,6 +357,7 @@ void TestIo::testCheckIfIsHiddenFile() {
 #endif
         CPPUNIT_ASSERT(!isHidden);
     }
+#endif
 
 #if !defined(WIN32)
     // A non-existing file with a very long path is hidden if its name starts with a dot
