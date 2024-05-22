@@ -213,11 +213,11 @@ void TestIo::testGetFileStat() {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
         }
-         
+
         FileStat fileStat;
         IoError ioError = IoErrorUnknown;
 #ifdef _WIN32
-        CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size == 0u);
         CPPUNIT_ASSERT(fileStat.modtime == 0u);
