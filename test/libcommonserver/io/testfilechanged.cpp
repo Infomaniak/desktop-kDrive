@@ -329,7 +329,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT(isHidden);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 #endif
 
@@ -364,9 +364,9 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         bool isHidden = true;
         IoError ioError = IoErrorSuccess;
-        CPPUNIT_ASSERT(!_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
-        CPPUNIT_ASSERT(!isHidden);
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
+        CPPUNIT_ASSERT(isHidden);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 #endif
 

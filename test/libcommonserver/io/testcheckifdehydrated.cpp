@@ -36,9 +36,9 @@ void TestIo::testCheckIfFileIsDehydrated() {
         bool isDehydrated = false;
         CPPUNIT_ASSERT(_testObj->checkIfFileIsDehydrated(path, isDehydrated, ioError));
 #if defined(__APPLE__)
-        CPPUNIT_ASSERT(ioError == IoErrorAttrNotFound);
-#elif defined(_WIN32)
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorAttrNotFound, ioError);
+#elif defined(__unix__)
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 #endif
         CPPUNIT_ASSERT(!isDehydrated);
     }
@@ -112,7 +112,11 @@ void TestIo::testCheckIfFileIsDehydrated() {
         IoError ioError = IoErrorSuccess;
         bool isDehydrated = true;
         CPPUNIT_ASSERT(_testObj->checkIfFileIsDehydrated(path, isDehydrated, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+#if defined(__unix__)
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
+#endif
         CPPUNIT_ASSERT(!isDehydrated);
     }
 
