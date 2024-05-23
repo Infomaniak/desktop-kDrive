@@ -320,7 +320,7 @@ AppServer::AppServer(int &argc, char **argv)
     if (_crashRecovered) {
         bool found = false;
         LOG_WARN(_logger, "Server auto restart after a crash.");
-        if (true || serverCrashedRecently()) {  // TODO: remove true
+        if (serverCrashedRecently()) {
             LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
             QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
             if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, std::string("0"), found) ||
@@ -344,14 +344,14 @@ AppServer::AppServer(int &argc, char **argv)
     }
 
     // Check if a log Upload has been interrupted
-    AppStateValue logUploadStatus = LogUploadState::None;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStatus, found) || !found) {
+    AppStateValue appStateValue = LogUploadState::None;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         throw std::runtime_error("Failed to get log upload status.");
     }
+    LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
 
-    LogUploadState logUploadState = std::get<LogUploadState>(logUploadStatus);
     if (logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
         LOG_DEBUG(_logger, "App was closed during log upload, resetting upload status.");
         if (bool found = false;
@@ -1840,17 +1840,17 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString defaultValue;
             QDataStream paramsStream(params);
             paramsStream >> key;
-            AppStateValue value = "";
-            bool found = false;
-            if (!ParmsDb::instance()->selectAppState(key, value, found) || !found) {
+
+            AppStateValue appStateValue = std::string();
+            if (bool found = false; !ParmsDb::instance()->selectAppState(key, appStateValue, found) || !found) {
                 LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
                 resultStream << ExitCodeDbError;
                 break;
             }
-            std::string valueStr = std::get<std::string>(value);
+            std::string appStateValueStr = std::get<std::string>(appStateValue);
 
             resultStream << ExitCodeOk;
-            resultStream << QString::fromStdString(valueStr);
+            resultStream << QString::fromStdString(appStateValueStr);
             break;
         }
         case REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE: {
@@ -2088,18 +2088,18 @@ void AppServer::cancelLogUpload() {
 
     if (exitCode == ExitCodeInvalidOperation) {
         LOG_WARN(_logger, "Cannot cancel the log upload operation (not started or already finished)");
-        AppStateValue logUploadStateVar = LogUploadState::None;
-        AppStateValue logUploadPercentVar = 0;
+        AppStateValue logUploadState = LogUploadState::None;
+        if (bool found = false;
+            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadState, found) || !found) {
+            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
+        }
 
+        AppStateValue logUploadPercent = int();
         if (bool found = false;
-            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStateVar, found) || !found) {
+            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadPercent, logUploadPercent, found) || !found) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         }
-        if (bool found = false;
-            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadPercent, logUploadPercentVar, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        }
-        sendLogUploadStatusUpdated(std::get<LogUploadState>(logUploadStateVar), std::get<int>(logUploadPercentVar));
+        sendLogUploadStatusUpdated(std::get<LogUploadState>(logUploadState), std::get<int>(logUploadPercent));
         return;
     }
 
@@ -2124,14 +2124,15 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
     std::function<bool(LogUploadState, int)> progressFunc = [this](LogUploadState status, int progress) {
-        AppStateValue logUploadStateVar = LogUploadState::None;
         LOG_DEBUG(_logger, "Log transfert progress : " << static_cast<int>(status) << " | " << progress << " %");
 
-        if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStateVar, found) ||
+        AppStateValue appStateValue = LogUploadState::None;
+        if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) ||
                                 !found) {  // Check if the user canceled the upload
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         }
-        LogUploadState logUploadState = std::get<LogUploadState>(logUploadStateVar);
+        LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
+
         return logUploadState != LogUploadState::Canceled && logUploadState != LogUploadState::CancelRequested;
         bool canceled = logUploadState == LogUploadState::Canceled || logUploadState == LogUploadState::CancelRequested;
         if (!canceled) {
@@ -2478,8 +2479,7 @@ bool AppServer::vfsCleanUpStatuses(int syncDbId) {
     }
 
     if (!_vfsMap[syncDbId]->cleanUpStatuses()) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in Vfs::cleanUpStatuses for syncDbId=" << syncDbId);
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in Vfs::cleanUpStatuses for syncDbId=" << syncDbId);
         return false;
     }
 
@@ -3041,15 +3041,14 @@ bool AppServer::serverCrashedRecently(int seconds) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    bool found = false;
-    AppStateValue lastServerCrashDate = int64_t(0);
-
-    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, lastServerCrashDate, found) || !found) {
+    AppStateValue appStateValue = int64_t(0);
+    if (bool found = false;
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, appStateValue, found) || !found) {
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     }
-    int64_t lastServerCrash = std::get<int64_t>(lastServerCrashDate);
+    int64_t lastServerCrash = std::get<int64_t>(appStateValue);
 
     const auto diff = nowSeconds - lastServerCrash;
     if (diff > seconds) {
@@ -3064,17 +3063,17 @@ bool AppServer::clientCrashedRecently(int seconds) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    AppStateValue lastClientCrashDate = int64_t(0);
-    bool found = false;
-
-    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, lastClientCrashDate, found) ||
+    AppStateValue appStateValue = int64_t(0);
+   
+    if (bool found = false;
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found) ||
         !found) {
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     }
 
-    int64_t lastClientCrash = std::get<int64_t>(lastClientCrashDate);
+    int64_t lastClientCrash = std::get<int64_t>(appStateValue);
     const auto diff = nowSeconds - lastClientCrash;
     if (diff > seconds) {
         return false;
