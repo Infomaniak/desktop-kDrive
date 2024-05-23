@@ -1,6 +1,5 @@
 project(testcommon)
 
-find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.0 REQUIRED)
 
@@ -21,10 +20,6 @@ set(testcommon_SRCS
     io/testio.h io/testio.cpp io/testgetitemtype.cpp io/testgetfilesize.cpp io/testcheckifpathexists.cpp io/testgetnodeid.cpp io/testgetfilestat.cpp io/testisfileaccessible.cpp io/testfilechanged.cpp
     io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testcheckdirectoryiterator.cpp io/testchecksetgetrights.cpp
 )
-
-if (USE_OUR_OWN_SQLITE3)
-    list(APPEND testcommon_SRCS ${SQLITE3_SOURCE})
-endif()
 
 if(APPLE)
     list(APPEND testcommon_SRCS io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp)
@@ -48,8 +43,6 @@ set_target_properties(${testcommon_NAME} PROPERTIES
 
 target_link_libraries(${testcommon_NAME}
     ${libcommonserver_NAME}
-    ${libsyncengine_NAME}
-    ${SQLITE3_LIBRARIES}
 )
 
 if (WIN32)

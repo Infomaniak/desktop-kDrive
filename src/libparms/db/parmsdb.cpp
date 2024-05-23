@@ -17,6 +17,7 @@
  */
 
 #include "parmsdb.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/asserts.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/utility.h"

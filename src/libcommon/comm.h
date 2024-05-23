@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <QColor>
 #include <QDataStream>
 #include <QIODevice>
 
