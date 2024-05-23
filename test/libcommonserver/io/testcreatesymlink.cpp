@@ -32,7 +32,7 @@ void TestIo::testCreateSymlink() {
         const SyncPath path = temporaryDirectory.path / "regular_file_alias";
 
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, ioError));
+        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::is_symlink(path));
 
@@ -51,7 +51,7 @@ void TestIo::testCreateSymlink() {
         const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
 
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, ioError));
+        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, true, ioError));
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::is_symlink(path));
 
@@ -70,7 +70,7 @@ void TestIo::testCreateSymlink() {
         const SyncPath path = temporaryDirectory.path / "file_symlink";
 
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, ioError));
+        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::is_symlink(path));  // Dangling link created.
 
@@ -79,7 +79,11 @@ void TestIo::testCreateSymlink() {
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);  // Although the target path is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeSymlink);
+#ifdef _WIN32
+        CPPUNIT_ASSERT(itemType.targetType == NodeTypeFile);
+#else
         CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
+#endif
     }
 
     // Fails to create a symlink whose path indicates an existing file: no overwriting
@@ -91,7 +95,7 @@ void TestIo::testCreateSymlink() {
         { std::ofstream ofs(path); }
 
         IoError ioError = IoErrorSuccess;
-        CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoErrorFileExists);
         CPPUNIT_ASSERT(!std::filesystem::is_symlink(path));
     }
@@ -103,12 +107,8 @@ void TestIo::testCreateSymlink() {
         const SyncPath path = temporaryDirectory.path;
 
         IoError ioError = IoErrorSuccess;
-        CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, ioError));
-#ifdef _WIN32
-        CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
-#else
+        CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, true, ioError));
         CPPUNIT_ASSERT(ioError == IoErrorFileExists);
-#endif
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         ItemType itemType;
@@ -127,7 +127,7 @@ void TestIo::testCreateSymlink() {
         const SyncPath targetPath = path;
 
         IoError aliasError;
-        CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, false, aliasError));
         CPPUNIT_ASSERT(aliasError == IoErrorInvalidArgument);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
@@ -146,7 +146,7 @@ void TestIo::testCreateSymlink() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError ioError;
-        CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, ioError));
+        CPPUNIT_ASSERT(!IoHelper::createSymlink(targetPath, path, false, ioError));
 #ifdef _WIN32
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
 #else
@@ -163,7 +163,7 @@ void TestIo::testCreateSymlink() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError aliasError;
-        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, aliasError));
+        CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, false, aliasError));
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
 
         CPPUNIT_ASSERT(std::filesystem::exists(path));

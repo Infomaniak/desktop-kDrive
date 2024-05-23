@@ -27,10 +27,10 @@ struct FileStat {
         time_t modtime = 0;
         int64_t size = 0;
         uint64_t inode = 0;
-        NodeType type = NodeTypeUnknown;
         bool isHidden = false;
-
-        bool isDir() { return type == NodeTypeDirectory; }
+        // Type of the item or target item if symlink
+        // Value for a dangling symlink: NodeTypeUnknown (macOS & Linux), NodeTypeFile/NodeTypeDirectory (Windows)
+        NodeType nodeType = NodeTypeUnknown;
 };
 
 }  // namespace KDC

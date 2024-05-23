@@ -35,7 +35,7 @@
 
 namespace KDC {
 
-bool LogArchiver::getLogDirEstimatedSize(uint64_t& size, IoError& ioError) {
+bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
     bool result = false;
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
@@ -50,9 +50,9 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t& size, IoError& ioError) {
     return result;
 }
 
-ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath& outputPath,
-                                                 std::function<bool(int)> progressCallback, SyncPath& archivePath,
-                                                 ExitCause& exitCause, bool test) {
+ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputPath,
+                                                 std::function<bool(int)> progressCallback, SyncPath &archivePath,
+                                                 ExitCause &exitCause, bool test) {
     // Get the log directory path
     const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
     const SyncPath tempLogArchiveDir =
@@ -232,7 +232,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::copyLogsTo(const SyncPath& outputPath, bool includeArchivedLogs, ExitCause& exitCause) {
+ExitCode LogArchiver::copyLogsTo(const SyncPath &outputPath, bool includeArchivedLogs, ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
     SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
 
@@ -276,7 +276,7 @@ ExitCode LogArchiver::copyLogsTo(const SyncPath& outputPath, bool includeArchive
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::copyParmsDbTo(const SyncPath& outputPath, ExitCause& exitCause) {
+ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause) {
     const SyncPath parmsDbName = ".parms.db";
     const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
     DirectoryEntry entryParmsDb;
@@ -306,8 +306,8 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath& outputPath, ExitCause& exitC
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, std::function<bool(int)> progressCallback,
-                                       ExitCause& exitCause) {
+ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std::function<bool(int)> progressCallback,
+                                       ExitCause &exitCause) {
     IoHelper::DirectoryIterator dir;
     IoError ioError = IoErrorUnknown;
     exitCause = ExitCauseUnknown;
@@ -385,7 +385,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath& directoryToCompress, std:
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath& outputPath, ExitCause& exitCause) {
+ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
 
     std::string osName = CommonUtility::platformName().toStdString();
@@ -441,6 +441,5 @@ ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath& outputPath, Ex
 
     return ExitCodeOk;
 }
-
 
 };  // namespace KDC

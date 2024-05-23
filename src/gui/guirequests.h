@@ -121,44 +121,10 @@ struct GuiRequests {
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);
         static ExitCode setLaunchOnStartup(bool enabled);
-        static ExitCode getAppState(AppStateKey key, QString &value);
-        static ExitCode updateAppState(AppStateKey key, const QString &value);
-
-        template <typename T>
-        static ExitCode getAppState(AppStateKey key, T &value);
-
-        template <typename T>
-        static ExitCode updateAppState(AppStateKey key, const T &value);
-
+        static ExitCode getAppState(AppStateKey key, AppStateValue &value);
+        static ExitCode updateAppState(AppStateKey key, const AppStateValue &value);
         static ExitCode getLogDirEstimatedSize(uint64_t &size);
         static ExitCode sendLogToSupport(bool sendArchivedLogs);
         static ExitCode cancelLogUploadToSupport();
-};
-
-template <typename T>
-inline ExitCode GuiRequests::getAppState(AppStateKey key, T &value) {
-    static_assert(std::is_integral_v<T> || std::is_enum_v<T>, "T must be an integral type or enum type");
-    QString valueStr = "";
-    if (!getAppState(key, valueStr)) {
-        return ExitCodeDbError;
-    }
-
-    try {
-        value = static_cast<T>(std::stoi(valueStr.toStdString()));
-    } catch (const std::invalid_argument &) {
-        return ExitCodeDbError;
-    }
-    return ExitCodeOk;
-};
-
-template <typename T>
-inline ExitCode GuiRequests::updateAppState(AppStateKey key, const T &value) {
-    static_assert(std::is_integral_v<T> || std::is_enum_v<T>, "T must be an integral type or enum type");
-    try {
-        QString valueStr = QString::fromStdString(std::to_string(static_cast<int>(value)));
-        return updateAppState(key, valueStr);
-    } catch (const std::invalid_argument &) {
-        return ExitCodeDbError;
-    }
 };
 }  // namespace KDC

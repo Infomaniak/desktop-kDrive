@@ -82,9 +82,11 @@ typedef std::ostringstream OStringStream;
 #ifdef __GNUC__
 #define Path2WStr(p) KDC::Utility::s2ws(p.native())
 #define Path2Str(p) p.native()
+#define Str2Path(s) std::filesystem::path(s)
 #else
 #define Path2WStr(p) p.native()
 #define Path2Str(p) KDC::Utility::ws2s(p.native())
+#define Str2Path(s) std::filesystem::path(KDC::Utility::s2ws(s))
 #endif
 
 typedef std::function<void(const char *)> ExecuteCommand;
@@ -370,15 +372,6 @@ enum class AppStateKey {
     LastClientSelfRestartDate,
     LastSuccessfulLogUploadDate,
     LastLogUploadArchivePath,
-    /* Log upload status is a string with the first character being the status and the rest being the progress percentage
-     * "A" means "Archiving" (ie. A80 means 80% of the archiving is done)
-     * "U" means "Uploading" (ie. U80 means 80% of the uploading is done)
-     * "S" means "Success" (ie. S means the archiving and upload where successful)
-     * "F" means "Failed"
-     * "C0" means "Cancel requested"
-     * "C1" means "Canceled"
-     * "N" means "None" (ie. N means we never tried to upload the logs)
-     */
     LogUploadState,
     LogUploadPercent,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
@@ -391,6 +384,10 @@ enum class LogUploadState {
     Success,
     Failed,
     CancelRequested,
-    Canceled,
+    Canceled
 };
+
+// Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
+using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
+
 }  // namespace KDC

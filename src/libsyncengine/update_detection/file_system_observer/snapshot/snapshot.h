@@ -46,8 +46,8 @@ class Snapshot : public SharedObject {
         bool setName(const NodeId &itemId, const SyncName &newName);
         SyncTime createdAt(const NodeId &itemId);
         bool setCreatedAt(const NodeId &itemId, SyncTime newTime);
-        SyncTime lastModifed(const NodeId &itemId);
-        bool setLastModifed(const NodeId &itemId, SyncTime newTime);
+        SyncTime lastModified(const NodeId &itemId);
+        bool setLastModified(const NodeId &itemId, SyncTime newTime);
         NodeType type(const NodeId &itemId);
         int64_t size(const NodeId &itemId);
         std::string contentChecksum(const NodeId &itemId);
@@ -57,6 +57,7 @@ class Snapshot : public SharedObject {
         bool clearContentChecksum(const NodeId &itemId);
         bool exists(const NodeId &itemId);
         bool pathExists(const SyncPath &path);
+        bool isLink(const NodeId &itemId);
 
         bool getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds);
 

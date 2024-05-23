@@ -38,6 +38,9 @@ struct COMMON_EXPORT CommonUtility {
 
         static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
 
+        static const int logsPurgeRate;  // Delay after which the logs are purged, expressed in days
+        static const int logMaxSize;
+
         static QString getIconPath(IconType iconType);
         static SyncPath _workingDirPath;
 
@@ -59,6 +62,8 @@ struct COMMON_EXPORT CommonUtility {
         static QByteArray IntToArray(qint32 source);
         static int ArrayToInt(QByteArray source);
         static QString escape(const QString &in);
+        static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
+        static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);
 
         static bool compressFile(const QString &originalName, const QString &targetName);
 
@@ -96,6 +101,8 @@ struct COMMON_EXPORT CommonUtility {
         static bool isLiteSyncExtEnabled();
         static bool isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr);
 #endif
+
+        static std::string envVarValue(const std::string &name);
 
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);

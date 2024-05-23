@@ -43,13 +43,13 @@ static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/
 static const SyncPath localTestDirPath_bigFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/big_file_dir");
 
 void KDC::TestJobManager::setUp() {
-    const char *userIdStr = std::getenv("KDRIVE_TEST_CI_USER_ID");
-    const char *accountIdStr = std::getenv("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const char *driveIdStr = std::getenv("KDRIVE_TEST_CI_DRIVE_ID");
-    const char *remoteDirIdStr = std::getenv("KDRIVE_TEST_CI_REMOTE_DIR_ID");
-    const char *apiTokenStr = std::getenv("KDRIVE_TEST_CI_API_TOKEN");
+    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
+    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
+    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
+    const std::string remoteDirIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_DIR_ID");
+    const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
 
-    if (!userIdStr || !accountIdStr || !driveIdStr || !remoteDirIdStr || !apiTokenStr) {
+    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remoteDirIdStr.empty() || apiTokenStr.empty()) {
         throw std::runtime_error("Some environment variables are missing!");
     }
 
@@ -67,16 +67,16 @@ void KDC::TestJobManager::setUp() {
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
-    int userId(atoi(userIdStr));
+    int userId(atoi(userIdStr.c_str()));
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr));
+    int accountId(atoi(accountIdStr.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    int driveId = atoi(driveIdStr);
+    int driveId = atoi(driveIdStr.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 

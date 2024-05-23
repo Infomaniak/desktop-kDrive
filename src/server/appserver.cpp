@@ -344,15 +344,15 @@ AppServer::AppServer(int &argc, char **argv)
     }
 
     // Check if a log Upload has been interrupted
-    LogUploadState logUploadStatus = LogUploadState::None;
+    AppStateValue logUploadStatus = LogUploadState::None;
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStatus, found) || !found) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         throw std::runtime_error("Failed to get log upload status.");
     }
 
-
-    if (logUploadStatus == LogUploadState::Archiving || logUploadStatus == LogUploadState::Uploading) {
+    LogUploadState logUploadState = std::get<LogUploadState>(logUploadStatus);
+    if (logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
         LOG_DEBUG(_logger, "App was closed during log upload, resetting upload status.");
         if (bool found = false;
             !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
@@ -360,7 +360,7 @@ AppServer::AppServer(int &argc, char **argv)
             addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
             throw std::runtime_error("Failed to update log upload status.");
         }
-    } else if (logUploadStatus ==
+    } else if (logUploadState ==
                LogUploadState::CancelRequested) {  // If interrupted while cancelling, consider it has been cancelled
         if (bool found = false;
             !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Canceled, found) || !found) {
@@ -449,20 +449,33 @@ void AppServer::stopAllSyncsTask(const std::vector<int> &syncDbIdList) {
     }
 }
 
-void AppServer::deleteAccount(int accountDbId) {
+void AppServer::deleteAccountIfNeeded(int accountDbId) {
     std::vector<Drive> driveList;
     if (!ParmsDb::instance()->selectAllDrives(accountDbId, driveList)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectAllDrives");
         addError(Error(ERRID, ExitCodeDbError, ExitCauseUnknown));
     } else if (driveList.empty()) {
-        ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
+        const ExitCode exitCode = ServerRequests::deleteAccount(accountDbId);
         if (exitCode == ExitCodeOk) {
             sendAccountRemoved(accountDbId);
         } else {
-            LOG_WARN(_logger, "Error in Requests::deleteAccount : " << exitCode);
+            LOG_WARN(_logger, "Error in ServerRequests::deleteAccount: " << exitCode);
             addError(Error(ERRID, exitCode, ExitCauseUnknown));
         }
     }
+}
+
+void AppServer::deleteDrive(int driveDbId, int accountDbId) {
+    const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
+    if (exitCode == ExitCodeOk) {
+        sendDriveRemoved(driveDbId);
+    } else {
+        LOG_WARN(_logger, "Error in Requests::deleteDrive : " << exitCode);
+        addError(Error(ERRID, exitCode, ExitCauseUnknown));
+        sendDriveDeletionFailed(driveDbId);
+    }
+
+    deleteAccountIfNeeded(accountDbId);
 }
 
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
@@ -543,17 +556,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            if (syncDbIdList.empty()) {
-                // The user has no synchronizations.
-                break;
-            }
-
             // Stop syncs for this user and remove them from syncPalMap.
             QTimer::singleShot(100, [this, userDbId, syncDbIdList]() {
                 AppServer::stopAllSyncsTask(syncDbIdList);
 
                 // Delete user from DB
-                ExitCode exitCode = ServerRequests::deleteUser(userDbId);
+                const ExitCode exitCode = ServerRequests::deleteUser(userDbId);
                 if (exitCode == ExitCodeOk) {
                     sendUserRemoved(userDbId);
                 } else {
@@ -848,26 +856,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            if (syncDbIdList.empty()) {
-                // The drive's user has no synchronizations.
-                break;
-            }
-
             // Stop syncs for this drive and remove them from syncPalMap
             QTimer::singleShot(100, [this, driveDbId, accountDbId, syncDbIdList]() {
                 AppServer::stopAllSyncsTask(syncDbIdList);
-
-                // Delete drive from DB
-                const ExitCode exitCode = ServerRequests::deleteDrive(driveDbId);
-                if (exitCode == ExitCodeOk) {
-                    sendDriveRemoved(driveDbId);
-                } else {
-                    LOG_WARN(_logger, "Error in Requests::deleteDrive : " << exitCode);
-                    addError(Error(ERRID, exitCode, ExitCauseUnknown));
-                    sendDriveDeletionFailed(driveDbId);
-                }
-
-                deleteAccount(accountDbId);
+                AppServer::deleteDrive(driveDbId, accountDbId);
             });
 
             break;
@@ -1848,16 +1840,17 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString defaultValue;
             QDataStream paramsStream(params);
             paramsStream >> key;
-            std::string value;
+            AppStateValue value = "";
             bool found = false;
             if (!ParmsDb::instance()->selectAppState(key, value, found) || !found) {
                 LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
                 resultStream << ExitCodeDbError;
                 break;
             }
+            std::string valueStr = std::get<std::string>(value);
 
             resultStream << ExitCodeOk;
-            resultStream << QString::fromStdString(value);
+            resultStream << QString::fromStdString(valueStr);
             break;
         }
         case REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE: {
@@ -2095,17 +2088,18 @@ void AppServer::cancelLogUpload() {
 
     if (exitCode == ExitCodeInvalidOperation) {
         LOG_WARN(_logger, "Cannot cancel the log upload operation (not started or already finished)");
-        LogUploadState logUploadStatus = LogUploadState::None;
-        int logUploadPercent = 0;
+        AppStateValue logUploadStateVar = LogUploadState::None;
+        AppStateValue logUploadPercentVar = 0;
+
         if (bool found = false;
-            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStatus, found) || !found) {
+            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStateVar, found) || !found) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         }
         if (bool found = false;
-            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadPercent, logUploadPercent, found) || !found) {
+            !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadPercent, logUploadPercentVar, found) || !found) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         }
-        sendLogUploadStatusUpdated(logUploadStatus, logUploadPercent);
+        sendLogUploadStatusUpdated(std::get<LogUploadState>(logUploadStateVar), std::get<int>(logUploadPercentVar));
         return;
     }
 
@@ -2113,8 +2107,7 @@ void AppServer::cancelLogUpload() {
         LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport : " << exitCode << " | " << exitCause);
         addError(Error(ERRID, exitCode, exitCause));
         sendLogUploadStatusUpdated(LogUploadState::Failed, 0);  // Considered as a failure, in case the operation was not
-                                                                // canceled, the gui
-        // will receive updated status quickly.
+                                                                // canceled, the gui will receive updated status quickly.
         return;
     }
     sendLogUploadStatusUpdated(LogUploadState::CancelRequested, 0);
@@ -2131,13 +2124,15 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
     std::function<bool(LogUploadState, int)> progressFunc = [this](LogUploadState status, int progress) {
+        AppStateValue logUploadStateVar = LogUploadState::None;
         LOG_DEBUG(_logger, "Log transfert progress : " << static_cast<int>(status) << " | " << progress << " %");
 
-        LogUploadState logUploadState = LogUploadState::None;
-        if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadState, found) ||
+        if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStateVar, found) ||
                                 !found) {  // Check if the user canceled the upload
             LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         }
+        LogUploadState logUploadState = std::get<LogUploadState>(logUploadStateVar);
+        return logUploadState != LogUploadState::Canceled && logUploadState != LogUploadState::CancelRequested;
         bool canceled = logUploadState == LogUploadState::Canceled || logUploadState == LogUploadState::CancelRequested;
         if (!canceled) {
             sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
@@ -2470,6 +2465,21 @@ bool AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncin
     if (!_vfsMap[syncDbId]->forceStatus(SyncName2QStr(path.native()), isSyncing, progress, isHydrated)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in Vfs::forceStatus for syncDbId=" << syncDbId << L" and path=" << Path2WStr(path).c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool AppServer::vfsCleanUpStatuses(int syncDbId) {
+    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+        LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
+        return false;
+    }
+
+    if (!_vfsMap[syncDbId]->cleanUpStatuses()) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in Vfs::cleanUpStatuses for syncDbId=" << syncDbId);
         return false;
     }
 
@@ -3031,26 +3041,15 @@ bool AppServer::serverCrashedRecently(int seconds) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    int64_t lastServerCrash = 0;
-    std::string lastServerCrashStr;
     bool found = false;
+    AppStateValue lastServerCrashDate = int64_t(0);
 
-    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, lastServerCrashStr, found) || !found) {
+    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, lastServerCrashDate, found) || !found) {
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     }
-
-    if (lastServerCrashStr.empty()) {
-        return false;
-    }
-
-    try {
-        lastServerCrash = std::stoll(lastServerCrashStr);
-    } catch (const std::invalid_argument &e) {
-        LOG_WARN(_logger, "Error in std::stoll: " << e.what());
-        return false;
-    }
+    int64_t lastServerCrash = std::get<int64_t>(lastServerCrashDate);
 
     const auto diff = nowSeconds - lastServerCrash;
     if (diff > seconds) {
@@ -3065,27 +3064,17 @@ bool AppServer::clientCrashedRecently(int seconds) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
-    int64_t lastClientCrash = 0;
-    std::string lastClientCrashStr;
+    AppStateValue lastClientCrashDate = int64_t(0);
     bool found = false;
 
-    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, lastClientCrashStr, found) || !found) {
+    if (!KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, lastClientCrashDate, found) ||
+        !found) {
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;
     }
 
-    if (lastClientCrashStr.empty()) {
-        return false;
-    }
-
-    try {
-        lastClientCrash = std::stoll(lastClientCrashStr);
-    } catch (const std::invalid_argument &e) {
-        LOG_WARN(_logger, "Error in std::stoll: " << e.what());
-        return false;
-    }
-
+    int64_t lastClientCrash = std::get<int64_t>(lastClientCrashDate);
     const auto diff = nowSeconds - lastClientCrash;
     if (diff > seconds) {
         return false;
@@ -3420,6 +3409,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
         _syncPalMap[sync.dbId()]->setVfsUpdateFetchStatusCallback(&vfsUpdateFetchStatus);
         _syncPalMap[sync.dbId()]->setVfsFileStatusChangedCallback(&vfsFileStatusChanged);
         _syncPalMap[sync.dbId()]->setVfsForceStatusCallback(&vfsForceStatus);
+        _syncPalMap[sync.dbId()]->setVfsCleanUpStatusesCallback(&vfsCleanUpStatuses);
         _syncPalMap[sync.dbId()]->setVfsClearFileAttributesCallback(&vfsClearFileAttributes);
         _syncPalMap[sync.dbId()]->setVfsCancelHydrateCallback(&vfsCancelHydrate);
 

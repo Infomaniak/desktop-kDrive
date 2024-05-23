@@ -160,10 +160,10 @@ bool Utility::findNodeValue(const Poco::XML::Document &doc, const std::string &n
 }
 
 bool Utility::setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                           std::optional<KDC::SyncTime> modificationDate, bool &exists) {
+                           std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
     if (!setFileDates_private(filePath,
                               creationDate.has_value() && isCreationDateValid(creationDate.value()) ? creationDate : std::nullopt,
-                              modificationDate, exists)) {
+                              modificationDate, symlink, exists)) {
         return false;
     }
     return true;
@@ -281,13 +281,13 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
     return errorStream.str();  // str() return a copy of the underlying string
 }
 
-void Utility::logGenericServerError(const std::string &errorTitle, std::istream &inputStream,
+void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
 #ifdef NDEBUG
     sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, errorTitle.c_str(), errorMsg.c_str()));
 #endif
-    LOG_WARN(_logger, errorTitle.c_str() << ": " << errorMsg.c_str());
+    LOG_WARN(logger, errorTitle.c_str() << ": " << errorMsg.c_str());
 }
 
 #ifdef _WIN32
@@ -309,40 +309,29 @@ bool Utility::isNtfs(const SyncPath &dirPath) {
 #endif
 
 std::string Utility::fileSystemName(const SyncPath &dirPath) {
-    bool exists;
-    IoError ioError = IoErrorSuccess;
-    if (!IoHelper::checkIfPathExists(dirPath, exists, ioError)) {
-        LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dirPath, ioError).c_str());
-        return std::string();
-    }
-
-    if (exists) {
 #if defined(__APPLE__)
-        struct statfs stat;
-        if (statfs(dirPath.native().c_str(), &stat) == 0) {
-            return stat.f_fstypename;
-        }
-#elif defined(_WIN32)
-        TCHAR szFileSystemName[MAX_PATH + 1];
-        DWORD dwMaxFileNameLength = 0;
-        DWORD dwFileSystemFlags = 0;
-
-        if (GetVolumeInformation(dirPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
-                                 szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
-            return Utility::ws2s(szFileSystemName);
-        } else {
-            // Not all the requested information is retrieved
-            DWORD dwError = GetLastError();
-            LOGW_WARN(logger(), L"Error in GetVolumeInformation for " << Path2WStr(dirPath.root_name()).c_str() << L" ("
-                                                                      << dwError << L")");
-
-            // !!! File system name can be OK or not !!!
-            return Utility::ws2s(szFileSystemName);
-        }
-#endif
-    } else {
-        return fileSystemName(dirPath.parent_path());
+    struct statfs stat;
+    if (statfs(dirPath.root_path().native().c_str(), &stat) == 0) {
+        return stat.f_fstypename;
     }
+#elif defined(_WIN32)
+    TCHAR szFileSystemName[MAX_PATH + 1];
+    DWORD dwMaxFileNameLength = 0;
+    DWORD dwFileSystemFlags = 0;
+
+    if (GetVolumeInformation(dirPath.root_path().c_str(), NULL, 0, NULL, &dwMaxFileNameLength, &dwFileSystemFlags,
+                             szFileSystemName, sizeof(szFileSystemName)) == TRUE) {
+        return Utility::ws2s(szFileSystemName);
+    } else {
+        // Not all the requested information is retrieved
+        DWORD dwError = GetLastError();
+        LOGW_WARN(logger(),
+                  L"Error in GetVolumeInformation for " << Path2WStr(dirPath.root_name()).c_str() << L" (" << dwError << L")");
+
+        // !!! File system name can be OK or not !!!
+        return Utility::ws2s(szFileSystemName);
+    }
+#endif
 
     return std::string();
 }
@@ -683,7 +672,8 @@ SyncPath Utility::binRelativePath() {
     SyncPath path(resourcesPath);
 
 #ifdef __unix__
-    if (getenv("APPIMAGE") != NULL) {
+    const std::string value = CommonUtility::envVarValue("APPIMAGE");
+    if (!value.empty()) {
         path = path / "usr/bin";
     }
 #endif
@@ -811,13 +801,16 @@ SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
     return result;
 }
 
-bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, IoError &ioError) {
+bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
+                                       IoError &ioError) {
     isManaged = true;
+    isLink = false;
     ioError = IoErrorSuccess;
 
     ItemType itemType;
-    if (!IoHelper::getItemType(dirIt->path(), itemType)) {
-        ioError = itemType.ioError;
+    bool result = IoHelper::getItemType(dirIt->path(), itemType);
+    ioError = itemType.ioError;
+    if (!result) {
         LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirIt->path(), ioError).c_str());
         return false;
     }
@@ -827,7 +820,7 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
         return true;
     }
 
-    bool isLink = itemType.linkType != LinkTypeNone;
+    isLink = itemType.linkType != LinkTypeNone;
     if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
         LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
                                        << L" because it's not a directory, a regular file or a symlink");
@@ -846,12 +839,11 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
 }
 
 bool Utility::getLinuxDesktopType(std::string &currentDesktop) {
-    const char *xdgDesktopEnv = std::getenv("XDG_CURRENT_DESKTOP");
-    if (!xdgDesktopEnv) {
+    const std::string xdgCurrentDesktop = CommonUtility::envVarValue("XDG_CURRENT_DESKTOP");
+    if (xdgCurrentDesktop.empty()) {
         return false;
     }
 
-    std::string xdgCurrentDesktop(xdgDesktopEnv);
     // ':' is the separator in the env variable, like "ubuntu:GNOME"
     size_t colon_pos = xdgCurrentDesktop.find(':');
 

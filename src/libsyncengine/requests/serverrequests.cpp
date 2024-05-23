@@ -1091,21 +1091,23 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
 ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
-    LogUploadState logUploadStatus = LogUploadState::None;
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, logUploadStatus, found) || !found) {
+    AppStateValue appStateValue;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
         return ExitCodeDbError;
     }
+    LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
 
-    if (logUploadStatus == LogUploadState::CancelRequested) {
+
+    if (logUploadState == LogUploadState::CancelRequested) {
         return ExitCodeOk;
     }
 
-    if (logUploadStatus == LogUploadState::Canceled) {
+    if (logUploadState == LogUploadState::Canceled) {
         return ExitCodeOperationCanceled;  // The user has already canceled the operation
     }
 
-    if (logUploadStatus != LogUploadState::Archiving && logUploadStatus  != LogUploadState::Uploading) {
+    if (logUploadState == LogUploadState::Uploading || logUploadState == LogUploadState::Archiving) {
         return ExitCodeInvalidOperation;  // The operation is not in progress
     }
 
@@ -1442,7 +1444,6 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
         return ExitCodeDbError;
     }
 
-    bool found = false;
     for (const Error &error : errorList) {
         if (isConflictsWithLocalRename(error.conflictType())) {
             // For conflict type that rename local file
@@ -1466,19 +1467,14 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
                 return ExitCodeSystemError;
             }
 
-            if (ioError != IoErrorSuccess) {
-                LOGW_DEBUG(Log::instance()->getLogger(),
-                           "Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError).c_str());
-                continue;
-            }
-
             // If conflict file still exists, keep the error.
-            if (found) {
+            if (found || ioError != IoErrorNoSuchFileOrDirectory) {
                 continue;
             }
         }
 
         if (isAutoResolvedError(error) == autoResolved) {
+            bool found = false;
             if (!ParmsDb::instance()->deleteError(error.dbId(), found)) {
                 LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteError for dbId=" << error.dbId());
                 return ExitCodeDbError;

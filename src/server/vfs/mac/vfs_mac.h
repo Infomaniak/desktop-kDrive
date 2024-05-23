@@ -72,6 +72,7 @@ class VfsMac : public Vfs {
                                bool &finished) override;
         void cancelHydrate(const QString &filePath) override;
         bool forceStatus(const QString &path, bool isSyncing, int progress, bool isHydrated = false) override;
+        bool cleanUpStatuses() override;
         virtual void clearFileAttributes(const QString &path) override;
 
         bool needsMetadataUpdate(const SyncFileItem &) override { return false; }

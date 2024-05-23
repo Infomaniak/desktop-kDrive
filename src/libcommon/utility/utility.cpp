@@ -73,6 +73,9 @@
 
 namespace KDC {
 
+const int CommonUtility::logsPurgeRate = 7;               // days
+const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
+
 SyncPath CommonUtility::_workingDirPath = "";
 
 static const QString englishCode = "en";
@@ -229,6 +232,49 @@ int CommonUtility::ArrayToInt(QByteArray source) {
 
 QString CommonUtility::escape(const QString &in) {
     return in.toHtmlEscaped();
+}
+
+bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStateValue &appStateValueTo) {
+    if (std::holds_alternative<std::string>(appStateValueTo)) {
+        appStateValueTo = stringFrom;
+    } else if (std::holds_alternative<int>(appStateValueTo)) {
+        try {
+            appStateValueTo = std::stoi(stringFrom);
+        } catch (const std::invalid_argument &) {
+            return false;
+        }
+    } else if (std::holds_alternative<LogUploadState>(appStateValueTo)) {
+        try {
+            appStateValueTo = static_cast<LogUploadState>(std::stoi(stringFrom));
+        } catch (const std::invalid_argument &) {
+            return false;
+        }
+    } else if (std::holds_alternative<int64_t>(appStateValueTo)) {
+        try {
+            std::get<int64_t>(appStateValueTo) = std::stoll(stringFrom);
+        } catch (const std::invalid_argument &) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {
+    if (std::holds_alternative<std::string>(appStateValueFrom)) {
+        stringTo = std::get<std::string>(appStateValueFrom);
+    } else if (std::holds_alternative<int>(appStateValueFrom)) {
+        stringTo = std::to_string(std::get<int>(appStateValueFrom));
+    } else if (std::holds_alternative<LogUploadState>(appStateValueFrom)) {
+        stringTo = std::to_string(static_cast<int>(std::get<LogUploadState>(appStateValueFrom)));
+    } else if (std::holds_alternative<int64_t>(appStateValueFrom)) {
+        stringTo = std::to_string(std::get<int64_t>(appStateValueFrom));
+    } else {
+        return false;
+    }
+    return true;
 }
 
 bool CommonUtility::compressFile(const QString &originalName, const QString &targetName) {
@@ -665,6 +711,26 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
     std::error_code ec;
     std::filesystem::remove_all(tmpPath, ec);
     return true;
+}
+
+std::string CommonUtility::envVarValue(const std::string &name) {
+#ifdef _WIN32
+    char *value = nullptr;
+    size_t sz = 0;
+    if (_dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
+        std::string valueStr(value);
+        free(value);
+        return valueStr;
+    }
+#else
+    char *value = std::getenv(name.c_str());
+    if (value) {
+        return std::string(value);
+        // Don't free "value"
+    }
+#endif
+
+    return std::string();
 }
 
 #ifdef __APPLE__

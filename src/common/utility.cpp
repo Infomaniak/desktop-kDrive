@@ -108,27 +108,6 @@ qint64 OldUtility::qDateTimeToTime_t(const QDateTime &t) {
     return t.toMSecsSinceEpoch() / 1000;
 }
 
-QByteArray OldUtility::versionOfInstalledBinary(const QString &command) {
-    QByteArray re;
-    if (isLinux()) {
-        QString binary(command);
-        if (binary.isEmpty()) {
-            binary = qApp->arguments()[0];
-        }
-        QStringList params;
-        params << QLatin1String("--version");
-        QProcess process;
-        process.start(binary, params);
-        process.waitForFinished();  // sets current thread to sleep and waits for pingProcess end
-        re = process.readAllStandardOutput();
-        int newline = QString::fromUtf8(re).indexOf(QChar('\n'));
-        if (newline > 0) {
-            re.truncate(newline);
-        }
-    }
-    return re;
-}
-
 /* --------------------------------------------------------------------------- */
 
 #ifdef Q_OS_WIN

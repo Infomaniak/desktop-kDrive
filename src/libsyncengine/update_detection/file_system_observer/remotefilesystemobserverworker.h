@@ -20,6 +20,8 @@
 
 #include "filesystemobserverworker.h"
 
+#include "jobs/network/networkjobsparams.h"
+
 #include <Poco/JSON/Object.h>
 
 namespace KDC {
@@ -43,12 +45,24 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitCode sendLongPoll(bool &changes);
 
+        struct ActionInfo {
+            ActionCode actionCode {ActionCode::actionCodeUnknown};
+            NodeId nodeId;
+            NodeId parentNodeId;
+            SyncName name;
+            SyncName path;
+            SyncName destName;
+            SyncTime createdAt {0};
+            SyncTime modtime {0};
+            NodeType type {NodeTypeUnknown};
+            int64_t size {0};
+            bool canWrite {true};
+        };
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
+        ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
+        ExitCode processAction(const SyncName &usedName, const ActionInfo &actionInfo, std::set<NodeId, std::equal_to<>> &movedItems);
 
-        ExitCode accessRightsAdded(const std::string &action, const NodeId &nodeId, bool &rightsAdded, SyncTime &createdAt,
-                                   SyncTime &modtime);
-        ExitCode accessRightsRemoved(const std::string &action, const NodeId &nodeId, bool &rightsRemoved);
-        ExitCode hasAccessRights(const NodeId &nodeId, bool &hasRights, SyncTime &createdAt, SyncTime &modtime);
+        ExitCode checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
 
         bool hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
 

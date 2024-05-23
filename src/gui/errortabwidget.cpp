@@ -58,16 +58,15 @@ ErrorTabWidget::ErrorTabWidget(int driveDbId, bool generic, QWidget *parent)
 
     _resolveButton = new QPushButton(this);
     _resolveButton->setObjectName("resolveButton");
-    _resolveButton->setText(tr("Resolve"));
     _resolveButton->setVisible(false);
     MenuWidgetLite *menu = new MenuWidgetLite(_resolveButton, this);
 
-    _resolveConflictsAction = new QAction(tr("Conflicted item(s)"), this);
+    _resolveConflictsAction = new QAction(this);
     _resolveConflictsAction->setVisible(false);
     menu->addAction(_resolveConflictsAction);
     connect(_resolveConflictsAction, &QAction::triggered, this, &ErrorTabWidget::onResolveConflictErrors);
 
-    _resolveUnsupportedCharactersAction = new QAction(tr("Item(s) with unsupported characters"), this);
+    _resolveUnsupportedCharactersAction = new QAction(this);
     _resolveUnsupportedCharactersAction->setVisible(false);
     menu->addAction(_resolveUnsupportedCharactersAction);
     connect(_resolveUnsupportedCharactersAction, &QAction::triggered, this,
@@ -176,6 +175,9 @@ void ErrorTabWidget::retranslateUi() {
     setTabText(tabIndex, tr("To Resolve"));
     _toResolveErrorsLabel->setText(tr("problem(s) detected"));
     _clearToResButton->setText(tr("Clear history"));
+    _resolveButton->setText(tr("Resolve"));
+    _resolveConflictsAction->setText(tr("Conflicted item(s)"));
+    _resolveUnsupportedCharactersAction->setText(tr("Item(s) with unsupported characters"));
 
     if (!_generic) {
         setTabText(++tabIndex, tr("Automatically resolved"));

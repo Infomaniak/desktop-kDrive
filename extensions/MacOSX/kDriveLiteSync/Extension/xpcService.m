@@ -116,6 +116,7 @@
                             @"com.apple.security.codesign",                     // codesign
                             @"com.apple.mdmclient",                             // MDM
                             @"com.apple.warmd_agent",                           // Warmd
+                            @"com.apple.apfsd",                                 // Apfsd
                             nil
     ];
 }

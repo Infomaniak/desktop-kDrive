@@ -36,6 +36,7 @@ class AbstractFileItemWidget : public QWidget {
         Q_OBJECT
 
         Q_PROPERTY(QColor background_color READ backgroundColor WRITE setBackgroundColor)
+        Q_PROPERTY(QColor logo_color READ logoColor WRITE setLogoColor)
 
     public:
         explicit AbstractFileItemWidget(QWidget *parent = nullptr);
@@ -57,6 +58,8 @@ class AbstractFileItemWidget : public QWidget {
     private:
         inline QColor backgroundColor() const { return _backgroundColor; }
         inline void setBackgroundColor(const QColor &value) { _backgroundColor = value; }
+        inline QColor logoColor() const { return _logoColor; }
+        void setLogoColor(const QColor &value);
         void paintEvent(QPaintEvent *event) override;
 
         void setFileTypeIcon(const QString &ressourcePath);
@@ -64,6 +67,7 @@ class AbstractFileItemWidget : public QWidget {
         void setPath(const QString &path);
 
         QColor _backgroundColor;
+        QColor _logoColor;
 
         QHBoxLayout *_topLayout = nullptr;
         QLabel *_fileTypeIconLabel = nullptr;

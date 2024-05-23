@@ -18,15 +18,14 @@
 
 #include "testremotefilesystemobserverworker.h"
 #include "config.h"
-#include "jobs/network/getfilelistjob.h"
 #include "jobs/network/deletejob.h"
 #include "jobs/network/movejob.h"
 #include "jobs/network/renamejob.h"
 #include "jobs/network/uploadjob.h"
 #include "jobs/network/networkjobsparams.h"
-#include "jobs/local/localdeletejob.h"
 #include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 
@@ -53,15 +52,16 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
 
-    const char *userIdStr = std::getenv("KDRIVE_TEST_CI_USER_ID");
-    const char *accountIdStr = std::getenv("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const char *driveIdStr = std::getenv("KDRIVE_TEST_CI_DRIVE_ID");
-    const char *localPathStr = std::getenv("KDRIVE_TEST_CI_LOCAL_PATH");
-    const char *remotePathStr = std::getenv("KDRIVE_TEST_CI_REMOTE_PATH");
-    const char *apiTokenStr = std::getenv("KDRIVE_TEST_CI_API_TOKEN");
-    const char *remoteDirIdStr = std::getenv("KDRIVE_TEST_CI_REMOTE_DIR_ID");
+    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
+    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
+    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
+    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
+    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
+    const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
+    const std::string remoteDirIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_DIR_ID");
 
-    if (!userIdStr || !accountIdStr || !driveIdStr || !localPathStr || !remotePathStr || !apiTokenStr || !remoteDirIdStr) {
+    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
+        apiTokenStr.empty() || remoteDirIdStr.empty()) {
         throw std::runtime_error("Some environment variables are missing!");
     }
 
@@ -78,20 +78,20 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     ParmsDb::instance()->setAutoDelete(true);
 
     // Insert user, account, drive & sync
-    int userId(atoi(userIdStr));
+    int userId(atoi(userIdStr.c_str()));
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr));
+    int accountId(atoi(accountIdStr.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    int driveId = atoi(driveIdStr);
+    int driveId = atoi(driveIdStr.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    Sync sync(1, drive.dbId(), std::string(localPathStr), std::string(remotePathStr));
+    Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
     ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
