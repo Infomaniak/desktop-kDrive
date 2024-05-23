@@ -64,14 +64,9 @@ if [ -z ${KDRIVE_TOKEN+x} ]; then
 	echo "No kDrive token found, AppImage will not be uploaded."
 else
 	FILES=($APP_NAME "kDrive-amd64.dbg" "kDrive_client-amd64.dbg")
+	source "$(dirname "$0")/../upload_version.sh"
 
 	for FILE in ${FILES[@]}; do
-		SIZE=$(ls -l $FILE | awk '{print $5}')
-
-		curl -X POST \
-			-H "Authorization: Bearer $KDRIVE_TOKEN" \
-			-H "Content-Type: application/octet-stream" \
-			--data-binary @$FILE \
-			"https://api.infomaniak.com/3/drive/$KDRIVE_ID/upload?directory_id=$KDRIVE_DIR_ID&total_size=$SIZE&file_name=$FILE&directory_path=${VERSION:0:3}/${VERSION:0:5}/${VERSION:6}/linux-amd&conflict=version"
+		upload_file FILE "linux-amd"
 	done
 fi
