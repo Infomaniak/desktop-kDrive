@@ -146,14 +146,13 @@ else()
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
 endif()
 
+if (APPLE)
+    set(OUTPUT_DIRECTORY ${INSTALL_OUTPUT_DIRECTORY})
+else()
+    set(OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY})
+endif()
 set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
-    if(APPLE)
-        # This is a fix to macOS debugger build removing dependencies
-        RUNTIME_OUTPUT_DIRECTORY ${INSTALL_OUTPUT_DIRECTORY}
-    else()
-        RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
-    endif()
-
+    RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIRECTORY}
     MACOSX_BUNDLE TRUE
 )
 
