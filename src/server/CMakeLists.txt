@@ -147,7 +147,13 @@ else()
 endif()
 
 set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY  ${INSTALL_OUTPUT_DIRECTORY}
+    if(APPLE)
+        # This is a fix to macOS debugger build removing dependencies
+        RUNTIME_OUTPUT_DIRECTORY ${INSTALL_OUTPUT_DIRECTORY}
+    else()
+        RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
+    endif()
+
     MACOSX_BUNDLE TRUE
 )
 
