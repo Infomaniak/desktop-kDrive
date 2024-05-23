@@ -362,20 +362,26 @@ void DebuggingDialog::initUI() {
 }
 
 void DebuggingDialog::initLogUploadLayout() {
+    AppStateValue appStateValue = LogUploadState::None;
     LogUploadState logUploadState = LogUploadState::None;
-    int logUploadPercent = 0;
-
-    ExitCode exitCode = GuiRequests::getAppState(AppStateKey::LogUploadState, logUploadState);
-    if (exitCode != ExitCode::ExitCodeOk) {
+    ExitCode exitCode = GuiRequests::getAppState(AppStateKey::LogUploadState, appStateValue);
+    if (exitCode == ExitCode::ExitCodeOk) {
+        logUploadState = std::get<LogUploadState>(appStateValue);
+    } else {
         qCWarning(lcDebuggingDialog) << "Failed to get log upload status";
     }
 
-    if (logUploadState == LogUploadState::Canceled) {
+    if (logUploadState == LogUploadState::Canceled) {  // If the last log upload was canceled, we do not show the cancel label
+                                                       // when reopening the dialog
+        appStateValue = std::string();
         QString LastSuccessfulLogUploadDate = "";
-        exitCode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadDate, LastSuccessfulLogUploadDate);
-        if (exitCode != ExitCode::ExitCodeOk) {
+        exitCode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadDate, appStateValue);
+        if (exitCode == ExitCode::ExitCodeOk) {
+            LastSuccessfulLogUploadDate = QString::fromStdString(std::get<std::string>(appStateValue));
+        } else {
             qCWarning(lcDebuggingDialog) << "Failed to get last successful log upload date";
         }
+
         if (LastSuccessfulLogUploadDate.size() == 0) {
             logUploadState = LogUploadState::None;
         } else {
@@ -383,9 +389,12 @@ void DebuggingDialog::initLogUploadLayout() {
         }
     }
 
-
-    exitCode = GuiRequests::getAppState(AppStateKey::LogUploadPercent, logUploadPercent);
-    if (exitCode != ExitCode::ExitCodeOk) {
+    appStateValue = int();
+    int logUploadPercent = 0;
+    exitCode = GuiRequests::getAppState(AppStateKey::LogUploadPercent, appStateValue);
+    if (exitCode == ExitCode::ExitCodeOk) {
+        logUploadPercent = std::get<int>(appStateValue);
+    } else {
         qCWarning(lcDebuggingDialog) << "Failed to get log upload percent";
     }
     onLogUploadStatusUpdated(logUploadState, logUploadPercent);
@@ -438,14 +447,20 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
     QString archivePathStr = "";
     QString lasSuccessfullUploadDate = "";
 
-    ExitCode exitcode = GuiRequests::getAppState(AppStateKey::LastLogUploadArchivePath, archivePathStr);
-    if (exitcode != ExitCode::ExitCodeOk) {
+    AppStateValue appStateValue = std::string();
+    ExitCode exitcode = GuiRequests::getAppState(AppStateKey::LastLogUploadArchivePath, appStateValue);
+    if (exitcode == ExitCode::ExitCodeOk) {
+        archivePathStr = QString::fromStdString(std::get<std::string>(appStateValue));
+    } else {
         qCWarning(lcDebuggingDialog) << "Failed to get last log upload archive path";
     }
 
-    exitcode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadDate, lasSuccessfullUploadDate);
-    if (exitcode != ExitCode::ExitCodeOk) {
-        qCWarning(lcDebuggingDialog) << "Failed to get last log upload date";
+    appStateValue = std::string();
+    exitcode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadDate, appStateValue);
+    if (exitcode == ExitCode::ExitCodeOk) {
+        lasSuccessfullUploadDate = QString::fromStdString(std::get<std::string>(appStateValue));
+    } else {
+        qCWarning(lcDebuggingDialog) << "Failed to get last successful log upload date";
     }
 
     if (status == LogUploadState::Uploading || status == LogUploadState::Archiving || status == LogUploadState::None) {
