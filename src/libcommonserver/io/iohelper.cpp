@@ -25,6 +25,9 @@
 #include <filesystem>
 #include <system_error>
 
+#if defined(__APPLE__) || defined(__unix__)
+#include <sys/stat.h>
+#endif
 
 #include <log4cplus/loggingmacros.h>  // LOGW_WARN
 
@@ -63,6 +66,7 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
         case static_cast<int>(std::errc::is_a_directory):
             return IoErrorIsADirectory;
         case static_cast<int>(std::errc::no_such_file_or_directory):
+        case static_cast<int>(std::errc::not_a_directory):  // Occurs in particular when converting a bundle into a single file
             return IoErrorNoSuchFileOrDirectory;
         case static_cast<int>(std::errc::no_space_on_device):
             return IoErrorDiskFull;
@@ -165,8 +169,106 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
     itemType.targetType = isDir ? NodeTypeDirectory : NodeTypeFile;
 
     return true;
-};
+}
 
+#if defined(__APPLE__) || defined(__unix__)
+bool IoHelper::fileExists(const std::error_code &ec) noexcept {
+    return ec.value() != static_cast<int>(std::errc::no_such_file_or_directory);
+}
+
+bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
+    struct stat sb;
+
+    if (lstat(path.string().c_str(), &sb) < 0) {
+        return false;
+    }
+
+    nodeId = std::to_string(sb.st_ino);
+    return true;
+}
+
+bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
+    return true;
+}
+
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
+    ioError = IoErrorSuccess;
+
+    struct stat sb;
+
+    if (lstat(path.string().c_str(), &sb) < 0) {
+        ioError = posixError2ioError(errno);
+        return _isExpectedError(ioError);
+    }
+
+#if defined(__APPLE__)
+    buf->isHidden = false;
+    if (sb.st_flags & UF_HIDDEN) {
+        buf->isHidden = true;
+    }
+#elif defined(__unix__)
+    if (!_checkIfIsHiddenFile(path, buf->isHidden, ioError)) {
+        return false;
+    }
+#endif
+
+    buf->inode = sb.st_ino;
+#if !defined(_POSIX_C_SOURCE) || defined(_DARWIN_C_SOURCE)
+    buf->creationTime = sb.st_birthtime;
+#else
+    buf->creationTime = sb.st_ctime;
+#endif
+    buf->modtime = sb.st_mtime;
+    buf->size = sb.st_size;
+    if (S_ISLNK(sb.st_mode)) {
+        // Symlink
+        struct stat sbTarget;
+        if (stat(path.string().c_str(), &sbTarget) < 0) {
+            // Cannot access target => undetermined
+            buf->nodeType = NodeTypeUnknown;
+        } else {
+            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+        }
+    } else {
+        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+    }
+
+    return true;
+}
+
+bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept {
+    ioError = IoErrorSuccess;
+
+    isHidden = path.filename().string()[0] == '.';
+    if (isHidden) {
+        return true;
+    }
+
+#ifdef __APPLE__
+    static const std::string VolumesFolder = "/Volumes";
+
+    if (path == VolumesFolder) {
+        // `VolumesFolder` is always hidden on MacOSX whereas kDrive needs to consider it as visible.
+        isHidden = false;
+        return true;
+    }
+
+    FileStat filestat;
+    if (!getFileStat(path, &filestat, ioError)) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(path, ioError).c_str());
+        return false;
+    }
+
+    if (ioError != IoErrorSuccess) {
+        return _isExpectedError(ioError);
+    }
+
+    isHidden = filestat.isHidden;
+#endif
+
+    return true;
+}
+#endif
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is a symbolic link.
@@ -199,7 +301,19 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         itemType.nodeType = NodeTypeFile;
         itemType.linkType = LinkTypeSymlink;
 
-        return _setTargetType(itemType);
+        // Get target type
+        FileStat filestat;
+        if (!getFileStat(path, &filestat, itemType.ioError)) {
+            LOGW_WARN(logger(), L"Error in getFileStat: " << Utility::formatStdError(path, ec).c_str());
+            return false;
+        }
+
+        if (itemType.ioError != IoErrorSuccess) {
+            return _isExpectedError(itemType.ioError);
+        }
+
+        itemType.targetType = filestat.nodeType;
+        return true;
     }
 
 #ifdef __APPLE__
@@ -450,7 +564,8 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
 
 void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
     IoError ioError = IoErrorSuccess;
-    if (!getFileStat(path, buf, exists, ioError)) {
+    if (!getFileStat(path, buf, ioError)) {
+        exists = (ioError != IoErrorNoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
@@ -461,8 +576,7 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, ti
     changed = false;
 
     FileStat fileStat;
-    bool exists = false;
-    if (!getFileStat(path, &fileStat, exists, ioError)) {
+    if (!getFileStat(path, &fileStat, ioError)) {
         LOGW_WARN(logger(), L"Failed to get file status: " << Utility::formatIoError(path, ioError).c_str());
 
         return false;
@@ -568,28 +682,21 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
     return ioError == IoErrorSuccess;
 }
 
-bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
+bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Cannot create symlink on itself - path=" << Path2WStr(path).c_str());
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path).c_str());
         ioError = IoErrorInvalidArgument;
         return false;
     }
 
     std::error_code ec;
-    const bool isDirectory = std::filesystem::is_directory(targetPath, ec);
-    ioError = stdError2ioError(ec);
-
-    if (ioError != IoErrorSuccess && ioError != IoErrorNoSuchFileOrDirectory) {
-        return _isExpectedError(ioError);
-    }
-
-    if (isDirectory) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Create directory symlink - targetPath="
-                                                     << Path2WStr(targetPath).c_str() << L" path=" << Path2WStr(path).c_str());
+    if (isFolder) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Create directory symlink: target " << Path2WStr(targetPath).c_str() << L", "
+                                                                                      << Utility::formatSyncPath(path).c_str());
         std::filesystem::create_directory_symlink(targetPath, path, ec);
     } else {
-        LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Create file symlink - targetPath=" << Path2WStr(targetPath).c_str() << L" path=" << Path2WStr(path).c_str());
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Create file symlink: target " << Path2WStr(targetPath).c_str() << L", "
+                                                                                 << Utility::formatSyncPath(path).c_str());
         std::filesystem::create_symlink(targetPath, path, ec);
     }
 

@@ -32,14 +32,12 @@
 
 #include <codecvt>
 
-#define LOGGER_INSTANCE_NAME L"Main"
-#define LOGGER_APP_RF_NAME L"RollingFileAppender"
-#define LOGGER_APP_RF_PATTERN L"%D{%Y-%m-%d %H:%M:%S:%q} [%-0.-1p] (%t) %b:%L - %m%n"
-#define LOGGER_APP_RF_MAX_FILE_SIZE 500  // MB
-#define LOGGER_APP_RF_MAX_BACKUP_IDX 4
-#define LOGGER_APP_PURGE_AFTER_HOURS 24
-
 namespace KDC {
+
+const std::wstring Log::instanceName = L"Main";
+const std::wstring Log::rfName = L"RollingFileAppender";
+const std::wstring Log::rfPattern = L"%D{%Y-%m-%d %H:%M:%S:%q} [%-0.-1p] (%t) %b:%L - %m%n";
+const int Log::rfMaxBackupIdx = 4;   // Max number of backup files
 
 std::shared_ptr<Log> Log::_instance = nullptr;
 
@@ -83,30 +81,31 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
         _logger.setLogLevel(log4cplus::OFF_LOG_LEVEL);
     }
 
-    // Set purge duration
-    log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(LOGGER_APP_RF_NAME);
-    static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get())->setExpire(purgeOldLogs ? LOGGER_APP_PURGE_AFTER_HOURS : 0);
+    // Set purge rate
+    log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
+    static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get())
+        ->setExpire(purgeOldLogs ? CommonUtility::logsPurgeRate * 24 : 0);
 
     return true;
 }
 
 Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
     // Instantiate an appender object
-    CustomRollingFileAppender *rfAppender = new CustomRollingFileAppender(filePath, LOGGER_APP_RF_MAX_FILE_SIZE * 1024 * 1024,
-                                                                          LOGGER_APP_RF_MAX_BACKUP_IDX, true, true);
+    CustomRollingFileAppender *rfAppender =
+        new CustomRollingFileAppender(filePath, CommonUtility::logMaxSize, Log::rfMaxBackupIdx, true, true);
 
     // Unicode management
     std::locale loc(std::locale(), new std::codecvt_utf8<wchar_t>);
     rfAppender->imbue(loc);
 
     log4cplus::SharedAppenderPtr appender(std::move(rfAppender));
-    appender->setName(LOGGER_APP_RF_NAME);
+    appender->setName(Log::rfName);
 
     // Instantiate a layout object && attach the layout object to the appender
-    appender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(LOGGER_APP_RF_PATTERN)));
+    appender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(Log::rfPattern)));
 
     // Instantiate a logger object
-    _logger = log4cplus::Logger::getInstance(LOGGER_INSTANCE_NAME);
+    _logger = log4cplus::Logger::getInstance(Log::instanceName);
     _logger.setLogLevel(log4cplus::TRACE_LOG_LEVEL);
 
     // Attach the appender object to the logger

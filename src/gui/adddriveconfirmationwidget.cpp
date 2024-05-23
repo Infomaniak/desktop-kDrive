@@ -17,7 +17,6 @@
  */
 
 #include "adddriveconfirmationwidget.h"
-#include "customtoolbutton.h"
 #include "guiutility.h"
 
 #include <QBoxLayout>
@@ -44,8 +43,7 @@ static const int progressBarMax = 5;
 
 Q_LOGGING_CATEGORY(lcAddDriveConfirmationWidget, "gui.adddriveconfirmationwidget", QtInfoMsg)
 
-AddDriveConfirmationWidget::AddDriveConfirmationWidget(QWidget *parent)
-    : QWidget(parent), _logoTextIconLabel(nullptr), _descriptionLabel(nullptr), _logoColor(QColor()) {
+AddDriveConfirmationWidget::AddDriveConfirmationWidget(QWidget *parent) : QWidget(parent) {
     initUI();
 }
 

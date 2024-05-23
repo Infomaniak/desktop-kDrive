@@ -1,0 +1,52 @@
+<!--
+  ~ Infomaniak kDrive - Desktop
+  ~ Copyright (C) 2023-2024 Infomaniak Network SA
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Release notes - kDrive 3.6.0</h1>
+<h2><b>New features</b></h2>
+  <ul>
+    <li>Synchronisation of links (symlinks)</li>
+    <li>Added protection to avoid 2 syncs syncing inside the same folder</li>
+    <li>Logs are now kept for 7 days instead of 24 hours</li>
+  </ul>
+<h2><b>Bug fixes</b></h2>
+  <ul>
+    <li>Fixed broken lauch options --synthesis and --settings</li>
+    <li>Fixed an Operation Generator issue when an item with DELETE operation is blacklisted</li>
+    <li>Fixed a crash in the Job Manager</li>
+    <li>Fixed a crash in the Executor when the local snapshot is reconstructed</li>
+    <li>Fixed an issue that caused the local folder to be emptied when changing rights on the kDrive</li>
+    <li>Fixed an issue occuring when removing a sync while syncing</li>
+    <li>Fixed an issue occuring during massive uploads</li>
+    <li>Fixed the message reporting a file too large</li>
+    <li>Fixed migration if there is an accent in the home path of the user</li>
+    <li>Fixed a sync issue concerning Office and similar softwares due to DELETE operations not detected</li>
+    <li>Fixed a sync issue concerning Pro Tools and similar softwares</li>
+    <li>Fixed sync not working on FAT disks</li>
+    <li>Fixed a conflict between a file and a directory</li>
+    <li>Fixed a crash when there are 2 files with the same name but different encodings</li>
+    <li>Fixed a sync loop due to case issue</li>
+    <li>Fixed an Edit-Move conflict issue</li>
+    <li>Sync folders selection - Display warning only when deselection</li>
+    <li>Display an explicit message if the kDrive quota has been reached</li>
+    <li>Fixed a crash occurring after adding elements locally whose path contains unsupported characters</li>
+  </ul>
+</body>
+</html>

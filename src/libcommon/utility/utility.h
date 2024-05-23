@@ -38,6 +38,9 @@ struct COMMON_EXPORT CommonUtility {
 
         static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
 
+        static const int logsPurgeRate;  // Delay after which the logs are purged, expressed in days
+        static const int logMaxSize;
+
         static QString getIconPath(IconType iconType);
         static SyncPath _workingDirPath;
 
@@ -96,6 +99,8 @@ struct COMMON_EXPORT CommonUtility {
         static bool isLiteSyncExtEnabled();
         static bool isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr);
 #endif
+
+        static std::string envVarValue(const std::string &name);
 
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);

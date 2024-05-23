@@ -42,13 +42,15 @@
 #include <AccCtrl.h>
 #define SECURITY_WIN32
 #include <security.h>
-#include <iostream>
+#include <ntstatus.h>
 
 namespace KDC {
 
 namespace {
 IoError dWordError2ioError(DWORD error) noexcept {
     switch (error) {
+        case ERROR_SUCCESS:
+            return IoErrorSuccess;
         case ERROR_ACCESS_DENIED:
             return IoErrorAccessDenied;
         case ERROR_DISK_FULL:
@@ -57,8 +59,8 @@ IoError dWordError2ioError(DWORD error) noexcept {
             return IoErrorFileExists;
         case ERROR_INVALID_PARAMETER:
             return IoErrorInvalidArgument;
-        case ERROR_SUCCESS:
-            return IoErrorSuccess;
+        case ERROR_FILENAME_EXCED_RANGE:
+            return IoErrorFileNameTooLong;
         case ERROR_FILE_NOT_FOUND:
         case ERROR_INVALID_DRIVE:
         case ERROR_PATH_NOT_FOUND:
@@ -68,7 +70,25 @@ IoError dWordError2ioError(DWORD error) noexcept {
             LOG_WARN(Log::instance()->getLogger(), L"Unknown IO error - error=" << error);
             return IoErrorUnknown;
     }
-}  // namespace
+}
+
+IoError ntStatus2ioError(NTSTATUS status) noexcept {
+    switch (status) {
+        case STATUS_SUCCESS:
+            return IoErrorSuccess;
+        case STATUS_ACCESS_DENIED:
+            return IoErrorAccessDenied;
+        case STATUS_DISK_FULL:
+            return IoErrorDiskFull;
+        case STATUS_INVALID_PARAMETER:
+            return IoErrorInvalidArgument;
+        case STATUS_NO_SUCH_FILE:
+        case STATUS_NO_SUCH_DEVICE:
+            return IoErrorNoSuchFileOrDirectory;
+        default:
+            return IoErrorUnknown;
+    }
+}
 
 time_t FileTimeToUnixTime(FILETIME *filetime, DWORD *remainder) {
     long long int t = filetime->dwHighDateTime;
@@ -153,17 +173,8 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
     return true;
 }
 
-bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, IoError &ioError) noexcept {
-    exists = true;
+bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
     ioError = IoErrorSuccess;
-
-    if (!checkIfPathExists(path, exists, ioError)) {
-        return false;
-    }
-
-    if (!exists) {
-        return true;
-    }
 
     // Get parent folder handle
     HANDLE hParent;
@@ -174,8 +185,8 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
 
         hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                               FILE_FLAG_BACKUP_SEMANTICS, NULL);
-
         if (hParent == INVALID_HANDLE_VALUE) {
+            DWORD dwError = GetLastError();
             if (counter) {
                 retry = true;
                 Utility::msleep(10);
@@ -186,16 +197,14 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
             }
 
             LOG_WARN(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()).c_str());
-            ioError = dWordError2ioError(GetLastError());
-            exists = false;
-
-            return false;
+            ioError = dWordError2ioError(dwError);
+            return _isExpectedError(ioError);
         }
     }
 
     // Get file information
     WCHAR szFileName[MAX_PATH_LENGTH_WIN_LONG];
-    lstrcpyW(szFileName, path.filename().wstring().c_str());
+    StringCchCopy(szFileName, MAX_PATH_LENGTH_WIN_LONG, path.filename().wstring().c_str());
 
     UNICODE_STRING fn;
     fn.Buffer = (LPWSTR)szFileName;
@@ -215,7 +224,6 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
         LOG_WARN(Log::instance()->getLogger(), "Error in GetProcAddress");
         ioError = dWordError2ioError(GetLastError());
         CloseHandle(hParent);
-
         return false;
     }
 
@@ -230,10 +238,13 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
         LOGW_DEBUG(Log::instance()->getLogger(),
                    L"Error in zwQueryDirectoryFile: " << Utility::formatSyncPath(path.parent_path()).c_str());
         CloseHandle(hParent);
-        exists = false;
-        ioError = dWordError2ioError(dwError);
 
-        return false;
+        if (!NT_SUCCESS(status)) {
+            ioError = ntStatus2ioError(status);
+        } else if (dwError != 0) {
+            ioError = dWordError2ioError(dwError);
+        }
+        return _isExpectedError(ioError);
     }
 
     // Get the Windows file id as an inode replacement.
@@ -244,11 +255,8 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists, Io
     buf->modtime = FileTimeToUnixTime(pFileInfo->LastWriteTime, &rem);
     buf->creationTime = FileTimeToUnixTime(pFileInfo->CreationTime, &rem);
 
-    bool isDirectory =
-        !(pFileInfo->FileAttributes & FILE_ATTRIBUTE_REPARSE_POINT) && pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
-    buf->type = isDirectory ? NodeTypeDirectory : NodeTypeFile;
-
     buf->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
+    buf->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeTypeDirectory : NodeTypeFile;
     CloseHandle(hParent);
 
     return true;
@@ -304,7 +312,7 @@ bool IoHelper::setXAttrValue(const SyncPath &path, DWORD attrCode, IoError &ioEr
 
     if (!result) {
         ioError = dWordError2ioError(GetLastError());
-        return ioError == IoErrorNoSuchFileOrDirectory;
+        return _isExpectedError(ioError);
     }
 
     return true;
@@ -318,7 +326,7 @@ bool IoHelper::getXAttrValue(const SyncPath &path, DWORD attrCode, bool &value, 
     if (result == INVALID_FILE_ATTRIBUTES) {
         ioError = dWordError2ioError(GetLastError());
 
-        return ioError == IoErrorNoSuchFileOrDirectory;
+        return _isExpectedError(ioError);
     }
 
     // XAttr has been read
@@ -655,7 +663,7 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
                     OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OPEN_REPARSE_POINT, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
         ioError = dWordError2ioError(GetLastError());
-        return ioError == IoErrorNoSuchFileOrDirectory;
+        return _isExpectedError(ioError);
     }
 
     BYTE buf[MAXIMUM_REPARSE_DATA_BUFFER_SIZE];
@@ -667,7 +675,7 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
         CloseHandle(hFile);
 
         ioError = dWordError2ioError(dwError);
-        return ioError == IoErrorNoSuchFileOrDirectory;
+        return _isExpectedError(ioError);
     }
 
     CloseHandle(hFile);
@@ -720,12 +728,13 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     wcscpy(reparseDataBuffer->MountPointReparseBuffer.PathBuffer, targetPathCstr);
     wcscpy(reparseDataBuffer->MountPointReparseBuffer.PathBuffer + targetPathWLen + 1, targetPathCstr);
     reparseDataBuffer->MountPointReparseBuffer.SubstituteNameOffset = 0;
-    reparseDataBuffer->MountPointReparseBuffer.SubstituteNameLength = targetPathWLen * sizeof(WCHAR);
-    reparseDataBuffer->MountPointReparseBuffer.PrintNameOffset = (targetPathWLen + 1) * sizeof(WCHAR);
-    reparseDataBuffer->MountPointReparseBuffer.PrintNameLength = targetPathWLen * sizeof(WCHAR);
-    reparseDataBuffer->ReparseDataLength = (targetPathWLen + 1) * 2 * sizeof(WCHAR) + REPARSE_MOUNTPOINT_HEADER_SIZE;
+    reparseDataBuffer->MountPointReparseBuffer.SubstituteNameLength = static_cast<WORD>(targetPathWLen * sizeof(WCHAR));
+    reparseDataBuffer->MountPointReparseBuffer.PrintNameOffset = static_cast<WORD>((targetPathWLen + 1) * sizeof(WCHAR));
+    reparseDataBuffer->MountPointReparseBuffer.PrintNameLength = static_cast<WORD>(targetPathWLen * sizeof(WCHAR));
+    reparseDataBuffer->ReparseDataLength =
+        static_cast<WORD>((targetPathWLen + 1) * 2 * sizeof(WCHAR) + REPARSE_MOUNTPOINT_HEADER_SIZE);
 
-    DWORD dwError;
+    DWORD dwError = ERROR_SUCCESS;
     const bool success =
         DeviceIoControl(hDir, FSCTL_SET_REPARSE_POINT, reparseDataBuffer,
                         reparseDataBuffer->ReparseDataLength + REPARSE_MOUNTPOINT_HEADER_SIZE, NULL, 0, &dwError, NULL);

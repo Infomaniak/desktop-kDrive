@@ -36,7 +36,6 @@
 #endif
 
 static const int logSizeWatcherTimeout = 60000;
-static const int logMaxSize = 500000000;  // 500MB
 
 namespace KDC {
 
@@ -299,7 +298,7 @@ void Logger::slotWatchLogSize() {
         // Do not check log size from client
         _watchLogSizeTimer.stop();
     } else {
-        if (_logFile.size() > logMaxSize) {
+        if (_logFile.size() > CommonUtility::logMaxSize) {
             kdriveLog("Log too big, archiving current log and creating a new one.");
             emit logTooBig();
             enterNextLogFile();

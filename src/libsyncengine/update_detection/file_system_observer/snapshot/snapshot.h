@@ -57,6 +57,7 @@ class Snapshot : public SharedObject {
         bool clearContentChecksum(const NodeId &itemId);
         bool exists(const NodeId &itemId);
         bool pathExists(const SyncPath &path);
+        bool isLink(const NodeId &itemId);
 
         bool getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds);
 

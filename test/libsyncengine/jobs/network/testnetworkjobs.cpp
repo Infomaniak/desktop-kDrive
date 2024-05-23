@@ -62,13 +62,13 @@ static NodeId testBigFileRemoteId = "59411";
 void TestNetworkJobs::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
-    const char *userIdStr = std::getenv("KDRIVE_TEST_CI_USER_ID");
-    const char *accountIdStr = std::getenv("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const char *driveIdStr = std::getenv("KDRIVE_TEST_CI_DRIVE_ID");
-    const char *remoteDirIdStr = std::getenv("KDRIVE_TEST_CI_REMOTE_DIR_ID");
-    const char *apiTokenStr = std::getenv("KDRIVE_TEST_CI_API_TOKEN");
+    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
+    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
+    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
+    const std::string remoteDirIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_DIR_ID");
+    const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
 
-    if (!userIdStr || !accountIdStr || !driveIdStr || !remoteDirIdStr || !apiTokenStr) {
+    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remoteDirIdStr.empty() || apiTokenStr.empty()) {
         throw std::runtime_error("Some environment variables are missing!");
     }
 
@@ -86,21 +86,21 @@ void TestNetworkJobs::setUp() {
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
-    int userId(atoi(userIdStr));
+    int userId(atoi(userIdStr.c_str()));
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
     _userDbId = user.dbId();
 
-    int accountId(atoi(accountIdStr));
+    int accountId(atoi(accountIdStr.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    int driveId = atoi(driveIdStr);
+    int driveId = atoi(driveIdStr.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    _remoteDirId = std::string(remoteDirIdStr);
+    _remoteDirId = remoteDirIdStr;
 
     // Setup proxy
     Parameters parameters;

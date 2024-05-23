@@ -60,7 +60,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool enoughSpace(const SyncPath &path);
         static bool findNodeValue(const Poco::XML::Document &doc, const std::string &nodeName, std::string *outValue);
         static bool setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                                 std::optional<KDC::SyncTime> modificationDate, bool &exists);
+                                 std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists);
         static bool isCreationDateValid(uint64_t creationDate);
 
         static std::wstring s2ws(const std::string &str);
@@ -79,8 +79,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
         static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
-        static void logGenericServerError(const std::string &errorTitle, std::istream &inputStream,
-                                          const Poco::Net::HTTPResponse &httpResponse);
+        static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
 #ifdef _WIN32
         static bool isNtfs(const SyncPath &dirPath);
@@ -141,7 +140,7 @@ struct COMMONSERVER_EXPORT Utility {
         static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
 #endif
-        static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
+        static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
                                              IoError &ioError);
 
         /* Resources analyser */

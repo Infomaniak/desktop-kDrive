@@ -25,10 +25,7 @@ SnapshotItem::SnapshotItem() {}
 SnapshotItem::SnapshotItem(const NodeId &id) : _id(id) {}
 
 SnapshotItem::SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt,
-                           SyncTime lastModified, NodeType type, int64_t size, bool canWrite /*= true*/
-                           ,
-                           const std::string &contentChecksum /*= ""*/
-                           ,
+                           SyncTime lastModified, NodeType type, int64_t size, bool isLink /*= false*/, bool canWrite /*= true*/,
                            bool canShare /*= true*/)
     : _id(id),
       _parentId(parentId),
@@ -37,7 +34,7 @@ SnapshotItem::SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncN
       _lastModified(lastModified),
       _type(type),
       _size(size),
-      _contentChecksum(contentChecksum),
+      _isLink(isLink),
       _canWrite(canWrite),
       _canShare(canShare) {}
 
@@ -54,6 +51,7 @@ SnapshotItem &SnapshotItem::operator=(const SnapshotItem &other) {
     _lastModified = other.lastModified();
     _type = other.type();
     _size = other.size();
+    _isLink = other.isLink();
     _contentChecksum = other.contentChecksum();
     _canWrite = other.canWrite();
     _canShare = other.canShare();

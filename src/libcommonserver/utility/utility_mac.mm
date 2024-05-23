@@ -59,37 +59,70 @@ bool preventSleeping(bool enable) {
 }
 
 bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
-                  std::optional<KDC::SyncTime> modificationDate, bool &exists) {
+                  std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
     exists = true;
 
-    NSMutableDictionary *attrDictionary = [[NSMutableDictionary alloc] init];
+    NSString *filePathStr = [NSString stringWithUTF8String:filePath.native().c_str()];
+
+    NSDate *cDate = nil;
     if (creationDate.has_value()) {
-        // Set creation time
-        NSDate *cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate.value()];
+        cDate = [[NSDate alloc] initWithTimeIntervalSince1970:creationDate.value()];
+    }
+
+    NSDate *mDate = nil;
+    if (modificationDate.has_value()) {
+        mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate.value()];
+    }
+
+    NSError *error = nil;
+
+    bool ret = false;
+    if (symlink) {
+        if (cDate) {
+            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:mDate
+                                                                                forKey:NSURLCreationDateKey
+                                                                                 error:&error];
+            if (!ret) {
+                if (error.code == NSFileNoSuchFileError) {
+                    exists = false;
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        if (mDate) {
+            ret = [[NSURL fileURLWithPath:filePathStr isDirectory:NO] setResourceValue:mDate
+                                                                                forKey:NSURLContentModificationDateKey
+                                                                                 error:&error];
+            if (!ret) {
+                if (error.code == NSFileNoSuchFileError) {
+                    exists = false;
+                    return true;
+                }
+                return false;
+            }
+        }
+    } else {
+        NSMutableDictionary *attrDictionary = [[NSMutableDictionary alloc] init];
         if (cDate) {
             [attrDictionary setObject:cDate forKey:NSFileCreationDate];
         }
-    }
 
-    if (modificationDate.has_value()) {
-        // Set modification time
-        NSDate *mDate = [[NSDate alloc] initWithTimeIntervalSince1970:modificationDate.value()];
         if (mDate) {
             [attrDictionary setObject:mDate forKey:NSFileModificationDate];
         }
-    }
 
-    if ([[attrDictionary allKeys] count]) {
-        NSError *error = nil;
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        NSString *filePathStr = [NSString stringWithUTF8String:filePath.native().c_str()];
-        bool ret = [fileManager setAttributes:attrDictionary ofItemAtPath:filePathStr error:&error];
-        if (!ret) {
-            if (error.code == NSFileNoSuchFileError) {
-                exists = false;
-                return true;
+        if ([[attrDictionary allKeys] count]) {
+            NSFileManager *fileManager = [NSFileManager defaultManager];
+            ret = [fileManager setAttributes:attrDictionary ofItemAtPath:filePathStr error:&error];
+            if (!ret) {
+                if (error.code == NSFileNoSuchFileError) {
+                    exists = false;
+                    return true;
+                }
+                return false;
             }
-            return false;
         }
     }
 

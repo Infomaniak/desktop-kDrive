@@ -102,8 +102,6 @@ class ExecutorWorker : public OperationProcessor {
 
         void increaseErrorCount(SyncOpPtr syncOp);
 
-        ExitCode isLink(const NodeId &nodeId, bool &isLink);
-
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         std::queue<UniqueId> _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;

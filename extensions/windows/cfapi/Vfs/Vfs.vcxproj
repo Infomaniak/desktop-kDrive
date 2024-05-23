@@ -159,10 +159,10 @@
     </Midl>
     <Manifest />
     <PostBuildEvent>
-      <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "F:\Projects\kdrive\src\server\vfs\win\."
-copy /Y "$(ProjectDir)$(TargetName).h" "F:\Projects\kdrive\src\server\vfs\win\."
-copy /Y "$(TargetDir)$(TargetName).dll" "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\."
-copy /Y "$(TargetDir)$(TargetName).pdb" "F:\Projects\build-kdrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\."
+      <Command>copy /Y "$(ProjectDir)..\Common\debug.h" "F:\Projects\desktop-kDrive\src\server\vfs\win\."
+copy /Y "$(ProjectDir)$(TargetName).h" "F:\Projects\desktop-kDrive\src\server\vfs\win\."
+copy /Y "$(TargetDir)$(TargetName).dll" "F:\Projects\build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\."
+copy /Y "$(TargetDir)$(TargetName).pdb" "F:\Projects\build-desktop-kDrive-Desktop_Qt_6_2_3_MSVC2019_64bit-Debug\bin\."
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -222,10 +222,10 @@ copy /Y "$(TargetDir)$(TargetName).pdb" "F:\Projects\build-kdrive-Desktop_Qt_6_2
     <ClInclude Include="vfs.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <Image Include="..\Common\kdrive-win-icon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\Common\kdrive-win-icon.ico" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

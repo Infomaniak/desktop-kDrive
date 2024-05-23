@@ -31,9 +31,8 @@ void TestIo::testFileChanged() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         bool changed = true;
         CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, changed, ioError));
@@ -45,10 +44,9 @@ void TestIo::testFileChanged() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures";
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
 
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         bool changed = true;
         CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, changed, ioError));
@@ -64,9 +62,8 @@ void TestIo::testFileChanged() {
         std::filesystem::create_symlink(targetPath, path);
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         bool changed = true;
         CPPUNIT_ASSERT(_testObj->checkIfFileChanged(path, fileStat.size, fileStat.modtime, changed, ioError));
@@ -95,9 +92,8 @@ void TestIo::testFileChanged() {
         }
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         // Editing
         {
@@ -121,10 +117,9 @@ void TestIo::testFileChanged() {
         }
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
 
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
@@ -145,10 +140,9 @@ void TestIo::testFileChanged() {
         { std::ofstream ofs(path); }
 
         FileStat fileStat;
-        bool exists = false;
         IoError ioError = IoErrorSuccess;
 
-        _testObj->getFileStat(path, &fileStat, exists, ioError);
+        _testObj->getFileStat(path, &fileStat, ioError);
 
         _testObj->setFileHidden(path, true);
         bool changed = true;
@@ -322,7 +316,11 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT(!isHidden);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+#if defined(__unix__)
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
+#endif
     }
 
 #if !defined(WIN32)
@@ -335,7 +333,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT(isHidden);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 #endif
 
@@ -351,10 +349,13 @@ void TestIo::testCheckIfIsHiddenFile() {
         IoError ioError = IoErrorSuccess;
 #ifdef _WIN32
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
-#else
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
+#elif defined(__APPLE__)
         CPPUNIT_ASSERT(!_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT_EQUAL(IoErrorFileNameTooLong, ioError);
+#elif defined(__unix__)
+        CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 #endif
         CPPUNIT_ASSERT(!isHidden);
     }
@@ -370,9 +371,9 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         bool isHidden = true;
         IoError ioError = IoErrorSuccess;
-        CPPUNIT_ASSERT(!_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
-        CPPUNIT_ASSERT(!isHidden);
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
+        CPPUNIT_ASSERT(isHidden);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 #endif
 

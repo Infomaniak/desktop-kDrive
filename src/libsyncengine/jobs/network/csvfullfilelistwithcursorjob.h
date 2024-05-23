@@ -25,16 +25,18 @@ namespace KDC {
 
 class CsvFullFileListWithCursorJob : public AbstractTokenNetworkJob {
     public:
-        enum {
-            CSV_INDEX_ID = 0,
-            CSV_INDEX_PARENT_ID,
-            CSV_INDEX_NAME,
-            CSV_INDEX_TYPE,
-            CSV_INDEX_SIZE,
-            CSV_INDEX_CREATED_AT,
-            CSV_INDEX_MODTIME,
-            CSV_INDEX_CAN_WRITE
-        } CSV_INDEX;
+        enum CsvIndex {
+            CsvIndexId = 0,
+            CsvIndexParentId,
+            CsvIndexName,
+            CsvIndexType,
+            CsvIndexSize,
+            CsvIndexCreatedAt,
+            CsvIndexModtime,
+            CsvIndexCanWrite,
+            CsvIndexIsLink,
+            CsvIndexEnd
+        };
 
     public:
         CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, std::unordered_set<NodeId> blacklist = {},
@@ -57,7 +59,7 @@ class CsvFullFileListWithCursorJob : public AbstractTokenNetworkJob {
 
         virtual bool handleResponse(std::istream &is) override;
 
-        bool updateSnapshotItem(const std::string &str, const int index, SnapshotItem &item);
+        bool updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item);
 
         NodeId _dirId;
         std::unordered_set<NodeId> _blacklist;

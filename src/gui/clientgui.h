@@ -83,9 +83,6 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void resolveConflictErrors(int driveDbId, bool keepLocalVersion);
         void resolveUnsupportedCharErrors(int driveDbId);
 
-        // Delay after which the logs are purged, expressed in days.
-        static const int logsPurgeRate;
-
     signals:
         void userListRefreshed();
         void accountListRefreshed();
