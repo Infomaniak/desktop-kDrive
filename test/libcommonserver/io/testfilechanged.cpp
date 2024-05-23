@@ -329,7 +329,6 @@ void TestIo::testCheckIfIsHiddenFile() {
         const TemporaryDirectory temporaryDirectory;
         const SyncPath path = ".non_existing_hidden_file.txt";
 
-
         bool isHidden = false;
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
@@ -360,7 +359,6 @@ void TestIo::testCheckIfIsHiddenFile() {
 #endif
         CPPUNIT_ASSERT(!isHidden);
     }
-
 
 #if !defined(WIN32)
     // A non-existing file with a very long path is hidden if its name starts with a dot
