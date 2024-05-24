@@ -25,8 +25,6 @@
 #include <3rdparty/sqlite3/sqlite3.h>
 
 #include <fstream>
-#include <list>
-#include <sstream>
 #include <string>
 
 //

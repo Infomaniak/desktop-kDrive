@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "testincludes.h"
+
 #include <log4cplus/logger.h>
 
 using namespace CppUnit;

@@ -2,6 +2,7 @@ project(testserver)
 
 find_package(Qt6 REQUIRED Core Gui)
 find_package(log4cplus 2.1.0 REQUIRED)
+find_package(Poco 1.12.5 REQUIRED XML Net)
 
 set(testserver_NAME ${APPLICATION_NAME}_test_server)
 
@@ -22,6 +23,9 @@ endif()
 if (WIN32)
     include_directories("F:/Projects/log4cplus/include")
     include_directories("C:/Program Files (x86)/cppunit/include")
+    include_directories("C:/Program Files (x86)/Sentry-Native/include")
+    include_directories("C:/Program Files (x86)/xxHash/include")
+    include_directories("C:/Program Files (x86)/libzip/include")
 else()
     include_directories("/usr/local/include")
 endif()
@@ -32,9 +36,9 @@ set_target_properties(${testserver_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY} )
 
 target_link_libraries(${testserver_NAME}
-    Qt6::Core
-    Qt6::Gui
-    ${server_NAME}
+    Qt6::Core Qt6::Gui
+    Poco::XML Poco::Net
+    ${libsyncengine_NAME}
 )
 
 if (WIN32)

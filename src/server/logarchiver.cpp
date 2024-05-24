@@ -30,8 +30,9 @@
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/drive.h"
 
-#include <sstream>
 #include <fstream>
+
+#include <zip.h>
 
 namespace KDC {
 
