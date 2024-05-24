@@ -27,6 +27,11 @@ export CONTENTDIR="$BASEPATH/build-linux"
 export BUILDDIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
+extract_debug {
+    objcopy --only-keep-debug "$1/$2" $CONTENTDIR/$2-amd64.dbg
+    objcopy --strip-debug "$1/$2"
+    objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive-amd64.dbg "$1/$2"
+}
 
 mkdir -p $APPDIR
 mkdir -p $BUILDDIR
@@ -65,14 +70,9 @@ cmake -B$BUILDDIR -H$BASEPATH \
 
 make -j4
 
-objcopy --only-keep-debug ./bin/kDrive $CONTENTDIR/kDrive-amd64.dbg
-objcopy --strip-debug ./bin/kDrive
-objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive-amd64.dbg ./bin/kDrive
-
-objcopy --only-keep-debug ./bin/kDrive_client $CONTENTDIR/kDrive_client-amd64.dbg
-objcopy --strip-debug ./bin/kDrive_client
-objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive_client-amd64.dbg ./bin/kDrive_client
+extract_debug ./bin kDrive
+extract_debug ./bin kDrive_client
 
 make DESTDIR=$APPDIR install
 
-cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
+# cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
