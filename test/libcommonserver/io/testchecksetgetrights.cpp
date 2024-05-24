@@ -77,14 +77,18 @@ void TestIo::testCheckSetAndGetRights() {
          *  |  0   |   0   |    0    | v
          *  ...
          */
-        IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
-        for (int i = 0; i < 2; i++) {
+#ifdef _WIN32
+        IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the windows API
+        for (int i = 0; i < 2; i++) {          // Test Windows API and fallback method
+#endif
             for (int baseRigths = 0; baseRigths < 7; baseRigths++) {
                 for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
                     auto rightsSet = RightsSet(baseRigths);
+#ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue;  // Skip the test if the rights are not supported by the current method
                     }
+#endif
                     bool result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                     result &= ioError == IoErrorSuccess;
                     if (!result) {
@@ -105,9 +109,11 @@ void TestIo::testCheckSetAndGetRights() {
                     }
 
                     rightsSet = RightsSet(targetRigths);
+#ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue;  // Skip the test if the rights are not supported by the current method
                     }
+#endif
                     result = IoHelper::setRights(path, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                     result &= ioError == IoErrorSuccess;
                     if (!result) {
@@ -128,14 +134,17 @@ void TestIo::testCheckSetAndGetRights() {
                     }
                 }
             }
-            IoHelper::_getAndSetRightsMethod = 1; // Set the method to use std::filesystem method (fallback)
+#ifdef _WIN32
+            if (i == 0) {
+                CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
+            }
+            IoHelper::_getAndSetRightsMethod = 1;  // Set the method to use std::filesystem method (fallback)
         }
         IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the windows API
+#endif
+
         // Restore the rights
         IoHelper::setRights(path, true, true, true, ioError);
-#ifdef _WIN32
-        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
-#endif
     }
 
     // Test if the rights are correctly set and if they can be successfully retrieved from a file
@@ -160,7 +169,6 @@ void TestIo::testCheckSetAndGetRights() {
         CPPUNIT_ASSERT(ioError == IoErrorSuccess && isReadable && isWritable && isExecutable);
 #endif
 
-
         /* Test all the possible rights and all the possible order of rights modification. ie:
          *  | READ | WRITE | EXECUTE | |
          *  |  0   |   0   |    0    | v
@@ -180,15 +188,20 @@ void TestIo::testCheckSetAndGetRights() {
          *  |  0   |   0   |    0    | v
          *  ...
          */
+#ifdef _WIN32
+
         IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the windows API
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 2; i++) {          // Test Windows API and fallback method
+#endif
             for (int baseRigths = 0; baseRigths < 7;
                  baseRigths++) {  // Test all the possible rights and the all the possible order of rights modification
                 for (int targetRigths = baseRigths + 1; targetRigths < 8; targetRigths++) {
                     auto rightsSet = RightsSet(baseRigths);
+#ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue;  // Skip the test if the rights are not supported by the current method
                     }
+#endif
                     bool result = IoHelper::setRights(filepath, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                     result &= ioError == IoErrorSuccess;
                     if (!result) {
@@ -208,9 +221,11 @@ void TestIo::testCheckSetAndGetRights() {
                     }
 
                     rightsSet = RightsSet(targetRigths);
+#ifdef _WIN32
                     if (IoHelper::_getAndSetRightsMethod == 1 && (!rightsSet.execute || !rightsSet.read)) {
                         continue;  // Skip the test if the rights are not supported by the current method
                     }
+#endif
                     result = IoHelper::setRights(filepath, rightsSet.read, rightsSet.write, rightsSet.execute, ioError);
                     result &= ioError == IoErrorSuccess;
                     if (!result) {
@@ -230,16 +245,17 @@ void TestIo::testCheckSetAndGetRights() {
                     }
                 }
             }
+#ifdef _WIN32
+            if (i == 0) {
+                CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
+            }
             IoHelper::_getAndSetRightsMethod = 1;  // Set the method to use the std::filesystem method (fallback)
         }
-        IoHelper::_getAndSetRightsMethod = 0; // Set the method to use the windows API
+        IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the windows API
+#endif
 
         // Restore the rights
         IoHelper::setRights(filepath, true, true, true, ioError);
-
-#ifdef _WIN32
-        CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
-#endif
     }
 
     // Check permissions are not set recursively on a folder
@@ -392,8 +408,6 @@ void TestIo::testCheckSetAndGetRights() {
         IoHelper::setRights(path, true, true, true, ioError);
         IoHelper::_setRightsWindowsApiInheritance = false;
         CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the windows API
-
-
 #endif
     }
 
@@ -509,7 +523,17 @@ void TestIo::testCheckSetAndGetRights() {
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
 #ifdef _WIN32
         CPPUNIT_ASSERT_EQUAL(0, IoHelper::_getAndSetRightsMethod);  // Check that no error occurred with the wndows API
+        IoHelper::_getAndSetRightsMethod = 1;                       // Set the method to use the std::filesystem method (fallback)
+        CPPUNIT_ASSERT(IoHelper::getRights(path, isReadable, isWritable, isExecutable, ioError));
+        CPPUNIT_ASSERT_EQUAL(ioError, IoErrorNoSuchFileOrDirectory);
+
+        CPPUNIT_ASSERT(IoHelper::setRights(path, true, true, true, ioError));
+        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+
 #endif
     }
+#ifdef _WIN32
+    IoHelper::_getAndSetRightsMethod = 0;  // Set the method to use the std::filesystem method (fallback)
+#endif
 }
 }  // namespace KDC
