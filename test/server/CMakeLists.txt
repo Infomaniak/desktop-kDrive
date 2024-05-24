@@ -72,3 +72,16 @@ if(APPLE)
     target_link_libraries(${testserver_NAME}
         "${libsyncengine_NAME}_vfs_mac")
 endif()
+
+if(APPLE)
+    # Default sync exclude list
+    install(FILES ${CMAKE_SOURCE_DIR}/sync-exclude-osx.lst DESTINATION ${BIN_OUTPUT_DIRECTORY} RENAME sync-exclude.lst)
+
+    # Default Lite Sync app exclude list
+    install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
+
+    install(CODE "
+        message(STATUS \"Fixing library paths for ${testserver_NAME}...\")
+        execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testserver_NAME})
+        " COMPONENT RUNTIME)
+endif()

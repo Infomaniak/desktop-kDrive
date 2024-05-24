@@ -70,3 +70,10 @@ else()
     target_link_libraries(${testcommon_NAME}
         "/usr/local/lib/libcppunit.so")
 endif()
+
+if(APPLE)
+    install(CODE "
+        message(STATUS \"Fixing library paths for ${testcommon_NAME}...\")
+        execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testcommon_NAME})
+        " COMPONENT RUNTIME)
+endif()

@@ -658,13 +658,12 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 
 #if defined(__APPLE__)
 SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
-    return (test ? (testResourcesPath + excludedAppFileName)
-                 : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
+    return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
 }
 #endif
 
 SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
-    return (test ? testResourcesPath + excludedTemplateFileName
+    return (test ? excludedTemplateFileName
                  : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
 }
 
