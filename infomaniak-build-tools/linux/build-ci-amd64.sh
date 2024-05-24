@@ -75,4 +75,4 @@ extract_debug ./bin kDrive_client
 
 make DESTDIR=$APPDIR install
 
-# cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
+cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
