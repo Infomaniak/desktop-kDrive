@@ -23,7 +23,7 @@ if [ "${BASH_SOURCE[0]}" -ef "$0" ]; then
     exit 1
 fi
 
-upload_file {
+upload_file () {
     FILE="$1"
     SYSTEM="$2"
 
