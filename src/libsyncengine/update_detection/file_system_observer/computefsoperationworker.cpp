@@ -369,26 +369,22 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     FSOpPtr fsOp = nullptr;
                     if (isInUnsyncedList(snapshot, nodeId, side)) {
                         // Delete operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete
-                                                             , nodeId
-                                                             , dbNode.type()
-                                                             ,snapshot->createdAt(nodeId)
-                                                             , snapshotLastModified
-                                                             ,snapshot->size(nodeId)
-                                                             ,remoteDbPath  // We use the remotePath anyway here to display
-                                                                                 // notifications with the real (remote) name
-                                                             ,snapPath);
+                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete, nodeId, dbNode.type(),
+                                                             snapshot->createdAt(nodeId), snapshotLastModified,
+                                                             snapshot->size(nodeId),
+                                                             remoteDbPath  // We use the remotePath anyway here to display
+                                                                           // notifications with the real (remote) name
+                                                             ,
+                                                             snapPath);
                     } else {
                         // Move operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeMove
-                                                             , nodeId
-                                                             , dbNode.type()
-                                                             ,snapshot->createdAt(nodeId)
-                                                             , snapshotLastModified
-                                                             ,snapshot->size(nodeId)
-                                                             ,remoteDbPath  // We use the remotePath anyway here to display
-                                                                                 // notifications with the real (remote) name
-                                                             ,snapPath);
+                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeMove, nodeId, dbNode.type(),
+                                                             snapshot->createdAt(nodeId), snapshotLastModified,
+                                                             snapshot->size(nodeId),
+                                                             remoteDbPath  // We use the remotePath anyway here to display
+                                                                           // notifications with the real (remote) name
+                                                             ,
+                                                             snapPath);
                     }
 
                     opSet->insertOp(fsOp);
@@ -470,7 +466,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 // Ignore orphans
                 if (ParametersCache::instance()->parameters().extendedLog()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring orphan node " << SyncName2WStr(snapshot->name(nodeId)).c_str() << L" ("
-                                                                        << Utility::s2ws(nodeId).c_str() << L")");
+                                                                         << Utility::s2ws(nodeId).c_str() << L")");
                 }
                 continue;
             }
@@ -533,22 +529,20 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
     }
 
     if (fsOp->operationType() == OperationTypeMove) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                                                 << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str())
-                                                 << L" FS operation from "
-                                                 << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
-                                                 << Path2WStr(fsOp->path()).c_str() << L"\" to \""
-                                                 << Path2WStr(fsOp->destinationPath()).c_str() << L"\" ("
-                                                 << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
+        LOGW_SYNCPAL_DEBUG(
+            _logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
+                                  << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str()) << L" FS operation from "
+                                  << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
+                                  << Path2WStr(fsOp->path()).c_str() << L"\" to \"" << Path2WStr(fsOp->destinationPath()).c_str()
+                                  << L"\" (" << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
         return;
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                                             << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str())
-                                             << L" FS operation on "
-                                             << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
-                                             << Path2WStr(fsOp->path()).c_str() << L"\" ("
-                                             << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
+    LOGW_SYNCPAL_DEBUG(
+        _logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
+                              << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str()) << L" FS operation on "
+                              << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
+                              << Path2WStr(fsOp->path()).c_str() << L"\" (" << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
 }
 
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
@@ -799,8 +793,14 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     bool exists = false;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError).c_str());
-        setExitCause(ExitCauseFileAccessError);
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExistsWithSameNodeId: "
+                               << Utility::formatIoError(absolutePath, ioError).c_str());
+
+        if (ioError == IoErrorInvalidFileName) {
+            // Observed on MacOSX under special circumstances; see getItemType unit test edge cases.
+            setExitCause(ExitCauseInvalidName);
+        } else
+            setExitCause(ExitCauseFileAccessError);
 
         return ExitCodeSystemError;
     }
