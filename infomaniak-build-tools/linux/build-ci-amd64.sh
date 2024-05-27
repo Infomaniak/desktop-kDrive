@@ -68,7 +68,7 @@ cmake -B$BUILDDIR -H$BASEPATH \
     -DBUILD_UNIT_TESTS=1 \
     "${CMAKE_PARAMS[@]}" \
 
-make -j4
+make -j$(nproc)
 
 extract_debug ./bin kDrive
 extract_debug ./bin kDrive_client
