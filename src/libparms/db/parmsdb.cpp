@@ -17,6 +17,7 @@
  */
 
 #include "parmsdb.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/asserts.h"
 #include "libcommonserver/utility/utility.h"
 #include "utility/utility.h"
@@ -24,8 +25,6 @@
 #include <3rdparty/sqlite3/sqlite3.h>
 
 #include <fstream>
-#include <list>
-#include <sstream>
 #include <string>
 
 //

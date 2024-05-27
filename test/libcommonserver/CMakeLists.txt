@@ -1,6 +1,5 @@
 project(testcommon)
 
-find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco REQUIRED Foundation)
 find_package(log4cplus 2.1.0 REQUIRED)
 
@@ -22,10 +21,6 @@ set(testcommon_SRCS
     io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp io/testcheckdirectoryiterator.cpp io/testchecksetgetrights.cpp
 )
 
-if (USE_OUR_OWN_SQLITE3)
-    list(APPEND testcommon_SRCS ${SQLITE3_SOURCE})
-endif()
-
 if(APPLE)
     list(APPEND testcommon_SRCS io/testcreatealias.cpp io/testgetxattrvalue.cpp io/testsetxattrvalue.cpp)
 endif()
@@ -37,6 +32,7 @@ endif()
 if (WIN32)
     include_directories("F:/Projects/log4cplus/include")
     include_directories("C:/Program Files (x86)/cppunit/include")
+    include_directories("C:/Program Files (x86)/Sentry-Native/include")
 else()
     include_directories("/usr/local/include")
 endif()
@@ -48,8 +44,6 @@ set_target_properties(${testcommon_NAME} PROPERTIES
 
 target_link_libraries(${testcommon_NAME}
     ${libcommonserver_NAME}
-    ${libsyncengine_NAME}
-    ${SQLITE3_LIBRARIES}
 )
 
 if (WIN32)
@@ -75,4 +69,11 @@ elseif(APPLE)
 else()
     target_link_libraries(${testcommon_NAME}
         "/usr/local/lib/libcppunit.so")
+endif()
+
+if(APPLE)
+    install(CODE "
+        message(STATUS \"Fixing library paths for ${testcommon_NAME}...\")
+        execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testcommon_NAME})
+        " COMPONENT RUNTIME)
 endif()

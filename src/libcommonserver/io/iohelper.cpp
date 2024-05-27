@@ -98,6 +98,9 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
             return IoErrorInvalidArgument;
         case ENAMETOOLONG:
             return IoErrorFileNameTooLong;
+#ifdef _WIN32
+        case ESRCH:
+#endif
         case ENOENT:
             return IoErrorNoSuchFileOrDirectory;
 #ifdef __APPLE__
