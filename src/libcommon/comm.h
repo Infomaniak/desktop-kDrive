@@ -188,7 +188,7 @@ struct ArgsWriter {
         template <class T, class... Args>
         void write(T &r, Args... args) {
             stream >> r;
-            extract(args...);
+            write(args...);
         }
         QDataStream stream;
 };
