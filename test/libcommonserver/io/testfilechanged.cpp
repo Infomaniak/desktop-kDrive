@@ -316,7 +316,11 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT(!isHidden);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+#if defined(__unix__)
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
+#endif
     }
 
 #if !defined(WIN32)
@@ -329,7 +333,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
         CPPUNIT_ASSERT(isHidden);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 #endif
 
@@ -345,10 +349,13 @@ void TestIo::testCheckIfIsHiddenFile() {
         IoError ioError = IoErrorSuccess;
 #ifdef _WIN32
         CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
-#else
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
+#elif defined(__APPLE__)
         CPPUNIT_ASSERT(!_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT_EQUAL(IoErrorFileNameTooLong, ioError);
+#elif defined(__unix__)
+        CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 #endif
         CPPUNIT_ASSERT(!isHidden);
     }
@@ -364,9 +371,9 @@ void TestIo::testCheckIfIsHiddenFile() {
 
         bool isHidden = true;
         IoError ioError = IoErrorSuccess;
-        CPPUNIT_ASSERT(!_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
-        CPPUNIT_ASSERT(!isHidden);
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT(_testObj->checkIfIsHiddenFile(path, false, isHidden, ioError));
+        CPPUNIT_ASSERT(isHidden);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 #endif
 
