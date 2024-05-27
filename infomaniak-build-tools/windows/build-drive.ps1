@@ -19,7 +19,7 @@
 # Parameters :
 Param(
 # BuildType	: The type of build (Debug will run the tests, Release will sign the app)
-[ValidateSet('Release', 'RelWithDebInfo')]
+[ValidateSet('Release', 'RelWithDebInfo', 'Debug')]
 [string] $buildType = "RelWithDebInfo",
 
 # Path	: The path to the root CMakeLists.txt
