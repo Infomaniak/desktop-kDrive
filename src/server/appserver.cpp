@@ -115,15 +115,7 @@ static void displayHelpText(const QString &t) {
 #endif
 
 AppServer::AppServer(int &argc, char **argv)
-    : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv),
-      _navigationPaneHelper(nullptr),
-      _socketApi(nullptr),
-      _appRestartRequired(false),
-      _theme(Theme::instance()),
-      _helpAsked(false),
-      _versionAsked(false),
-      _clearSyncNodesAsked(false),
-      _debugMode(false) {
+    : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv), _theme(Theme::instance()) {
     _startedAt.start();
 
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
@@ -439,7 +431,7 @@ void AppServer::stopSyncTask(int syncDbId) {
     ASSERT(_syncPalMap[syncDbId].use_count() == 1)
     _syncPalMap.erase(syncDbId);
 
-    ASSERT(_vfsMap[syncDbId].use_count() == 1)
+    ASSERT(_vfsMap[syncDbId].use_count() <= 1)  // `use_count` can be zero when the local drive has been removed.
     _vfsMap.erase(syncDbId);
 }
 
@@ -573,13 +565,10 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_ERROR_INFOLIST: {
-            ErrorLevel level;
-            int syncDbId;
-            int limit;
-            QDataStream paramsStream(params);
-            paramsStream >> level;
-            paramsStream >> syncDbId;
-            paramsStream >> limit;
+            ErrorLevel level{ErrorLevelUnknown};
+            int syncDbId{0};
+            int limit{100};
+            ArgsWriter(params).write(level, syncDbId, limit);
 
             QList<ErrorInfo> list;
             ExitCode exitCode = ServerRequests::getErrorInfoList(level, syncDbId, limit, list);
@@ -883,7 +872,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> syncDbId;
 
             Sync sync;
-            bool found;
+            bool found = false;
             if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
                 LOG_WARN(_logger, "Error in ParmsDb::selectSync");
                 resultStream << ExitCodeDbError;
@@ -895,7 +884,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
-            // Check if sync is valid
             ExitCode exitCode = checkIfSyncIsValid(sync);
             ExitCause exitCause = ExitCauseUnknown;
             if (exitCode != ExitCodeOk) {
@@ -904,24 +892,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 break;
             }
 
-            bool resumedByUser = true;
-            exitCode = createAndStartVfs(sync, exitCause);
-            if (exitCode != ExitCodeOk) {
-                LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode);
-                addError(Error(sync.dbId(), ERRID, exitCode, exitCause));
-                resumedByUser = false;
-
-                // Set sync's paused flag
-                sync.setPaused(true);
-
-                bool found;
-                if (!ParmsDb::instance()->setSyncPaused(sync.dbId(), true, found)) {
-                    LOG_WARN(_logger, "Error in ParmsDb::setSyncPaused");
-                }
-                if (!found) {
-                    LOG_WARN(_logger, "Sync not found");
-                }
-            }
+            exitCode = tryCreateAndStartVfs(sync);
+            const bool resumedByUser = exitCode == ExitCodeOk;
 
             exitCode = initSyncPal(sync, std::unordered_set<NodeId>(), std::unordered_set<NodeId>(), std::unordered_set<NodeId>(),
                                    true, resumedByUser, false);
@@ -1052,7 +1024,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 Sync sync;
                 ServerRequests::syncInfoToSync(syncInfo, sync);
 
-                // Check if sync is valid
                 ExitCode exitCode = checkIfSyncIsValid(sync);
                 ExitCause exitCause = ExitCauseUnknown;
                 if (exitCode != ExitCodeOk) {
@@ -1060,24 +1031,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                // Create and start Vfs
-                exitCode = createAndStartVfs(sync, exitCause);
-                if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger,
-                             "Error in createAndStartVfs for syncDbId=" << syncInfo.dbId() << " - exitCode=" << exitCode);
-                    addError(Error(sync.dbId(), ERRID, exitCode, exitCause));
-
-                    // Set sync's paused flag
-                    sync.setPaused(true);
-
-                    bool found;
-                    if (!ParmsDb::instance()->setSyncPaused(sync.dbId(), true, found)) {
-                        LOG_WARN(_logger, "Error in ParmsDb::setSyncPaused");
-                    }
-                    if (!found) {
-                        LOG_WARN(_logger, "Sync not found");
-                    }
-                }
+                tryCreateAndStartVfs(sync);
 
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
@@ -1170,24 +1124,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     return;
                 }
 
-                // Create and start Vfs
-                exitCode = createAndStartVfs(sync, exitCause);
-                if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger,
-                             "Error in createAndStartVfs for syncDbId=" << syncInfo.dbId() << " - exitCode=" << exitCode);
-                    addError(Error(sync.dbId(), ERRID, exitCode, exitCause));
-
-                    // Set sync's paused flag
-                    sync.setPaused(true);
-
-                    bool found;
-                    if (!ParmsDb::instance()->setSyncPaused(sync.dbId(), true, found)) {
-                        LOG_WARN(_logger, "Error in ParmsDb::setSyncPaused");
-                    }
-                    if (!found) {
-                        LOG_WARN(_logger, "Sync not found");
-                    }
-                }
+                tryCreateAndStartVfs(sync);
 
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
@@ -2016,7 +1953,7 @@ void AppServer::startSyncPals() {
     if (trials < START_SYNCPALS_TRIALS) {
         trials++;
         LOG_DEBUG(_logger, "Start SyncPals - trials = " << trials);
-        ExitCause exitCause;
+        ExitCause exitCause = ExitCauseUnknown;
         ExitCode exitCode = startSyncs(exitCause);
         if (exitCode != ExitCodeOk) {
             if (exitCode == ExitCodeSystemError && exitCause == ExitCauseUnknown) {
@@ -2158,15 +2095,15 @@ ExitCode AppServer::checkIfSyncIsValid(const Sync &sync) {
     }
 
     // Check for nested syncs
-    for (const auto &tmpSync : syncList) {
-        if (tmpSync.dbId() == sync.dbId()) {
+    for (const auto &sync_ : syncList) {
+        if (sync_.dbId() == sync.dbId()) {
             continue;
         }
-        if (CommonUtility::isSubDir(sync.localPath(), tmpSync.localPath()) ||
-            CommonUtility::isSubDir(tmpSync.localPath(), sync.localPath())) {
-            LOGW_WARN(_logger, L"Nested syncs - dbId1=" << sync.dbId() << L" path1=" << Path2WStr(sync.localPath()).c_str()
-                                                        << L" dbId2=" << tmpSync.dbId() << L" path2="
-                                                        << Path2WStr(tmpSync.localPath()).c_str());
+        if (CommonUtility::isSubDir(sync.localPath(), sync_.localPath()) ||
+            CommonUtility::isSubDir(sync_.localPath(), sync.localPath())) {
+            LOGW_WARN(_logger, L"Nested syncs - (1) dbId="
+                                   << sync.dbId() << L", " << Utility::formatSyncPath(sync.localPath()).c_str() << L"; (2) dbId="
+                                   << sync_.dbId() << L", " << Utility::formatSyncPath(sync_.localPath()).c_str());
             return ExitCodeInvalidSync;
         }
     }
@@ -2784,10 +2721,34 @@ ExitCode AppServer::startSyncs(ExitCause &exitCause) {
     return ExitCodeOk;
 }
 
+// This function will pause the synchronization in case of errors.
+ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
+    ExitCause exitCause = ExitCauseUnknown;
+    ExitCode exitCode = createAndStartVfs(sync, exitCause);
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(_logger,
+                 "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode << ", pausing.");
+        addError(Error(sync.dbId(), ERRID, exitCode, exitCause));
+
+        // Set sync's paused flag
+        sync.setPaused(true);
+
+        bool found = false;
+        if (!ParmsDb::instance()->setSyncPaused(sync.dbId(), true, found)) {
+            LOG_WARN(_logger, "Error in ParmsDb::setSyncPaused");
+        }
+        if (!found) {
+            LOG_WARN(_logger, "Sync not found");
+        }
+    }
+
+    return exitCode;
+}
+
 ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
     ExitCode mainExitCode = ExitCodeOk;
-    ExitCode exitCode;
-    bool found;
+    ExitCode exitCode = ExitCodeOk;
+    bool found = false;
 
     // Load account list
     std::vector<Account> accountList;
@@ -2822,7 +2783,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                 if (user.toMigrate()) {
                     if (!user.keychainKey().empty()) {
                         // End migration once connected
-                        bool syncUpdated;
+                        bool syncUpdated = false;
                         exitCode = processMigratedSyncOnceConnected(user.dbId(), drive.driveId(), sync, blackList, undecidedList,
                                                                     syncUpdated);
                         if (exitCode != ExitCodeOk) {
@@ -2852,7 +2813,6 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                     }
                 }
 
-                // Check if sync is valid
                 exitCode = checkIfSyncIsValid(sync);
                 exitCause = ExitCauseUnknown;
                 if (exitCode != ExitCodeOk) {
@@ -2860,23 +2820,7 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                     continue;
                 }
 
-                // Create and start Vfs
-                exitCode = createAndStartVfs(sync, exitCause);
-                if (exitCode != ExitCodeOk) {
-                    LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode);
-                    addError(Error(sync.dbId(), ERRID, exitCode, exitCause));
-
-                    // Set sync's paused flag
-                    sync.setPaused(true);
-
-                    bool found;
-                    if (!ParmsDb::instance()->setSyncPaused(sync.dbId(), true, found)) {
-                        LOG_WARN(_logger, "Error in ParmsDb::setSyncPaused");
-                    }
-                    if (!found) {
-                        LOG_WARN(_logger, "Sync not found");
-                    }
-                }
+                tryCreateAndStartVfs(sync);
 
                 // Create and start SyncPal
                 exitCode =
@@ -3515,8 +3459,8 @@ ExitCode AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     return ExitCodeOk;
 }
 
-ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) {
-    // Check that the sync folder exists
+ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) noexcept {
+    // Check that the sync folder exists.
     bool exists = false;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError)) {
@@ -3526,7 +3470,7 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) {
     }
 
     if (!exists) {
-        LOGW_WARN(_logger, L"Sync localpath " << Path2WStr(sync.localPath()).c_str() << L" doesn't exist");
+        LOGW_WARN(_logger, L"Sync localpath " << Utility::formatSyncPath(sync.localPath()).c_str() << L" doesn't exist.");
         exitCause = ExitCauseSyncDirDoesntExist;
         return ExitCodeSystemError;
     }
@@ -3759,23 +3703,7 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         // Delete previous vfs
         _vfsMap.erase(syncDbId);
 
-        // Create and start Vfs
-        exitCode = createAndStartVfs(sync, exitCause);
-        if (exitCode != ExitCodeOk) {
-            LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode);
-            addError(Error(ERRID, exitCode, exitCause));
-
-            // Set sync's paused flag
-            sync.setPaused(true);
-
-            bool found;
-            if (!ParmsDb::instance()->setSyncPaused(sync.dbId(), true, found)) {
-                LOG_WARN(_logger, "Error in ParmsDb::setSyncPaused");
-            }
-            if (!found) {
-                LOG_WARN(_logger, "Sync not found");
-            }
-        }
+        tryCreateAndStartVfs(sync);
 
         QTimer::singleShot(100, this, [=]() {
             bool ok = true;
@@ -3804,56 +3732,43 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
 }
 
 void AppServer::addError(const Error &error) {
-    // Check if the same error already exists
+    // Fetch all errors.
     std::vector<Error> errorList;
     if (!ParmsDb::instance()->selectAllErrors(error.level(), error.syncDbId(), INT_MAX, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
         return;
     }
 
+    // Check if a similar error already exists.
     bool errorAlreadyExists = false;
     for (Error &existingError : errorList) {
-        if ((error.level() == ErrorLevelServer && error.functionName() == existingError.functionName() &&
-             error.exitCode() == existingError.exitCode() && error.exitCause() == existingError.exitCause()) ||
-            (error.level() == ErrorLevelSyncPal && error.workerName() == existingError.workerName() &&
-             error.exitCode() == existingError.exitCode() && error.exitCause() == existingError.exitCause()) ||
-            (error.level() == ErrorLevelNode && error.path() == existingError.path() &&
-             error.destinationPath() == existingError.destinationPath() && error.conflictType() == existingError.conflictType() &&
-             error.inconsistencyType() == existingError.inconsistencyType() &&
-             error.cancelType() == existingError.cancelType())) {
-            // Update existing error time
-            existingError.setTime(error.time());
+        if (!existingError.isSimilarTo(error)) continue;
+        // Update existing error time
+        existingError.setTime(error.time());
 
-            bool found;
-            if (!ParmsDb::instance()->updateError(existingError, found)) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateError");
-                return;
-            }
-            if (!found) {
-                LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << existingError.dbId());
-                return;
-            }
-
-            errorAlreadyExists = true;
-            break;
-        }
-    }
-
-    if (!errorAlreadyExists) {
-        // Insert new error
-        if (!ParmsDb::instance()->insertError(error)) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertError");
+        bool found = false;
+        if (!ParmsDb::instance()->updateError(existingError, found)) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateError");
             return;
         }
+        if (!found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error not found in Error table for dbId=" << existingError.dbId());
+            return;
+        }
+
+        errorAlreadyExists = true;
+        break;
+    }
+
+    if (!errorAlreadyExists && !ParmsDb::instance()->insertError(error)) {  // Insert new error
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::insertError");
+        return;
     }
 
     User user;
-    if (error.syncDbId()) {
-        ExitCode exitCode = ServerRequests::getUserFromSyncDbId(error.syncDbId(), user);
-        if (exitCode != ExitCodeOk) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getUserFromSyncDbId");
-            return;
-        }
+    if (error.syncDbId() && ServerRequests::getUserFromSyncDbId(error.syncDbId(), user) != ExitCodeOk) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::getUserFromSyncDbId");
+        return;
     }
 
     if (ServerRequests::isDisplayableError(error)) {
@@ -3872,7 +3787,7 @@ void AppServer::addError(const Error &error) {
 
         // Update user
         user.setKeychainKey(std::string());
-        bool found;
+        bool found = false;
         if (!ParmsDb::instance()->updateUser(user, found)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateUser");
             return;
@@ -3890,9 +3805,8 @@ void AppServer::addError(const Error &error) {
         LOG_WARN(Log::instance()->getLogger(), "Sockets defuncted error");
 
         Parameters &parameters = ParametersCache::instance()->parameters();
-        int uploadSessionParallelJobs = parameters.uploadSessionParallelJobs();
-        if (uploadSessionParallelJobs > 1) {
-            int newUploadSessionParallelJobs = std::floor(uploadSessionParallelJobs / 2.0);
+        if (const int uploadSessionParallelJobs = parameters.uploadSessionParallelJobs(); uploadSessionParallelJobs > 1) {
+            const int newUploadSessionParallelJobs = std::floor(uploadSessionParallelJobs / 2.0);
             parameters.setUploadSessionParallelJobs(newUploadSessionParallelJobs);
             ParametersCache::instance()->save();
             LOG_DEBUG(Log::instance()->getLogger(), "Update uploadSessionParallelJobs from "

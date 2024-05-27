@@ -436,11 +436,11 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             break;
         }
         case SIGNAL_NUM_UTILITY_SHOW_SETTINGS: {
-            emit showParametersDialog();
+            showParametersDialog();
             break;
         }
         case SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS: {
-            emit showSynthesisDialog();
+            showSynthesisDialog();
             break;
         }
         case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
