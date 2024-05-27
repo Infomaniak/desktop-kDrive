@@ -25,6 +25,7 @@
 #ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"

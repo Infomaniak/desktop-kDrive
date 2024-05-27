@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
 #include "testlogarchiver.h"
 #include "server/logarchiver.h"
 #include "libcommonserver/log/log.h"
@@ -24,6 +23,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/db/db.h"
+
 #include <log4cplus/loggingmacros.h>
 
 #include <iostream>

@@ -17,8 +17,11 @@
  */
 
 #include "user.h"
+#include "libcommonserver/log/log.h"
 
 #include <Poco/URIStreamOpener.h>
+
+#include <log4cplus/loggingmacros.h>
 
 namespace KDC {
 
