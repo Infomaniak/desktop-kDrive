@@ -47,6 +47,7 @@
 #include "jobs/local/localmovejob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/jobmanager.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "tmpblacklistmanager.h"
 

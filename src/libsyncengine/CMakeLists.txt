@@ -3,7 +3,7 @@ project(libsyncengine)
 find_package(Poco 1.12.5 REQUIRED Foundation Net NetSSL JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(log4cplus 2.1.0 REQUIRED)
-find_package(xxHash 0.8.1 REQUIRED)
+find_package(xxHash 0.8.2 REQUIRED)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -169,8 +169,6 @@ endif()
 
 # Link
 target_link_libraries(${libsyncengine_NAME}
-    ${libcommon_NAME}
-    ${libcommonserver_NAME}
     ${libparms_NAME}
     Poco::Foundation Poco::Net Poco::NetSSL Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto)

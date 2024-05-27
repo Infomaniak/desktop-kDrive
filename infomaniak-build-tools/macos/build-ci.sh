@@ -93,7 +93,4 @@ cmake \
 # Build kDrive sources
 make install
 
-# Move tester to the install dir (So they can access ressources)
-mv $BUILDDIR/bin/kDrive_test_* $INSTALLDIR/
-
 popd
