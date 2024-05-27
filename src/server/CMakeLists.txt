@@ -1,6 +1,7 @@
 project(server)
 
-find_package(Qt6 REQUIRED COMPONENTS Network Xml Svg)
+find_package(Qt6 REQUIRED COMPONENTS Network Svg)
+find_package(Poco 1.12.5 REQUIRED XML)
 find_package(sentry REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
@@ -146,10 +147,17 @@ else()
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
 endif()
 
-set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY  ${INSTALL_OUTPUT_DIRECTORY}
-    MACOSX_BUNDLE TRUE
-)
+if (APPLE)
+    set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${INSTALL_OUTPUT_DIRECTORY}
+        MACOSX_BUNDLE TRUE
+    )
+else()
+    set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+        MACOSX_BUNDLE TRUE
+    )
+endif()
 
 # Includes
 if (WIN32)
@@ -173,18 +181,14 @@ add_library(updater STATIC ${updater_SRCS})
 target_include_directories(updater PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(updater
-    Qt6::Network Qt6::Xml
-    ${updater_DEPS}
-    ${libparms_NAME}
-    ${libcommonserver_NAME}
-    ${libsyncengine_NAME})
+    Qt6::Network
+    Poco::XML
+    ${libsyncengine_NAME}
+    ${updater_DEPS})
 
 target_link_libraries(${APPLICATION_EXECUTABLE}
     Qt6::Network Qt6::Svg
     sentry::sentry
-    ${libcommon_NAME}
-    ${libcommonserver_NAME}
-    ${libsyncengine_NAME}
     updater)
 
 ## handle DBUS for Fdo notifications

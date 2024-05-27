@@ -12,7 +12,7 @@ jobs:
   build-kDrive:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
     env:
-      bin-directory: ./build-macos/install
+      bin-directory: ./build-macos/client/bin
 
     steps:
       - name: Checkout the code

@@ -18,11 +18,10 @@
 
 #pragma once
 
-#include "parmslib.h"
+#include "libparms/parmslib.h"
 #include "libcommon/utility/types.h"
 
 #include <string>
-#include <filesystem>
 
 namespace KDC {
 
@@ -82,6 +81,7 @@ class PARMS_EXPORT Error {
         inline void setCancelType(CancelType val) { _cancelType = val; }
 
         std::string errorString() const;
+        bool isSimilarTo(const Error &other) const;
 
     private:
         int64_t _dbId{0};

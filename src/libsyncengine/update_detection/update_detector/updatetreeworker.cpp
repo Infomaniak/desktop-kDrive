@@ -17,6 +17,7 @@
  */
 
 #include "updatetreeworker.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 
