@@ -436,11 +436,11 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             break;
         }
         case SIGNAL_NUM_UTILITY_SHOW_SETTINGS: {
-            emit showParametersDialog();
+            showParametersDialog();
             break;
         }
         case SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS: {
-            emit showSynthesisDialog();
+            showSynthesisDialog();
             break;
         }
         default: {
@@ -468,9 +468,9 @@ void AppClient::onQuit() {
 }
 
 void AppClient::onServerDisconnected() {
-  static const auto msg = tr("The server got disconnected. Restarting the server and closing.");
-  qCCritical(lcAppClient) << msg;
-  
+    static const auto msg = tr("The server got disconnected. Restarting the server and closing.");
+    qCCritical(lcAppClient) << msg;
+
 #if NDEBUG
     startServerAndDie(true);
 
