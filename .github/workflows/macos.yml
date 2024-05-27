@@ -48,10 +48,10 @@ jobs:
           path: ${{ env.logdir_path }}/*
           retention-days: 3
           overwrite: true
-        if: ${{ 'kDrive-logdir' in env.logdir_path }}
+        if: contains(env.logdir_path, 'kDrive-logdir')
 
       - name: Clean the log directory
-        if  : ${{ 'kDrive-logdir' in env.logdir_path }}
+        if  : contains(env.logdir_path, 'kDrive-logdir')
         run : rm -rf ${{ env.logdir_path }}/*
 
       - name: Clean-up generated code
