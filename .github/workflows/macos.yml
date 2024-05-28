@@ -45,9 +45,7 @@ jobs:
           path: ${{ env.logdir_path }}/*
           retention-days: 3
           overwrite: true
-        if: 
-          contains(env.logdir_path, 'kDrive-logdir')
-          success() || failure()
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
         if  : contains(env.logdir_path, 'kDrive-logdir')
