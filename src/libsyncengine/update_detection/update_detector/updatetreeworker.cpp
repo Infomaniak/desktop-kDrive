@@ -1148,8 +1148,6 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
 
             SyncPath localPath;
             SyncPath remotePath;
-            _syncDb->path(node->idb().value(), localPath, remotePath, found);
-
             if (!_syncDb->path(node->idb().value(), localPath, remotePath, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
                 return ExitCodeDbError;
@@ -1158,7 +1156,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for DB ID=" << node->idb().value());
                 return ExitCodeDataError;
             }
-            node->setMoveOrigin(_side == ReplicaSideLocal ? localPath : remotePath);    // TODO : no need to keep both remote and local path since we do not rename the file locally any more
+            node->setMoveOrigin(_side == ReplicaSideLocal ? localPath : remotePath);    // TODO : no need to keep both remote and local paths since we do not rename the file locally anymore.
         } else {
             if (dbNode.nameLocal() != dbNode.nameRemote()) {
                 node->setName(dbNode.nameRemote());
