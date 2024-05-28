@@ -185,6 +185,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
         void sendErrorsCleared(int syncDbId);
+        
+        // See types.h -> AppStateKey for the possible values of status
+        void cancelLogUpload();
+        void uploadLog(bool includeArchivedLogs);
+        void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();
         void stopSyncTask(int syncDbId);  // Long task which can block GUI: post-poned in the event loop by means of timer

@@ -19,7 +19,6 @@
 #include "log.h"
 #include "customrollingfileappender.h"
 #include "utility/utility.h"
-
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 

@@ -25,12 +25,15 @@
 #include "drive.h"
 #include "sync.h"
 #include "exclusiontemplate.h"
+#include <list>
+#include <variant>
 #ifdef __APPLE__
 #include "exclusionapp.h"
 #endif
 #include "error.h"
 #include "migrationselectivesync.h"
 #include "libcommonserver/db/db.h"
+
 
 namespace KDC {
 
@@ -121,8 +124,8 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
-        bool selectAppState(AppStateKey key, std::string &value, bool& found);
-        bool updateAppState(AppStateKey key, const std::string &value, bool& found);  // update or insert
+        bool selectAppState(AppStateKey key, AppStateValue& value, bool &found);
+        bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found);  // update or insert
 
     private:
         static std::shared_ptr<ParmsDb> _instance;
@@ -142,5 +145,4 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateExclusionApps();
 #endif
 };
-
 }  // namespace KDC
