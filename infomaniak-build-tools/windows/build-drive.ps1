@@ -358,12 +358,6 @@ $binaries = @(
 "kDrive_client.exe"
 )
 
-$testers = @(
-"kDrive_test_common.exe",
-"kDrive_test_parms.exe"
-# "kDrive_test_syncengine.exe"
-)
-
 $dependencies = @(
 "${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1.dll",
 "${env:ProgramFiles(x86)}/libzip/bin/zip.dll",
@@ -392,10 +386,6 @@ foreach ($file in $dependencies)
 
 if ($ci)
 {
-	foreach ($file in $testers)
-	{
-		Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
-	}
 	Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 	exit $LASTEXITCODE
 }
