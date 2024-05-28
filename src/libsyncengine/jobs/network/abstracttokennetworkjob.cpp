@@ -31,6 +31,7 @@
 #include <Poco/JSON/Parser.h>
 
 #define API_PREFIX_DRIVE "/drive"
+#define API_PREFIX_DESKTOP "/desktop"
 #define API_PREFIX_PROFILE "/profile"
 
 #define ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG "Failed to create AbstractTokenNetworkJob instance!"
@@ -53,7 +54,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
     }
 
     if (((_apiType == ApiDrive || _apiType == ApiNotifyDrive) && _driveDbId == 0 && (_userDbId == 0 || _driveId == 0)) ||
-        ((_apiType == ApiProfile || _apiType == ApiDriveByUser) && _userDbId == 0)) {
+        ((_apiType == ApiProfile || _apiType == ApiDriveByUser || _apiType == ApiDesktop) && _userDbId == 0)) {
         LOG_WARN(_logger, "Invalid parameters!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
@@ -125,6 +126,9 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
             break;
         case ApiProfile:
             str += API_PREFIX_PROFILE;
+            break;
+        case ApiDesktop:
+            str += API_PREFIX_DESKTOP;
             break;
     }
 
@@ -452,6 +456,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
             }
             break;
         }
+        case ApiDesktop:
         case ApiProfile:
         case ApiDriveByUser: {
             auto it = _userToApiKeyMap.find(_userDbId);

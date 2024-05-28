@@ -16,12 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "uploadsession.h"
+#include "abstractuploadsession.h"
 
-#include "uploadsessionchunkjob.h"
-#include "uploadsessionfinishjob.h"
-#include "uploadsessionstartjob.h"
-#include "uploadsessioncanceljob.h"
 #include "io/iohelper.h"
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/jobmanager.h"
@@ -38,18 +34,10 @@
 
 namespace KDC {
 
-UploadSession::UploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
-                             const NodeId &remoteParentDirId, SyncTime modtime, bool liteSyncActivated,
-                             uint64_t nbParalleleThread /*= 1*/)
-    : _logger(Log::instance()->getLogger()),
-      _driveDbId(driveDbId),
-      _syncDb(syncDb),
-      _filePath(filepath),
-      _filename(filename),
-      _remoteParentDirId(remoteParentDirId),
-      _modtimeIn(modtime),
-      _liteSyncActivated(liteSyncActivated),
-      _nbParalleleThread(nbParalleleThread) {
+AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
+                                             uint64_t nbParalleleThread /*= 1*/)
+    : _logger(Log::instance()->getLogger()), _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
+        
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(_filePath, ioError).c_str());
@@ -65,29 +53,26 @@ UploadSession::UploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, cons
     _progress = 0;
 }
 
-UploadSession::~UploadSession() {
-    if (_vfsForceStatus) {
-        if (!_vfsForceStatus(_filePath, false, 100, true)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath).c_str());
-        }
-    }
-}
-
-void UploadSession::runJob() {
+void AbstractUploadSession::runJob() {
     if (isExtendedLog()) {
         LOGW_DEBUG(_logger, L"Starting upload session " << jobId() << L" for file " << Path2WStr(_filePath.filename()).c_str()
                                                         << L" with " << _nbParalleleThread << L" threads");
     }
+
     auto start = std::chrono::steady_clock::now();
 
-    if (_vfsForceStatus) {
-        if (!_vfsForceStatus(_filePath, true, 0, true)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath).c_str());
-        }
+    if (_uploadSessionType ==
+        UploadSessionType::Unknown) {  // Should never happen, the type should be set in the child class constructor
+        LOGW_ERROR(_logger, L"Upload session type is unknown");
+        _exitCode = ExitCodeDataError;
+        _exitCause = ExitCauseUnknown;
+        abort();
+        _state = StateFinished;
     }
 
-    bool ok = true;
+    runJobInit();
 
+    bool ok = true;
     while (_state != StateFinished) {
         switch (_state) {
             case StateInitChunk: {
@@ -126,7 +111,7 @@ void UploadSession::runJob() {
                                            << elapsed_seconds.count() << L"s");
 }
 
-void UploadSession::uploadChunkCallback(UniqueId jobId) {
+void AbstractUploadSession::uploadChunkCallback(UniqueId jobId) {
     const std::lock_guard<std::mutex> lock(_mutex);
     if (_ongoingChunkJobs.find(jobId) != _ongoingChunkJobs.end()) {
         auto jobInfo = _ongoingChunkJobs.extract(jobId);
@@ -144,12 +129,28 @@ void UploadSession::uploadChunkCallback(UniqueId jobId) {
     }
 }
 
-void UploadSession::abort() {
+void AbstractUploadSession::abort() {
     AbstractJob::abort();
     cancelSession();
 }
 
-bool UploadSession::canRun() {
+bool AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+    if (cancelJob->hasHttpError()) {
+        LOGW_WARN(_logger, L"Failed to cancel upload session for file " << Path2WStr(_filePath.filename()).c_str());
+        _exitCode = ExitCodeDataError;
+        return false;
+    }
+    return true;
+}
+
+bool AbstractUploadSession::canRun() {
+    if (_uploadSessionType == UploadSessionType::Unknown) {
+        LOGW_ERROR(_logger, L"Upload session type is unknown");
+        _exitCode = ExitCodeDataError;
+        _exitCause = ExitCauseUnknown;
+        return false;
+    }
+
     if (bypassCheck()) {
         return true;
     }
@@ -175,7 +176,7 @@ bool UploadSession::canRun() {
     return true;
 }
 
-bool UploadSession::initChunks() {
+bool AbstractUploadSession::initChunks() {
     _chunkSize = _filesize / optimalTotalChunks;
     if (_chunkSize < chunkMinSize) {
         _chunkSize = chunkMinSize;
@@ -197,38 +198,36 @@ bool UploadSession::initChunks() {
     return true;
 }
 
-bool UploadSession::startSession() {
+bool AbstractUploadSession::startSession() {
     try {
-        UploadSessionStartJob startJob(_driveDbId, _filename, _filesize, _remoteParentDirId, _totalChunks);
-        ExitCode exitCode = startJob.runSynchronously();
-        if (startJob.hasHttpError() || exitCode != ExitCodeOk) {
+        auto startJob = createStartJob();
+        ExitCode exitCode = startJob->runSynchronously();
+        if (startJob->hasHttpError() || exitCode != ExitCodeOk) {
             LOGW_ERROR(_logger, L"Failed to start upload session for file " << Path2WStr(_filePath.filename()).c_str());
-            _exitCode = startJob.exitCode();
-            _exitCause = startJob.exitCause();
+            _exitCode = startJob->exitCode();
+            _exitCause = startJob->exitCause();
             return false;
         }
 
         // Extract file ID
-        if (!startJob.jsonRes()) {
+        if (!startJob->jsonRes()) {
             LOG_WARN(_logger, "jsonRes is NULL");
             _exitCode = ExitCodeDataError;
             return false;
         }
 
-        Poco::JSON::Object::Ptr dataObj = startJob.jsonRes()->getObject(dataKey);
+        Poco::JSON::Object::Ptr dataObj = startJob->jsonRes()->getObject(dataKey);
         if (!dataObj || !JsonParserUtility::extractValue(dataObj, tokenKey, _sessionToken)) {
             LOG_WARN(_logger, "Failed to extract upload session token");
             _exitCode = ExitCodeDataError;
             return false;
         }
 
-        int64_t uploadSessionTokenDbId = 0;
-        if (_syncDb && !_syncDb->insertUploadSessionToken(UploadSessionToken(_sessionToken), uploadSessionTokenDbId)) {
-            LOG_WARN(_logger, "Error in SyncDb::insertUploadSessionToken");
-            _exitCode = ExitCodeDbError;
+        if (!handleStartJobResult(startJob, _sessionToken)) {
+            LOG_WARN(_logger, "Error in handleStartJobResult");
             return false;
         }
-        _uploadSessionTokenDbId = uploadSessionTokenDbId;
+
         _sessionStarted = true;
     } catch (std::exception const &e) {
         LOG_WARN(_logger, "Error in UploadSessionStartJob: " << e.what());
@@ -244,7 +243,7 @@ bool UploadSession::startSession() {
     return true;
 }
 
-bool UploadSession::sendChunks() {
+bool AbstractUploadSession::sendChunks() {
     if (_sessionToken.empty()) {
         LOG_WARN(_logger, "Impossible to upload chunks without a valid session token");
         _exitCode = ExitCodeDataError;
@@ -306,8 +305,7 @@ bool UploadSession::sendChunks() {
 
         std::shared_ptr<UploadSessionChunkJob> chunkJob;
         try {
-            chunkJob = std::make_shared<UploadSessionChunkJob>(_driveDbId, _filePath, _sessionToken, chunkContent, chunkNb,
-                                                               actualChunkSize, jobId());
+            chunkJob = createChunkJob(chunkContent, chunkNb, actualChunkSize);
         } catch (std::exception const &e) {
             LOG_ERROR(_logger, "Error in UploadSessionChunkJob::UploadSessionChunkJob: " << e.what());
             jobCreationError = true;
@@ -320,15 +318,16 @@ bool UploadSession::sendChunks() {
             break;
         }
 
-        if (_liteSyncActivated) {
-            // Set VFS callbacks
-            chunkJob->setVfsUpdateFetchStatusCallback(_vfsUpdateFetchStatus);
-            chunkJob->setVfsSetPinStateCallback(_vfsSetPinState);
-            chunkJob->setVfsForceStatusCallback(_vfsForceStatus);
+        if (!prepareChunkJob(chunkJob)) {
+            LOGW_WARN(_logger,
+                      L"Failed to prepare chunk job " << chunkNb << L" of file " << Path2WStr(_filePath.filename()).c_str());
+            jobCreationError = true;
+            break;
         }
 
         if (_isAsynchrounous) {
-            std::function<void(UniqueId)> callback = std::bind(&UploadSession::uploadChunkCallback, this, std::placeholders::_1);
+            std::function<void(UniqueId)> callback =
+                std::bind(&AbstractUploadSession::uploadChunkCallback, this, std::placeholders::_1);
 
             _mutex.lock();
             _threadCounter++;
@@ -404,7 +403,7 @@ bool UploadSession::sendChunks() {
     return true;
 }
 
-bool UploadSession::closeSession() {
+bool AbstractUploadSession::closeSession() {
     if (_sessionToken.empty()) {
         LOG_WARN(_logger, "Impossible to close upload session without a valid session token");
         _exitCode = ExitCodeDataError;
@@ -412,23 +411,19 @@ bool UploadSession::closeSession() {
     }
 
     try {
-        UploadSessionFinishJob finishJob(_driveDbId, _filePath, _sessionToken, _totalChunkHash, _totalChunks, _modtimeIn);
-        ExitCode exitCode = finishJob.runSynchronously();
-        if (exitCode != ExitCodeOk || finishJob.hasHttpError()) {
+        auto finishJob = createFinishJob();
+        ExitCode exitCode = finishJob->runSynchronously();
+        if (exitCode != ExitCodeOk || finishJob->hasHttpError()) {
             LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously - exit code: "
                                    << exitCode << L", file: " << Path2WStr(_filePath.filename()).c_str());
             return false;
         }
 
-        _nodeId = finishJob.nodeId();
-        _modtimeOut = finishJob.modtime();
-
-        bool found = false;
-        if (_syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
-            LOG_WARN(_logger, "Error in SyncDb::deleteUploadSessionTokenByDbId");
-            _exitCode = ExitCodeDbError;
+        if (!handleFinishJobResult(finishJob)) {
+            LOGW_WARN(_logger, L"Error in handleFinishJobResult");
             return false;
         }
+
     } catch (std::exception const &e) {
         LOG_WARN(_logger, "Error in UploadSessionFinishJob: " << e.what());
         _exitCode = ExitCodeDataError;
@@ -438,7 +433,7 @@ bool UploadSession::closeSession() {
     return true;
 }
 
-bool UploadSession::cancelSession() {
+bool AbstractUploadSession::cancelSession() {
     if (!_sessionStarted || _sessionCancelled) {
         return true;
     }
@@ -463,27 +458,20 @@ bool UploadSession::cancelSession() {
     _mutex.unlock();
 
     try {
-        UploadSessionCancelJob cancelJob(_driveDbId, _filePath, _sessionToken);
+        auto cancelJob = createCancelJob();
 
-        ExitCode exitCode = cancelJob.runSynchronously();
+        ExitCode exitCode = cancelJob->runSynchronously();
         if (exitCode != ExitCodeOk) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
             _exitCode = exitCode;
             return false;
         }
 
-        if (cancelJob.hasHttpError()) {
-            LOGW_WARN(_logger, L"Failed to cancel upload session for file " << Path2WStr(_filePath.filename()).c_str());
-            _exitCode = ExitCodeDataError;
+        if (!handleCancelJobResult(cancelJob)) {
+            LOG_WARN(_logger, "Error in handleCancelJobResult");
             return false;
         }
 
-        bool found = false;
-        if (_syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
-            LOG_WARN(_logger, "Error in SyncDb::deleteUploadSessionTokenByDbId");
-            _exitCode = ExitCodeDbError;
-            return false;
-        }
     } catch (std::exception const &e) {
         LOG_WARN(_logger, "Error in UploadSessionCancelJob: " << e.what());
         _exitCode = ExitCodeDataError;
@@ -493,7 +481,7 @@ bool UploadSession::cancelSession() {
     return true;
 }
 
-void UploadSession::waitForJobsToComplete(bool all) {
+void AbstractUploadSession::waitForJobsToComplete(bool all) {
     while (_threadCounter > (all ? 0 : _nbParalleleThread) && !isAborted() && !_jobExecutionError) {
         if (isExtendedLog()) {
             LOG_DEBUG(_logger, (all ? "Wait for all jobs to complete" : "Wait for some jobs to complete"));

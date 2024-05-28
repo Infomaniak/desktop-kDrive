@@ -41,7 +41,8 @@ set(syncengine_SRCS
     jobs/network/copytodirectoryjob.h jobs/network/copytodirectoryjob.cpp
     jobs/network/downloadjob.h jobs/network/downloadjob.cpp
     jobs/network/uploadjob.h jobs/network/uploadjob.cpp
-    jobs/network/upload_session/uploadsession.h jobs/network/upload_session/uploadsession.cpp
+    jobs/network/upload_session/abstractuploadsession.h jobs/network/upload_session/abstractuploadsession.cpp
+    jobs/network/upload_session/uploadsessiondrive.h jobs/network/upload_session/uploadsessiondrive.cpp
     jobs/network/upload_session/abstractuploadsessionjob.h jobs/network/upload_session/abstractuploadsessionjob.cpp
     jobs/network/upload_session/uploadsessionstartjob.h jobs/network/upload_session/uploadsessionstartjob.cpp
     jobs/network/upload_session/uploadsessionchunkjob.h jobs/network/upload_session/uploadsessionchunkjob.cpp
@@ -139,8 +140,7 @@ elseif(UNIX)
 endif()
 
 # Target
-add_library(${libsyncengine_NAME} STATIC ${syncengine_SRCS}
-)
+add_library(${libsyncengine_NAME} STATIC ${syncengine_SRCS})
 
 set_target_properties(${libsyncengine_NAME} PROPERTIES
     VERSION ${KDRIVE_VERSION}

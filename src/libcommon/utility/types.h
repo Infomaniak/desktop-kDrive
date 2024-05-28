@@ -234,6 +234,8 @@ typedef enum {
     CancelTypeHardlink
 } CancelType;
 
+enum class UploadSessionType { Unknown, Standard, LogUpload };
+
 typedef enum { NodeStatusUnknown = 0, NodeStatusUnprocessed, NodeStatusPartiallyProcessed, NodeStatusProcessed } NodeStatus;
 
 typedef enum {

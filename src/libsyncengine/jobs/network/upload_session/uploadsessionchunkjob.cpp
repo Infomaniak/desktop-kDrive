@@ -23,10 +23,11 @@
 
 namespace KDC {
 
-UploadSessionChunkJob::UploadSessionChunkJob(int driveDbId, const SyncPath &filepath, const std::string &sessionToken,
+UploadSessionChunkJob::UploadSessionChunkJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
+                                             const std::string &sessionToken,
                                              const std::string &chunkContent, uint64_t chunkNb, uint64_t chunkSize,
                                              UniqueId sessionJobId)
-    : AbstractUploadSessionJob(driveDbId, filepath, sessionToken),
+    : AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken),
       _chunkNb(chunkNb),
       _chunkSize(chunkSize),
       _sessionJobId(sessionJobId) {

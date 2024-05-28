@@ -22,9 +22,10 @@
 
 namespace KDC {
 
-UploadSessionFinishJob::UploadSessionFinishJob(int driveDbId, const SyncPath &filepath, const std::string &sessionToken,
+UploadSessionFinishJob::UploadSessionFinishJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
+                                               const std::string &sessionToken,
                                                const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime)
-    : AbstractUploadSessionJob(driveDbId, filepath, sessionToken),
+    : AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken),
       _totalChunkHash(totalChunkHash),
       _totalChunks(totalChunks),
       _modtimeIn(modtime) {
