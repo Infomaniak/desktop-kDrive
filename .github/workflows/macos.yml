@@ -18,13 +18,8 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v4.1.1
         with:
+          ref: ${{ github.head_ref }}
           submodules: recursive
-
-      - name: Get the path to kDrive-logdir
-        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
-
-      - name: Clean the log directory
-        run : rm -rf ${{ env.logdir_path }}/*
 
       - name: Unlock keychain to use the certificate
         run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
@@ -38,6 +33,10 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
       - name: Execute tests
         run : ./infomaniak-build-tools/run-tests.sh
+        continue-on-error: true
+
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -46,7 +45,12 @@ jobs:
           path: ${{ env.logdir_path }}/*
           retention-days: 3
           overwrite: true
-        if: always()
+        if: contains(env.logdir_path, 'kDrive-logdir')
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        continue-on-error: true
 
       - name: Clean-up generated code
         run : rm -rf build-macos
