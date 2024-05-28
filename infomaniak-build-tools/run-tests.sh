@@ -19,15 +19,41 @@
 #
 #!/bin/bash
 
+# Color coding
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
+failures=()
 
 for tester in ${testers[@]}; do
+
+    echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
     chmod +x $tester
-    pushd $(dirname "$tester")
+    pushd $(dirname "$tester") 1>/dev/null
     ./$(basename "$tester")
-    errors=$(($errors + $?))
-    popd
+
+    if [ $? -ne 0 ]; then
+        errors+=1
+        failures+=($(basename $tester))
+        echo -e "${RED}---------- Failure: $(basename $tester) ----------${NC}";
+    else
+        echo -e "${GREEN}---------- Success: $(basename $tester) ----------${NC}";
+    fi
+    popd 1>/dev/null
 done
 
+if [ $errors -eq 0 ]; then
+    echo -e "${GREEN}Success: All Tests passed !${NC}"
+else
+    echo -e "${RED}Failures :\n"
+    for failure in ${failures[@]}; do
+        echo -e "$failure"
+    done
+    echo -e "${NC}"
+fi
 exit $errors
