@@ -536,8 +536,7 @@ bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     auto updateFct = [=](bool &canceled, bool &finished, bool &error) {
         // Update download progress
         finished = false;
-        const QString localSyncPath = Path2QStr(_vfsSetupParams._localPath);
-        if (!_connector->vfsUpdateFetchStatus(Path2QStr(tmpFullPath), Path2QStr(fullPath), localSyncPath, received, canceled,
+        if (!_connector->vfsUpdateFetchStatus(Path2QStr(tmpFullPath), Path2QStr(fullPath), _localSyncPath, received, canceled,
                                               finished)) {
             LOG_WARN(logger(), "Error in vfsUpdateFetchStatus!");
             error = true;
@@ -563,10 +562,10 @@ void VfsMac::cancelHydrate(const QString &filePath) {
 bool VfsMac::isDehydratedPlaceholder(const QString &initFilePath, bool isAbsolutePath /*= false*/) {
     SyncPath filePath(isAbsolutePath ? QStr2Path(initFilePath) : _vfsSetupParams._localPath / QStr2Path(initFilePath));
 
-    bool isPlaceholder;
-    bool isHydrated;
-    bool isSyncing;
-    int progress;
+    bool isPlaceholder = false;
+    bool isHydrated = false;
+    bool isSyncing = false;
+    int progress = 0;
     if (!_connector->vfsGetStatus(Path2QStr(filePath), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return false;
