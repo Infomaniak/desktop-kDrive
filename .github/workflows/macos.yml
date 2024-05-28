@@ -53,6 +53,7 @@ jobs:
       - name: Clean the log directory
         if  : contains(env.logdir_path, 'kDrive-logdir')
         run : rm -rf ${{ env.logdir_path }}/*
+        continue-on-error: true
 
       - name: Clean-up generated code
         run : rm -rf build-macos
