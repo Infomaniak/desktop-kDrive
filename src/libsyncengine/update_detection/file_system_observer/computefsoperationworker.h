@@ -47,7 +47,7 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isTooBig(const std::shared_ptr<Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type);
 
-        ExitCode checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId);
+        ExitCode checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
         void deleteChildOpRecursively(const std::shared_ptr<Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
                                       std::unordered_set<NodeId> &tmpTooBigList);
