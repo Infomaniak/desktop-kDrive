@@ -22,14 +22,27 @@ else
     $version = (Select-String -Path .\build-windows\build\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
     $app = "kDrive-$version.exe"
     Set-Location build-windows
-    $size = (Get-ChildItem $app | % {[int]($_.length)})
-    $mainVersion = $version.Substring(0, 3)
-    $minorVersion = $version.Substring(0, 5)
 
-    $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$app&directory_path=$mainVersion/$minorVersion&conflict=version"
+    $files = @(
+        $app,
+        "kDrive.pdb",
+        "kDrive_client.pdb",
+        "kDrivesyncengine_vfs_win.pdb"
+    )
+
     $headers = @{
         Authorization="Bearer $env:KDRIVE_TOKEN"
     }
 
-    Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $app
+    $mainVersion = $version.Substring(0, 3)
+    $minorVersion = $version.Substring(0, 5)
+    $date = $version.Substring(6)
+
+    foreach ($file in $files)
+    {
+        $size = (Get-ChildItem $file | % {[int]($_.length)})
+        $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$mainVersion/$minorVersion/$date/windows&conflict=version"
+
+        Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
+    }
 }
