@@ -33,10 +33,10 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
       - name: Execute tests
         run : ./infomaniak-build-tools/run-tests.sh
-        continue-on-error: true
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
