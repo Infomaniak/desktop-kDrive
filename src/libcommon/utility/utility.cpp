@@ -235,28 +235,43 @@ QString CommonUtility::escape(const QString &in) {
 }
 
 bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStateValue &appStateValueTo) {
+    bool res = true;
+    std::string appStateValueType = "Unknown";
     if (std::holds_alternative<std::string>(appStateValueTo)) {
         appStateValueTo = stringFrom;
+        appStateValueType = "std::string";
     } else if (std::holds_alternative<int>(appStateValueTo)) {
+        appStateValueType = "int";
         try {
             appStateValueTo = std::stoi(stringFrom);
         } catch (const std::invalid_argument &) {
-            return false;
+            res = false;
         }
     } else if (std::holds_alternative<LogUploadState>(appStateValueTo)) {
+        appStateValueType = "LogUploadState";
         try {
             appStateValueTo = static_cast<LogUploadState>(std::stoi(stringFrom));
         } catch (const std::invalid_argument &) {
-            return false;
+            res = false;
         }
     } else if (std::holds_alternative<int64_t>(appStateValueTo)) {
+        appStateValueType = "int64_t";
         try {
             std::get<int64_t>(appStateValueTo) = std::stoll(stringFrom);
         } catch (const std::invalid_argument &) {
-            return false;
+            res = false;
         }
     } else {
-        return false;
+        res = false;
+    }
+
+    if (!res){
+        sentry_value_t event = sentry_value_new_event();
+        std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
+        sentry_value_t exc = sentry_value_new_exception("CommonUtility::stringToAppStateValue", message.c_str());
+        sentry_value_set_stacktrace(exc, NULL, 0);
+        sentry_event_add_exception(event, exc);
+        sentry_capture_event(event);
     }
 
     return true;
