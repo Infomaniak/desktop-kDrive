@@ -178,7 +178,7 @@ void TestComputeFSOperationWorker::testComputeOps() {
     // Create operation
     _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), tLoc, tLoc, NodeTypeFile, 123));
     // Edit operation
-    _syncPal->_localSnapshot->setLastModifed("laa", tLoc + 60);
+    _syncPal->_localSnapshot->setLastModified("laa", tLoc + 60);
     // Move operation
     _syncPal->_localSnapshot->setParentId("lab", "lb");
     // Rename operation
