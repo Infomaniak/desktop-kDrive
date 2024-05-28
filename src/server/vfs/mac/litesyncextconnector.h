@@ -49,7 +49,7 @@ class LiteSyncExtConnector {
         void operator=(const LiteSyncExtConnector &) = delete;
         static LiteSyncExtConnector *instance(log4cplus::Logger logger, ExecuteCommand executeCommand);
         static bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                             int &progress, log4cplus::Logger &logger) noexcept;
+                                 int &progress, log4cplus::Logger &logger) noexcept;
 
         ~LiteSyncExtConnector();
 
@@ -66,13 +66,14 @@ class LiteSyncExtConnector {
         bool vfsCreatePlaceHolder(const QString &relativePath, const QString &localSyncPath, const struct stat *fileStat);
         bool vfsUpdateFetchStatus(const QString &tmpFilePath, const QString &filePath, const QString &localSyncPath,
                                   unsigned long long completed, bool &canceled, bool &finished);
+        bool vfsCancelHydrate(const QString &filePath);
         bool vfsSetThumbnail(const QString &absoluteFilePath, const QPixmap &pixmap);
         bool vfsSetStatus(const QString &path, const QString &localSyncPath, bool isSyncing, int progress,
                           bool isHydrated = false);
         bool vfsCleanUpStatuses(const QString &localSyncPath);
         bool vfsGetStatus(const QString &absoluteFilePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                      int &progress) noexcept {
-           return vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress, _logger);
+                          int &progress) noexcept {
+            return vfsGetStatus(absoluteFilePath, isPlaceholder, isHydrated, isSyncing, progress, _logger);
         };
         bool vfsSetAppExcludeList(const QString &appList);
         bool vfsGetFetchingAppList(QHash<QString, QString> &appTable);
