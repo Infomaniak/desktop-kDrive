@@ -11,8 +11,6 @@ concurrency:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
-    env:
-      bin-directory: ./build-linux/build/bin
 
     steps:
       - name: Checkout the PR
