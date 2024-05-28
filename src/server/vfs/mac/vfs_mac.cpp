@@ -142,32 +142,30 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
         return false;
     }
 
-    if (isPlaceholder && isSyncing) {
-        // Verify that all files/folders are in the correct state
-        QStringList filesToFix;
-        if (_connector->checkFilesAttributes(folderPath, _localSyncPath, filesToFix)) {
-            bool ok = true;
-
-            // Get directories to fix
-            QSet<QString> dirsToFix;
-            for (const auto &file : filesToFix) {
-                QFileInfo fileInfo(file);
-                if (fileInfo.isDir()) {
-                    dirsToFix.insert(file);
-                    continue;
-                }
-                dirsToFix.insert(fileInfo.dir().absolutePath());
+    QStringList filesToFix;
+    if (isPlaceholder && isSyncing &&
+        _connector->checkFilesAttributes(folderPath, _localSyncPath,
+                                         filesToFix)) {  // Verify that all files/folders are in the correct state
+        // Get the directories to fix
+        QSet<QString> dirsToFix;
+        for (const auto &file : filesToFix) {
+            const QFileInfo fileInfo(file);
+            if (fileInfo.isDir()) {
+                dirsToFix.insert(file);
+                continue;
             }
-
-            // Fix parent directories status
-            for (const auto &dir : dirsToFix) {
-                if (!_connector->vfsProcessDirStatus(dir, _localSyncPath)) {
-                    LOGW_WARN(logger(), L"Error in vfsProcessDirStatus for " << QStr2WStr(dir).c_str() << errno);
-                    ok = false;
-                }
-            }
-            return ok;
+            dirsToFix.insert(fileInfo.dir().absolutePath());
         }
+
+        // Fix parent directories status
+        bool ok = true;
+        for (const auto &dir : dirsToFix) {
+            if (!_connector->vfsProcessDirStatus(dir, _localSyncPath)) {
+                LOGW_WARN(logger(), L"Error in vfsProcessDirStatus for " << QStr2WStr(dir).c_str() << errno);
+                ok = false;
+            }
+        }
+        return ok;
     }
 
     return true;
