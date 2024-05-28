@@ -317,8 +317,7 @@ AppServer::AppServer(int &argc, char **argv)
             QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
             if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, std::string("0"), found) ||
                 !found) {
-                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-                addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+                LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
                 throw std::runtime_error("Failed to update last server self restart.");
             }
             QTimer::singleShot(0, this, quit);
@@ -329,8 +328,7 @@ AppServer::AppServer(int &argc, char **argv)
         std::string timestampStr = std::to_string(timestamp);
         KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
         if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
+            LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
             throw std::runtime_error("Failed to update last server self restart.");
         }
     }
@@ -338,33 +336,27 @@ AppServer::AppServer(int &argc, char **argv)
     // Check if a log Upload has been interrupted
     AppStateValue appStateValue = LogUploadState::None;
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
-        LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
-        addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
-        throw std::runtime_error("Failed to get log upload status.");
+        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
     }
     LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
 
     if (logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
-        LOG_DEBUG(_logger, "App was closed during log upload, resetting upload status.");
+        LOG_ERROR(_logger, "App was closed during log upload, resetting upload status.");
         if (bool found = false;
             !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
             LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
-            throw std::runtime_error("Failed to update log upload status.");
         }
     } else if (logUploadState ==
                LogUploadState::CancelRequested) {  // If interrupted while cancelling, consider it has been cancelled
         if (bool found = false;
             !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Canceled, found) || !found) {
-            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-            addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
-            throw std::runtime_error("Failed to update log upload status.");
+            LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
         }
     }
 
     // Start client
     if (!startClient()) {
-        LOG_WARN(_logger, "Error in startClient");
+        LOG_ERROR(_logger, "Error in startClient");
         throw std::runtime_error("Failed to start kDrive client.");
         return;
     }

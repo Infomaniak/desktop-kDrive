@@ -38,7 +38,7 @@ constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath[] = "";
-constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = {static_cast<char>(KDC::LogUploadState::None), '\0'};
+constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; //KDC::LogUploadState::None
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 
 
@@ -206,4 +206,3 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
     return true;
 };
 }  // namespace KDC
-
