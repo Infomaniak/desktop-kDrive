@@ -240,7 +240,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     if (!pathInDeletedFolder(dbPath)) {
                         // Check that the file/directory really does not exist on replica
                         bool isExcluded = false;
-                        ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded);
+                        const ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded);
                         if (exitCode != ExitCodeOk) {
                             if (exitCode == ExitCodeNoWritePermission) {
                                 // Blacklist node
