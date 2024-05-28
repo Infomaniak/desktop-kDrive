@@ -27,7 +27,7 @@ NC='\033[0m'
 
 
 testers=$(find . -type f -name "kDrive_test_*")
-errors=0
+errors=1
 failures=()
 
 for tester in ${testers[@]}; do

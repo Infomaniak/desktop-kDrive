@@ -17,7 +17,7 @@
 #>
 
 $testers = Get-ChildItem build-windows -Recurse -Name -Filter 'kDrive_test_*.exe'
-$errors = 0
+$errors = 1
 $failures = @()
 
 pushd build-windows\install\bin
