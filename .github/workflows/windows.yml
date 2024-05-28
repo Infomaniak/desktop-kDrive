@@ -44,7 +44,6 @@ jobs:
 
       - name: Execute tests
         run: ./infomaniak-build-tools/windows/run-tests.ps1
-        continue-on-error: true
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
