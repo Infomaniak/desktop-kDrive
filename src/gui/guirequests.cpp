@@ -18,6 +18,7 @@
 
 #include "guirequests.h"
 #include "libcommongui/commclient.h"
+#include "libcommon/utility/utility.h"
 
 namespace KDC {
 
@@ -823,7 +824,7 @@ ExitCode GuiRequests::setLaunchOnStartup(bool enabled) {
     return exitCode;
 }
 
-ExitCode GuiRequests::getAppState(AppStateKey key, QString &value) {
+ExitCode GuiRequests::getAppState(AppStateKey key, AppStateValue &value) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << key;
@@ -836,18 +837,28 @@ ExitCode GuiRequests::getAppState(AppStateKey key, QString &value) {
     ExitCode exitCode = ExitCodeUnknown;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
-    if (exitCode == ExitCodeOk) {
-        resultStream >> value;
+    if (exitCode != ExitCodeOk) {
+        return exitCode;
     }
 
+    QString valueQStr;
+    resultStream >> valueQStr;
+
+    if (std::string valueStr = valueQStr.toStdString(); !CommonUtility::stringToAppStateValue(valueStr, value)) {
+        return ExitCodeSystemError;
+    }
     return exitCode;
 }
 
-ExitCode GuiRequests::updateAppState(AppStateKey key, const QString &value) {
+ExitCode GuiRequests::updateAppState(AppStateKey key, const AppStateValue &value) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << key;
-    paramsStream << value;
+    std::string valueStr = "";
+    if (!CommonUtility::appStateValueToString(value, valueStr)) {
+        return ExitCodeSystemError;
+    }
+    paramsStream << QString::fromStdString(valueStr);
 
     QByteArray results;
     if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SET_APPSTATE, params, results)) {
@@ -855,6 +866,54 @@ ExitCode GuiRequests::updateAppState(AppStateKey key, const QString &value) {
     }
 
     ExitCode exitCode = ExitCodeUnknown;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::getLogDirEstimatedSize(uint64_t &size) {
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results)) {
+        return ExitCodeSystemError;
+    }
+
+    qint64 sizeQt = 0;
+    ExitCode exitCode = ExitCodeOk;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+    resultStream >> sizeQt;
+    size = static_cast<uint64_t>(sizeQt);
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
+    QByteArray params;
+    QDataStream paramsStream(&params, QIODevice::WriteOnly);
+    paramsStream << sendArchivedLogs;
+
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SEND_LOG_TO_SUPPORT, params, results,
+                                         COMM_SHORT_TIMEOUT)) {  // Short timeout because the operation is asynchronous
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode = ExitCodeOk;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> exitCode;
+
+    return exitCode;
+}
+
+ExitCode GuiRequests::cancelLogUploadToSupport() {
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT, QByteArray(), results,
+                                         COMM_SHORT_TIMEOUT)) {  // Short timeout because the operation is asynchronous
+        return ExitCodeSystemError;
+    }
+
+    ExitCode exitCode = ExitCodeOk;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> exitCode;
 

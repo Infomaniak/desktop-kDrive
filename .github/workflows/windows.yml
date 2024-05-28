@@ -16,6 +16,7 @@ jobs:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
+          ref: ${{ github.head_ref }}
           submodules: recursive
 
       - name: Clean the log directory
