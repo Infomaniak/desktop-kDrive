@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "parmslib.h"
+#include "libparms/parmslib.h"
 #include "parameters.h"
 #include "user.h"
 #include "account.h"
@@ -27,13 +27,12 @@
 #include "exclusiontemplate.h"
 #include <list>
 #include <variant>
-
 #ifdef __APPLE__
 #include "exclusionapp.h"
 #endif
 #include "error.h"
 #include "migrationselectivesync.h"
-#include "db/db.h"
+#include "libcommonserver/db/db.h"
 
 
 namespace KDC {

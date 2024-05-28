@@ -21,7 +21,6 @@
 #include "../utility/types.h"
 
 #include <QObject>
-#include <QPaintDevice>
 #include <QHash>
 
 namespace KDC {

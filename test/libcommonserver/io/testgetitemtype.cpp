@@ -291,12 +291,8 @@ void TestIo::testGetItemTypeSimpleCases() {
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
         std::filesystem::remove(targetPath);
 
-#ifdef _WIN32
-        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeFile);
-#else
         const auto result =
             checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeUnknown);
-#endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 

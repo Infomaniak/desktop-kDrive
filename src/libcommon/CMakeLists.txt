@@ -4,7 +4,7 @@ find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.12.5 REQUIRED Foundation JSON Util)
 find_package(log4cplus 2.1.0 REQUIRED)
 find_package(sentry REQUIRED)
-find_package(xxHash 0.8.1 REQUIRED)
+find_package(xxHash 0.8.2 REQUIRED)
 find_package(libzip 1.10.1 REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)

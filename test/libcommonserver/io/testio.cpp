@@ -18,7 +18,6 @@
 
 #include "testio.h"
 #include "config.h"
-#include "requests/parameterscache.h"
 
 #include <filesystem>
 
@@ -83,7 +82,6 @@ TestIo::TestIo() : CppUnit::TestFixture(), _localTestDirPath(std::wstring(L"" TE
 
 void TestIo::setUp() {
     _testObj = new IoHelperTests();
-    ParametersCache::instance(true);  // Init parameters cache for test
 }
 
 void TestIo::tearDown() {
