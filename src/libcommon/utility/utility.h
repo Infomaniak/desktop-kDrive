@@ -62,6 +62,8 @@ struct COMMON_EXPORT CommonUtility {
         static QByteArray IntToArray(qint32 source);
         static int ArrayToInt(QByteArray source);
         static QString escape(const QString &in);
+        static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
+        static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);
 
         static bool compressFile(const QString &originalName, const QString &targetName);
 

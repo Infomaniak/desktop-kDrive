@@ -11,13 +11,12 @@ concurrency:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Linux, X64, desktop-kdrive ]
-    env:
-      bin-directory: ./build-linux/build/bin
 
     steps:
       - name: Checkout the PR
         uses: actions/checkout@v4.1.1
         with:
+          ref: ${{ github.head_ref }}
           submodules: recursive
 
       - name: Clean the log directory
@@ -28,13 +27,10 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/linux/build-ci-amd64.sh
 
-      - name: Execute common tests
-        run : ./kDrive_test_common
-        working-directory: ${{env.bin-directory}}
-
-      - name: Execute parms tests
-        run : ./kDrive_test_parms
-        working-directory: ${{env.bin-directory}}
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-tests.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-tests.sh
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4

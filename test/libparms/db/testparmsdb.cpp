@@ -300,27 +300,55 @@ void TestParmsDb::testExclusionTemplate() {
 
 void TestParmsDb::testAppState(void) {
     bool found = true;
-    std::string value;
 
-    CPPUNIT_ASSERT(
-        ParmsDb::instance()->updateAppState(AppStateKey::Unknown, "value 2", found));  // Test for unknown key (not in db)
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(AppStateKey::Unknown, std::string("value"),
+                                                       found));  // Test for unknown key (not in db)
     CPPUNIT_ASSERT(!found);
 
+    AppStateValue value = "";  // Test for unknown key (not in db)
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::Unknown, value, found));
     CPPUNIT_ASSERT(!found);
 
+    // Test for int value
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), 10, found));
+    CPPUNIT_ASSERT(found);
+
+    AppStateValue valueIntRes = 0;  
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), valueIntRes, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(10, std::get<int>(valueIntRes));
+
+    // Test for string value
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), std::string("test"), found));
+    CPPUNIT_ASSERT(found);
+
+    AppStateValue valueStrRes = "";  // Test for string value
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), valueStrRes, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(std::string("test"), std::get<std::string>(valueStrRes));
+
+    // Test for LogUploadState value
+    CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), LogUploadState::None, found));
+    CPPUNIT_ASSERT(found);
+
+    AppStateValue valueLogUploadStateRes = LogUploadState::None;  // Test for LogUploadState value
+    CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), valueLogUploadStateRes, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(LogUploadState::None, std::get<LogUploadState>(valueLogUploadStateRes));
+
     int i = 0;
-    do {
+    while (true) {
         AppStateKey key = static_cast<AppStateKey>(i);  // Test for all known keys
         if (key == AppStateKey::Unknown) {
             break;
         }
-        CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(key, value, found) && found);
-        CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(key, "value 1", found));
-        CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(key, value, found) && found);
-        CPPUNIT_ASSERT_EQUAL(std::string("value 1"), value);
+        AppStateValue valueRes = "";
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(key, valueRes, found) && found);
+        CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(key, std::string("value"), found));
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(key, valueRes, found) && found);
+        CPPUNIT_ASSERT_EQUAL(std::string("value"), std::get<std::string>(valueRes));
         i++;
-    } while (true);
+    };
 }
 
 #ifdef __APPLE__

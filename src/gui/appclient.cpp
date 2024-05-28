@@ -443,6 +443,14 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             showSynthesisDialog();
             break;
         }
+        case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
+            LogUploadState status;
+            int progress; // Progress in percentage
+            paramsStream >> status;
+            paramsStream >> progress;
+            emit logUploadStatusUpdated(status, progress);
+            break;
+        }
         default: {
             qCDebug(lcAppClient) << "Signal not implemented!";
             break;
