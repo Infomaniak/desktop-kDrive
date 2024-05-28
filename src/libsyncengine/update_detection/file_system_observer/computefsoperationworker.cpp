@@ -239,7 +239,8 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 if (!snapshot->exists(nodeId) || movedIntoUnsyncedFolder) {
                     if (!pathInDeletedFolder(dbPath)) {
                         // Check that the file/directory really does not exist on replica
-                        ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId);
+                        bool isExcluded = false;
+                        ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded);
                         if (exitCode != ExitCodeOk) {
                             if (exitCode == ExitCodeNoWritePermission) {
                                 // Blacklist node
@@ -256,6 +257,8 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                 return exitCode;
                             }
                         }
+
+                        if (isExcluded) continue;   // Never generate operation on excluded file
                     }
 
                     if (isInUnsyncedList(snapshot, nodeId, side, true)) {
@@ -783,7 +786,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
-ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId) {
+ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded) {
     if (side != ReplicaSideLocal) return ExitCodeOk;
 
     if (!_syncPal->_localSnapshot->itemId(relativePath).empty()) {
@@ -821,7 +824,6 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     // Check if file is synced
     bool isWarning = false;
     ioError = IoErrorSuccess;
-    bool isExcluded = false;
     const bool success =
         ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
     if (!success) {
