@@ -19,7 +19,7 @@
 # Parameters :
 Param(
 # BuildType	: The type of build (Debug will run the tests, Release will sign the app)
-[ValidateSet('Release', 'RelWithDebInfo')]
+[ValidateSet('Release', 'RelWithDebInfo', 'Debug')]
 [string] $buildType = "RelWithDebInfo",
 
 # Path	: The path to the root CMakeLists.txt
@@ -45,9 +45,9 @@ Param(
 )
 
 #################################################################################################
-#																								#
-#										PATHS AND VARIABLES										#
-#																								#
+#                                                                                               #
+#                                       PATHS AND VARIABLES                                     #
+#                                                                                               #
 #################################################################################################
 
 # CMake will treat any backslash as escape character and return an error
@@ -80,9 +80,9 @@ $buildVersion = Get-Date -Format "yyyyMMdd"
 $aumid = if ($upload) {$env:KDC_PHYSICAL_AUMID} else {$env:KDC_VIRTUAL_AUMID}
 
 #################################################################################################
-#																								#
-#											FUNCTIONS											#
-#																								#
+#                                                                                               #
+#                                           FUNCTIONS                                           #
+#                                                                                               #
 #################################################################################################
 
 function Clean {
@@ -114,9 +114,9 @@ function Get-Thumbprint {
 }
 
 #################################################################################################
-#																								#
-#											COMMANDS											#
-#																								#
+#                                                                                               #
+#                                           COMMANDS                                            #
+#                                                                                               #
 #################################################################################################
 
 $msbuildPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -prerelease -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe
@@ -126,9 +126,9 @@ Set-Alias msbuild $msbuildPath
 Set-Alias 7za $7zaPath
 
 #################################################################################################
-#																								#
-#											PARAMETERS											#
-#																								#
+#                                                                                               #
+#                                           PARAMETERS                                          #
+#                                                                                               #
 #################################################################################################
 
 if ($help)
@@ -239,9 +239,9 @@ if ($upload)
 }
 
 #################################################################################################
-#																								#
-#											EXTENSION											#
-#																								#
+#                                                                                               #
+#                                           EXTENSION                                           #
+#                                                                                               #
 #################################################################################################
 
 if (!$aumid)
@@ -261,9 +261,9 @@ if (!(Test-Path "$vfsDir\vfs.dll") -or $ext)
 }
 
 #################################################################################################
-#																								#
-#											CMAKE												#
-#																								#
+#                                                                                               #
+#                                           CMAKE                   	                        #
+#                                                                                               #
 #################################################################################################
 
 $args = @("'-GNinja'")
@@ -316,9 +316,9 @@ if ($LASTEXITCODE -ne 0)
 }
 
 #################################################################################################
-#																								#
-#											NSIS SETUP											#
-#																								#
+#                                                                                               #
+#                                           NSIS SETUP                                          #
+#                                                                                               #
 #################################################################################################
 
 $version = (Select-String -Path $buildPath\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
@@ -348,9 +348,9 @@ $scriptContent = $scriptContent -replace "@{AUMID}", $aumid
 Set-Content -Path "$buildPath/NSIS.template.nsi" -Value $scriptContent
 
 #################################################################################################
-#																								#
-#										ARCHIVE PREPARATION										#
-#																								#
+#                                                                                               #
+#                                       ARCHIVE PREPARATION                                     #
+#                                                                                               #
 #################################################################################################
 
 $binaries = @(
@@ -418,9 +418,9 @@ foreach ($file in $binaries)
 }
 
 #################################################################################################
-#																								#
-#										ARCHIVE CREATION										#
-#																								#
+#                                                                                               #
+#                                       ARCHIVE CREATION                                        #
+#                                                                                               #
 #################################################################################################
 
 7za a -mx=5 $target $sourceTranslation
@@ -442,8 +442,17 @@ if (Test-Path -Path $installerPath)
 else
 {
 	Write-Host ("$installerPath not found. Unable to sign final installer.") -f Red
-	exit $LASTEXITCODE
+	exit 1
 }
+
+#################################################################################################
+#                                                                                               #
+#                                              CLEAN-UP                                         #
+#                                                                                               #
+#################################################################################################
+
+Copy-Item -Path "$buildPath\bin\kDrive*.pdb" -Destination $contentPath
+Remove-Item $archivePath\$archiveName
 
 if ($upload)
 {

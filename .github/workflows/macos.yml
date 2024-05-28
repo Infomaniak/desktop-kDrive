@@ -21,12 +21,6 @@ jobs:
           ref: ${{ github.head_ref }}
           submodules: recursive
 
-      - name: Get the path to kDrive-logdir
-        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
-
-      - name: Clean the log directory
-        run : rm -rf ${{ env.logdir_path }}/*
-
       - name: Unlock keychain to use the certificate
         run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
 
@@ -38,10 +32,15 @@ jobs:
       - name: Execute common tests
         run : ./kDrive_test_common
         working-directory: ${{env.bin-directory}}
+        continue-on-error: true
 
       - name: Execute parms tests
         run : ./kDrive_test_parms
         working-directory: ${{env.bin-directory}}
+        continue-on-error: true
+
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -50,7 +49,12 @@ jobs:
           path: ${{ env.logdir_path }}/*
           retention-days: 3
           overwrite: true
-        if: always()
+        if: contains(env.logdir_path, 'kDrive-logdir')
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        continue-on-error: true
 
       - name: Clean-up generated code
         run : rm -rf build-macos

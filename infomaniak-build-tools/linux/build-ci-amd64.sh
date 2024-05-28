@@ -20,18 +20,26 @@
 
 set -xe
 
+BUILDTYPE="Debug"
+if [[ $1 == 'release' ]]; then
+    BUILDTYPE="Release";
+fi
+
 export QT_BASE_DIR="~/Qt/6.2.3"
 export QTDIR="$QT_BASE_DIR/gcc_64"
 export BASEPATH=$PWD
 export CONTENTDIR="$BASEPATH/build-linux"
-export INSTALLDIR="$CONTENTDIR/install"
 export BUILDDIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
+extract_debug () {
+    objcopy --only-keep-debug "$1/$2" $CONTENTDIR/$2-amd64.dbg
+    objcopy --strip-debug "$1/$2"
+    objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive-amd64.dbg "$1/$2"
+}
 
 mkdir -p $APPDIR
 mkdir -p $BUILDDIR
-mkdir -p $INSTALLDIR
 
 export QMAKE=$QTDIR/bin/qmake
 export PATH=$QTDIR/bin:$QTDIR/libexec:$PATH
@@ -55,7 +63,7 @@ cmake -B$BUILDDIR -H$BASEPATH \
     -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
     -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
     -DQT_FEATURE_neon=OFF \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILDTYPE=$BUILDTYPE \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBIN_INSTALL_DIR=$BUILDDIR/client \
@@ -65,7 +73,11 @@ cmake -B$BUILDDIR -H$BASEPATH \
     -DBUILD_UNIT_TESTS=1 \
     "${CMAKE_PARAMS[@]}" \
 
-make -j4
+make -j$(nproc)
+
+extract_debug ./bin kDrive
+extract_debug ./bin kDrive_client
+
 make DESTDIR=$APPDIR install
 
 cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
