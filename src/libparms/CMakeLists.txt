@@ -55,7 +55,6 @@ endif()
 
 # Link
 target_link_libraries(${libparms_NAME}
-    ${libcommon_NAME}
     ${libcommonserver_NAME}
     Poco::Foundation)
 

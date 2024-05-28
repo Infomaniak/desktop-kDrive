@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "parmslib.h"
+#include "libparms/parmslib.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/network/proxyconfig.h"
 

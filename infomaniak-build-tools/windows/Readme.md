@@ -221,7 +221,7 @@ git clone https://github.com/nih-at/libzip.git
 cd libzip
 git checkout tags/v1.10.1
 mkdir build && cd build
-cmake .. -DZLIB_LIBRARY="C:\Program Files (x86)\zlib-1.2.11\lib\zlib.lib"
+cmake .. -DZLIB_LIBRARY="C:\Program Files (x86)\zlib-1.2.11\lib\zlib.lib" -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include"
 cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```

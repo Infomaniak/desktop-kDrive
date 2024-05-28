@@ -56,16 +56,17 @@ $HOME/desktop-setup/linuxdeploy-x86_64.AppImage --appdir $APP_DIR -e $APP_DIR/us
 
 VERSION=$(grep "KDRIVE_VERSION_FULL" "$BASE_DIR/build-linux/build/version.h" | awk '{print $3}')
 APP_NAME=kDrive-${VERSION}-amd64.AppImage
-mv kDrive*.AppImage $APP_NAME
+
+mv kDrive*.AppImage ../$APP_NAME
+cd ..
 
 if [ -z ${KDRIVE_TOKEN+x} ]; then
 	echo "No kDrive token found, AppImage will not be uploaded."
 else
-	APP_SIZE=$(ls -l $APP_NAME | awk '{print $5}')
+	FILES=($APP_NAME "kDrive-amd64.dbg" "kDrive_client-amd64.dbg")
+	source "$(dirname "$0")/../upload_version.sh"
 
-	curl -X POST \
-		-H "Authorization: Bearer $KDRIVE_TOKEN" \
-		-H "Content-Type: application/octet-stream" \
-		--data-binary @$APP_NAME \
-		"https://api.infomaniak.com/3/drive/$KDRIVE_ID/upload?directory_id=$KDRIVE_DIR_ID&total_size=$APP_SIZE&file_name=$APP_NAME&directory_path=${VERSION:0:3}/${VERSION:0:5}&conflict=version"
+	for FILE in ${FILES[@]}; do
+		upload_file FILE "linux-amd"
+	done
 fi

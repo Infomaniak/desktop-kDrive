@@ -18,13 +18,12 @@
 
 #pragma once
 
-#include "db/dbdefs.h"
+#include "dbdefs.h"
 #include "libcommon/utility/types.h"
 
 #include <log4cplus/logger.h>
 
 #include <string>
-#include <variant>
 
 #define SQLITE_DO(A)                                                            \
     _errId = (A);                                                               \

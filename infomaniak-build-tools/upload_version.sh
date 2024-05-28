@@ -18,21 +18,20 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-VERSION=$(grep "KDRIVE_VERSION_FULL" "build-macos/client/version.h" | awk '{print $3}')
-APP_NAME=kDrive-${VERSION}.pkg
-mv build-macos/install/$APP_NAME build-macos
-cd build-macos
-
-tar -cvf kDrive-debug-macos.tar kDrive.dSYM kDrive_client.dSYM
-
-if [ -z ${KDRIVE_TOKEN+x} ]; then
-	echo "No kDrive token found, Package will not be uploaded."
-else
-
-	FILES=($APP_NAME "kDrive-debug-macos.tar")
-	source "$(dirname "$0")/../upload_version.sh"
-
-	for FILE in ${FILES[@]}; do
-		upload_file FILE "macos"
-	done
+if [ "${BASH_SOURCE[0]}" -ef "$0" ]; then
+    echo "This script must be sourced, not executed."
+    exit 1
 fi
+
+upload_file () {
+    FILE="$1"
+    SYSTEM="$2"
+
+    SIZE=$(ls -l $FILE | awk '{print $5}')
+
+    curl -X POST \
+        -H "Authorization: Bearer $KDRIVE_TOKEN" \
+        -H "Content-Type: application/octet-stream" \
+        --data-binary @$FILE \
+        "https://api.infomaniak.com/3/drive/$KDRIVE_ID/upload?directory_id=$KDRIVE_DIR_ID&total_size=$SIZE&file_name=$FILE&directory_path=${VERSION:0:3}/${VERSION:0:5}/${VERSION:6}/${SYSTEM}&conflict=version"
+}
