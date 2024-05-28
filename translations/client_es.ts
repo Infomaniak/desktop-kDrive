@@ -2815,7 +2815,7 @@ Puedes agregar uno desde la configuración de kDrive.</translation>
         <source>Sync in progress (%1 of %2)
 %3 left...</source>
         <translation>Sincronización en curso (%1 de %2)
-%quedan 3...</translation>
+quedan %3...</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="336"/>

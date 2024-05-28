@@ -1333,9 +1333,6 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
             unresolvedErrorCount++;
         }
 
-        // Get user friendly error message
-        const QString errorMsg = getErrorMessage(errorInfo);
-
         // Insert error item
         QListWidgetItem *listWidgetItem = new QListWidgetItem();
         listWidgetItem->setFlags(Qt::NoItemFlags);
@@ -1351,6 +1348,8 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
 
         GenericErrorItemWidget *widget = nullptr;
         try {
+            // Get user friendly error message
+            const QString errorMsg = getErrorMessage(errorInfo);
             widget = new GenericErrorItemWidget(_gui, errorMsg, errorInfo, this);
         } catch (std::exception const &) {
             qCWarning(lcParametersDialog()) << "Error in GenericErrorItemWidget::GenericErrorItemWidget for syncDbId="

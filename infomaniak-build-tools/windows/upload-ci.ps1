@@ -16,20 +16,34 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #>
 
-if (-not $env:KDRIVE_TOKEN) { Write-Host "No token found to upload to kDrive." -f Red }
-else
+if (-not $env:KDRIVE_TOKEN) {
+    Write-Host "No token found to upload to kDrive." -f Red 
+    exit 1
+}
+
+$version = (Select-String -Path .\build-windows\build\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
+$app = "kDrive-$version.exe"
+Set-Location build-windows
+
+$files = @(
+    $app,
+    "kDrive.pdb",
+    "kDrive_client.pdb",
+    "kDrivesyncengine_vfs_win.pdb"
+)
+
+$headers = @{
+    Authorization="Bearer $env:KDRIVE_TOKEN"
+}
+
+$mainVersion = $version.Substring(0, 3)
+$minorVersion = $version.Substring(0, 5)
+$date = $version.Substring(6)
+
+foreach ($file in $files)
 {
-    $version = (Select-String -Path .\build-windows\build\version.h KDRIVE_VERSION_FULL | foreach-object { $data = $_ -split " "; echo $data[3]})
-    $app = "kDrive-$version.exe"
-    Set-Location build-windows
-    $size = (Get-ChildItem $app | % {[int]($_.length)})
-    $mainVersion = $version.Substring(0, 3)
-    $minorVersion = $version.Substring(0, 5)
+    $size = (Get-ChildItem $file | % {[int]($_.length)})
+    $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$file&directory_path=$mainVersion/$minorVersion/$date/windows&conflict=version"
 
-    $uri = "https://api.infomaniak.com/3/drive/$env:KDRIVE_ID/upload?directory_id=$env:KDRIVE_DIR_ID&total_size=$size&file_name=$app&directory_path=$mainVersion/$minorVersion&conflict=version"
-    $headers = @{
-        Authorization="Bearer $env:KDRIVE_TOKEN"
-    }
-
-    Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $app
+    Invoke-RestMethod -Method "POST" -Uri $uri -Header $headers -ContentType 'application/octet-stream' -InFile $file
 }

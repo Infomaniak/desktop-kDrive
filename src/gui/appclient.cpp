@@ -436,11 +436,19 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             break;
         }
         case SIGNAL_NUM_UTILITY_SHOW_SETTINGS: {
-            emit showParametersDialog();
+            showParametersDialog();
             break;
         }
         case SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS: {
-            emit showSynthesisDialog();
+            showSynthesisDialog();
+            break;
+        }
+        case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
+            LogUploadState status;
+            int progress; // Progress in percentage
+            paramsStream >> status;
+            paramsStream >> progress;
+            emit logUploadStatusUpdated(status, progress);
             break;
         }
         default: {
@@ -468,9 +476,9 @@ void AppClient::onQuit() {
 }
 
 void AppClient::onServerDisconnected() {
-  static const auto msg = tr("The server got disconnected. Restarting the server and closing.");
-  qCCritical(lcAppClient) << msg;
-  
+    static const auto msg = tr("The server got disconnected. Restarting the server and closing.");
+    qCCritical(lcAppClient) << msg;
+
 #if NDEBUG
     startServerAndDie(true);
 

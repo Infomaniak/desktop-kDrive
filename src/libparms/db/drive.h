@@ -18,12 +18,11 @@
 
 #pragma once
 
-#include "parmslib.h"
-#include "account.h"
-#include "utility/types.h"
-#include "libcommonserver/log/log.h"
+#include "libparms/parmslib.h"
 
 #include <string>
+
+#include <log4cplus/logger.h>
 
 namespace KDC {
 

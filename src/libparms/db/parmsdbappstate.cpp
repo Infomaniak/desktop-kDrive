@@ -17,7 +17,10 @@
  */
 
 #include "parmsdb.h"
+#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/asserts.h"
+#include "libcommon/utility/types.h"
+#include "libcommon/utility/utility.h"
 
 constexpr char CREATE_APP_STATE_TABLE_ID[] = "create_app_state";
 constexpr char CREATE_APP_STATE_TABLE[] = "CREATE TABLE IF NOT EXISTS app_state(key INTEGER PRIMARY KEY, value TEXT);";
@@ -31,8 +34,13 @@ constexpr char SELECT_APP_STATE_REQUEST[] = "SELECT value FROM app_state WHERE k
 constexpr char UPDATE_APP_STATE_REQUEST_ID[] = "update_value_with_key";
 constexpr char UPDATE_APP_STATE_REQUEST[] = "UPDATE app_state SET value=?2 WHERE key=?1;";
 
-constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestart[] = "0";
-constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestart[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadDate[] = "0";
+constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath[] = "";
+constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; //KDC::LogUploadState::None
+constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
+
 
 namespace KDC {
 
@@ -78,11 +86,33 @@ bool ParmsDb::prepareAppState() {
 }
 
 bool ParmsDb::insertDefaultAppState() {
-    if (!insertAppState(AppStateKey::LastServerSelfRestart, APP_STATE_KEY_DEFAULT_LastServerSelfRestart)) {
+    if (!insertAppState(AppStateKey::LastServerSelfRestartDate, APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate)) {
+        LOG_WARN(_logger, "Error inserting default value for LastServerSelfRestartDate");
         return false;
     }
 
-    if (!insertAppState(AppStateKey::LastClientSelfRestart, APP_STATE_KEY_DEFAULT_LastClientSelfRestart)) {
+    if (!insertAppState(AppStateKey::LastClientSelfRestartDate, APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate)) {
+        LOG_WARN(_logger, "Error inserting default value for LastClientSelfRestartDate");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LastSuccessfulLogUploadDate, APP_STATE_KEY_DEFAULT_LastLogUploadDate)) {
+        LOG_WARN(_logger, "Error inserting default value for LastSuccessfulLogUploadDate");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LastLogUploadArchivePath, APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath)) {
+        LOG_WARN(_logger, "Error inserting default value for LastLogUploadArchivePath");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LogUploadState, APP_STATE_KEY_DEFAULT_LogUploadState)) {
+        LOG_WARN(_logger, "Error inserting default value for LogUploadState");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LogUploadPercent, APP_STATE_KEY_DEFAULT_LogUploadPercent)) {
+        LOG_WARN(_logger, "Error inserting default value for LogUploadPercent");
         return false;
     }
 
@@ -101,8 +131,8 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
     }
-
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
+
     if (!found) {
         ASSERT(queryResetAndClearBindings(INSERT_APP_STATE_REQUEST_ID));
         ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
@@ -115,9 +145,10 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
     return true;
 }
 
-bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
+bool ParmsDb::selectAppState(AppStateKey key, AppStateValue &value, bool &found) {
     const std::scoped_lock lock(_mutex);
     found = false;
+    std::string valueStr = "";
 
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
@@ -130,28 +161,42 @@ bool ParmsDb::selectAppState(AppStateKey key, std::string &value, bool &found) {
         LOG_WARN(_logger, "AppStateKey not found: " << static_cast<int>(key));
         return true;
     }
-    ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, value));
+    ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, valueStr));
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
-    return true;
-}
 
-bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &found) {
-    std::string existingValue;
+    if (!CommonUtility::stringToAppStateValue(valueStr, value)) {
+        LOG_WARN(_logger, "Unable to convert value from string in selectAppState");
+        return false;
+    }
+
+    return true;
+};
+
+bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &found) {
+    AppStateValue existingValue;
     int errId = 0;
-    std::string error;
+
     if (!selectAppState(key, existingValue, found)) {
         return false;
     }
 
     if (!found) {
+        LOG_WARN(_logger, "AppStateKey not found: " << static_cast<int>(key));
         return true;
+    }
+
+    std::string valueStr = "";
+    if (!CommonUtility::appStateValueToString(value, valueStr)) {
+        LOG_WARN(_logger, "Unable to convert value to string in updateAppState");
+        return false;
     }
 
     const std::scoped_lock lock(_mutex);
     if (found) {
+        std::string error = "";
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
         ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
-        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, value));
+        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, valueStr));
         if (!queryExec(UPDATE_APP_STATE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << UPDATE_APP_STATE_REQUEST_ID);
             return false;
@@ -159,5 +204,5 @@ bool ParmsDb::updateAppState(AppStateKey key, const std::string &value, bool &fo
         ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID));
     }
     return true;
-} 
+};
 }  // namespace KDC

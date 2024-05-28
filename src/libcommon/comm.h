@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <QColor>
 #include <QDataStream>
 #include <QIODevice>
 
@@ -112,6 +111,9 @@ typedef enum {
     REQUEST_NUM_UTILITY_SETLAUNCHONSTARTUP,
     REQUEST_NUM_UTILITY_SET_APPSTATE,
     REQUEST_NUM_UTILITY_GET_APPSTATE,
+    REQUEST_NUM_UTILITY_SEND_LOG_TO_SUPPORT,
+    REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT,
+    REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE,
     REQUEST_NUM_UPDATER_VERSION,
     REQUEST_NUM_UPDATER_ISKDCUPDATER,
     REQUEST_NUM_UPDATER_ISSPARKLEUPDATER,
@@ -158,7 +160,8 @@ typedef enum {
     SIGNAL_NUM_UTILITY_ERROR_ADDED,
     SIGNAL_NUM_UTILITY_ERRORS_CLEARED,
     SIGNAL_NUM_UTILITY_SHOW_SETTINGS,
-    SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS
+    SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS,
+    SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED,
 } SignalNum;
 
 struct ArgsReader {
@@ -189,7 +192,7 @@ struct ArgsWriter {
         template <class T, class... Args>
         void write(T &r, Args... args) {
             stream >> r;
-            extract(args...);
+            write(args...);
         }
         QDataStream stream;
 };

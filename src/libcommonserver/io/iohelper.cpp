@@ -98,6 +98,9 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
             return IoErrorInvalidArgument;
         case ENAMETOOLONG:
             return IoErrorFileNameTooLong;
+#ifdef _WIN32
+        case ESRCH:
+#endif
         case ENOENT:
             return IoErrorNoSuchFileOrDirectory;
 #ifdef __APPLE__
@@ -516,6 +519,18 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
 
     return ioError == IoError::IoErrorSuccess;
 }
+
+bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    SyncPath tempDir;
+    tempDirectoryPath(tempDir, ioError);
+    if (ioError != IoErrorSuccess) {
+        return false;
+    }
+    const SyncName logArchiverDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-logarchiverdir/"));
+    directoryPath = tempDir / logArchiverDirName;
+    return true;
+}
+
 
 bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
     exists = false;
