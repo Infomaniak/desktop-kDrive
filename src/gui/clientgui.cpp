@@ -83,6 +83,9 @@ ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
 
     connect(&_refreshErrorListTimer, &QTimer::timeout, this, &ClientGui::onRefreshErrorList);
+
+    connect(_app, &AppClient::logUploadStatusUpdated, this, &ClientGui::logUploadStatusUpdated);
+
     _refreshErrorListTimer.setInterval(1 * 1000);
     _refreshErrorListTimer.start();
 }

@@ -234,6 +234,49 @@ QString CommonUtility::escape(const QString &in) {
     return in.toHtmlEscaped();
 }
 
+bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStateValue &appStateValueTo) {
+    if (std::holds_alternative<std::string>(appStateValueTo)) {
+        appStateValueTo = stringFrom;
+    } else if (std::holds_alternative<int>(appStateValueTo)) {
+        try {
+            appStateValueTo = std::stoi(stringFrom);
+        } catch (const std::invalid_argument &) {
+            return false;
+        }
+    } else if (std::holds_alternative<LogUploadState>(appStateValueTo)) {
+        try {
+            appStateValueTo = static_cast<LogUploadState>(std::stoi(stringFrom));
+        } catch (const std::invalid_argument &) {
+            return false;
+        }
+    } else if (std::holds_alternative<int64_t>(appStateValueTo)) {
+        try {
+            std::get<int64_t>(appStateValueTo) = std::stoll(stringFrom);
+        } catch (const std::invalid_argument &) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+
+    return true;
+}
+
+bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {
+    if (std::holds_alternative<std::string>(appStateValueFrom)) {
+        stringTo = std::get<std::string>(appStateValueFrom);
+    } else if (std::holds_alternative<int>(appStateValueFrom)) {
+        stringTo = std::to_string(std::get<int>(appStateValueFrom));
+    } else if (std::holds_alternative<LogUploadState>(appStateValueFrom)) {
+        stringTo = std::to_string(static_cast<int>(std::get<LogUploadState>(appStateValueFrom)));
+    } else if (std::holds_alternative<int64_t>(appStateValueFrom)) {
+        stringTo = std::to_string(std::get<int64_t>(appStateValueFrom));
+    } else {
+        return false;
+    }
+    return true;
+}
+
 bool CommonUtility::compressFile(const QString &originalName, const QString &targetName) {
 #ifdef ZLIB_FOUND
     QFile original(originalName);

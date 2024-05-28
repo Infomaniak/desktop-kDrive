@@ -124,7 +124,9 @@ typedef enum {
     ExitCodeTokenRefreshed,
     ExitCodeNoWritePermission,
     ExitCodeRateLimited,
-    ExitCodeInvalidSync  // The sync configuration is not valid
+    ExitCodeInvalidSync,  // The sync configuration is not valid
+    ExitCodeOperationCanceled,
+    ExitCodeInvalidOperation
 } ExitCode;
 
 typedef enum {
@@ -366,10 +368,26 @@ struct ItemType {
 
 enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
-    LastServerSelfRestart,
-    LastClientSelfRestart,
-
-    Unknown,  //!\ keep in last position (For tests) /!\\ Used for initialization, will throw error if used.
+    LastServerSelfRestartDate,
+    LastClientSelfRestartDate,
+    LastSuccessfulLogUploadDate,
+    LastLogUploadArchivePath,
+    LogUploadState,
+    LogUploadPercent,
+    Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
+
+enum class LogUploadState {
+    None,
+    Archiving,
+    Uploading,
+    Success,
+    Failed,
+    CancelRequested,
+    Canceled
+};
+
+// Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
+using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
 
 }  // namespace KDC

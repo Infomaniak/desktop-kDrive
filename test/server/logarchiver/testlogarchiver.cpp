@@ -107,7 +107,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
 
         // compress the log file
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause);
+        ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, nullptr, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
@@ -192,7 +192,7 @@ void TestLogArchiver::testCompressLogs(void) {
         CPPUNIT_ASSERT(logDirSize >= 0);
 
         ExitCause cause = ExitCauseUnknown;
-        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause);
+        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, nullptr, cause);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
@@ -212,7 +212,7 @@ void TestLogArchiver::testCompressLogs(void) {
         CPPUNIT_ASSERT(exists);
     }
 
-    {  // test the progress bar
+    {  // test the progress callback
         TemporaryDirectory tempDir;
         for (int i = 0; i < 30; i++) {
             std::ofstream logFile(tempDir.path / ("test" + std::to_string(i) + ".log"));
@@ -224,18 +224,33 @@ void TestLogArchiver::testCompressLogs(void) {
 
         int percent = 0;
         int oldPercent = 0;
-        std::function<void(int)> progress = [&percent, &oldPercent](int p) {
+        std::function<bool(int)> progress = [&percent, &oldPercent](int p) {
             percent = p;
             CPPUNIT_ASSERT(percent >= oldPercent);
             oldPercent = percent;
+            return true;
         };
 
         ExitCause cause = ExitCauseUnknown;
-        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, cause, progress);
+        ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, progress, cause);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
         CPPUNIT_ASSERT_EQUAL(100, percent);
+
+        // Test the progress callback with a cancel
+        percent = 0;
+        oldPercent = 0;
+        progress = [&percent, &oldPercent](int p) {
+            percent = p;
+            CPPUNIT_ASSERT(percent >= oldPercent);
+            oldPercent = percent;
+            return false;
+        };
+
+        exitCode = LogArchiver::compressLogFiles(tempDir.path, progress, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOperationCanceled, exitCode);
     }
 }
 
@@ -273,20 +288,42 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
         return;
     }
 
-    {
+    { // Test the generation of the archive
         TemporaryDirectory tempDir;
-        const SyncPath archiveFile = tempDir.path / "logs_support.tar.gz";
+        SyncPath archivePath;
         ExitCause cause = ExitCauseUnknown;
+        int previousPercent = 0;
+        std::function<bool(int)> progress = [&previousPercent](int percent) {
+            CPPUNIT_ASSERT(percent >= 0);
+            CPPUNIT_ASSERT(percent <= 100);
+            CPPUNIT_ASSERT(percent >= previousPercent);
+            previousPercent = percent;
+            return true;
+        };
 
-        ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, archiveFile.filename(), cause);
+        ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archivePath, cause, true);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
+        CPPUNIT_ASSERT_EQUAL(tempDir.path / archivePath.filename(), archivePath);
 
         bool exists = false;
         IoError err = IoErrorSuccess;
-        CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(archiveFile, exists, err));
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(archivePath, exists, err));
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(exists);
+    }
+
+    { // Test with a cancel
+        TemporaryDirectory tempDir;
+        SyncPath archiveFile;
+        ExitCause cause = ExitCauseUnknown;
+        std::function<bool(int)> progress = [](int) {
+            return false;
+        };
+
+        ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archiveFile, cause, true);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOperationCanceled, code);
     }
 }
 
