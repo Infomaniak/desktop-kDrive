@@ -101,6 +101,7 @@ class VfsMac : public Vfs {
         LiteSyncExtConnector *_connector;
 
         void resetLiteSyncConnector();
+        const QString _localSyncPath;
 };
 
 class Worker : public QObject {
