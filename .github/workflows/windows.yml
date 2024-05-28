@@ -11,8 +11,6 @@ concurrency:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, Windows, desktop-kdrive ]
-    env:
-      bin-directory: ./build-windows/install/bin/
 
     steps:
       - name: Checkout the PR
@@ -44,13 +42,8 @@ jobs:
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
-      - name: Execute common tests
-        run: ./kDrive_test_common.exe
-        working-directory: ${{env.bin-directory}}
-
-      - name: Execute parms tests
-        run: ./kDrive_test_parms.exe
-        working-directory: ${{env.bin-directory}}
+      - name: Execute tests
+        run: ./infomaniak-build-tools/run-tests.ps1
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
