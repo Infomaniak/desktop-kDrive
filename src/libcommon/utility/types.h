@@ -376,6 +376,7 @@ enum class AppStateKey {
     LastLogUploadArchivePath,
     LogUploadState,
     LogUploadPercent,
+    LogUploadToken,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
 

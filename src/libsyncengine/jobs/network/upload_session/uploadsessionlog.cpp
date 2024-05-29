@@ -17,6 +17,7 @@
  */
 
 #include "uploadsessionlog.h"
+#include "libparms/db/parmsdb.h"
 
 namespace KDC {
 
@@ -56,11 +57,37 @@ bool UploadSessionLog::prepareChunkJob(const std::shared_ptr<UploadSessionChunkJ
 }
 
 bool UploadSessionLog::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
+    AppStateValue appStateValue = ""; // 
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
+        LOG_ERROR(getLogger(), "Error in ParmsDb::selectAppState");
+    }
+    std::string logUploadToken = std::get<std::string>(appStateValue);
+    if (!logUploadToken.empty()) {
+        UploadSessionCancelJob cancelJob(UploadSessionType::LogUpload, logUploadToken);
+        ExitCode exitCode = cancelJob.runSynchronously();
+        if (exitCode != ExitCodeOk) {
+            LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
+        } else {
+            LOG_INFO(getLogger(), "Previous Log upload api call cancelled");
+            bool found = true;
+            if (!ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
+                LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
+            }
+        }
+    }
+
+    AppStateValue value = uploadToken;
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, value, found) || !found) {
+        LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
+    }
     return true;
 }
 
 bool UploadSessionLog::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
-    // TODO: Remove job from the queue
+    bool found = true;
+    if (!ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
+        LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
+    }
     return true;
 }
 
@@ -68,9 +95,6 @@ bool UploadSessionLog::handleCancelJobResult(const std::shared_ptr<UploadSession
     if (!AbstractUploadSession::handleCancelJobResult(cancelJob)) {
         return false;
     }
-
-    // TODO: Remove job from the queue
-
-    return true;
+    return handleFinishJobResult(nullptr);
 }
 }  // namespace KDC

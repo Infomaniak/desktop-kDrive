@@ -43,6 +43,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/jobmanager.h"
+#include "libsyncengine/jobs/network/upload_session/uploadsessioncanceljob.h"
 
 #include <iostream>
 #include <filesystem>
@@ -351,6 +352,25 @@ AppServer::AppServer(int &argc, char **argv)
         if (bool found = false;
             !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Canceled, found) || !found) {
             LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+        }
+    }
+
+    appStateValue = "";
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
+        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
+    }
+    std::string logUploadToken = std::get<std::string>(appStateValue);
+    if (!logUploadToken.empty()) {
+        UploadSessionCancelJob cancelJob(UploadSessionType::LogUpload, logUploadToken);
+        ExitCode exitCode = cancelJob.runSynchronously();
+        if (exitCode != ExitCodeOk) {
+            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
+        } else {
+            LOG_INFO(_logger, "Previous Log upload api call cancelled");
+            if (bool found = false;
+                !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
+                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+            }
         }
     }
 
