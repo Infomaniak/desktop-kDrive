@@ -18,6 +18,7 @@
 
 #include "testexclusiontemplatecache.h"
 #include "libparms/db/parmsdb.h"
+#include "requests/parameterscache.h"
 
 #include <filesystem>
 
@@ -25,96 +26,137 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static const std::vector<std::string> excludedTemplates = {"*~",
-                                                           "~$*",
-                                                           ".~lock.*",
-                                                           "~*.tmp",
-                                                           "*.~*",
-                                                           "Icon\r*",
-                                                           ".DS_Store",
-                                                           ".ds_store",
-                                                           "._*",
-                                                           "Thumbs.db",
-                                                           "System Volume Information",
-                                                           ".*.sw?",
-                                                           ".*.*sw?",
-                                                           ".TemporaryItems",
-                                                           ".Trashes",
-                                                           ".DocumentRevisions-V100",
-                                                           ".Trash-*",
-                                                           ".fseventd",
-                                                           ".apdisk",
-                                                           ".directory",
-                                                           "*.part",
-                                                           "*.filepart",
-                                                           "*.crdownload",
-                                                           "*.kate-swp",
-                                                           "*.gnucash.tmp-*",
-                                                           ".synkron.*",
-                                                           ".sync.ffs_db",
-                                                           ".symform",
-                                                           ".symform-store",
-                                                           ".fuse_hidden*",
-                                                           "*.unison",
-                                                           ".nfs*",
-                                                           "My Saved Places.",
-                                                           "*_conflict_*_*_*"};
+static const std::vector<ExclusionTemplate> excludedTemplates = {
+    ExclusionTemplate(".parms.db"),
+    ExclusionTemplate(".sync_*.db"),
+    ExclusionTemplate(".parms.db-shm"),
+    ExclusionTemplate(".parms.db-wal"),
+    ExclusionTemplate(".sync_*.db-shm"),
+    ExclusionTemplate(".sync_*.db-wal"),
+    ExclusionTemplate(".sentry-native_client"),
+    ExclusionTemplate(".sentry-native_server"),
+    ExclusionTemplate("*_conflict_*_*_*"),
+    ExclusionTemplate("*_blacklisted_*_*_*"),
+    ExclusionTemplate("*~"),
+    ExclusionTemplate("~$*"),
+    ExclusionTemplate("*.~*"),
+    ExclusionTemplate("._*"),
+    ExclusionTemplate("~*.tmp"),
+    ExclusionTemplate("*.idlk"),
+    ExclusionTemplate("*.lock"),
+    ExclusionTemplate("*.lck"),
+    ExclusionTemplate("*.part"),
+    ExclusionTemplate(".~lock.*"),
+    ExclusionTemplate("*.symform"),
+    ExclusionTemplate("*.symform-store"),
+    ExclusionTemplate("*.unison"),
+    ExclusionTemplate(".directory"),
+    ExclusionTemplate(".sync.ffs_db"),
+    ExclusionTemplate(".synkron.*"),
+    ExclusionTemplate("*.crdownload"),
+#if defined(__APPLE__)
+    // macOS only
+    ExclusionTemplate(".fuse_hidden*"),
+    ExclusionTemplate("*.kate-swp"),
+    ExclusionTemplate(".DS_Store"),
+    ExclusionTemplate(".ds_store"),
+    ExclusionTemplate(".TemporaryItems"),
+    ExclusionTemplate(".Trashes"),
+    ExclusionTemplate(".DocumentRevisions-V100"),
+    ExclusionTemplate(".fseventd"),
+    ExclusionTemplate(".apdisk"),
+    ExclusionTemplate("*.photoslibrary"),
+    ExclusionTemplate("*.tvlibrary"),
+    ExclusionTemplate("*.musiclibrary"),
+    ExclusionTemplate("Icon\r*"),
+    ExclusionTemplate(".Spotlight-V100"),
+    ExclusionTemplate("*.lnk")
+#elif defined(_WIN32)
+    // Windows only
+    ExclusionTemplate("*.kate-swp"),
+    ExclusionTemplate("System Volume Information"),
+    ExclusionTemplate("Thumbs.db"),
+    ExclusionTemplate("Desktop.ini"),
+    ExclusionTemplate("*.filepart"),
+    ExclusionTemplate("*.app")
+#else
+    // Linux only
+    ExclusionTemplate(".fuse_hidden*"),
+    ExclusionTemplate("*.kate-swp"),
+    ExclusionTemplate("*.gnucash.tmp-*"),
+    ExclusionTemplate(".Trash-*"),
+    ExclusionTemplate(".nfs*"),
+    ExclusionTemplate("*.app"),
+    ExclusionTemplate("*.lnk)"
+#endif
+};
 
-static const std::vector<std::string> rejectedFiles = {
+// List of names that should be rejected
+static const std::vector<std::string> rejectedFiles =
+{
     // *~
     "test~",
-    ".test~"
+    ".test~",
     // *.~*
-    ,
     "*.~*",
     ".~",
     "test.~test",
     "test.~",
-    ".~test"
+    ".~test",
+    // ~*.tmp
+    "~test.tmp",
+    // *_conflict_*_*_*
+    "testfile_conflict_20220913_130102_abcdefghij.txt",
+    "testfile_conflict_test_20220913_130102_abcdefghij.txt",
+    "_conflict___",
+    // *_blacklisted_*_*_*
+    "testfile_blacklisted_20220913_130102_abcdefghij.txt",
+#if defined(__APPLE__)
+    // .DS_Store
+    ".DS_Store",
+    // .ds_store
+    ".ds_store",
+    // .apdisk
+    ".apdisk",
     // Icon\r*
-    ,
     "Icon\r*",
     "Icon\r",
-    "Icon\rtest"
-    // .*.sw?
-    // .*.*sw?
-    ,
-    ".*.sw?",
-    ".*.*sw?",
-    ".testsw?",
-    ".*.sw?",
-    "..*sw?",
-    ".test.sw?",
-    "..testsw?",
-    ".test.testsw?",
-    "..sw?",
-    ".123.123sw?",
-    "/Applications/kDrive.app/Contents/Resources/.test.testsw?",
-    "/Applications/kDrive.app/.test.testsw?/Contents/Resources"
-    // My Saved Places.
-    ,
-    "My Saved Places.",
-    "testfile_conflict_20220913_130102_abcdefghij.txt"};
+    "Icon\rtest",
+#elif defined(_WIN32)
 
-static const std::vector<std::string> acceptedFiles = {
+#else
+
+#endif
+};
+
+// List of names that should be accepted
+static const std::vector<std::string> acceptedFiles =
+{
     // *~
-    "~test"
+    "~test",
     // *.~*
-    ,
-    "test.test~test"
+    "test.test~test",
+    // ~*.tmp
+    "test.tmp",
+    "~.tmp2",
+    // *_conflict_*_*_*
+    "testfile_conflict_130102_abcdefghij.txt",
+    "conflict_20220913_130102_abcdefghij.txt",
+    // *_blacklisted_*_*_*
+    "testfile_blacklisted_130102_abcdefghij.txt",
+#if defined(__APPLE__)
+    // .apdisk
+    "test.apdisk",
     // Icon\r*
-    ,
-    "test Icon\r"
-    // .*.sw?
-    // .*.*sw?
-    ,
-    "test.sw?",
-    "/Applications/kDrive.app/Contents/Resources/test.testsw?",
-    "/Applications/kDrive.app.testsw?/Contents/Resources",
-    "/Applications/kDrive.app.test.testsw?/Contents/Resources"
-    // My Saved Places.
-    ,
-    "test My Saved Places."};
+    "test_Icon\rtest"
+#elif defined(_WIN32)
+// Windows only
+
+#else
+// Linux only
+
+#endif
+};
 
 void TestExclusionTemplateCache::setUp() {
     // Create parmsDb
@@ -124,11 +166,7 @@ void TestExclusionTemplateCache::setUp() {
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
     ParmsDb::instance()->setAutoDelete(true);
 
-    std::vector<ExclusionTemplate> exclusionTemplates;
-    for (const auto &templ : excludedTemplates) {
-        exclusionTemplates.push_back(ExclusionTemplate(templ));
-    }
-    ExclusionTemplateCache::instance()->update(true, exclusionTemplates);
+    ExclusionTemplateCache::instance()->update(true, excludedTemplates);
 }
 
 void TestExclusionTemplateCache::tearDown() {
@@ -137,22 +175,16 @@ void TestExclusionTemplateCache::tearDown() {
 
 void TestExclusionTemplateCache::testIsExcluded() {
     // Exclude hidden files
-    Parameters params;
-    bool found = false;
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(params, found) && found);
-    params.setSyncHiddenFiles(false);
-    CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(params, found) && found);
+    ParametersCache::instance()->parameters().setSyncHiddenFiles(false);
 
     // Test rejected files
     for (const auto &str : rejectedFiles) {
+        std::cout << "Testing rejected item: `" << str << "`\n";
         bool isWarning = false;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcludedTemplate(str, isWarning));
         CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("", str, isWarning, isExcluded, ioError));
-        if (!isExcluded) {
-            std::cout << str << "\n\n";
-        }
         CPPUNIT_ASSERT(!isWarning);
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
@@ -160,6 +192,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
 
     // Test accepted files
     for (const auto &str : acceptedFiles) {
+        std::cout << "Testing accepted item: `" << str << "`\n";
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
@@ -176,9 +209,8 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcludedTemplate(testPath, isWarning));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("", testPath, isWarning, isExcluded, ioError));
-        CPPUNIT_ASSERT(!isWarning);
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile("/test_path", testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("/test_path", testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
@@ -189,16 +221,14 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcludedTemplate(testPath, isWarning));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("", testPath, isWarning, isExcluded, ioError));
-        CPPUNIT_ASSERT(!isWarning);
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile("/test_path", testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("/test_path", testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // Include hidden files
-    params.setSyncHiddenFiles(true);
-    CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(params, found) && found);
+    ParametersCache::instance()->parameters().setSyncHiddenFiles(true);
 
     {
         // Test include hidden file
@@ -206,9 +236,8 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcludedTemplate(testPath, isWarning));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("", testPath, isWarning, isExcluded, ioError));
-        CPPUNIT_ASSERT(!isWarning);
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile("/test_path", testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("/test_path", testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
@@ -218,9 +247,8 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcludedTemplate(testPath, isWarning));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("", testPath, isWarning, isExcluded, ioError));
-        CPPUNIT_ASSERT(!isWarning);
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile("/test_path", testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("/test_path", testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }

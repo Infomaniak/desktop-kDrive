@@ -33,14 +33,14 @@ static const time_t tDrive = std::time(0);
 /**
  * init tree:
  *
- *                   root
- *          __________|__________
- *         |                    |
- *         A                    B
- *    _____|_____          _____|_____
- *   |     |    |         |          |
- *  AA    AB   AC        AA         AB
-
+ *      Root
+ *      |-- A
+ *      |   |-- AA
+ *      |   |-- AB
+ *      |   `-- AC
+ *      `-- B
+ *          |-- BA
+ *          `-- BB
  */
 
 void TestComputeFSOperationWorker::setUp() {
