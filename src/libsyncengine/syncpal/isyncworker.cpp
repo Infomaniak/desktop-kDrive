@@ -23,19 +23,14 @@
 
 namespace KDC {
 
-ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName)
+ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName
+                         , bool testing /*= false*/)
     : _logger(Log::instance()->getLogger()),
       _syncPal(syncPal),
       _name(name),
       _shortName(shortName),
-      _thread(nullptr),
-      _stopAsked(false),
-      _isRunning(false),
-      _pauseAsked(false),
-      _unpauseAsked(false),
-      _isPaused(false),
-      _exitCode(ExitCodeUnknown),
-      _exitCause(ExitCauseUnknown) {}
+      _testing(testing)
+{}
 
 ISyncWorker::~ISyncWorker() {
     if (_isRunning) {
@@ -154,7 +149,7 @@ void ISyncWorker::setUnpauseDone() {
 void ISyncWorker::setDone(ExitCode code) {
     LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " has finished with code=" << code << " and cause=" << _exitCause);
 
-    if (code != ExitCodeOk) {
+    if (code != ExitCodeOk && _syncPal) {
         _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, code, _exitCause));
     }
 

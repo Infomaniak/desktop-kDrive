@@ -61,7 +61,7 @@ void TestComputeFSOperationWorker::setUp() {
     KeyChainManager::instance()->writeToken(keychainKey, apiTokenStr);
 
     // Create parmsDb
-    bool alreadyExists;
+    bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
