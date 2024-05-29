@@ -19,6 +19,7 @@
 #pragma once
 
 #include "jobs/abstractjob.h"
+#include "abstractuploadsession.h"
 #include "utility/types.h"
 #include "db/syncdb.h"
 
@@ -28,72 +29,24 @@
 
 namespace KDC {
 
-class UploadSessionChunkJob;
-
-class UploadSession : public AbstractJob {
+class UploadSessionLog : public AbstractUploadSession {
     public:
-        UploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
-                      const NodeId &remoteParentDirId, SyncTime modtime, bool liteSyncActivated, uint64_t nbParalleleThread = 1);
-        ~UploadSession();
+        UploadSessionLog(const SyncPath &filepath, uint64_t nbParalleleThread = 1);
 
-        void uploadChunkCallback(UniqueId jobId);
+    protected:
+        bool runJobInit();
+        std::shared_ptr<UploadSessionStartJob> createStartJob();
+        std::shared_ptr<UploadSessionChunkJob> createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
+                                                              std::streamsize actualChunkSize);
+        std::shared_ptr<UploadSessionFinishJob> createFinishJob();
+        std::shared_ptr<UploadSessionCancelJob> createCancelJob();
 
-        void abort() override;
 
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline SyncTime modtime() const { return _modtimeOut; }
+        bool prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob);
 
-    private:
-        enum UploadSessionState {
-            StateInitChunk,
-            StateStartUploadSession,
-            StateUploadChunks,
-            StateStopUploadSession,
-            StateFinished
-        };
-
-        virtual bool canRun() override;
-        virtual void runJob() override;
-
-        bool initChunks();
-        bool startSession();
-        bool sendChunks();
-        bool closeSession();
-        bool cancelSession();
-        void waitForJobsToComplete(bool all);
-
-        log4cplus::Logger _logger;
-        UploadSessionState _state = StateInitChunk;
-
-        int _driveDbId = 0;
-        std::shared_ptr<SyncDb> _syncDb = nullptr;
-        SyncPath _filePath;
-        SyncName _filename;
-        NodeId _fileId;
-        uint64_t _filesize = 0;
-        std::string _remoteParentDirId;
-        SyncTime _modtimeIn = 0;
-        bool _liteSyncActivated = false;
-        uint64_t _nbParalleleThread = 1;
-        bool _isAsynchrounous = false;
-        bool _sessionStarted = false;
-        bool _sessionCancelled = false;
-        bool _jobExecutionError = false;
-
-        std::string _sessionToken;
-
-        int64_t _uploadSessionTokenDbId = 0;
-        uint64_t _chunkSize = 0;
-        uint64_t _totalChunks = 0;
-        std::string _totalChunkHash;  // This is not a content checksum. It is the hash of all the chunk hash concatenated
-
-        NodeId _nodeId;
-        SyncTime _modtimeOut = 0;
-
-        std::unordered_map<UniqueId, std::shared_ptr<UploadSessionChunkJob>> _ongoingChunkJobs;
-        uint64_t _threadCounter = 0;  // Number of running
-
-        std::mutex _mutex;
+        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken);
+        bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob);
+        bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob);
 };
 
 }  // namespace KDC

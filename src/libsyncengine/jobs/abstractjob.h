@@ -41,11 +41,16 @@ class AbstractJob : public Poco::Runnable {
          */
         inline void setMainCallback(const std::function<void(uint64_t)> newCallback) { _mainCallback = newCallback; }
         inline void setAdditionalCallback(const std::function<void(uint64_t)> newCallback) { _additionalCallback = newCallback; }
+        inline void setProgressPercentCallback(const std::function<void(UniqueId, int)> newCallback) {
+            _progressPercentCallback = newCallback;
+        }
 
         inline ExitCode exitCode() const { return _exitCode; }
         inline ExitCause exitCause() const { return _exitCause; }
 
+        inline virtual void setExpectedSize(int64_t newExpectedSize) { _expectedSize = newExpectedSize; }
         inline virtual int64_t getProgress() { return _progress; }
+        virtual void setProgress(int64_t newProgress);
         bool progressChanged();
         inline const SyncPath &affectedFilePath() const { return _affectedFilePath; }
         inline void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
@@ -94,10 +99,6 @@ class AbstractJob : public Poco::Runnable {
         ExitCode _exitCode = ExitCodeUnknown;
         ExitCause _exitCause = ExitCauseUnknown;
 
-        int64_t _progress = -1;      // Progress is -1 when it is not relevant for the current job
-        int64_t _lastProgress = -1;  // Progress last time it was checked using progressChanged()
-        SyncPath _affectedFilePath;  // The file path associated to _progress
-
         std::function<bool(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled, bool &finished)>
             _vfsUpdateFetchStatus;
         std::function<bool(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState;
@@ -115,12 +116,19 @@ class AbstractJob : public Poco::Runnable {
 
         std::function<void(UniqueId)> _mainCallback = nullptr;        // Used by the job manager to keep track of running jobs
         std::function<void(UniqueId)> _additionalCallback = nullptr;  // Used by the caller to be notified of job completion
+        std::function<void(UniqueId id, int progress)> _progressPercentCallback =
+            nullptr;  // Used by the caller to be notified of job progress change
 
         static UniqueId _nextJobId;
         static std::mutex _nextJobIdMutex;
 
         UniqueId _jobId = 0;
         UniqueId _parentJobId = -1;  // ID of that parent job i.e. the job that must be completed before starting this one
+
+        int64_t _expectedSize = -1;  // Expected size of the job is -1 when it is not relevant for the current job
+        int64_t _progress = -1;      // Progress is -1 when it is not relevant for the current job
+        int64_t _lastProgress = -1;  // Progress last time it was checked using progressChanged()
+        SyncPath _affectedFilePath;  // The file path associated to _progress
 
         bool _abort = false;
         bool _bypassCheck = false;

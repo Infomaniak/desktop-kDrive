@@ -125,7 +125,6 @@ typedef enum {
     ExitCodeNoWritePermission,
     ExitCodeRateLimited,
     ExitCodeInvalidSync,  // The sync configuration is not valid
-    ExitCodeOperationCanceled,
     ExitCodeInvalidOperation
 } ExitCode;
 
@@ -166,7 +165,8 @@ typedef enum {
     ExitCauseSocketsDefuncted,  // macOS: sockets defuncted by kernel
     ExitCauseNoSearchPermission,
     ExitCauseNotFound,
-    ExitCauseQuotaExceeded
+    ExitCauseQuotaExceeded,
+    ExitCauseOperationCanceled
 } ExitCause;
 
 // Conflict types ordered by priority

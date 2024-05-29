@@ -46,6 +46,8 @@
 #include "libsyncengine/olddb/oldsyncdb.h"
 #include "utility/jsonparserutility.h"
 #include "server/logarchiver.h"
+#include "libsyncengine/jobs/jobmanager.h"
+#include "libsyncengine/jobs/network/upload_session/uploadsessionlog.h"
 
 #include <QDir>
 #include <QUuid>
@@ -1035,7 +1037,12 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     SyncPath archivePath;
     exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, logUploadTempFolder, progressCallbackArchivingWrapper,
                                                        archivePath, exitCause);
-    if (exitCode != ExitCodeOk) {
+    if (exitCause == ExitCauseOperationCanceled) {
+        IoHelper::deleteDirectory(logUploadTempFolder, ioError);
+        LOG_INFO(Log::instance()->getLogger(),
+                 "LogArchiver::generateLogsSupportArchive Cancelled: " << exitCode << " : " << exitCause);
+        return ExitCodeOk;
+    } else if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in LogArchiver::generateLogsSupportArchive: " << exitCode << " : " << exitCause);
         IoHelper::deleteDirectory(logUploadTempFolder, ioError);
@@ -1048,24 +1055,40 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     }
 
     // Upload archive
-    std::function<bool(int)> progressCallbackUploadingWrapper = [&safeProgressCallback](int percent) {
-        return safeProgressCallback(LogUploadState::Uploading, percent);
-    };
+    std::shared_ptr<UploadSessionLog> uploadSessionLog = std::make_shared<UploadSessionLog>(archivePath);
 
-    for (int i = 0; i < 100; i++) {  // TODO: Remove | Fake progress waiting for the real upload implementation
-        if (!progressCallbackUploadingWrapper(i)) {
-            exitCode = ExitCodeOperationCanceled;
-            break;
-        }
+    std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
+        [&safeProgressCallback, &uploadSessionLog](UniqueId, int percent) {  // Progress callback
+            if (percent > 50) { //For the cancel test
+                uploadSessionLog->abort();
+            }
+            return;
+            if (!safeProgressCallback(LogUploadState::Uploading, percent)) {
+                uploadSessionLog->abort();
+            };
+        };
+    uploadSessionLog->setProgressPercentCallback(progressCallbackUploadingWrapper);
+
+    bool jobFinished = false;
+    std::function<void(uint64_t)> uploadSessionLogFinisCallback = [&safeProgressCallback, &jobFinished](uint64_t) {
+        safeProgressCallback(LogUploadState::Uploading, 100);
+        jobFinished = true;
+    };
+    uploadSessionLog->setAdditionalCallback(uploadSessionLogFinisCallback);
+
+    JobManager::instance()->queueAsyncJob(uploadSessionLog, Poco::Thread::PRIO_NORMAL);
+
+    while (!jobFinished) {
         Utility::msleep(100);
     }
 
-
-    // TODO: implement real log upload backend
+    exitCode = uploadSessionLog->exitCode();
+    exitCause = uploadSessionLog->exitCause();
 
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
-        // We do not delete the archive here, The path is stored in the app state and the user can try to upload it manually
+        // We do not delete the archive here, The path is stored in the app state and the user can try to upload it
+        // manually
         return exitCode;
     }
 
@@ -1097,7 +1120,8 @@ ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
     }
 
     if (logUploadState == LogUploadState::Canceled) {
-        return ExitCodeOperationCanceled;  // The user has already canceled the operation
+        exitCause = ExitCauseOperationCanceled;
+        return ExitCodeOk;  // The user has already canceled the operation
     }
 
     if (logUploadState == LogUploadState::Uploading || logUploadState == LogUploadState::Archiving) {

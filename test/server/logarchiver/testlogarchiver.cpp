@@ -249,8 +249,8 @@ void TestLogArchiver::testCompressLogs(void) {
         };
 
         exitCode = LogArchiver::compressLogFiles(tempDir.path, progress, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOperationCanceled, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseOperationCanceled, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
     }
 }
 
@@ -322,8 +322,8 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
         };
 
         ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archiveFile, cause, true);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOperationCanceled, code);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseOperationCanceled, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
     }
 }
 

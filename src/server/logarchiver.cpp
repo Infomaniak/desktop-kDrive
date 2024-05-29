@@ -325,11 +325,15 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
 
     if (!safeProgressCallback(0)) {
         LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
-        return ExitCodeOperationCanceled;
+        exitCause = ExitCauseOperationCanceled;
+        return ExitCodeOk;
     }
 
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        if (entry.path().filename().extension() == Str(".gz")) {
+            continue;
+        }
         nbFiles++;
     }
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
@@ -370,10 +374,11 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
         }
 
         progress++;
-        const int progressPercent = 100.0 * (double)progress / (double)nbFiles;
+        const int progressPercent = (progress*100) / nbFiles;
         if (!safeProgressCallback(progressPercent)) {
             LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
-            return ExitCodeOperationCanceled;
+            exitCause = ExitCauseOperationCanceled;
+            return ExitCodeOk;
         }
     }
 

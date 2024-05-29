@@ -54,7 +54,7 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
     }
 
     if (((_apiType == ApiDrive || _apiType == ApiNotifyDrive) && _driveDbId == 0 && (_userDbId == 0 || _driveId == 0)) ||
-        ((_apiType == ApiProfile || _apiType == ApiDriveByUser || _apiType == ApiDesktop) && _userDbId == 0)) {
+        ((_apiType == ApiProfile || _apiType == ApiDriveByUser) && _userDbId == 0)) {
         LOG_WARN(_logger, "Invalid parameters!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
@@ -297,6 +297,9 @@ std::string AbstractTokenNetworkJob::getUrl() {
         case ApiDriveByUser:
             apiUrl = KDRIVE_API_V2_URL;
             break;
+        case ApiDesktop: // TODO: Use KDRIVE_API_V2_URL when Desktop API is in production
+            apiUrl = DESKTOP_API_V2_URL;
+            break;
         case ApiNotifyDrive:
             apiUrl = NOTIFY_KDRIVE_V2_URL;
             break;
@@ -380,9 +383,24 @@ bool AbstractTokenNetworkJob::handleOctetStreamResponse(std::istream &is) {
 
 std::string AbstractTokenNetworkJob::loadToken() {
     std::string token;
+    if (_apiType == ApiDesktop) {  // Fetch the user of the first sync available
+        std::vector<Sync> syncList;
+        if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+            LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
+            throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
+        }
+
+        if (syncList.empty()) {
+            LOG_WARN(_logger, "No sync found");
+            throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
+        }
+
+        _driveDbId = syncList[0].driveDbId();
+    }
 
     switch (_apiType) {
         case ApiDrive:
+        case ApiDesktop:
         case ApiNotifyDrive: {
             if (_driveDbId) {
                 auto it = _driveToApiKeyMap.find(_driveDbId);
@@ -456,7 +474,6 @@ std::string AbstractTokenNetworkJob::loadToken() {
             }
             break;
         }
-        case ApiDesktop:
         case ApiProfile:
         case ApiDriveByUser: {
             auto it = _userToApiKeyMap.find(_userDbId);

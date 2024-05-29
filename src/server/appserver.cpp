@@ -2009,7 +2009,7 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
 void AppServer::cancelLogUpload() {
     ExitCause exitCause = ExitCauseUnknown;
     ExitCode exitCode = ServerRequests::cancelLogToSupport(exitCause);
-    if (exitCode == ExitCodeOperationCanceled) {
+    if (exitCause == ExitCauseOperationCanceled) {
         LOG_WARN(_logger, "Operation already canceled");
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
         return;
@@ -2068,7 +2068,7 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
     ExitCause exitCause = ExitCauseUnknown;
     ExitCode exitCode = ServerRequests::sendLogToSupport(includeArchivedLogs, progressFunc, exitCause);
 
-    if (exitCode == ExitCodeOperationCanceled) {
+    if (exitCause == ExitCauseOperationCanceled) {
         LOG_DEBUG(_logger, "Log transfert canceled");
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
         return;

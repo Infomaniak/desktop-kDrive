@@ -50,7 +50,8 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     }
 
     _isAsynchrounous = _nbParalleleThread > 1;
-    _progress = 0;
+    setProgress(0);
+    setExpectedSize(_filesize);
 }
 
 void AbstractUploadSession::runJob() {
@@ -123,7 +124,7 @@ void AbstractUploadSession::uploadChunkCallback(UniqueId jobId) {
         }
 
         _threadCounter--;
-        _progress += jobInfo.mapped()->chunkSize();
+        setProgress(getProgress() + jobInfo.mapped()->chunkSize());
         LOG_INFO(_logger,
                  "Session " << _sessionToken.c_str() << ", thread " << jobId << " finished. " << _threadCounter << " running");
     }
@@ -249,7 +250,6 @@ bool AbstractUploadSession::sendChunks() {
         _exitCode = ExitCodeDataError;
         return false;
     }
-
     bool readError = false;
     bool checksumError = false;
     bool jobCreationError = false;
@@ -350,8 +350,7 @@ bool AbstractUploadSession::sendChunks() {
                 _jobExecutionError = true;
                 break;
             }
-
-            _progress += actualChunkSize;
+            setProgress(getProgress() + actualChunkSize);
         }
     }
 

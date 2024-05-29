@@ -46,6 +46,7 @@ bool UploadSessionDrive::runJobInit() {
             LOG_WARN(getLogger(), L"Error in vfsForceStatus - path=" << Path2WStr(getFilePath()).c_str());
         }
     }
+    return true;
 }
 
 std::shared_ptr<UploadSessionStartJob> UploadSessionDrive::createStartJob() {
@@ -90,6 +91,14 @@ bool UploadSessionDrive::handleStartJobResult(const std::shared_ptr<UploadSessio
 bool UploadSessionDrive::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
     _nodeId = finishJob->nodeId();
     _modtimeOut = finishJob->modtime();
+
+    bool found = false;
+    if (_syncDb && !_syncDb->deleteUploadSessionTokenByDbId(_uploadSessionTokenDbId, found)) {
+        LOG_WARN(getLogger(), "Error in SyncDb::deleteUploadSessionTokenByDbId");
+        _exitCode = ExitCodeDbError;
+        return false;
+    }
+
     return true;
 }
 

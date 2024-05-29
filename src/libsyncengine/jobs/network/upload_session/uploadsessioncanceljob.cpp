@@ -26,6 +26,11 @@ UploadSessionCancelJob::UploadSessionCancelJob(UploadSessionType uploadType, int
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
 
+UploadSessionCancelJob::UploadSessionCancelJob(UploadSessionType uploadType, const std::string &sessionToken)
+    : AbstractUploadSessionJob(uploadType, 0, "", sessionToken) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
+}
+
 std::string UploadSessionCancelJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/upload/session/";

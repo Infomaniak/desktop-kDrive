@@ -241,7 +241,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         bool fetchCanceled = false;
         bool fetchFinished = false;
         bool fetchError = false;
-        _progress = 0;
+        setProgress(0);
         if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || expectedSize > 0) {
             std::unique_ptr<char[]> buffer(new char[BUF_SIZE]);
             bool done = false;
@@ -256,19 +256,19 @@ bool DownloadJob::handleResponse(std::istream &is) {
                 if (is.bad() && !is.fail()) {
                     // Read/writing error and not logical error
                     LOG_WARN(_logger,
-                             "Request " << jobId() << ": error after reading " << _progress << " bytes from input stream");
+                             "Request " << jobId() << ": error after reading " << getProgress() << " bytes from input stream");
                     readError = true;
                     break;
                 } else {
                     std::streamsize readSize = is.gcount();
-                    _progress += readSize;
+                    setProgress(getProgress() + readSize);
 
                     if (readSize > 0) {
                         output.write(buffer.get(), readSize);
                         if (output.bad()) {
                             // Read/writing error or logical error
                             LOG_WARN(_logger,
-                                     "Request " << jobId() << ": error after writing " << _progress << " bytes to tmp file");
+                                     "Request " << jobId() << ": error after writing " << getProgress() << " bytes to tmp file");
                             writeError = true;
                             break;
                         }
@@ -276,7 +276,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                         if (output.bad()) {
                             // Read/writing error or logical error
                             LOG_WARN(_logger,
-                                     "Request " << jobId() << ": error after flushing " << _progress << " bytes to tmp file");
+                                     "Request " << jobId() << ": error after flushing " << getProgress() << " bytes to tmp file");
                             writeError = true;
                             break;
                         }
@@ -285,19 +285,19 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
                     if (is.eof()) {
                         // End of stream
-                        if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || _progress == expectedSize) {
+                        if (expectedSize == Poco::Net::HTTPMessage::UNKNOWN_CONTENT_LENGTH || getProgress() == expectedSize) {
                             done = true;
                         } else {
                             // Expected size hasn't be read
                             if (retryCount < READ_RETRIES) {
                                 // Try to read again later
-                                LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << _progress
+                                LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << getProgress()
                                                              << " bytes from input stream, retrying");
                                 retryCount++;
                                 Utility::msleep(READ_PAUSE_SLEEP_PERIOD);
                                 continue;
                             } else {
-                                LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << _progress
+                                LOG_WARN(_logger, "Request " << jobId() << ": eof after reading " << getProgress()
                                                              << " bytes from input stream");
                                 readError = true;
                                 break;
@@ -310,7 +310,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - fileProgressTimer;
                     if (elapsed_seconds.count() > NOTIFICATION_DELAY || done) {
                         // Update fetch status
-                        if (!_vfsUpdateFetchStatus(tmpPath, _localpath, _progress, fetchCanceled, fetchFinished)) {
+                        if (!_vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
                             LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath).c_str());
                             fetchError = true;
                             break;
@@ -337,7 +337,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
         if (!_responseHandlingCanceled) {
             if (_vfsUpdateFetchStatus && !fetchFinished) {
                 // Update fetch status
-                if (!_vfsUpdateFetchStatus(tmpPath, _localpath, _progress, fetchCanceled, fetchFinished)) {
+                if (!_vfsUpdateFetchStatus(tmpPath, _localpath, getProgress(), fetchCanceled, fetchFinished)) {
                     LOGW_WARN(_logger, L"Error in vfsUpdateFetchStatus: " << Utility::formatSyncPath(_localpath).c_str());
                     fetchError = true;
                 } else if (fetchCanceled) {
