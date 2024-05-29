@@ -446,7 +446,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
         }
         case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
             LogUploadState status;
-            int progress;  // Progress in percentage
+            int progress; // Progress in percentage
             paramsStream >> status;
             paramsStream >> progress;
             emit logUploadStatusUpdated(status, progress);
@@ -486,9 +486,10 @@ void AppClient::onServerDisconnected() {
         qCInfo(lcAppClient) << "Server expected disconnection.";
     }
 #else
+    QString msg = QStringLiteral("The server got disconnected. As the app is in debug mode, it will not be restarted.");
     displayHelpText(msg);
     QTimer::singleShot(0, qApp, SLOT(quit()));
-    qCCritical(lcAppClient) << "The server got disconnected. As the app is in debug mode, it will not be restarted.";
+    qCCritical(lcAppClient) << msg;
 #endif
 }
 
