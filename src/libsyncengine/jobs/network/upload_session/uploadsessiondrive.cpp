@@ -35,7 +35,7 @@ UploadSessionDrive::UploadSessionDrive(int driveDbId, std::shared_ptr<SyncDb> sy
 UploadSessionDrive::~UploadSessionDrive() {
     if (_vfsForceStatus) {
         if (!_vfsForceStatus(getFilePath(), false, 100, true)) {
-            LOG_WARN(getLogger(), L"Error in vfsForceStatus - path=" << Path2WStr(getFilePath()).c_str());
+            LOG_WARN(getLogger(), L"Error in vfsForceStatus - path=" << getFilePath().c_str());
         }
     }
 }
@@ -43,7 +43,7 @@ UploadSessionDrive::~UploadSessionDrive() {
 bool UploadSessionDrive::runJobInit() {
     if (_vfsForceStatus) {
         if (!_vfsForceStatus(getFilePath(), true, 0, true)) {
-            LOG_WARN(getLogger(), L"Error in vfsForceStatus - path=" << Path2WStr(getFilePath()).c_str());
+            LOG_WARN(getLogger(), L"Error in vfsForceStatus - path=" << getFilePath().c_str());
         }
     }
     return true;
