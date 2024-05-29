@@ -373,8 +373,6 @@ AppServer::AppServer(int &argc, char **argv)
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
 
-    //test log upload
-    uploadLog(true);
 }
 
 AppServer::~AppServer() {

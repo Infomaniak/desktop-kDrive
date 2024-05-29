@@ -127,7 +127,7 @@ class AbstractJob : public Poco::Runnable {
         UniqueId _jobId = 0;
         UniqueId _parentJobId = -1;  // ID of that parent job i.e. the job that must be completed before starting this one
 
-        int64_t _expectedFinishProgress = -1;  // Expected size of the job is -1 when it is not relevant for the current job
+        int64_t _expectedFinishProgress = -1;  // Expected progress value when the job is finished
         int64_t _progress = -1;      // Progress is -1 when it is not relevant for the current job
         int64_t _lastProgress = -1;  // Progress last time it was checked using progressChanged()
         SyncPath _affectedFilePath;  // The file path associated to _progress
