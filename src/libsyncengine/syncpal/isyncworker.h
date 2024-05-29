@@ -32,7 +32,7 @@ namespace KDC {
 
 class ISyncWorker {
     public:
-        ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName, bool testing = false);
+        ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
         virtual ~ISyncWorker();
 
         // Returns true if the thread was successfully started, false if there was an error starting the thread
@@ -58,8 +58,6 @@ class ISyncWorker {
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal;
 
-        bool _testing {false};
-
         void setPauseDone();
         void setUnpauseDone();
         void setExitCause(ExitCause cause) { _exitCause = cause; }
@@ -76,13 +74,13 @@ class ISyncWorker {
         const std::string _name;
         const std::string _shortName;
         std::unique_ptr<std::thread> _thread;
-        bool _stopAsked {false};
-        bool _isRunning {false};
-        bool _pauseAsked {false};
-        bool _unpauseAsked {false};
-        bool _isPaused {false};
-        ExitCode _exitCode {ExitCodeUnknown};
-        ExitCause _exitCause {ExitCauseUnknown};
+        bool _stopAsked;
+        bool _isRunning;
+        bool _pauseAsked;
+        bool _unpauseAsked;
+        bool _isPaused;
+        ExitCode _exitCode;
+        ExitCause _exitCause;
 };
 
 }  // namespace KDC
