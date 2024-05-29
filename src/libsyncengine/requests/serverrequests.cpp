@@ -1059,10 +1059,6 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
     std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
         [&safeProgressCallback, &uploadSessionLog](UniqueId, int percent) {  // Progress callback
-            if (percent > 50) { //For the cancel test
-                uploadSessionLog->abort();
-            }
-            return;
             if (!safeProgressCallback(LogUploadState::Uploading, percent)) {
                 uploadSessionLog->abort();
             };
