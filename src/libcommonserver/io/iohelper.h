@@ -98,6 +98,14 @@ struct IoHelper {
          */
         static bool logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
 
+        //! Returns the log archiver directory path of the application.
+        /*!
+         \param directoryPath is set with the path of to the log directory of the application. Empty if there is a an error.
+         \param ioError holds the error returned when an underlying OS API call fails.
+         \return true if no unexpected error occurred, false otherwise.
+         */
+        static bool logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept;
+
         //! Retrieves the node identifier of the item indicated by a file system path.
         /*!
          \param path is a file system path to a directory entry (we also call it an item).

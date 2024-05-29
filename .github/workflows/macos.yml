@@ -11,13 +11,12 @@ concurrency:
 jobs:
   build-kDrive:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
-    env:
-      bin-directory: ./build-macos/client/bin
 
     steps:
       - name: Checkout the code
         uses: actions/checkout@v4.1.1
         with:
+          ref: ${{ github.head_ref }}
           submodules: recursive
 
       - name: Unlock keychain to use the certificate
@@ -28,18 +27,14 @@ jobs:
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/macos/build-ci.sh
 
-      - name: Execute common tests
-        run : ./kDrive_test_common
-        working-directory: ${{env.bin-directory}}
-        continue-on-error: true
-
-      - name: Execute parms tests
-        run : ./kDrive_test_parms
-        working-directory: ${{env.bin-directory}}
-        continue-on-error: true
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-tests.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-tests.sh
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
@@ -48,7 +43,7 @@ jobs:
           path: ${{ env.logdir_path }}/*
           retention-days: 3
           overwrite: true
-        if: contains(env.logdir_path, 'kDrive-logdir')
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
 
       - name: Clean the log directory
         if  : contains(env.logdir_path, 'kDrive-logdir')
