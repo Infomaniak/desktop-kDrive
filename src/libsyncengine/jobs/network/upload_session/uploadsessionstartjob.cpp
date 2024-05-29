@@ -27,9 +27,9 @@ UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, int d
       _filename(filename),
       _totalSize(size),
       _remoteParentDirId(remoteParentDirId),
-      _totalChunks(totalChunks) {
+      _totalChunks(totalChunks),
+      _uploadType(uploadType) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
-    _uploadType = uploadType;
 }
 
 UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const NodeId &fileId, uint64_t size,
@@ -53,7 +53,6 @@ UploadSessionStartJob::~UploadSessionStartJob() {
             break;
         case UploadSessionType::LogUpload:
             break;
-        case UploadSessionType::Unknown:
         default:
             LOGW_FATAL(_logger, L"Unknown upload type");
             break;
@@ -86,7 +85,6 @@ void UploadSessionStartJob::setData(bool &canceled) {
             json.set("last_modified_at", timestamp.count());
             json.set("file_name", _filename);
             break;
-        case UploadSessionType::Unknown:
         default:
             LOGW_FATAL(_logger, L"Unknown upload type");
             break;

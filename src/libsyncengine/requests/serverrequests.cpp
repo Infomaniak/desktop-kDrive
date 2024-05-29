@@ -1055,7 +1055,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     }
 
     // Upload archive
-    std::shared_ptr<UploadSessionLog> uploadSessionLog = std::make_shared<UploadSessionLog>(archivePath);
+    auto uploadSessionLog = std::make_shared<UploadSessionLog>(archivePath);
 
     std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
         [&safeProgressCallback, &uploadSessionLog](UniqueId, int percent) {  // Progress callback

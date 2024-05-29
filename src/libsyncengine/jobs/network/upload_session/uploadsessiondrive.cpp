@@ -25,9 +25,9 @@ UploadSessionDrive::UploadSessionDrive(int driveDbId, std::shared_ptr<SyncDb> sy
                                        bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/)
     : _driveDbId(driveDbId),
       _syncDb(syncDb),
-      _remoteParentDirId(remoteParentDirId),
       _modtimeIn(modtime),
       _liteSyncActivated(liteSyncActivated),
+      _remoteParentDirId(remoteParentDirId),
       AbstractUploadSession(filepath, filename, nbParalleleThread) {
     _uploadSessionType = UploadSessionType::Standard;
 }

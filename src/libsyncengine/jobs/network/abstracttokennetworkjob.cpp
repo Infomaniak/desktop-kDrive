@@ -30,15 +30,15 @@
 
 #include <Poco/JSON/Parser.h>
 
-#define API_PREFIX_DRIVE "/drive"
-#define API_PREFIX_DESKTOP "/desktop"
-#define API_PREFIX_PROFILE "/profile"
+constexpr char API_PREFIX_DRIVE[] = "/drive";
+constexpr char API_PREFIX_DESKTOP[] = "/desktop";
+constexpr char API_PREFIX_PROFILE[] = "/profile";
 
-#define ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG "Failed to create AbstractTokenNetworkJob instance!"
-#define ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN "Invalid Token"
-#define ABSTRACTTOKENNETWORKJOB_EXEC_ERROR_MSG "Failed to execute AbstractTokenNetworkJob!"
+constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG[] = "Failed to create AbstractTokenNetworkJob instance!";
+constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN[] = "Invalid Token";
+constexpr char ABSTRACTTOKENNETWORKJOB_EXEC_ERROR_MSG[] = "Failed to execute AbstractTokenNetworkJob!";
 
-#define TOKEN_LIFETIME 7200  // 2 hours
+constexpr int TOKEN_LIFETIME = 7200;  // 2 hours
 
 namespace KDC {
 

@@ -34,19 +34,19 @@ class UploadSessionLog : public AbstractUploadSession {
         UploadSessionLog(const SyncPath &filepath, uint64_t nbParalleleThread = 1);
 
     protected:
-        bool runJobInit();
-        std::shared_ptr<UploadSessionStartJob> createStartJob();
+        bool runJobInit() override;
+        std::shared_ptr<UploadSessionStartJob> createStartJob() override;
         std::shared_ptr<UploadSessionChunkJob> createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
                                                               std::streamsize actualChunkSize);
-        std::shared_ptr<UploadSessionFinishJob> createFinishJob();
-        std::shared_ptr<UploadSessionCancelJob> createCancelJob();
+        std::shared_ptr<UploadSessionFinishJob> createFinishJob() override;
+        std::shared_ptr<UploadSessionCancelJob> createCancelJob() override;
 
 
-        bool prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob);
+        bool prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) override;
 
-        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken);
-        bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob);
-        bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob);
+        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) override;
+        bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
+        bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
 };
 
 }  // namespace KDC

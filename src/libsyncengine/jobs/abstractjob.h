@@ -39,9 +39,9 @@ class AbstractJob : public Poco::Runnable {
          * Callback to get reply
          * Job ID is passed as argument
          */
-        inline void setMainCallback(const std::function<void(uint64_t)> newCallback) { _mainCallback = newCallback; }
-        inline void setAdditionalCallback(const std::function<void(uint64_t)> newCallback) { _additionalCallback = newCallback; }
-        inline void setProgressPercentCallback(const std::function<void(UniqueId, int)> newCallback) {
+        inline void setMainCallback(const std::function<void(uint64_t)> &newCallback) { _mainCallback = newCallback; }
+        inline void setAdditionalCallback(const std::function<void(uint64_t)> &newCallback) { _additionalCallback = newCallback; }
+        inline void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
             _progressPercentCallback = newCallback;
         }
 
