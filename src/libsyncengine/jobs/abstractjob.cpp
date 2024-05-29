@@ -60,12 +60,12 @@ ExitCode AbstractJob::runSynchronously() {
 void AbstractJob::setProgress(int64_t newProgress) {
     _progress = newProgress;
     if (_progressPercentCallback) {
-        if (_expectedSize == -1) {
+        if (_expectedFinishProgress == -1) {
             LOG_WARN(
                 _logger,
-                L"Could not calculate progress percentage as expected size is not set (but _progressPercentCallback is set).");
+                L"Could not calculate progress percentage as _expectedFinishProgress is not set (but _progressPercentCallback is set).");
         } else {
-            _progressPercentCallback(_jobId, ((_progress*100) / _expectedSize));
+            _progressPercentCallback(_jobId, ((_progress*100) / _expectedFinishProgress));
         }
     }
 }

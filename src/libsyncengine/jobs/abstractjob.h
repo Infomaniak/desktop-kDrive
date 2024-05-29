@@ -48,7 +48,9 @@ class AbstractJob : public Poco::Runnable {
         inline ExitCode exitCode() const { return _exitCode; }
         inline ExitCause exitCause() const { return _exitCause; }
 
-        inline virtual void setExpectedSize(int64_t newExpectedSize) { _expectedSize = newExpectedSize; }
+        inline virtual void setExpectedFinishProgress(int64_t newExpectedFinishProgress) {
+            _expectedFinishProgress = newExpectedFinishProgress;
+        }
         inline virtual int64_t getProgress() { return _progress; }
         virtual void setProgress(int64_t newProgress);
         bool progressChanged();
@@ -125,7 +127,7 @@ class AbstractJob : public Poco::Runnable {
         UniqueId _jobId = 0;
         UniqueId _parentJobId = -1;  // ID of that parent job i.e. the job that must be completed before starting this one
 
-        int64_t _expectedSize = -1;  // Expected size of the job is -1 when it is not relevant for the current job
+        int64_t _expectedFinishProgress = -1;  // Expected size of the job is -1 when it is not relevant for the current job
         int64_t _progress = -1;      // Progress is -1 when it is not relevant for the current job
         int64_t _lastProgress = -1;  // Progress last time it was checked using progressChanged()
         SyncPath _affectedFilePath;  // The file path associated to _progress
