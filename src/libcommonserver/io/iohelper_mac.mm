@@ -28,16 +28,20 @@
 
 namespace KDC {
 
-IoError IoHelper::nsError2ioError(int nsErrorCode) noexcept {
+IoError nsError2ioError(NSError *nsError) noexcept {
     // See https://developer.apple.com/documentation/foundation/
-    switch (nsErrorCode) {
-        case NSFileNoSuchFileError:
-        case NSFileReadNoSuchFileError:
-            return IoErrorNoSuchFileOrDirectory;
-        case NSFileReadNoPermissionError:
-            return IoErrorAccessDenied;
-        default:
-            return IoErrorUnknown;
+    if ([nsError.domain isEqualToString:NSCocoaErrorDomain]) {
+        switch (nsError.code) {
+            case NSFileNoSuchFileError:
+            case NSFileReadNoSuchFileError:
+                return IoErrorNoSuchFileOrDirectory;
+            case NSFileReadNoPermissionError:
+                return IoErrorAccessDenied;
+            default:
+                return IoErrorUnknown;
+        }
+    } else {
+        return IoErrorUnknown;
     }
 }
 
@@ -46,13 +50,17 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
     ioError = IoErrorSuccess;
 
     NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
+    if (pathStr == nil) {
+        return false;
+    }
+
     NSURL *pathURL = [NSURL fileURLWithPath:pathStr];
 
     NSError *error = nil;
     NSNumber *isAliasNumber = nil;
     BOOL ret = [pathURL getResourceValue:&isAliasNumber forKey:NSURLIsAliasFileKey error:&error];
     if (!ret) {
-        ioError = nsError2ioError(error.code);
+        ioError = nsError2ioError(error);
         if (ioError != IoErrorUnknown) {
             return true;
         }
@@ -80,11 +88,12 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
     CFRelease(bookmarkRef);
     CFRelease(aliasUrl);
     if (!ret) {
-        CFIndex idx = CFErrorGetCode(error);
-        CFRelease(error);
-        ioError = nsError2ioError(idx);
-        if (ioError != IoErrorUnknown) {
-            return true;
+        if (error) {
+            ioError = nsError2ioError((NSError *)error);
+            CFRelease(error);
+            if (ioError != IoErrorUnknown) {
+                return true;
+            }
         }
         return false;
     }
@@ -106,9 +115,8 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     CFRelease(aliasUrl);
     if (bookmarkRef == nil) {
         if (error) {
-            CFIndex idx = CFErrorGetCode(error);
+            ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
-            ioError = nsError2ioError(idx);
             if (ioError != IoErrorUnknown) {
                 return true;
             }
@@ -128,17 +136,16 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     CFRelease(bookmarkRef);
     if (targetUrl == nil) {
         if (error) {
-            CFIndex idx = CFErrorGetCode(error);
-            ioError = nsError2ioError(idx);
+            ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
-            return ioError != IoErrorUnknown;
         }
-        return false;
+        return true;
     }
 
     CFStringRef targetPathStr = CFURLCopyFileSystemPath(targetUrl, kCFURLPOSIXPathStyle);
     CFRelease(targetUrl);
     targetPath = SyncPath(std::string([(NSString *)targetPathStr UTF8String]));
+    CFRelease(targetPathStr);
 
     return true;
 }
@@ -159,10 +166,13 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
         // The obj-c/swift doc: https://developer.apple.com/documentation/corefoundation/1542923-cfurlcreatebookmarkdata
         NULL, targetUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, CFArrayRef{}, nil, &error);
 
-    if (error) {
-        CFIndex idx = CFErrorGetCode(error);
-        CFRelease(error);
-        ioError = nsError2ioError(idx);
+    if (bookmarkRef == nil) {
+        if (error) {
+            ioError = nsError2ioError((NSError *)error);
+            CFRelease(error);
+        }
+        CFRelease(aliasUrl);
+        CFRelease(targetUrl);
         return false;
     }
 
@@ -175,11 +185,9 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
 
     if (!result) {
         if (error) {
-            CFIndex idx = CFErrorGetCode(error);
+            ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
-            ioError = nsError2ioError(idx);
         }
-
         return false;
     }
 
@@ -188,6 +196,10 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
 
 void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
     NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
+    if (pathStr == nil) {
+        return;
+    }
+
     NSURL *pathURL = [NSURL fileURLWithPath:pathStr];
     NSNumber *value = [NSNumber numberWithBool:hidden];
 
@@ -196,6 +208,9 @@ void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
 
 bool isLocked(const SyncPath &path) {
     NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
+    if (pathStr == nil) {
+        return false;
+    }
 
     NSDictionary *attributes = [[NSFileManager defaultManager] attributesOfItemAtPath:pathStr error:nil];
     BOOL isLocked = [[attributes objectForKey:NSFileImmutable] boolValue];

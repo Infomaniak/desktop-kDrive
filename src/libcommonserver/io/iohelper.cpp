@@ -155,6 +155,11 @@ bool IoHelper::_isExpectedError(IoError ioError) noexcept {
   \return true if no error occurred or if the error is expected, false otherwise.
 */
 bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
+    if (itemType.targetPath.empty()) {
+        itemType.targetType = NodeTypeUnknown;
+        return true;
+    }
+
     std::error_code ec;
     const bool isDir = _isDirectory(itemType.targetPath, ec);
     IoError ioError = stdError2ioError(ec);
