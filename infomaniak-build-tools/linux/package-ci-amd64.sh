@@ -67,6 +67,6 @@ else
 	source "$BASE_DIR/infomaniak-build-tools/upload_version.sh"
 
 	for FILE in ${FILES[@]}; do
-		upload_file FILE "linux-amd"
+		upload_file $FILE "linux-amd"
 	done
 fi
