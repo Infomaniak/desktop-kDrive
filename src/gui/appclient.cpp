@@ -486,7 +486,7 @@ void AppClient::onServerDisconnected() {
         qCInfo(lcAppClient) << "Server expected disconnection.";
     }
 #else
-    QString msg = QStringLiteral("The server got disconnected. As the app is in debug mode, it will not be restarted.");
+    auto msg = QStringLiteral("The server got disconnected. As the app is in debug mode, it will not be restarted.");
     displayHelpText(msg);
     QTimer::singleShot(0, qApp, SLOT(quit()));
     qCCritical(lcAppClient) << msg;
