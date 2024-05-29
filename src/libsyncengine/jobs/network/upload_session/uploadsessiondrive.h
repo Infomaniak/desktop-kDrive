@@ -34,7 +34,7 @@ class UploadSessionDrive : public AbstractUploadSession {
         UploadSessionDrive(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
                            const NodeId &remoteParentDirId, SyncTime modtime, bool liteSyncActivated,
                            uint64_t nbParalleleThread = 1);
-        ~UploadSessionDrive();
+        ~UploadSessionDrive() override;
 
         inline const NodeId &nodeId() const { return _nodeId; }
         inline SyncTime modtime() const { return _modtimeOut; }

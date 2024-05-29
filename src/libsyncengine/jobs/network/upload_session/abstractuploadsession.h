@@ -72,8 +72,8 @@ class AbstractUploadSession : public AbstractJob {
             StateFinished
         };
 
-        virtual bool canRun() override;
-        virtual void runJob() override;
+        bool canRun() override;
+        void runJob() override;
 
         bool initChunks();
         bool startSession();

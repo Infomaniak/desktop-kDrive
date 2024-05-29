@@ -23,12 +23,12 @@ namespace KDC {
 UploadSessionDrive::UploadSessionDrive(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
                                        const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
                                        bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/)
-    : _driveDbId(driveDbId),
-      _syncDb(syncDb),
-      _modtimeIn(modtime),
-      _liteSyncActivated(liteSyncActivated),
+    : AbstractUploadSession(filepath, filename, nbParalleleThread),
       _remoteParentDirId(remoteParentDirId),
-      AbstractUploadSession(filepath, filename, nbParalleleThread) {
+      _liteSyncActivated(liteSyncActivated),
+      _modtimeIn(modtime),
+      _syncDb(syncDb),
+      _driveDbId(driveDbId) {
     _uploadSessionType = UploadSessionType::Standard;
 }
 
