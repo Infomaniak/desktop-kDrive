@@ -146,7 +146,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     }
 
     // Generate user description file
-    exitCode = generateUserDescriptionFile(tempLogArchiveDir, exitCause);
+    exitCode = generateUserDescriptionFile(tempLogArchiveDir / "user_description.txt", exitCause);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to generate user description file: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
@@ -401,7 +401,7 @@ ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath &outputPath, Ex
     IoError ioError = IoErrorUnknown;
     std::ofstream file(outputPath.string());
     if (!file.is_open()) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in creating file: " << Utility::formatIoError(outputPath, ioError).c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Error in creating user description file: " << Utility::formatIoError(outputPath, ioError).c_str());
         ioError = IoErrorUnknown;
         return ExitCodeOk;
     }
