@@ -37,7 +37,6 @@ namespace KDC {
 AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
                                              uint64_t nbParalleleThread /*= 1*/)
     : _logger(Log::instance()->getLogger()), _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
-        
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(_filePath, ioError).c_str());
@@ -113,7 +112,7 @@ void AbstractUploadSession::runJob() {
 }
 
 void AbstractUploadSession::uploadChunkCallback(UniqueId jobId) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     if (_ongoingChunkJobs.find(jobId) != _ongoingChunkJobs.end()) {
         auto jobInfo = _ongoingChunkJobs.extract(jobId);
         if (jobInfo.mapped() && (jobInfo.mapped()->hasHttpError() || jobInfo.mapped()->exitCode() != ExitCodeOk)) {
@@ -282,7 +281,7 @@ bool AbstractUploadSession::sendChunks() {
             break;
         }
 
-        std::unique_ptr<char[]> memblock(new char[_chunkSize]);
+        auto memblock = std::make_unique<char[]>(_chunkSize);
         file.read(memblock.get(), (std::streamsize)_chunkSize);
         if (file.bad() && !file.fail()) {
             // Read/writing error and not logical error
@@ -326,16 +325,15 @@ bool AbstractUploadSession::sendChunks() {
         }
 
         if (_isAsynchrounous) {
-            std::function<void(UniqueId)> callback =
-                std::bind(&AbstractUploadSession::uploadChunkCallback, this, std::placeholders::_1);
-
-            _mutex.lock();
-            _threadCounter++;
-            JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
-            _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
-            _mutex.unlock();
-            LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
-                                         << _threadCounter << " jobs in queue");
+            std::function<void(UniqueId)> callback = [this](UniqueId jobId) { uploadChunkCallback(jobId); };
+            {
+                std::scoped_lock lock(_mutex);
+                _threadCounter++;
+                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
+                _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
+                LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
+                                             << _threadCounter << " jobs in queue");
+            }
 
             waitForJobsToComplete(false);
         } else {
@@ -447,14 +445,15 @@ bool AbstractUploadSession::cancelSession() {
     }
 
     // Cancel all ongoing chunk jobs
-    _mutex.lock();
-    std::unordered_map<UniqueId, std::shared_ptr<UploadSessionChunkJob>>::iterator it = _ongoingChunkJobs.begin();
-    for (; it != _ongoingChunkJobs.end(); it++) {
-        if (it->second->sessionToken() == _sessionToken) {
-            it->second->abort();
+    {
+        std::scoped_lock lock(_mutex);
+        auto it = _ongoingChunkJobs.begin();
+        for (; it != _ongoingChunkJobs.end(); it++) {
+            if (it->second->sessionToken() == _sessionToken) {
+                it->second->abort();
+            }
         }
     }
-    _mutex.unlock();
 
     try {
         auto cancelJob = createCancelJob();
