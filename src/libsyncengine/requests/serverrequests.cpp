@@ -1103,13 +1103,12 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
 ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
-    AppStateValue appStateValue;
+    AppStateValue appStateValue = LogUploadState::None;
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::getAppState");
         return ExitCodeDbError;
     }
     LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
-
 
     if (logUploadState == LogUploadState::CancelRequested) {
         return ExitCodeOk;
