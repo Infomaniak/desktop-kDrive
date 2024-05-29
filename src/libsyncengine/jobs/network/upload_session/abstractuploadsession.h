@@ -36,6 +36,7 @@ class UploadSessionChunkJob;
 class AbstractUploadSession : public AbstractJob {
     public:
         AbstractUploadSession(const SyncPath &filepath, const SyncName &filename, uint64_t nbParalleleThread = 1);
+        inline virtual ~AbstractUploadSession() = default;
         void uploadChunkCallback(UniqueId jobId);
         void abort() override;
         UploadSessionType _uploadSessionType = UploadSessionType::Unknown;
