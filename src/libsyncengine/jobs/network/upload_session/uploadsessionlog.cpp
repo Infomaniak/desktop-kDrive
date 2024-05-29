@@ -59,7 +59,7 @@ bool UploadSessionLog::prepareChunkJob(const std::shared_ptr<UploadSessionChunkJ
 bool UploadSessionLog::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
     AppStateValue appStateValue = ""; // 
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
-        LOG_ERROR(getLogger(), "Error in ParmsDb::selectAppState");
+        LOG_WARN(getLogger(), "Error in ParmsDb::selectAppState");
     }
     std::string logUploadToken = std::get<std::string>(appStateValue);
     if (!logUploadToken.empty()) {

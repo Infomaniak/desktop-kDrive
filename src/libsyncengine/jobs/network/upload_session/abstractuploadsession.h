@@ -62,8 +62,6 @@ class AbstractUploadSession : public AbstractJob {
         inline SyncName getFileName() const { return _filename; }
         inline std::string getSessionToken() const { return _sessionToken; }
 
-      
-
     private:
         enum UploadSessionState {
             StateInitChunk,

@@ -69,6 +69,7 @@ void UploadSessionStartJob::setData(bool &canceled) {
     Poco::JSON::Object json;
     auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch());
+    
     switch (_uploadType) {
         case UploadSessionType::Standard:
             if (_fileId.empty()) {
@@ -80,8 +81,6 @@ void UploadSessionStartJob::setData(bool &canceled) {
             }
             break;
         case UploadSessionType::LogUpload:
-
-           
             json.set("last_modified_at", timestamp.count());
             json.set("file_name", _filename);
             break;

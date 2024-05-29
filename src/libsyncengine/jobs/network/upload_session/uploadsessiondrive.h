@@ -64,10 +64,9 @@ class UploadSessionDrive : public AbstractUploadSession {
         bool _liteSyncActivated = false;
 
         int64_t _uploadSessionTokenDbId = 0;
-        std::string _remoteParentDirId;
+        NodeId _remoteParentDirId;
 
         NodeId _nodeId;
         SyncTime _modtimeOut = 0;
 };
-
 }  // namespace KDC
