@@ -295,10 +295,8 @@ std::string AbstractTokenNetworkJob::getUrl() {
     switch (_apiType) {
         case ApiDrive:
         case ApiDriveByUser:
+        case ApiDesktop:
             apiUrl = KDRIVE_API_V2_URL;
-            break;
-        case ApiDesktop: // TODO: Use KDRIVE_API_V2_URL when Desktop API is in production
-            apiUrl = DESKTOP_API_V2_URL;
             break;
         case ApiNotifyDrive:
             apiUrl = NOTIFY_KDRIVE_V2_URL;
