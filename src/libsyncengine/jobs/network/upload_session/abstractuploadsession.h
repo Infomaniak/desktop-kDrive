@@ -23,7 +23,7 @@
 #include "db/syncdb.h"
 #include "uploadsessionchunkjob.h"
 #include "uploadsessionfinishjob.h"
-#include "uploadsessionstartJob.h"
+#include "uploadsessionstartjob.h"
 #include "uploadsessioncanceljob.h"
 #include <log4cplus/logger.h>
 
