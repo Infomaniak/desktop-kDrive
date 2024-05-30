@@ -354,6 +354,7 @@ Set-Content -Path "$buildPath/NSIS.template.nsi" -Value $scriptContent
 #################################################################################################
 
 $binaries = @(
+"${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
 "kDrive.exe",
 "kDrive_client.exe"
 )
@@ -402,12 +403,19 @@ if (Test-Path -Path $iconPath)
 # Move each executable to the bin folder and sign them
 foreach ($file in $binaries)
 {
-	Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
-	& "$QTDIR\bin\windeployqt.exe" "$archivePath\$file"
+	if (Test-Path -Path $buildPath/bin/$file) {
+		Copy-Item -Path "$buildPath/bin/$file" -Destination "$archivePath"
+		& "$QTDIR\bin\windeployqt.exe" "$archivePath\$file"
+	}
+	else {
+		Copy-Item -Path $file -Destination $archivePath
+	}
 
-	& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.comodoca.com /v $archivePath/$file
+    $filename = Split-Path -Leaf $file
+
+	& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.comodoca.com /v $archivePath/$filename
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-	& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.comodoca.com?td=sha256 /td sha256 /as /v $archivePath/$file
+	& signtool sign /sha1 $thumbprint /fd sha256 /tr http://timestamp.comodoca.com?td=sha256 /td sha256 /as /v $archivePath/$filename
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
