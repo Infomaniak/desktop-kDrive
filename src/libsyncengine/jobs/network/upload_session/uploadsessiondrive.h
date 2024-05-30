@@ -18,14 +18,11 @@
 
 #pragma once
 
-#include "jobs/abstractjob.h"
 #include "abstractuploadsession.h"
 #include "utility/types.h"
 #include "db/syncdb.h"
 
 #include <log4cplus/logger.h>
-
-#include <unordered_map>
 
 namespace KDC {
 
