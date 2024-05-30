@@ -25,6 +25,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 
 def version_regex(arg_value, pattern=re.compile("^(\d+\.)?(\d+\.)?(\*|\d+)")):
 	if not pattern.match(arg_value):
@@ -54,17 +55,14 @@ parser.add_argument('-d', '--date', metavar="", type=int, help='The planned rele
 args = parser.parse_args()
 
 if not os.path.isfile(f"kDrive-template.html"):
-	print("Unable to find kDrive-template.html.")
-	quit();
+	sys.exit("Unable to find kDrive-template.html.");
 
 fullName = f"kDrive-{args.version}.{args.date}"
 dirPath = f"../release_notes/{fullName}"
 
-deepl_key = os.getenv("DEEPL_AUTH_KEY")
+deepl_key = os.getenv("DEEPL_AUDTH_KEY")
 if not deepl_key:
-	print(f"error: The DeepL API key is not set in env")
-	print(parser.description)
-	exit(1);
+	sys.exit("error: The DeepL API key is not set in env");
 translator = deepl.Translator()
 
 target_lang = [
