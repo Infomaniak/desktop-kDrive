@@ -993,10 +993,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;
     std::function<bool(LogUploadState, int)> safeProgressCallback =
-        progressCallback != nullptr
-            ? std::function<bool(LogUploadState, int)>(
-                  [progressCallback](LogUploadState status, int percent) { return progressCallback(status, percent); })
-            : std::function<bool(LogUploadState, int)>([](LogUploadState, int) { return true; });
+        progressCallback != nullptr ? progressCallback
+                                    : std::function<bool(LogUploadState, int)>([](LogUploadState, int) { return true; });
 
     safeProgressCallback(LogUploadState::Archiving, 0);
 
@@ -1032,7 +1030,6 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     std::function<bool(int)> progressCallbackArchivingWrapper = [&safeProgressCallback](int percent) {
         return safeProgressCallback(LogUploadState::Archiving, percent);
     };
-
 
     SyncPath archivePath;
     exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, logUploadTempFolder, progressCallbackArchivingWrapper,

@@ -35,7 +35,7 @@ class LogArchiver {
          * \param includeArchivedLogs If true, the archived logs from previous sessions will be included.
          * \param outputDir The path of the directory where the archive will be generated.
          * \param progressCallback The callback to be called with the progress percentage, the callback retruns false if the user
-         *      cancels the operation (else true). 
+         *      cancels the operation (else true).
          * \param archivePath The path to the generated archive.
          * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to
          *      ExitCauseUnknown;
@@ -57,9 +57,9 @@ class LogArchiver {
          * The compressed files will have the same name as the original files with the .gz extension.
          * \param directoryToCompress The directory containing the log files to compress.
          * \param progressCallback The callback to be called with the progress percentage, the callback retruns false if the user
-         *      cancels the operation (else true). 
+         *      cancels the operation (else true).
          * \param exitCause The exit cause to be filled in case of error. If no error occurred,
-         *      it will be set to ExitCauseUnknown; 
+         *      it will be set to ExitCauseUnknown;
          * \return The exit code of the operation.
          */
         static ExitCode compressLogFiles(const SyncPath &directoryToCompress, std::function<bool(int)> progressCallback,
@@ -69,10 +69,9 @@ class LogArchiver {
          * The file will contain: Current OS, current architecture, current version, current user(s), current drive(s).
          * \param outputPath The path where the file will be generated.
          * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to
-         *      ExitCauseUnknown; 
+         *      ExitCauseUnknown;
          * \return The exit code of the operation.
          */
         static ExitCode generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);
 };
-
 }  // namespace KDC

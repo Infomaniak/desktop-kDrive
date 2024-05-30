@@ -265,7 +265,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
         res = false;
     }
 
-    if (!res){
+    if (!res) {
         sentry_value_t event = sentry_value_new_event();
         std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
         sentry_value_t exc = sentry_value_new_exception("CommonUtility::stringToAppStateValue", message.c_str());
@@ -292,8 +292,11 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     return true;
 }
 
-bool CommonUtility::compressFile(const QString &originalName, const QString &targetName) {
+bool CommonUtility::compressFile(const QString &originalName, const QString &targetName,
+                                 std::function<bool(int)> progressCallback) {
 #ifdef ZLIB_FOUND
+    std::function<bool(int)> safeProgressCallback = progressCallback != nullptr ? progressCallback : [](int) { return true; };
+
     QFile original(originalName);
     if (!original.open(QIODevice::ReadOnly)) return false;
 
@@ -303,12 +306,18 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
     }
 
     original.seek(0);
+    qint64 compressedSize = 0;
     while (!original.atEnd()) {
         auto data = original.read(1024 * 1024);
         auto written = gzwrite(compressed, data.data(), data.size());
         if (written != data.size()) {
             gzclose(compressed);
             return false;
+        }
+        compressedSize += data.size();
+        if (!safeProgressCallback(static_cast<int>((100 * compressedSize) / original.size()))) {
+            gzclose(compressed);
+            return true; // User cancelled
         }
     }
     gzclose(compressed);
