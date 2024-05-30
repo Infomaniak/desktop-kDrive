@@ -131,7 +131,7 @@ void TestIo::testCreateAlias() {
 
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT_EQUAL(IoErrorInvalidFileName, aliasError);
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, aliasError);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 
@@ -157,7 +157,7 @@ void TestIo::testCreateAlias() {
 
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT_EQUAL(IoErrorInvalidFileName, aliasError);
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, aliasError);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 

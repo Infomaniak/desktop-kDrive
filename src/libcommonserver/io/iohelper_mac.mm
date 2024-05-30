@@ -34,12 +34,12 @@ IoError nsError2ioError(NSError *nsError) noexcept {
     if ([nsError.domain isEqualToString:NSCocoaErrorDomain]) {
         switch (nsError.code) {
             case NSFileNoSuchFileError:
-            case NSFileReadInvalidFileNameError:
-                return IoErrorInvalidFileName;
             case NSFileReadNoSuchFileError:
                 return IoErrorNoSuchFileOrDirectory;
             case NSFileReadNoPermissionError:
                 return IoErrorAccessDenied;
+            case NSFileReadInvalidFileNameError:
+                return IoErrorInvalidFileName;
             default:
                 return IoErrorUnknown;
         }
