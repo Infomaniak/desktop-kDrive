@@ -18,6 +18,7 @@
 
 #import "libcommon/utility/types.h"
 #import "libcommonserver/io/iohelper.h"
+#import "libcommonserver/utility/utility.h"
 
 #import "config.h"
 
@@ -51,6 +52,7 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
 
     NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
     if (pathStr == nil) {
+        LOGW_WARN(logger(), L"Bad parameters");
         return false;
     }
 
@@ -60,13 +62,20 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
     NSNumber *isAliasNumber = nil;
     BOOL ret = [pathURL getResourceValue:&isAliasNumber forKey:NSURLIsAliasFileKey error:&error];
     if (!ret) {
-        ioError = nsError2ioError(error);
-        if (ioError != IoErrorUnknown) {
-            return true;
+        if (error) {
+            ioError = nsError2ioError(error);
+            if (ioError != IoErrorUnknown) {
+                return true;
+            } else {
+                LOGW_WARN(logger(), L"Error in getResourceValue: " << Utility::formatIoError(path, ioError).c_str());
+                return false;
+            }
         }
+        LOGW_WARN(logger(), L"Error in getResourceValue: " << Utility::formatSyncPath(path).c_str());
         return false;
     } else if (isAliasNumber == nil) {
         // Property not available (should not happen)
+        LOGW_WARN(logger(), L"No NSURLIsAliasFileKey: " << Utility::formatSyncPath(path).c_str());
         return false;
     }
 
@@ -93,8 +102,13 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
             CFRelease(error);
             if (ioError != IoErrorUnknown) {
                 return true;
+            } else {
+                LOGW_WARN(logger(),
+                          L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatIoError(aliasPath, ioError).c_str());
+                return false;
             }
         }
+        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath).c_str());
         return false;
     }
 
@@ -119,8 +133,13 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
             CFRelease(error);
             if (ioError != IoErrorUnknown) {
                 return true;
+            } else {
+                LOGW_WARN(logger(),
+                          L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatIoError(aliasPath, ioError).c_str());
+                return false;
             }
         }
+        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkDataFromFile: " << Utility::formatSyncPath(aliasPath).c_str());
         return false;
     }
 
@@ -173,6 +192,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
         }
         CFRelease(aliasUrl);
         CFRelease(targetUrl);
+        LOGW_WARN(logger(), L"Error in CFURLCreateBookmarkData: " << Utility::formatSyncPath(targetPath).c_str());
         return false;
     }
 
@@ -188,6 +208,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
             ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
         }
+        LOGW_WARN(logger(), L"Error in CFURLWriteBookmarkDataToFile: " << Utility::formatSyncPath(aliasPath).c_str());
         return false;
     }
 
