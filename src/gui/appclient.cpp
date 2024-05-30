@@ -483,10 +483,10 @@ void AppClient::onServerDisconnected() {
         startServerAndDie(true);
         qCCritical(lcAppClient) << "The server was unexpectedly disconnected. The application will be restarted.";
     } else {
-        qCInfo(lcAppClient) << "Server expected disconnection.";
+        qCInfo(lcAppClient) << "Server disconnected while the client is closing: this is expected.";
     }
 #else
-    auto msg = QStringLiteral("The server got disconnected. As the app is in debug mode, it will not be restarted.");
+    const auto msg = QStringLiteral("The server got disconnected. As the app is in debug mode, it will not be restarted.");
     displayHelpText(msg);
     QTimer::singleShot(0, qApp, SLOT(quit()));
     qCCritical(lcAppClient) << msg;
