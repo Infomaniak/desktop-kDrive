@@ -32,13 +32,12 @@ def version_regex(arg_value, pattern=re.compile("^(\d+\.)?(\d+\.)?(\*|\d+)")):
 	return arg_value
 
 parser = argparse.ArgumentParser(
-	description='''
-Translater script for the desktop kDrive release notes.
+	description="""Translater script for the desktop kDrive release notes.
 The translation is done using DeepL API from English to French, German, Italian and Spanish.
 Please make sure your DeepL API key is exported as DEEPL_AUTH_KEY before running the script.
 
 A default english version of the Release Notes with all the systems combined must be created first.
-This script requires a file named kDrive-template.html to exist in the current working directory.''',
+This script requires a file named kDrive-template.html to exist in the current working directory.""",
 	epilog="""
 To add more languages in the future, edit the script to append the new language to the list.
 	All the languages in the list must be in the DeepL API target language list.
@@ -50,8 +49,8 @@ To add more systems, edit the script to append the new system to the list.
 	""",
 	formatter_class=argparse.RawTextHelpFormatter)
 
-parser.add_argument('-v', '--version', metavar="", type=version_regex, help='The release version', required=True)
-parser.add_argument('-d', '--date', metavar="", type=int, default=datetime.date.today().strftime('%Y%m%d'))
+parser.add_argument('-v', '--version', metavar="", type=version_regex, help='The release version (eg: 3.6.0)', required=True)
+parser.add_argument('-d', '--date', metavar="", type=int, help='The planned release date (defaults to today)', default=datetime.date.today().strftime('%Y%m%d'))
 args = parser.parse_args()
 
 if not os.path.isfile(f"kDrive-template.html"):
