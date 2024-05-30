@@ -61,7 +61,12 @@ if not os.path.isfile(f"kDrive-template.html"):
 fullName = f"kDrive-{args.version}.{args.date}"
 dirPath = f"../release_notes/{fullName}"
 
-translator = deepl.Translator(os.getenv("DEEPL_AUTH_KEY"))
+deepl_key = os.getenv("DEEPL_AUTH_KEY")
+if not deepl_key:
+	print(f"error: The DeepL API key is not set in env")
+	print(parser.description)
+	exit(1);
+translator = deepl.Translator()
 
 target_lang = [
 	'FR',
