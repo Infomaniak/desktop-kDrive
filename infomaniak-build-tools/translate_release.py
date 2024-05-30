@@ -63,7 +63,7 @@ dirPath = f"../release_notes/{fullName}"
 deepl_key = os.getenv("DEEPL_AUDTH_KEY")
 if not deepl_key:
 	sys.exit("error: The DeepL API key is not set in env");
-translator = deepl.Translator()
+translator = deepl.Translator(deepl_key)
 
 target_lang = [
 	'FR',
