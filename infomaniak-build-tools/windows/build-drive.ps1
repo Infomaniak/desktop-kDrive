@@ -359,29 +359,33 @@ $binaries = @(
 )
 
 $dependencies = @(
-"${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1.dll",
-"${env:ProgramFiles(x86)}/libzip/bin/zip.dll",
-"${env:ProgramFiles(x86)}/log4cplus/bin/log4cplusU.dll",
-"${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64.dll",
-"${env:ProgramFiles}/OpenSSL/bin/libssl-3-x64.dll",
-"${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto.dll",
-"${env:ProgramFiles(x86)}/Poco/bin/PocoFoundation.dll",
-"${env:ProgramFiles(x86)}/Poco/bin/PocoJSON.dll",
-"${env:ProgramFiles(x86)}/Poco/bin/PocoNet.dll",
-"${env:ProgramFiles(x86)}/Poco/bin/PocoNetSSL.dll",
-"${env:ProgramFiles(x86)}/Poco/bin/PocoUtil.dll",
-"${env:ProgramFiles(x86)}/Poco/bin/PocoXML.dll",
-"${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry.dll",
-"${env:ProgramFiles(x86)}/Sentry-Native/bin/crashpad_handler.exe",
-"${env:ProgramFiles(x86)}/xxHash/bin/xxhash.dll",
-"$vfsDir/Vfs.dll",
-"$buildPath/bin/kDrivesyncengine_vfs_win.dll"
+"${env:ProgramFiles(x86)}/zlib-1.2.11/bin/zlib1",
+"${env:ProgramFiles(x86)}/libzip/bin/zip",
+"${env:ProgramFiles(x86)}/log4cplus/bin/log4cplusU",
+"${env:ProgramFiles}/OpenSSL/bin/libcrypto-3-x64",
+"${env:ProgramFiles}/OpenSSL/bin/libssl-3-x64",
+"${env:ProgramFiles(x86)}/Poco/bin/PocoCrypto",
+"${env:ProgramFiles(x86)}/Poco/bin/PocoFoundation",
+"${env:ProgramFiles(x86)}/Poco/bin/PocoJSON",
+"${env:ProgramFiles(x86)}/Poco/bin/PocoNet",
+"${env:ProgramFiles(x86)}/Poco/bin/PocoNetSSL",
+"${env:ProgramFiles(x86)}/Poco/bin/PocoUtil",
+"${env:ProgramFiles(x86)}/Poco/bin/PocoXML",
+"${env:ProgramFiles(x86)}/Sentry-Native/bin/sentry",
+"${env:ProgramFiles(x86)}/xxHash/bin/xxhash",
+"$vfsDir/Vfs",
+"$buildPath/bin/kDrivesyncengine_vfs_win"
 )
 
 Write-Host "Copying dependencies to the folder $archivePath"
 foreach ($file in $dependencies)
 {
-	Copy-Item -Path $file -Destination "$archivePath"
+	if (($buildType -eq "Debug") -and (Test-Path -Path $file"d.dll")) {
+		Copy-Item -Path $file"d.dll" -Destination "$archivePath"
+	}
+	else {
+		Copy-Item -Path $file".dll" -Destination "$archivePath"
+	}
 }
 
 if ($ci)
