@@ -58,7 +58,8 @@ VERSION=$(grep "KDRIVE_VERSION_FULL" "$BASE_DIR/build-linux/build/version.h" | a
 APP_NAME=kDrive-${VERSION}-amd64.AppImage
 
 mv kDrive*.AppImage ../$APP_NAME
-cd $BASE_DIR
+
+cd $BASE_DIR/build-linux
 
 if [ -z ${KDRIVE_TOKEN+x} ]; then
 	echo "No kDrive token found, AppImage will not be uploaded."
