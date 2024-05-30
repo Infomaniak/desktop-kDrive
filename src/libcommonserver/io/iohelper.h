@@ -21,6 +21,7 @@
 #include "common/utility.h"
 #include "libcommon/utility/types.h"
 #include "libcommonserver/log/log.h"
+
 #ifdef _WIN32
 #include <AccCtrl.h>
 #endif
@@ -69,9 +70,6 @@ struct IoHelper {
         static std::string ioError2StdString(IoError ioError) noexcept;
 
         static bool fileExists(const std::error_code &ec) noexcept;
-#ifdef __APPLE__
-        static IoError nsError2ioError(int nsErrorCode) noexcept;
-#endif
 
         //! Get the item type of the item indicated by `path`.
         /*!
