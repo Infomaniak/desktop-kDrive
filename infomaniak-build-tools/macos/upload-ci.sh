@@ -33,6 +33,6 @@ else
 	source "../infomaniak-build-tools/upload_version.sh"
 
 	for FILE in ${FILES[@]}; do
-		upload_file FILE "macos"
+		upload_file $FILE "macos"
 	done
 fi
