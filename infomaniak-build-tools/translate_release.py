@@ -88,7 +88,7 @@ def split_os(lang):
 		with open(f"{fullName}{os_ext}{lang_ext}.html", "w") as f:
 			for line in lines:
 				if any(os_note in line for os_note in os_list):
-					if (os_name in line):
+					if (f"<li>{os_name}" in line):
 						f.write(f"\t\t<li>{line[line.find('-') + 2:]}")
 				else:
 					f.write(line)
