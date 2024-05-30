@@ -30,9 +30,9 @@ if [ -z ${KDRIVE_TOKEN+x} ]; then
 else
 
 	FILES=($APP_NAME "kDrive-debug-macos.tar")
-	source "$(dirname "$0")/../upload_version.sh"
+	source "../infomaniak-build-tools/upload_version.sh"
 
 	for FILE in ${FILES[@]}; do
-		upload_file FILE "macos"
+		upload_file $FILE "macos"
 	done
 fi
