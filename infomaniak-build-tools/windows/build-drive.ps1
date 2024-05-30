@@ -454,7 +454,7 @@ else
 #################################################################################################
 
 Copy-Item -Path "$buildPath\bin\kDrive*.pdb" -Destination $contentPath
-Remove-Item $archivePath\$archiveName
+Remove-Item $archiveDataPath
 
 if ($upload)
 {
