@@ -411,7 +411,7 @@ foreach ($file in $binaries)
 		Copy-Item -Path $file -Destination $archivePath
 	}
 
-    $filename = Split-Path -Leaf $file
+	$filename = Split-Path -Leaf $file
 
 	& signtool sign /sha1 $thumbprint /fd SHA1 /t http://timestamp.comodoca.com /v $archivePath/$filename
 	if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
