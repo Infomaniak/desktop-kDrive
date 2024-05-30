@@ -9,6 +9,7 @@ set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 set(testsyncengine_SRCS
     ../test.cpp
     test.cpp
+    ../test_utility/temporarydirectory.cpp
     # Database
     db/testsyncdb.h db/testsyncdb.cpp
     olddb/testoldsyncdb.h olddb/testoldsyncdb.cpp
