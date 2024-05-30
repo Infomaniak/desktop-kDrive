@@ -155,6 +155,11 @@ bool IoHelper::_isExpectedError(IoError ioError) noexcept {
   \return true if no error occurred or if the error is expected, false otherwise.
 */
 bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
+    if (itemType.targetPath.empty()) {
+        itemType.targetType = NodeTypeUnknown;
+        return true;
+    }
+
     std::error_code ec;
     const bool isDir = _isDirectory(itemType.targetPath, ec);
     IoError ioError = stdError2ioError(ec);
@@ -163,8 +168,8 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
         const bool expected = _isExpectedError(ioError);
         if (!expected) {
             itemType.ioError = ioError;
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to check if the item is a directory: "
-                                                        << Utility::formatStdError(itemType.targetPath, ec).c_str());
+            LOGW_WARN(logger(), L"Failed to check if the item is a directory: "
+                                    << Utility::formatStdError(itemType.targetPath, ec).c_str());
         }
         return expected;
     }
@@ -323,7 +328,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is an alias.
     bool isAlias = false;
     if (!_checkIfAlias(path, isAlias, itemType.ioError)) {
-        LOGW_WARN(Log::instance()->getLogger(),
+        LOGW_WARN(logger(),
                   L"Failed to check if the item is an alias: " << Utility::formatIoError(path, itemType.ioError).c_str());
         return false;
     }
@@ -336,8 +341,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         // !!! isAlias is true for a symlink and for a Finder alias !!!
         IoError aliasReadError = IoErrorSuccess;
         if (!_readAlias(path, itemType.targetPath, aliasReadError)) {
-            LOGW_WARN(Log::instance()->getLogger(), L"Failed to read an item first identified as an alias: "
-                                                        << Utility::formatIoError(path, itemType.ioError).c_str());
+            LOGW_WARN(logger(), L"Failed to read an item first identified as an alias: "
+                                    << Utility::formatIoError(path, itemType.ioError).c_str());
             itemType.ioError = aliasReadError;
 
             return false;
@@ -459,7 +464,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     IoHelper::DirectoryIterator dir;
     IoHelper::getDirectoryIterator(path, true, ioError, dir);
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        LOG_WARN(logger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
         return _isExpectedError(ioError);
     }
 
@@ -469,8 +474,8 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) {
             if (maxDepth == 0) {
-                LOG_WARN(Log::instance()->getLogger(), "Max depth reached in getDirectorySize, skipping deeper directories: "
-                                                           << Utility::formatSyncPath(path).c_str());
+                LOG_WARN(logger(), "Max depth reached in getDirectorySize, skipping deeper directories: "
+                                       << Utility::formatSyncPath(path).c_str());
                 ioError = IoErrorMaxDepthExceeded;
                 return _isExpectedError(ioError);
             }
@@ -486,14 +491,14 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         if (!ec) {
             size += entrySize;
         } else {
-            LOG_WARN(Log::instance()->getLogger(), "Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
+            LOG_WARN(logger(), "Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
             ioError = stdError2ioError(ec);
             return _isExpectedError(ioError);
         }
     }
 
     if (!endOfDirectory) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        LOG_WARN(logger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
         return _isExpectedError(ioError);
     }
 
@@ -645,8 +650,7 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
     ioError = itemType.ioError;
 
     if (!success) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, ioError).c_str());
         return false;
     }
 
@@ -699,19 +703,19 @@ bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, Directo
 
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path).c_str());
+        LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path).c_str());
         ioError = IoErrorInvalidArgument;
         return false;
     }
 
     std::error_code ec;
     if (isFolder) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Create directory symlink: target " << Path2WStr(targetPath).c_str() << L", "
-                                                                                      << Utility::formatSyncPath(path).c_str());
+        LOGW_DEBUG(logger(), L"Create directory symlink: target " << Path2WStr(targetPath).c_str() << L", "
+                                                                  << Utility::formatSyncPath(path).c_str());
         std::filesystem::create_directory_symlink(targetPath, path, ec);
     } else {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Create file symlink: target " << Path2WStr(targetPath).c_str() << L", "
-                                                                                 << Utility::formatSyncPath(path).c_str());
+        LOGW_DEBUG(logger(), L"Create file symlink: target " << Path2WStr(targetPath).c_str() << L", "
+                                                             << Utility::formatSyncPath(path).c_str());
         std::filesystem::create_symlink(targetPath, path, ec);
     }
 
