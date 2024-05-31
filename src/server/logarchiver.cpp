@@ -388,6 +388,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
                                                       << (compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
             }
             canceled = !safeProgressCallback((compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
+            compressedFilesSize += fileSize;
             return !canceled;
         };
 
@@ -409,7 +410,6 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
             return ExitCodeSystemError;
         }
 
-        compressedFilesSize += entry.file_size();
     }
 
     if (!endOfDirectory) {
