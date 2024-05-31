@@ -100,6 +100,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
 
         // create a fake log file
         std::ofstream logFile(tempDir.path / "test.log");
+        CPPUNIT_ASSERT(logFile.is_open());
         for (int i = 0; i < 10; i++) {
             logFile << "Test log line " << i << std::endl;
         }
@@ -214,6 +215,20 @@ void TestLogArchiver::testCompressLogs(void) {
 
     {  // test the progress callback
         TemporaryDirectory tempDir;
+        std::ofstream logFile(tempDir.path / "test.log");
+        for (int i = 0; i < 10000; i++) {
+            logFile << "Test log line " << i << std::endl;
+        }
+        logFile.close();
+
+        const SyncPath logDir = tempDir.path / "log";
+        IoError err = IoErrorSuccess;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::createDirectory(logDir, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+
+        const SyncPath logFilePath = logDir / "test.log";
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path / "test.log", logFilePath, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         for (int i = 0; i < 30; i++) {
             std::ofstream logFile(tempDir.path / ("test" + std::to_string(i) + ".log"));
             for (int j = 0; j < 10; j++) {
@@ -241,6 +256,20 @@ void TestLogArchiver::testCompressLogs(void) {
 
     {  // Test the progress callback with a cancel
         TemporaryDirectory tempDir;
+        std::ofstream logFile(tempDir.path / "test.log");
+        for (int i = 0; i < 10000; i++) {
+            logFile << "Test log line " << i << std::endl;
+        }
+        logFile.close();
+
+        const SyncPath logDir = tempDir.path / "log";
+        IoError err = IoErrorSuccess;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::createDirectory(logDir, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+
+        const SyncPath logFilePath = logDir / "test.log";
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path / "test.log", logFilePath, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         for (int i = 0; i < 30; i++) {
             std::ofstream logFile(tempDir.path / ("test" + std::to_string(i) + ".log"));
             for (int j = 0; j < 10; j++) {
