@@ -58,15 +58,16 @@ VERSION=$(grep "KDRIVE_VERSION_FULL" "$BASE_DIR/build-linux/build/version.h" | a
 APP_NAME=kDrive-${VERSION}-amd64.AppImage
 
 mv kDrive*.AppImage ../$APP_NAME
-cd ..
+
+cd $BASE_DIR/build-linux
 
 if [ -z ${KDRIVE_TOKEN+x} ]; then
 	echo "No kDrive token found, AppImage will not be uploaded."
 else
 	FILES=($APP_NAME "kDrive-amd64.dbg" "kDrive_client-amd64.dbg")
-	source "$(dirname "$0")/../upload_version.sh"
+	source "$BASE_DIR/infomaniak-build-tools/upload_version.sh"
 
 	for FILE in ${FILES[@]}; do
-		upload_file FILE "linux-amd"
+		upload_file $FILE "linux-amd"
 	done
 fi
