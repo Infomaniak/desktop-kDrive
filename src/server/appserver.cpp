@@ -392,7 +392,6 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
-
 }
 
 AppServer::~AppServer() {
@@ -2068,21 +2067,14 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
                             !found) {  // Reset status
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
     }
+    sendLogUploadStatusUpdated(LogUploadState::Archiving, 0);  // Send progress to the client
 
     /* See AppStateKey::LogUploadState for status values
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
-    int previousPercent = 0;
     LogUploadState previousStatus = LogUploadState::None;
-    std::function<bool(LogUploadState, int)> progressFunc = [this, &previousPercent, &previousStatus](LogUploadState status,
-                                                                                                      int progress) {
-        if (status != previousStatus || progress != previousPercent) {
-        sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
-            previousPercent = progress;
-            previousStatus = status;
-        LOG_DEBUG(_logger, "Log transfert progress : " << static_cast<int>(status) << " | " << progress << " %");
-        }
-
+    int previousProgress = 0;
+    std::function<bool(LogUploadState, int)> progressFunc = [this, &previousStatus, &previousProgress](LogUploadState status, int progress) {
         AppStateValue appStateValue = LogUploadState::None;
         if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) ||
                                 !found) {  // Check if the user canceled the upload
@@ -2090,7 +2082,14 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
         }
         LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
 
-        return logUploadState != LogUploadState::Canceled && logUploadState != LogUploadState::CancelRequested;
+        bool canceled = logUploadState == LogUploadState::Canceled || logUploadState == LogUploadState::CancelRequested;
+        if (!canceled && (status != previousStatus || progress != previousProgress)) {
+            sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
+            LOG_DEBUG(_logger, "Log transfert progress : " << static_cast<int>(status) << " | " << progress << " %");
+        }
+        previousProgress = progress;
+        previousStatus = status;
+        return !canceled;
     };
 
     ExitCause exitCause = ExitCauseUnknown;
@@ -3023,7 +3022,7 @@ bool AppServer::clientCrashedRecently(int seconds) {
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     AppStateValue appStateValue = int64_t(0);
-   
+
     if (bool found = false;
         !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found) || !found) {
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));

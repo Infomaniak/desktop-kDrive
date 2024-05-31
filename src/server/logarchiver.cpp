@@ -30,6 +30,8 @@
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/drive.h"
 
+#include "requests/parameterscache.h"
+
 #include <fstream>
 
 #include <zip.h>
@@ -42,6 +44,7 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
         result = IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoErrorSuccess) {
+            result = result * 0.8;  // The compressed logs will be smaller than the original ones. We estimate at worst 80% of the original size.
             return true;
         }
     }
@@ -374,21 +377,20 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
         const std::string entryPathStr = entry.path().string();
         QString destPath = QString::fromStdString(entryPathStr + ".gz");
         bool canceled = false;
+        uint64_t fileSize = 0;
+        if (!IoHelper::getFileSize(entry.path(), fileSize, ioError) || ioError != IoErrorSuccess) {
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
+        }
         std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
-                                                             &destPath, &totalSize](int progressPercent) {
-            uint64_t fileSize = 0;
-            IoError ioError = IoErrorUnknown;
-            if (!IoHelper::getFileSize(entry.path(), fileSize, ioError) || ioError != IoErrorSuccess) {
-                LOG_WARN(Log::instance()->getLogger(),
-                         "Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
-            } else {
+                                                             &destPath, &totalSize, &fileSize](int progressPercent) {
+            if (ParametersCache::instance()->parameters().extendedLog()) {
                 LOG_DEBUG(Log::instance()->getLogger(),
                           "File compression: -path: " << destPath.toStdString().c_str() << " - sub percent: " << progressPercent
                                                       << " - total compression step percent: "
                                                       << (compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
             }
             canceled = !safeProgressCallback((compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
-            compressedFilesSize += fileSize;
             return !canceled;
         };
 
@@ -409,7 +411,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
                      "Error in IoHelper::deleteDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
             return ExitCodeSystemError;
         }
-
+        compressedFilesSize += fileSize;
     }
 
     if (!endOfDirectory) {
