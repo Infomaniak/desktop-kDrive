@@ -858,11 +858,11 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         }
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
-                         "Error catched in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " - " << e.what());
+                         "Error caught in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " - " << e.what());
         setExitCause(ExitCauseFileAccessError);
         return ExitCodeSystemError;
     } catch (...) {
-        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error catched in LocalFileSystemObserverWorker::exploreDir");
+        LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in LocalFileSystemObserverWorker::exploreDir");
         return ExitCodeSystemError;
     }
 
