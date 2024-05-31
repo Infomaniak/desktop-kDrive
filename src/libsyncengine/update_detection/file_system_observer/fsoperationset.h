@@ -42,6 +42,8 @@ class FSOperationSet : public SharedObject {
         bool getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops);
         bool getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops);
 
+        const uint64_t nbOpsByType(const OperationType type);
+
         void clear();
         void insertOp(FSOpPtr opPtr);
         bool removeOp(UniqueId id);
