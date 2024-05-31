@@ -157,7 +157,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
 
     // compress all the files in the folder
     std::function<bool(int)> compressLogFilesProgressCallback = [&safeProgressCallback](int progressPercent) {
-        return safeProgressCallback((progressPercent * 95) / 100); // The last 5% is for the archive generation
+        return safeProgressCallback((progressPercent * 95) / 100);  // The last 5% is for the archive generation
     };
     exitCode = compressLogFiles(tempLogArchiveDir, compressLogFilesProgressCallback, exitCause);
     if (exitCause == ExitCauseOperationCanceled) {
@@ -328,11 +328,14 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
     uint64_t totalSize = 0;
     DirectoryEntry entry;
     bool endOfDirectory = false;
-    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) { //cannot use IoHelper::getDirectorySize because it will count the size of the already compressed files
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {  // cannot use IoHelper::getDirectorySize because it
+                                                                           // will count the size of the already compressed files
         if (entry.path().filename().extension() == Str(".gz")) {
             continue;
         }
-        totalSize += entry.file_size();
+        if (entry.is_regular_file()) {
+            totalSize += entry.file_size();
+        }
     }
 
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
@@ -344,7 +347,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
     // Compress the files
     uint64_t compressedFilesSize = 0;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (entry.path().filename().extension() == Str(".gz")) {
+        if (entry.path().filename().extension() == Str(".gz") || !entry.is_regular_file()) {
             continue;
         }
 
@@ -361,12 +364,14 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
         const std::string entryPathStr = entry.path().string();
         QString destPath = QString::fromStdString(entryPathStr + ".gz");
         bool canceled = false;
-        std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry, &destPath, &totalSize](int progressPercent) {
+        std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
+                                                             &destPath, &totalSize](int progressPercent) {
+            auto fileSize = entry.is_regular_file() ? entry.file_size() : 0;
             LOG_DEBUG(Log::instance()->getLogger(),
-                      "File compression: -path: "
-                          << destPath.toStdString().c_str() << " - sub percent: " << progressPercent << " - total compression step percent: "
-                          << (compressedFilesSize * 100 + progressPercent * entry.file_size()) / totalSize);
-            canceled = !safeProgressCallback((compressedFilesSize * 100 + progressPercent * entry.file_size()) / totalSize);
+                      "File compression: -path: " << destPath.toStdString().c_str() << " - sub percent: " << progressPercent
+                                                  << " - total compression step percent: "
+                                                  << (compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
+            canceled = !safeProgressCallback((compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
             return !canceled;
         };
 
