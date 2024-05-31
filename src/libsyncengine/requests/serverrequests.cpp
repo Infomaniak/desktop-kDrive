@@ -52,6 +52,9 @@
 #include <QDir>
 #include <QUuid>
 
+#include <sstream>
+#include <fstream>
+
 namespace KDC {
 
 ExitCode ServerRequests::getUserDbIdList(QList<int> &list) {
@@ -1087,9 +1090,13 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, const std::fu
 
     IoHelper::deleteDirectory(logUploadTempFolder, ioError);  // Delete temp folder if the upload was successful
 
-    long long timestamp =
-        std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
-    std::string uploadDate = std::to_string(timestamp);
+    std::string uploadDate = "";
+    const std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    std::ostringstream woss;
+    woss << std::put_time(&tm, "%D at %Hh%M");
+    uploadDate = woss.str();
+
     if (bool found = false;
         !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) || !found ||
         !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string(""), found) || !found) {
