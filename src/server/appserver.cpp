@@ -2072,9 +2072,16 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
     /* See AppStateKey::LogUploadState for status values
      * The return value of progressFunc is true if the upload should continue, false if the user canceled the upload
      */
-    std::function<bool(LogUploadState, int)> progressFunc = [this](LogUploadState status, int progress) {
+    int previousPercent = 0;
+    LogUploadState previousStatus = LogUploadState::None;
+    std::function<bool(LogUploadState, int)> progressFunc = [this, &previousPercent, &previousStatus](LogUploadState status,
+                                                                                                      int progress) {
+        if (status != previousStatus || progress != previousPercent) {
         sendLogUploadStatusUpdated(status, progress);  // Send progress to the client
+            previousPercent = progress;
+            previousStatus = status;
         LOG_DEBUG(_logger, "Log transfert progress : " << static_cast<int>(status) << " | " << progress << " %");
+        }
 
         AppStateValue appStateValue = LogUploadState::None;
         if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) ||
@@ -3018,8 +3025,7 @@ bool AppServer::clientCrashedRecently(int seconds) {
     AppStateValue appStateValue = int64_t(0);
    
     if (bool found = false;
-        !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found) ||
-        !found) {
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found) || !found) {
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;

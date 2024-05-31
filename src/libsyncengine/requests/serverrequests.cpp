@@ -988,7 +988,7 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCodeOk;
 }
 
-ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function<bool(LogUploadState, int)> progressCallback,
+ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, const std::function<bool(LogUploadState, int)> &progressCallback,
                                           ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;

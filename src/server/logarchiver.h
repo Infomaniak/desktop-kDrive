@@ -44,7 +44,7 @@ class LogArchiver {
          * was generated successfully, false otherwise.
          */
         static ExitCode generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputDir,
-                                                   std::function<bool(int)> progressCallback, SyncPath &archivePath,
+                                                   const std::function<bool(int)> &progressCallback, SyncPath &archivePath,
                                                    ExitCause &exitCause, bool test = false);
 
     private:
@@ -62,7 +62,7 @@ class LogArchiver {
          *      it will be set to ExitCauseUnknown;
          * \return The exit code of the operation.
          */
-        static ExitCode compressLogFiles(const SyncPath &directoryToCompress, std::function<bool(int)> progressCallback,
+        static ExitCode compressLogFiles(const SyncPath &directoryToCompress, const std::function<bool(int)> &progressCallback,
                                          ExitCause &exitCause);
 
         /*! Generates a file containing the user description.

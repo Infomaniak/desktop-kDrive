@@ -52,7 +52,7 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
 }
 
 ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputPath,
-                                                 std::function<bool(int)> progressCallback, SyncPath &archivePath,
+                                                 const std::function<bool(int)> &progressCallback, SyncPath &archivePath,
                                                  ExitCause &exitCause, bool test) {
     std::function<bool(int)> safeProgressCallback = progressCallback != nullptr ? progressCallback : [](int) { return true; };
 
@@ -156,7 +156,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     }
 
     // compress all the files in the folder
-    std::function<bool(int)> compressLogFilesProgressCallback = [&](int progressPercent) {
+    std::function<bool(int)> compressLogFilesProgressCallback = [&safeProgressCallback](int progressPercent) {
         return safeProgressCallback((progressPercent * 95) / 100); // The last 5% is for the archive generation
     };
     exitCode = compressLogFiles(tempLogArchiveDir, compressLogFilesProgressCallback, exitCause);
@@ -311,7 +311,7 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std::function<bool(int)> progressCallback,
+ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, const std::function<bool(int)> &progressCallback,
                                        ExitCause &exitCause) {
     std::function<bool(int)> safeProgressCallback = progressCallback != nullptr ? progressCallback : [](int) { return true; };
     IoHelper::DirectoryIterator dir;
@@ -361,7 +361,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
         const std::string entryPathStr = entry.path().string();
         QString destPath = QString::fromStdString(entryPathStr + ".gz");
         bool canceled = false;
-        std::function<bool(int)> compressProgressCallback = [&](int progressPercent) {
+        std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry, &destPath, &totalSize](int progressPercent) {
             LOG_DEBUG(Log::instance()->getLogger(),
                       "File compression: -path: "
                           << destPath.toStdString().c_str() << " - sub percent: " << progressPercent << " - total compression step percent: "
