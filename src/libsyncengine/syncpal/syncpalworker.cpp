@@ -392,12 +392,13 @@ SyncStep SyncPalWorker::nextStep() const {
         case SyncStepUpdateDetection1: {
             auto logNbOps = [=](const ReplicaSide side) {
                 auto opsSet = side == ReplicaSideLocal ? _syncPal->_localOperationSet : _syncPal->_remoteOperationSet;
-                LOG_SYNCPAL_DEBUG(_logger, _syncPal->_localOperationSet->ops().size()
-                                               << Utility::side2Str(side).c_str() << " operations detected ("
-                                               << "# CREATE: " << _syncPal->_localOperationSet->nbOpsByType(OperationTypeCreate)
-                                               << "# EDIT: " << _syncPal->_localOperationSet->nbOpsByType(OperationTypeEdit)
-                                               << "# MOVE: " << _syncPal->_localOperationSet->nbOpsByType(OperationTypeMove)
-                                               << "# DELETE: " << _syncPal->_localOperationSet->nbOpsByType(OperationTypeDelete)
+                LOG_SYNCPAL_DEBUG(_logger, opsSet->ops().size()
+                                               << " " << Utility::side2Str(side).c_str()
+                                               << " operations detected (# CREATE: "
+                                               << opsSet->nbOpsByType(OperationTypeCreate)
+                                               << ", # EDIT: " << opsSet->nbOpsByType(OperationTypeEdit)
+                                               << ", # MOVE: " << opsSet->nbOpsByType(OperationTypeMove)
+                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete)
                                                << ")");
             };
             logNbOps(ReplicaSideLocal);
