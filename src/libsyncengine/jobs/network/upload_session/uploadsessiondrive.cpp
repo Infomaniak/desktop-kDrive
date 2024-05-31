@@ -17,6 +17,7 @@
  */
 
 #include "uploadsessiondrive.h"
+#include "utility/utility.h"
 
 namespace KDC {
 
@@ -35,7 +36,7 @@ UploadSessionDrive::UploadSessionDrive(int driveDbId, std::shared_ptr<SyncDb> sy
 UploadSessionDrive::~UploadSessionDrive() {
     if (_vfsForceStatus) {
         if (!_vfsForceStatus(getFilePath(), false, 100, true)) {
-            LOG_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
+            LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
         }
     }
 }

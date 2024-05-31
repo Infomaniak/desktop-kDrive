@@ -50,7 +50,7 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
 
     _isAsynchrounous = _nbParalleleThread > 1;
     setProgress(0);
-    setExpectedFinishProgress(_filesize);
+    setProgressExpectedFinalValue(_filesize);
 }
 
 void AbstractUploadSession::runJob() {
