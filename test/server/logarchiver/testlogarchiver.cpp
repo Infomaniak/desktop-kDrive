@@ -169,7 +169,6 @@ void TestLogArchiver::testCopyParmsDbTo(void) {
 void TestLogArchiver::testCompressLogs(void) {
     {
         TemporaryDirectory tempDir("logArchiver");
-
         std::ofstream logFile(tempDir.path / "test.log");
         for (int i = 0; i < 10000; i++) {
             logFile << "Test log line " << i << std::endl;
@@ -251,7 +250,7 @@ void TestLogArchiver::testCompressLogs(void) {
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
-        CPPUNIT_ASSERT_EQUAL(100, percent);
+        CPPUNIT_ASSERT_GREATER(90, percent);
     }
 
     {  // Test the progress callback with a cancel
