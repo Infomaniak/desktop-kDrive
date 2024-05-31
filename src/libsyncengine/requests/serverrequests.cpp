@@ -1037,7 +1037,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, const std::fu
     if (exitCause == ExitCauseOperationCanceled) {
         IoHelper::deleteDirectory(logUploadTempFolder, ioError);
         LOG_INFO(Log::instance()->getLogger(),
-                 "LogArchiver::generateLogsSupportArchive Cancelled: " << exitCode << " : " << exitCause);
+                 "LogArchiver::generateLogsSupportArchive canceled: " << exitCode << " : " << exitCause);
         return ExitCodeOk;
     } else if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(),

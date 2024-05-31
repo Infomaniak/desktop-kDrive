@@ -117,7 +117,7 @@ bool ParmsDb::insertDefaultAppState() {
     }
 
     if (!insertAppState(AppStateKey::LogUploadToken, APP_STATE_KEY_DEFAULT_LogUploadToken)) {
-        LOG_WARN(_logger, "Error inserting default value for LogUploadToken");
+        LOG_WARN(_logger, "Error when inserting default value for LogUploadToken");
         return false;
     }
 

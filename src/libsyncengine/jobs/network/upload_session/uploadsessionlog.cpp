@@ -61,10 +61,10 @@ bool UploadSessionLog::handleStartJobResult(const std::shared_ptr<UploadSessionS
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::selectAppState");
     }
-    std::string logUploadToken = std::get<std::string>(appStateValue);
+    const std::string logUploadToken = std::get<std::string>(appStateValue);
     if (!logUploadToken.empty()) {
         UploadSessionCancelJob cancelJob(UploadSessionType::LogUpload, logUploadToken);
-        ExitCode exitCode = cancelJob.runSynchronously();
+        const ExitCode exitCode = cancelJob.runSynchronously();
         if (exitCode != ExitCodeOk) {
             LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
         } else {

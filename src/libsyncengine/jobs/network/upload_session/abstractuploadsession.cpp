@@ -136,7 +136,7 @@ void AbstractUploadSession::abort() {
 
 bool AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
     if (cancelJob->hasHttpError()) {
-        LOGW_WARN(_logger, L"Failed to cancel upload session for file " << Path2WStr(_filePath.filename()).c_str());
+        LOGW_WARN(_logger, L"Failed to cancel upload session for " << Utility::formatSyncPath(_filePath.filename()).c_str());
         _exitCode = ExitCodeDataError;
         return false;
     }
@@ -201,9 +201,9 @@ bool AbstractUploadSession::initChunks() {
 bool AbstractUploadSession::startSession() {
     try {
         auto startJob = createStartJob();
-        ExitCode exitCode = startJob->runSynchronously();
+        const ExitCode exitCode = startJob->runSynchronously();
         if (startJob->hasHttpError() || exitCode != ExitCodeOk) {
-            LOGW_ERROR(_logger, L"Failed to start upload session for file " << Path2WStr(_filePath.filename()).c_str());
+            LOGW_ERROR(_logger, L"Failed to start upload session for " << Utility::formatSyncPath(_filePath.filename()).c_str());
             _exitCode = startJob->exitCode();
             _exitCause = startJob->exitCause();
             return false;

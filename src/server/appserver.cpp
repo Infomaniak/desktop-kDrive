@@ -359,10 +359,10 @@ AppServer::AppServer(int &argc, char **argv)
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
     }
-    std::string logUploadToken = std::get<std::string>(appStateValue);
+    const std::string logUploadToken = std::get<std::string>(appStateValue);
     if (!logUploadToken.empty()) {
         UploadSessionCancelJob cancelJob(UploadSessionType::LogUpload, logUploadToken);
-        ExitCode exitCode = cancelJob.runSynchronously();
+        const ExitCode exitCode = cancelJob.runSynchronously();
         if (exitCode != ExitCodeOk) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
         } else {

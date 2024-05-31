@@ -381,7 +381,7 @@ bool AbstractTokenNetworkJob::handleOctetStreamResponse(std::istream &is) {
 
 std::string AbstractTokenNetworkJob::loadToken() {
     std::string token;
-    if (_apiType == ApiDesktop) {  // Fetch the user of the first sync available
+    if (_apiType == ApiDesktop) {  // Fetch the drive identifier of the first available sync.
         std::vector<Sync> syncList;
         if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");

@@ -48,7 +48,7 @@ class AbstractJob : public Poco::Runnable {
         inline ExitCode exitCode() const { return _exitCode; }
         inline ExitCause exitCause() const { return _exitCause; }
 
-        inline virtual void setExpectedFinishProgress(int64_t newExpectedFinishProgress) {
+        inline virtual void setProgressExpectedFinalValue(int64_t newExpectedFinishProgress) {
             _expectedFinishProgress = newExpectedFinishProgress;
         }
         inline virtual int64_t getProgress() { return _progress; }
@@ -119,7 +119,7 @@ class AbstractJob : public Poco::Runnable {
         std::function<void(UniqueId)> _mainCallback = nullptr;        // Used by the job manager to keep track of running jobs
         std::function<void(UniqueId)> _additionalCallback = nullptr;  // Used by the caller to be notified of job completion
         std::function<void(UniqueId id, int progress)> _progressPercentCallback =
-            nullptr;  // Used by the caller to be notified of job progress change
+            nullptr;  // Used by the caller to be notified of job progress.
 
         static UniqueId _nextJobId;
         static std::mutex _nextJobIdMutex;
