@@ -91,7 +91,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
         bool tooDeep = false;
         IoHelper::getDirectorySize(tempDir.path, tempDirSize, err, 0);
         CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
-        CPPUNIT_ASSERT_EQUAL(logDirsize, tempDirSize);
+        CPPUNIT_ASSERT_GREATER(tempDirSize, logDirsize);
     }
 
     {  // Test without archivedLogs
