@@ -168,6 +168,7 @@ void TestLogArchiver::testCopyParmsDbTo(void) {
 
 void TestLogArchiver::testCompressLogs(void) {
     {
+        LOG_DEBUG(_logger, "Test log compression");
         TemporaryDirectory tempDir("logArchiver");
         std::ofstream logFile(tempDir.path / "test.log");
         for (int i = 0; i < 10000; i++) {
@@ -190,7 +191,7 @@ void TestLogArchiver::testCompressLogs(void) {
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::getDirectorySize(logDir, logDirSize, err, 0));
         CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
         CPPUNIT_ASSERT(logDirSize >= 0);
-
+        
         ExitCause cause = ExitCauseUnknown;
         const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, nullptr, cause);
 
@@ -213,6 +214,7 @@ void TestLogArchiver::testCompressLogs(void) {
     }
 
     {  // test the progress callback
+        LOG_DEBUG(_logger, "Test log compression with progress callback");
         TemporaryDirectory tempDir("logArchiver");
         std::ofstream logFile(tempDir.path / "test.log");
         for (int i = 0; i < 10000; i++) {
@@ -254,6 +256,7 @@ void TestLogArchiver::testCompressLogs(void) {
     }
 
     {  // Test the progress callback with a cancel
+        LOG_DEBUG(_logger, "Test log compression with progress callback and cancel");
         TemporaryDirectory tempDir("logArchiver");
         std::ofstream logFile(tempDir.path / "test.log");
         for (int i = 0; i < 10000; i++) {

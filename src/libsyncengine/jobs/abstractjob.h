@@ -42,7 +42,7 @@ class AbstractJob : public Poco::Runnable {
         inline void setMainCallback(const std::function<void(uint64_t)> &newCallback) { _mainCallback = newCallback; }
         inline void setAdditionalCallback(const std::function<void(uint64_t)> &newCallback) { _additionalCallback = newCallback; }
         inline void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
-            _progressPercentCallback = newCallback;
+            _progressPercentCallback = newCallback ? newCallback : nullptr;
         }
 
         inline ExitCode exitCode() const { return _exitCode; }

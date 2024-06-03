@@ -991,13 +991,13 @@ ExitCode ServerRequests::getUserFromSyncDbId(int syncDbId, User &user) {
     return ExitCodeOk;
 }
 
-ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, const std::function<bool(LogUploadState, int)> &progressCallback,
+ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
+                                          const std::function<bool(LogUploadState, int)> &progressCallback,
                                           ExitCause &exitCause) {
     exitCause = ExitCauseUnknown;
     ExitCode exitCode = ExitCodeOk;
     std::function<bool(LogUploadState, int)> safeProgressCallback =
-        progressCallback != nullptr ? progressCallback
-                                    : std::function<bool(LogUploadState, int)>([](LogUploadState, int) { return true; });
+        progressCallback ? progressCallback : std::function<bool(LogUploadState, int)>([](LogUploadState, int) { return true; });
 
     safeProgressCallback(LogUploadState::Archiving, 0);
 

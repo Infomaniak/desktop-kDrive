@@ -58,7 +58,7 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
 ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputPath,
                                                  const std::function<bool(int)> &progressCallback, SyncPath &archivePath,
                                                  ExitCause &exitCause, bool test) {
-    std::function<bool(int)> safeProgressCallback = progressCallback != nullptr ? progressCallback : [](int) { return true; };
+    std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
 
     // Get the log directory path
     const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
@@ -317,11 +317,10 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
 
 ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, const std::function<bool(int)> &progressCallback,
                                        ExitCause &exitCause) {
-    std::function<bool(int)> safeProgressCallback = progressCallback != nullptr ? progressCallback : [](int) { return true; };
+    std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
     IoHelper::DirectoryIterator dir;
     IoError ioError = IoErrorUnknown;
     exitCause = ExitCauseUnknown;
-
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());

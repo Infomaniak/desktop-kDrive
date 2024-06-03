@@ -295,7 +295,7 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
 bool CommonUtility::compressFile(const QString &originalName, const QString &targetName,
                                  std::function<bool(int)> progressCallback) {
 #ifdef ZLIB_FOUND
-    std::function<bool(int)> safeProgressCallback = progressCallback != nullptr ? progressCallback : [](int) { return true; };
+    std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
 
     QFile original(originalName);
     if (!original.open(QIODevice::ReadOnly)) return false;
