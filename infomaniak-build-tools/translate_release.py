@@ -25,6 +25,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 
 def version_regex(arg_value, pattern=re.compile("^(\d+\.)?(\d+\.)?(\*|\d+)")):
 	if not pattern.match(arg_value):
@@ -32,13 +33,12 @@ def version_regex(arg_value, pattern=re.compile("^(\d+\.)?(\d+\.)?(\*|\d+)")):
 	return arg_value
 
 parser = argparse.ArgumentParser(
-	description='''
-Translater script for the desktop kDrive release notes.
+	description="""Translater script for the desktop kDrive release notes.
 The translation is done using DeepL API from English to French, German, Italian and Spanish.
 Please make sure your DeepL API key is exported as DEEPL_AUTH_KEY before running the script.
 
 A default english version of the Release Notes with all the systems combined must be created first.
-This script requires a file named kDrive-template.html to exist in the current working directory.''',
+This script requires a file named kDrive-template.html to exist in the current working directory.""",
 	epilog="""
 To add more languages in the future, edit the script to append the new language to the list.
 	All the languages in the list must be in the DeepL API target language list.
@@ -50,18 +50,20 @@ To add more systems, edit the script to append the new system to the list.
 	""",
 	formatter_class=argparse.RawTextHelpFormatter)
 
-parser.add_argument('-v', '--version', metavar="", type=version_regex, help='The release version', required=True)
-parser.add_argument('-d', '--date', metavar="", type=int, default=datetime.date.today().strftime('%Y%m%d'))
+parser.add_argument('-v', '--version', metavar="", type=version_regex, help='The release version (eg: 3.6.0)', required=True)
+parser.add_argument('-d', '--date', metavar="", type=int, help='The planned release date (defaults to today)', default=datetime.date.today().strftime('%Y%m%d'))
 args = parser.parse_args()
 
 if not os.path.isfile(f"kDrive-template.html"):
-	print("Unable to find kDrive-template.html.")
-	quit();
+	sys.exit("Unable to find kDrive-template.html.");
 
 fullName = f"kDrive-{args.version}.{args.date}"
 dirPath = f"../release_notes/{fullName}"
 
-translator = deepl.Translator(os.getenv("DEEPL_AUTH_KEY"))
+deepl_key = os.getenv("DEEPL_AUDTH_KEY")
+if not deepl_key:
+	sys.exit("error: The DeepL API key is not set in env");
+translator = deepl.Translator(deepl_key)
 
 target_lang = [
 	'FR',
@@ -88,7 +90,7 @@ def split_os(lang):
 		with open(f"{fullName}{os_ext}{lang_ext}.html", "w") as f:
 			for line in lines:
 				if any(os_note in line for os_note in os_list):
-					if (os_name in line):
+					if (f"<li>{os_name}" in line):
 						f.write(f"\t\t<li>{line[line.find('-') + 2:]}")
 				else:
 					f.write(line)
