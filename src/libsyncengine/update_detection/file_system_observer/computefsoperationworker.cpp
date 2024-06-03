@@ -40,8 +40,6 @@ void ComputeFSOperationWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
     auto start = std::chrono::steady_clock::now();
 
-    //_syncPal->_localFSObserverWorker->invalidateSnapshot();
-
     // Update the sync parameters
     bool ok = true;
     bool found = true;
