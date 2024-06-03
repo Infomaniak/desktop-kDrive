@@ -26,6 +26,8 @@
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "io/filestat.h"
 
+#include "localfilesystemobserverworker.h"
+
 namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
@@ -37,6 +39,8 @@ void ComputeFSOperationWorker::execute() {
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
     auto start = std::chrono::steady_clock::now();
+
+    //_syncPal->_localFSObserverWorker->invalidateSnapshot();
 
     // Update the sync parameters
     bool ok = true;
