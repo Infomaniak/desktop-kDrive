@@ -64,10 +64,9 @@ bool FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<Uni
     return false;
 }
 
-const uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
+uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
     const std::lock_guard<std::mutex> lock(_mutex);
-    auto it = _opsByType.find(type);
-    if (it != _opsByType.end()) {
+    if (auto it = _opsByType.find(type); it != _opsByType.end()) {
         return it->second.size();
     }
     return 0;
