@@ -58,7 +58,7 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
 ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputPath,
                                                  const std::function<bool(int)> &progressCallback, SyncPath &archivePath,
                                                  ExitCause &exitCause, bool test) {
-    std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
+    const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
 
     // Get the log directory path
     const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
@@ -317,7 +317,7 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
 
 ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, const std::function<bool(int)> &progressCallback,
                                        ExitCause &exitCause) {
-    std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
+    const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
     IoHelper::DirectoryIterator dir;
     IoError ioError = IoErrorUnknown;
     exitCause = ExitCauseUnknown;
@@ -384,7 +384,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
         }
         std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
                                                              &destPath, &totalSize, &fileSize](int progressPercent) {
-            if (ParametersCache::instance()->parameters().extendedLog()) {
+            auto parametersCacheInstance = ParametersCache::instance();
+            if (parametersCacheInstance && parametersCacheInstance->parameters().extendedLog()) {
                 LOG_DEBUG(Log::instance()->getLogger(),
                           "File compression: -path: " << destPath.toStdString().c_str() << " - sub percent: " << progressPercent
                                                       << " - total compression step percent: "

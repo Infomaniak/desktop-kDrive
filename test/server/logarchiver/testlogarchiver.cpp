@@ -78,6 +78,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
 
         IoError err = IoErrorSuccess;
         uint64_t logDirsize = 0;
+    
         LogArchiver::getLogDirEstimatedSize(logDirsize, err);
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(logDirsize >= 0);
@@ -91,7 +92,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
         bool tooDeep = false;
         IoHelper::getDirectorySize(tempDir.path, tempDirSize, err, 0);
         CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
-        CPPUNIT_ASSERT_GREATER(tempDirSize, logDirsize);
+        CPPUNIT_ASSERT_GREATER(logDirsize, tempDirSize);
     }
 
     {  // Test without archivedLogs
@@ -193,7 +194,7 @@ void TestLogArchiver::testCompressLogs(void) {
         CPPUNIT_ASSERT(logDirSize >= 0);
         
         ExitCause cause = ExitCauseUnknown;
-        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, nullptr, cause);
+        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, std::function<bool(int)>(), cause);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
