@@ -34,8 +34,8 @@ class DeleteJob : public AbstractTokenNetworkJob {
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
         virtual void setData(bool &canceled) override { canceled = false; }
 
-        const NodeId _localItemId;
         const NodeId _remoteItemId;
+        const NodeId _localItemId;
         SyncPath _absoluteLocalFilepath;
 };
 
