@@ -44,7 +44,8 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
         result = IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoErrorSuccess) {
-            result = result * 0.8;  // The compressed logs will be smaller than the original ones. We estimate at worst 80% of the original size.
+            size *= 0.8;  // The compressed logs will be smaller than the original ones. We estimate at worst 80% of the
+                                  // original size.
             return true;
         }
     }
