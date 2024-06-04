@@ -25,22 +25,36 @@
 
 namespace KDC {
 
-DeleteJob::DeleteJob(int driveDbId, const NodeId &fileId, const SyncPath &absoluteLocalFilepath)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0), _fileId(fileId), _absoluteLocalFilepath(absoluteLocalFilepath) {
+DeleteJob::DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath)
+    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0)
+      , _remoteItemId(remoteItemId)
+      , _localItemId(localItemId)
+      , _absoluteLocalFilepath(absoluteLocalFilepath) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
-
-DeleteJob::~DeleteJob() {}
 
 bool DeleteJob::canRun() {
     if (bypassCheck()) {
         return true;
     }
 
+    if (_remoteItemId.empty()
+        || _localItemId.empty()
+        || _absoluteLocalFilepath.empty()) {
+        LOGW_WARN(_logger,
+                  L"Error in DeleteJob::canRun: missing required input, remote ID:" << Utility::s2ws(_remoteItemId).c_str()
+                  << L", local ID: " << Utility::s2ws(_localItemId).c_str()
+                  << L", " << Utility::formatSyncPath(_absoluteLocalFilepath)
+                  );
+        _exitCode = ExitCodeDataError;
+        _exitCause = ExitCauseUnknown;
+        return false;
+    }
+
     // The item must be absent on local replica for the job to run
-    bool exists;
+    bool exists = false;
     IoError ioError = IoErrorSuccess;
-    if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _fileId, exists, ioError)) {
+    if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _localItemId, exists, ioError)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
         _exitCode = ExitCodeSystemError;
@@ -50,7 +64,7 @@ bool DeleteJob::canRun() {
 
     if (exists) {
         FileStat filestat;
-        IoError ioError = IoErrorSuccess;
+        ioError = IoErrorSuccess;
         if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
             LOGW_WARN(_logger,
                       L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
@@ -89,7 +103,7 @@ bool DeleteJob::canRun() {
 std::string DeleteJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/files/";
-    str += _fileId;
+    str += _remoteItemId;
     return str;
 }
 
