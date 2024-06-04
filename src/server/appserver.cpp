@@ -956,13 +956,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_SYNC_ADD: {
-            int userDbId;
-            int accountId;
-            int driveId;
+            int userDbId = 0;
+            int accountId = 0;
+            int driveId = 0;
             QString localFolderPath;
             QString serverFolderPath;
             QString serverFolderNodeId;
-            bool liteSync;
+            bool liteSync = false;
             QSet<QString> blackList;
             QSet<QString> whiteList;
             QDataStream paramsStream(params);
@@ -1063,21 +1063,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_SYNC_ADD2: {
-            int driveDbId;
+            int driveDbId = 0;
             QString localFolderPath;
             QString serverFolderPath;
             QString serverFolderNodeId;
-            bool liteSync;
+            bool liteSync = 0;
             QSet<QString> blackList;
             QSet<QString> whiteList;
-            QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
-            paramsStream >> localFolderPath;
-            paramsStream >> serverFolderPath;
-            paramsStream >> serverFolderNodeId;
-            paramsStream >> liteSync;
-            paramsStream >> blackList;
-            paramsStream >> whiteList;
+            ArgsWriter(params).write(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, blackList,
+                                     whiteList);
 
             // Add sync in DB
             bool showInNavigationPane = false;
