@@ -109,7 +109,7 @@ void KDC::TestJobManager::setUp() {
 
 void KDC::TestJobManager::tearDown() {
     ParmsDb::instance()->close();
-    DeleteJob job(_driveDbId, _dirId, "");
+    DeleteJob job(_driveDbId, _dirId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
     job.runSynchronously();
 }
 
