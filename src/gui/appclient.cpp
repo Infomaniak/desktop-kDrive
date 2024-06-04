@@ -111,6 +111,7 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
 #else
     // Read comm port value from argument list
     if (!parseOptions(arguments())) {
+        // Start the server and die (the server will restart the client)
         startServerAndDie(false);
         return;
     }
@@ -436,15 +437,15 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             break;
         }
         case SIGNAL_NUM_UTILITY_SHOW_SETTINGS: {
-            emit showParametersDialog();
+            showParametersDialog();
             break;
         }
         case SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS: {
-            emit showSynthesisDialog();
+            showSynthesisDialog();
             break;
         }
         case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
-            LogUploadState status;  
+            LogUploadState status;
             int progress; // Progress in percentage
             paramsStream >> status;
             paramsStream >> progress;
@@ -465,6 +466,7 @@ void AppClient::onLogTooBig() {
 }
 
 void AppClient::onQuit() {
+    _quitInProcess = true;
     if (CommClient::isConnected()) {
         QByteArray results;
         if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_QUIT, QByteArray(), results)) {
@@ -476,15 +478,18 @@ void AppClient::onQuit() {
 }
 
 void AppClient::onServerDisconnected() {
-    static const auto msg = tr("The server got disconnected. Restarting the server and closing.");
-    qCCritical(lcAppClient) << msg;
-
 #if NDEBUG
-    startServerAndDie(true);
-
+    if (!_quitInProcess) {
+        startServerAndDie(true);
+        qCCritical(lcAppClient) << "The server was unexpectedly disconnected. The application will be restarted.";
+    } else {
+        qCInfo(lcAppClient) << "Server disconnected while the client is closing: this is expected.";
+    }
 #else
+    const auto msg = QStringLiteral("The server got disconnected. As the app is in debug mode, it will not be restarted.");
     displayHelpText(msg);
     QTimer::singleShot(0, qApp, SLOT(quit()));
+    qCCritical(lcAppClient) << msg;
 #endif
 }
 

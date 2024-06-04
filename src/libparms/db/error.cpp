@@ -27,15 +27,10 @@ Error::Error()
     : _dbId(0),
       _time(std::time(0)),
       _level(ErrorLevelUnknown),
-      _functionName(std::string()),
       _syncDbId(0),
-      _workerName(std::string()),
       _exitCode(ExitCodeUnknown),
       _exitCause(ExitCauseUnknown),
-      _localNodeId(NodeId()),
-      _remoteNodeId(NodeId()),
       _nodeType(NodeTypeUnknown),
-      _path(SyncPath()),
       _conflictType(ConflictTypeNone),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}
@@ -49,10 +44,7 @@ Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitC
       _workerName(std::string()),
       _exitCode(exitCode),
       _exitCause(exitCause),
-      _localNodeId(NodeId()),
-      _remoteNodeId(NodeId()),
       _nodeType(NodeTypeUnknown),
-      _path(SyncPath()),
       _conflictType(ConflictTypeNone),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}
@@ -61,15 +53,11 @@ Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, Exi
     : _dbId(0),
       _time(std::time(0)),
       _level(ErrorLevelSyncPal),
-      _functionName(std::string()),
       _syncDbId(syncDbId),
       _workerName(workerName),
       _exitCode(exitCode),
       _exitCause(exitCause),
-      _localNodeId(NodeId()),
-      _remoteNodeId(NodeId()),
       _nodeType(NodeTypeUnknown),
-      _path(SyncPath()),
       _conflictType(ConflictTypeNone),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}
@@ -82,9 +70,7 @@ Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId
     : _dbId(0),
       _time(std::time(0)),
       _level(ErrorLevelNode),
-      _functionName(std::string()),
       _syncDbId(syncDbId),
-      _workerName(std::string()),
       _exitCode(exitCode),
       _exitCause(exitCause),
       _localNodeId(localNodeId),
@@ -132,6 +118,24 @@ std::string Error::errorString() const {
     }
 
     return errStream.str();
+}
+
+bool Error::isSimilarTo(const Error &other) const {
+    switch (_level) {
+        case ErrorLevelServer: {
+            return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) &&
+                   (_functionName == other.functionName());
+        }
+        case ErrorLevelSyncPal: {
+            return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) && (_workerName == other.workerName());
+        }
+        case ErrorLevelNode: {
+            return (_conflictType == other.conflictType()) && (_inconsistencyType == other.inconsistencyType()) &&
+                   (_cancelType == other.cancelType()) && (_path == other.path() && _destinationPath == other.destinationPath());
+        }
+        default:
+            return false;
+    }
 }
 
 }  // namespace KDC

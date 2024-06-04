@@ -21,8 +21,8 @@
 #include "testio.h"
 
 #include "libcommonserver/utility/utility.h"
-#include "jobs/local/localcopyjob.h"
-#include "jobs/jobmanager.h"
+
+#include <thread>
 
 using namespace CppUnit;
 
@@ -39,12 +39,11 @@ void TestIo::testIsFileAccessible() {
         sourceFile << std::string(100000000, 'z');
     }
 
-    std::shared_ptr<LocalCopyJob> copyJob = std::make_shared<LocalCopyJob>(sourcePath, destPath);
-    JobManager::instance()->queueAsyncJob(copyJob);
+    // Copy file
+    std::thread copyFile([](const SyncPath &fromPath, const SyncPath &toPath) { std::filesystem::copy(fromPath, toPath); },
+                         sourcePath, destPath);
+    copyFile.detach();
 
-    while (!copyJob->isRunning()) {
-        // Just wait for the job to start
-    }
     Utility::msleep(10);
 
     IoError ioError = IoErrorUnknown;
@@ -52,6 +51,8 @@ void TestIo::testIsFileAccessible() {
     // IoHelper::isFileAccessible returns instantly `true` on MacOSX and Linux.
 #ifdef _WIN32
     CPPUNIT_ASSERT(!res);
+#else
+    (void)res;
 #endif
 
     // File copy not finished yet.

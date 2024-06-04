@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "commonserverlib.h"
+#include "libcommonserver/commonserverlib.h"
 #include "libcommon/utility/types.h"
 #include "sqlitedb.h"
 

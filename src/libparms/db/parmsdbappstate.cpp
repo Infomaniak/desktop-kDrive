@@ -17,6 +17,7 @@
  */
 
 #include "parmsdb.h"
+#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/asserts.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
@@ -37,9 +38,9 @@ constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath[] = "";
-constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = {static_cast<char>(KDC::LogUploadState::None), '\0'};
+constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; //KDC::LogUploadState::None
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
-
+constexpr char APP_STATE_KEY_DEFAULT_LogUploadToken[] = "";
 
 namespace KDC {
 
@@ -112,6 +113,11 @@ bool ParmsDb::insertDefaultAppState() {
 
     if (!insertAppState(AppStateKey::LogUploadPercent, APP_STATE_KEY_DEFAULT_LogUploadPercent)) {
         LOG_WARN(_logger, "Error inserting default value for LogUploadPercent");
+        return false;
+    }
+
+    if (!insertAppState(AppStateKey::LogUploadToken, APP_STATE_KEY_DEFAULT_LogUploadToken)) {
+        LOG_WARN(_logger, "Error when inserting default value for LogUploadToken");
         return false;
     }
 
@@ -204,5 +210,4 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
     }
     return true;
 };
-
 }  // namespace KDC

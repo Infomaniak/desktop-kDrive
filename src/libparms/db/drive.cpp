@@ -18,6 +18,9 @@
 
 #include "drive.h"
 #include "account.h"
+#include "libcommonserver/log/log.h"
+
+#include <log4cplus/loggingmacros.h>
 
 namespace KDC {
 

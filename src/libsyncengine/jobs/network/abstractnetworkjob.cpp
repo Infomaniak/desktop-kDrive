@@ -313,7 +313,7 @@ bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, con
     }
 
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
-
+   
     // Set headers
     req.set("User-Agent", _userAgent);
     req.setContentType(contentType);
@@ -361,7 +361,7 @@ bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, con
         }
 
         if (isProgressTracked()) {
-            _progress += itEnd - itBegin;
+            setProgress(getProgress() + itEnd - itBegin);
         }
 
         itBegin = itEnd;

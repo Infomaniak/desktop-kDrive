@@ -1,20 +1,10 @@
 name: Package kDrive desktop on all platforms
 
 on:
-  workflow_dispatch:
-    inputs:
-      BRANCH:
-        description: 'Branch to use'
-        required: true
-        default: 'main'
-        type: choice
-        options:
-        - main
-        - develop
-        - RELEASE-**
   push:
     branches:
       - 'RELEASE-**'
+  workflow_dispatch:
 
 concurrency:
   group: packaging
@@ -77,7 +67,7 @@ jobs:
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/build-ci-amd64.sh
       - name: Build kDrive desktop
-        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh
+        run : ./infomaniak-build-tools/linux/build-ci-amd64.sh release
 
       - name: Grant packaging script execute permission
         run : chmod +x ./infomaniak-build-tools/linux/package-ci-amd64.sh

@@ -17,6 +17,7 @@
  */
 
 #include "updatetreeworker.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 
@@ -1181,7 +1182,18 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
         if (node->hasChangeEvent(OperationTypeMove)) {
             // update parentDbId
             node->setMoveOriginParentDbId(dbNode.parentNodeId());
-            // TODO : should we set moveOrigin too?
+
+            SyncPath localPath;
+            SyncPath remotePath;
+            if (!_syncDb->path(node->idb().value(), localPath, remotePath, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
+                return ExitCodeDbError;
+            }
+            if (!found) {
+                LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for DB ID=" << node->idb().value());
+                return ExitCodeDataError;
+            }
+            node->setMoveOrigin(_side == ReplicaSideLocal ? localPath : remotePath);    // TODO : no need to keep both remote and local paths since we do not rename the file locally anymore.
         } else {
             if (dbNode.nameLocal() != dbNode.nameRemote()) {
                 node->setName(dbNode.nameRemote());
@@ -1280,7 +1292,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
             LOGW_SYNCPAL_DEBUG(
                 _logger,
                 Utility::s2ws(Utility::side2Str(_side)).c_str()
-                    << L" update tree: Changed events to '" << prevNode->changeEvents()
+                    << L" update tree: Changed events to '" << Utility::opType2Str((OperationType)prevNode->changeEvents()).c_str()
                     << "' for node '" << SyncName2WStr(tmpNode->name()).c_str()
                     << L"' (node ID: '"
                     << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())).c_str()
@@ -1313,7 +1325,7 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
     std::vector<SyncName> names;
     std::shared_ptr<Node> tmpNode = node;
     while (tmpNode && tmpNode->parentNode() != nullptr) {
-        if (tmpNode->moveOriginParentDbId().has_value()) {
+        if (tmpNode->moveOriginParentDbId().has_value() && tmpNode->moveOrigin().has_value()) {
             // Save origin file name
             names.push_back(tmpNode->moveOrigin().value().filename());
 

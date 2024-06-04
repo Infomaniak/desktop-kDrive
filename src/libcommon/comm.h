@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <QColor>
 #include <QDataStream>
 #include <QIODevice>
 
@@ -193,7 +192,7 @@ struct ArgsWriter {
         template <class T, class... Args>
         void write(T &r, Args... args) {
             stream >> r;
-            extract(args...);
+            write(args...);
         }
         QDataStream stream;
 };

@@ -88,7 +88,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         void showNotification(const QString &title, const QString &message);
         void errorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         void errorsCleared(int syncDbId);
-        void logUploadStatusUpdated(LogUploadState state, int percent);
+        void logUploadStatusUpdated(LogUploadState status, int percent);
 
     public slots:
         void onWizardDone(int);
@@ -125,6 +125,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool _logDebug = false;
         bool _debugMode = false;
         QScopedPointer<UpdaterClient> _updaterClient;
+        bool _quitInProcess = false;
 
     private slots:
         void onUseMonoIconsChanged(bool);

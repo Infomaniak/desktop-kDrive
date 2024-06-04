@@ -19,7 +19,7 @@
 #include "jobmanager.h"
 #include "jobs/network/networkjobsparams.h"
 #include "log/log.h"
-#include "jobs/network/upload_session/uploadsession.h"
+#include "jobs/network/upload_session/abstractuploadsession.h"
 #include "libcommonserver/utility/utility.h"
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
@@ -155,7 +155,7 @@ void JobManager::run() {
                 _queuedJobs.pop();
 
                 if (isParentPendingOrRunning(job->jobId()) ||
-                    (std::dynamic_pointer_cast<UploadSession>(job) &&
+                    (std::dynamic_pointer_cast<AbstractUploadSession>(job) &&
                      uploadSessionCount >= Poco::ThreadPool::defaultPool().capacity() / 10)) {
                     try {
                         _pendingJobs.insert({job->jobId(), jobItem});
@@ -171,7 +171,7 @@ void JobManager::run() {
                         LOG_WARN(Log::instance()->getLogger(), "Job " << job->jobId() << " insertion in pending queue failed");
                     }
                 } else {
-                    if (std::dynamic_pointer_cast<UploadSession>(job)) {
+                    if (std::dynamic_pointer_cast<AbstractUploadSession>(job)) {
                         uploadSessionCount++;
                     }
 
@@ -257,7 +257,7 @@ int JobManager::countUploadSession() {
     int uploadSessionCount = 0;
     for (UniqueId id : _runningJobs) {
         const auto &job = _managedJobs[id];
-        if (std::dynamic_pointer_cast<UploadSession>(job)) {
+        if (std::dynamic_pointer_cast<AbstractUploadSession>(job)) {
             uploadSessionCount++;
         }
     }
@@ -271,7 +271,7 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
     auto it = _pendingJobs.begin();
     for (; it != _pendingJobs.end();) {
         const auto &job = it->second.first;
-        if (!isParentPendingOrRunning(job->jobId()) && !(std::dynamic_pointer_cast<UploadSession>(job) &&
+        if (!isParentPendingOrRunning(job->jobId()) && !(std::dynamic_pointer_cast<AbstractUploadSession>(job) &&
                                                          uploadSessionCount >= Poco::ThreadPool::defaultPool().capacity() / 10)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completly from job manager

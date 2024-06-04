@@ -135,7 +135,7 @@ Clone and build `Poco`:
 
 ```bash
 cd F:\Projects
-git clone -b master https://github.com/pocoproject/poco.git
+git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.12.5-release
 mkdir cmake-build
@@ -221,7 +221,7 @@ git clone https://github.com/nih-at/libzip.git
 cd libzip
 git checkout tags/v1.10.1
 mkdir build && cd build
-cmake .. -DZLIB_LIBRARY="C:\Program Files (x86)\zlib-1.2.11\lib\zlib.lib"
+cmake .. -DZLIB_LIBRARY="C:\Program Files (x86)\zlib-1.2.11\lib\zlib.lib" -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include"
 cmake --build . --target install --config Debug
 cmake --build . --target install --config Release
 ```

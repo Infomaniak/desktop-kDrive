@@ -145,7 +145,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
          * \param progressCallback The callback to be called with the progress percentage, the function returns false if the user cancels the operation (else true).
          * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to ExitCauseUnknown;
          */
-        static ExitCode sendLogToSupport(bool includeArchivedLog, std::function<bool(LogUploadState, int)> progressCallback,
+        static ExitCode sendLogToSupport(bool includeArchivedLog, const std::function<bool(LogUploadState, int)> &progressCallback,
                                          ExitCause &exitCause);
         static ExitCode cancelLogToSupport(ExitCause &exitCause);
 

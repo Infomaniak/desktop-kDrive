@@ -47,6 +47,7 @@
 #include "jobs/local/localmovejob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/jobmanager.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "tmpblacklistmanager.h"
 
@@ -1342,7 +1343,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
 
     for (auto &uploadSessionToken : uploadSessionTokenList) {
         try {
-            auto job = std::make_shared<UploadSessionCancelJob>(_driveDbId, "", uploadSessionToken.token());
+            auto job = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCodeOk) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);

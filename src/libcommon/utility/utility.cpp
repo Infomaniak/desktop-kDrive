@@ -235,28 +235,43 @@ QString CommonUtility::escape(const QString &in) {
 }
 
 bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStateValue &appStateValueTo) {
+    bool res = true;
+    std::string appStateValueType = "Unknown";
     if (std::holds_alternative<std::string>(appStateValueTo)) {
         appStateValueTo = stringFrom;
+        appStateValueType = "std::string";
     } else if (std::holds_alternative<int>(appStateValueTo)) {
+        appStateValueType = "int";
         try {
             appStateValueTo = std::stoi(stringFrom);
         } catch (const std::invalid_argument &) {
-            return false;
+            res = false;
         }
     } else if (std::holds_alternative<LogUploadState>(appStateValueTo)) {
+        appStateValueType = "LogUploadState";
         try {
             appStateValueTo = static_cast<LogUploadState>(std::stoi(stringFrom));
         } catch (const std::invalid_argument &) {
-            return false;
+            res = false;
         }
     } else if (std::holds_alternative<int64_t>(appStateValueTo)) {
+        appStateValueType = "int64_t";
         try {
             std::get<int64_t>(appStateValueTo) = std::stoll(stringFrom);
         } catch (const std::invalid_argument &) {
-            return false;
+            res = false;
         }
     } else {
-        return false;
+        res = false;
+    }
+
+    if (!res) {
+        sentry_value_t event = sentry_value_new_event();
+        std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
+        sentry_value_t exc = sentry_value_new_exception("CommonUtility::stringToAppStateValue", message.c_str());
+        sentry_value_set_stacktrace(exc, NULL, 0);
+        sentry_event_add_exception(event, exc);
+        sentry_capture_event(event);
     }
 
     return true;
@@ -277,8 +292,11 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     return true;
 }
 
-bool CommonUtility::compressFile(const QString &originalName, const QString &targetName) {
+bool CommonUtility::compressFile(const QString &originalName, const QString &targetName,
+                                 std::function<bool(int)> progressCallback) {
 #ifdef ZLIB_FOUND
+    const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
+
     QFile original(originalName);
     if (!original.open(QIODevice::ReadOnly)) return false;
 
@@ -288,12 +306,18 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
     }
 
     original.seek(0);
+    qint64 compressedSize = 0;
     while (!original.atEnd()) {
         auto data = original.read(1024 * 1024);
         auto written = gzwrite(compressed, data.data(), data.size());
         if (written != data.size()) {
             gzclose(compressed);
             return false;
+        }
+        compressedSize += data.size();
+        if (!safeProgressCallback(static_cast<int>((100 * compressedSize) / original.size()))) {
+            gzclose(compressed);
+            return true; // User cancelled
         }
     }
     gzclose(compressed);

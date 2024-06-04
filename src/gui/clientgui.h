@@ -99,7 +99,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void refreshStatusNeeded();
         void folderSizeCompleted(QString nodeId, qint64 size);
         void driveBeingRemoved();
-        void logUploadStatusUpdated(LogUploadState state, int progress);
+        void logUploadStatusUpdated(LogUploadState status, int progress);
 
     public slots:
         // void onManageRightAndSharingItem(int syncDbId, const QString &filePath);
@@ -118,21 +118,21 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QScopedPointer<ParametersDialog> _parametersDialog;
         std::unique_ptr<AddDriveWizard> _addDriveWizard;
         std::unique_ptr<LoginDialog> _loginDialog;
-        bool _workaroundShowAndHideTray;
-        bool _workaroundNoAboutToShowUpdate;
-        bool _workaroundFakeDoubleClick;
-        bool _workaroundManualVisibility;
+        bool _workaroundShowAndHideTray{false};
+        bool _workaroundNoAboutToShowUpdate{false};
+        bool _workaroundFakeDoubleClick{false};
+        bool _workaroundManualVisibility{false};
         QTimer _delayedTrayUpdateTimer;
         QDateTime _notificationEnableDate;
-        AppClient *_app;
+        AppClient *_app{nullptr};
         std::map<int, UserInfoClient> _userInfoMap;
         std::map<int, AccountInfo> _accountInfoMap;
         std::map<int, DriveInfoClient> _driveInfoMap;
         std::map<int, SyncInfoClient> _syncInfoMap;
-        int _generalErrorsCounter;
-        int _currentUserDbId;
-        int _currentAccountDbId;
-        int _currentDriveDbId;
+        int _generalErrorsCounter{0};
+        int _currentUserDbId{0};
+        int _currentAccountDbId{0};
+        int _currentDriveDbId{0};
         QSet<int> _driveWithNewErrorSet;
         QTimer _refreshErrorListTimer;
         std::map<int, QList<ErrorInfo>> _errorInfoMap;
@@ -152,6 +152,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QString trayTooltipStatusString(SyncStatus status, bool unresolvedConflicts, bool paused);
         void executeSyncAction(ActionType type, int syncDbId);
         void refreshErrorList(int driveDbId);
+        ExitCode loadError(int driveDbId, int syncDbId, ErrorLevel level);
 
 
     private slots:
