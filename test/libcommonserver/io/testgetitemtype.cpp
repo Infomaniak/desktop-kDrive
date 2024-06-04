@@ -311,7 +311,7 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         const auto result =
             checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeUnknown);
-#endif
+
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
@@ -394,8 +394,8 @@ void TestIo::testGetItemTypeSimpleCases() {
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
         CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
 #else
-    CPPUNIT_ASSERT(itemType.ioError == IoErrorAccessDenied);
-    CPPUNIT_ASSERT(itemType.nodeType == NodeTypeUnknown);
+        CPPUNIT_ASSERT(itemType.ioError == IoErrorAccessDenied);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeUnknown);
 #endif
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeNone);
         CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
@@ -430,10 +430,10 @@ void TestIo::testGetItemTypeSimpleCases() {
         CPPUNIT_ASSERT(itemType.targetType == NodeTypeFile);
         CPPUNIT_ASSERT(itemType.targetPath == targetPath);
 #else
-    const auto result = checker.checkAccessIsDenied(path);
-    // Restore permission to allow subdir removal
-    std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
-    CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
+        const auto result = checker.checkAccessIsDenied(path);
+        // Restore permission to allow subdir removal
+        std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
+        CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
 #endif
     }
 }
