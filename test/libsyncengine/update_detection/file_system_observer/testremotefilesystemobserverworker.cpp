@@ -114,7 +114,7 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
     // Delete file
     if (!_testFileId.empty()) {
-        DeleteJob job(_driveDbId, _testFileId, "");
+        DeleteJob job(_driveDbId, _testFileId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
         job.runSynchronously();
     }
 
@@ -214,7 +214,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOGW_DEBUG(_logger, L"***** test delete file *****");
 
-        DeleteJob job(_driveDbId, _testFileId, "");
+        DeleteJob job(_driveDbId, _testFileId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
         job.runSynchronously();
 
         // Get activity from the server
