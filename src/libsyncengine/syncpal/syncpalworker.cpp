@@ -389,9 +389,21 @@ SyncStep SyncPalWorker::nextStep() const {
                        ? SyncStepUpdateDetection1
                        : SyncStepIdle;
             break;
-        case SyncStepUpdateDetection1:
-            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_localOperationSet->ops().size() << " local operations detected");
-            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_remoteOperationSet->ops().size() << " remote operations detected");
+        case SyncStepUpdateDetection1: {
+            auto logNbOps = [=](const ReplicaSide side) {
+                auto opsSet = side == ReplicaSideLocal ? _syncPal->_localOperationSet : _syncPal->_remoteOperationSet;
+                LOG_SYNCPAL_DEBUG(_logger, opsSet->ops().size()
+                                               << " " << Utility::side2Str(side).c_str()
+                                               << " operations detected (# CREATE: "
+                                               << opsSet->nbOpsByType(OperationTypeCreate)
+                                               << ", # EDIT: " << opsSet->nbOpsByType(OperationTypeEdit)
+                                               << ", # MOVE: " << opsSet->nbOpsByType(OperationTypeMove)
+                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete)
+                                               << ")");
+            };
+            logNbOps(ReplicaSideLocal);
+            logNbOps(ReplicaSideRemote);
+
             if (!_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap().empty()) {
                 _syncPal->fixCorruptedFile(_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap());
                 _syncPal->_restart = true;
@@ -402,6 +414,7 @@ SyncStep SyncPalWorker::nextStep() const {
                        ? SyncStepUpdateDetection2
                        : SyncStepDone;
             break;
+        }
         case SyncStepUpdateDetection2:
             return (_syncPal->_localUpdateTree->updated() || _syncPal->_remoteUpdateTree->updated()) ? SyncStepReconciliation1
                                                                                                      : SyncStepDone;
