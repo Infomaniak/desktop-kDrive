@@ -20,7 +20,7 @@
 
 #include "customdialog.h"
 #include "adddriveloginwidget.h"
-#include "adddrivesmartsyncwidget.h"
+#include "adddriveslitesyncwidget.h"
 #include "adddriveserverfolderswidget.h"
 #include "adddrivelocalfolderwidget.h"
 #include "adddriveextensionsetupwidget.h"
@@ -48,21 +48,21 @@ class AddDriveWizard : public CustomDialog {
         inline int syncDbId() { return _syncDbId; }
 
     private:
-        enum Step { None = -1, Login, ListDrives, SmartSync, RemoteFolders, LocalFolder, ExtensionSetup, Confirmation };
+        enum Step { None = -1, Login, ListDrives, LiteSync, RemoteFolders, LocalFolder, ExtensionSetup, Confirmation };
 
         std::shared_ptr<ClientGui> _gui;
 
         QStackedWidget *_stepStackedWidget;
         AddDriveLoginWidget *_addDriveLoginWidget;
         AddDriveListWidget *_addDriveListWidget;
-        AddDriveSmartSyncWidget *_addDriveSmartSyncWidget;
+        AddDriveLiteSyncWidget *_addDriveLiteSyncWidget;
         AddDriveServerFoldersWidget *_addDriveServerFoldersWidget;
         AddDriveLocalFolderWidget *_addDriveLocalFolderWidget;
         AddDriveExtensionSetupWidget *_addDriveExtensionSetupWidget;
         AddDriveConfirmationWidget *_addDriveConfirmationWidget;
         Step _currentStep;
         QString _loginUrl;
-        bool _smartSync;
+        bool _liteSync;
         QString _serverFolderPath;
         qint64 _selectionSize;
         QSet<QString> _blackList;
@@ -79,7 +79,7 @@ class AddDriveWizard : public CustomDialog {
         void start();
         void startNextStep(bool backward = false);
         bool addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath, const QString &serverFolderPath,
-                     bool smartSync, const QSet<QString> &blackList, const QSet<QString> &whiteList);
+                     bool liteSync, const QSet<QString> &blackList, const QSet<QString> &whiteList);
 
     private slots:
         void onStepTerminated(bool next = true);

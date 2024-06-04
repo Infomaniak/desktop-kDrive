@@ -48,8 +48,8 @@ class AddDriveLocalFolderWidget : public QWidget {
         void setDrive(const QString &driveName);
         void setLocalFolderPath(const QString &path);
         inline QString localFolderPath() const { return _localFolderPath; }
-        inline void setSmartSync(bool smartSync) { _smartSync = smartSync; }
-        inline bool folderCompatibleWithSmartSync() const { return _folderCompatibleWithSmartSync; }
+        inline void setLiteSync(bool liteSync) { _liteSync = liteSync; }
+        inline bool folderCompatibleWithLiteSync() const { return _folderCompatibleWithLiteSync; }
         void setButtonIcon(const QColor &value);
 
     signals:
@@ -80,8 +80,8 @@ class AddDriveLocalFolderWidget : public QWidget {
         QSize _warningIconSize;
         QColor _logoColor;
         bool _needToSave;
-        bool _smartSync;
-        bool _folderCompatibleWithSmartSync;
+        bool _liteSync;
+        bool _folderCompatibleWithLiteSync;
 
         QPointer<DisabledOverlay> _disabledOverlay = nullptr;
 

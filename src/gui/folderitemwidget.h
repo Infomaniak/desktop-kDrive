@@ -43,7 +43,7 @@ class FolderItemWidget : public QWidget {
         void setUpdateWidgetVisible(bool visible);
         void setUpdateWidgetLabelVisible(bool visible);
         void setSupportVfs(bool value);
-        void setSmartSyncActivated(bool value);
+        void setLiteSyncActivated(bool value);
         void closeFolderView();
         SyncInfoClient *getSyncInfoClient() const noexcept;
         const DriveInfoClient *getDriveInfoClient() const noexcept;
@@ -69,11 +69,11 @@ class FolderItemWidget : public QWidget {
         CustomToolButton *_menuButton{nullptr};
         QLabel *_statusIconLabel{nullptr};
         QLabel *_nameLabel{nullptr};
-        CustomLabel *_smartSyncIconLabel;
+        CustomLabel *_liteSyncIconLabel;
         QWidget *_updateWidget{nullptr};
         bool _isExpanded{false};
-        bool _smartSyncAvailable{false};
-        bool _smartSyncActivated{false};
+        bool _liteSyncAvailable{false};
+        bool _liteSyncActivated{false};
         QLabel *_synchroLabel{nullptr};
         QLabel *_saveLabel{nullptr};
         QPushButton *_cancelButton{nullptr};

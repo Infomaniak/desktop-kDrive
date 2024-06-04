@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "adddrivesmartsyncwidget.h"
+#include "adddriveslitesyncwidget.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
 #include "config.h"
@@ -45,26 +45,26 @@ static const int progressBarMax = 5;
 static const QSize pictureIconSize = QSize(202, 140);
 static const QSize checkIconSize = QSize(20, 20);
 
-Q_LOGGING_CATEGORY(lcAddDriveSmartSyncWidget, "gui.adddrivesmartsyncwidget", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAddDriveLiteSyncWidget, "gui.adddrivesmartsyncwidget", QtInfoMsg)
 
-AddDriveSmartSyncWidget::AddDriveSmartSyncWidget(QWidget *parent)
+AddDriveLiteSyncWidget::AddDriveLiteSyncWidget(QWidget *parent)
     : QWidget(parent),
       _logoTextIconLabel(nullptr),
       _backButton(nullptr),
       _laterButton(nullptr),
       _yesButton(nullptr),
       _logoColor(QColor()),
-      _smartSync(false) {
+      _liteSync(false) {
     initUI();
 }
 
-void AddDriveSmartSyncWidget::setButtonIcon(const QColor &value) {
+void AddDriveLiteSyncWidget::setButtonIcon(const QColor &value) {
     if (_backButton) {
         _backButton->setIcon(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-left.svg", value));
     }
 }
 
-void AddDriveSmartSyncWidget::initUI() {
+void AddDriveLiteSyncWidget::initUI() {
     QVBoxLayout *mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
@@ -198,47 +198,47 @@ void AddDriveSmartSyncWidget::initUI() {
     _yesButton->setText(tr("YES"));
     buttonsHBox->addWidget(_yesButton);
 
-    connect(textLabel, &QLabel::linkActivated, this, &AddDriveSmartSyncWidget::onLinkActivated);
-    connect(_backButton, &QPushButton::clicked, this, &AddDriveSmartSyncWidget::onBackButtonTriggered);
-    connect(_laterButton, &QPushButton::clicked, this, &AddDriveSmartSyncWidget::onLaterButtonTriggered);
-    connect(_yesButton, &QPushButton::clicked, this, &AddDriveSmartSyncWidget::onYesButtonTriggered);
+    connect(textLabel, &QLabel::linkActivated, this, &AddDriveLiteSyncWidget::onLinkActivated);
+    connect(_backButton, &QPushButton::clicked, this, &AddDriveLiteSyncWidget::onBackButtonTriggered);
+    connect(_laterButton, &QPushButton::clicked, this, &AddDriveLiteSyncWidget::onLaterButtonTriggered);
+    connect(_yesButton, &QPushButton::clicked, this, &AddDriveLiteSyncWidget::onYesButtonTriggered);
 }
 
-void AddDriveSmartSyncWidget::onLinkActivated(const QString &link) {
+void AddDriveLiteSyncWidget::onLinkActivated(const QString &link) {
     if (link == KDC::GuiUtility::learnMoreLink) {
         // Learn more: Lite Sync
         if (!QDesktopServices::openUrl(QUrl(LEARNMORE_LITESYNC_URL))) {
-            qCWarning(lcAddDriveSmartSyncWidget) << "QDesktopServices::openUrl failed for " << link;
+            qCWarning(lcAddDriveLiteSyncWidget) << "QDesktopServices::openUrl failed for " << link;
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(link), QMessageBox::Ok, this);
             msgBox.exec();
         }
     }
 }
 
-void AddDriveSmartSyncWidget::setLogoColor(const QColor &color) {
+void AddDriveLiteSyncWidget::setLogoColor(const QColor &color) {
     _logoColor = color;
     _logoTextIconLabel->setPixmap(
         KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor).pixmap(logoTextIconSize));
 }
 
-void AddDriveSmartSyncWidget::onBackButtonTriggered(bool checked) {
+void AddDriveLiteSyncWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
     emit terminated(false);
 }
 
-void AddDriveSmartSyncWidget::onLaterButtonTriggered(bool checked) {
+void AddDriveLiteSyncWidget::onLaterButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
-    _smartSync = false;
+    _liteSync = false;
 
     emit terminated();
 }
 
-void AddDriveSmartSyncWidget::onYesButtonTriggered(bool checked) {
+void AddDriveLiteSyncWidget::onYesButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
-    _smartSync = true;
+    _liteSync = true;
 
     emit terminated();
 }

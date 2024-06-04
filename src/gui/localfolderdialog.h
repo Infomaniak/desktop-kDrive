@@ -40,8 +40,8 @@ class LocalFolderDialog : public CustomDialog {
         explicit LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent = nullptr);
 
         inline QString localFolderPath() const { return _localFolderPath; }
-        inline void setSmartSync(bool smartSync) { _smartSync = smartSync; }
-        inline bool folderCompatibleWithSmartSync() const { return _folderCompatibleWithSmartSync; }
+        inline void setLiteSync(bool liteSync) { _liteSync = liteSync; }
+        inline bool folderCompatibleWithLiteSync() const { return _folderCompatibleWithLiteSync; }
 
     signals:
         void openFolder(const QString &filePath);
@@ -63,8 +63,8 @@ class LocalFolderDialog : public CustomDialog {
         QLabel *_warningIconLabel;
         QLabel *_warningLabel;
         bool _okToContinue;
-        bool _smartSync;
-        bool _folderCompatibleWithSmartSync;
+        bool _liteSync;
+        bool _folderCompatibleWithLiteSync;
 
         inline QColor folderIconColor() const { return _folderIconColor; }
         inline void setFolderIconColor(QColor color) {
