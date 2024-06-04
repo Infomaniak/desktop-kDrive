@@ -27,6 +27,8 @@
 #import <AppKit/NSApplication.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 
+#include <log4cplus/loggingmacros.h>
+
 namespace KDC {
 
 IoError nsError2ioError(NSError *nsError) noexcept {

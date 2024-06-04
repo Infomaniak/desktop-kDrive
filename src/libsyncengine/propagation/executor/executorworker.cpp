@@ -1393,8 +1393,10 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
     } else {
         try {
             job = std::make_shared<DeleteJob>(
-                _syncPal->_driveDbId, syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
-                absoluteLocalFilePath);
+                _syncPal->_driveDbId
+                , syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string()
+                , syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string()
+                , absoluteLocalFilePath);
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DeleteJob::DeleteJob for driveDbId=" << _syncPal->_driveDbId << L" : "
                                                                                        << Utility::s2ws(e.what()).c_str());

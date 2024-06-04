@@ -25,6 +25,8 @@
 #include "libcommonserver/io/iohelper.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 
+#include "localfilesystemobserverworker.h"
+
 namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
@@ -494,18 +496,23 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                     continue;
                 }
 
-                const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
-
-                if (type == NodeTypeFile && !isLink) {
-                    // On Windows, we receive CREATE event while the file is still being copied
-                    // Do not start synchronizing the file while copying is in progress
-                    const SyncPath absolutePath = _syncPal->_localPath / snapPath;
-                    if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
-                        LOG_SYNCPAL_INFO(_logger, L"Item \"" << Path2WStr(absolutePath).c_str()
-                                                             << L"\" is not ready. Synchronization postponed.");
-                        continue;
-                    }
-                }
+                // TODO : this portion of code aimed to wait for a file to be available locally before starting to synchronize it
+                // For example, on Windows, when copying a big file inside the sync folder, the creation event is received
+                // immediately but the copy will take some time. Therefor, the file will appear locked during the copy.
+                // However, this will also block the update of file locked by an application during its edition (Microsoft Office,
+                // Open Office, ...)
+//                const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
+//
+//                if (type == NodeTypeFile && !isLink) {
+//                    // On Windows, we receive CREATE event while the file is still being copied
+//                    // Do not start synchronizing the file while copying is in progress
+//                    const SyncPath absolutePath = _syncPal->_localPath / snapPath;
+//                    if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
+//                        LOG_SYNCPAL_INFO(_logger, L"Item \"" << Path2WStr(absolutePath).c_str()
+//                                                             << L"\" is not ready. Synchronization postponed.");
+//                        continue;
+//                    }
+//                }
             }
 
             // Create operation

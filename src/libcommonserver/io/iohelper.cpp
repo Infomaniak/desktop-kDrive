@@ -272,11 +272,11 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
     }
 
     isHidden = filestat.isHidden;
-#endif
+#endif  // #ifdef __APPLE__
 
     return true;
 }
-#endif
+#endif  // #if defined(__APPLE__) || defined(__unix__)
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is a symbolic link.
