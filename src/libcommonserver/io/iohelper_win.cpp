@@ -447,7 +447,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     ioError = dWordError2ioError(result);
     if (ioError != IoErrorSuccess) {
         LOGW_INFO(logger,
-                  L"GetNamedSecurityInfo failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
+                  L"GetNamedSecurityInfo failed: " << Utility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
         LocalFree(psecDesc);
         return false;  // Caller should call _isExpectedError
     }
