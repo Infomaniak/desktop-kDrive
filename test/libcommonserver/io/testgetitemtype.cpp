@@ -314,6 +314,7 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
+#endif
 
 #if defined(_WIN32)
     // A Windows junction on a regular folder.
