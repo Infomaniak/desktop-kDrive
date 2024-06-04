@@ -94,67 +94,57 @@ static const std::vector<ExclusionTemplate> excludedTemplates = {
 // List of names that should be rejected
 static const std::vector<std::string> rejectedFiles =
 {
-    // *~
     "test~",
     ".test~",
-    // *.~*
     "*.~*",
     ".~",
     "test.~test",
     "test.~",
     ".~test",
-    // ~*.tmp
     "~test.tmp",
-    // *_conflict_*_*_*
     "testfile_conflict_20220913_130102_abcdefghij.txt",
     "testfile_conflict_test_20220913_130102_abcdefghij.txt",
     "_conflict___",
-    // *_blacklisted_*_*_*
     "testfile_blacklisted_20220913_130102_abcdefghij.txt",
 #if defined(__APPLE__)
-    // .DS_Store
     ".DS_Store",
-    // .ds_store
     ".ds_store",
-    // .apdisk
     ".apdisk",
-    // Icon\r*
     "Icon\r*",
     "Icon\r",
     "Icon\rtest",
 #elif defined(_WIN32)
-
+    "test.kate-swp",
+    "System Volume Information",
+    "*.app"
 #else
-
+    ".fuse_hidden1",
+    ".gnucash.tmp-",
+    "test.gnucash.tmp-test",
+    "test.test.gnucash.tmp-test"
 #endif
 };
 
 // List of names that should be accepted
 static const std::vector<std::string> acceptedFiles =
 {
-    // *~
     "~test",
-    // *.~*
     "test.test~test",
-    // ~*.tmp
     "test.tmp",
     "~.tmp2",
-    // *_conflict_*_*_*
     "testfile_conflict_130102_abcdefghij.txt",
     "conflict_20220913_130102_abcdefghij.txt",
-    // *_blacklisted_*_*_*
     "testfile_blacklisted_130102_abcdefghij.txt",
 #if defined(__APPLE__)
-    // .apdisk
     "test.apdisk",
-    // Icon\r*
     "test_Icon\rtest"
 #elif defined(_WIN32)
-// Windows only
-
+    "test.testkate-swp",
+    "system volume information",
+    "System test Volume Information"
 #else
-// Linux only
-
+    "test.fuse_hidden"
+    "test.gnucash.test.tmp-test"
 #endif
 };
 
