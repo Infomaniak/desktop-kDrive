@@ -49,22 +49,22 @@ class LocalFolderDialog : public CustomDialog {
     private:
         std::shared_ptr<ClientGui> _gui;
         QString _localFolderPath;
-        QPushButton *_continueButton;
-        QWidget *_folderSelectionWidget;
-        QWidget *_folderSelectedWidget;
-        QLabel *_folderIconLabel;
-        QLabel *_folderNameLabel;
-        QLabel *_folderPathLabel;
+        QPushButton *_continueButton{nullptr};
+        QWidget *_folderSelectionWidget{nullptr};
+        QWidget *_folderSelectedWidget{nullptr};
+        QLabel *_folderIconLabel{nullptr};
+        QLabel *_folderNameLabel{nullptr};
+        QLabel *_folderPathLabel{nullptr};
         QColor _folderIconColor;
         QSize _folderIconSize;
         QColor _warningIconColor;
         QSize _warningIconSize;
-        QWidget *_warningWidget;
-        QLabel *_warningIconLabel;
-        QLabel *_warningLabel;
-        bool _okToContinue;
-        bool _liteSync;
-        bool _folderCompatibleWithLiteSync;
+        QWidget *_warningWidget{nullptr};
+        QLabel *_warningIconLabel{nullptr};
+        QLabel *_warningLabel{nullptr};
+        bool _okToContinue{false};
+        bool _liteSync{false};
+        bool _folderCompatibleWithLiteSync{false};
 
         inline QColor folderIconColor() const { return _folderIconColor; }
         inline void setFolderIconColor(QColor color) {

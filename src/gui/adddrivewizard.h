@@ -52,25 +52,25 @@ class AddDriveWizard : public CustomDialog {
 
         std::shared_ptr<ClientGui> _gui;
 
-        QStackedWidget *_stepStackedWidget;
-        AddDriveLoginWidget *_addDriveLoginWidget;
-        AddDriveListWidget *_addDriveListWidget;
-        AddDriveLiteSyncWidget *_addDriveLiteSyncWidget;
-        AddDriveServerFoldersWidget *_addDriveServerFoldersWidget;
-        AddDriveLocalFolderWidget *_addDriveLocalFolderWidget;
-        AddDriveExtensionSetupWidget *_addDriveExtensionSetupWidget;
-        AddDriveConfirmationWidget *_addDriveConfirmationWidget;
+        QStackedWidget *_stepStackedWidget{nullptr};
+        AddDriveLoginWidget *_addDriveLoginWidget{nullptr};
+        AddDriveListWidget *_addDriveListWidget{nullptr};
+        AddDriveLiteSyncWidget *_addDriveLiteSyncWidget{nullptr};
+        AddDriveServerFoldersWidget *_addDriveServerFoldersWidget{nullptr};
+        AddDriveLocalFolderWidget *_addDriveLocalFolderWidget{nullptr};
+        AddDriveExtensionSetupWidget *_addDriveExtensionSetupWidget{nullptr};
+        AddDriveConfirmationWidget *_addDriveConfirmationWidget{nullptr};
         Step _currentStep;
         QString _loginUrl;
-        bool _liteSync;
+        bool _liteSync{false};
         QString _serverFolderPath;
-        qint64 _selectionSize;
+        qint64 _selectionSize{0};
         QSet<QString> _blackList;
         QSet<QString> _whiteList;
         QString _localFolderPath;
         int _userDbId;
         DriveAvailableInfo _driveInfo;
-        int _syncDbId;
+        int _syncDbId{0};
         KDC::GuiUtility::WizardAction _action;
 
         void setButtonIcon(const QColor &value) override;

@@ -311,7 +311,6 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         const auto result =
             checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeUnknown);
-
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 #endif

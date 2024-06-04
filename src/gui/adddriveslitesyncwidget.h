@@ -47,12 +47,12 @@ class AddDriveLiteSyncWidget : public QWidget {
         void terminated(bool next = true);
 
     private:
-        QLabel *_logoTextIconLabel;
-        QPushButton *_backButton;
-        QPushButton *_laterButton;
-        QPushButton *_yesButton;
+        QLabel *_logoTextIconLabel{nullptr};
+        QPushButton *_backButton{nullptr};
+        QPushButton *_laterButton{nullptr};
+        QPushButton *_yesButton{nullptr};
         QColor _logoColor;
-        bool _liteSync;
+        bool _liteSync{false};
 
         inline QColor logoColor() const { return _logoColor; }
         void setLogoColor(const QColor &color);

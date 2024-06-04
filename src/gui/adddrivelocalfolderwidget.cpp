@@ -55,33 +55,7 @@ static const int progressBarMax = 5;
 Q_LOGGING_CATEGORY(lcAddDriveLocalFolderWidget, "gui.adddrivelocalfolderwidget", QtInfoMsg)
 
 AddDriveLocalFolderWidget::AddDriveLocalFolderWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : QWidget(parent),
-      _gui(gui),
-      _localFolderPath(QString()),
-      _defaultLocalFolderPath(QString()),
-      _logoTextIconLabel(nullptr),
-      _titleLabel(nullptr),
-      _folderIconLabel(nullptr),
-      _folderNameLabel(nullptr),
-      _folderPathLabel(nullptr),
-      _warningWidget(nullptr),
-      _warningIconLabel(nullptr),
-      _warningLabel(nullptr),
-      _infoWidget(nullptr),
-      _infoIconLabel(nullptr),
-      _infoLabel(nullptr),
-      _backButton(nullptr),
-      _endButton(nullptr),
-      _folderIconColor(QColor()),
-      _folderIconSize(QSize()),
-      _infoIconColor(QColor()),
-      _infoIconSize(QSize()),
-      _warningIconColor(QColor()),
-      _warningIconSize(QSize()),
-      _logoColor(QColor()),
-      _needToSave(false),
-      _liteSync(false),
-      _folderCompatibleWithLiteSync(false) {
+    : QWidget(parent), _gui(gui) {
     initUI();
     updateUI();
 }

@@ -46,25 +46,7 @@ static const int warningBoxSpacing = 10;
 Q_LOGGING_CATEGORY(lcLocalFolderDialog, "gui.localfolderdialog", QtInfoMsg)
 
 LocalFolderDialog::LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent)
-    : CustomDialog(true, parent),
-      _gui(gui),
-      _localFolderPath(localFolderPath),
-      _continueButton(nullptr),
-      _folderSelectionWidget(nullptr),
-      _folderSelectedWidget(nullptr),
-      _folderIconLabel(nullptr),
-      _folderNameLabel(nullptr),
-      _folderPathLabel(nullptr),
-      _folderIconColor(QColor()),
-      _folderIconSize(QSize()),
-      _warningIconColor(QColor()),
-      _warningIconSize(QSize()),
-      _warningWidget(nullptr),
-      _warningIconLabel(nullptr),
-      _warningLabel(nullptr),
-      _okToContinue(false),
-      _liteSync(false),
-      _folderCompatibleWithLiteSync(false) {
+    : CustomDialog(true, parent), _gui(gui), _localFolderPath(localFolderPath) {
     initUI();
     updateUI();
 }

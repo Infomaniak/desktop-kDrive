@@ -42,23 +42,8 @@ Q_LOGGING_CATEGORY(lcAddDriveWizard, "gui.adddrivewizard", QtInfoMsg)
 AddDriveWizard::AddDriveWizard(std::shared_ptr<ClientGui> gui, int userDbId, QWidget *parent)
     : CustomDialog(false, parent),
       _gui(gui),
-      _stepStackedWidget(nullptr),
-      _addDriveLoginWidget(nullptr),
-      _addDriveListWidget(nullptr),
-      _addDriveLiteSyncWidget(nullptr),
-      _addDriveServerFoldersWidget(nullptr),
-      _addDriveLocalFolderWidget(nullptr),
-      _addDriveExtensionSetupWidget(nullptr),
-      _addDriveConfirmationWidget(nullptr),
       _currentStep(userDbId ? Login : None),
-      _loginUrl(QString()),
-      _liteSync(false),
-      _serverFolderPath(QString()),
-      _selectionSize(0),
-      _blackList(QSet<QString>()),
-      _localFolderPath(QString()),
       _userDbId(userDbId),
-      _syncDbId(0),
       _action(KDC::GuiUtility::WizardAction::OpenFolder) {
     initUI();
     start();
