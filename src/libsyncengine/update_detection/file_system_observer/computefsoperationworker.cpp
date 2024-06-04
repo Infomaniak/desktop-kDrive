@@ -206,7 +206,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 SyncName dbName = side == ReplicaSideLocal ? dbNode.nameLocal() : dbNode.nameRemote();
                 const SyncPath &dbPath = side == ReplicaSideLocal ? localDbPath : remoteDbPath;
                 const std::shared_ptr<Snapshot> snapshot =
-                    side == ReplicaSideLocal ? _syncPal->_localSnapshot : _syncPal->_remoteSnapshot;
+                    side == ReplicaSideLocal ? _syncPal->_localSnapshotCopy : _syncPal->_remoteSnapshotCopy;
                 std::shared_ptr<FSOperationSet> opSet =
                     side == ReplicaSideLocal ? _syncPal->_localOperationSet : _syncPal->_remoteOperationSet;
 
@@ -410,7 +410,8 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
 }
 
 ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const std::unordered_set<NodeId> &idsSet) {
-    const std::shared_ptr<Snapshot> snapshot = side == ReplicaSideLocal ? _syncPal->_localSnapshot : _syncPal->_remoteSnapshot;
+    const std::shared_ptr<Snapshot> snapshot =
+        side == ReplicaSideLocal ? _syncPal->_localSnapshotCopy : _syncPal->_remoteSnapshotCopy;
     std::shared_ptr<FSOperationSet> opSet =
         side == ReplicaSideLocal ? _syncPal->_localOperationSet : _syncPal->_remoteOperationSet;
 
@@ -566,28 +567,28 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
             return ExitCodeOk;
         }
 
-        if (!_syncPal->_localSnapshot->exists(dbNode.nodeIdLocal().value()) ||
-            !_syncPal->_remoteSnapshot->exists(dbNode.nodeIdRemote().value())) {
+        if (!_syncPal->_localSnapshotCopy->exists(dbNode.nodeIdLocal().value()) ||
+            !_syncPal->_remoteSnapshotCopy->exists(dbNode.nodeIdRemote().value())) {
             // Ignore if item does not exist
             return ExitCodeOk;
         }
 
-        const bool localSnapshotIsLink = _syncPal->_localSnapshot->isLink(dbNode.nodeIdLocal().value());
+        const bool localSnapshotIsLink = _syncPal->_localSnapshotCopy->isLink(dbNode.nodeIdLocal().value());
         if (localSnapshotIsLink) {
             // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
             return ExitCodeOk;
         }
 
-        int64_t localSnapshotSize = _syncPal->_localSnapshot->size(dbNode.nodeIdLocal().value());
-        int64_t remoteSnapshotSize = _syncPal->_remoteSnapshot->size(dbNode.nodeIdRemote().value());
-        SyncTime localSnapshotLastModified = _syncPal->_localSnapshot->lastModified(dbNode.nodeIdLocal().value());
-        SyncTime remoteSnapshotLastModified = _syncPal->_remoteSnapshot->lastModified(dbNode.nodeIdRemote().value());
+        int64_t localSnapshotSize = _syncPal->_localSnapshotCopy->size(dbNode.nodeIdLocal().value());
+        int64_t remoteSnapshotSize = _syncPal->_remoteSnapshotCopy->size(dbNode.nodeIdRemote().value());
+        SyncTime localSnapshotLastModified = _syncPal->_localSnapshotCopy->lastModifed(dbNode.nodeIdLocal().value());
+        SyncTime remoteSnapshotLastModified = _syncPal->_remoteSnapshotCopy->lastModifed(dbNode.nodeIdRemote().value());
 
         // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
         if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
             localSnapshotLastModified == remoteSnapshotLastModified) {
             SyncPath localSnapshotPath;
-            if (!_syncPal->_localSnapshot->path(dbNode.nodeIdLocal().value(), localSnapshotPath)) {
+            if (!_syncPal->_localSnapshotCopy->path(dbNode.nodeIdLocal().value(), localSnapshotPath)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
                                                << SyncName2WStr(dbNode.nameLocal()).c_str() << L" ("
                                                << Utility::s2ws(dbNode.nodeIdLocal().value()).c_str() << L")");
@@ -750,7 +751,7 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<Snapshot> remoteSn
     // Therefor check also with path
     SyncPath relativePath;
     if (remoteSnapshot->path(remoteNodeId, relativePath)) {
-        localNodeId = _syncPal->_localSnapshot->itemId(relativePath);
+        localNodeId = _syncPal->_localSnapshotCopy->itemId(relativePath);
         if (!localNodeId.empty()) {
             // We already synchronize the item locally, keep it
             return false;
@@ -796,7 +797,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
 ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded) {
     if (side != ReplicaSideLocal) return ExitCodeOk;
 
-    if (!_syncPal->_localSnapshot->itemId(relativePath).empty()) {
+    if (!_syncPal->_localSnapshotCopy->itemId(relativePath).empty()) {
         // Item with the same path but different ID exist
         // This is an Edit operation (Delete-Create)
         return ExitCodeOk;
@@ -848,7 +849,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
 
     if (isExcluded) return ExitCodeOk;
 
-    if (_syncPal->_localSnapshot->isOrphan(nodeId)) {
+    if (_syncPal->_localSnapshotCopy->isOrphan(nodeId)) {
         // This can happen if the propagation of template exclusions has been unexpectedly interrupted.
         // This special handling should be removed once the app keeps track on such interruptions.
         return ExitCodeOk;

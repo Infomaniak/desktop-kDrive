@@ -277,8 +277,9 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
         case SyncStepUpdateDetection1:
             workers[0] = _syncPal->_computeFSOperationsWorker;
             workers[1] = nullptr;
-            inputSharedObject[0] = _syncPal->_localSnapshot;
-            inputSharedObject[1] = _syncPal->_remoteSnapshot;
+            _syncPal->copySnapshots();
+            inputSharedObject[0] = _syncPal->_localSnapshotCopy;
+            inputSharedObject[1] = _syncPal->_remoteSnapshotCopy;
             _syncPal->_restart = false;
             break;
         case SyncStepUpdateDetection2:

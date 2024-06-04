@@ -32,9 +32,10 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
     }
 
     std::shared_ptr<Snapshot> snapshot =
-        (node->side() == ReplicaSide::ReplicaSideLocal ? _syncPal->_localSnapshot : _syncPal->_remoteSnapshot);
+        (node->side() == ReplicaSide::ReplicaSideLocal ? _syncPal->_localSnapshotCopy : _syncPal->_remoteSnapshotCopy);
     std::shared_ptr<Snapshot> otherSnapshot =
-        (correspondingNode->side() == ReplicaSide::ReplicaSideLocal ? _syncPal->_localSnapshot : _syncPal->_remoteSnapshot);
+        (correspondingNode->side() == ReplicaSide::ReplicaSideLocal ? _syncPal->_localSnapshotCopy
+                                                                    : _syncPal->_remoteSnapshotCopy);
 
     // Create-Create pseudo-conflict
     if (node->hasChangeEvent(OperationTypeCreate) && correspondingNode->hasChangeEvent(OperationTypeCreate) &&

@@ -87,6 +87,8 @@ SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, bool ha
       _interruptSync(std::shared_ptr<bool>(new bool(false))),
       _localSnapshot(nullptr),
       _remoteSnapshot(nullptr),
+      _localSnapshotCopy(nullptr),
+      _remoteSnapshotCopy(nullptr),
       _localOperationSet(nullptr),
       _remoteOperationSet(nullptr),
       _localUpdateTree(nullptr),
@@ -145,6 +147,8 @@ SyncPal::SyncPal(int syncDbId, const std::string &version)
       _interruptSync(std::shared_ptr<bool>(new bool(false))),
       _localSnapshot(nullptr),
       _remoteSnapshot(nullptr),
+      _localSnapshotCopy(nullptr),
+      _remoteSnapshotCopy(nullptr),
       _localOperationSet(nullptr),
       _remoteOperationSet(nullptr),
       _localUpdateTree(nullptr),
@@ -613,6 +617,8 @@ void SyncPal::createSharedObjects() {
     // Create shared objects
     _localSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
     _remoteSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
+    _localSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
+    _remoteSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
     _localOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
     _remoteOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
     _localUpdateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
@@ -688,6 +694,8 @@ void SyncPal::free() {
     _interruptSync.reset();
     _localSnapshot.reset();
     _remoteSnapshot.reset();
+    _localSnapshotCopy.reset();
+    _remoteSnapshotCopy.reset();
     _localOperationSet.reset();
     _remoteOperationSet.reset();
     _localUpdateTree.reset();
@@ -699,6 +707,8 @@ void SyncPal::free() {
     ASSERT(_interruptSync.use_count() == 0);
     ASSERT(_localSnapshot.use_count() == 0);
     ASSERT(_remoteSnapshot.use_count() == 0);
+    ASSERT(_localSnapshotCopy.use_count() == 0);
+    ASSERT(_remoteSnapshotCopy.use_count() == 0);
     ASSERT(_localOperationSet.use_count() == 0);
     ASSERT(_remoteOperationSet.use_count() == 0);
     ASSERT(_localUpdateTree.use_count() == 0);
@@ -1022,8 +1032,8 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshot->exists(*nodeIdIt)
-                                                                : _remoteSnapshot->exists(*nodeIdIt);
+        bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshotCopy->exists(*nodeIdIt)
+                                                                : _remoteSnapshotCopy->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
@@ -1532,6 +1542,11 @@ void SyncPal::refreshTmpBlacklist() {
 
 void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
+}
+
+void SyncPal::copySnapshots() {
+    _localSnapshotCopy = _localSnapshot;
+    _remoteSnapshotCopy = _remoteSnapshot;
 }
 
 }  // namespace KDC

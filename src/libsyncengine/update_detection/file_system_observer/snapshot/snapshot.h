@@ -33,6 +33,9 @@ class Snapshot : public SharedObject {
     public:
         Snapshot(ReplicaSide side, const DbNode &dbNode);
 
+        Snapshot(Snapshot const &) = delete;
+        Snapshot &operator=(Snapshot &other);
+
         void init();
 
         bool updateItem(const SnapshotItem &item);

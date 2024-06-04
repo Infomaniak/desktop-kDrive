@@ -223,7 +223,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void refreshTmpBlacklist();
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
 
-        std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) { return side == ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree; }
+		std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) { return side == ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree; }
+
+        void copySnapshots();
 
     private:
         log4cplus::Logger _logger;
@@ -279,6 +281,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<bool> _interruptSync;
         std::shared_ptr<Snapshot> _localSnapshot;
         std::shared_ptr<Snapshot> _remoteSnapshot;
+        std::shared_ptr<Snapshot> _localSnapshotCopy;
+        std::shared_ptr<Snapshot> _remoteSnapshotCopy;
         std::shared_ptr<FSOperationSet> _localOperationSet;
         std::shared_ptr<FSOperationSet> _remoteOperationSet;
         std::shared_ptr<UpdateTree> _localUpdateTree;

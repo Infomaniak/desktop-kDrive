@@ -35,6 +35,20 @@ Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode)
     _items.insert({_rootFolderId, SnapshotItem(_rootFolderId)});
 }
 
+Snapshot &Snapshot::operator=(Snapshot &other) {
+    if (this != &other) {
+        const std::scoped_lock lock(_mutex, other._mutex);
+
+        assert(_side == other._side);
+        assert(_rootFolderId == other._rootFolderId);
+
+        _items = other._items;
+        _isValid = other._isValid;
+    }
+
+    return *this;
+}
+
 void Snapshot::init() {
     const std::scoped_lock lock(_mutex);
     startUpdate();
