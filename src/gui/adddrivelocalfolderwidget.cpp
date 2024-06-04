@@ -254,43 +254,40 @@ void AddDriveLocalFolderWidget::initUI() {
 
 void AddDriveLocalFolderWidget::updateUI() {
     bool ok = !_localFolderPath.isEmpty();
-    if (ok) {
-        QDir dir(_localFolderPath);
-        _folderNameLabel->setText(dir.dirName());
-        _folderPathLabel->setText(
-            QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle).arg(_localFolderPath));
+    if (!ok) return;
 
-        if (_localFolderPath != _defaultLocalFolderPath) {
-            _infoLabel->setText(
-                tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName()));
-            _infoWidget->setVisible(true);
-        } else {
-            _infoWidget->setVisible(false);
+    const QDir dir(_localFolderPath);
+    _folderNameLabel->setText(dir.dirName());
+    _folderPathLabel->setText(QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle).arg(_localFolderPath));
+
+    if (_localFolderPath != _defaultLocalFolderPath) {
+        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName()));
+        _infoWidget->setVisible(true);
+    } else {
+        _infoWidget->setVisible(false);
+    }
+
+    if (_liteSync) {
+        VirtualFileMode virtualFileMode;
+        const ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
+        if (exitCode != ExitCodeOk) {
+            qCWarning(lcAddDriveLocalFolderWidget) << "Error in Requests::bestAvailableVfsMode";
+            return;
         }
 
-        if (_liteSync) {
-            VirtualFileMode virtualFileMode;
-            ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcAddDriveLocalFolderWidget) << "Error in Requests::bestAvailableVfsMode";
-                return;
-            }
-
-            if (virtualFileMode == VirtualFileModeWin || virtualFileMode == VirtualFileModeMac) {
-                // Check file system
-                QString fsName(KDC::CommonUtility::fileSystemName(_localFolderPath));
-                _folderCompatibleWithLiteSync = (virtualFileMode == VirtualFileModeWin && fsName == "NTFS") ||
-                                                (virtualFileMode == VirtualFileModeMac && fsName == "apfs");
-                if (!_folderCompatibleWithLiteSync) {
-                    _warningLabel->setText(tr("This folder is not compatible with Lite Sync."
-                                              " Please select another folder or if you continue Lite Sync will be disabled."
-                                              " <a style=\"%1\" href=\"%2\">Learn more</a>")
-                                               .arg(CommonUtility::linkStyle)
-                                               .arg(KDC::GuiUtility::learnMoreLink));
-                    _warningWidget->setVisible(true);
-                } else {
-                    _warningWidget->setVisible(false);
-                }
+        if (virtualFileMode == VirtualFileModeWin || virtualFileMode == VirtualFileModeMac) {
+            // Check file system
+            const QString fsName(KDC::CommonUtility::fileSystemName(_localFolderPath));
+            _folderCompatibleWithLiteSync = (virtualFileMode == VirtualFileModeWin && fsName == "NTFS") ||
+                                            (virtualFileMode == VirtualFileModeMac && fsName == "apfs");
+            if (!_folderCompatibleWithLiteSync) {
+                _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync."
+                                          " Please select another folder or if you continue Lite Sync will be disabled."
+                                          " <a style="%1" href="%2">Learn more</a>)")
+                                           .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
+                _warningWidget->setVisible(true);
+            } else {
+                _warningWidget->setVisible(false);
             }
         }
     }

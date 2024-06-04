@@ -205,12 +205,10 @@ void AddDriveWizard::startNextStep(bool backward) {
         _addDriveConfirmationWidget->setFolderPath(_localFolderPath);
     }
 
-    if (setupDrive) {
-        if (!addSync(_userDbId, _driveInfo.accountId(), _driveInfo.driveId(), _localFolderPath, _serverFolderPath, _liteSync,
-                     _blackList, _whiteList)) {
-            qCWarning(lcAddDriveWizard()) << "Error in addSync!";
-            reject();
-        }
+    if (setupDrive && !addSync(_userDbId, _driveInfo.accountId(), _driveInfo.driveId(), _localFolderPath, _serverFolderPath,
+                               _liteSync, _blackList, _whiteList)) {
+        qCWarning(lcAddDriveWizard()) << "Error in addSync!";
+        reject();
     }
 }
 
