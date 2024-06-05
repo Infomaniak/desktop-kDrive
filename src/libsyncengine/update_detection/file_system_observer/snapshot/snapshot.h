@@ -32,6 +32,7 @@ namespace KDC {
 class Snapshot : public SharedObject {
     public:
         Snapshot(ReplicaSide side, const DbNode &dbNode);
+        ~Snapshot();
 
         Snapshot(Snapshot const &) = delete;
         Snapshot &operator=(Snapshot &other);

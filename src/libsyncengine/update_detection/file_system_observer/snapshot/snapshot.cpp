@@ -35,6 +35,10 @@ Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode)
     _items.insert({_rootFolderId, SnapshotItem(_rootFolderId)});
 }
 
+Snapshot::~Snapshot() {
+    _items.clear();
+}
+
 Snapshot &Snapshot::operator=(Snapshot &other) {
     if (this != &other) {
         const std::scoped_lock lock(_mutex, other._mutex);
