@@ -23,8 +23,8 @@
 
 namespace KDC {
 static const int threadPoolMinCapacity = 10;
-static const uint64_t chunkMinSize = 10 * 1024 * 1024;                // 10MB
 static const uint64_t chunkMaxSize = 100 * 1024 * 1024;               // 100MB
+static const uint64_t chunkMinSize = 10 * 1024 * 1024;                // 10MB
 static const uint64_t useUploadSessionThreshold = 100 * 1024 * 1024;  // if file size > 100MB -> start upload session
 static const uint64_t optimalTotalChunks = 200;
 static const uint64_t maxTotalChunks = 10000;  // Theoretical max. file size 10'000 * 100MB = 1TB

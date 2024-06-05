@@ -57,9 +57,11 @@ static const NodeId pictureDirRemoteId = "56851";       // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373";         // test_ci/test_pictures/picture-1.jpg
 static const NodeId testFileRemoteId = "97370";         // test_ci/test_networkjobs/test_download.txt
 static const NodeId testFileRemoteRenameId = "97376";   // test_ci/test_networkjobs/test_rename*.txt
-static const NodeId testBigFileRemoteId = "97421";      // test_ci/big_file_dir/big_zip.zip
+static const NodeId testBigFileRemoteId = "97601";      // test_ci/big_file_dir/big_text_file.txt
 
 static const std::string desktopTeamTestDriveName = "Test Desktop App";
+static const std::string bigFileDirName = "big_file_dir";
+static const std::string bigFileName = "big_text_file.txt";
 
 void TestNetworkJobs::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
@@ -217,12 +219,12 @@ void TestNetworkJobs::testDownload() {
 
 void TestNetworkJobs::testDownloadAborted() {
     const TemporaryDirectory temporaryDirectory("testDownloadAborted");
-    SyncPath localDestFilePath = temporaryDirectory.path / "big_zip.zip";
+    SyncPath localDestFilePath = temporaryDirectory.path / bigFileName;
     std::shared_ptr<DownloadJob> job =
         std::make_shared<DownloadJob>(_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
     JobManager::instance()->queueAsyncJob(job);
 
-    Utility::msleep(5000);  // Wait 5sec
+    Utility::msleep(1000);  // Wait 1sec
 
     job->abort();
 
@@ -532,7 +534,7 @@ void TestNetworkJobs::testRename() {
 void TestNetworkJobs::testUpload() {
     CPPUNIT_ASSERT(createTestDir());
 
-    SyncPath localFilePath = localTestDirPath / "big_file_dir/big_file.mov";
+    SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), _dirId, 0);
     job.runSynchronously();
@@ -547,19 +549,19 @@ void TestNetworkJobs::testUpload() {
     if (dataObj) {
         name = dataObj->get(nameKey).toString();
     }
-    CPPUNIT_ASSERT(name == "big_file.mov");
+    CPPUNIT_ASSERT(name == bigFileName);
 }
 
 void TestNetworkJobs::testUploadAborted() {
     CPPUNIT_ASSERT(createTestDir());
 
-    SyncPath localFilePath = localTestDirPath / "big_file_dir/test_big_file.mov";
+    SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     std::shared_ptr<UploadJob> job =
         std::make_shared<UploadJob>(_driveDbId, localFilePath, localFilePath.filename().native(), _dirId, 0);
     JobManager::instance()->queueAsyncJob(job);
 
-    Utility::msleep(10000);  // Wait 10sec
+    Utility::msleep(1000);  // Wait 1sec
 
     job->abort();
 
@@ -588,7 +590,7 @@ void TestNetworkJobs::testUploadSessionSynchronous() {
 
     CPPUNIT_ASSERT(createTestDir());
 
-    SyncPath localFilePath = localTestDirPath / "big_file_dir/big_zip.zip";
+    SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
                                    1);
@@ -609,7 +611,7 @@ void TestNetworkJobs::testUploadSessionAsynchronous2() {
 
     CPPUNIT_ASSERT(createTestDir());
 
-    SyncPath localFilePath = localTestDirPath / "big_file_dir/big_zip.zip";
+    SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
                                    2);
@@ -630,7 +632,7 @@ void TestNetworkJobs::testUploadSessionAsynchronous5() {
 
     CPPUNIT_ASSERT(createTestDir());
 
-    SyncPath localFilePath = localTestDirPath / "big_file_dir/big_zip.zip";
+    SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
                                    5);
@@ -651,13 +653,13 @@ void TestNetworkJobs::testUploadSessionSynchronousAborted() {
 
     CPPUNIT_ASSERT(createTestDir());
 
-    SyncPath localFilePath = localTestDirPath / "big_file_dir/big_zip.zip";
+    SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     std::shared_ptr<UploadSession> uploadSessionJob = std::make_shared<UploadSession>(
         _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false, 1);
     JobManager::instance()->queueAsyncJob(uploadSessionJob);
 
-    Utility::msleep(5000);  // Wait 5sec
+    Utility::msleep(1000);  // Wait 1sec
 
     uploadSessionJob->abort();
 
@@ -672,13 +674,13 @@ void TestNetworkJobs::testUploadSessionAsynchronous5Aborted() {
 
     CPPUNIT_ASSERT(createTestDir());
 
-    SyncPath localFilePath = localTestDirPath / "big_file_dir/big_zip.zip";
+    SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     std::shared_ptr<UploadSession> uploadSessionJob = std::make_shared<UploadSession>(
         _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false, 5);
     JobManager::instance()->queueAsyncJob(uploadSessionJob);
 
-    Utility::msleep(5000);  // Wait 5sec
+    Utility::msleep(1000);  // Wait 1sec
 
     uploadSessionJob->abort();
 
