@@ -1009,8 +1009,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
     IoHelper::logArchiverDirectoryPath(logUploadTempFolder, ioError);
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in IoHelper::logArchiverDirectoryPath : "
-                                                   << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::logArchiverDirectoryPath: "
+                                                    << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         return ExitCodeSystemError;
     }
 
@@ -1022,7 +1022,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
     if (ioError != IoErrorSuccess) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in IoHelper::createDirectory : " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
+                 L"Error in IoHelper::createDirectory: " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         exitCause = ioError == IoErrorDiskFull ? ExitCauseNotEnoughDiskSpace : ExitCauseUnknown;
         return ExitCodeSystemError;
     }
