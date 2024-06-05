@@ -27,58 +27,25 @@ using namespace CppUnit;
 namespace KDC {
 
 static const std::vector<ExclusionTemplate> excludedTemplates = {
-    ExclusionTemplate(".parms.db"),
-    ExclusionTemplate(".sync_*.db"),
-    ExclusionTemplate(".parms.db-shm"),
-    ExclusionTemplate(".parms.db-wal"),
-    ExclusionTemplate(".sync_*.db-shm"),
-    ExclusionTemplate(".sync_*.db-wal"),
-    ExclusionTemplate(".sentry-native_client"),
-    ExclusionTemplate(".sentry-native_server"),
-    ExclusionTemplate("*_conflict_*_*_*"),
-    ExclusionTemplate("*_blacklisted_*_*_*"),
-    ExclusionTemplate("*~"),
-    ExclusionTemplate("~$*"),
-    ExclusionTemplate("*.~*"),
-    ExclusionTemplate("._*"),
-    ExclusionTemplate("~*.tmp"),
-    ExclusionTemplate("*.idlk"),
-    ExclusionTemplate("*.lock"),
-    ExclusionTemplate("*.lck"),
-    ExclusionTemplate("*.part"),
-    ExclusionTemplate(".~lock.*"),
-    ExclusionTemplate("*.symform"),
-    ExclusionTemplate("*.symform-store"),
-    ExclusionTemplate("*.unison"),
-    ExclusionTemplate(".directory"),
-    ExclusionTemplate(".sync.ffs_db"),
-    ExclusionTemplate(".synkron.*"),
-    ExclusionTemplate("*.crdownload"),
+    ExclusionTemplate(".parms.db"), ExclusionTemplate(".sync_*.db"), ExclusionTemplate(".parms.db-shm"),
+    ExclusionTemplate(".parms.db-wal"), ExclusionTemplate(".sync_*.db-shm"), ExclusionTemplate(".sync_*.db-wal"),
+    ExclusionTemplate(".sentry-native_client"), ExclusionTemplate(".sentry-native_server"), ExclusionTemplate("*_conflict_*_*_*"),
+    ExclusionTemplate("*_blacklisted_*_*_*"), ExclusionTemplate("*~"), ExclusionTemplate("~$*"), ExclusionTemplate("*.~*"),
+    ExclusionTemplate("._*"), ExclusionTemplate("~*.tmp"), ExclusionTemplate("*.idlk"), ExclusionTemplate("*.lock"),
+    ExclusionTemplate("*.lck"), ExclusionTemplate("*.part"), ExclusionTemplate(".~lock.*"), ExclusionTemplate("*.symform"),
+    ExclusionTemplate("*.symform-store"), ExclusionTemplate("*.unison"), ExclusionTemplate(".directory"),
+    ExclusionTemplate(".sync.ffs_db"), ExclusionTemplate(".synkron.*"), ExclusionTemplate("*.crdownload"),
 #if defined(__APPLE__)
     // macOS only
-    ExclusionTemplate(".fuse_hidden*"),
-    ExclusionTemplate("*.kate-swp"),
-    ExclusionTemplate(".DS_Store"),
-    ExclusionTemplate(".ds_store"),
-    ExclusionTemplate(".TemporaryItems"),
-    ExclusionTemplate(".Trashes"),
-    ExclusionTemplate(".DocumentRevisions-V100"),
-    ExclusionTemplate(".fseventd"),
-    ExclusionTemplate(".apdisk"),
-    ExclusionTemplate("*.photoslibrary"),
-    ExclusionTemplate("*.tvlibrary"),
-    ExclusionTemplate("*.musiclibrary"),
-    ExclusionTemplate("Icon\r*"),
-    ExclusionTemplate(".Spotlight-V100"),
-    ExclusionTemplate("*.lnk")
+    ExclusionTemplate(".fuse_hidden*"), ExclusionTemplate("*.kate-swp"), ExclusionTemplate(".DS_Store"),
+    ExclusionTemplate(".ds_store"), ExclusionTemplate(".TemporaryItems"), ExclusionTemplate(".Trashes"),
+    ExclusionTemplate(".DocumentRevisions-V100"), ExclusionTemplate(".fseventd"), ExclusionTemplate(".apdisk"),
+    ExclusionTemplate("*.photoslibrary"), ExclusionTemplate("*.tvlibrary"), ExclusionTemplate("*.musiclibrary"),
+    ExclusionTemplate("Icon\r*"), ExclusionTemplate(".Spotlight-V100"), ExclusionTemplate("*.lnk")
 #elif defined(_WIN32)
     // Windows only
-    ExclusionTemplate("*.kate-swp"),
-    ExclusionTemplate("System Volume Information"),
-    ExclusionTemplate("Thumbs.db"),
-    ExclusionTemplate("Desktop.ini"),
-    ExclusionTemplate("*.filepart"),
-    ExclusionTemplate("*.app")
+    ExclusionTemplate("*.kate-swp"), ExclusionTemplate("System Volume Information"), ExclusionTemplate("Thumbs.db"),
+    ExclusionTemplate("Desktop.ini"), ExclusionTemplate("*.filepart"), ExclusionTemplate("*.app")
 #else
     // Linux only
     ExclusionTemplate(".fuse_hidden*"),
@@ -92,8 +59,7 @@ static const std::vector<ExclusionTemplate> excludedTemplates = {
 };
 
 // List of names that should be rejected
-static const std::vector<std::string> rejectedFiles =
-{
+static const std::vector<std::string> rejectedFiles = {
     "test~",
     ".test~",
     "*.~*",
@@ -126,25 +92,23 @@ static const std::vector<std::string> rejectedFiles =
 };
 
 // List of names that should be accepted
-static const std::vector<std::string> acceptedFiles =
-{
-    "~test",
-    "test.test~test",
-    "test.tmp",
-    "~.tmp2",
-    "testfile_conflict_130102_abcdefghij.txt",
-    "conflict_20220913_130102_abcdefghij.txt",
-    "testfile_blacklisted_130102_abcdefghij.txt",
+static const std::vector<std::string> acceptedFiles = {"~test",
+                                                       "test.test~test",
+                                                       "test.tmp",
+                                                       "~.tmp2",
+                                                       "testfile_conflict_130102_abcdefghij.txt",
+                                                       "conflict_20220913_130102_abcdefghij.txt",
+                                                       "testfile_blacklisted_130102_abcdefghij.txt",
 #if defined(__APPLE__)
-    "test.apdisk",
-    "test_Icon\rtest"
+                                                       "test.apdisk",
+                                                       "test_Icon\rtest"
 #elif defined(_WIN32)
-    "test.testkate-swp",
-    "system volume information",
-    "System test Volume Information"
+                                                       "test.testkate-swp",
+                                                       "system volume information",
+                                                       "System test Volume Information"
 #else
-    "test.fuse_hidden"
-    "test.gnucash.test.tmp-test"
+                                                       "test.fuse_hidden"
+                                                       "test.gnucash.test.tmp-test"
 #endif
 };
 
@@ -169,7 +133,6 @@ void TestExclusionTemplateCache::testIsExcluded() {
 
     // Test rejected files
     for (const auto &str : rejectedFiles) {
-        std::cout << "Testing rejected item: `" << str << "`\n";
         bool isWarning = false;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
@@ -182,7 +145,6 @@ void TestExclusionTemplateCache::testIsExcluded() {
 
     // Test accepted files
     for (const auto &str : acceptedFiles) {
-        std::cout << "Testing accepted item: `" << str << "`\n";
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
@@ -199,8 +161,10 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(localTestDirPath, testPath, isExcluded, ioError));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(localTestDirPath, testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
@@ -211,8 +175,10 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(localTestDirPath, testPath, isExcluded, ioError));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(localTestDirPath, testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
@@ -226,8 +192,10 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(localTestDirPath, testPath, isExcluded, ioError));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(localTestDirPath, testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
@@ -237,8 +205,10 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(localTestDirPath, testPath, isExcluded, ioError));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(localTestDirPath, testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }

@@ -65,7 +65,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
     // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
     // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it will
-    // be considered by the OS as move while must be considered by the synchronizer as create
+    // be considered by the OS as move while must be considered by the synchronizer as Create.
     if (!_snapshot->isValid()) {
         // Snapshot generation is ongoing, queue the events and process them later
         _pendingFileEvents.insert(_pendingFileEvents.end(), changes.begin(), changes.end());
@@ -303,8 +303,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                                                     << Utility::s2ws(itemId).c_str() << L")");
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath).c_str()
-                                                                          << L" (" << Utility::s2ws(itemId).c_str()
-                                                                          << L")");
+                                                                          << L" (" << Utility::s2ws(itemId).c_str() << L")");
                     invalidateSnapshot();
                     return;
                 }
