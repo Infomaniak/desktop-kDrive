@@ -112,15 +112,49 @@ static bool initTrusteeWithUserSID() {
 }
 
 static bool init_private() {
+    const std::string useGetRightsFallbackMethod = CommonUtility::envVarValue("KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD");
+    if (!useGetRightsFallbackMethod.empty()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD env is set, using fallback method");
+        IoHelper::_getAndSetRightsMethod = 1;
+        return true;
+    }
+
     if (Utility::_psid != nullptr) {
         return false;
     }
-
     initTrusteeWithUserSID();
+    // Check if the reading is quick enought
+    SyncPath tmpDir;
+    IoError ioError = IoErrorSuccess;
 
-    const std::string useGetRightsFallbackMethod = CommonUtility::envVarValue("KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD");
-    if (!useGetRightsFallbackMethod.empty()) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Use getRights fallback method");
+    if (!IoHelper::tempDirectoryPath(tmpDir, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  "Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
+        return false;
+    }
+
+    bool read = true;
+    bool write = true;
+    bool execute = true;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 10; i++) {
+        if (!IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
+            LOGW_WARN(Log::instance()->getLogger(), "Error in IoHelper::getRights: " << Utility::formatIoError(tmpDir, ioError));
+            return false;
+        }
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    LOG_DEBUG(Log::instance()->getLogger(), "Time to get rights x10: " << duration << "ms");
+    /* Averrage times for 10 calls to getRights with windows API:
+    *    -> Windows 11 without Active Directory: 10ms < time < 40ms
+    *    -> Windows 11 with Active Directory: 700ms < time < 1100ms
+    */
+    if (duration > 60) {
+        LOG_WARN(Log::instance()->getLogger(),
+                  "Get/Set rights using windows API seems to be slow. We might be on a windows server, using fallback method");
         IoHelper::_getAndSetRightsMethod = 1;
     }
 
