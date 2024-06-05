@@ -258,7 +258,7 @@ void AddDriveLocalFolderWidget::updateUI() {
 
     const QDir dir(_localFolderPath);
     _folderNameLabel->setText(dir.dirName());
-    _folderPathLabel->setText(QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle).arg(_localFolderPath));
+    _folderPathLabel->setText(QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle, _localFolderPath));
 
     if (_localFolderPath != _defaultLocalFolderPath) {
         _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName()));
