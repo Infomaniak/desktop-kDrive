@@ -314,6 +314,50 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
     return isSnapshotRebuildRequired ? ExitCodeDataError : ExitCodeOk;
 }
+
+void UpdateTreeWorker::logUpdate(const std::shared_ptr<Node> node, const OperationType opType,
+                                 const std::shared_ptr<Node> parentNode) {
+    if (!ParametersCache::isExtendedLogEnabled()) return;
+
+    std::wstring parentIdStr;
+    std::wstring updateTypeStr = L"updated";
+    if (parentNode) {
+        parentIdStr = L"parent ID: '" + Utility::s2ws(parentNode->id() ? *parentNode->id() : NodeId()) + L"'";
+        updateTypeStr = L"inserted";
+    }
+
+    const std::wstring updateTreeStr = Utility::s2ws(Utility::side2Str(_side)) + L" update tree";
+    const std::wstring nodeStr = L"Node '" + SyncName2WStr(node->name()) + L"'";
+    const std::wstring nodeIdStr = L"node ID: '" + Utility::s2ws(node->id() ? *node->id() : NodeId()) + L"'";
+    const std::wstring dbIdStr = L"DB ID: '" + std::to_wstring(node->idb() ? *node->idb() : -1) + L"'";
+    const std::wstring opTypeStr = Utility::s2ws(Utility::opType2Str(opType));
+
+    LOGW_SYNCPAL_DEBUG(_logger, updateTreeStr.c_str()
+                                    << L": " << nodeStr.c_str() << L" (" << nodeIdStr.c_str() << L", " << dbIdStr.c_str() << L", "
+                                    << parentIdStr.c_str() << L") " << updateTypeStr.c_str() << L". Operation "
+                                    << opTypeStr.c_str() << L" inserted in change events.");
+}
+
+void UpdateTreeWorker::updateTmpNode(std::shared_ptr<Node> newNode, const FSOpPtr op, const FSOpPtr deleteOp) {
+    assert(newNode != nullptr && newNode->isTmp());
+
+    updateNodeId(newNode, op->nodeId());
+    newNode->setCreatedAt(op->createdAt());
+    newNode->setLastModified(op->lastModified());
+    newNode->setSize(op->size());
+    newNode->insertChangeEvent(op->operationType());
+    newNode->setIsTmp(false);
+
+    const auto opType = op->operationType();
+    if (opType == OperationTypeEdit) {
+        newNode->setPreviousId(deleteOp->nodeId());
+        _updateTree->previousIdSet()[deleteOp->nodeId()] = op->nodeId();
+    }
+
+    _updateTree->nodes()[op->nodeId()] = newNode;
+    logUpdate(newNode, opType);
+}
+
 ExitCode UpdateTreeWorker::step4DeleteFile() {
     const ExitCode exitCode = handleCreateOperationsWithSamePath();
     if (exitCode != ExitCodeOk) return exitCode;  // Rebuild the snapshot.
@@ -357,7 +401,8 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 _createFileOperationSet.erase(deleteOp->path());
             }
         }
-        OperationType opType = op->operationType() == OperationTypeCreate ? OperationTypeEdit : OperationTypeDelete;
+
+        const OperationType opType = op->operationType() == OperationTypeCreate ? OperationTypeEdit : OperationTypeDelete;
 
         auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
         if (currentNodeIt != _updateTree->nodes().end()) {
@@ -383,15 +428,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 _updateTree->nodes().insert(std::move(node));
             }
 
-            if (ParametersCache::isExtendedLogEnabled()) {
-                LOGW_SYNCPAL_DEBUG(
-                    _logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                 << L" update tree: Node '" << SyncName2WStr(currentNode->name()).c_str() << L"' (node ID: '"
-                                 << Utility::s2ws(currentNode->id().has_value() ? *currentNode->id() : NodeId()).c_str()
-                                 << L"', DB ID: '" << (currentNode->idb().has_value() ? *currentNode->idb() : -1)
-                                 << L"') updated. Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                 << L" inserted in change events.");
-            }
+            logUpdate(currentNode, opType);
         } else {
             // find parentNodeId in db
             std::optional<NodeId> parentNodeId;
@@ -420,27 +457,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             std::shared_ptr<Node> newNode = parentNode->findChildrenById(deleteOp->nodeId());
             if (newNode != nullptr && newNode->isTmp()) {
                 // Tmp node already exists, update it
-                updateNodeId(newNode, op->nodeId());
-                newNode->setCreatedAt(op->createdAt());
-                newNode->setLastModified(op->lastModified());
-                newNode->setSize(op->size());
-                newNode->insertChangeEvent(opType);
-                newNode->setIsTmp(false);
-                if (opType == OperationTypeEdit) {
-                    newNode->setPreviousId(deleteOp->nodeId());
-                    _updateTree->previousIdSet()[deleteOp->nodeId()] = op->nodeId();
-                }
-
-                _updateTree->nodes()[op->nodeId()] = newNode;
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(
-                        _logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                     << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                                     << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
-                                     << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1)
-                                     << L"') updated. Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                     << L" inserted in change events.");
-                }
+                updateTmpNode(newNode, op, deleteOp);
             } else {
                 // create node
                 DbNodeId idb;
@@ -471,17 +488,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
                 parentNode->insertChildren(newNode);
                 _updateTree->nodes()[op->nodeId()] = newNode;
-                if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_SYNCPAL_DEBUG(
-                        _logger, Utility::s2ws(Utility::side2Str(_side)).c_str()
-                                     << L" update tree: Node '" << SyncName2WStr(newNode->name()).c_str() << L"' (node ID: '"
-                                     << Utility::s2ws(newNode->id().has_value() ? *newNode->id() : NodeId()).c_str()
-                                     << L"', DB ID: '" << (newNode->idb().has_value() ? *newNode->idb() : -1)
-                                     << L"', parent ID: '"
-                                     << Utility::s2ws(parentNode->id().has_value() ? *parentNode->id() : NodeId()).c_str()
-                                     << L"') inserted. Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                     << L" inserted in change events.");
-                }
+                logUpdate(newNode, opType, parentNode);
             }
         }
     }
