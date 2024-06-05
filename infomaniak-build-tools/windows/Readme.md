@@ -135,7 +135,7 @@ Clone and build `Poco`:
 
 ```bash
 cd F:\Projects
-git clone -b master https://github.com/pocoproject/poco.git
+git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.12.5-release
 mkdir cmake-build

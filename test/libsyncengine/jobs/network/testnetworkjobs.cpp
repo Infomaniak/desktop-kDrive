@@ -119,7 +119,7 @@ void TestNetworkJobs::tearDown() {
 
     ParmsDb::instance()->close();
     if (_deleteTestDir) {
-        DeleteJob job(_driveDbId, _dirId, "");
+        DeleteJob job(_driveDbId, _dirId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
         job.runSynchronously();
     }
 }
@@ -178,7 +178,7 @@ void TestNetworkJobs::testCopyToDir() {
 void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT(createTestDir());
 
-    DeleteJob job(_driveDbId, _dirId, "");
+    DeleteJob job(_driveDbId, _dirId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
     job.runSynchronously();
 
     GetFileListJob fileListJob(_driveDbId, _remoteDirId);

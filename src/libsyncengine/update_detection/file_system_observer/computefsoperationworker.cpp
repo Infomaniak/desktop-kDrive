@@ -25,6 +25,8 @@
 #include "libcommonserver/io/iohelper.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 
+#include "localfilesystemobserverworker.h"
+
 namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
@@ -253,7 +255,8 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 if (!snapshot->exists(nodeId) || movedIntoUnsyncedFolder) {
                     if (!pathInDeletedFolder(dbPath)) {
                         // Check that the file/directory really does not exist on replica
-                        ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId);
+                        bool isExcluded = false;
+                        const ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded);
                         if (exitCode != ExitCodeOk) {
                             if (exitCode == ExitCodeNoWritePermission) {
                                 // Blacklist node
@@ -270,6 +273,8 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                 return exitCode;
                             }
                         }
+
+                        if (isExcluded) continue;   // Never generate operation on excluded file
                     }
 
                     if (isInUnsyncedList(snapshot, nodeId, side, true)) {
@@ -380,26 +385,22 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     FSOpPtr fsOp = nullptr;
                     if (isInUnsyncedList(snapshot, nodeId, side)) {
                         // Delete operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete
-                                                             , nodeId
-                                                             , dbNode.type()
-                                                             ,snapshot->createdAt(nodeId)
-                                                             , snapshotLastModified
-                                                             ,snapshot->size(nodeId)
-                                                             ,remoteDbPath  // We use the remotePath anyway here to display
-                                                                                 // notifications with the real (remote) name
-                                                             ,snapPath);
+                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete, nodeId, dbNode.type(),
+                                                             snapshot->createdAt(nodeId), snapshotLastModified,
+                                                             snapshot->size(nodeId),
+                                                             remoteDbPath  // We use the remotePath anyway here to display
+                                                                           // notifications with the real (remote) name
+                                                             ,
+                                                             snapPath);
                     } else {
                         // Move operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeMove
-                                                             , nodeId
-                                                             , dbNode.type()
-                                                             ,snapshot->createdAt(nodeId)
-                                                             , snapshotLastModified
-                                                             ,snapshot->size(nodeId)
-                                                             ,remoteDbPath  // We use the remotePath anyway here to display
-                                                                                 // notifications with the real (remote) name
-                                                             ,snapPath);
+                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeMove, nodeId, dbNode.type(),
+                                                             snapshot->createdAt(nodeId), snapshotLastModified,
+                                                             snapshot->size(nodeId),
+                                                             remoteDbPath  // We use the remotePath anyway here to display
+                                                                           // notifications with the real (remote) name
+                                                             ,
+                                                             snapPath);
                     }
 
                     opSet->insertOp(fsOp);
@@ -481,7 +482,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 // Ignore orphans
                 if (ParametersCache::instance()->parameters().extendedLog()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring orphan node " << SyncName2WStr(snapshot->name(nodeId)).c_str() << L" ("
-                                                                        << Utility::s2ws(nodeId).c_str() << L")");
+                                                                         << Utility::s2ws(nodeId).c_str() << L")");
                 }
                 continue;
             }
@@ -514,18 +515,23 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                     }
                 }
 
-                const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
-
-                if (type == NodeTypeFile && !isLink) {
-                    // On Windows, we receive CREATE event while the file is still being copied
-                    // Do not start synchronizing the file while copying is in progress
-                    const SyncPath absolutePath = _syncPal->_localPath / snapPath;
-                    if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
-                        LOG_SYNCPAL_INFO(_logger, L"Item \"" << Path2WStr(absolutePath).c_str()
-                                                             << L"\" is not ready. Synchronization postponed.");
-                        continue;
-                    }
-                }
+                // TODO : this portion of code aimed to wait for a file to be available locally before starting to synchronize it
+                // For example, on Windows, when copying a big file inside the sync folder, the creation event is received
+                // immediately but the copy will take some time. Therefor, the file will appear locked during the copy.
+                // However, this will also block the update of file locked by an application during its edition (Microsoft Office,
+                // Open Office, ...)
+//                const bool isLink = _syncPal->_localSnapshot->isLink(nodeId);
+//
+//                if (type == NodeTypeFile && !isLink) {
+//                    // On Windows, we receive CREATE event while the file is still being copied
+//                    // Do not start synchronizing the file while copying is in progress
+//                    const SyncPath absolutePath = _syncPal->_localPath / snapPath;
+//                    if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
+//                        LOG_SYNCPAL_INFO(_logger, L"Item \"" << Path2WStr(absolutePath).c_str()
+//                                                             << L"\" is not ready. Synchronization postponed.");
+//                        continue;
+//                    }
+//                }
             }
 
             // Create operation
@@ -549,22 +555,20 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
     }
 
     if (fsOp->operationType() == OperationTypeMove) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                                                 << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str())
-                                                 << L" FS operation from "
-                                                 << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
-                                                 << Path2WStr(fsOp->path()).c_str() << L"\" to \""
-                                                 << Path2WStr(fsOp->destinationPath()).c_str() << L"\" ("
-                                                 << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
+        LOGW_SYNCPAL_DEBUG(
+            _logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
+                                  << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str()) << L" FS operation from "
+                                  << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
+                                  << Path2WStr(fsOp->path()).c_str() << L"\" to \"" << Path2WStr(fsOp->destinationPath()).c_str()
+                                  << L"\" (" << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
         return;
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                                             << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str())
-                                             << L" FS operation on "
-                                             << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
-                                             << Path2WStr(fsOp->path()).c_str() << L"\" ("
-                                             << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
+    LOGW_SYNCPAL_DEBUG(
+        _logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
+                              << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str()) << L" FS operation on "
+                              << (fsOp->objectType() == NodeTypeDirectory ? L"dir \"" : L"file \"")
+                              << Path2WStr(fsOp->path()).c_str() << L"\" (" << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
 }
 
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
@@ -804,7 +808,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
-ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId) {
+ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded) {
     if (side != ReplicaSideLocal) return ExitCodeOk;
 
     if (!_syncPal->_localSnapshot->itemId(relativePath).empty()) {
@@ -817,8 +821,14 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     bool exists = false;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, exists, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError).c_str());
-        setExitCause(ExitCauseFileAccessError);
+        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExistsWithSameNodeId: "
+                               << Utility::formatIoError(absolutePath, ioError).c_str());
+
+        if (ioError == IoErrorInvalidFileName) {
+            // Observed on MacOSX under special circumstances; see getItemType unit test edge cases.
+            setExitCause(ExitCauseInvalidName);
+        } else
+            setExitCause(ExitCauseFileAccessError);
 
         return ExitCodeSystemError;
     }
@@ -842,7 +852,6 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     // Check if file is synced
     bool isWarning = false;
     ioError = IoErrorSuccess;
-    bool isExcluded = false;
     const bool success =
         ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
     if (!success) {

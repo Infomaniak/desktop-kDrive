@@ -302,8 +302,9 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                                                     << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                     << Utility::s2ws(itemId).c_str() << L")");
                 } else {
-                    LOGW_SYNCPAL_WARN(_logger, L"Failed to delete item: " << Utility::formatSyncPath(absolutePath).c_str()
-                                                                          << L" (" << Utility::s2ws(itemId).c_str() << L")");
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath).c_str()
+                                                                          << L" (" << Utility::s2ws(itemId).c_str()
+                                                                          << L")");
                     invalidateSnapshot();
                     return;
                 }
