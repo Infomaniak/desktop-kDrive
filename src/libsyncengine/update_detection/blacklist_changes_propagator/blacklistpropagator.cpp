@@ -228,7 +228,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     }
 
     if (exists) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing item with "
                                                                  << Utility::formatSyncPath(localPath).c_str() << L" ("
                                                                  << Utility::s2ws(localNodeId).c_str()

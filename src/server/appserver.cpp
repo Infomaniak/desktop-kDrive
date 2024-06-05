@@ -457,6 +457,13 @@ void AppServer::deleteDrive(int driveDbId, int accountDbId) {
     deleteAccountIfNeeded(accountDbId);
 }
 
+void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept {
+    const std::string activationStatus = isExtendedLogEnabled ? "enabled" : "disabled";
+    const std::string msg = "Extended logging is " + activationStatus + ".";
+
+    LOG_INFO(_logger, msg.c_str());
+}
+
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
@@ -1601,7 +1608,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> parametersInfo;
 
             // Retrieve current settings
-            Parameters parameters = ParametersCache::instance()->parameters();
+            const Parameters parameters = ParametersCache::instance()->parameters();
             std::string pwd;
             if (parameters.proxyConfig().needsAuth()) {
                 // Read pwd from keystore
@@ -1615,7 +1622,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
 
             // Update parameters
-            ExitCode exitCode = ServerRequests::updateParameters(parametersInfo);
+            const ExitCode exitCode = ServerRequests::updateParameters(parametersInfo);
             if (exitCode != ExitCodeOk) {
                 LOG_WARN(_logger, "Error in Requests::updateParameters");
                 addError(Error(ERRID, exitCode, ExitCauseUnknown));
@@ -1623,8 +1630,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             // extendedLog change propagation
             if (parameters.extendedLog() != parametersInfo.extendedLog()) {
-                for (const auto &vfsMapElt : _vfsMap) {
-                    vfsMapElt.second->setExtendedLog(parametersInfo.extendedLog());
+                logExtendedLogActivationMessage(parametersInfo.extendedLog());
+                for (const auto &[_, vfsMapElt] : _vfsMap) {
+                    vfsMapElt->setExtendedLog(parametersInfo.extendedLog());
                 }
             }
 
@@ -2737,6 +2745,8 @@ ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
 }
 
 ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
+    logExtendedLogActivationMessage(ParametersCache::isExtendedLogEnabled());
+
     ExitCode mainExitCode = ExitCodeOk;
     ExitCode exitCode = ExitCodeOk;
     bool found = false;
@@ -3522,7 +3532,7 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
             exitCause = ExitCauseUnableToCreateVfs;
             return ExitCodeSystemError;
         }
-        _vfsMap[sync.dbId()]->setExtendedLog(ParametersCache::instance()->parameters().extendedLog());
+        _vfsMap[sync.dbId()]->setExtendedLog(ParametersCache::isExtendedLogEnabled());
 
         // Set callbacks
         _vfsMap[sync.dbId()]->setSyncFileStatusCallback(&syncFileStatus);

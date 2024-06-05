@@ -791,7 +791,7 @@ void OperationSorterWorker::moveFirstAfterSecond(SyncOpPtr opFirst, SyncOpPtr op
 
     if (firstFound) {
         // make sure opSecond is executed after opFirst
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Operation " << opFirst->id() << L" ("
                                                       << Utility::s2ws(Utility::opType2Str(opFirst->type())).c_str() << L" "
                                                       << SyncName2WStr(opFirst->affectedNode()->name()).c_str()

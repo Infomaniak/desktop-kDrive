@@ -275,7 +275,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 }
 
 #else
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring spurious edit notification on file: "
                                                     << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                     << Utility::s2ws(nodeId).c_str() << L")");
@@ -303,8 +303,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                                                     << Utility::s2ws(itemId).c_str() << L")");
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath).c_str()
-                                                                          << L" (" << Utility::s2ws(itemId).c_str()
-                                                                          << L")");
+                                                                          << L" (" << Utility::s2ws(itemId).c_str() << L")");
                     invalidateSnapshot();
                     return;
                 }
@@ -334,7 +333,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                               nodeType, fileStat.size, isLink);
 
             if (_snapshot->updateItem(item)) {
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
                                                     << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                     << Utility::s2ws(nodeId).c_str() << L") at " << fileStat.modtime);
@@ -394,7 +393,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         // Update snapshot
         if (_snapshot->updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
                                                fileStat.modtime, nodeType, fileStat.size, isLink))) {
-            if (ParametersCache::instance()->parameters().extendedLog()) {
+            if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                       << Utility::s2ws(nodeId).c_str() << L") updated in local snapshot at "
                                                       << fileStat.modtime);
@@ -668,7 +667,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             return ExitCodeSystemError;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (ParametersCache::instance()->parameters().extendedLog()) {
+            if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(dirIt->path()).c_str() << L" found");
             }
 
@@ -844,7 +843,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
                               itemType.nodeType, fileStat.size, isLink);
             if (_snapshot->updateItem(item)) {
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
                                                     << Utility::formatSyncPath(absolutePath.filename()).c_str() << L" inode:"
                                                     << nodeId.c_str() << L" parent inode:" << Utility::s2ws(parentNodeId).c_str()
