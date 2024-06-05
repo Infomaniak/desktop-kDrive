@@ -123,10 +123,10 @@ static bool init_private() {
         return false;
     }
     initTrusteeWithUserSID();
-    // Check if the reading is quick enought
+
+    // Check getRights method performance
     SyncPath tmpDir;
     IoError ioError = IoErrorSuccess;
-
     if (!IoHelper::tempDirectoryPath(tmpDir, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   "Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
@@ -154,7 +154,7 @@ static bool init_private() {
     */
     if (duration > 60) {
         LOG_WARN(Log::instance()->getLogger(),
-                  "Get/Set rights using windows API seems to be slow. We might be on a windows server, using fallback method");
+                  "Get/Set rights using windows API is too slow to be used. Using fallback method.");
         IoHelper::_getAndSetRightsMethod = 1;
     }
 
