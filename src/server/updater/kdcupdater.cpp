@@ -35,8 +35,6 @@
 #include <QtGui>
 #include <QtWidgets>
 
-#include <stdio.h>
-
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
@@ -179,10 +177,11 @@ void KDCUpdater::slotStartInstaller() {
         return;
     }
 
-    LOG_WARN(Log::instance()->getLogger(), L"Running updater" << Utility::s2ws(updateFile.toStdString()).c_str());
+    LOGW_WARN(Log::instance()->getLogger(), L"Running updater" << Utility::s2ws(updateFile.toStdString()).c_str());
 
     if (updateFile.endsWith(".exe")) {
-        QProcess::startDetached(updateFile, QStringList() << "/S" << "/launch");
+        QProcess::startDetached(updateFile, QStringList() << "/S"
+                                                          << "/launch");
     } else if (updateFile.endsWith(".msi")) {
         // When MSIs are installed without gui they cannot launch applications
         // as they lack the user context. That is why we need to run the client
@@ -231,8 +230,8 @@ void KDCUpdater::slotVersionInfoArrived() {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     reply->deleteLater();
     if (reply->error() != QNetworkReply::NoError) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 L"Failed to reach version check url: " << Utility::s2ws(reply->errorString().toStdString()).c_str());
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Failed to reach version check url: " << Utility::s2ws(reply->errorString().toStdString()).c_str());
         setDownloadState(KDCUpdater::Unknown);
         return;
     }
@@ -481,8 +480,7 @@ void NSISUpdater::slotSetSeenVersion() {
 
 ////////////////////////////////////////////////////////////////////////
 
-PassiveUpdateNotifier::PassiveUpdateNotifier(const QUrl &url) : KDCUpdater(url) {
-}
+PassiveUpdateNotifier::PassiveUpdateNotifier(const QUrl &url) : KDCUpdater(url) {}
 
 void PassiveUpdateNotifier::versionInfoArrived(const UpdateInfo &info) {
     qint64 currentVer = Helper::currentVersionToInt();
