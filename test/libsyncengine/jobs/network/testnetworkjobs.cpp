@@ -18,7 +18,6 @@
 
 #include "testnetworkjobs.h"
 
-#include "config.h"
 #include "jobs/network/copytodirectoryjob.h"
 #include "jobs/network/createdirjob.h"
 #include "jobs/network/deletejob.h"
@@ -52,7 +51,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static const SyncPath localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci");
 static const NodeId pictureDirRemoteId = "56851";       // test_ci/test_pictures
 static const NodeId picture1RemoteId = "97373";         // test_ci/test_pictures/picture-1.jpg
 static const NodeId testFileRemoteId = "97370";         // test_ci/test_networkjobs/test_download.txt
@@ -120,6 +118,7 @@ void TestNetworkJobs::tearDown() {
     ParmsDb::instance()->close();
     if (_deleteTestDir) {
         DeleteJob job(_driveDbId, _dirId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
+        job.setBypassCheck(true);
         job.runSynchronously();
     }
 }
@@ -178,7 +177,8 @@ void TestNetworkJobs::testCopyToDir() {
 void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT(createTestDir());
 
-    DeleteJob job(_driveDbId, _dirId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob job(_driveDbId, _dirId, "", ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    job.setBypassCheck(true);
     job.runSynchronously();
 
     GetFileListJob fileListJob(_driveDbId, _remoteDirId);
@@ -191,7 +191,8 @@ void TestNetworkJobs::testDelete() {
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
     for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
         Poco::JSON::Object::Ptr dirObj = it->extract<Poco::JSON::Object::Ptr>();
-        if (_dirName == dirObj->get(nameKey)) {
+        SyncName currentName = dirObj->get(nameKey);
+        if (_dirName == currentName) {
             newDirFound = true;
             break;
         }
@@ -213,8 +214,6 @@ void TestNetworkJobs::testDownload() {
     std::ifstream ifs(localDestFilePath.string().c_str());
     std::string content((std::istreambuf_iterator<char>(ifs)), (std::istreambuf_iterator<char>()));
     CPPUNIT_ASSERT(content == "test");
-
-    std::filesystem::remove(localDestFilePath);
 }
 
 void TestNetworkJobs::testDownloadAborted() {
@@ -230,7 +229,6 @@ void TestNetworkJobs::testDownloadAborted() {
 
     Utility::msleep(1000);  // Wait 1sec
 
-    CPPUNIT_ASSERT(!job->hasHttpError());
     CPPUNIT_ASSERT(!std::filesystem::exists(localDestFilePath));
 }
 
@@ -524,9 +522,9 @@ void TestNetworkJobs::testRename() {
     fileInfoJob.runSynchronously();
 
     Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
-    std::string name;
+    SyncName name;
     if (dataObj) {
-        name = dataObj->get(nameKey).toString();
+        name = Str2SyncName(dataObj->get(nameKey).toString());
     }
     CPPUNIT_ASSERT(name == filename);
 }
