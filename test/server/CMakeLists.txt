@@ -38,7 +38,6 @@ set_target_properties(${testserver_NAME} PROPERTIES
 target_link_libraries(${testserver_NAME}
     Qt6::Core Qt6::Gui
     Poco::XML Poco::Net
-    ${libsyncengine_NAME}
 )
 
 if (WIN32)
