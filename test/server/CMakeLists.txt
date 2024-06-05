@@ -70,6 +70,9 @@ endif()
 if(APPLE)
     target_link_libraries(${testserver_NAME}
         "${libsyncengine_NAME}_vfs_mac")
+else()
+    target_link_libraries(${testserver_NAME}
+        ${libsyncengine_NAME})
 endif()
 
 if(APPLE)
