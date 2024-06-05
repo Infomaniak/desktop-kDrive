@@ -147,11 +147,13 @@ static bool init_private() {
     auto end = std::chrono::high_resolution_clock::now();
 
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    LOG_DEBUG(Log::instance()->getLogger(), "Time to get rights x10: " << duration << "ms");
+
     /* Averrage times for 10 calls to getRights with windows API:
-    *    -> Windows 11 without Active Directory: 10ms < time < 40ms
-    *    -> Windows 11 with Active Directory: 700ms < time < 1100ms
-    */
+     *    -> Windows 11 without Active Directory: 10ms < time < 40ms
+     *    -> Windows 11 with Active Directory: 700ms < time < 1100ms
+     */
+    LOG_DEBUG(Log::instance()->getLogger(), "Time to get rights x10: " << duration << "ms");
+
     if (duration > 60) {
         LOG_WARN(Log::instance()->getLogger(),
                   "Get/Set rights using windows API is too slow to be used. Using fallback method.");
