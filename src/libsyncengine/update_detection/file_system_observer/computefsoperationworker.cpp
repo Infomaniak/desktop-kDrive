@@ -581,8 +581,8 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
 
         int64_t localSnapshotSize = _syncPal->_localSnapshotCopy->size(dbNode.nodeIdLocal().value());
         int64_t remoteSnapshotSize = _syncPal->_remoteSnapshotCopy->size(dbNode.nodeIdRemote().value());
-        SyncTime localSnapshotLastModified = _syncPal->_localSnapshotCopy->lastModifed(dbNode.nodeIdLocal().value());
-        SyncTime remoteSnapshotLastModified = _syncPal->_remoteSnapshotCopy->lastModifed(dbNode.nodeIdRemote().value());
+        SyncTime localSnapshotLastModified = _syncPal->_localSnapshotCopy->lastModified(dbNode.nodeIdLocal().value());
+        SyncTime remoteSnapshotLastModified = _syncPal->_remoteSnapshotCopy->lastModified(dbNode.nodeIdRemote().value());
 
         // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
         if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
