@@ -93,6 +93,10 @@ typedef std::function<void(const char *)> ExecuteCommand;
 
 typedef enum { ReplicaSideUnknown, ReplicaSideLocal, ReplicaSideRemote } ReplicaSide;
 
+inline ReplicaSide otherSide(ReplicaSide side) {
+    return side == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal;
+}
+
 typedef enum {
     NodeTypeUnknown,
     NodeTypeFile,  // File or symlink

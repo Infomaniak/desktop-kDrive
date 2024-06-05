@@ -934,8 +934,8 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshotCopy->exists(*nodeIdIt)
-                                                                : _remoteSnapshotCopy->exists(*nodeIdIt);
+        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshotCopy->exists(*nodeIdIt)
+                                                                      : _remoteSnapshotCopy->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
@@ -964,6 +964,22 @@ ExitCode SyncPal::updateSyncNode() {
     }
 
     return ExitCodeOk;
+}
+
+std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
+    if (copy) {
+        return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshotCopy : _remoteSnapshotCopy);
+    } else {
+        return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshot : _remoteSnapshot);
+    }
+}
+
+std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) {
+    return (side == ReplicaSide::ReplicaSideLocal ? _localOperationSet : _remoteOperationSet);
+}
+
+std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) {
+    return (side == ReplicaSide::ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree);
 }
 
 ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const {

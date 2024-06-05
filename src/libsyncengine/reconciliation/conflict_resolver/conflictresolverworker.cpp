@@ -77,7 +77,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
             SyncName newName;
             if (!generateConflictedName(conflict.localNode(), newName)) {
-                op->setNewParentNode(_syncPal->_localUpdateTree->rootNode());
+                op->setNewParentNode(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
             }
             op->setNewName(newName);
             op->setConflict(conflict);
@@ -108,8 +108,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 SyncName newName;
                 generateConflictedName(conflict.localNode(), newName);
                 moveOp->setNewName(newName);
-                moveOp->setNewParentNode(deleteNode->side() == ReplicaSideLocal ? _syncPal->_localUpdateTree->rootNode()
-                                                                                : _syncPal->_remoteUpdateTree->rootNode());
+                moveOp->setNewParentNode(_syncPal->updateTree(deleteNode->side())->rootNode());
                 moveOp->setConflict(conflict);
 
                 LOGW_SYNCPAL_INFO(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(moveOp->type())).c_str()
@@ -213,8 +212,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                             return ExitCodeDataError;
                         }
 
-                        auto updateTree =
-                            deleteNode->side() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
+                        auto updateTree = _syncPal->updateTree(deleteNode->side());
                         auto orphanNode = updateTree->getNodeById(orphanNodeId);
                         auto correspondingOrphanNode = correspondingNodeInOtherTree(orphanNode);
                         if (!correspondingOrphanNode) {
@@ -235,8 +233,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                         SyncName newName;
                         generateConflictedName(orphanNode, newName, true);
                         op->setNewName(newName);
-                        op->setNewParentNode(orphanNode->side() == ReplicaSideLocal ? _syncPal->_localUpdateTree->rootNode()
-                                                                                    : _syncPal->_remoteUpdateTree->rootNode());
+                        op->setNewParentNode(_syncPal->updateTree(orphanNode->side())->rootNode());
                         op->setConflict(conflict);
 
                         LOGW_SYNCPAL_INFO(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(op->type())).c_str()
@@ -437,7 +434,7 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
         return ExitCodeDataError;
     }
 
-    auto updateTree = moveNode->side() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
+    auto updateTree = _syncPal->updateTree(moveNode->side());
     auto originParentNode = updateTree->getNodeByPath(moveNode->moveOrigin()->parent_path());
     auto originPath = moveNode->moveOrigin();
     bool undoPossible = true;
@@ -461,8 +458,7 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
         moveOp->setNewParentNode(originParentNode);
         moveOp->setNewName(originPath->filename().native());
     } else {
-        moveOp->setNewParentNode(moveNode->side() == ReplicaSideLocal ? _syncPal->_localUpdateTree->rootNode()
-                                                                      : _syncPal->_remoteUpdateTree->rootNode());
+        moveOp->setNewParentNode(_syncPal->updateTree(moveNode->side())->rootNode());
         SyncName newName;
         generateConflictedName(moveNode, newName);
         moveOp->setNewName(newName);

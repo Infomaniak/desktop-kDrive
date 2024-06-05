@@ -94,10 +94,10 @@ class ExecutorWorker : public OperationProcessor {
         inline bool isLiteSyncActivated() { return _syncPal->_vfsMode != VirtualFileModeOff; }
 
         inline std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) {
-            return syncOp->targetSide() == ReplicaSideRemote ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
+            return _syncPal->updateTree(otherSide(syncOp->targetSide()));
         }
         inline std::shared_ptr<UpdateTree> targetUpdateTree(SyncOpPtr syncOp) {
-            return syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
+            return _syncPal->updateTree(syncOp->targetSide());
         }
 
         void increaseErrorCount(SyncOpPtr syncOp);

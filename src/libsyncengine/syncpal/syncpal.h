@@ -225,6 +225,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
 		std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) { return side == ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree; }
 
+        //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
     private:
@@ -279,10 +280,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Shared objects
         std::shared_ptr<bool> _interruptSync{new bool(false)};
-        std::shared_ptr<Snapshot> _localSnapshot{nullptr};
-        std::shared_ptr<Snapshot> _remoteSnapshot{nullptr};
-        std::shared_ptr<Snapshot> _localSnapshotCopy{nullptr};
-        std::shared_ptr<Snapshot> _remoteSnapshotCopy{nullptr};
+        std::shared_ptr<Snapshot> _localSnapshot{nullptr};   // Real time local snapshot
+        std::shared_ptr<Snapshot> _remoteSnapshot{nullptr};  // Real time remote snapshot
+        std::shared_ptr<Snapshot> _localSnapshotCopy{
+            nullptr};  // Copy of the real time local snapshot that is used by synchronization workers
+        std::shared_ptr<Snapshot> _remoteSnapshotCopy{
+            nullptr};  // Copy of the real time remote snapshot that is used by synchronization workers
         std::shared_ptr<FSOperationSet> _localOperationSet{nullptr};
         std::shared_ptr<FSOperationSet> _remoteOperationSet{nullptr};
         std::shared_ptr<UpdateTree> _localUpdateTree{nullptr};
@@ -321,6 +324,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
+        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false);
+        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side);
+        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side);
 
         // Progress info management
         void resetEstimateUpdates();

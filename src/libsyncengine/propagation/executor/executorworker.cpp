@@ -293,12 +293,8 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
             deleteJob.runSynchronously();
 
             // Remove from update tree
-            std::shared_ptr<UpdateTree> sourceUpdateTree =
-                syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_remoteUpdateTree : _syncPal->_localUpdateTree;
-            sourceUpdateTree->deleteNode(syncOp->affectedNode());
-            std::shared_ptr<UpdateTree> targetUpdateTree =
-                syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
-            targetUpdateTree->deleteNode(syncOp->correspondingNode());
+            affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
+            targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
 
             return;
         }
@@ -365,8 +361,7 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
                 }
 
                 _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusIgnored);
-                std::shared_ptr<UpdateTree> sourceUpdateTree =
-                    syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_remoteUpdateTree : _syncPal->_localUpdateTree;
+                std::shared_ptr<UpdateTree> sourceUpdateTree = affectedUpdateTree(syncOp);
                 sourceUpdateTree->deleteNode(syncOp->affectedNode());
             }
 
@@ -662,7 +657,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 _executorExitCode = needRestart ? ExitCodeOk : ExitCodeSystemError;
                 _executorExitCause = ExitCauseUnknown;
                 _syncPal->_restart = true;
-                _syncPal->_localUpdateTree->deleteNode(syncOp->affectedNode());
+                _syncPal->updateTree(ReplicaSideLocal)->deleteNode(syncOp->affectedNode());
                 return false;
             }
 
@@ -1664,8 +1659,7 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
     } else {
         // The item should be temporarily blacklisted
         _syncPal->blacklistTemporarily(syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(),
-                                       syncOp->affectedNode()->getPath(),
-                                       syncOp->targetSide() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal);
+                                       syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()));
     }
 
     affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
@@ -1744,7 +1738,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
                                           << L" doesn't have write permissions or is locked!");
             _syncPal->blacklistTemporarily(
                 syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), relativeLocalPath,
-                syncOp->targetSide() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal);
+                otherSide(syncOp->targetSide()));
             Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, _syncPal->_localPath / relativeLocalPath,
                         ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone, "", job->exitCode(), job->exitCause());
             _syncPal->addError(error);
@@ -1920,8 +1914,8 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
             }
 
             // Remove node from update tree
-            _syncPal->_localUpdateTree->deleteNode(syncOp->conflict().localNode());
-            _syncPal->_remoteUpdateTree->deleteNode(syncOp->conflict().remoteNode());
+            _syncPal->updateTree(ReplicaSideLocal)->deleteNode(syncOp->conflict().localNode());
+            _syncPal->updateTree(ReplicaSideRemote)->deleteNode(syncOp->conflict().remoteNode());
 
             propagateChange = false;
             break;
@@ -1940,8 +1934,7 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
         case ConflictTypeCreateParentDelete:  // Indirect conflict pattern
         {
             // Remove node from update tree
-            std::shared_ptr<UpdateTree> updateTree =
-                syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_remoteUpdateTree : _syncPal->_localUpdateTree;
+            std::shared_ptr<UpdateTree> updateTree = affectedUpdateTree(syncOp);
             updateTree->deleteNode(syncOp->affectedNode());
 
             // Do not propagate changes to the DB
@@ -2161,8 +2154,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
             node->setValidLocalName(localName);
         }
 
-        std::shared_ptr<UpdateTree> updateTree =
-            syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
+        std::shared_ptr<UpdateTree> updateTree = targetUpdateTree(syncOp);
         updateTree->insertNode(node);
 
         newCorrespondingParentNode->insertChildren(node);
@@ -2378,12 +2370,8 @@ bool ExecutorWorker::propagateDeleteToDbAndTree(SyncOpPtr syncOp) {
     }
 
     // 3. Remove nX and nY from the update tree structures.
-    std::shared_ptr<UpdateTree> sourceUpdateTree =
-        syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_remoteUpdateTree : _syncPal->_localUpdateTree;
-    sourceUpdateTree->deleteNode(syncOp->affectedNode());
-    std::shared_ptr<UpdateTree> targetUpdateTree =
-        syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
-    targetUpdateTree->deleteNode(syncOp->correspondingNode());
+    affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
+    targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
 
     return true;
 }
@@ -2554,16 +2542,11 @@ void ExecutorWorker::manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<Abs
 void ExecutorWorker::increaseErrorCount(SyncOpPtr syncOp) {
     if (syncOp->affectedNode() && syncOp->affectedNode()->id().has_value()) {
         _syncPal->increaseErrorCount(*syncOp->affectedNode()->id(), syncOp->affectedNode()->type(),
-                                     syncOp->affectedNode()->getPath(),
-                                     syncOp->targetSide() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal);
+                                     syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()));
 
-        auto affectedUpdateTree =
-            syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
-        affectedUpdateTree->deleteNode(syncOp->affectedNode());
-        if (syncOp->correspondingNode()) {
-            auto correspondingUpdateTree =
-                syncOp->targetSide() == ReplicaSideRemote ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
-            correspondingUpdateTree->deleteNode(syncOp->correspondingNode());
+        affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
+        if (syncOp->correspondingNode() && syncOp->correspondingNode()->id().has_value()) {
+            targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
         }
     }
 }
