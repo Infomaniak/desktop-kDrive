@@ -54,7 +54,7 @@ static const std::vector<ExclusionTemplate> excludedTemplates = {
     ExclusionTemplate(".Trash-*"),
     ExclusionTemplate(".nfs*"),
     ExclusionTemplate("*.app"),
-    ExclusionTemplate("*.lnk)"
+    ExclusionTemplate("*.lnk")
 #endif
 };
 
