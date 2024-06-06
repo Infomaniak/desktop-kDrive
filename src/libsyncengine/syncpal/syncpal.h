@@ -223,22 +223,25 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void refreshTmpBlacklist();
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
 
-        std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) { return side == ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree; }
+		std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) { return side == ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree; }
+
+        //! Makes copies of real-time snapshots to be used by synchronization workers.
+        void copySnapshots();
 
     private:
         log4cplus::Logger _logger;
-        int _syncDbId;
-        int _driveDbId;
-        int _driveId;
-        int _accountDbId;
-        int _userDbId;
-        int _userId;
+        int _syncDbId{0};
+        int _driveDbId{0};
+        int _driveId{0};
+        int _accountDbId{0};
+        int _userDbId{0};
+        int _userId{0};
         std::string _driveName;
         SyncPath _localPath;
         SyncPath _targetPath;
-        VirtualFileMode _vfsMode;
-        bool _restart;
-        bool _isPaused;
+        VirtualFileMode _vfsMode{VirtualFileModeOff};
+        bool _restart{false};
+        bool _isPaused{false};
         bool _syncHasFullyCompleted;
 
         std::shared_ptr<ExcludeListPropagator> _excludeListPropagator = nullptr;
@@ -273,36 +276,40 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         bool (*_vfsCancelHydrate)(int syncDbId, const SyncPath &path);
 
         // DB
-        std::shared_ptr<SyncDb> _syncDb;
+        std::shared_ptr<SyncDb> _syncDb{nullptr};
 
         // Shared objects
-        std::shared_ptr<bool> _interruptSync;
-        std::shared_ptr<Snapshot> _localSnapshot;
-        std::shared_ptr<Snapshot> _remoteSnapshot;
-        std::shared_ptr<FSOperationSet> _localOperationSet;
-        std::shared_ptr<FSOperationSet> _remoteOperationSet;
-        std::shared_ptr<UpdateTree> _localUpdateTree;
-        std::shared_ptr<UpdateTree> _remoteUpdateTree;
-        std::shared_ptr<ConflictQueue> _conflictQueue;
-        std::shared_ptr<SyncOperationList> _syncOps;
+        std::shared_ptr<bool> _interruptSync{new bool(false)};
+        std::shared_ptr<Snapshot> _localSnapshot{nullptr};   // Real time local snapshot
+        std::shared_ptr<Snapshot> _remoteSnapshot{nullptr};  // Real time remote snapshot
+        std::shared_ptr<Snapshot> _localSnapshotCopy{
+            nullptr};  // Copy of the real time local snapshot that is used by synchronization workers
+        std::shared_ptr<Snapshot> _remoteSnapshotCopy{
+            nullptr};  // Copy of the real time remote snapshot that is used by synchronization workers
+        std::shared_ptr<FSOperationSet> _localOperationSet{nullptr};
+        std::shared_ptr<FSOperationSet> _remoteOperationSet{nullptr};
+        std::shared_ptr<UpdateTree> _localUpdateTree{nullptr};
+        std::shared_ptr<UpdateTree> _remoteUpdateTree{nullptr};
+        std::shared_ptr<ConflictQueue> _conflictQueue{nullptr};
+        std::shared_ptr<SyncOperationList> _syncOps{nullptr};
 
         // Workers
-        std::shared_ptr<SyncPalWorker> _syncPalWorker;
-        std::shared_ptr<FileSystemObserverWorker> _localFSObserverWorker;
-        std::shared_ptr<FileSystemObserverWorker> _remoteFSObserverWorker;
-        std::shared_ptr<ComputeFSOperationWorker> _computeFSOperationsWorker;
-        std::shared_ptr<UpdateTreeWorker> _localUpdateTreeWorker;
-        std::shared_ptr<UpdateTreeWorker> _remoteUpdateTreeWorker;
-        std::shared_ptr<PlatformInconsistencyCheckerWorker> _platformInconsistencyCheckerWorker;
-        std::shared_ptr<ConflictFinderWorker> _conflictFinderWorker;
-        std::shared_ptr<ConflictResolverWorker> _conflictResolverWorker;
-        std::shared_ptr<OperationGeneratorWorker> _operationsGeneratorWorker;
-        std::shared_ptr<OperationSorterWorker> _operationsSorterWorker;
-        std::shared_ptr<ExecutorWorker> _executorWorker;
+        std::shared_ptr<SyncPalWorker> _syncPalWorker{nullptr};
+        std::shared_ptr<FileSystemObserverWorker> _localFSObserverWorker{nullptr};
+        std::shared_ptr<FileSystemObserverWorker> _remoteFSObserverWorker{nullptr};
+        std::shared_ptr<ComputeFSOperationWorker> _computeFSOperationsWorker{nullptr};
+        std::shared_ptr<UpdateTreeWorker> _localUpdateTreeWorker{nullptr};
+        std::shared_ptr<UpdateTreeWorker> _remoteUpdateTreeWorker{nullptr};
+        std::shared_ptr<PlatformInconsistencyCheckerWorker> _platformInconsistencyCheckerWorker{nullptr};
+        std::shared_ptr<ConflictFinderWorker> _conflictFinderWorker{nullptr};
+        std::shared_ptr<ConflictResolverWorker> _conflictResolverWorker{nullptr};
+        std::shared_ptr<OperationGeneratorWorker> _operationsGeneratorWorker{nullptr};
+        std::shared_ptr<OperationSorterWorker> _operationsSorterWorker{nullptr};
+        std::shared_ptr<ExecutorWorker> _executorWorker{nullptr};
 
-        std::shared_ptr<ProgressInfo> _progressInfo;
+        std::shared_ptr<ProgressInfo> _progressInfo{nullptr};
 
-        std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager;
+        std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager{nullptr};
 
         void createSharedObjects();
         void resetSharedObjects();
@@ -317,6 +324,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
+        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false);
+        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side);
+        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side);
 
         // Progress info management
         void resetEstimateUpdates();

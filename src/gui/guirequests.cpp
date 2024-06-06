@@ -646,7 +646,7 @@ ExitCode GuiRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAvail
 }
 
 ExitCode GuiRequests::addSync(int userDbId, int accountId, int driveId, const QString localFolderPath,
-                              const QString &serverFolderPath, const QString &serverFolderNodeId, bool smartSync,
+                              const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                               QSet<QString> blackList, QSet<QString> whiteList, int &syncDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -656,7 +656,7 @@ ExitCode GuiRequests::addSync(int userDbId, int accountId, int driveId, const QS
     paramsStream << localFolderPath;
     paramsStream << serverFolderPath;
     paramsStream << serverFolderNodeId;
-    paramsStream << smartSync;
+    paramsStream << liteSync;
     paramsStream << blackList;
     paramsStream << whiteList;
 
@@ -676,7 +676,7 @@ ExitCode GuiRequests::addSync(int userDbId, int accountId, int driveId, const QS
 }
 
 ExitCode GuiRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                              const QString &serverFolderNodeId, bool smartSync, QSet<QString> blackList, QSet<QString> whiteList,
+                              const QString &serverFolderNodeId, bool liteSync, QSet<QString> blackList, QSet<QString> whiteList,
                               int &syncDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -684,7 +684,7 @@ ExitCode GuiRequests::addSync(int driveDbId, const QString &localFolderPath, con
     paramsStream << localFolderPath;
     paramsStream << serverFolderPath;
     paramsStream << serverFolderNodeId;
-    paramsStream << smartSync;
+    paramsStream << liteSync;
     paramsStream << blackList;
     paramsStream << whiteList;
 

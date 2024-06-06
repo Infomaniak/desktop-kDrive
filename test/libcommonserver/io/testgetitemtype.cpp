@@ -222,9 +222,8 @@ void TestIo::testGetItemTypeSimpleCases() {
 
     // An existing file with emojis in its name
     {
-        using namespace std::string_literals;  // operator ""s
         const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / std::string{u8"🫃😋🌲👣🍔🕉️⛎"s};
+        const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
         { std::ofstream ofs(path); }
 
         const auto result = checker.checkSuccessfulRetrieval(path, NodeTypeFile);
@@ -311,7 +310,6 @@ void TestIo::testGetItemTypeSimpleCases() {
 
         const auto result =
             checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeUnknown);
-
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 #endif

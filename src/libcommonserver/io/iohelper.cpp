@@ -464,7 +464,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     IoHelper::DirectoryIterator dir;
     IoHelper::getDirectoryIterator(path, true, ioError, dir);
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(logger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
         return _isExpectedError(ioError);
     }
 
@@ -474,8 +474,8 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) {
             if (maxDepth == 0) {
-                LOG_WARN(logger(), "Max depth reached in getDirectorySize, skipping deeper directories: "
-                                       << Utility::formatSyncPath(path).c_str());
+                LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories: "
+                                        << Utility::formatSyncPath(path).c_str());
                 ioError = IoErrorMaxDepthExceeded;
                 return _isExpectedError(ioError);
             }
@@ -491,14 +491,14 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         if (!ec) {
             size += entrySize;
         } else {
-            LOG_WARN(logger(), "Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
+            LOGW_WARN(logger(), L"Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
             ioError = stdError2ioError(ec);
             return _isExpectedError(ioError);
         }
     }
 
     if (!endOfDirectory) {
-        LOG_WARN(logger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
         return _isExpectedError(ioError);
     }
 
@@ -836,6 +836,4 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 
     return true;
 }
-
-
 }  // namespace KDC

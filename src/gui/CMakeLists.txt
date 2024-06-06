@@ -57,7 +57,7 @@ set(client_SRCS
     adddriveloginwidget.h adddriveloginwidget.cpp
     adddrivelistwidget.h adddrivelistwidget.cpp
     adddriveserverfolderswidget.h adddriveserverfolderswidget.cpp
-    adddrivesmartsyncwidget.h adddrivesmartsyncwidget.cpp
+    adddriveslitesyncwidget.h adddriveslitesyncwidget.cpp
     adddrivewizard.h adddrivewizard.cpp
     appclient.h appclient.cpp
     basefoldertreeitemwidget.h basefoldertreeitemwidget.cpp

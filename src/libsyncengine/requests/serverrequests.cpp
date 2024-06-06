@@ -1009,8 +1009,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
 
     IoHelper::logArchiverDirectoryPath(logUploadTempFolder, ioError);
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in IoHelper::logArchiverDirectoryPath : "
-                                                   << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::logArchiverDirectoryPath: "
+                                                    << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         return ExitCodeSystemError;
     }
 
@@ -1021,8 +1021,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     }
 
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in IoHelper::createDirectory : " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::createDirectory: " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         exitCause = ioError == IoErrorDiskFull ? ExitCauseNotEnoughDiskSpace : ExitCauseUnknown;
         return ExitCodeSystemError;
     }
@@ -1503,13 +1503,13 @@ ExitCode ServerRequests::deleteLiteSyncNotAllowedErrors() {
 #endif
 
 ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
-                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool smartSync,
+                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                  bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
                                                 << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                                 << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath)).c_str()
                                                 << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str()
-                                                << L" smartSync=" << smartSync);
+                                                << L" liteSync=" << liteSync);
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
@@ -1571,23 +1571,23 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
                                                                                         << L" accountDbId=" << accountDbId);
     }
 
-    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, smartSync, showInNavigationPane, syncInfo);
+    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, showInNavigationPane, syncInfo);
 }
 
 ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool smartSync, bool showInNavigationPane,
+                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane,
                                  SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId="
                                                 << driveDbId << L" localFolderPath="
                                                 << Path2WStr(QStr2Path(localFolderPath)).c_str() << L" serverFolderPath="
-                                                << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" smartSync=" << smartSync);
+                                                << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" liteSync=" << liteSync);
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
 #endif
 
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
-    Q_UNUSED(smartSync)
+    Q_UNUSED(liteSync)
 #endif
 
     ExitCode exitCode;
@@ -1622,9 +1622,9 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setSupportVfs(supportVfs);
 
 #if defined(Q_OS_MAC)
-    sync.setVirtualFileMode(smartSync ? VirtualFileModeMac : VirtualFileModeOff);
+    sync.setVirtualFileMode(liteSync ? VirtualFileModeMac : VirtualFileModeOff);
 #elif defined(Q_OS_WIN32)
-    sync.setVirtualFileMode(smartSync ? VirtualFileModeWin : VirtualFileModeOff);
+    sync.setVirtualFileMode(liteSync ? VirtualFileModeWin : VirtualFileModeOff);
 #else
     sync.setVirtualFileMode(VirtualFileModeOff);
 #endif

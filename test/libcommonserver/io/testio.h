@@ -157,6 +157,7 @@ struct GetItemChecker {
 };
 
 SyncPath makeVeryLonPath(const SyncPath &rootPath);
+SyncPath makeFileNameWithEmojis();
 
 
 }  // namespace KDC

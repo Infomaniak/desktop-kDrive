@@ -48,8 +48,8 @@ class AddDriveLocalFolderWidget : public QWidget {
         void setDrive(const QString &driveName);
         void setLocalFolderPath(const QString &path);
         inline QString localFolderPath() const { return _localFolderPath; }
-        inline void setSmartSync(bool smartSync) { _smartSync = smartSync; }
-        inline bool folderCompatibleWithSmartSync() const { return _folderCompatibleWithSmartSync; }
+        inline void setLiteSync(bool liteSync) { _liteSync = liteSync; }
+        inline bool folderCompatibleWithLiteSync() const { return _folderCompatibleWithLiteSync; }
         void setButtonIcon(const QColor &value);
 
     signals:
@@ -59,19 +59,19 @@ class AddDriveLocalFolderWidget : public QWidget {
         std::shared_ptr<ClientGui> _gui;
         QString _localFolderPath;
         QString _defaultLocalFolderPath;
-        QLabel *_logoTextIconLabel;
-        QLabel *_titleLabel;
-        QLabel *_folderIconLabel;
-        QLabel *_folderNameLabel;
-        QLabel *_folderPathLabel;
-        QWidget *_warningWidget;
-        QLabel *_warningIconLabel;
-        QLabel *_warningLabel;
-        QWidget *_infoWidget;
-        QLabel *_infoIconLabel;
-        QLabel *_infoLabel;
-        QPushButton *_backButton;
-        QPushButton *_endButton;
+        QLabel *_logoTextIconLabel{nullptr};
+        QLabel *_titleLabel{nullptr};
+        QLabel *_folderIconLabel{nullptr};
+        QLabel *_folderNameLabel{nullptr};
+        QLabel *_folderPathLabel{nullptr};
+        QWidget *_warningWidget{nullptr};
+        QLabel *_warningIconLabel{nullptr};
+        QLabel *_warningLabel{nullptr};
+        QWidget *_infoWidget{nullptr};
+        QLabel *_infoIconLabel{nullptr};
+        QLabel *_infoLabel{nullptr};
+        QPushButton *_backButton{nullptr};
+        QPushButton *_endButton{nullptr};
         QColor _folderIconColor;
         QSize _folderIconSize;
         QColor _infoIconColor;
@@ -79,9 +79,9 @@ class AddDriveLocalFolderWidget : public QWidget {
         QColor _warningIconColor;
         QSize _warningIconSize;
         QColor _logoColor;
-        bool _needToSave;
-        bool _smartSync;
-        bool _folderCompatibleWithSmartSync;
+        bool _needToSave{false};
+        bool _liteSync{false};
+        bool _folderCompatibleWithLiteSync{false};
 
         QPointer<DisabledOverlay> _disabledOverlay = nullptr;
 
