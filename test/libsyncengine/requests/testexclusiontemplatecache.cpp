@@ -155,6 +155,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
+#ifndef _WIN32
     {
         // Test exclude hidden file
         SyncPath testPath = localTestDirPath / ".my_hidden_file.txt";
@@ -212,6 +213,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
+#endif
 }
 
 }  // namespace KDC
