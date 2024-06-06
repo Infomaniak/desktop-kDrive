@@ -111,7 +111,7 @@ bool SqliteQuery::bindValue(int index, const dbtype &value) {
     }
 
     if (res != SQLITE_OK) {
-        LOGW_WARN(_logger, "ERROR binding SQL value: " << Utility::v2ws(value).c_str() << L" error: " << res);
+        LOGW_WARN(_logger, L"ERROR binding SQL value: " << Utility::v2ws(value).c_str() << L" error: " << res);
         return false;
     }
 
