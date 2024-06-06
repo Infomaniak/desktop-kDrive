@@ -28,11 +28,11 @@ Q_LOGGING_CATEGORY(lcAppParameters, "gui.appparameters", QtInfoMsg)
 
 std::shared_ptr<ParametersCache> ParametersCache::_instance = nullptr;
 
-std::shared_ptr<ParametersCache> ParametersCache::instance() {
+std::shared_ptr<ParametersCache> ParametersCache::instance() noexcept {
     if (_instance == nullptr) {
         try {
             _instance = std::shared_ptr<ParametersCache>(new ParametersCache());
-        } catch (std::exception const &) {
+        } catch (...) {
             return nullptr;
         }
     }
@@ -42,7 +42,7 @@ std::shared_ptr<ParametersCache> ParametersCache::instance() {
 
 ParametersCache::ParametersCache() {
     // Load parameters
-    ExitCode exitCode = GuiRequests::getParameters(_parametersInfo);
+    const ExitCode exitCode = GuiRequests::getParameters(_parametersInfo);
     if (exitCode != ExitCodeOk) {
         qCWarning(lcAppParameters()) << "Error in Requests::getParameters : " << exitCode;
         throw std::runtime_error("Failed to create ParametersCache instance!");
@@ -50,7 +50,7 @@ ParametersCache::ParametersCache() {
 }
 
 bool ParametersCache::saveParametersInfo(bool displayMessageBoxOnError) {
-    ExitCode exitCode = GuiRequests::updateParameters(_parametersInfo);
+    const ExitCode exitCode = GuiRequests::updateParameters(_parametersInfo);
     if (exitCode != ExitCodeOk) {
         qCWarning(lcAppParameters()) << "Error in Requests::updateParameters";
         if (displayMessageBoxOnError) {

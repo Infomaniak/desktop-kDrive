@@ -112,7 +112,7 @@ ExitCode ExcludeListPropagator::checkItems() {
                 if (!found) continue;
 
                 // Remove node (and children by cascade) from DB
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node "
                                                                          << Path2WStr(relativePath).c_str()
                                                                          << L" from DB because it is excluded from sync");
