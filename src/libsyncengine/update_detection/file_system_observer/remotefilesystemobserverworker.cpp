@@ -420,8 +420,8 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
         JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_HIGHEST);
         while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
-                notifyJob->abort();
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
+                notifyJob->abort();
                 return ExitCodeOk;
             }
 

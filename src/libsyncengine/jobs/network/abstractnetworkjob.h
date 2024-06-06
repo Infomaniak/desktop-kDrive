@@ -39,6 +39,7 @@ class AbstractJob;
 class AbstractNetworkJob : public AbstractJob {
     public:
         AbstractNetworkJob();
+        virtual ~AbstractNetworkJob();
 
         bool hasHttpError();
         inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
@@ -105,14 +106,16 @@ class AbstractNetworkJob : public AbstractJob {
 
         virtual std::string getContentType(bool &canceled) = 0;
 
-        Poco::Net::HTTPSClientSession *_session = nullptr;
-        std::mutex _mutexSession;
+        std::unique_ptr<Poco::Net::HTTPSClientSession> _session;
+        std::recursive_mutex _mutexSession;
 
-        Poco::Net::HTTPSClientSession createSession(const Poco::URI &uri);
-        bool sendRequest(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
-        bool receiveResponse(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
+        void createSession(const Poco::URI &uri);
+        void clearSession();
+        void abortSession();
+        bool sendRequest(const Poco::URI &uri);
+        bool receiveResponse(const Poco::URI &uri);
         bool followRedirect(std::istream &inputStream);
-        bool processSocketError(Poco::Net::HTTPSClientSession &session, const std::string &msg, const UniqueId jobId, int err = 0,
+        bool processSocketError(const std::string &msg, const UniqueId jobId, int err = 0,
                                 const std::string &errMsg = std::string());
         bool ioOrLogicalErrorOccurred(std::ios &stream);
         static bool isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept;

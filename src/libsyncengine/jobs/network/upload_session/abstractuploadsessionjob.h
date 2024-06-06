@@ -27,6 +27,7 @@ class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
     public:
         AbstractUploadSessionJob(int driveDbId);
         AbstractUploadSessionJob(int driveDbId, const SyncPath &filepath, const std::string &sessionToken);
+        virtual ~AbstractUploadSessionJob() = default;
 
         inline const std::string &sessionToken() const { return _sessionToken; }
 
