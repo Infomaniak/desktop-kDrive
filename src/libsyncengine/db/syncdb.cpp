@@ -1850,7 +1850,7 @@ bool SyncDb::correspondingNodeId(ReplicaSide snapshotIn, const NodeId &nodeIdIn,
         return true;
     }
 
-    return id(snapshotIn == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal, dbNodeId, nodeIdOut, found);
+    return id(otherSide(snapshotIn), dbNodeId, nodeIdOut, found);
 }
 
 bool SyncDb::updateAllSyncNodes(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet) {

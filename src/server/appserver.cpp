@@ -2947,16 +2947,14 @@ void AppServer::initLogging() {
         throw std::runtime_error("Error in initLogging: failed to get the log directory path.");
     }
 
-    std::filesystem::path logFilePath = logDirPath / Utility::logFileNameWithTime();
+    const std::filesystem::path logFilePath = logDirPath / Utility::logFileNameWithTime();
     _logger = Log::instance(Path2WStr(logFilePath))->getLogger();
 
-    LOG_INFO(_logger, Utility::s2ws(QString::fromLatin1("%1 locale:[%2] version:[%4] os:[%5]")
-                                        .arg(_theme->appName())
-                                        .arg(QLocale::system().name())
-                                        .arg(_theme->version())
-                                        .arg(KDC::CommonUtility::platformName())
-                                        .toStdString())
-                          .c_str());
+    LOGW_INFO(_logger, Utility::s2ws(QString::fromLatin1("%1 locale:[%2] version:[%4] os:[%5]")
+                                         .arg(_theme->appName(), QLocale::system().name(), _theme->version(),
+                                              KDC::CommonUtility::platformName())
+                                         .toStdString())
+                           .c_str());
 }
 
 void AppServer::setupProxy() {
@@ -2990,10 +2988,9 @@ bool AppServer::clientCrashedRecently(int seconds) {
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
     AppStateValue appStateValue = int64_t(0);
-   
+
     if (bool found = false;
-        !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found) ||
-        !found) {
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey ::LastClientSelfRestartDate, appStateValue, found) || !found) {
         addError(Error(ERRID, ExitCodeDbError, ExitCauseDbEntryNotFound));
         LOG_WARN(_logger, "Error in ParmsDb::selectAppState");
         return false;

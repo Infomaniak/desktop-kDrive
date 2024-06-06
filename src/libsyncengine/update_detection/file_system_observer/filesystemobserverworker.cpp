@@ -25,9 +25,7 @@ namespace KDC {
 
 FileSystemObserverWorker::FileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName, ReplicaSide side)
-    : ISyncWorker(syncPal, name, shortName),
-      _syncDb(syncPal->_syncDb),
-      _snapshot(side == ReplicaSideLocal ? syncPal->_localSnapshot : syncPal->_remoteSnapshot) {}
+    : ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb), _snapshot(syncPal->snapshot(side)) {}
 
 FileSystemObserverWorker::~FileSystemObserverWorker() {}
 

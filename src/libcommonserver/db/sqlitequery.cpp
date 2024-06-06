@@ -26,7 +26,6 @@
 #include <sqlite3.h>
 
 #include <iostream>
-#include <unordered_set>
 #include <vector>
 
 #define SQLITE_SLEEP_TIME_MSEC 100
@@ -112,7 +111,7 @@ bool SqliteQuery::bindValue(int index, const dbtype &value) {
     }
 
     if (res != SQLITE_OK) {
-        LOG_WARN(_logger, "ERROR binding SQL value: " << Utility::v2ws(value).c_str() << " error: " << res);
+        LOGW_WARN(_logger, L"ERROR binding SQL value: " << Utility::v2ws(value).c_str() << L" error: " << res);
         return false;
     }
 
@@ -120,8 +119,6 @@ bool SqliteQuery::bindValue(int index, const dbtype &value) {
 }
 
 bool SqliteQuery::exec() {
-    // LOG_DEBUG(_logger, "SQL exec: " << _sql.c_str());
-
     if (isSelect() || isPragma()) {
         return false;
     }

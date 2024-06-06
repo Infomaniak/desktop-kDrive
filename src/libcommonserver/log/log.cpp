@@ -18,8 +18,6 @@
 
 #include "log.h"
 #include "customrollingfileappender.h"
-#include "utility/utility.h"
-#include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 
 #include <log4cplus/initializer.h>
@@ -33,7 +31,7 @@ namespace KDC {
 const std::wstring Log::instanceName = L"Main";
 const std::wstring Log::rfName = L"RollingFileAppender";
 const std::wstring Log::rfPattern = L"%D{%Y-%m-%d %H:%M:%S:%q} [%-0.-1p] (%t) %b:%L - %m%n";
-const int Log::rfMaxBackupIdx = 4;   // Max number of backup files
+const int Log::rfMaxBackupIdx = 4;  // Max number of backup files
 
 std::shared_ptr<Log> Log::_instance = nullptr;
 
