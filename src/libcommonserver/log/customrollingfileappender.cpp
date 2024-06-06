@@ -19,6 +19,7 @@
 #include "customrollingfileappender.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <QString>
@@ -287,10 +288,9 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
 
 void CustomRollingFileAppender::checkForExpiredFiles() {
     // Delete expired files
+    _lastExpireCheck = std::chrono::system_clock::now();
     if (_expire > 0) {
-        _lastExpireCheck = std::chrono::system_clock::now();
         QDateTime now = QDateTime::currentDateTime();
-
         IoError ioError = IoErrorSuccess;
         SyncPath logDirPath;
         if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
@@ -310,6 +310,36 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
             }
         }
     }
-}
 
+    // Archive Previous Log Files
+    IoError ioError = IoErrorSuccess;
+    SyncPath logDirPath;
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
+        throw std::runtime_error("Error in CustomRollingFileAppender: failed to get the log directory path.");
+    }
+    IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoErrorSuccess) {
+        FileStat fileStat;
+        IoHelper::getFileStat(entry.path(), &fileStat, ioError);
+        if (ioError != IoErrorSuccess || fileStat.nodeType != NodeTypeFile) {
+            continue;
+        }
+        // skip already compress logs and current log file.
+        DirectoryEntry currentLog(filename);
+        auto currentLogName = currentLog.path().filename().replace_extension("");
+
+        if (entry.path().filename().string().find(".gz") != std::string::npos ||
+            entry.path().native().find(currentLogName) != std::string::npos) {
+            continue;
+        }
+        if (CommonUtility::compressFile(QString::fromStdString(entry.path().string()),
+                                        QString::fromStdString(entry.path().string() + ".gz"))) {
+            log4cplus::file_remove(entry.path().native());
+        } else {
+            log4cplus::file_remove(entry.path().native() + LOG4CPLUS_TEXT(".gz"));
+        }
+    }
+}
 }  // namespace KDC
