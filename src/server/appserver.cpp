@@ -1067,7 +1067,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QString localFolderPath;
             QString serverFolderPath;
             QString serverFolderNodeId;
-            bool liteSync = 0;
+            bool liteSync = false;
             QSet<QString> blackList;
             QSet<QString> whiteList;
             ArgsWriter(params).write(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, blackList,
