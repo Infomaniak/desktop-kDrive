@@ -207,8 +207,9 @@ void TestIo::testGetItemTypeSimpleCases() {
 
 #ifdef _WIN32
         ItemType itemType;
-        CPPUNIT_ASSERT(_testObj->getItemType(path, itemType)); // Invalid name is considered as IoErrorNoSuchFileOrDirectory (expected error)
-        CPPUNIT_ASSERT(itemType.ioError == IoErrorNoSuchFileOrDirectory); 
+        CPPUNIT_ASSERT(_testObj->getItemType(
+            path, itemType));  // Invalid name is considered as IoErrorNoSuchFileOrDirectory (expected error)
+        CPPUNIT_ASSERT(itemType.ioError == IoErrorNoSuchFileOrDirectory);
         CPPUNIT_ASSERT(itemType.nodeType == NodeTypeUnknown);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeNone);
         CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
@@ -221,9 +222,8 @@ void TestIo::testGetItemTypeSimpleCases() {
 
     // An existing file with emojis in its name
     {
-        using namespace std::string_literals;  // operator ""s
         const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / std::string{u8"🫃😋🌲👣🍔🕉️⛎"s};
+        const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
         { std::ofstream ofs(path); }
 
         const auto result = checker.checkSuccessfulRetrieval(path, NodeTypeFile);
@@ -308,17 +308,13 @@ void TestIo::testGetItemTypeSimpleCases() {
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
         std::filesystem::remove_all(targetPath);
 
-#ifdef _WIN32
-        const auto result =
-            checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeDirectory);
-#else
         const auto result =
             checker.checkSuccessfullRetrievalOfDanglingLink(path, SyncPath{}, LinkTypeFinderAlias, NodeTypeUnknown);
-#endif
+
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
-
 #endif
+
 #if defined(_WIN32)
     // A Windows junction on a regular folder.
     {
@@ -617,9 +613,58 @@ void TestIo::testGetItemTypeAllBranches() {
 #endif
 }
 
+void TestIo::testGetItemTypeEdgeCases() {
+#ifdef __APPLE__
+    // A regular file with a file path of length 1023 which contains moreover a Japanese character.
+    // Such a path causes the function `getResourceValue` to issue an error with code 258 in the following excerpt:
+    //
+    // NSURL *pathURL = [NSURL fileURLWithPath:pathStr]
+    // NSError *error = nil;
+    // NSNumber *isAliasNumber = nil;
+    // BOOL ret = [pathURL getResourceValue:&isAliasNumber forKey:NSURLIsAliasFileKey error:&error];
+    //
+    // Above `ret` is FALSE and `error` has code 258 as in
+    // https://developer.apple.com/documentation/foundation/1448136-nserror_codes/nsfilereadinvalidfilenameerror?language=objc
+    // It is unclear which of `fileURLWithPath` or `getResourceValue` is the culprit.
+
+    const TemporaryDirectory temporaryDirectory;
+    const int bound = (1020 - temporaryDirectory.path.string().size()) / 4;
+    std::string segment(bound, 'a');
+
+    SyncPath path = temporaryDirectory.path / segment / segment / segment / u8"놔";
+
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::create_directories(path, ec));
+    CPPUNIT_ASSERT(!ec);
+    CPPUNIT_ASSERT(std::filesystem::exists(path));
+    CPPUNIT_ASSERT(!ec);
+    CPPUNIT_ASSERT(std::filesystem::is_directory(path, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    path = path / std::string(1022 - path.string().size(), 'a');
+    // The length of a file path can be at most 1024 on MacOSX, including the terminating null character.
+    CPPUNIT_ASSERT_EQUAL(size_t(1023), path.string().size());
+    { std::ofstream{path}; }
+
+    ItemType itemType;
+    CPPUNIT_ASSERT(!_testObj->getItemType(path, itemType));
+    // The outcome depends on the value of `temporaryDirectory.path`.
+    if (std::filesystem::exists(path, ec)) {
+        CPPUNIT_ASSERT_EQUAL(
+            IoErrorInvalidFileName,  // Ooops! Because of NSFileReadInvalidNameError with code 258 issued within `checkIfAlias_`
+            itemType.ioError);
+    } else {
+        CPPUNIT_ASSERT_EQUAL(
+            IoErrorFileNameTooLong,  // Ooops! Because of NSFileReadInvalidNameError with code 258 issued within `checkIfAlias_`
+            itemType.ioError);
+    }
+#endif
+}
+
 void TestIo::testGetItemType() {
     testGetItemTypeSimpleCases();
     testGetItemTypeAllBranches();
+    testGetItemTypeEdgeCases();
 }
 
 }  // namespace KDC

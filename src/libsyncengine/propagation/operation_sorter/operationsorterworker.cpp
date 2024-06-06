@@ -575,8 +575,6 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
         }
 
         std::shared_ptr<Node> xNode = xOp->affectedNode();
-        std::shared_ptr<UpdateTree> tree =
-            xNode->side() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
         SyncPath xDestPath = xNode->getPath();
         if (!xNode->moveOrigin().has_value()) {
             continue;
@@ -624,8 +622,6 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
 
     // computes paths
     // impossible move if dest = source + "/"
-    std::shared_ptr<UpdateTree> tree =
-        o1->affectedNode()->side() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
     SyncPath source = (o1->affectedNode()->moveOrigin().has_value() ? o1->affectedNode()->moveOrigin().value() : "");
     SyncPath dest = o1->affectedNode()->getPath();
     if (!Utility::startsWith(dest.native(), source.native() + Str("/"))) {

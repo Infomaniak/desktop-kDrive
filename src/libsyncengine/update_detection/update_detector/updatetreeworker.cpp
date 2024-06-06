@@ -31,8 +31,8 @@ UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncPal> syncPal, const std::
                                    ReplicaSide side)
     : ISyncWorker(syncPal, name, shortName),
       _syncDb(syncPal->_syncDb),
-      _operationSet(side == ReplicaSideLocal ? syncPal->_localOperationSet : syncPal->_remoteOperationSet),
-      _updateTree(side == ReplicaSideLocal ? syncPal->_localUpdateTree : syncPal->_remoteUpdateTree),
+      _operationSet(syncPal->operationSet(side)),
+      _updateTree(syncPal->updateTree(side)),
       _side(side) {}
 
 UpdateTreeWorker::UpdateTreeWorker(std::shared_ptr<SyncDb> syncDb, std::shared_ptr<FSOperationSet> operationSet,

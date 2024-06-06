@@ -131,7 +131,7 @@ void TestIo::testCreateAlias() {
 
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, aliasError);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 
@@ -157,7 +157,7 @@ void TestIo::testCreateAlias() {
 
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, aliasError);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 
@@ -177,9 +177,8 @@ void TestIo::testCreateAlias() {
 
     // The alias file name contains emojis: success
     {
-        using namespace std::string_literals;  // operator ""s
         const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / std::string{u8"🫃😋🌲👣🍔🕉️⛎"s};
+        const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError aliasError = IoErrorUnknown;

@@ -93,6 +93,10 @@ typedef std::function<void(const char *)> ExecuteCommand;
 
 typedef enum { ReplicaSideUnknown, ReplicaSideLocal, ReplicaSideRemote } ReplicaSide;
 
+inline ReplicaSide otherSide(ReplicaSide side) {
+    return side == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal;
+}
+
 typedef enum {
     NodeTypeUnknown,
     NodeTypeFile,  // File or symlink
@@ -347,12 +351,13 @@ typedef enum {
     IoErrorFileExists,
     IoErrorFileNameTooLong,
     IoErrorInvalidArgument,
+    IoErrorInvalidDirectoryIterator,
+    IoErrorInvalidFileName,
     IoErrorIsADirectory,
     IoErrorIsAFile,
+    IoErrorMaxDepthExceeded,
     IoErrorNoSuchFileOrDirectory,
     IoErrorResultOutOfRange,
-    IoErrorInvalidDirectoryIterator,
-    IoErrorMaxDepthExceeded,
     IoErrorUnknown
 } IoError;
 
@@ -380,15 +385,7 @@ enum class AppStateKey {
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
 
-enum class LogUploadState {
-    None,
-    Archiving,
-    Uploading,
-    Success,
-    Failed,
-    CancelRequested,
-    Canceled
-};
+enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
