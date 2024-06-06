@@ -69,7 +69,7 @@ IoError dWordError2ioError(DWORD error) noexcept {
         case ERROR_INVALID_NAME:
             return IoErrorNoSuchFileOrDirectory;
         default:
-            LOG_WARN(Log::instance()->getLogger(), L"Unknown IO error - error=" << error);
+            LOG_WARN(Log::instance()->getLogger(), "Unknown IO error - error=" << error);
             return IoErrorUnknown;
     }
 }
@@ -158,7 +158,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
         (PZW_QUERY_DIRECTORY_FILE)GetProcAddress(GetModuleHandle(L"ntdll.dll"), "ZwQueryDirectoryFile");
 
     if (zwQueryDirectoryFile == 0) {
-        LOG_WARN(Log::instance()->getLogger(),
+        LOGW_WARN(Log::instance()->getLogger(),
                  L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()).c_str());
         return false;
     }
@@ -201,7 +201,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
                 continue;
             }
 
-            LOG_WARN(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()).c_str());
+            LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()).c_str());
             ioError = dWordError2ioError(dwError);
             return _isExpectedError(ioError);
         }
