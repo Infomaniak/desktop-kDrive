@@ -277,15 +277,16 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
         case SyncStepUpdateDetection1:
             workers[0] = _syncPal->_computeFSOperationsWorker;
             workers[1] = nullptr;
-            inputSharedObject[0] = _syncPal->_localSnapshot;
-            inputSharedObject[1] = _syncPal->_remoteSnapshot;
+            _syncPal->copySnapshots();
+            inputSharedObject[0] = _syncPal->snapshot(ReplicaSideLocal, true);
+            inputSharedObject[1] = _syncPal->snapshot(ReplicaSideRemote, true);
             _syncPal->_restart = false;
             break;
         case SyncStepUpdateDetection2:
             workers[0] = _syncPal->_localUpdateTreeWorker;
             workers[1] = _syncPal->_remoteUpdateTreeWorker;
-            inputSharedObject[0] = _syncPal->_localOperationSet;
-            inputSharedObject[1] = _syncPal->_remoteOperationSet;
+            inputSharedObject[0] = _syncPal->operationSet(ReplicaSideLocal);
+            inputSharedObject[1] = _syncPal->operationSet(ReplicaSideRemote);
             break;
         case SyncStepReconciliation1:
             workers[0] = _syncPal->_platformInconsistencyCheckerWorker;
@@ -391,7 +392,7 @@ SyncStep SyncPalWorker::nextStep() const {
             break;
         case SyncStepUpdateDetection1: {
             auto logNbOps = [=](const ReplicaSide side) {
-                auto opsSet = side == ReplicaSideLocal ? _syncPal->_localOperationSet : _syncPal->_remoteOperationSet;
+                auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->ops().size()
                                                << " " << Utility::side2Str(side).c_str()
                                                << " operations detected (# CREATE: "
@@ -410,14 +411,15 @@ SyncStep SyncPalWorker::nextStep() const {
                 return SyncStepIdle;
             }
 
-            return (_syncPal->_localOperationSet->updated() || _syncPal->_remoteOperationSet->updated())
+            return (_syncPal->operationSet(ReplicaSideLocal)->updated() || _syncPal->operationSet(ReplicaSideRemote)->updated())
                        ? SyncStepUpdateDetection2
                        : SyncStepDone;
             break;
         }
         case SyncStepUpdateDetection2:
-            return (_syncPal->_localUpdateTree->updated() || _syncPal->_remoteUpdateTree->updated()) ? SyncStepReconciliation1
-                                                                                                     : SyncStepDone;
+            return (_syncPal->updateTree(ReplicaSideLocal)->updated() || _syncPal->updateTree(ReplicaSideRemote)->updated())
+                       ? SyncStepReconciliation1
+                       : SyncStepDone;
             break;
         case SyncStepReconciliation1:
             return SyncStepReconciliation2;

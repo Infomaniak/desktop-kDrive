@@ -58,54 +58,7 @@ namespace KDC {
 #define SYNCDB _syncDbId
 
 SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted)
-    : _logger(Log::instance()->getLogger()),
-      _syncDbId(0),
-      _driveDbId(0),
-      _driveId(0),
-      _accountDbId(0),
-      _userDbId(0),
-      _userId(0),
-      _driveName(std::string()),
-      _localPath(SyncPath()),
-      _targetPath(SyncPath()),
-      _vfsMode(VirtualFileModeOff),
-      _restart(false),
-      _isPaused(false),
-      _syncHasFullyCompleted(hasFullyCompleted),
-      _addError(nullptr),
-      _addCompletedItem(nullptr),
-      _vfsIsExcluded(nullptr),
-      _vfsExclude(nullptr),
-      _vfsPinState(nullptr),
-      _vfsSetPinState(nullptr),
-      _vfsStatus(nullptr),
-      _vfsCreatePlaceholder(nullptr),
-      _vfsConvertToPlaceholder(nullptr),
-      _vfsUpdateMetadata(nullptr),
-      _vfsUpdateFetchStatus(nullptr),
-      _syncDb(nullptr),
-      _interruptSync(std::shared_ptr<bool>(new bool(false))),
-      _localSnapshot(nullptr),
-      _remoteSnapshot(nullptr),
-      _localOperationSet(nullptr),
-      _remoteOperationSet(nullptr),
-      _localUpdateTree(nullptr),
-      _remoteUpdateTree(nullptr),
-      _conflictQueue(nullptr),
-      _syncOps(nullptr),
-      _syncPalWorker(nullptr),
-      _localFSObserverWorker(nullptr),
-      _remoteFSObserverWorker(nullptr),
-      _computeFSOperationsWorker(nullptr),
-      _localUpdateTreeWorker(nullptr),
-      _remoteUpdateTreeWorker(nullptr),
-      _platformInconsistencyCheckerWorker(nullptr),
-      _conflictFinderWorker(nullptr),
-      _conflictResolverWorker(nullptr),
-      _operationsGeneratorWorker(nullptr),
-      _operationsSorterWorker(nullptr),
-      _executorWorker(nullptr),
-      _tmpBlacklistManager(nullptr) {
+    : _logger(Log::instance()->getLogger()), _syncHasFullyCompleted(hasFullyCompleted) {
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init : " << Utility::formatSyncPath(syncDbPath).c_str());
 
     if (!createOrOpenDb(syncDbPath, version)) {
@@ -115,54 +68,7 @@ SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, bool ha
     createSharedObjects();
 }
 
-SyncPal::SyncPal(int syncDbId, const std::string &version)
-    : _logger(Log::instance()->getLogger()),
-      _syncDbId(syncDbId),
-      _driveDbId(0),
-      _driveId(0),
-      _accountDbId(0),
-      _userDbId(0),
-      _userId(0),
-      _driveName(std::string()),
-      _localPath(SyncPath()),
-      _targetPath(SyncPath()),
-      _vfsMode(VirtualFileModeOff),
-      _restart(false),
-      _isPaused(false),
-      _syncHasFullyCompleted(false),
-      _addError(nullptr),
-      _addCompletedItem(nullptr),
-      _vfsIsExcluded(nullptr),
-      _vfsExclude(nullptr),
-      _vfsPinState(nullptr),
-      _vfsSetPinState(nullptr),
-      _vfsStatus(nullptr),
-      _vfsCreatePlaceholder(nullptr),
-      _vfsConvertToPlaceholder(nullptr),
-      _vfsUpdateMetadata(nullptr),
-      _vfsUpdateFetchStatus(nullptr),
-      _syncDb(nullptr),
-      _interruptSync(std::shared_ptr<bool>(new bool(false))),
-      _localSnapshot(nullptr),
-      _remoteSnapshot(nullptr),
-      _localOperationSet(nullptr),
-      _remoteOperationSet(nullptr),
-      _localUpdateTree(nullptr),
-      _remoteUpdateTree(nullptr),
-      _conflictQueue(nullptr),
-      _syncOps(nullptr),
-      _syncPalWorker(nullptr),
-      _localFSObserverWorker(nullptr),
-      _remoteFSObserverWorker(nullptr),
-      _computeFSOperationsWorker(nullptr),
-      _localUpdateTreeWorker(nullptr),
-      _remoteUpdateTreeWorker(nullptr),
-      _platformInconsistencyCheckerWorker(nullptr),
-      _conflictFinderWorker(nullptr),
-      _conflictResolverWorker(nullptr),
-      _operationsGeneratorWorker(nullptr),
-      _operationsSorterWorker(nullptr),
-      _executorWorker(nullptr) {
+SyncPal::SyncPal(int syncDbId, const std::string &version) : _logger(Log::instance()->getLogger()), _syncDbId(syncDbId) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
 
     // Get sync
@@ -613,6 +519,8 @@ void SyncPal::createSharedObjects() {
     // Create shared objects
     _localSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
     _remoteSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
+    _localSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
+    _remoteSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
     _localOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
     _remoteOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
     _localUpdateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
@@ -688,6 +596,8 @@ void SyncPal::free() {
     _interruptSync.reset();
     _localSnapshot.reset();
     _remoteSnapshot.reset();
+    _localSnapshotCopy.reset();
+    _remoteSnapshotCopy.reset();
     _localOperationSet.reset();
     _remoteOperationSet.reset();
     _localUpdateTree.reset();
@@ -699,6 +609,8 @@ void SyncPal::free() {
     ASSERT(_interruptSync.use_count() == 0);
     ASSERT(_localSnapshot.use_count() == 0);
     ASSERT(_remoteSnapshot.use_count() == 0);
+    ASSERT(_localSnapshotCopy.use_count() == 0);
+    ASSERT(_remoteSnapshotCopy.use_count() == 0);
     ASSERT(_localOperationSet.use_count() == 0);
     ASSERT(_remoteOperationSet.use_count() == 0);
     ASSERT(_localUpdateTree.use_count() == 0);
@@ -1022,8 +934,8 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshot->exists(*nodeIdIt)
-                                                                : _remoteSnapshot->exists(*nodeIdIt);
+        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshotCopy->exists(*nodeIdIt)
+                                                                      : _remoteSnapshotCopy->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
@@ -1052,6 +964,22 @@ ExitCode SyncPal::updateSyncNode() {
     }
 
     return ExitCodeOk;
+}
+
+std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
+    if (copy) {
+        return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshotCopy : _remoteSnapshotCopy);
+    } else {
+        return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshot : _remoteSnapshot);
+    }
+}
+
+std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) {
+    return (side == ReplicaSide::ReplicaSideLocal ? _localOperationSet : _remoteOperationSet);
+}
+
+std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) {
+    return (side == ReplicaSide::ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree);
 }
 
 ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const {
@@ -1532,6 +1460,11 @@ void SyncPal::refreshTmpBlacklist() {
 
 void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
+}
+
+void SyncPal::copySnapshots() {
+    _localSnapshotCopy = _localSnapshot;
+    _remoteSnapshotCopy = _remoteSnapshot;
 }
 
 }  // namespace KDC
