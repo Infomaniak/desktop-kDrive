@@ -265,12 +265,13 @@ void AbstractNetworkJob::getStringFromStream(std::istream &is, std::string &res)
 }
 
 void AbstractNetworkJob::createSession(const Poco::URI &uri) {
+    const std::lock_guard<std::recursive_mutex> lock(_mutexSession);
+
     if (_session) {
         // Redirection case
         clearSession();
     }
 
-    const std::lock_guard<std::recursive_mutex> lock(_mutexSession);
     _session.reset(new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context));
 
     if (_customTimeout) {
@@ -301,7 +302,6 @@ void AbstractNetworkJob::abortSession() {
             if (socketImpl->sockfd()) {
                 try {
                     socketImpl->close();
-                    //&_session->abort();
                 } catch (std::exception &e) {
                     LOG_DEBUG(_logger, "Job " << jobId() << " abort error - err=" << e.what());
                 }
