@@ -117,6 +117,7 @@ int IoHelper::_getAndSetRightsMethod = -1;  // -1: not initialized, 0: Windows A
 bool IoHelper::_setRightsWindowsApiInheritance = false;
 std::unique_ptr<BYTE[]> IoHelper::_psid = nullptr;
 TRUSTEE IoHelper::_trustee = {nullptr};
+std::mutex IoHelper::_initRightsWindowsApiMutex;
 
 bool IoHelper::fileExists(const std::error_code &ec) noexcept {
     return (ec.value() != ERROR_FILE_NOT_FOUND) && (ec.value() != ERROR_PATH_NOT_FOUND) && (ec.value() != ERROR_INVALID_DRIVE);
