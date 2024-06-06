@@ -71,9 +71,9 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
         errorInfo._path = relativePath;
         errors.insert({nodeId, errorInfo});
 
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
-                                                                   << L" error list with nodeId=" << Utility::s2ws(nodeId).c_str()
-                                                                   << L" and path=" << Path2WStr(errorInfo._path).c_str());
+        LOGW_INFO(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
+                                                                  << L" error list with nodeId=" << Utility::s2ws(nodeId).c_str()
+                                                                  << L" and path=" << Path2WStr(errorInfo._path).c_str());
     }
 }
 
@@ -90,9 +90,9 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
         errorInfo._path = relativePath;
         errors.insert({nodeId, errorInfo});
 
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
-                                                                   << L" error list with nodeId=" << Utility::s2ws(nodeId).c_str()
-                                                                   << L" and path=" << Path2WStr(errorInfo._path).c_str());
+        LOGW_INFO(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
+                                                                  << L" error list with nodeId=" << Utility::s2ws(nodeId).c_str()
+                                                                  << L" and path=" << Path2WStr(errorInfo._path).c_str());
     }
 
     insertInBlacklist(nodeId, side);
@@ -108,10 +108,8 @@ void TmpBlacklistManager::refreshBlacklist() {
         while (errorIt != errors.end()) {
             std::chrono::duration<double> elapsed_seconds = now - errorIt->second._lastErrorTime;
             if (elapsed_seconds.count() > oneHour) {
-                if (ParametersCache::instance()->parameters().extendedLog()) {
-                    LOG_DEBUG(Log::instance()->getLogger(), "Removing " << Utility::side2Str(side).c_str() << "  item "
-                                                                        << errorIt->first.c_str() << " from tmp blacklist.");
-                }
+                LOG_INFO(Log::instance()->getLogger(), "Removing " << Utility::side2Str(side).c_str() << "  item "
+                                                                   << errorIt->first.c_str() << " from tmp blacklist.");
 
                 SyncNodeType blaclistType =
                     side == ReplicaSideLocal ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
@@ -184,9 +182,7 @@ void TmpBlacklistManager::removeFromDB(const NodeId &nodeId, const ReplicaSide s
             return;
         }
 
-        if (ParametersCache::instance()->parameters().extendedLog()) {
-            LOG_DEBUG(Log::instance()->getLogger(), "Item " << dbNodeId << " removed from DB");
-        }
+        LOG_INFO(Log::instance()->getLogger(), "Item " << dbNodeId << " removed from DB");
     }
 }
 

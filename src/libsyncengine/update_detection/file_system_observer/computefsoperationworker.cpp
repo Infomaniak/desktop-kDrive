@@ -258,7 +258,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                             }
                         }
 
-                        if (isExcluded) continue;   // Never generate operation on excluded file
+                        if (isExcluded) continue;  // Never generate operation on excluded file
                     }
 
                     if (isInUnsyncedList(snapshot, nodeId, side, true)) {
@@ -266,6 +266,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                         continue;
                     }
 
+                    bool checkTemplate = side == ReplicaSideRemote;
                     if (side == ReplicaSideLocal) {
                         SyncPath localPath = _syncPal->_localPath / dbPath;
 
@@ -287,20 +288,25 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                 return ExitCodeSystemError;
                             }
                             if (exists) {
-                                bool warn = false;
-                                bool isExcluded = false;
-                                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(
-                                    _syncPal->_localPath, dbPath, warn, isExcluded, ioError);
-                                if (!success) {
-                                    LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                                                           << Utility::formatIoError(localPath, ioError).c_str());
-                                    return ExitCodeSystemError;
-                                }
-                                if (isExcluded) {
-                                    // The item is excluded
-                                    continue;
-                                }
+                                checkTemplate = true;
                             }
+                        }
+                    }
+
+                    if (checkTemplate) {
+                        IoError ioError = IoErrorSuccess;
+                        bool warn = false;
+                        bool isExcluded = false;
+                        const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, dbPath,
+                                                                                                   warn, isExcluded, ioError);
+                        if (!success) {
+                            LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                                                   << Utility::formatIoError(dbPath, ioError).c_str());
+                            return ExitCodeSystemError;
+                        }
+                        if (isExcluded) {
+                            // The item is excluded
+                            continue;
                         }
                     }
 
@@ -786,7 +792,8 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
-ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded) {
+ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
+                                                     bool &isExcluded) {
     if (side != ReplicaSideLocal) return ExitCodeOk;
 
     if (!_syncPal->snapshot(ReplicaSideLocal, true)->itemId(relativePath).empty()) {
