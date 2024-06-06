@@ -951,13 +951,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_SYNC_ADD: {
-            int userDbId;
-            int accountId;
-            int driveId;
+            int userDbId = 0;
+            int accountId = 0;
+            int driveId = 0;
             QString localFolderPath;
             QString serverFolderPath;
             QString serverFolderNodeId;
-            bool smartSync;
+            bool liteSync = false;
             QSet<QString> blackList;
             QSet<QString> whiteList;
             QDataStream paramsStream(params);
@@ -967,7 +967,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> localFolderPath;
             paramsStream >> serverFolderPath;
             paramsStream >> serverFolderNodeId;
-            paramsStream >> smartSync;
+            paramsStream >> liteSync;
             paramsStream >> blackList;
             paramsStream >> whiteList;
 
@@ -981,13 +981,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             SyncInfo syncInfo;
             ExitCode exitCode =
                 ServerRequests::addSync(userDbId, accountId, driveId, localFolderPath, serverFolderPath, serverFolderNodeId,
-                                        smartSync, showInNavigationPane, accountInfo, driveInfo, syncInfo);
+                                        liteSync, showInNavigationPane, accountInfo, driveInfo, syncInfo);
             if (exitCode != ExitCodeOk) {
                 LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
                                        << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                        << L" localFolderPath=" << QStr2WStr(localFolderPath).c_str() << L" serverFolderPath="
                                        << QStr2WStr(serverFolderPath).c_str() << L" serverFolderNodeId="
-                                       << serverFolderNodeId.toStdWString().c_str() << L" smartSync=" << smartSync
+                                       << serverFolderNodeId.toStdWString().c_str() << L" liteSync=" << liteSync
                                        << L" showInNavigationPane=" << showInNavigationPane);
                 addError(Error(ERRID, exitCode, ExitCauseUnknown));
                 resultStream << exitCode;
@@ -1058,21 +1058,15 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_SYNC_ADD2: {
-            int driveDbId;
+            int driveDbId = 0;
             QString localFolderPath;
             QString serverFolderPath;
             QString serverFolderNodeId;
-            bool smartSync;
+            bool liteSync = false;
             QSet<QString> blackList;
             QSet<QString> whiteList;
-            QDataStream paramsStream(params);
-            paramsStream >> driveDbId;
-            paramsStream >> localFolderPath;
-            paramsStream >> serverFolderPath;
-            paramsStream >> serverFolderNodeId;
-            paramsStream >> smartSync;
-            paramsStream >> blackList;
-            paramsStream >> whiteList;
+            ArgsWriter(params).write(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, blackList,
+                                     whiteList);
 
             // Add sync in DB
             bool showInNavigationPane = false;
@@ -1081,12 +1075,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 #endif
             SyncInfo syncInfo;
             ExitCode exitCode = ServerRequests::addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId,
-                                                        smartSync, showInNavigationPane, syncInfo);
+                                                        liteSync, showInNavigationPane, syncInfo);
             if (exitCode != ExitCodeOk) {
                 LOGW_WARN(_logger, L"Error in Requests::addSync for driveDbId="
                                        << driveDbId << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath)).c_str()
-                                       << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str()
-                                       << L" smartSync=" << smartSync << L" showInNavigationPane=" << showInNavigationPane);
+                                       << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" liteSync="
+                                       << liteSync << L" showInNavigationPane=" << showInNavigationPane);
                 addError(Error(ERRID, exitCode, ExitCauseUnknown));
                 resultStream << exitCode;
                 break;
@@ -1810,13 +1804,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_SYNC_SETSUPPORTSVIRTUALFILES: {
-            int syncDbId;
-            bool value;
-            QDataStream paramsStream(params);
-            paramsStream >> syncDbId;
-            paramsStream >> value;
+            int syncDbId = 0;
+            bool value = false;
+            ArgsWriter(params).write(syncDbId, value);
 
-            ExitCode exitCode = setSupportsVirtualFiles(syncDbId, value);
+            const ExitCode exitCode = setSupportsVirtualFiles(syncDbId, value);
             if (exitCode != ExitCodeOk) {
                 LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId);
             }
@@ -2708,10 +2700,22 @@ ExitCode AppServer::startSyncs(ExitCause &exitCause) {
     return ExitCodeOk;
 }
 
+std::string liteSyncActivationLogMessage(bool enabled, int syncDbId) {
+    const std::string activationStatus = enabled ? "enabled" : "disabled";
+    std::stringstream ss;
+
+    ss << "LiteSync is " << activationStatus << " for syncDbId=" << syncDbId;
+
+    return ss.str();
+}
+
 // This function will pause the synchronization in case of errors.
 ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
+    const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileModeOff, sync.dbId());
+    LOG_INFO(_logger, liteSyncMsg.c_str());
+
     ExitCause exitCause = ExitCauseUnknown;
-    ExitCode exitCode = createAndStartVfs(sync, exitCause);
+    const ExitCode exitCode = createAndStartVfs(sync, exitCause);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(_logger,
                  "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode << ", pausing.");
