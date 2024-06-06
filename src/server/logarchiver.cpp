@@ -333,8 +333,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
         nbFiles++;
     }
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
         return ExitCodeSystemError;
     }
 
@@ -364,8 +364,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
         }
 
         if (!IoHelper::deleteDirectory(entry.path(), ioError)) {  // Delete the original file
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in IoHelper::deleteDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::deleteDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
             return ExitCodeSystemError;
         }
 
@@ -378,8 +378,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
     }
 
     if (!endOfDirectory) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
         return ExitCodeSystemError;
     }
 
@@ -393,11 +393,9 @@ ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath &outputPath, Ex
     std::string osArch = CommonUtility::platformArch().toStdString();
     std::string appVersion = CommonUtility::userAgentString();
 
-    IoError ioError = IoErrorUnknown;
     std::ofstream file(outputPath.string());
     if (!file.is_open()) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in creating file: " << Utility::formatIoError(outputPath, ioError).c_str());
-        ioError = IoErrorUnknown;
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in creating file: " << Utility::formatSyncPath(outputPath).c_str());
         return ExitCodeOk;
     }
     file << "OS Name: " << osName << std::endl;
