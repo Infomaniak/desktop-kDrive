@@ -287,8 +287,9 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
 }
 
 void CustomRollingFileAppender::checkForExpiredFiles() {
-    // Delete expired files
     _lastExpireCheck = std::chrono::system_clock::now();
+
+    // Delete expired files
     if (_expire > 0) {
         QDateTime now = QDateTime::currentDateTime();
         IoError ioError = IoErrorSuccess;
@@ -314,7 +315,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
     // Archive Previous Log Files
     IoError ioError = IoErrorSuccess;
     SyncPath logDirPath;
-    if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoErrorSuccess) {
         throw std::runtime_error("Error in CustomRollingFileAppender: failed to get the log directory path.");
     }
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
