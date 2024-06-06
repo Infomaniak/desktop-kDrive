@@ -64,6 +64,14 @@ bool FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<Uni
     return false;
 }
 
+uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
+    const std::lock_guard<std::mutex> lock(_mutex);
+    if (auto it = _opsByType.find(type); it != _opsByType.end()) {
+        return it->second.size();
+    }
+    return 0;
+}
+
 void FSOperationSet::clear() {
     std::unordered_map<UniqueId, FSOpPtr>::iterator it = _ops.begin();
     while (it != _ops.end()) {
