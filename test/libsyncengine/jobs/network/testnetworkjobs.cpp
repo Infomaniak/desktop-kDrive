@@ -119,7 +119,8 @@ void TestNetworkJobs::tearDown() {
     if (_deleteTestDir) {
         DeleteJob job(_driveDbId, _dirId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
         job.setBypassCheck(true);
-        job.runSynchronously();
+        ExitCode exitCode = job.runSynchronously();
+        CPPUNIT_ASSERT(exitCode == ExitCodeOk);
     }
 }
 
@@ -127,7 +128,8 @@ void TestNetworkJobs::testCreateDir() {
     CPPUNIT_ASSERT(createTestDir());
 
     GetFileListJob fileListJob(_driveDbId, _remoteDirId);
-    fileListJob.runSynchronously();
+    ExitCode exitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -154,10 +156,12 @@ void TestNetworkJobs::testCopyToDir() {
 
     SyncName filename = Str("testCopyToDir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
     CopyToDirectoryJob job(_driveDbId, testFileRemoteId, _dirId, filename);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     GetFileListJob fileListJob(_driveDbId, _dirId);
-    fileListJob.runSynchronously();
+    exitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -179,10 +183,12 @@ void TestNetworkJobs::testDelete() {
 
     DeleteJob job(_driveDbId, _dirId, "", ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
     job.setBypassCheck(true);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     GetFileListJob fileListJob(_driveDbId, _remoteDirId);
-    fileListJob.runSynchronously();
+    exitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -206,7 +212,8 @@ void TestNetworkJobs::testDownload() {
     const TemporaryDirectory temporaryDirectory("testDownload");
     SyncPath localDestFilePath = temporaryDirectory.path / "test_file.txt";
     DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     CPPUNIT_ASSERT(std::filesystem::exists(localDestFilePath));
 
@@ -234,14 +241,16 @@ void TestNetworkJobs::testDownloadAborted() {
 
 void TestNetworkJobs::testGetAvatar() {
     GetInfoUserJob job(_userDbId);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     CPPUNIT_ASSERT(job.jsonRes());
     Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
     std::string avatarUrl = data->get(avatarKey);
 
     GetAvatarJob avatarJob(avatarUrl);
-    avatarJob.runSynchronously();
+    exitCode = avatarJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     CPPUNIT_ASSERT(avatarJob.avatar());
     CPPUNIT_ASSERT(!avatarJob.avatar().get()->empty());
@@ -250,6 +259,8 @@ void TestNetworkJobs::testGetAvatar() {
 void TestNetworkJobs::testGetDriveList() {
     GetDrivesListJob job(_userDbId);
     job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     bool found = false;
     Poco::JSON::Array::Ptr data = job.jsonRes()->getArray("data");
@@ -266,7 +277,8 @@ void TestNetworkJobs::testGetDriveList() {
 
 void TestNetworkJobs::testGetFileInfo() {
     GetFileInfoJob job(_driveDbId, testFileRemoteId);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     // Extract file ID
     Poco::JSON::Object::Ptr resObj = job.jsonRes();
@@ -280,7 +292,8 @@ void TestNetworkJobs::testGetFileInfo() {
 
 void TestNetworkJobs::testGetFileList() {
     GetFileListJob job(_driveDbId, pictureDirRemoteId);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     int counter = 0;
     Poco::JSON::Array::Ptr dataArray = job.jsonRes()->getArray(dataKey);
@@ -292,7 +305,8 @@ void TestNetworkJobs::testGetFileList() {
 
 void TestNetworkJobs::testGetFileListWithCursor() {
     InitFileListWithCursorJob job(_driveDbId, pictureDirRemoteId);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     int counter = 0;
     std::string cursor;
@@ -314,7 +328,8 @@ void TestNetworkJobs::testGetFileListWithCursor() {
 
 void TestNetworkJobs::testFullFileListWithCursorJson() {
     JsonFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     int counter = 0;
     std::string cursor;
@@ -339,7 +354,8 @@ void TestNetworkJobs::testFullFileListWithCursorJson() {
 
 void TestNetworkJobs::testFullFileListWithCursorJsonZip() {
     JsonFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     int counter = 0;
     std::string cursor;
@@ -364,7 +380,8 @@ void TestNetworkJobs::testFullFileListWithCursorJsonZip() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsv() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, false);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     int counter = 0;
     std::string cursor = job.getCursor();
@@ -387,7 +404,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsv() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {}, true);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     int counter = 0;
     std::string cursor = job.getCursor();
@@ -410,7 +428,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvZip() {
 
 void TestNetworkJobs::testFullFileListWithCursorJsonBlacklist() {
     JsonFullFileListWithCursorJob job(_driveDbId, "1", {pictureDirRemoteId}, true);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     int counter = 0;
     std::string cursor;
@@ -435,7 +454,8 @@ void TestNetworkJobs::testFullFileListWithCursorJsonBlacklist() {
 
 void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
     CsvFullFileListWithCursorJob job(_driveDbId, "1", {pictureDirRemoteId}, true);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     int counter = 0;
     std::string cursor = job.getCursor();
@@ -458,7 +478,8 @@ void TestNetworkJobs::testFullFileListWithCursorCsvBlacklist() {
 
 void TestNetworkJobs::testGetInfoUser() {
     GetInfoUserJob job(_userDbId);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
     //    CPPUNIT_ASSERT(data->get(emailKey).toString() == _email);
@@ -466,7 +487,8 @@ void TestNetworkJobs::testGetInfoUser() {
 
 void TestNetworkJobs::testGetInfoDrive() {
     GetInfoDriveJob job(_driveDbId);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
     CPPUNIT_ASSERT(data->get(nameKey).toString() == "kDrive Desktop Team");
@@ -474,7 +496,8 @@ void TestNetworkJobs::testGetInfoDrive() {
 
 void TestNetworkJobs::testThumbnail() {
     GetThumbnailJob job(_driveDbId, picture1RemoteId.c_str(), 50);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     CPPUNIT_ASSERT(!job.octetStreamRes().empty());
 }
@@ -484,7 +507,8 @@ void TestNetworkJobs::testDuplicateRenameMove() {
 
     // Duplicate
     DuplicateJob dupJob(_driveDbId, testFileRemoteId, Str("test_duplicate.txt"));
-    dupJob.runSynchronously();
+    ExitCode exitCode = dupJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     NodeId dupFileId;
     if (dupJob.jsonRes()) {
@@ -499,10 +523,12 @@ void TestNetworkJobs::testDuplicateRenameMove() {
     // Move
     MoveJob moveJob(_driveDbId, "", dupFileId, _dirId);
     moveJob.setBypassCheck(true);
-    moveJob.runSynchronously();
+    exitCode = moveJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     GetFileListJob fileListJob(_driveDbId, _dirId);
-    fileListJob.runSynchronously();
+    exitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -519,7 +545,8 @@ void TestNetworkJobs::testRename() {
 
     // Check the name has changed
     GetFileInfoJob fileInfoJob(_driveDbId, testFileRemoteRenameId);
-    fileInfoJob.runSynchronously();
+    ExitCode exitCode = fileInfoJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
     SyncName name;
@@ -535,12 +562,14 @@ void TestNetworkJobs::testUpload() {
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), _dirId, 0);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     NodeId newNodeId = job.nodeId();
 
     GetFileInfoJob fileInfoJob(_driveDbId, newNodeId);
-    fileInfoJob.runSynchronously();
+    exitCode = fileInfoJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr dataObj = fileInfoJob.jsonRes()->getObject(dataKey);
     std::string name;
@@ -592,10 +621,12 @@ void TestNetworkJobs::testUploadSessionSynchronous() {
 
     UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
                                    1);
-    uploadSessionJob.runSynchronously();
+    ExitCode exitCode = uploadSessionJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     GetFileListJob fileListJob(_driveDbId, _dirId);
-    fileListJob.runSynchronously();
+    exitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -613,10 +644,12 @@ void TestNetworkJobs::testUploadSessionAsynchronous2() {
 
     UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
                                    2);
-    uploadSessionJob.runSynchronously();
+    ExitCode exitCode = uploadSessionJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     GetFileListJob fileListJob(_driveDbId, _dirId);
-    fileListJob.runSynchronously();
+    exitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -634,10 +667,12 @@ void TestNetworkJobs::testUploadSessionAsynchronous5() {
 
     UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
                                    5);
-    uploadSessionJob.runSynchronously();
+    ExitCode exitCode = uploadSessionJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     GetFileListJob fileListJob(_driveDbId, _dirId);
-    fileListJob.runSynchronously();
+    exitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -685,7 +720,8 @@ void TestNetworkJobs::testUploadSessionAsynchronous5Aborted() {
     Utility::msleep(1000);  // Wait 1sec
 
     GetFileListJob fileListJob(_driveDbId, _dirId);
-    fileListJob.runSynchronously();
+    ExitCode exitCode = fileListJob.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
@@ -697,7 +733,8 @@ void TestNetworkJobs::testUploadSessionAsynchronous5Aborted() {
 bool TestNetworkJobs::createTestDir() {
     _dirName = Str("test_dir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
     CreateDirJob job(_driveDbId, _dirName, _remoteDirId, _dirName);
-    job.runSynchronously();
+    ExitCode exitCode = job.runSynchronously();
+    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     // Extract file ID
     if (job.jsonRes()) {
