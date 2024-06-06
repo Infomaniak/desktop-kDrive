@@ -77,6 +77,9 @@ SyncPath makeVeryLonPath(const SyncPath &rootPath) {
     return path;
 }
 
+SyncPath makeFileNameWithEmojis() {
+    return u8"🫃😋🌲👣🍔🕉️⛎";
+}
 
 TestIo::TestIo() : CppUnit::TestFixture(), _localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci") {}
 

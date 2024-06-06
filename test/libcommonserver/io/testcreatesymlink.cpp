@@ -157,9 +157,8 @@ void TestIo::testCreateSymlink() {
 
     // Successfully creates a symlink whose file name contains emojis
     {
-        using namespace std::string_literals;  // operator ""s
         const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / std::string{u8"🫃😋🌲👣🍔🕉️⛎"s};
+        const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError aliasError;
