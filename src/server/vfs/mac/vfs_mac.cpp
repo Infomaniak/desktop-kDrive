@@ -17,9 +17,6 @@
  */
 
 #include "vfs_mac.h"
-#include "version.h"
-#include "libcommon/info/exclusionappinfo.h"
-#include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/utility/utility.h"
@@ -281,10 +278,8 @@ bool VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
         return false;
     }
 
-    if (ec.value() != 0) {
-        LOGW_WARN(logger(), L"Failed to check if path exists " << Utility::formatSyncPath(fullPath).c_str() << L": "
-                                                               << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
-                                                               << L")");
+    if (ec) {
+        LOGW_WARN(logger(), L"Failed to check if path exists " << Utility::formatStdError(fullPath, ec).c_str());
         return false;
     }
 
@@ -533,7 +528,7 @@ bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     }
 
     std::filesystem::path tmpFullPath(QStr2Path(tmpPath));
-    auto updateFct = [=](bool &canceled, bool &finished, bool &error) {
+    auto updateFct = [=, this](bool &canceled, bool &finished, bool &error) {
         // Update download progress
         finished = false;
         if (!_connector->vfsUpdateFetchStatus(Path2QStr(tmpFullPath), Path2QStr(fullPath), _localSyncPath, received, canceled,
@@ -755,8 +750,8 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
         } else {
             isDirectory = itemType.nodeType == NodeTypeDirectory;
             if (!isDirectory && itemType.ioError != IoErrorSuccess) {
-                LOG_WARN(logger(), L"Failed to check if the path is a directory: "
-                                       << Utility::formatIoError(fullPath, itemType.ioError).c_str());
+                LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
+                                        << Utility::formatIoError(fullPath, itemType.ioError).c_str());
                 return false;
             }
         }
