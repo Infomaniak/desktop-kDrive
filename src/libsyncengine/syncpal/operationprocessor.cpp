@@ -31,10 +31,8 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         return false;
     }
 
-    std::shared_ptr<Snapshot> snapshot =
-        (node->side() == ReplicaSide::ReplicaSideLocal ? _syncPal->_localSnapshot : _syncPal->_remoteSnapshot);
-    std::shared_ptr<Snapshot> otherSnapshot =
-        (correspondingNode->side() == ReplicaSide::ReplicaSideLocal ? _syncPal->_localSnapshot : _syncPal->_remoteSnapshot);
+    std::shared_ptr<Snapshot> snapshot = _syncPal->snapshot(node->side(), true);
+    std::shared_ptr<Snapshot> otherSnapshot = _syncPal->snapshot(correspondingNode->side(), true);
 
     // Create-Create pseudo-conflict
     if (node->hasChangeEvent(OperationTypeCreate) && correspondingNode->hasChangeEvent(OperationTypeCreate) &&
@@ -89,10 +87,6 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeInOtherTree(std::shar
     // The node is not in DB => find an ancestor
     return findCorrespondingNodeFromPath(node);
 }
-
-constexpr auto otherSide = [](ReplicaSide side) {
-    return side == ReplicaSide::ReplicaSideLocal ? ReplicaSide::ReplicaSideRemote : ReplicaSide::ReplicaSideLocal;
-};
 
 std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::shared_ptr<Node> node) {
     std::shared_ptr<Node> parentNode = node;

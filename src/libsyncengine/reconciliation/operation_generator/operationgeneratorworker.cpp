@@ -37,14 +37,14 @@ void OperationGeneratorWorker::execute() {
     _bytesToDownload = 0;
 
     // Mark all nodes "Unprocessed"
-    _syncPal->_localUpdateTree->markAllNodesUnprocessed();
-    _syncPal->_remoteUpdateTree->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSideLocal)->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSideRemote)->markAllNodesUnprocessed();
 
     _deletedNodes.clear();
 
     // Initiate breadth-first search with root nodes from both update trees
-    _queuedToExplore.push(_syncPal->_localUpdateTree->rootNode());
-    _queuedToExplore.push(_syncPal->_remoteUpdateTree->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideRemote)->rootNode());
 
     // Explore both update trees
     while (!_queuedToExplore.empty()) {
@@ -145,7 +145,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
 
     op->setType(OperationTypeCreate);
     op->setAffectedNode(currentNode);
-    ReplicaSide targetSide = currentNode->side() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal;
+    ReplicaSide targetSide = otherSide(currentNode->side());
     op->setTargetSide(targetSide);
     // We do not set parent node here since it might has been just created as well. In that case, parent node does not exist yet
     // in update tree.
