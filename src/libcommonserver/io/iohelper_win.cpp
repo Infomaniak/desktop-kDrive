@@ -23,6 +23,7 @@
 #include "libcommonserver/io/iohelper_win.h"
 
 #include "libcommonserver/utility/utility.h"  // Path2WStr
+#include "libcommon/utility/utility.h"
 
 #include "log/log.h"
 
@@ -112,8 +113,10 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
 }
 }  // namespace
 
-int IoHelper::_getAndSetRightsMethod = 0;
+int IoHelper::_getAndSetRightsMethod = -1;  // -1: not initialized, 0: Windows API, 1: std::filesystem
 bool IoHelper::_setRightsWindowsApiInheritance = false;
+std::unique_ptr<BYTE[]> IoHelper::_psid = nullptr;
+TRUSTEE IoHelper::_trustee = {nullptr};
 
 bool IoHelper::fileExists(const std::error_code &ec) noexcept {
     return (ec.value() != ERROR_FILE_NOT_FOUND) && (ec.value() != ERROR_PATH_NOT_FOUND) && (ec.value() != ERROR_INVALID_DRIVE);
@@ -342,6 +345,120 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return IoHelper::getXAttrValue(itemPath.native(), FILE_ATTRIBUTE_OFFLINE, isDehydrated, ioError);
 }
 
+
+TRUSTEE &IoHelper::getTrustee() {
+    return _trustee;
+}
+
+void IoHelper::initRightsWindowsApi() {
+    _getAndSetRightsMethod = 1;  // Fallback method by default
+    if (const std::string useGetRightsFallbackMethod = CommonUtility::envVarValue("KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD");
+        !useGetRightsFallbackMethod.empty()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD env is set, using fallback method");
+        return;
+    }
+
+    if (_psid != nullptr) {  // should never happen
+        _psid.reset();
+        LOGW_WARN(Log::instance()->getLogger(),
+                  "Unexpected _psid value in initRightsWindowsApi - _pssid is not null. initRightsWindowsApi should only be call "
+                  "one time.");
+    }
+    _trustee = {nullptr};
+
+    // Get SID associated with the current process
+    auto hToken_std = std::make_unique<HANDLE>();
+    PHANDLE hToken = hToken_std.get();
+    if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, hToken)) {
+        DWORD dwError = GetLastError();
+        if (dwError == ERROR_NO_TOKEN) {
+            if (!ImpersonateSelf(SecurityImpersonation)) {
+                dwError = GetLastError();
+                LOGW_WARN(Log::instance()->getLogger(), "Error in ImpersonateSelf - err=" << dwError);
+                return;
+            }
+
+            if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, hToken)) {
+                dwError = GetLastError();
+                LOGW_WARN(Log::instance()->getLogger(), "Error in OpenThreadToken - err=" << dwError);
+                return;
+            }
+        } else {
+            LOGW_WARN(Log::instance()->getLogger(), "Error in OpenThreadToken - err=" << dwError);
+            return;
+        }
+    }
+
+    DWORD dwLength = 0;
+    GetTokenInformation(*hToken, TokenUser, nullptr, 0, &dwLength);
+    if (dwLength == 0) {
+        DWORD dwError = GetLastError();
+        LOGW_WARN(Log::instance()->getLogger(), "Error in GetTokenInformation 1 - err=" << dwError);
+        return;
+    }
+    auto pTokenUser_std = std::make_unique<TOKEN_USER[]>(dwLength);
+    PTOKEN_USER pTokenUser = pTokenUser_std.get();
+    if (pTokenUser == nullptr) {
+        LOGW_WARN(Log::instance()->getLogger(), "Memory allocation error");
+        return;
+    }
+
+    if (!GetTokenInformation(*hToken, TokenUser, pTokenUser, dwLength, &dwLength)) {
+        DWORD dwError = GetLastError();
+        LOGW_WARN(Log::instance()->getLogger(), "Error in GetTokenInformation 2 - err=" << dwError);
+        return;
+    }
+
+    _psid = std::make_unique<BYTE[]>(GetLengthSid(pTokenUser->User.Sid));
+
+    if (!CopySid(GetLengthSid(pTokenUser->User.Sid), _psid.get(), pTokenUser->User.Sid)) {
+        DWORD dwError = GetLastError();
+        LOGW_WARN(Log::instance()->getLogger(), "Error in CopySid - err=" << dwError);
+        _psid.reset();
+        return;
+    }
+
+    // initialize the trustee structure
+    BuildTrusteeWithSid(&_trustee, _psid.get());
+    _getAndSetRightsMethod = 0;  // Windows API method
+
+    // Check getRights method performance
+    SyncPath tmpDir;
+    IoError ioError = IoErrorSuccess;
+    if (!IoHelper::tempDirectoryPath(tmpDir, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  "Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
+        return;
+    }
+
+    bool read = true;
+    bool write = true;
+    bool execute = true;
+
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 10; i++) {
+        if (!IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
+            LOGW_WARN(Log::instance()->getLogger(), "Error in IoHelper::getRights: " << Utility::formatIoError(tmpDir, ioError));
+            _getAndSetRightsMethod = 1;  // Fallback method
+            return;
+        }
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+    /* Average time spent in getRights with windows API:
+     *    -> Windows 11 without Active Directory: 1ms < time < 4ms
+     *    -> Windows 11 with Active Directory: 70ms < time < 110ms
+     */
+    LOG_DEBUG(Log::instance()->getLogger(), "getRights duration: " << double(duration / 1000.0) << "ms");
+
+    if (duration > 60) {
+        LOG_WARN(Log::instance()->getLogger(), "Get/Set rights using windows API is too slow to be used. Using fallback method.");
+        _getAndSetRightsMethod = 1;  // Fallback method
+        return;
+    }
+}
+
 // Always return false if ioError != IoErrorSuccess, caller should call _isExpectedError
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger, bool inherite = false) noexcept {
@@ -360,9 +477,9 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     }
     explicitAccess.Trustee.pMultipleTrustee = nullptr;
     explicitAccess.Trustee.MultipleTrusteeOperation = NO_MULTIPLE_TRUSTEE;
-    explicitAccess.Trustee.TrusteeForm = Utility::_trustee.TrusteeForm;
-    explicitAccess.Trustee.TrusteeType = Utility::_trustee.TrusteeType;
-    explicitAccess.Trustee.ptstrName = Utility::_trustee.ptstrName;
+    explicitAccess.Trustee.TrusteeForm = IoHelper::getTrustee().TrusteeForm;
+    explicitAccess.Trustee.TrusteeType = IoHelper::getTrustee().TrusteeType;
+    explicitAccess.Trustee.ptstrName = IoHelper::getTrustee().ptstrName;
 
     std::wstring pathWstr = Path2WStr(path);
     size_t pathLen = pathWstr.length();
@@ -454,7 +571,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
 
     // Get rights for trustee
     ACCESS_MASK rights = 0;
-    result = GetEffectiveRightsFromAcl(pfileACL, &Utility::_trustee, &rights);
+    result = GetEffectiveRightsFromAcl(pfileACL, &IoHelper::getTrustee(), &rights);
     ioError = dWordError2ioError(result);
 
     /* The GetEffectiveRightsFromAcl function fails and returns ERROR_INVALID_ACL if the specified ACL contains an inherited
@@ -496,8 +613,9 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     read = false;
     write = false;
     exec = false;
+    if (_getAndSetRightsMethod == -1) initRightsWindowsApi();
     // Preferred method
-    if (_getAndSetRightsMethod == 0 && Utility::_trustee.ptstrName) {
+    if (_getAndSetRightsMethod == 0 && IoHelper::getTrustee().ptstrName) {
         if (getRightsWindowsApi(path, read, write, exec, ioError, logger()) || _isExpectedError(ioError)) {
             return true;
         }
@@ -508,7 +626,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         sentry_value_set_stacktrace(exc, NULL, 0);
         sentry_event_add_exception(event, exc);
         sentry_capture_event(event);
-        Utility::_trustee.ptstrName = nullptr;
+        IoHelper::getTrustee().ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
     }
     // Fallback method.
@@ -541,8 +659,9 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
 }
 
 bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
+    if (_getAndSetRightsMethod == -1) initRightsWindowsApi();
     // Preferred method
-    if (_getAndSetRightsMethod == 0 && Utility::_trustee.ptstrName) {
+    if (_getAndSetRightsMethod == 0 && IoHelper::getTrustee().ptstrName) {
         ioError = IoErrorSuccess;
         DWORD grantedPermission = WRITE_DAC;
         DWORD deniedPermission = 0;
@@ -586,7 +705,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         sentry_value_set_stacktrace(exc, NULL, 0);
         sentry_event_add_exception(event, exc);
         sentry_capture_event(event);
-        Utility::_trustee.ptstrName = nullptr;
+        IoHelper::getTrustee().ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
     }
     return _setRightsStd(path, read, write, exec, ioError);

@@ -28,9 +28,6 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestIo::testCheckDirectoryIterator() {
-#ifdef _WIN32
-    Utility::init();  // Initialize the utility library, needed to access/change the permissions on Windows
-#endif
     testCheckDirectoryIteratorNonExistingPath();
     testCheckDirectoryIteratorExistingPath();
     testCheckDirectoryRecursive();

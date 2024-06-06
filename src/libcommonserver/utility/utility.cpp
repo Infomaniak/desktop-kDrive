@@ -99,19 +99,6 @@ struct VariantPrinter {
 
 log4cplus::Logger Utility::_logger;
 
-#ifdef _WIN32
-std::unique_ptr<BYTE[]> Utility::_psid = nullptr;
-TRUSTEE Utility::_trustee = {0};
-#endif
-
-bool Utility::init() {
-    return init_private();
-}
-
-void Utility::free() {
-    free_private();
-}
-
 int64_t Utility::freeDiskSpace(const SyncPath &path) {
 #if defined(__APPLE__)
     struct statvfs stat;

@@ -46,10 +46,7 @@ class URI;
 namespace KDC {
 
 struct COMMONSERVER_EXPORT Utility {
-#ifdef _WIN32
-        static std::unique_ptr<BYTE[]> _psid;
-        static TRUSTEE _trustee;
-#endif
+
 
         inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
 

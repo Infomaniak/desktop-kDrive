@@ -126,10 +126,6 @@ AppServer::AppServer(int &argc, char **argv)
     // Setup logging with default parameters
     initLogging();
 
-    if (!Utility::init()) {
-        LOG_WARN(_logger, "Error in Utility::init");
-    }
-
     parseOptions(arguments());
     if (_helpAsked || _versionAsked || _clearSyncNodesAsked || _clearKeychainKeysAsked || isRunning()) {
         return;
@@ -376,7 +372,6 @@ AppServer::AppServer(int &argc, char **argv)
 
 AppServer::~AppServer() {
     LOG_DEBUG(_logger, "~AppServer");
-    Utility::free();
 }
 
 void AppServer::onCleanup() {
