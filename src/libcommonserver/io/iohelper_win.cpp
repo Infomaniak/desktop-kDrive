@@ -351,20 +351,19 @@ TRUSTEE &IoHelper::getTrustee() {
 }
 
 void IoHelper::initRightsWindowsApi() {
+    std::lock_guard lock(_initRightsWindowsApiMutex);
+    if (_getAndSetRightsMethod != -1) {
+        return;
+    }
     _getAndSetRightsMethod = 1;  // Fallback method by default
+    _trustee = {nullptr};
+    _psid = nullptr;
+
     if (const std::string useGetRightsFallbackMethod = CommonUtility::envVarValue("KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD");
         !useGetRightsFallbackMethod.empty()) {
         LOG_DEBUG(Log::instance()->getLogger(), "KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD env is set, using fallback method");
         return;
     }
-
-    if (_psid != nullptr) {  // should never happen
-        _psid.reset();
-        LOGW_WARN(Log::instance()->getLogger(),
-                  "Unexpected _psid value in initRightsWindowsApi - _pssid is not null. initRightsWindowsApi should only be call "
-                  "one time.");
-    }
-    _trustee = {nullptr};
 
     // Get SID associated with the current process
     auto hToken_std = std::make_unique<HANDLE>();

@@ -405,6 +405,7 @@ struct IoHelper {
         static int _getAndSetRightsMethod;
         static std::unique_ptr<BYTE[]> _psid;
         static TRUSTEE _trustee;
+        static std::mutex _initRightsWindowsApiMutex;
         static void initRightsWindowsApi();
 #endif
 };
