@@ -45,6 +45,7 @@
 #include <security.h>
 #include <ntstatus.h>
 
+constexpr int MAX_GET_RIGHTS_DURATION_MS = 60;
 namespace KDC {
 
 namespace {
@@ -452,7 +453,7 @@ void IoHelper::initRightsWindowsApi() {
      */
     LOG_DEBUG(Log::instance()->getLogger(), "getRights duration: " << double(duration / 1000.0) << "ms");
 
-    if (duration > 60) {
+    if (double(duration / 1000.0) > MAX_GET_RIGHTS_DURATION_MS) {
         LOG_WARN(Log::instance()->getLogger(), "Get/Set rights using windows API is too slow to be used. Using fallback method.");
         _getAndSetRightsMethod = 1;  // Fallback method
         return;
