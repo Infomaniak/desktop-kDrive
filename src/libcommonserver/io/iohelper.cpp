@@ -836,6 +836,4 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 
     return true;
 }
-
-
 }  // namespace KDC

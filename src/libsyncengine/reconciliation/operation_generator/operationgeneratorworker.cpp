@@ -155,13 +155,13 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Create-Create pseudo conflict detected. Operation Create to be propagated in DB only for item "
                                    << SyncName2WStr(currentNode->name()).c_str());
         }
     } else {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                 _logger, L"Create operation "
                              << op->id() << L" to be propagated on " << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
@@ -199,13 +199,13 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Edit-Edit pseudo conflict detected. Operation Edit to be propagated in DB only for item "
                                    << SyncName2WStr(currentNode->name()).c_str());
         }
     } else {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Edit operation "
                                             << op->id() << L" to be propagated on "
                                             << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str() << L" replica for item "
@@ -262,13 +262,13 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                 _logger, L"Move-Move (Source) pseudo conflict detected. Operation Move to be propagated in DB only for item "
                              << SyncName2WStr(currentNode->name()).c_str());
         }
     } else {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Move operation "
                                    << op->id() << L" to be propagated on "
@@ -310,7 +310,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Corresponding file already deleted on "
                                             << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
                                             << L" replica. Operation Delete to be propagated in DB only for item "
@@ -320,7 +320,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
             true;  // In certains cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
                    // of next sync because nothing has changed but create events are not propagated
     } else {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                 _logger, L"Delete operation "
                              << op->id() << L" to be propagated on " << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()

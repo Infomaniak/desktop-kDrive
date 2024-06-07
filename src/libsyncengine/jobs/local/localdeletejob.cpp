@@ -133,7 +133,7 @@ void LocalDeleteJob::runJob() {
             _exitCause = ExitCauseMoveToTrashFailed;
             return;
         }
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" was moved to trash");
         }
     } else {

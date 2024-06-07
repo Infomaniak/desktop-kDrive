@@ -90,8 +90,8 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
 
         bool existUndecidedSet();
         void updateUserInfo();
-        void askEnableSmartSync(const std::function<void(bool enable)> &callback);
-        void askDisableSmartSync(const std::function<void(bool enable, bool diskSpaceWarning)> &callback, int syncDbId);
+        void askEnableLiteSync(const std::function<void(bool enable)> &callback);
+        void askDisableLiteSync(const std::function<void(bool enable, bool diskSpaceWarning)> &callback, int syncDbId);
         bool switchVfsOn(int syncDbId);
         bool switchVfsOff(int syncDbId, bool diskSpaceWarning);
         void resetFoldersBlocs();
@@ -100,7 +100,7 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         FolderTreeItemWidget *blocTreeItemWidget(PreferencesBlocWidget *folderBloc);
         FolderItemWidget *blocItemWidget(PreferencesBlocWidget *folderBloc);
         QFrame *blocSeparatorFrame(PreferencesBlocWidget *folderBloc);
-        bool addSync(const QString &localFolderPath, bool smartSync, const QString &serverFolderPath,
+        bool addSync(const QString &localFolderPath, bool liteSync, const QString &serverFolderPath,
                      const QString &serverFolderNodeId, QSet<QString> blackSet, QSet<QString> whiteSet);
         bool updateSelectiveSyncList(const QHash<int, QHash<const QString, bool>> &mapUndefinedFolders);
         void updateGuardedFoldersBlocs();
@@ -109,7 +109,7 @@ class DrivePreferencesWidget : public LargeWidgetWithCustomToolTip {
         void onErrorsWidgetClicked();
         void onBigFoldersWarningWidgetClicked();
         void onAddLocalFolder(bool checked = false);
-        void onSmartSyncSwitchSyncChanged(int syncDbId, bool activate);
+        void onLiteSyncSwitchSyncChanged(int syncDbId, bool activate);
         void onNotificationsSwitchClicked(bool checked = false);
         void onErrorAdded();
         void onRemoveDrive(bool checked = false);
