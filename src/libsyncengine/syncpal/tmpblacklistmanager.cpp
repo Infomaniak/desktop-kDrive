@@ -42,7 +42,7 @@ int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, ReplicaSide side) c
     return errorItem == errors.end() ? 0 : errorItem->second._count + 1;
 }
 
-void logMessage(const std::wstring msg, const NodeId &id, const ReplicaSide side, const SyncPath &path = "") {
+void logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side, const SyncPath &path = "") {
     LOGW_INFO(Log::instance()->getLogger(),
               msg.c_str() << L" - node ID='" << Utility::s2ws(id).c_str() << L"' - side='" << Utility::side2WStr(side).c_str()
                           << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path)).c_str()));
@@ -80,9 +80,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
 
 void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
-
-    auto errorItem = errors.find(nodeId);
-    if (errorItem != errors.end()) {
+    if (auto errorItem = errors.find(nodeId); errorItem != errors.end()) {
         // Reset error timer
         errorItem->second._count++;
         errorItem->second._lastErrorTime = std::chrono::steady_clock::now();
@@ -104,8 +102,8 @@ void TmpBlacklistManager::refreshBlacklist() {
 
         auto errorIt = errors.begin();
         while (errorIt != errors.end()) {
-            std::chrono::duration<double> elapsed_seconds = now - errorIt->second._lastErrorTime;
-            if (elapsed_seconds.count() > oneHour) {
+            if (std::chrono::duration<double> elapsed_seconds = now - errorIt->second._lastErrorTime;
+                elapsed_seconds.count() > oneHour) {
                 logMessage(L"Removing item from tmp blacklist", errorIt->first, side);
 
                 SyncNodeType blaclistType =
@@ -139,7 +137,7 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
     errors.erase(nodeId);
 }
 
-bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) {
+bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
     for (const auto &errorInfo : errors) {
         if (Utility::startsWith(path, errorInfo.second._path)) {
