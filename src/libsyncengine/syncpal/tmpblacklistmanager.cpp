@@ -110,7 +110,6 @@ void TmpBlacklistManager::refreshBlacklist() {
             if (elapsed_seconds.count() > oneHour) {
                 LOG_INFO(Log::instance()->getLogger(), "Removing " << Utility::side2Str(side).c_str() << "  item "
                                                                    << errorIt->first.c_str() << " from tmp blacklist.");
-
                 SyncNodeType blaclistType =
                     side == ReplicaSideLocal ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
 

@@ -65,7 +65,7 @@ void FolderWatcher_win::startWatching() {
         }
     }
 
-    LOGW_DEBUG(_logger, L"Folder watching stoped: " << _folder.wstring().c_str());
+    LOGW_DEBUG(_logger, L"Folder watching stopped: " << _folder.wstring().c_str());
 }
 
 void FolderWatcher_win::stopWatching() {
@@ -167,8 +167,8 @@ void FolderWatcher_win::watchChanges() {
                         skip = true;
                     }
                 } else {
-                    if (ParametersCache::instance()->parameters().extendedLog()) {
-                        LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
+                    if (ParametersCache::isExtendedLogEnabled()) {
+                        LOG_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
                                                               << L" detected on item " << Path2WStr(filepath).c_str()
                                                               << L" (directory)");
                     }
@@ -196,7 +196,7 @@ void FolderWatcher_win::watchChanges() {
             }
 
             if (!skip) {
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
                                                      << L" detected on item " << Path2WStr(longfilepath).c_str());
                 }

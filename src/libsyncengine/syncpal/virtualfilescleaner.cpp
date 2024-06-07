@@ -83,7 +83,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             SyncName entryPathStr = dirIt->path().native();
             entryPathStr.erase(0, rootPathStr.length() + 1);  // +1 because of the first “/”
 
-            if (ParametersCache::instance()->parameters().extendedLog()) {
+            if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_DEBUG(_logger, L"VirtualFilesCleaner: processing item " << SyncName2WStr(entryPathStr).c_str());
             }
 
@@ -119,14 +119,14 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
 
             if (!dirIt->is_directory() && isPlaceholder && isHydrated) {
                 // Keep this file in file system
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"VirtualFilesCleaner: item " << SyncName2WStr(entryPathStr).c_str()
                                                                       << L" is a hydrated placeholder, keep it");
                 }
             } else {
                 if (!dirIt->is_directory()) {  // Keep folders
                     // Remove file from file system
-                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                    if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << SyncName2WStr(entryPathStr).c_str()
                                                                                    << L" from file system");
                     }
@@ -149,7 +149,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
                     }
 
                     // Remove item from db
-                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                    if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_DEBUG(_logger,
                                    L"VirtualFilesCleaner: removing item " << SyncName2WStr(entryPathStr).c_str() << L" from DB");
                     }
@@ -254,7 +254,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                         LOGW_WARN(_logger, L"File does not exist " << SyncName2WStr(filePathStr).c_str());
                     }
 
-                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                    if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_DEBUG(_logger,
                                    L"VFC removeDehydratedPlaceholders: removing item " << SyncName2WStr(filePathStr).c_str());
                     }
