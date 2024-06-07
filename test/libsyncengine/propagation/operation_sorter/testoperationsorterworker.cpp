@@ -21,6 +21,13 @@ using namespace CppUnit;
 
 namespace KDC {
 
+#ifdef _WIN32
+auto &Console = std::wcout;
+#else
+auto &Console = std::cout;
+#endif
+
+
 void TestOperationSorterWorker::setUp() {
     // Create SyncPal
     bool alreadyExists;
@@ -934,7 +941,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
     opAAB->setType(OperationTypeCreate);
 
     // Case 1 : A AAA AA AAB AB B
-    std::cout << std::endl;
+    Console << std::endl;
     {
         _syncPal->_syncOps->pushOp(opA);
         _syncPal->_syncOps->pushOp(opAAA);
@@ -944,23 +951,23 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opB);
         _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
         // Expected order: A AA AAA AAB AB B
-        std::cout << "Initial ops order : ";
+        Console << Str("Initial ops order : ");
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            Console << op->affectedNode()->name().c_str() << Str(" ");
         }
-        std::cout << std::endl;
+        Console << std::endl;
 
         std::vector<SyncOpPtr> expectedRes = {opA, opAA, opAAA, opAAB, opAB, opB};
 
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
-        std::cout << "Final ops order : ";
+        Console << Str("Final ops order : ");
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            Console << op->affectedNode()->name().c_str() << Str(" ");
         }
-        std::cout << std::endl;
+        Console << std::endl;
 
         int index = 0;
         std::list<UniqueId>::iterator it = _syncPal->_syncOps->_opSortedList.begin();
@@ -980,22 +987,22 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opB);
         _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
         // Expected order: A AB AA AAB AAA B
-        std::cout << "Initial ops order : ";
+        Console << Str("Initial ops order : ");
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            Console << op->affectedNode()->name().c_str() << Str(" ");
         }
-        std::cout << std::endl;
+        Console << std::endl;
         std::vector<SyncOpPtr> expectedRes = {opA, opAB, opAA, opAAB, opAAA, opB};
 
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
-        std::cout << "Final ops order : ";
+        Console << Str("Final ops order : ");
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            Console << op->affectedNode()->name().c_str() << Str(" ");
         }
-        std::cout << std::endl;
+        Console << std::endl;
 
         int index = 0;
         std::list<UniqueId>::iterator it = _syncPal->_syncOps->_opSortedList.begin();
@@ -1015,22 +1022,22 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_syncOps->pushOp(opA);
         _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
         // Expected order: B A AB AA AAB AAA
-        std::cout << "Initial ops order : ";
+        Console << Str("Initial ops order : ");
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            Console << op->affectedNode()->name().c_str() << Str(" ");
         }
-        std::cout << std::endl;
+        Console << std::endl;
         std::vector<SyncOpPtr> expectedRes = {opB, opA, opAB, opAA, opAAB, opAAA};
 
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
-        std::cout << "Final ops order : ";
+        Console << Str("Final ops order : ");
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            Console << op->affectedNode()->name().c_str() << Str(" ");
         }
-        std::cout << std::endl;
+        Console << std::endl;
 
         int index = 0;
         std::list<UniqueId>::iterator it = _syncPal->_syncOps->_opSortedList.begin();
