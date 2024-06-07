@@ -39,7 +39,7 @@ class AbstractJob;
 class AbstractNetworkJob : public AbstractJob {
     public:
         AbstractNetworkJob();
-        virtual ~AbstractNetworkJob();
+        virtual ~AbstractNetworkJob() override;
 
         bool hasHttpError();
         inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
