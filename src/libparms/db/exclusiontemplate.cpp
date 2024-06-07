@@ -20,7 +20,7 @@
 
 namespace KDC {
 
-ExclusionTemplate::ExclusionTemplate() : _templ(std::string()), _warning(false), _def(false), _deleted(false) {
+ExclusionTemplate::ExclusionTemplate() {
     evaluateComplexity();
 }
 

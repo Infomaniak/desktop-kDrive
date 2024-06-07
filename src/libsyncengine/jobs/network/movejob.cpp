@@ -55,7 +55,7 @@ bool MoveJob::canRun() {
         return true;
     }
 
-    // Check that the we still have to move the folder
+    // Check that we still have to move the folder
     bool exists;
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError)) {
@@ -67,6 +67,7 @@ bool MoveJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"File " << Path2WStr(_destFilepath).c_str()
+
                                      << L" is not in its destination folder. Aborting current sync and restart.");
         _exitCode = ExitCodeDataError;  // Data error so the snapshots will be re-created
         _exitCause = ExitCauseUnexpectedFileSystemEvent;
