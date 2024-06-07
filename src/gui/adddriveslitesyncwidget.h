@@ -31,28 +31,28 @@
 
 namespace KDC {
 
-class AddDriveSmartSyncWidget : public QWidget {
+class AddDriveLiteSyncWidget : public QWidget {
         Q_OBJECT
 
         Q_PROPERTY(QColor logo_color READ logoColor WRITE setLogoColor)
 
     public:
-        explicit AddDriveSmartSyncWidget(QWidget *parent = nullptr);
+        explicit AddDriveLiteSyncWidget(QWidget *parent = nullptr);
 
         void setButtonIcon(const QColor &value);
 
-        inline bool smartSync() const { return _smartSync; }
+        inline bool liteSync() const { return _liteSync; }
 
     signals:
         void terminated(bool next = true);
 
     private:
-        QLabel *_logoTextIconLabel;
-        QPushButton *_backButton;
-        QPushButton *_laterButton;
-        QPushButton *_yesButton;
+        QLabel *_logoTextIconLabel{nullptr};
+        QPushButton *_backButton{nullptr};
+        QPushButton *_laterButton{nullptr};
+        QPushButton *_yesButton{nullptr};
         QColor _logoColor;
-        bool _smartSync;
+        bool _liteSync{false};
 
         inline QColor logoColor() const { return _logoColor; }
         void setLogoColor(const QColor &color);

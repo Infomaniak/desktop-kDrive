@@ -108,7 +108,7 @@ void TmpBlacklistManager::refreshBlacklist() {
         while (errorIt != errors.end()) {
             std::chrono::duration<double> elapsed_seconds = now - errorIt->second._lastErrorTime;
             if (elapsed_seconds.count() > oneHour) {
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOG_DEBUG(Log::instance()->getLogger(), "Removing " << Utility::side2Str(side).c_str() << "  item "
                                                                         << errorIt->first.c_str() << " from tmp blacklist.");
                 }
@@ -184,7 +184,7 @@ void TmpBlacklistManager::removeFromDB(const NodeId &nodeId, const ReplicaSide s
             return;
         }
 
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Item " << dbNodeId << " removed from DB");
         }
     }

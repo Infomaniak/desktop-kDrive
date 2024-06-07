@@ -258,7 +258,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                             }
                         }
 
-                        if (isExcluded) continue;   // Never generate operation on excluded file
+                        if (isExcluded) continue;  // Never generate operation on excluded file
                     }
 
                     if (isInUnsyncedList(snapshot, nodeId, side, true)) {
@@ -463,7 +463,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
 
             if (snapshot->isOrphan(snapshot->parentId(nodeId))) {
                 // Ignore orphans
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring orphan node " << SyncName2WStr(snapshot->name(nodeId)).c_str() << L" ("
                                                                          << Utility::s2ws(nodeId).c_str() << L")");
                 }
@@ -528,7 +528,7 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
     if (!fsOp) {
         return;
     }
-    if (!ParametersCache::instance()->parameters().extendedLog()) {
+    if (!ParametersCache::isExtendedLogEnabled()) {
         return;
     }
 
@@ -609,7 +609,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
 bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<Snapshot> snapshot, const ReplicaSide side,
                                                   const NodeId &nodeId, const SyncPath &path, NodeType type, int64_t size) {
     if (isInUnsyncedList(snapshot, nodeId, side)) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring item " << Path2WStr(path).c_str() << L" (" << Utility::s2ws(nodeId).c_str()
                                                           << L") because it is not synced");
         }
@@ -623,7 +623,7 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<Snapshot
         }
 
         if (type == NodeTypeDirectory && isTooBig(snapshot, nodeId, size)) {
-            if (ParametersCache::instance()->parameters().extendedLog()) {
+            if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Blacklisting item " << Path2WStr(path).c_str() << L" ("
                                                                   << Utility::s2ws(nodeId).c_str() << L") because it is too big");
             }
@@ -786,7 +786,8 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
     return false;
 }
 
-ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded) {
+ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
+                                                     bool &isExcluded) {
     if (side != ReplicaSideLocal) return ExitCodeOk;
 
     if (!_syncPal->snapshot(ReplicaSideLocal, true)->itemId(relativePath).empty()) {

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "adddrivesmartsyncwidget.h"
+#include "adddriveslitesyncwidget.h"
 #include "custommessagebox.h"
 #include "guiutility.h"
 #include "config.h"
@@ -45,38 +45,31 @@ static const int progressBarMax = 5;
 static const QSize pictureIconSize = QSize(202, 140);
 static const QSize checkIconSize = QSize(20, 20);
 
-Q_LOGGING_CATEGORY(lcAddDriveSmartSyncWidget, "gui.adddrivesmartsyncwidget", QtInfoMsg)
+Q_LOGGING_CATEGORY(lcAddDriveLiteSyncWidget, "gui.adddrivesmartsyncwidget", QtInfoMsg)
 
-AddDriveSmartSyncWidget::AddDriveSmartSyncWidget(QWidget *parent)
-    : QWidget(parent),
-      _logoTextIconLabel(nullptr),
-      _backButton(nullptr),
-      _laterButton(nullptr),
-      _yesButton(nullptr),
-      _logoColor(QColor()),
-      _smartSync(false) {
+AddDriveLiteSyncWidget::AddDriveLiteSyncWidget(QWidget *parent) : QWidget(parent) {
     initUI();
 }
 
-void AddDriveSmartSyncWidget::setButtonIcon(const QColor &value) {
+void AddDriveLiteSyncWidget::setButtonIcon(const QColor &value) {
     if (_backButton) {
         _backButton->setIcon(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-left.svg", value));
     }
 }
 
-void AddDriveSmartSyncWidget::initUI() {
-    QVBoxLayout *mainLayout = new QVBoxLayout();
+void AddDriveLiteSyncWidget::initUI() {
+    auto *mainLayout = new QVBoxLayout();
     mainLayout->setContentsMargins(0, 0, 0, 0);
     mainLayout->setSpacing(0);
     setLayout(mainLayout);
 
     // Logo
-    QHBoxLayout *logoHBox = new QHBoxLayout();
+    auto *logoHBox = new QHBoxLayout();
     logoHBox->setContentsMargins(0, 0, 0, 0);
     mainLayout->addLayout(logoHBox);
     mainLayout->addSpacing(logoBoxVMargin);
 
-    QLabel *logoIconLabel = new QLabel(this);
+    auto *logoIconLabel = new QLabel(this);
     logoIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
                                  .pixmap(QSize(logoIconSize, logoIconSize)));
     logoHBox->addWidget(logoIconLabel);
@@ -87,7 +80,7 @@ void AddDriveSmartSyncWidget::initUI() {
     logoHBox->addStretch();
 
     // Progress bar
-    QProgressBar *progressBar = new QProgressBar(this);
+    auto *progressBar = new QProgressBar(this);
     progressBar->setMinimum(progressBarMin);
     progressBar->setMaximum(progressBarMax);
     progressBar->setValue(1);
@@ -96,20 +89,20 @@ void AddDriveSmartSyncWidget::initUI() {
     mainLayout->addSpacing(progressBarVMargin);
 
     // Picture
-    QHBoxLayout *pictureHBox = new QHBoxLayout();
+    auto *pictureHBox = new QHBoxLayout();
     pictureHBox->setContentsMargins(0, 0, 0, 0);
     pictureHBox->setSpacing(boxHSpacing);
     mainLayout->addLayout(pictureHBox);
     mainLayout->addSpacing(pictureBoxVMargin);
 
-    QLabel *pictureIconLabel = new QLabel(this);
+    auto *pictureIconLabel = new QLabel(this);
     pictureIconLabel->setPixmap(
         KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/lite-sync.svg").pixmap(pictureIconSize));
     pictureIconLabel->setAlignment(Qt::AlignCenter);
     pictureHBox->addWidget(pictureIconLabel);
 
     // Title
-    QLabel *titleLabel = new QLabel(this);
+    auto *titleLabel = new QLabel(this);
     titleLabel->setObjectName("titleLabel");
     titleLabel->setContentsMargins(0, 0, 0, 0);
 
@@ -124,30 +117,30 @@ void AddDriveSmartSyncWidget::initUI() {
     mainLayout->addSpacing(titleBoxVMargin);
 
     // Text
-    QLabel *textLabel = new QLabel(this);
+    auto *textLabel = new QLabel(this);
     textLabel->setObjectName("largeMediumTextLabel");
     textLabel->setContentsMargins(0, 0, 0, 0);
-    textLabel->setText(tr("Lite Sync syncs all your files without using your computer space."
+    textLabel->setText(tr(R"(Lite Sync syncs all your files without using your computer space."
                           " You can browse the files in your kDrive and download them locally whenever you want."
-                          " <a style=\"%1\" href=\"%2\">Learn more</a>")
+                          " <a style="%1" href="%2">Learn more</a>)")
                            .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
     textLabel->setWordWrap(true);
     mainLayout->addWidget(textLabel);
     mainLayout->addSpacing(textBoxVMargin);
 
     // Point 1
-    QHBoxLayout *point1HBox = new QHBoxLayout();
+    auto *point1HBox = new QHBoxLayout();
     point1HBox->setContentsMargins(0, 0, 0, 0);
     point1HBox->setSpacing(boxHSpacing);
     mainLayout->addLayout(point1HBox);
     mainLayout->addSpacing(textBoxVMargin);
 
-    QLabel *point1IconLabel = new QLabel(this);
+    auto *point1IconLabel = new QLabel(this);
     point1IconLabel->setPixmap(
         KDC::GuiUtility::getIconWithColor(":/client/resources/icons/statuts/success.svg").pixmap(checkIconSize));
     point1HBox->addWidget(point1IconLabel);
 
-    QLabel *point1TextLabel = new QLabel(this);
+    auto *point1TextLabel = new QLabel(this);
     point1TextLabel->setObjectName("largeMediumTextLabel");
     point1TextLabel->setText(tr("Conserve your computer space"));
     point1TextLabel->setWordWrap(true);
@@ -155,19 +148,19 @@ void AddDriveSmartSyncWidget::initUI() {
     point1HBox->setStretchFactor(point1TextLabel, 1);
 
     // Point 2
-    QHBoxLayout *point2HBox = new QHBoxLayout();
+    auto *point2HBox = new QHBoxLayout();
     point2HBox->setContentsMargins(0, 0, 0, 0);
     point2HBox->setSpacing(boxHSpacing);
     mainLayout->addLayout(point2HBox);
     mainLayout->addSpacing(textBoxVMargin);
     mainLayout->addStretch();
 
-    QLabel *point2IconLabel = new QLabel(this);
+    auto *point2IconLabel = new QLabel(this);
     point2IconLabel->setPixmap(
         KDC::GuiUtility::getIconWithColor(":/client/resources/icons/statuts/success.svg").pixmap(checkIconSize));
     point2HBox->addWidget(point2IconLabel);
 
-    QLabel *point2TextLabel = new QLabel(this);
+    auto *point2TextLabel = new QLabel(this);
     point2TextLabel->setObjectName("largeMediumTextLabel");
     point2TextLabel->setText(tr("Decide which files should be available online or locally"));
     point2TextLabel->setWordWrap(true);
@@ -175,7 +168,7 @@ void AddDriveSmartSyncWidget::initUI() {
     point2HBox->setStretchFactor(point2TextLabel, 1);
 
     // Add dialog buttons
-    QHBoxLayout *buttonsHBox = new QHBoxLayout();
+    auto *buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(0, 0, 0, 0);
     buttonsHBox->setSpacing(boxHSpacing);
     mainLayout->addLayout(buttonsHBox);
@@ -198,47 +191,47 @@ void AddDriveSmartSyncWidget::initUI() {
     _yesButton->setText(tr("YES"));
     buttonsHBox->addWidget(_yesButton);
 
-    connect(textLabel, &QLabel::linkActivated, this, &AddDriveSmartSyncWidget::onLinkActivated);
-    connect(_backButton, &QPushButton::clicked, this, &AddDriveSmartSyncWidget::onBackButtonTriggered);
-    connect(_laterButton, &QPushButton::clicked, this, &AddDriveSmartSyncWidget::onLaterButtonTriggered);
-    connect(_yesButton, &QPushButton::clicked, this, &AddDriveSmartSyncWidget::onYesButtonTriggered);
+    connect(textLabel, &QLabel::linkActivated, this, &AddDriveLiteSyncWidget::onLinkActivated);
+    connect(_backButton, &QPushButton::clicked, this, &AddDriveLiteSyncWidget::onBackButtonTriggered);
+    connect(_laterButton, &QPushButton::clicked, this, &AddDriveLiteSyncWidget::onLaterButtonTriggered);
+    connect(_yesButton, &QPushButton::clicked, this, &AddDriveLiteSyncWidget::onYesButtonTriggered);
 }
 
-void AddDriveSmartSyncWidget::onLinkActivated(const QString &link) {
+void AddDriveLiteSyncWidget::onLinkActivated(const QString &link) {
     if (link == KDC::GuiUtility::learnMoreLink) {
         // Learn more: Lite Sync
         if (!QDesktopServices::openUrl(QUrl(LEARNMORE_LITESYNC_URL))) {
-            qCWarning(lcAddDriveSmartSyncWidget) << "QDesktopServices::openUrl failed for " << link;
+            qCWarning(lcAddDriveLiteSyncWidget) << "QDesktopServices::openUrl failed for " << link;
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open link %1.").arg(link), QMessageBox::Ok, this);
             msgBox.exec();
         }
     }
 }
 
-void AddDriveSmartSyncWidget::setLogoColor(const QColor &color) {
+void AddDriveLiteSyncWidget::setLogoColor(const QColor &color) {
     _logoColor = color;
     _logoTextIconLabel->setPixmap(
         KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor).pixmap(logoTextIconSize));
 }
 
-void AddDriveSmartSyncWidget::onBackButtonTriggered(bool checked) {
+void AddDriveLiteSyncWidget::onBackButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
     emit terminated(false);
 }
 
-void AddDriveSmartSyncWidget::onLaterButtonTriggered(bool checked) {
+void AddDriveLiteSyncWidget::onLaterButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
-    _smartSync = false;
+    _liteSync = false;
 
     emit terminated();
 }
 
-void AddDriveSmartSyncWidget::onYesButtonTriggered(bool checked) {
+void AddDriveLiteSyncWidget::onYesButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
-    _smartSync = true;
+    _liteSync = true;
 
     emit terminated();
 }
