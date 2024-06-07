@@ -265,7 +265,7 @@ void AbstractNetworkJob::getStringFromStream(std::istream &is, std::string &res)
 }
 
 void AbstractNetworkJob::createSession(const Poco::URI &uri) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
 
     if (_session) {
         // Redirection case
@@ -288,7 +288,8 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
 }
 
 void AbstractNetworkJob::clearSession() {
-    const std::lock_guard<std::recursive_mutex> lock(_mutexSession);
+    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+
     if (_session) {
         _session->reset();
         _session = nullptr;
@@ -345,22 +346,17 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     // Send request, retrieve an open stream
     std::vector<std::reference_wrapper<std::ostream>> stream;
     try {
-        const std::lock_guard<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
         if (_session) {
             stream.push_back(_session->sendRequest(req));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
-                if (_session) {
-                    int err = _session->socket().getError();
-                    return processSocketError("invalid send stream", jobId(), err, Poco::Error::getMessage(err));
-                } else {
-                    return processSocketError("invalid send stream", jobId());
-                }
+                return processSocketError("invalid send stream", jobId());
             }
         }
     } catch (Poco::Exception &e) {
-        return processSocketError("sendRequest exception", jobId(), e.code(), e.message());
+        return processSocketError("sendRequest exception", jobId(), e);
     } catch (std::exception &e) {
-        return processSocketError("sendRequest exception", jobId(), 0, e.what());
+        return processSocketError("sendRequest exception", jobId(), e);
     }
 
     // Send data
@@ -375,18 +371,12 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         try {
             stream[0].get() << std::string(itBegin, itEnd);
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
-                const std::lock_guard<std::recursive_mutex> lock(_mutexSession);
-                if (_session) {
-                    int err = _session->socket().getError();
-                    return processSocketError("stream write error", jobId(), err, Poco::Error::getMessage(err));
-                } else {
-                    return processSocketError("stream write error", jobId());
-                }
+                return processSocketError("stream write error", jobId());
             }
         } catch (Poco::Exception &e) {
-            return processSocketError("send data exception", jobId(), e.code(), e.message());
+            return processSocketError("send data exception", jobId(), e);
         } catch (std::exception &e) {
-            return processSocketError("send data exception", jobId(), 0, e.what());
+            return processSocketError("send data exception", jobId(), e);
         }
 
         if (isProgressTracked()) {
@@ -402,22 +392,17 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
 bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     std::vector<std::reference_wrapper<std::istream>> stream;
     try {
-        const std::lock_guard<std::recursive_mutex> lock(_mutexSession);
+        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
         if (_session) {
             stream.push_back(_session->receiveResponse(_resHttp));
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
-                if (_session) {
-                    int err = _session->socket().getError();
-                    return processSocketError("invalid receive stream", jobId(), err, Poco::Error::getMessage(err));
-                } else {
-                    return processSocketError("invalid receive stream", jobId());
-                }
+                return processSocketError("invalid receive stream", jobId());
             }
         }
     } catch (Poco::Exception &e) {
-        return processSocketError("receiveResponse exception", jobId(), e.code(), e.message());
+        return processSocketError("receiveResponse exception", jobId(), e);
     } catch (std::exception &e) {
-        return processSocketError("receiveResponse exception", jobId(), 0, e.what());
+        return processSocketError("receiveResponse exception", jobId(), e);
     }
 
     if (isAborted()) {
@@ -534,8 +519,26 @@ bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
     return receiveOk;
 }
 
-bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, int err /*= 0*/,
-                                            const std::string &errMsg /*= std::string()*/) {
+bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId) {
+    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    if (_session) {
+        int err = _session->socket().getError();
+        std::string errMsg = Poco::Error::getMessage(err);
+        return processSocketError(msg, jobId, err, errMsg);
+    } else {
+        return processSocketError(msg, jobId, 0, std::string());
+    }
+}
+
+bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, const std::exception &e) {
+    return processSocketError(msg, jobId, 0, e.what());
+}
+
+bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e) {
+    return processSocketError(msg, jobId, e.code(), e.message());
+}
+
+bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, int err, const std::string &errMsg) {
     clearSession();
 
     if (isAborted()) {
@@ -549,7 +552,6 @@ bool AbstractNetworkJob::processSocketError(const std::string &msg, const Unique
         if (!errMsg.empty()) errMsgStream << " - err message=" << errMsg.c_str();
         LOG_WARN(_logger, errMsgStream.str().c_str());
 
-        _exitCode = ExitCodeNetworkError;
         if (err == EBADF) {
             // !!! macOS
             // When too many sockets are opened, the kernel kills all the process' sockets!
@@ -559,6 +561,7 @@ bool AbstractNetworkJob::processSocketError(const std::string &msg, const Unique
         } else {
             _exitCause = ExitCauseUnknown;
         }
+
         return false;
     }
 }
@@ -589,20 +592,20 @@ void AbstractNetworkJob::TimeoutHelper::add(std::chrono::duration<double> durati
         }
 
         // Add event
-        const std::lock_guard<std::mutex> lock(_mutexEventsQueue);
+        const std::scoped_lock<std::mutex> lock(_mutexEventsQueue);
         unsigned int eventTime = static_cast<unsigned int>(time(NULL));
         _eventsQueue.push(eventTime);
     }
 }
 
 void AbstractNetworkJob::TimeoutHelper::clearAllEvents() {
-    const std::lock_guard<std::mutex> lock(_mutexEventsQueue);
+    const std::scoped_lock<std::mutex> lock(_mutexEventsQueue);
     std::queue<SyncTime> emptyQueue;
     std::swap(_eventsQueue, emptyQueue);
 }
 
 void AbstractNetworkJob::TimeoutHelper::deleteOldestEvents() {
-    const std::lock_guard<std::mutex> lock(_mutexEventsQueue);
+    const std::scoped_lock<std::mutex> lock(_mutexEventsQueue);
     if (!_eventsQueue.empty()) {
         unsigned int eventTime = static_cast<unsigned int>(time(NULL));
         while (eventTime - _eventsQueue.front() > PERIOD) {

@@ -115,8 +115,10 @@ class AbstractNetworkJob : public AbstractJob {
         bool sendRequest(const Poco::URI &uri);
         bool receiveResponse(const Poco::URI &uri);
         bool followRedirect(std::istream &inputStream);
-        bool processSocketError(const std::string &msg, const UniqueId jobId, int err = 0,
-                                const std::string &errMsg = std::string());
+        bool processSocketError(const std::string &msg, const UniqueId jobId);
+        bool processSocketError(const std::string &msg, const UniqueId jobId, const std::exception &e);
+        bool processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e);
+        bool processSocketError(const std::string &msg, const UniqueId jobId, int err, const std::string &errMsg);
         bool ioOrLogicalErrorOccurred(std::ios &stream);
         static bool isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept;
 
