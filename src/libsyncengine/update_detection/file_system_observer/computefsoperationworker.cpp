@@ -287,9 +287,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                                        << Utility::formatIoError(localPath, ioError).c_str());
                                 return ExitCodeSystemError;
                             }
-                            if (exists) {
-                                checkTemplate = true;
-                            }
+                            checkTemplate = checkTemplate || exists;
                         }
                     }
 

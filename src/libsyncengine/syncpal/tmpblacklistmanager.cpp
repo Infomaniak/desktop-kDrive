@@ -42,6 +42,12 @@ int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, ReplicaSide side) c
     return errorItem == errors.end() ? 0 : errorItem->second._count + 1;
 }
 
+void logMessage(const std::wstring msg, const NodeId &id, const ReplicaSide side, const SyncPath &path = "") {
+    LOGW_INFO(Log::instance()->getLogger(),
+              msg.c_str() << L" - node ID='" << Utility::s2ws(id).c_str() << L"' - side='" << Utility::side2WStr(side).c_str()
+                          << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path)).c_str()));
+}
+
 void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath,
                                              ReplicaSide side) {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
@@ -50,9 +56,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
     if (errorItem != errors.end()) {
         errorItem->second._count++;
         errorItem->second._lastErrorTime = std::chrono::steady_clock::now();
-        LOGW_WARN(Log::instance()->getLogger(), L"Error counter increased for item with nodeId="
-                                                    << Utility::s2ws(nodeId).c_str() << L" and path="
-                                                    << Path2WStr(relativePath).c_str());
+        logMessage(L"Error counter increased", nodeId, side, relativePath);
 
         if (errorItem->second._count >= 1) {  // We try only once. TODO: If we keep this logic, no need to keep _count
             insertInBlacklist(nodeId, side);
@@ -70,10 +74,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
         TmpErrorInfo errorInfo;
         errorInfo._path = relativePath;
         errors.insert({nodeId, errorInfo});
-
-        LOGW_INFO(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
-                                                                  << L" error list with nodeId=" << Utility::s2ws(nodeId).c_str()
-                                                                  << L" and path=" << Path2WStr(errorInfo._path).c_str());
+        logMessage(L"Item added in error list", nodeId, side, relativePath);
     }
 }
 
@@ -89,10 +90,7 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
         TmpErrorInfo errorInfo;
         errorInfo._path = relativePath;
         errors.insert({nodeId, errorInfo});
-
-        LOGW_INFO(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
-                                                                  << L" error list with nodeId=" << Utility::s2ws(nodeId).c_str()
-                                                                  << L" and path=" << Path2WStr(errorInfo._path).c_str());
+        logMessage(L"Item added in error list", nodeId, side, relativePath);
     }
 
     insertInBlacklist(nodeId, side);
@@ -108,8 +106,7 @@ void TmpBlacklistManager::refreshBlacklist() {
         while (errorIt != errors.end()) {
             std::chrono::duration<double> elapsed_seconds = now - errorIt->second._lastErrorTime;
             if (elapsed_seconds.count() > oneHour) {
-                LOG_INFO(Log::instance()->getLogger(), "Removing " << Utility::side2Str(side).c_str() << "  item "
-                                                                   << errorIt->first.c_str() << " from tmp blacklist.");
+                logMessage(L"Removing item from tmp blacklist", errorIt->first, side);
 
                 SyncNodeType blaclistType =
                     side == ReplicaSideLocal ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
@@ -144,7 +141,6 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
 
 bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
-
     for (const auto &errorInfo : errors) {
         if (Utility::startsWith(path, errorInfo.second._path)) {
             return true;
@@ -162,9 +158,7 @@ void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, ReplicaSide si
     tmp.insert(nodeId);
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType, tmp);
 
-    LOGW_INFO(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
-                                                              << L" tmp blacklist with nodeId=" << Utility::s2ws(nodeId).c_str());
-
+    logMessage(L"Item added in tmp blacklist", nodeId, side);
     removeFromDB(nodeId, side);
 }
 
