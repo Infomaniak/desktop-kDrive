@@ -45,6 +45,7 @@ class TmpBlacklistManager {
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side);
         void removeFromDB(const NodeId &nodeId, ReplicaSide side);
+        void addError(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
 
         std::unordered_map<NodeId, TmpErrorInfo> _localErrors;
         std::unordered_map<NodeId, TmpErrorInfo> _remoteErrors;

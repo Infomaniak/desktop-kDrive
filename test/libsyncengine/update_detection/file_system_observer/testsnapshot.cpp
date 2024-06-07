@@ -133,7 +133,7 @@ void TestSnapshot::testSnapshot() {
     _syncPal->_localSnapshot->path("aaa", path);
     CPPUNIT_ASSERT(path == std::filesystem::path("A*/AA/AAA"));
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->name("aaa") == Str("AAA"));
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->lastModifed("aaa") == 1640995205);
+    CPPUNIT_ASSERT(_syncPal->_localSnapshot->lastModified("aaa") == 1640995205);
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->type("aaa") == NodeType::NodeTypeFile);
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->contentChecksum("aaa") == "");  // Checksum never computed for now
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->itemId(std::filesystem::path("A*/AA/AAA")) == "aaa");

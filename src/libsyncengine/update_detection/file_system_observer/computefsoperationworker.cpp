@@ -31,7 +31,21 @@ namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName)
-    : ISyncWorker(syncPal, name, shortName), _syncDb(syncPal->_syncDb) {}
+    : ISyncWorker(syncPal, name, shortName)
+    , _syncDb(syncPal->_syncDb)
+    , _localSnapshot(syncPal->_localSnapshot)
+    , _remoteSnapshot(syncPal->_remoteSnapshot)
+{}
+
+ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb
+                                                   , const std::shared_ptr<Snapshot> testLocalSnapshot
+                                                   , const std::shared_ptr<Snapshot> testRemoteSnapshot
+                                                   , const std::string &name, const std::string &shortName)
+    : ISyncWorker(nullptr, name, shortName, true)
+    , _syncDb(testSyncDb)
+    , _localSnapshot(testLocalSnapshot)
+    , _remoteSnapshot(testRemoteSnapshot)
+{}
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCodeUnknown);
@@ -331,7 +345,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     return ExitCodeDataError;
                 }
 
-                if (side == ReplicaSideLocal) {
+                if (side == ReplicaSideLocal && !_testing) {
                     // OS might fail to notify all delete events, therefore we check that the file still exists.
                     SyncPath absolutePath = _syncPal->_localPath / snapPath;
                     bool exists = false;
@@ -490,7 +504,12 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 const bool success = ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(
                     _syncPal->_localPath, snapPath, isExcluded, ioError);
                 if (!success || ioError != IoErrorSuccess || isExcluded) {
-                    continue;
+                    if (_testing && ioError == IoErrorNoSuchFileOrDirectory) {
+                        // Files does exist in test, this fine, ignore ioError.
+                    }
+                    else {
+                        continue;
+                    }
                 }
 
                 // TODO : this portion of code aimed to wait for a file to be available locally before starting to synchronize it
@@ -630,21 +649,23 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<Snapshot
             return true;
         }
     } else {
-        SyncPath absoluteFilePath = _syncPal->_localPath / path;
+        if (!_testing) {
+            SyncPath absoluteFilePath = _syncPal->_localPath / path;
 
-        // Check that file exists
-        bool exists = false;
-        IoError ioError = IoErrorSuccess;
-        if (!IoHelper::checkIfPathExists(absoluteFilePath, exists, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path="
-                                   << Utility::formatIoError(absoluteFilePath, ioError).c_str());
-            return true;
-        }
+            // Check that file exists
+            bool exists = false;
+            IoError ioError = IoErrorSuccess;
+            if (!IoHelper::checkIfPathExists(absoluteFilePath, exists, ioError)) {
+                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path="
+                                       << Utility::formatIoError(absoluteFilePath, ioError).c_str());
+                return true;
+            }
 
-        if (!exists) {
-            LOGW_SYNCPAL_DEBUG(_logger, L"Ignore item " << Path2WStr(path).c_str() << L" (" << Utility::s2ws(nodeId).c_str()
-                                                        << L") because it doesn't exist");
-            return true;
+            if (!exists) {
+                LOGW_SYNCPAL_DEBUG(_logger, L"Ignore item " << Path2WStr(path).c_str() << L" (" << Utility::s2ws(nodeId).c_str()
+                                                            << L") because it doesn't exist");
+                return true;
+            }
         }
     }
 

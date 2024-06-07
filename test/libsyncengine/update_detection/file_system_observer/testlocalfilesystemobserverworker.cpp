@@ -153,13 +153,13 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 
         /// Edit file
         LOGW_DEBUG(_logger, L"***** test edit file *****");
-        SyncTime prevModTime = _syncPal->_localSnapshot->lastModifed(itemId);
+        SyncTime prevModTime = _syncPal->_localSnapshot->lastModified(itemId);
         testCallStr = R"(echo "This is an edit test" >> )" + testAbsolutePath.make_preferred().string();
         std::system(testCallStr.c_str());
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->lastModifed(itemId) > prevModTime);
+        CPPUNIT_ASSERT(_syncPal->_localSnapshot->lastModified(itemId) > prevModTime);
 
         /// Move file
         LOGW_DEBUG(_logger, L"***** test move file *****");
