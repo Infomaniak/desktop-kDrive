@@ -68,6 +68,13 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
 
     if (newItem.parentId().empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id().c_str());
+        assert(false);
+        return false;
+    }
+
+    if (newItem.parentId() == newItem.id()) {
+        LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << newItem.id().c_str());
+        assert(false);
         return false;
     }
 
@@ -116,6 +123,7 @@ bool Snapshot::removeItem(const NodeId &id) {
     const std::scoped_lock lock(_mutex);
 
     if (id.empty()) {
+        assert(false);
         return false;
     }
 
@@ -450,10 +458,17 @@ bool Snapshot::isOrphan(const NodeId &itemId) {
 
     NodeId nextParentId = parentId(itemId);
     while (nextParentId != _rootFolderId) {
-        nextParentId = parentId(nextParentId);
-        if (nextParentId.empty()) {
+        const NodeId tmpNextParentId = parentId(nextParentId);
+        if (tmpNextParentId.empty()) {
             return true;
         }
+        if (tmpNextParentId == nextParentId) {
+            // Should not happen
+            LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << nextParentId.c_str());
+            assert(false);
+            break;
+        }
+        nextParentId = tmpNextParentId;
     }
     return false;
 }
