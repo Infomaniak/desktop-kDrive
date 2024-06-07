@@ -32,7 +32,7 @@
 #include <filesystem>
 #include <string>
 
-#include <windows.h>
+#include <ntstatus.h>
 #include <Shobjidl.h>  //Required for IFileOperation Interface
 #include <shellapi.h>  //Required for Flags set in "SetOperationFlags"
 #include <objbase.h>
@@ -43,7 +43,6 @@
 #include <AccCtrl.h>
 #define SECURITY_WIN32
 #include <security.h>
-#include <ntstatus.h>
 
 constexpr int MAX_GET_RIGHTS_DURATION_MS = 60;
 namespace KDC {
