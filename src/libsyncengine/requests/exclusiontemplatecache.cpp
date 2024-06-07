@@ -198,6 +198,7 @@ bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bo
     for (const auto &pattern : _regexPatterns) {
         const std::string &patternStr = pattern.second.templ();
         isWarning = pattern.second.warning();
+
         switch (pattern.second.complexity()) {
             case ExclusionTemplateComplexitySimplest: {
                 if (fileName == patternStr) {

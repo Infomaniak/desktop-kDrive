@@ -228,14 +228,14 @@ void TestIntegration::testEditLocal() {
     IoHelper::getFileStat(_newTestFilePath, &fileStat, exists);
     _newTestFileLocalId = std::to_string(fileStat.inode);
 
-    SyncTime prevModTime = _syncPal->_remoteSnapshot->lastModifed(_newTestFileRemoteId);
+    SyncTime prevModTime = _syncPal->_remoteSnapshot->lastModified(_newTestFileRemoteId);
     SyncName testCallStr = Str(R"(echo "This is an edit test )") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) +
                            Str(R"(" >> ")") + _newTestFilePath.native().c_str() + Str(R"(")");
     std::system(SyncName2Str(testCallStr).c_str());
 
     waitForSyncToFinish();
 
-    SyncTime newModTime = _syncPal->_remoteSnapshot->lastModifed(_newTestFileRemoteId);
+    SyncTime newModTime = _syncPal->_remoteSnapshot->lastModified(_newTestFileRemoteId);
 
     CPPUNIT_ASSERT(newModTime > prevModTime);
 
@@ -340,7 +340,7 @@ void TestIntegration::testEditRemote() {
     LOGW_DEBUG(_logger, L"$$$$$ test edit remote file");
     std::cout << "test edit remote file : ";
 
-    SyncTime prevModTime = _syncPal->_localSnapshot->lastModifed(_newTestFileLocalId);
+    SyncTime prevModTime = _syncPal->_localSnapshot->lastModified(_newTestFileLocalId);
 
     std::filesystem::path tmpFile = std::filesystem::temp_directory_path() / "tmp_test_file.txt";
     SyncName testCallStr = Str(R"(echo "This is an edit test )") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) +
@@ -356,7 +356,7 @@ void TestIntegration::testEditRemote() {
     CPPUNIT_ASSERT(_syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, _newTestFileRemoteId, _newTestFileLocalId,
                                                           found));  // Update the local ID
     CPPUNIT_ASSERT(found);
-    SyncTime newModTime = _syncPal->_localSnapshot->lastModifed(_newTestFileLocalId);
+    SyncTime newModTime = _syncPal->_localSnapshot->lastModified(_newTestFileLocalId);
     CPPUNIT_ASSERT(newModTime > prevModTime);
 
     std::cout << "OK" << std::endl;
@@ -421,7 +421,7 @@ void TestIntegration::testSimultaneousChanges() {
     // Simulate local file edition
     std::filesystem::path localFilePath = _localPath / testExecutorFolderRelativePath / "test_executor_copy.txt";
 
-    SyncTime prevModTime = _syncPal->_remoteSnapshot->lastModifed(testExecutorFileCopyRemoteId);
+    SyncTime prevModTime = _syncPal->_remoteSnapshot->lastModified(testExecutorFileCopyRemoteId);
     SyncName testCallStr = Str(R"(echo "This is an edit test )") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) +
                            Str(R"(" >> ")") + localFilePath.make_preferred().native() + Str(R"(")");
     std::system(SyncName2Str(testCallStr).c_str());
@@ -436,7 +436,7 @@ void TestIntegration::testSimultaneousChanges() {
     waitForSyncToFinish();
 
     // Check effect of local change on remote snapshot
-    SyncTime newModTime = _syncPal->_remoteSnapshot->lastModifed(testExecutorFileCopyRemoteId);
+    SyncTime newModTime = _syncPal->_remoteSnapshot->lastModified(testExecutorFileCopyRemoteId);
     CPPUNIT_ASSERT(newModTime > prevModTime);
 
     // Check effect of remote change on local snapshot

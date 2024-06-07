@@ -174,7 +174,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         std::string testCallStr = R"(echo "This is an edit test" >> )" + localFilepath.make_preferred().string();
         std::system(testCallStr.c_str());
 
-        SyncTime prevModTime = _syncPal->_remoteFSObserverWorker->_snapshot->lastModifed(_testFileId);
+        SyncTime prevModTime = _syncPal->_remoteFSObserverWorker->_snapshot->lastModified(_testFileId);
 
         Utility::msleep(1000);
 
@@ -184,7 +184,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->lastModifed(_testFileId) > prevModTime);
+        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->lastModified(_testFileId) > prevModTime);
     }
 
     {
