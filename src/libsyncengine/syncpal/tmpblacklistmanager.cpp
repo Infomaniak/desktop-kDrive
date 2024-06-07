@@ -67,13 +67,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
             _syncPal->addError(err);
         }
     } else {
-        TmpErrorInfo errorInfo;
-        errorInfo._path = relativePath;
-        errors.insert({nodeId, errorInfo});
-
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
-                                                                   << L" error list with nodeId=" << Utility::s2ws(nodeId).c_str()
-                                                                   << L" and path=" << Path2WStr(errorInfo._path).c_str());
+        addError(nodeId, relativePath, side);
     }
 }
 
@@ -86,13 +80,7 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
         errorItem->second._count++;
         errorItem->second._lastErrorTime = std::chrono::steady_clock::now();
     } else {
-        TmpErrorInfo errorInfo;
-        errorInfo._path = relativePath;
-        errors.insert({nodeId, errorInfo});
-
-        LOGW_DEBUG(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
-                                                                   << L" error list with nodeId=" << Utility::s2ws(nodeId).c_str()
-                                                                   << L" and path=" << Path2WStr(errorInfo._path).c_str());
+        addError(nodeId, relativePath, side);
     }
 
     insertInBlacklist(nodeId, side);
@@ -188,6 +176,18 @@ void TmpBlacklistManager::removeFromDB(const NodeId &nodeId, const ReplicaSide s
             LOG_DEBUG(Log::instance()->getLogger(), "Item " << dbNodeId << " removed from DB");
         }
     }
+}
+
+void TmpBlacklistManager::addError(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {
+    TmpErrorInfo errorInfo;
+    errorInfo._path = relativePath;
+
+    auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
+    errors.insert({nodeId, errorInfo});
+
+    LOGW_INFO(Log::instance()->getLogger(), L"Item added in " << (side == ReplicaSideLocal ? L"local" : L"remote")
+                                                              << L" error list with nodeId=" << Utility::s2ws(nodeId).c_str()
+                                                              << L" and " << Utility::formatSyncPath(errorInfo._path).c_str());
 }
 
 }  // namespace KDC
