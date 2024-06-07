@@ -30,7 +30,7 @@ namespace KDC {
 class AbstractJob : public Poco::Runnable {
     public:
         AbstractJob();
-        ~AbstractJob();
+        ~AbstractJob() override;
 
         virtual void runJob() = 0;
         ExitCode runSynchronously();
