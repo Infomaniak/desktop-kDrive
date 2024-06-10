@@ -57,9 +57,13 @@ void TestLog::testLogRollingAndExpiration(void) {
     bool endOfDirectory = false;
     DirectoryEntry entry;
     while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoErrorSuccess) {
+        if (entry.path().filename().string() == Log::instance()->getLogFilePath().filename().string()) {
+            continue;
+        }
+        std::cout << "Deleting " << entry.path() << std::endl;
         IoHelper::deleteDirectory(entry.path(), ioError);
-    }
-    LOG_INFO(_logger, "Ensure the current log file is recreated if it does not exist anymore."); //On Linux and MacOs, the current log file is deleted where on Windows it can't be deleted
+    }    
+    
     testLargeLogRolling();
     testExpiredLogFiles();
 }

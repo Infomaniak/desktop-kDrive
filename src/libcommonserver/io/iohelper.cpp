@@ -514,20 +514,17 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    //!\ Don't use IoHelper::logger() here, as it Log::instance() may not be initialized yet. /!\_
     try {
         if (directoryPath = Log::instance()->getLogFilePath().parent_path(); !directoryPath.empty()) {
             return true;
         } else {
             throw std::runtime_error("Log directory path is empty.");
         }
+    } catch (const std::exception &e) {
+        // We can't log the error, so we just generate the path for the logger to initialize.
     }
-    catch (const std::exception& e) {
-        if (Log::isSet())
-            LOG_INFO(logger(),
-                     "Unable to get log directory path from Log class: " << e.what() << ". Generating the desired path.");
-        //Else, we can't log the error, so we just generate the path for the logger to initialize.
-    }
-    
+
     if (!tempDirectoryPath(directoryPath, ioError)) {
         return false;
     }

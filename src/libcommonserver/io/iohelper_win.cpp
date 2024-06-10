@@ -68,7 +68,9 @@ IoError dWordError2ioError(DWORD error) noexcept {
         case ERROR_INVALID_NAME:
             return IoErrorNoSuchFileOrDirectory;
         default:
-            if (Log::isSet()) LOG_WARN(Log::instance()->getLogger(), "Unknown IO error - error=" << error);
+            if (Log::isSet()) {
+                LOG_WARN(Log::instance()->getLogger(), "Unknown IO error - error=" << error);
+            }
             return IoErrorUnknown;
     }
 }
