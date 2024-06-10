@@ -517,11 +517,14 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
     try {
         if (directoryPath = Log::instance()->getLogFilePath().parent_path(); !directoryPath.empty()) {
             return true;
+        } else {
+            throw std::runtime_error("Log directory path is empty.");
         }
-    } catch (std::runtime_error &e) {}// Log not initialized
+    }
+    catch (const std::exception& e) {
+        LOG_INFO(logger(), "Unable to get log directory path from Log class: " << e.what() << ". Generating the desired path.");
+    }
     
-
-    // if the Log::instance() is nullptr or if the file path is empty, we genereate the desired path.
     if (!tempDirectoryPath(directoryPath, ioError)) {
         return false;
     }
