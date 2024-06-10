@@ -29,15 +29,14 @@ namespace KDC {
 class TestLocalJobs : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestLocalJobs);
-        CPPUNIT_TEST(testCreateMoveDeleteDir);
+        CPPUNIT_TEST(testLocalJobs);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
-        void tearDown() override;
 
     protected:
-        void testCreateMoveDeleteDir();
+        void testLocalJobs();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;

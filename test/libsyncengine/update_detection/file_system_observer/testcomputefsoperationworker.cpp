@@ -21,6 +21,7 @@
 #include "libcommon/utility/utility.h"
 #include "requests/exclusiontemplatecache.h"
 #include "requests/syncnodecache.h"
+#include "requests/parameterscache.h"
 
 #include <update_detection/file_system_observer/computefsoperationworker.h>
 
@@ -32,14 +33,14 @@ static const time_t tDrive = std::time(0);
 /**
  * init tree:
  *
- *                   root
- *          __________|__________
- *         |                    |
- *         A                    B
- *    _____|_____          _____|_____
- *   |     |    |         |          |
- *  AA    AB   AC        AA         AB
-
+ *      Root
+ *      |-- A
+ *      |   |-- AA
+ *      |   |-- AB
+ *      |   `-- AC
+ *      `-- B
+ *          |-- BA
+ *          `-- BB
  */
 
 void TestComputeFSOperationWorker::setUp() {
@@ -61,7 +62,7 @@ void TestComputeFSOperationWorker::setUp() {
     KeyChainManager::instance()->writeToken(keychainKey, apiTokenStr);
 
     // Create parmsDb
-    bool alreadyExists;
+    bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
@@ -162,8 +163,12 @@ void TestComputeFSOperationWorker::setUp() {
     // Insert items to blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeBlackList, {"lac"});
 
+    // Activate big folder limit
+    ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(true);
+
     _syncPal->_computeFSOperationsWorker =
         std::shared_ptr<ComputeFSOperationWorker>(new ComputeFSOperationWorker(_syncPal, "Local Compute FS Operations", "LCOP"));
+    _syncPal->_computeFSOperationsWorker->setTesting(true);
 }
 
 void TestComputeFSOperationWorker::tearDown() {
@@ -178,7 +183,7 @@ void TestComputeFSOperationWorker::testComputeOps() {
     // Create operation
     _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), tLoc, tLoc, NodeTypeFile, 123));
     // Edit operation
-    _syncPal->_localSnapshot->setLastModifed("laa", tLoc + 60);
+    _syncPal->_localSnapshot->setLastModified("laa", tLoc + 60);
     // Move operation
     _syncPal->_localSnapshot->setParentId("lab", "lb");
     // Rename operation
@@ -186,11 +191,11 @@ void TestComputeFSOperationWorker::testComputeOps() {
     // Delete operation
     _syncPal->_localSnapshot->removeItem("lbb");
 
-    // Create operation on an excluded file
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("lae", "la", Str("AE_excluded"), tLoc, tLoc, NodeTypeFile, 123));
-    // Create operation but file too big (should be ignored on local replica)
-    _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("laf", "la", Str("AF_too_big"), tLoc, tLoc, NodeTypeFile, 550 * 1024 * 1024));  // File size: 550MB
+    // Create operation on a too big directory
+    _syncPal->_remoteSnapshot->updateItem(
+        SnapshotItem("raf", "ra", Str("AF_too_big"), tLoc, tLoc, NodeTypeDirectory, 0));
+    _syncPal->_remoteSnapshot->updateItem(
+        SnapshotItem("rafa", "raf", Str("AFA"), tLoc, tLoc, NodeTypeFile, 550 * 1024 * 1024));  // File size: 550MB
 
     // Rename operation on a blacklisted directory
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-blacklisted"));
@@ -204,13 +209,10 @@ void TestComputeFSOperationWorker::testComputeOps() {
     CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lba", OperationTypeMove, tmpOp));
     CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lbb", OperationTypeDelete, tmpOp));
 
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lae", OperationTypeCreate, tmpOp));
-
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("laf", OperationTypeCreate, tmpOp));
-
     // On remote replica
-    // Create operation but file too big (should be ignored on local replica)
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("ra", OperationTypeCreate, tmpOp));
+    // Create operation but folder too big (should be ignored on local replica)
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("raf", OperationTypeCreate, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rafa", OperationTypeCreate, tmpOp));
 
     CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rac", OperationTypeMove, tmpOp));
 }
