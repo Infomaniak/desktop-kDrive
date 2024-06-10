@@ -27,6 +27,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDateTime>
+#include "config.h"
 
 /*****************************************/
 /********** namespace log4cplus **********/
@@ -288,31 +289,7 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
 
 void CustomRollingFileAppender::checkForExpiredFiles() {
     _lastExpireCheck = std::chrono::system_clock::now();
-
-    // Delete expired files
-    if (_expire > 0) {
-        QDateTime now = QDateTime::currentDateTime();
-        IoError ioError = IoErrorSuccess;
-        SyncPath logDirPath;
-        if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
-            throw std::runtime_error("Error in CustomRollingFileAppender: failed to get the log directory path.");
-        }
-
-        QDir logDir(SyncName2QStr(logDirPath.native()));
-        QStringList filters;
-        filters << SyncName2QStr(Str("*") + Utility::logFileName() + Str("*"));
-        QStringList logFileNameList = logDir.entryList(filters, QDir::Files);
-        for (const QString &logFileName : logFileNameList) {
-            QFileInfo fileInfo(logDir, logFileName);
-            QDateTime expireDateTime = fileInfo.lastModified().addSecs(_expire * 3600);
-            if (expireDateTime < now) {
-                log4cplus::file_remove(fileInfo.filePath().toStdWString());
-                continue;
-            }
-        }
-    }
-
-    // Archive Previous Log Files
+    // Archive Previous Log Files and delete expired files
     IoError ioError = IoErrorSuccess;
     SyncPath logDirPath;
     if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoErrorSuccess) {
@@ -327,19 +304,28 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         if (ioError != IoErrorSuccess || fileStat.nodeType != NodeTypeFile) {
             continue;
         }
-        // skip already compress logs and current log file.
-        DirectoryEntry currentLog(filename);
-        auto currentLogName = currentLog.path().filename().replace_extension("");
 
-        if (entry.path().filename().string().find(".gz") != std::string::npos ||
-            entry.path().native().find(currentLogName) != std::string::npos) {
-            continue;
+        // Delete expired files
+        if (_expire > 0 && entry.path().string().find(APPLICATION_NAME) != std::string::npos) {
+            auto now = std::chrono::system_clock::now();
+            auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modtime);
+            auto expireDateTime = lastModified + std::chrono::seconds(_expire);
+            if (expireDateTime < now) {
+                log4cplus::file_remove(entry.path().native());
+                continue;
+            }
         }
-        if (CommonUtility::compressFile(QString::fromStdString(entry.path().string()),
-                                        QString::fromStdString(entry.path().string() + ".gz"))) {
-            log4cplus::file_remove(entry.path().native());
-        } else {
-            log4cplus::file_remove(entry.path().native() + LOG4CPLUS_TEXT(".gz"));
+
+        // Compress previous log sessions
+        if (SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
+            entry.path().filename().string().find(".gz") == std::string::npos &&
+            entry.path().native().find(currentLogName) == std::string::npos) {
+            if (CommonUtility::compressFile(QString::fromStdString(entry.path().string()),
+                                            QString::fromStdString(entry.path().string() + ".gz"))) {
+                log4cplus::file_remove(entry.path().native());
+            } else {
+                log4cplus::file_remove(entry.path().native() + LOG4CPLUS_TEXT(".gz"));
+            }
         }
     }
 }

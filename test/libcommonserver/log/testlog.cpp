@@ -16,28 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
 #include "testlog.h"
 #include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 #include "test_utility/temporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
-#include "libcommonserver/db/db.h"
+
 #include <log4cplus/loggingmacros.h>
 
 #include <iostream>
+#include <log/customrollingfileappender.h>
 
 using namespace CppUnit;
-
 namespace KDC {
 
 void TestLog::setUp() {
     _logger = Log::instance()->getLogger();
-    bool alreadyExist = false;
-    Db::makeDbName(alreadyExist);
+    _logDir = Log::instance()->getLogFilePath().parent_path();
 }
-
-void TestLog::tearDown() {}
 
 void TestLog::testLog() {
     LOG4CPLUS_TRACE(_logger, "Test trace log");
@@ -50,5 +47,68 @@ void TestLog::testLog() {
     LOG4CPLUS_DEBUG(_logger, L"家屋香袈睷晦");
 
     CPPUNIT_ASSERT(true);
+}
+
+void TestLog::testLogRollingAndExpiration(void) {
+    // Clear the log directory
+    IoError ioError = IoErrorSuccess;
+    IoHelper::DirectoryIterator dirIt(_logDir, false, ioError);
+
+    bool endOfDirectory = false;
+    DirectoryEntry entry;
+    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory &&
+           ioError == IoErrorSuccess) {  // keep only the current log file
+        IoHelper::deleteDirectory(entry.path(), ioError);
+    }
+
+    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
+    testLargeLogRolling();
+    testExpiredLogFiles();
+}
+
+void TestLog::testLargeLogRolling(void) {
+    // Generate a log larger than the max log file size.
+    std::string testLog = "Test info log/";
+    for (int i = 0; i < 1000; i++) {
+        testLog += "Test info log/";
+    }
+    uint64_t currentSize = 0;
+    while (currentSize < CommonUtility::logMaxSize) {
+        currentSize += testLog.size() * sizeof(testLog[0]);
+        LOG_DEBUG(_logger, testLog.c_str());
+    }
+
+    // Check that a new log file
+    CPPUNIT_ASSERT_EQUAL(countFilesInDirectory(_logDir), 2);
+}
+
+void TestLog::testExpiredLogFiles(void) {
+    CPPUNIT_ASSERT_EQUAL(countFilesInDirectory(_logDir), 2);
+    log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
+    static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())->setExpire(5);
+    Utility::msleep(2000);
+    LOG_DEBUG(_logger, "Ensure the two log files do not expire at thz same time.");  // No log file should be deleted
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
+    Utility::msleep(4000);  // Wait for the first log file to expire
+    static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())
+        ->setExpire(5);                   // Force the check of expired files at the next log
+    LOG_DEBUG(_logger, "Test info log");  // Generate a log to trigger the appender
+    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
+}
+
+int TestLog::countFilesInDirectory(const SyncPath& directory) const {
+    bool endOfDirectory = false;
+    IoError ioErorr = IoErrorSuccess;
+    IoHelper::DirectoryIterator dirIt(directory, false, ioErorr);
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioErorr);
+
+    int count = 0;
+    DirectoryEntry entry;
+    while (dirIt.next(entry, endOfDirectory, ioErorr) && !endOfDirectory) {
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioErorr);
+        count++;
+    }
+    CPPUNIT_ASSERT(endOfDirectory);
+    return count;
 }
 }  // namespace KDC

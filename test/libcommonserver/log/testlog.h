@@ -16,28 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <log4cplus/logger.h>
+#include "testincludes.h"
 
-using namespace CppUnit;
+#include <log4cplus/logger.h>
+#include <utility/types.h>
 
 namespace KDC {
 
 class TestLog : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLog);
         CPPUNIT_TEST(testLog);
+        CPPUNIT_TEST(testLogRollingAndExpiration);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void);
-        void tearDown(void);
-
-    protected:
-        log4cplus::Logger _logger;
-
-        void testLog(void);
+        void setUp(void) final;
 
     private:
-        bool _parmsDbFileExist();
-};
+        log4cplus::Logger _logger;
+        void testLog(void);
+        void testLogRollingAndExpiration(void);
 
+        int countFilesInDirectory(const SyncPath& directory) const;  // return -1 if error
+        void testLargeLogRolling(void);
+        void testExpiredLogFiles(void);
+        SyncPath _logDir;
+};
 }  // namespace KDC
