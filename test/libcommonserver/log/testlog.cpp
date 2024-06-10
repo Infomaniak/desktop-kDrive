@@ -79,11 +79,11 @@ void TestLog::testLargeLogRolling(void) {
     }
 
     // Check that a new log file
-    CPPUNIT_ASSERT_EQUAL(countFilesInDirectory(_logDir), 2);
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
 }
 
 void TestLog::testExpiredLogFiles(void) {
-    CPPUNIT_ASSERT_EQUAL(countFilesInDirectory(_logDir), 2);
+    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())->setExpire(5);
     Utility::msleep(2000);
