@@ -168,7 +168,7 @@ void FolderWatcher_win::watchChanges() {
                     }
                 } else {
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOG_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
+                        LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
                                                               << L" detected on item " << Path2WStr(filepath).c_str()
                                                               << L" (directory)");
                     }
