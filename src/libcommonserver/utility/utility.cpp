@@ -453,7 +453,7 @@ std::string Utility::opType2Str(OperationType opType) {
 }
 
 std::wstring Utility::opType2WStr(OperationType opType) {
-    return Utility::s2ws(opType2Str(opType));
+    return s2ws(opType2Str(opType));
 }
 
 std::string Utility::conflictType2Str(ConflictType conflictType) {
@@ -495,7 +495,7 @@ std::string Utility::conflictType2Str(ConflictType conflictType) {
 }
 
 std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
-    return Utility::s2ws(conflictType2Str(conflictType));
+    return s2ws(conflictType2Str(conflictType));
 }
 
 std::string Utility::side2Str(ReplicaSide side) {
@@ -513,7 +513,7 @@ std::string Utility::side2Str(ReplicaSide side) {
 }
 
 std::wstring Utility::side2WStr(ReplicaSide side) {
-    return Utility::s2ws(side2Str(side));
+    return s2ws(side2Str(side));
 }
 
 std::string Utility::nodeType2Str(NodeType type) {
@@ -531,7 +531,7 @@ std::string Utility::nodeType2Str(NodeType type) {
 }
 
 std::wstring Utility::nodeType2WStr(NodeType type) {
-    return Utility::s2ws(nodeType2Str(type));
+    return s2ws(nodeType2Str(type));
 }
 
 std::string Utility::logLevel2Str(LogLevel level) {
@@ -559,7 +559,7 @@ std::string Utility::logLevel2Str(LogLevel level) {
 }
 
 std::wstring Utility::logLevel2WStr(LogLevel level) {
-    return Utility::s2ws(logLevel2Str(level));
+    return s2ws(logLevel2Str(level));
 }
 
 std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
@@ -591,7 +591,7 @@ std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
 }
 
 std::wstring Utility::syncFileStatus2WStr(SyncFileStatus status) {
-    return Utility::s2ws(syncFileStatus2Str(status));
+    return s2ws(syncFileStatus2Str(status));
 }
 
 std::string Utility::list2str(std::unordered_set<std::string> inList) {

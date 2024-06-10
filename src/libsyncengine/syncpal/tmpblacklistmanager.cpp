@@ -39,7 +39,7 @@ int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, ReplicaSide side) c
     const auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
     const auto errorItem = errors.find(nodeId);
 
-    return errorItem == errors.end() ? 0 : errorItem->second._count + 1;
+    return errorItem == errors.end() ? 0 : errorItem->second.count + 1;
 }
 
 void logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side, const SyncPath &path = "") {
@@ -54,11 +54,11 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
 
     auto errorItem = errors.find(nodeId);
     if (errorItem != errors.end()) {
-        errorItem->second._count++;
-        errorItem->second._lastErrorTime = std::chrono::steady_clock::now();
+        errorItem->second.count++;
+        errorItem->second.lastErrorTime = std::chrono::steady_clock::now();
         logMessage(L"Error counter increased", nodeId, side, relativePath);
 
-        if (errorItem->second._count >= 1) {  // We try only once. TODO: If we keep this logic, no need to keep _count
+        if (errorItem->second.count >= 1) {  // We try only once. TODO: If we keep this logic, no need to keep _count
             insertInBlacklist(nodeId, side);
 
 #ifdef NDEBUG
@@ -72,8 +72,8 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
         }
     } else {
         TmpErrorInfo errorInfo;
-        errorInfo._path = relativePath;
-        errors.insert({nodeId, errorInfo});
+        errorInfo.path = relativePath;
+        errors.try_emplace(nodeId, errorInfo);
         logMessage(L"Item added in error list", nodeId, side, relativePath);
     }
 }
@@ -82,12 +82,12 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
     if (auto errorItem = errors.find(nodeId); errorItem != errors.end()) {
         // Reset error timer
-        errorItem->second._count++;
-        errorItem->second._lastErrorTime = std::chrono::steady_clock::now();
+        errorItem->second.count++;
+        errorItem->second.lastErrorTime = std::chrono::steady_clock::now();
     } else {
         TmpErrorInfo errorInfo;
-        errorInfo._path = relativePath;
-        errors.insert({nodeId, errorInfo});
+        errorInfo.path = relativePath;
+        errors.try_emplace(nodeId, errorInfo);
         logMessage(L"Item added in error list", nodeId, side, relativePath);
     }
 
@@ -102,17 +102,17 @@ void TmpBlacklistManager::refreshBlacklist() {
 
         auto errorIt = errors.begin();
         while (errorIt != errors.end()) {
-            if (std::chrono::duration<double> elapsed_seconds = now - errorIt->second._lastErrorTime;
+            if (const std::chrono::duration<double> elapsed_seconds = now - errorIt->second.lastErrorTime;
                 elapsed_seconds.count() > oneHour) {
                 logMessage(L"Removing item from tmp blacklist", errorIt->first, side);
 
-                SyncNodeType blaclistType =
+                SyncNodeType blacklistType =
                     side == ReplicaSideLocal ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
 
                 std::unordered_set<NodeId> tmp;
-                SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blaclistType, tmp);
+                SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType, tmp);
                 tmp.erase(errorIt->first);
-                SyncNodeCache::instance()->update(_syncPal->syncDbId(), blaclistType, tmp);
+                SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType, tmp);
 
                 errorIt = errors.erase(errorIt);
                 continue;
@@ -140,7 +140,7 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
 bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const {
     auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
     for (const auto &errorInfo : errors) {
-        if (Utility::startsWith(path, errorInfo.second._path)) {
+        if (Utility::startsWith(path, errorInfo.second.path)) {
             return true;
         }
     }

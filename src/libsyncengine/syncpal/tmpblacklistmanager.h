@@ -27,9 +27,9 @@ namespace KDC {
 class TmpBlacklistManager {
     public:
         struct TmpErrorInfo {
-                int _count = 0;
-                std::chrono::time_point<std::chrono::steady_clock> _lastErrorTime = std::chrono::steady_clock::now();
-                SyncPath _path;
+                int count = 0;
+                std::chrono::time_point<std::chrono::steady_clock> lastErrorTime = std::chrono::steady_clock::now();
+                SyncPath path;
         };
 
         TmpBlacklistManager(std::shared_ptr<SyncPal> syncPal);

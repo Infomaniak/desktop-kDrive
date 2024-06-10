@@ -133,7 +133,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
         bool checkOnlyDir = i == 0;
 
         auto dbIt = remainingDbIds.begin();
-        for (; dbIt != remainingDbIds.end();) {
+        while (dbIt != remainingDbIds.end()) {
             DbNodeId dbId = *dbIt;
 
             if (dbId == _syncPal->_syncDb->rootNode().nodeId()) {
@@ -201,13 +201,15 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
 
             for (int j = 0; j <= 1; j++) {
                 ReplicaSide side = j == 0 ? ReplicaSideLocal : ReplicaSideRemote;
-                SyncTime dbLastModified =
-                    side == ReplicaSideLocal
-                        ? (dbNode.lastModifiedLocal().has_value() ? dbNode.lastModifiedLocal().value() : 0)
-                        : (dbNode.lastModifiedRemote().has_value() ? dbNode.lastModifiedRemote().value() : 0);
-                NodeId nodeId = side == ReplicaSideLocal
-                                    ? (dbNode.nodeIdLocal().has_value() ? dbNode.nodeIdLocal().value() : "")
-                                    : (dbNode.nodeIdRemote().has_value() ? dbNode.nodeIdRemote().value() : "");
+                SyncTime dbLastModified = 0;
+                NodeId nodeId;
+                if (side == ReplicaSideLocal) {
+                    dbLastModified = dbNode.lastModifiedLocal().has_value() ? dbNode.lastModifiedLocal().value() : 0;
+                    nodeId = dbNode.nodeIdLocal().has_value() ? dbNode.nodeIdLocal().value() : "";
+                } else {
+                    dbLastModified = dbNode.lastModifiedRemote().has_value() ? dbNode.lastModifiedRemote().value() : 0;
+                    nodeId = dbNode.nodeIdRemote().has_value() ? dbNode.nodeIdRemote().value() : "";
+                }
                 if (nodeId.empty()) {
                     LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(side)).c_str()
                                                    << L" node ID empty for for dbId=" << dbId);
@@ -252,8 +254,8 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     if (!pathInDeletedFolder(dbPath)) {
                         // Check that the file/directory really does not exist on replica
                         bool isExcluded = false;
-                        const ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded);
-                        if (exitCode != ExitCodeOk) {
+                        if (const ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded);
+                            exitCode != ExitCodeOk) {
                             if (exitCode == ExitCodeNoWritePermission) {
                                 // Blacklist node
                                 _syncPal->blacklistTemporarily(nodeId, dbPath, side);
@@ -293,13 +295,13 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
 
                         if (!snapshot->exists(nodeId)) {
                             bool exists = false;
-                            IoError ioError = IoErrorSuccess;
-                            if (!IoHelper::checkIfPathExists(localPath, exists, ioError)) {
+
+                            if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
                                 LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                        << Utility::formatIoError(localPath, ioError).c_str());
                                 return ExitCodeSystemError;
                             }
-                            checkTemplate = checkTemplate || exists;
+                            checkTemplate = exists;
                         }
                     }
 
@@ -351,8 +353,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     // OS might fail to notify all delete events, therefore we check that the file still exists.
                     SyncPath absolutePath = _syncPal->_localPath / snapPath;
                     bool exists = false;
-                    IoError ioError = IoErrorSuccess;
-                    if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+                    if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                << Utility::formatIoError(absolutePath, ioError).c_str());
                         return ExitCodeSystemError;
@@ -437,7 +438,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
         bool checkOnlyDir = i == 0;
 
         auto snapIdIt = remainingDbIds.begin();
-        for (; snapIdIt != remainingDbIds.end();) {
+        while (snapIdIt != remainingDbIds.end()) {
             if (stopAsked()) {
                 return ExitCodeOk;
             }
