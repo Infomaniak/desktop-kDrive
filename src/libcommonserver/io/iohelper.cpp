@@ -522,7 +522,10 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
         }
     }
     catch (const std::exception& e) {
-        LOG_INFO(logger(), "Unable to get log directory path from Log class: " << e.what() << ". Generating the desired path.");
+        if (Log::isSet())
+            LOG_INFO(logger(),
+                     "Unable to get log directory path from Log class: " << e.what() << ". Generating the desired path.");
+        //Else, we can't log the error, so we just generate the path for the logger to initialize.
     }
     
     if (!tempDirectoryPath(directoryPath, ioError)) {

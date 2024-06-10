@@ -68,7 +68,7 @@ IoError dWordError2ioError(DWORD error) noexcept {
         case ERROR_INVALID_NAME:
             return IoErrorNoSuchFileOrDirectory;
         default:
-            LOG_WARN(Log::instance()->getLogger(), "Unknown IO error - error=" << error);
+            if (Log::isSet()) LOG_WARN(Log::instance()->getLogger(), "Unknown IO error - error=" << error);
             return IoErrorUnknown;
     }
 }
@@ -158,7 +158,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
 
     if (zwQueryDirectoryFile == 0) {
         LOGW_WARN(Log::instance()->getLogger(),
-                 L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()).c_str());
+                  L"Error in GetProcAddress: " << Utility::formatSyncPath(path.parent_path()).c_str());
         return false;
     }
 

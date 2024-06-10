@@ -322,9 +322,9 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
             entry.path().native().find(currentLogName) == std::string::npos) {
             if (CommonUtility::compressFile(QString::fromStdString(entry.path().string()),
                                             QString::fromStdString(entry.path().string() + ".gz"))) {
-                log4cplus::file_remove(entry.path().native());
+                log4cplus::file_remove(Utility::s2ws(entry.path().string()));
             } else {
-                log4cplus::file_remove(entry.path().native() + LOG4CPLUS_TEXT(".gz"));
+                log4cplus::file_remove(Utility::s2ws(entry.path().string()) + LOG4CPLUS_TEXT(".gz"));
             }
         }
     }

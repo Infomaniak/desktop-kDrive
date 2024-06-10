@@ -134,8 +134,10 @@ void TestIo::testLogDirectoryPath() {
             ec = std::make_error_code(std::errc::not_enough_memory);
             return SyncPath{};
         });
-
+        auto logInstance = Log::_instance;
+        Log::_instance.reset();
         CPPUNIT_ASSERT(!_testObj->logDirectoryPath(logDirPath, ioError));
+        Log::_instance = logInstance;
         CPPUNIT_ASSERT(logDirPath.empty());
         CPPUNIT_ASSERT(ioError == IoErrorUnknown);
 

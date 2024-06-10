@@ -73,9 +73,15 @@ void TestLog::testLargeLogRolling(void) {
         testLog += "Test info log/";
     }
     uint64_t currentSize = 0;
+    std::cout << std::endl << "|......................[100%]|" << std::endl << "|";
+    int progressBarProgress = 0;
     while (currentSize < CommonUtility::logMaxSize) {
         currentSize += testLog.size() * sizeof(testLog[0]);
         LOG_DEBUG(_logger, testLog.c_str());
+        if (currentSize > CommonUtility::logMaxSize /100 * progressBarProgress) {
+            std::cout << ".";
+            progressBarProgress += 5;
+        }
     }
 
     // Check that a new log file
