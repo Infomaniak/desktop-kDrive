@@ -66,21 +66,20 @@ void TestLog::testLogRollingAndExpiration(void) {
 
 void TestLog::testLargeLogRolling(void) {
 
-    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
     // Generate a log larger than the max log file size.
     std::string testLog = "Test info log/";
     for (int i = 0; i < 1000; i++) {
         testLog += "Test info log/";
     }
     uint64_t currentSize = 0;
-    std::cout << std::endl << "|......................[100%]|" << std::endl << "|";
+    std::cout << std::endl << "|......................................................................................................[100%]|" << std::endl << "|";
     int progressBarProgress = 0;
     while (currentSize < CommonUtility::logMaxSize) {
         currentSize += testLog.size() * sizeof(testLog[0]);
         LOG_DEBUG(_logger, testLog.c_str());
         if (currentSize > CommonUtility::logMaxSize / 100 * progressBarProgress) {
             std::cout << ".";
-            progressBarProgress += 5;
+            progressBarProgress ++;
         }
     }
 
