@@ -311,7 +311,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
             auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modtime);
             auto expireDateTime = lastModified + std::chrono::seconds(_expire);
             if (expireDateTime < now) {
-                log4cplus::file_remove(entry.path().native());
+                log4cplus::file_remove(Utility::s2ws(entry.path().string()));
                 continue;
             }
         }
@@ -319,7 +319,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         // Compress previous log sessions
         if (SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
             entry.path().filename().string().find(".gz") == std::string::npos &&
-            entry.path().native().find(currentLogName) == std::string::npos) {
+            entry.path().string().find(currentLogName.string()) == std::string::npos) {
             if (CommonUtility::compressFile(QString::fromStdString(entry.path().string()),
                                             QString::fromStdString(entry.path().string() + ".gz"))) {
                 log4cplus::file_remove(Utility::s2ws(entry.path().string()));
