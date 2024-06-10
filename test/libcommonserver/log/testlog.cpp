@@ -56,17 +56,17 @@ void TestLog::testLogRollingAndExpiration(void) {
 
     bool endOfDirectory = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory &&
-           ioError == IoErrorSuccess) {  // keep only the current log file
+    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoErrorSuccess) {
         IoHelper::deleteDirectory(entry.path(), ioError);
     }
-
-    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
+    LOG_INFO(_logger, "Ensure the current log file is recreated if it does not exist anymore."); //On Linux and MacOs, the current log file is deleted where on Windows it can't be deleted
     testLargeLogRolling();
     testExpiredLogFiles();
 }
 
 void TestLog::testLargeLogRolling(void) {
+
+    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
     // Generate a log larger than the max log file size.
     std::string testLog = "Test info log/";
     for (int i = 0; i < 1000; i++) {
@@ -78,7 +78,7 @@ void TestLog::testLargeLogRolling(void) {
     while (currentSize < CommonUtility::logMaxSize) {
         currentSize += testLog.size() * sizeof(testLog[0]);
         LOG_DEBUG(_logger, testLog.c_str());
-        if (currentSize > CommonUtility::logMaxSize /100 * progressBarProgress) {
+        if (currentSize > CommonUtility::logMaxSize / 100 * progressBarProgress) {
             std::cout << ".";
             progressBarProgress += 5;
         }
