@@ -116,14 +116,19 @@ class UpdateTreeWorker : public ISyncWorker {
         ExitCode getOriginPath(const std::shared_ptr<Node> node, SyncPath &path);
         ExitCode updateNameFromDbForMoveOp(const std::shared_ptr<Node> node, FSOpPtr moveOp);
 
+        // Log update information if extended logging is on.
+        void logUpdate(const std::shared_ptr<Node> node, const OperationType opType,
+                       const std::shared_ptr<Node> parentNode = nullptr);
+        void updateTmpNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp);
+
+
         /**
          * Detect and handle create operations on files or directories
          * with identical standardized paths.
          * The existence of such duplicate standardized paths can be caused by:
          * - a file deletion operation was not reported by the user OS.
-         * - the user has created several files whose names have different encodings but same normalization (an issue reported on
-         * Windows 10 and 11).
-         * This function fills `_createFileOperation` with all create operations on files.
+         * - the user has created several files whose names have different encodings but same normalization (an issue
+         *reported on Windows 10 and 11). This function fills `_createFileOperation` with all create operations on files.
          *
          *\return : ExitCodeOk if no problematic create operations were detected.
          */

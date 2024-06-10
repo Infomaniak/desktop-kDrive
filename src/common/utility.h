@@ -35,6 +35,7 @@
 #include <log4cplus/logger.h>
 
 #ifdef Q_OS_WIN
+#define UMDF_USING_NTSTATUS
 #include <windows.h>
 #endif
 

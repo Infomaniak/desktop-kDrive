@@ -428,7 +428,7 @@ bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTi
 
 bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) {
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger,
                            L"vfsUpdateFetchStatus : " << Utility::formatSyncPath(path).c_str() << L" received=" << received);
     }
@@ -1103,7 +1103,9 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
 ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap) {
     for (const auto &localFileInfo : localFileMap) {
         SyncPath destPath;
-        if (ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixTypeConflict, &destPath); exitCode != ExitCodeOk) {
+        if (ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(
+                localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixTypeConflict, &destPath);
+            exitCode != ExitCodeOk) {
             LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Path2WStr(localFileInfo.second).c_str() << L" into "
                                                           << Path2WStr(destPath).c_str());
 

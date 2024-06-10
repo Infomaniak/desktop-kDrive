@@ -540,7 +540,7 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
 }
   
 void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*/) {
-    if (path.size() > maxSize) {
+    if (path.size() > (qsizetype)maxSize) {
         path = path.left(maxSize) + "...";
     }
 }
