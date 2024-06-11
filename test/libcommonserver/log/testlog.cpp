@@ -24,7 +24,6 @@
 #include "libcommon/utility/utility.h"
 
 #include <log4cplus/loggingmacros.h>
-
 #include <iostream>
 #include <log/customrollingfileappender.h>
 
@@ -60,34 +59,36 @@ void TestLog::testLogRollingAndExpiration(void) {
         if (entry.path().filename().string() == Log::instance()->getLogFilePath().filename().string()) {
             continue;
         }
-        std::cout << "Deleting " << entry.path() << std::endl;
         IoHelper::deleteDirectory(entry.path(), ioError);
-    }    
-    
+    }
+
     testLargeLogRolling();
     testExpiredLogFiles();
 }
 
 void TestLog::testLargeLogRolling(void) {
-
+    CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
     // Generate a log larger than the max log file size.
     std::string testLog = "Test info log/";
     for (int i = 0; i < 1000; i++) {
         testLog += "Test info log/";
     }
     uint64_t currentSize = 0;
-    std::cout << std::endl << "|......................................................................................................[100%]|" << std::endl << "|";
+    std::cout << std::endl
+              << "|......................................................................................................[100%]|"
+              << std::endl
+              << "|";
     int progressBarProgress = 0;
     while (currentSize < CommonUtility::logMaxSize) {
         currentSize += testLog.size() * sizeof(testLog[0]);
         LOG_DEBUG(_logger, testLog.c_str());
         if (currentSize > CommonUtility::logMaxSize / 100 * progressBarProgress) {
             std::cout << ".";
-            progressBarProgress ++;
+            progressBarProgress++;
         }
     }
 
-    // Check that a new log file
+    // Check that a new log file has been created
     CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
 }
 
@@ -96,12 +97,12 @@ void TestLog::testExpiredLogFiles(void) {
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())->setExpire(5);
     Utility::msleep(2000);
-    LOG_DEBUG(_logger, "Ensure the two log files do not expire at thz same time.");  // No log file should be deleted
+    LOG_DEBUG(_logger, "Ensure the two log files do not expire at the same time.");  // No log file should be deleted
     CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
     Utility::msleep(4000);  // Wait for the first log file to expire
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())
         ->setExpire(5);                   // Force the check of expired files at the next log
-    LOG_DEBUG(_logger, "Test info log");  // Generate a log to trigger the appender
+    LOG_DEBUG(_logger, "Log to trigger the appender");  // Generate a log to trigger the appender
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
 }
 
