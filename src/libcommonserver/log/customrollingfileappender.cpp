@@ -273,7 +273,7 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
             log4cplus::file_remove(ztarget);
         }
 
-        if (success && CommonUtility::compressFile(QString::fromStdWString(target), QString::fromStdWString(ztarget))) {
+        if (success && CommonUtility::compressFile(target, ztarget)) {
             log4cplus::file_remove(target);
         } else {
             log4cplus::file_remove(ztarget);
@@ -293,7 +293,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
     IoError ioError = IoErrorSuccess;
     SyncPath logDirPath;
     if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoErrorSuccess) {
-        return; 
+        return;
     }
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
     bool endOfDir = false;
@@ -320,8 +320,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         if (const SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
             entry.path().filename().string().find(".gz") == std::string::npos &&
             entry.path().string().find(currentLogName.string()) == std::string::npos) {
-            if (CommonUtility::compressFile(QString::fromStdString(entry.path().string()),
-                                            QString::fromStdString(entry.path().string() + ".gz"))) {
+            if (CommonUtility::compressFile(entry.path().string(), entry.path().string() + ".gz")) {
                 log4cplus::file_remove(Utility::s2ws(entry.path().string()));
             } else {
                 log4cplus::file_remove(Utility::s2ws(entry.path().string()) + LOG4CPLUS_TEXT(".gz"));

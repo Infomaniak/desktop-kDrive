@@ -292,6 +292,14 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     return true;
 }
 
+bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName) {
+    return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName));
+}
+
+bool CommonUtility::compressFile(const std::string &originalName, const std::string &targetName) {
+    return compressFile(QString::fromStdString(originalName), QString::fromStdString(targetName));
+}
+
 bool CommonUtility::compressFile(const QString &originalName, const QString &targetName) {
 #ifdef ZLIB_FOUND
     QFile original(originalName);
