@@ -293,7 +293,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
     IoError ioError = IoErrorSuccess;
     SyncPath logDirPath;
     if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoErrorSuccess) {
-        throw std::runtime_error("Error in CustomRollingFileAppender: failed to get the log directory path.");
+        return; 
     }
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
     bool endOfDir = false;
