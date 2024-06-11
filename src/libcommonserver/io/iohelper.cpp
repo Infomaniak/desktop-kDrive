@@ -514,7 +514,7 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
-    //!\ Don't use IoHelper::logger() here, as it Log::instance() may not be initialized yet. /!\_
+    //!\ Don't use IoHelper::logger() here, as Log::_instance may not be initialized yet. /!\_
     try {
         if (directoryPath = Log::instance()->getLogFilePath().parent_path(); !directoryPath.empty()) {
             return true;
