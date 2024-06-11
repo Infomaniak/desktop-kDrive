@@ -145,12 +145,12 @@ ExitCode ExclusionTemplateCache::update(bool def, const std::vector<ExclusionTem
     return ExitCodeOk;
 }
 
-bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning,
-                                               bool &isExcluded, IoError &ioError) noexcept {
+bool ExclusionTemplateCache::isExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning, bool &isExcluded,
+                                        IoError &ioError) noexcept {
     isExcluded = false;
     ioError = IoErrorSuccess;
 
-    if (!checkIfIsAnExcludedHiddenFile(basePath, relativePath, isExcluded, ioError)) {
+    if (!isExcludedHidden(basePath, relativePath, isExcluded, ioError)) {
         return false;
     }
 
@@ -158,13 +158,13 @@ bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const S
         return true;
     }
 
-    isExcluded = isExcludedTemplate(relativePath, isWarning);
+    isExcluded = isExcludedByTemplate(relativePath, isWarning);
 
     return true;
 }
 
-bool ExclusionTemplateCache::checkIfIsAnExcludedHiddenFile(const SyncPath &basePath, const SyncPath &relativePath,
-                                                           bool &isExcluded, IoError &ioError) noexcept {
+bool ExclusionTemplateCache::isExcludedHidden(const SyncPath &basePath, const SyncPath &relativePath, bool &isExcluded,
+                                              IoError &ioError) noexcept {
     isExcluded = false;
     ioError = IoErrorSuccess;
 
@@ -192,7 +192,7 @@ bool ExclusionTemplateCache::checkIfIsAnExcludedHiddenFile(const SyncPath &baseP
     return true;
 }
 
-bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bool &isWarning) noexcept {
+bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, bool &isWarning) noexcept {
     const std::lock_guard<std::mutex> lock(_mutex);
     const std::string fileName = SyncName2Str(relativePath.filename().native());
     for (const auto &pattern : _regexPatterns) {
@@ -202,11 +202,11 @@ bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bo
         switch (pattern.second.complexity()) {
             case ExclusionTemplateComplexitySimplest: {
                 if (fileName == patternStr) {
-                    if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_INFO(Log::instance()->getLogger(),
-                                  L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
-                                             << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
-                    }
+                    //                    if (ParametersCache::isExtendedLogEnabled()) {
+                    LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Path2WStr(relativePath).c_str()
+                                                                       << L"\" rejected because of rule \""
+                                                                       << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
+                    //                    }
                     return true;  // Filename match exactly the pattern
                 }
                 break;
@@ -234,11 +234,11 @@ bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bo
                 }
 
                 if (exclude) {
-                    if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_INFO(Log::instance()->getLogger(),
-                                  L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
-                                             << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
-                    }
+                    //                    if (ParametersCache::isExtendedLogEnabled()) {
+                    LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Path2WStr(relativePath).c_str()
+                                                                       << L"\" rejected because of rule \""
+                                                                       << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
+                    //                    }
                     return true;  // Filename contains the pattern
                 }
                 break;
@@ -246,11 +246,11 @@ bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bo
             case ExclusionTemplateComplexityComplex:
             default: {
                 if (std::regex_match(fileName, pattern.first)) {
-                    if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_INFO(Log::instance()->getLogger(),
-                                  L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
-                                             << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
-                    }
+                    //                    if (ParametersCache::isExtendedLogEnabled()) {
+                    LOGW_INFO(Log::instance()->getLogger(), L"Item \"" << Path2WStr(relativePath).c_str()
+                                                                       << L"\" rejected because of rule \""
+                                                                       << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
+                    //                    }
                     return true;
                 }
                 break;

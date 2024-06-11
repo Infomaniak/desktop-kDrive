@@ -142,10 +142,10 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             // Check if excluded by a file exclusion rule
             bool isWarning = false;
             bool toExclude = false;
-            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
-                                                                                       isWarning, toExclude, ioError);
+            const bool success =
+                ExclusionTemplateCache::instance()->isExcluded(_syncPal->_localPath, relativePath, isWarning, toExclude, ioError);
             if (!success) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
                                                << Utility::formatIoError(absolutePath, ioError).c_str());
                 invalidateSnapshot();
                 return;
@@ -267,7 +267,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
                         if (!_syncPal->vfsFileStatusChanged(absolutePath, SyncFileStatusSyncing)) {
                             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: "
-                                                          << Utility::formatSyncPath(absolutePath).c_str());
+                                                           << Utility::formatSyncPath(absolutePath).c_str());
                             invalidateSnapshot();
                             return;
                         }
@@ -570,10 +570,10 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     bool isExcluded = false;
     IoError ioError = IoErrorSuccess;
     const bool success =
-        ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
+        ExclusionTemplateCache::instance()->isExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
     if (!success) {
-        LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                               << Utility::formatIoError(absolutePath, ioError).c_str());
+        LOGW_WARN(_logger,
+                  L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError).c_str());
         return;
     }
     if (isExcluded) {
@@ -725,10 +725,10 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 bool isWarning = false;
                 bool isExcluded = false;
                 IoError ioError = IoErrorSuccess;
-                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
-                                                                                           isWarning, isExcluded, ioError);
+                const bool success = ExclusionTemplateCache::instance()->isExcluded(_syncPal->_localPath, relativePath, isWarning,
+                                                                                    isExcluded, ioError);
                 if (!success) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
                                                     << Utility::formatIoError(absolutePath, ioError).c_str());
                     dirIt.disable_recursion_pending();
                     continue;

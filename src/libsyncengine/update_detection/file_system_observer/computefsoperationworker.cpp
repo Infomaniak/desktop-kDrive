@@ -31,21 +31,19 @@ namespace KDC {
 
 ComputeFSOperationWorker::ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                    const std::string &shortName)
-    : ISyncWorker(syncPal, name, shortName)
-    , _syncDb(syncPal->_syncDb)
-    , _localSnapshot(syncPal->_localSnapshot)
-    , _remoteSnapshot(syncPal->_remoteSnapshot)
-{}
+    : ISyncWorker(syncPal, name, shortName),
+      _syncDb(syncPal->_syncDb),
+      _localSnapshot(syncPal->_localSnapshot),
+      _remoteSnapshot(syncPal->_remoteSnapshot) {}
 
-ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb
-                                                   , const std::shared_ptr<Snapshot> testLocalSnapshot
-                                                   , const std::shared_ptr<Snapshot> testRemoteSnapshot
-                                                   , const std::string &name, const std::string &shortName)
-    : ISyncWorker(nullptr, name, shortName, true)
-    , _syncDb(testSyncDb)
-    , _localSnapshot(testLocalSnapshot)
-    , _remoteSnapshot(testRemoteSnapshot)
-{}
+ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb,
+                                                   const std::shared_ptr<Snapshot> testLocalSnapshot,
+                                                   const std::shared_ptr<Snapshot> testRemoteSnapshot, const std::string &name,
+                                                   const std::string &shortName)
+    : ISyncWorker(nullptr, name, shortName, true),
+      _syncDb(testSyncDb),
+      _localSnapshot(testLocalSnapshot),
+      _remoteSnapshot(testRemoteSnapshot) {}
 
 void ComputeFSOperationWorker::execute() {
     ExitCode exitCode(ExitCodeUnknown);
@@ -303,10 +301,10 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                             if (exists) {
                                 bool warn = false;
                                 bool isExcluded = false;
-                                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(
-                                    _syncPal->_localPath, dbPath, warn, isExcluded, ioError);
+                                const bool success = ExclusionTemplateCache::instance()->isExcluded(_syncPal->_localPath, dbPath,
+                                                                                                    warn, isExcluded, ioError);
                                 if (!success) {
-                                    LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                                    LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
                                                            << Utility::formatIoError(localPath, ioError).c_str());
                                     return ExitCodeSystemError;
                                 }
@@ -501,13 +499,12 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 // Check if a local file is hidden, hence excluded.
                 bool isExcluded = false;
                 IoError ioError = IoErrorSuccess;
-                const bool success = ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(
-                    _syncPal->_localPath, snapPath, isExcluded, ioError);
+                const bool success =
+                    ExclusionTemplateCache::instance()->isExcludedHidden(_syncPal->_localPath, snapPath, isExcluded, ioError);
                 if (!success || ioError != IoErrorSuccess || isExcluded) {
                     if (_testing && ioError == IoErrorNoSuchFileOrDirectory) {
                         // Files does exist in test, this fine, ignore ioError.
-                    }
-                    else {
+                    } else {
                         continue;
                     }
                 }
@@ -853,10 +850,10 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     bool isWarning = false;
     ioError = IoErrorSuccess;
     const bool success =
-        ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
+        ExclusionTemplateCache::instance()->isExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
     if (!success) {
-        LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                               << Utility::formatIoError(absolutePath, ioError).c_str());
+        LOGW_WARN(_logger,
+                  L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError).c_str());
         setExitCause(ExitCauseFileAccessError);
         return ExitCodeSystemError;
     }

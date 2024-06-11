@@ -42,11 +42,11 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
             return def ? _defExclusionTemplates : _userExclusionTemplates;
         }
         ExitCode update(bool def, const std::vector<ExclusionTemplate> &exclusionTemplates);
-        bool checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning, bool &isExcluded,
-                               IoError &ioError) noexcept;
-        bool checkIfIsAnExcludedHiddenFile(const SyncPath &basePath, const SyncPath &relativePath, bool &isExcluded,
-                                           IoError &ioError) noexcept;
-        bool isExcludedTemplate(const SyncPath &relativePath, bool &isWarning) noexcept;
+        bool isExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning, bool &isExcluded,
+                        IoError &ioError) noexcept;
+        bool isExcludedHidden(const SyncPath &basePath, const SyncPath &relativePath, bool &isExcluded,
+                              IoError &ioError) noexcept;
+        bool isExcludedByTemplate(const SyncPath &relativePath, bool &isWarning) noexcept;
 
     private:
         static std::shared_ptr<ExclusionTemplateCache> _instance;

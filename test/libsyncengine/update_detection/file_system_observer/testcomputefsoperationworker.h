@@ -26,7 +26,9 @@ namespace KDC {
 
 class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestComputeFSOperationWorker);
-        CPPUNIT_TEST(testComputeOps);
+        CPPUNIT_TEST(testNoOps);
+        CPPUNIT_TEST(testMultipleOps);
+        CPPUNIT_TEST(testLnkFileAlreadySynchronized);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -34,7 +36,22 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         void tearDown() override;
 
     protected:
-        void testComputeOps();
+        /**
+         * No operation should be generated in this test.
+         */
+        void testNoOps();
+        /**
+         * Multiple operations of different types should be generated in this test.
+         */
+        void testMultipleOps();
+        /**
+         * Spécific test for issue https://infomaniak.atlassian.net/browse/KDESKTOP-893.
+         * Sync is looping because a .lnk file was already synchronized with an earlier app's version.
+         * A delete FS operation was generated on remote replica but could not be propagated since the file still exist on remote
+         * replica.
+         * No FS operation should be generated on an excluded file.
+         */
+        void testLnkFileAlreadySynchronized();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
