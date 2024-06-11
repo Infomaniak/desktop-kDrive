@@ -124,8 +124,8 @@ enum class ActionCode {
     actionCodeRename,
     actionCodeEdit,
     actionCodeAccess,
-    actionCodeTrash,    // The file has been put into the trash
-    actionCodeDelete,   // The file has been completely deleted from the trash
+    actionCodeTrash,   // The file has been put into the trash
+    actionCodeDelete,  // The file has been completely deleted from the trash
     actionCodeMoveIn,
     actionCodeMoveOut,
     actionCodeRestore,
