@@ -27,11 +27,11 @@ namespace KDC {
 
 enum DownloadState { Unknown = 0, FindValidUpdate, DidNotFindUpdate, AbortWithError };
 
-class SparkleUpdater : public UpdaterServer {
+class MacOSUpdater : public UpdaterServer {
         Q_OBJECT
     public:
-        explicit SparkleUpdater(const QUrl &appCastUrl);
-        ~SparkleUpdater() override;
+        explicit MacOSUpdater(const QUrl &appCastUrl);
+        ~MacOSUpdater() override;
 
         void setUpdateUrl(const QUrl &url);
         bool startUpdater();

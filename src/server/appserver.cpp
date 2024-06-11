@@ -43,6 +43,7 @@
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/jobmanager.h"
+#include "updater/windowsupdater.h"
 
 #include <iostream>
 #include <filesystem>
@@ -1909,12 +1910,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> skip;
 
-            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
+            WindowsUpdater *updater = qobject_cast<WindowsUpdater *>(UpdaterServer::instance());
             if (skip) {
                 updater->wipeUpdateData();
                 updater->slotSetSeenVersion();
             } else {
-                updater->slotStartInstaller();
+                updater->slotStartWindowsInstaller();
                 QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             }
             break;
@@ -2106,7 +2107,7 @@ void AppServer::onScheduleAppRestart() {
 void AppServer::onShowWindowsUpdateErrorDialog() {
     static bool alreadyAsked = false;  // Ask only once
     if (!alreadyAsked) {
-        NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
+        WindowsUpdater *updater = qobject_cast<WindowsUpdater *>(UpdaterServer::instance());
         if (updater) {
             if (updater->autoUpdateAttempted()) {  // Try auto update first
                 alreadyAsked = true;

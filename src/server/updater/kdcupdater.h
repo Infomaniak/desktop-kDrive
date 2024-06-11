@@ -92,7 +92,7 @@ class KDCUpdater : public UpdaterServer {
         int downloadState() const;
         void setDownloadState(DownloadState state);
 
-        QString updateVersion();
+        inline QString updateVersion() const { return _updateInfo.version(); }
 
     signals:
         void downloadStateChanged();
@@ -101,7 +101,7 @@ class KDCUpdater : public UpdaterServer {
 
     public slots:
         // FIXME Maybe this should be in the NSISUpdater which should have been called WindowsUpdater
-        void slotStartInstaller();
+        void slotStartWindowsInstaller();
 
     protected slots:
         void backgroundCheckForUpdate() Q_DECL_OVERRIDE;
@@ -119,7 +119,7 @@ class KDCUpdater : public UpdaterServer {
 
     private:
         QUrl _updateUrl;
-        int _state;
+        int _state{Unknown};
         QNetworkAccessManager *_accessManager;
         QTimer *_timeoutWatchdog; /** Timer to guard the timeout of an individual network request */
         UpdateInfo _updateInfo;
@@ -129,29 +129,7 @@ class KDCUpdater : public UpdaterServer {
  * @brief Windows Updater Using NSIS
  * @ingroup gui
  */
-class NSISUpdater : public KDCUpdater {
-        Q_OBJECT
-    public:
-        explicit NSISUpdater(const QUrl &url);
-        bool handleStartup() Q_DECL_OVERRIDE;
 
-        void wipeUpdateData();
-        void getVersions(QString &targetVersion, QString &targetVersionString, QString &clientVersion);
-        bool autoUpdateAttempted();
-
-    public slots:
-        void slotSetSeenVersion();
-
-    private slots:
-        void slotDownloadFinished();
-        void slotWriteFile();
-
-    private:
-        void showNoUrlDialog(const UpdateInfo &info);
-        void versionInfoArrived(const UpdateInfo &info) Q_DECL_OVERRIDE;
-        QScopedPointer<QTemporaryFile> _file;
-        QString _targetFile;
-};
 
 /**
  *  @brief Updater that only implements notification for use in settings

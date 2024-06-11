@@ -20,7 +20,7 @@
 
 #include "common/utility.h"
 #include "libcommon/utility/utility.h"
-#include "updater/sparkleupdater.h"
+#include "updater/macosupdater.h"
 #include "libcommonserver/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -114,7 +114,7 @@
 // SparkleUpdater class
 namespace KDC {
 
-class SparkleUpdater::Private {
+class MacOSUpdater::Private {
     public:
         SPUUpdater *updater;
         DelegateUpdaterObject *updaterDelegate;
@@ -123,7 +123,7 @@ class SparkleUpdater::Private {
 };
 
 // Delete ~/Library//Preferences/864VDCS2QY.com.infomaniak.drive.desktopclient.plist to re-test
-SparkleUpdater::SparkleUpdater(const QUrl &appCastUrl) : UpdaterServer() {
+MacOSUpdater::MacOSUpdater(const QUrl &appCastUrl) : UpdaterServer() {
     d = new Private;
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
@@ -152,19 +152,19 @@ SparkleUpdater::SparkleUpdater(const QUrl &appCastUrl) : UpdaterServer() {
     [d->updater setUserAgentString:userAgent];
 }
 
-SparkleUpdater::~SparkleUpdater() {
+MacOSUpdater::~MacOSUpdater() {
     [d->updater release];
     [d->updaterDelegate release];
     [d->spuStandardUserDriver release];
     delete d;
 }
 
-void SparkleUpdater::setUpdateUrl(const QUrl &url) {
+void MacOSUpdater::setUpdateUrl(const QUrl &url) {
     NSURL *nsurl = [NSURL URLWithString:[NSString stringWithUTF8String:url.toString().toUtf8().data()]];
     [d->updater setFeedURL:nsurl];
 }
 
-bool SparkleUpdater::startUpdater() {
+bool MacOSUpdater::startUpdater() {
     NSError *error;
     bool success = [d->updater startUpdater:&error];
 
@@ -177,14 +177,14 @@ bool SparkleUpdater::startUpdater() {
     return true;
 }
 
-void SparkleUpdater::checkForUpdate() {
+void MacOSUpdater::checkForUpdate() {
     if (startUpdater()) {
         [d->updater checkForUpdates];
         [d->spuStandardUserDriver showUpdateInFocus];
     }
 }
 
-void SparkleUpdater::backgroundCheckForUpdate() {
+void MacOSUpdater::backgroundCheckForUpdate() {
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "launching background check");
 
     if (startUpdater() && !d->updater.sessionInProgress) {
@@ -193,20 +193,20 @@ void SparkleUpdater::backgroundCheckForUpdate() {
     [d->spuStandardUserDriver showUpdateInFocus];
 }
 
-int SparkleUpdater::state() const {
+int MacOSUpdater::state() const {
     return [d->updaterDelegate downloadState];
 }
 
-QString SparkleUpdater::version() const {
+QString MacOSUpdater::version() const {
     return [[d->updaterDelegate availableVersion] UTF8String];
 }
 
-bool SparkleUpdater::updateFound() const {
+bool MacOSUpdater::updateFound() const {
     DownloadState state = [d->updaterDelegate downloadState];
     return state == FindValidUpdate;
 }
 
-void SparkleUpdater::slotStartInstaller() {
+void MacOSUpdater::slotStartInstaller() {
     checkForUpdate();
 }
 

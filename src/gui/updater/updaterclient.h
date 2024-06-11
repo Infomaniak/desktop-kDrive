@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libcommon/updater.h"
+#include "server/updater/updater.h"
 
 #include <QObject>
 #include <QString>

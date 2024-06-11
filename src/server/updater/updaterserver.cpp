@@ -18,7 +18,7 @@
 
 #include "updaterserver.h"
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-#include "sparkleupdater.h"
+#include "macosupdater.h"
 #endif
 #include "kdcupdater.h"
 #include "common/utility.h"
@@ -69,7 +69,7 @@ QString UpdaterServer::version() const {
     QString version;
 
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    version = qobject_cast<SparkleUpdater *>(instance())->version();
+    version = qobject_cast<MacOSUpdater *>(instance())->version();
 #else
     version = qobject_cast<KDCUpdater *>(instance())->updateVersion();
 #endif
@@ -84,7 +84,7 @@ bool UpdaterServer::isKDCUpdater() {
 
 bool UpdaterServer::isSparkleUpdater() {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *sparkleUpdater = qobject_cast<SparkleUpdater *>(instance());
+    MacOSUpdater *sparkleUpdater = qobject_cast<MacOSUpdater *>(instance());
     return (sparkleUpdater != nullptr);
 #else
     return false;
@@ -107,7 +107,7 @@ bool UpdaterServer::downloadCompleted() const {
 
 bool UpdaterServer::updateFound() const {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *sparkleUpdater = qobject_cast<SparkleUpdater *>(instance());
+    MacOSUpdater *sparkleUpdater = qobject_cast<MacOSUpdater *>(instance());
     if (sparkleUpdater) {
         return sparkleUpdater->updateFound();
     }
@@ -118,7 +118,7 @@ bool UpdaterServer::updateFound() const {
 
 void UpdaterServer::startInstaller() const {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *updater = qobject_cast<SparkleUpdater *>(instance());
+    MacOSUpdater *updater = qobject_cast<MacOSUpdater *>(instance());
     if (updater) {
         updater->slotStartInstaller();
     }
@@ -188,7 +188,7 @@ UpdaterServer *UpdaterServer::create() {
     }
 
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    return new SparkleUpdater(url);
+    return new MacOSUpdater(url);
 #elif defined(Q_OS_WIN32)
     // Also for MSI
     return new NSISUpdater(url);
