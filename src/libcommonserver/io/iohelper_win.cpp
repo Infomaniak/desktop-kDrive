@@ -69,7 +69,7 @@ IoError dWordError2ioError(DWORD error) noexcept {
             return IoErrorNoSuchFileOrDirectory;
         default:
             if (Log::isSet()) {
-                LOG_WARN(Log::instance()->getLogger(), "Unknown IO error - error=" << error);
+                LOG_WARN(Log::instance()->getLogger(), "Unhandled DWORD error - error=" << error);
             }
             return IoErrorUnknown;
     }
