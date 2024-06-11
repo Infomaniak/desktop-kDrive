@@ -26,20 +26,21 @@ namespace KDC {
 class TestLog : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLog);
         CPPUNIT_TEST(testLog);
-        CPPUNIT_TEST(testLogRollingAndExpiration);
+        CPPUNIT_TEST(testExpiredLogFiles);
+        CPPUNIT_TEST(testLargeLogRolling);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp(void) final;
 
+        void testLargeLogRolling(void);
+        void testExpiredLogFiles(void);
     private:
         log4cplus::Logger _logger;
         void testLog(void);
-        void testLogRollingAndExpiration(void);
 
         int countFilesInDirectory(const SyncPath& directory) const;  // return -1 if error
-        void testLargeLogRolling(void);
-        void testExpiredLogFiles(void);
+        void clearLogDirectory(void) const; // remove all files in log directory except the current log file
         SyncPath _logDir;
 };
 }  // namespace KDC
