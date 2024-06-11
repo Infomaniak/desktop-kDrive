@@ -55,7 +55,7 @@ bool UpdaterClient::isKDCUpdater() {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
-    bool ret;
+    bool ret = false;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> ret;
 
@@ -68,7 +68,7 @@ bool UpdaterClient::isSparkleUpdater() {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
-    bool ret;
+    bool ret = false;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> ret;
 
@@ -94,7 +94,7 @@ bool UpdaterClient::downloadCompleted() const {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
-    bool ret;
+    bool ret = false;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> ret;
 
@@ -107,7 +107,7 @@ bool UpdaterClient::updateFound() const {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
-    bool ret;
+    bool ret = false;
     QDataStream resultStream(&results, QIODevice::ReadOnly);
     resultStream >> ret;
 

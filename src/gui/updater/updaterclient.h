@@ -18,27 +18,25 @@
 
 #pragma once
 
-#include "server/updater/updater.h"
-
 #include <QObject>
 #include <QString>
 
 namespace KDC {
 
-class UpdaterClient : public Updater {
+class UpdaterClient : public QObject {
         Q_OBJECT
 
     public:
         ~UpdaterClient();
         static UpdaterClient *instance();
 
-        QString version() const override;
-        bool isKDCUpdater() override;
-        bool isSparkleUpdater() override;
-        QString statusString() const override;
-        bool downloadCompleted() const override;
-        bool updateFound() const override;
-        void startInstaller() const override;
+        QString version() const;
+        bool isKDCUpdater();
+        bool isSparkleUpdater();
+        QString statusString() const;
+        bool downloadCompleted() const;
+        bool updateFound() const;
+        void startInstaller() const;
 
         void showWindowsUpdaterDialog(const QString &targetVersion, const QString &targetVersionString,
                                       const QString &clientVersion);
