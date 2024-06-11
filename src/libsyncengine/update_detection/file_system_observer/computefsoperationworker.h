@@ -35,9 +35,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
          * @param name
          * @param shortName
          */
-        ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::shared_ptr<Snapshot> testLocalSnapshot
-                                 , const std::shared_ptr<Snapshot> testRemoteSnapshot
-                                 , const std::string &name, const std::string &shortName);
+        ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::shared_ptr<Snapshot> testLocalSnapshot,
+                                 const std::shared_ptr<Snapshot> testRemoteSnapshot, const std::string &name,
+                                 const std::string &shortName);
 
         const std::unordered_map<NodeId, SyncPath> getFileSizeMismatchMap() const { return _fileSizeMismatchMap; }
 

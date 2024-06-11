@@ -51,11 +51,11 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static const NodeId pictureDirRemoteId = "56851";       // test_ci/test_pictures
-static const NodeId picture1RemoteId = "97373";         // test_ci/test_pictures/picture-1.jpg
-static const NodeId testFileRemoteId = "97370";         // test_ci/test_networkjobs/test_download.txt
-static const NodeId testFileRemoteRenameId = "97376";   // test_ci/test_networkjobs/test_rename*.txt
-static const NodeId testBigFileRemoteId = "97601";      // test_ci/big_file_dir/big_text_file.txt
+static const NodeId pictureDirRemoteId = "56851";      // test_ci/test_pictures
+static const NodeId picture1RemoteId = "97373";        // test_ci/test_pictures/picture-1.jpg
+static const NodeId testFileRemoteId = "97370";        // test_ci/test_networkjobs/test_download.txt
+static const NodeId testFileRemoteRenameId = "97376";  // test_ci/test_networkjobs/test_rename*.txt
+static const NodeId testBigFileRemoteId = "97601";     // test_ci/big_file_dir/big_text_file.txt
 
 static const std::string desktopTeamTestDriveName = "Test Desktop App";
 static const std::string bigFileDirName = "big_file_dir";
@@ -181,7 +181,7 @@ void TestNetworkJobs::testCopyToDir() {
 void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT(createTestDir());
 
-    DeleteJob job(_driveDbId, _dirId, "", ""); // TODO : this test needs to be fixed, local ID and path are now mandatory
+    DeleteJob job(_driveDbId, _dirId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
     job.setBypassCheck(true);
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);

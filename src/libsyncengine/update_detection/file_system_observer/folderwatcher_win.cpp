@@ -162,8 +162,8 @@ void FolderWatcher_win::watchChanges() {
                 if (!isDirectory) {
                     if (ioError == IoErrorNoSuchFileOrDirectory) {
                         LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                                              << L" detected on item " << Path2WStr(filepath).c_str()
-                                                              << L" (item doesn't exist)");
+                                                               << L" detected on item " << Path2WStr(filepath).c_str()
+                                                               << L" (item doesn't exist)");
                         skip = true;
                     }
                 } else {
@@ -184,8 +184,8 @@ void FolderWatcher_win::watchChanges() {
                     if (notFound) {
                         // Item doesn't exist anymore
                         LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                                              << L" detected on item " << Path2WStr(longfilepath).c_str()
-                                                              << L" (item doesn't exist)");
+                                                               << L" detected on item " << Path2WStr(longfilepath).c_str()
+                                                               << L" (item doesn't exist)");
                         skip = true;
                     } else {
                         // Keep original name
@@ -198,7 +198,7 @@ void FolderWatcher_win::watchChanges() {
             if (!skip) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_DEBUG(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                                     << L" detected on item " << Path2WStr(longfilepath).c_str());
+                                                      << L" detected on item " << Path2WStr(longfilepath).c_str());
                 }
 
                 changeDetected(longfilepath, opType);

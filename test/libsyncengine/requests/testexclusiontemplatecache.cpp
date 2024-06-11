@@ -48,13 +48,8 @@ static const std::vector<ExclusionTemplate> excludedTemplates = {
     ExclusionTemplate("Desktop.ini"), ExclusionTemplate("*.filepart"), ExclusionTemplate("*.app")
 #else
     // Linux only
-    ExclusionTemplate(".fuse_hidden*"),
-    ExclusionTemplate("*.kate-swp"),
-    ExclusionTemplate("*.gnucash.tmp-*"),
-    ExclusionTemplate(".Trash-*"),
-    ExclusionTemplate(".nfs*"),
-    ExclusionTemplate("*.app"),
-    ExclusionTemplate("*.lnk")
+    ExclusionTemplate(".fuse_hidden*"), ExclusionTemplate("*.kate-swp"), ExclusionTemplate("*.gnucash.tmp-*"),
+    ExclusionTemplate(".Trash-*"), ExclusionTemplate(".nfs*"), ExclusionTemplate("*.app"), ExclusionTemplate("*.lnk")
 #endif
 };
 
