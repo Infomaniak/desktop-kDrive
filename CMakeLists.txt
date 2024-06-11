@@ -55,6 +55,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_BINARY_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/test
+    ${CMAKE_CURRENT_SOURCE_DIR}/E2Etest
 )
 
 include(GNUInstallDirs)
@@ -127,6 +128,8 @@ option(BUILD_GUI "BUILD_GUI" ON)
 # build the tests
 option(BUILD_UNIT_TESTS "BUILD_UNIT_TESTS" OFF)
 
+option(BUILD_E2E_TESTS "BUILD_E2E_TESTS" OFF)
+
 if(APPLE)
     # build uninstaller
     option(BUILD_UNINSTALLER "BUILD_UNINSTALLER" ON)
@@ -193,6 +196,10 @@ endif()
 # Tests
 if(BUILD_UNIT_TESTS)
     add_subdirectory("test")
+endif()
+
+if(BUILD_E2E_TESTS)
+    add_subdirectory("E2Etest")
 endif()
 
 # utf8proc
