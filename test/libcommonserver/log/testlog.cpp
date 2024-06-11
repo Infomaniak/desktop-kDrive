@@ -99,14 +99,14 @@ void TestLog::testExpiredLogFiles(void) {
 
 int TestLog::countFilesInDirectory(const SyncPath& directory) const {
     bool endOfDirectory = false;
-    IoError ioErorr = IoErrorSuccess;
-    IoHelper::DirectoryIterator dirIt(directory, false, ioErorr);
-    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioErorr);
+    IoError ioError = IoErrorSuccess;
+    IoHelper::DirectoryIterator dirIt(directory, false, ioError);
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 
     int count = 0;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDirectory, ioErorr) && !endOfDirectory) {
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioErorr);
+    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
         count++;
     }
     CPPUNIT_ASSERT(endOfDirectory);
