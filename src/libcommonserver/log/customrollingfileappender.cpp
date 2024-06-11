@@ -289,7 +289,7 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
 
 void CustomRollingFileAppender::checkForExpiredFiles() {
     _lastExpireCheck = std::chrono::system_clock::now();
-    // Archive Previous Log Files and delete expired files
+    // Archive previous log files and delete expired files
     IoError ioError = IoErrorSuccess;
     SyncPath logDirPath;
     if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoErrorSuccess) {
@@ -307,7 +307,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
 
         // Delete expired files
         if (_expire > 0 && entry.path().string().find(APPLICATION_NAME) != std::string::npos) {
-            auto now = std::chrono::system_clock::now();
+            const auto now = std::chrono::system_clock::now();
             auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modtime);
             auto expireDateTime = lastModified + std::chrono::seconds(_expire);
             if (expireDateTime < now) {
@@ -317,7 +317,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         }
 
         // Compress previous log sessions
-        if (SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
+        if (const SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
             entry.path().filename().string().find(".gz") == std::string::npos &&
             entry.path().string().find(currentLogName.string()) == std::string::npos) {
             if (CommonUtility::compressFile(QString::fromStdString(entry.path().string()),
