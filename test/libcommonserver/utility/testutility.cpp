@@ -55,7 +55,8 @@ void TestUtility::testFreeDiskSpace() {
 void TestUtility::testIsCreationDateValid(void) const{
     CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 0.", !_testObj->isCreationDateValid(0));
     CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is negative for the value -1.", !_testObj->isCreationDateValid(-1));
-
+    // 443779200 correspond to "Tuesday 24 January 1984 08:00:00" which is a default date set by macOS
+    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 443779200 (Default on MacOs).", !_testObj->isCreationDateValid(443779200));
     auto currentTime = std::chrono::system_clock::now();
     auto currentTimePoint = std::chrono::time_point_cast<std::chrono::seconds>(currentTime);
     auto currentTimestamp = currentTimePoint.time_since_epoch().count();
@@ -92,7 +93,7 @@ void TestUtility::testTrim() {
     CPPUNIT_ASSERT(_testObj->trim("    ab    cd    ") == "ab    cd");
 }
 
-void TestUtility::testUsleep() {
+void TestUtility::testMsSleep() {
     auto start = std::chrono::high_resolution_clock::now();
     _testObj->msleep(1000);
     auto end = std::chrono::high_resolution_clock::now();
