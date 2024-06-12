@@ -145,7 +145,10 @@ void UploadSession::uploadChunkCallback(UniqueId jobId) {
 }
 
 void UploadSession::abort() {
+    LOG_DEBUG(_logger, "Aborting session for job " << jobId());
+
     AbstractJob::abort();
+
     cancelSession();
 }
 

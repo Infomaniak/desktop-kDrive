@@ -291,16 +291,20 @@ void AbstractNetworkJob::clearSession() {
     const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
 
     if (_session) {
-        _session->reset();
+        if (_session->connected()) {
+            _session->reset();
+        }
         _session = nullptr;
     }
 }
 
 void AbstractNetworkJob::abortSession() {
     if (_session) {
-        Poco::Net::SocketImpl *socketImpl = _session->socket().impl();
+        _session->abort();
+        _session = nullptr;
+        /*Poco::Net::SocketImpl *socketImpl = _session->socket().impl();
         if (socketImpl) {
-            if (socketImpl->sockfd()) {
+            if (socketImpl->initialized()) {
                 try {
                     socketImpl->close();
                 } catch (std::exception &e) {
@@ -309,7 +313,7 @@ void AbstractNetworkJob::abortSession() {
             } else {
                 LOG_DEBUG(_logger, "Job " << jobId() << " already aborted");
             }
-        }
+        }*/
     }
 }
 
@@ -357,11 +361,14 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         return processSocketError("sendRequest exception", jobId(), e);
     } catch (std::exception &e) {
         return processSocketError("sendRequest exception", jobId(), e);
+    } catch (...) {
+        return processSocketError("sendRequest exception", jobId());
     }
 
     // Send data
     std::string::const_iterator itBegin = _data.begin();
     while (itBegin != _data.end()) {
+        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
         if (isAborted()) {
             LOG_DEBUG(_logger, "Request " << jobId() << ": aborting HTTPS session");
             return false;
@@ -377,6 +384,8 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
             return processSocketError("send data exception", jobId(), e);
         } catch (std::exception &e) {
             return processSocketError("send data exception", jobId(), e);
+        } catch (...) {
+            return processSocketError("send data exception", jobId());
         }
 
         if (isProgressTracked()) {
@@ -418,9 +427,13 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         case Poco::Net::HTTPResponse::HTTP_OK: {
             bool ok = false;
             try {
+                const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
                 ok = handleResponse(stream[0].get());
             } catch (std::exception &e) {
-                LOG_WARN(_logger, "handleResponse failed - err= " << e.what());
+                LOG_WARN(_logger, "handleResponse exception - err= " << e.what());
+                return false;
+            } catch (...) {
+                LOG_WARN(_logger, "handleResponse exception");
                 return false;
             }
 

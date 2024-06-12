@@ -54,9 +54,9 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testUploadSessionConstructorException);
         CPPUNIT_TEST(testUploadSessionSynchronous);
         CPPUNIT_TEST(testUploadSessionAsynchronous2);
-        CPPUNIT_TEST(testUploadSessionAsynchronous5);
+        CPPUNIT_TEST(testUploadSessionAsynchronous10);
         CPPUNIT_TEST(testUploadSessionSynchronousAborted);
-        CPPUNIT_TEST(testUploadSessionAsynchronous5Aborted);
+        CPPUNIT_TEST(testUploadSessionAsynchronous10Aborted);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -90,19 +90,29 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testUploadSessionConstructorException();
         void testUploadSessionSynchronous();
         void testUploadSessionAsynchronous2();
-        void testUploadSessionAsynchronous5();
+        void testUploadSessionAsynchronous10();
         void testUploadSessionSynchronousAborted();
-        void testUploadSessionAsynchronous5Aborted();
+        void testUploadSessionAsynchronous10Aborted();
 
     private:
         bool createTestDir();
+        bool createTestFiles();
 
         int _driveDbId = 0;
         int _userDbId = 0;
-        SyncName _dirName;
         NodeId _remoteDirId;
-        NodeId _dirId;
-        bool _deleteTestDir = false;
+
+        SyncName _dummyDirName;
+        SyncPath _dummyLocalDirPath;
+        NodeId _dummyLocalDirId;
+        NodeId _dummyRemoteDirId;
+        bool _deleteDummyDir = false;
+
+        SyncName _dummyFileName;
+        SyncPath _dummyLocalFilePath;
+        NodeId _dummyLocalFileId;
+        NodeId _dummyRemoteFileId;
+        bool _deleteDummyFile = false;
 };
 
 }  // namespace KDC
