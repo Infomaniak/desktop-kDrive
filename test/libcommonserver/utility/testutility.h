@@ -26,6 +26,7 @@ namespace KDC {
 class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testFreeDiskSpace);
+        CPPUNIT_TEST(testIsCreationDateValid);
         CPPUNIT_TEST(testS2ws);
         CPPUNIT_TEST(testWs2s);
         CPPUNIT_TEST(testLtrim);
@@ -54,6 +55,7 @@ class TestUtility : public CppUnit::TestFixture {
 
     protected:
         void testFreeDiskSpace(void);
+        void testIsCreationDateValid(void) const;
         void testS2ws(void);
         void testWs2s(void);
         void testLtrim(void);

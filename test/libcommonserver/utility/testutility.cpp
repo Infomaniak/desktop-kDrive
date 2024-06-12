@@ -52,6 +52,24 @@ void TestUtility::testFreeDiskSpace() {
     CPPUNIT_ASSERT(freeSpace > 0);
 }
 
+void TestUtility::testIsCreationDateValid(void) const{
+    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 0.", !_testObj->isCreationDateValid(0));
+    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is negative for the value -1.", !_testObj->isCreationDateValid(-1));
+
+    auto currentTime = std::chrono::system_clock::now();
+    auto currentTimePoint = std::chrono::time_point_cast<std::chrono::seconds>(currentTime);
+    auto currentTimestamp = currentTimePoint.time_since_epoch().count();
+
+    for (int i = 10; i < currentTimestamp; i += 2629743) { // step of one month
+        CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(i));
+    }
+    CPPUNIT_ASSERT_MESSAGE("Creation date should be valid." , _testObj->isCreationDateValid(currentTimestamp));
+
+    auto futureTimestamp = currentTimestamp + 3600;
+    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is in the future.", !_testObj->isCreationDateValid(futureTimestamp));
+}
+
+
 void TestUtility::testS2ws() {
     CPPUNIT_ASSERT(_testObj->s2ws("abcd") == L"abcd");
     CPPUNIT_ASSERT(_testObj->s2ws("éèêà") == L"éèêà");
