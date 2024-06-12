@@ -17,6 +17,8 @@
  */
 
 #include "e2etestincludes.h"
+#include <chrono>
+#include <filesystem>
 
 using namespace CppUnit;
 
@@ -25,6 +27,7 @@ namespace KDC {
 class TestSelfRestarter : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSelfRestarter);
         CPPUNIT_TEST(testServerCrash);
+        //CPPUNIT_TEST(testClientCrash);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -34,7 +37,13 @@ class TestSelfRestarter : public CppUnit::TestFixture {
     protected:
         void testServerCrash();
         void testClientCrash();
-        void clearAppFolder();
+
+    private:
+        bool killAllInstances() const;
+        bool isAppRunningByName(std::wstring name) const;
+        bool startApp(std::filesystem::path appPath) const;
+        bool killApp(std::wstring name) const;
+        
 };
 
 }  // namespace KDC
