@@ -33,7 +33,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testRtrim);
         CPPUNIT_TEST(testTrim);
         CPPUNIT_TEST(testMsSleep);
-        CPPUNIT_TEST(testV2s);
+        CPPUNIT_TEST(testV2ws);
         CPPUNIT_TEST(testFileSystemName);
         CPPUNIT_TEST(testStartsWith);
         CPPUNIT_TEST(testStartsWithInsensitive);
@@ -62,7 +62,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testRtrim(void);
         void testTrim(void);
         void testMsSleep(void);
-        void testV2s(void);
+        void testV2ws(void);
         void testFileSystemName(void);
         void testStartsWith(void);
         void testStartsWithInsensitive(void);

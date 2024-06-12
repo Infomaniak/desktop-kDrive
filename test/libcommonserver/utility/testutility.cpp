@@ -103,7 +103,7 @@ void TestUtility::testMsSleep() {
     CPPUNIT_ASSERT(true);
 }
 
-void TestUtility::testV2s() {
+void TestUtility::testV2ws() {
     dbtype nullValue = std::monostate();
     CPPUNIT_ASSERT(_testObj->v2ws(nullValue) == L"NULL");
 
