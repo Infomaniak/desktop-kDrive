@@ -20,10 +20,13 @@
 #include "config.h"
 
 #include "libcommon/utility/utility.h"  // CommonUtility::isSubDir
+#include "Poco/URI.h"
 
 #include <climits>
 #include <iostream>
 #include <filesystem>
+
+
 
 using namespace CppUnit;
 
@@ -210,12 +213,12 @@ void TestUtility::isSubDir() {
 }
 
 void TestUtility::testFormatStdError() {
-    std::error_code ec;
-    auto result = Utility::formatStdError(ec);
+    const std::error_code ec;
+    std::wstring result = Utility::formatStdError(ec);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15);
 
-    SyncPath path = "A/AA";
+    const SyncPath path = "A/AA";
     result = Utility::formatStdError(path, ec);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
@@ -223,18 +226,27 @@ void TestUtility::testFormatStdError() {
 }
 
 void TestUtility::testFormatIoError(void) {
-    IoError ioError = IoErrorSuccess;
-    SyncPath path = "A/AA";
-    auto result = Utility::formatIoError(path, ioError);
-    std::wcout << L" result=" << result;
+    const IoError ioError = IoErrorSuccess;
+    const SyncPath path = "A/AA";
+    const std::wstring result = Utility::formatIoError(path, ioError);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''", result.find(L"err='Success'") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
 }
 
 void TestUtility::testFormatSyncPath(void) {
-    SyncPath path = "A/AA";
+    const SyncPath path = "A/AA";
     CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(path) != std::wstring::npos);
+}
+
+void TestUtility::testFormatRequest(void) {
+    const std::string uri("http://www.example.com");
+    const std::string code = "404";
+    const std::string description = "Not Found";
+    const std::string result = Utility::formatRequest(Poco::URI(uri), code, description);
+    CPPUNIT_ASSERT(result.find(uri) != std::string::npos);
+    CPPUNIT_ASSERT(result.find(code) != std::string::npos);
+    CPPUNIT_ASSERT(result.find(description) != std::string::npos);
 }
 
 void TestUtility::testNormalizedSyncPath() {

@@ -37,6 +37,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testFormatStdError);
         CPPUNIT_TEST(testFormatIoError);
         CPPUNIT_TEST(testFormatSyncPath);
+        CPPUNIT_TEST(testFormatRequest);
         CPPUNIT_TEST(testFileSystemName);
         CPPUNIT_TEST(testStartsWith);
         CPPUNIT_TEST(testStartsWithInsensitive);
@@ -68,6 +69,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testFormatStdError(void);
         void testFormatIoError(void);
         void testFormatSyncPath(void);
+        void testFormatRequest(void);
         void testFileSystemName(void);
         void testStartsWith(void);
         void testStartsWithInsensitive(void);
