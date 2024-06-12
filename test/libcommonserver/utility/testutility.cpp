@@ -242,6 +242,16 @@ void TestUtility::testJoinStr() {
     CPPUNIT_ASSERT(Utility::joinStr(strList, '@') == "C'est@ @un @test!");
 }
 
+void TestUtility::testPathDepth(void) {
+    SyncPath path = "";
+    CPPUNIT_ASSERT_EQUAL(0, Utility::pathDepth(path));
+
+    for (int i = 1; i < 10; i++) {
+        path /= "dir";
+        CPPUNIT_ASSERT_EQUAL(i, Utility::pathDepth(path));
+    }
+}
+
 void TestUtility::testXxHash() {
     SyncPath path = localTestDirPath / "test_pictures/picture-1.jpg";
     std::ifstream file(path, std::ios::binary);

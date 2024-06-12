@@ -49,6 +49,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testStrHex2Str);
         CPPUNIT_TEST(testSplitStr);
         CPPUNIT_TEST(testJoinStr);
+        CPPUNIT_TEST(testPathDepth);
         CPPUNIT_TEST(testXxHash);
         CPPUNIT_TEST(isSubDir);
         CPPUNIT_TEST(testNormalizedSyncPath);
@@ -85,6 +86,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testStrHex2Str(void);
         void testSplitStr(void);
         void testJoinStr(void);
+        void testPathDepth(void);
         void testXxHash(void);
         void isSubDir(void);
         void testNormalizedSyncPath(void);
