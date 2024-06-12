@@ -232,23 +232,23 @@ void TestUtility::testStrHex2Str() {
 }
 
 void TestUtility::testSplitStr() {
-    std::vector<std::string> strList = Utility::splitStr("01234:abcd:56789", ':');
+    std::vector<std::string> strList = _testObj->splitStr("01234:abcd:56789", ':');
     CPPUNIT_ASSERT(strList[0] == "01234" && strList[1] == "abcd" && strList[2] == "56789");
 }
 
 void TestUtility::testJoinStr() {
     std::vector<std::string> strList = {"C'est", " ", "un ", "test!"};
-    CPPUNIT_ASSERT(Utility::joinStr(strList) == "C'est un test!");
-    CPPUNIT_ASSERT(Utility::joinStr(strList, '@') == "C'est@ @un @test!");
+    CPPUNIT_ASSERT(_testObj->joinStr(strList) == "C'est un test!");
+    CPPUNIT_ASSERT(_testObj->joinStr(strList, '@') == "C'est@ @un @test!");
 }
 
 void TestUtility::testPathDepth(void) {
     SyncPath path = "";
-    CPPUNIT_ASSERT_EQUAL(0, Utility::pathDepth(path));
+    CPPUNIT_ASSERT_EQUAL(0, _testObj->pathDepth(path));
 
     for (int i = 1; i < 10; i++) {
         path /= "dir";
-        CPPUNIT_ASSERT_EQUAL(i, Utility::pathDepth(path));
+        CPPUNIT_ASSERT_EQUAL(i, _testObj->pathDepth(path));
     }
 }
 
@@ -263,8 +263,8 @@ void TestUtility::testComputeMd5Hash(void) {
     };
 
     for (const auto &testCase : testCases) {
-        CPPUNIT_ASSERT_EQUAL(testCase.second, Utility::computeMd5Hash(testCase.first));
-        CPPUNIT_ASSERT_EQUAL(testCase.second, Utility::computeMd5Hash(testCase.first.c_str(), testCase.first.size()));
+        CPPUNIT_ASSERT_EQUAL(testCase.second, _testObj->computeMd5Hash(testCase.first));
+        CPPUNIT_ASSERT_EQUAL(testCase.second, _testObj->computeMd5Hash(testCase.first.c_str(), testCase.first.size()));
     }
 }
 
@@ -275,33 +275,33 @@ void TestUtility::testXxHash() {
     ostrm << file.rdbuf();
     std::string data = ostrm.str();
 
-    std::string contentHash = Utility::computeXxHash(data);
+    std::string contentHash = _testObj->computeXxHash(data);
 
     CPPUNIT_ASSERT(contentHash == "5dcc477e35136516");
 }
 
 void TestUtility::testToUpper(void) {
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("abc"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("ABC"));
-    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("AbC"));
-    CPPUNIT_ASSERT_EQUAL(std::string(""), Utility::toUpper(""));
-    CPPUNIT_ASSERT_EQUAL(std::string("123"), Utility::toUpper("123"));
-    CPPUNIT_ASSERT_EQUAL(std::string("EA"), Utility::toUpper("éà"));
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("abc"));
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("ABC"));
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("AbC"));
+    CPPUNIT_ASSERT_EQUAL(std::string(""), _testObj->toUpper(""));
+    CPPUNIT_ASSERT_EQUAL(std::string("123"), _testObj->toUpper("123"));
+    CPPUNIT_ASSERT_EQUAL(std::string("EA"), _testObj->toUpper("éà"));
 
     CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
-                         Utility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+                         _testObj->toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
 }
 
 void TestUtility::testErrId(void) {
     // The macro ERRID expands to Utility::errId(__FILE__, __LINE__) (see types.h)
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), ERRID);
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), Utility::errId(__FILE__, __LINE__));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), Utility::errId("abc/defgh", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), Utility::errId("abc\\defgh", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), Utility::errId("abc/d", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), Utility::errId("abc/d.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DE:10"), Utility::errId("abc/de.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), Utility::errId("abc/def.r", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), _testObj->errId(__FILE__, __LINE__));
+    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/defgh", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc\\defgh", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d.r", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("DE:10"), _testObj->errId("abc/de.r", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/def.r", 10));
 }
 
 
@@ -337,57 +337,90 @@ void TestUtility::testLongPath(void) {
         CPPUNIT_ASSERT(longPathNotfound);
     }
 
-    //TO DO, see with Christophe.L What is the expected behavior of this function.
+    // TO DO, see with Christophe.L What is the expected behavior of this function.
 }
 
-    void TestUtility::testFormatStdError() {
-        const std::error_code ec;
-        std::wstring result = Utility::formatStdError(ec);
-        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
-        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15);
+void TestUtility::testcheckIfDirEntryIsManaged(void) {
+    TemporaryDirectory tempDir;
+    SyncPath path = tempDir.path / "test.txt";
+    std::ofstream file(path);
+    file << "test";
+    file.close();
 
-        const SyncPath path = "A/AA";
-        result = Utility::formatStdError(path, ec);
-        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
-        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
-                               (result.length() - path.native().length()) > 20);
-        CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
-    }
+    bool isManaged = false;
+    bool isLink = false;
+    IoError ioError = IoErrorSuccess;
+    std::filesystem::recursive_directory_iterator entry(tempDir.path);
 
-    void TestUtility::testFormatIoError(void) {
-        const IoError ioError = IoErrorSuccess;
-        const SyncPath path = "A/AA";
-        const std::wstring result = Utility::formatIoError(path, ioError);
-        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
-                               result.find(L"err='Success'") != std::wstring::npos);
-        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
-                               (result.length() - path.native().length()) > 20);
-        CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
-    }
+    // Check with an existing file (managed)
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(isManaged);
+    CPPUNIT_ASSERT(!isLink);
+    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
 
-    void TestUtility::testFormatSyncPath(void) {
-        const SyncPath path = "A/AA";
-        CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(path) != std::wstring::npos);
-    }
+    // Check with a simlink (managed)
+    const SyncPath simLinkDir = tempDir.path / "simLinkDir";
+    std::filesystem::create_directory(simLinkDir);
+    std::filesystem::create_symlink(path, simLinkDir / "testLink.txt");
+    entry = std::filesystem::recursive_directory_iterator(simLinkDir);
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(isManaged);
+    CPPUNIT_ASSERT(isLink);
+    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
 
-    void TestUtility::testFormatRequest(void) {
-        const std::string uri("http://www.example.com");
-        const std::string code = "404";
-        const std::string description = "Not Found";
-        const std::string result = Utility::formatRequest(Poco::URI(uri), code, description);
-        CPPUNIT_ASSERT(result.find(uri) != std::string::npos);
-        CPPUNIT_ASSERT(result.find(code) != std::string::npos);
-        CPPUNIT_ASSERT(result.find(description) != std::string::npos);
-    }
+    // Check with a directory
+    entry = std::filesystem::recursive_directory_iterator(tempDir.path);
+    CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
+    CPPUNIT_ASSERT(isManaged);
+    CPPUNIT_ASSERT(!isLink);
+    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+}
+
+void TestUtility::testFormatStdError() {
+    const std::error_code ec;
+    std::wstring result = _testObj->formatStdError(ec);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15);
+
+    const SyncPath path = "A/AA";
+    result = _testObj->formatStdError(path, ec);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
+}
+
+void TestUtility::testFormatIoError(void) {
+    const IoError ioError = IoErrorSuccess;
+    const SyncPath path = "A/AA";
+    const std::wstring result = _testObj->formatIoError(path, ioError);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''", result.find(L"err='Success'") != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
+}
+
+void TestUtility::testFormatSyncPath(void) {
+    const SyncPath path = "A/AA";
+    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(path) != std::wstring::npos);
+}
+
+void TestUtility::testFormatRequest(void) {
+    const std::string uri("http://www.example.com");
+    const std::string code = "404";
+    const std::string description = "Not Found";
+    const std::string result = _testObj->formatRequest(Poco::URI(uri), code, description);
+    CPPUNIT_ASSERT(result.find(uri) != std::string::npos);
+    CPPUNIT_ASSERT(result.find(code) != std::string::npos);
+    CPPUNIT_ASSERT(result.find(description) != std::string::npos);
+}
 
 
-    void TestUtility::testNormalizedSyncPath() {
-        CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
-        CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
+void TestUtility::testNormalizedSyncPath() {
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
 #ifdef _WIN32
-        CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)") == SyncPath("a/b/c"));
-        CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)") == SyncPath("/a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)") == SyncPath("a/b/c"));
+    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)") == SyncPath("/a/b/c"));
 #endif
-    }
+}
 
 }  // namespace KDC
