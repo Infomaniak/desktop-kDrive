@@ -53,6 +53,8 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testComputeMd5Hash);
         CPPUNIT_TEST(testXxHash);
         CPPUNIT_TEST(testToUpper);
+        CPPUNIT_TEST(testErrId);
+        CPPUNIT_TEST(testLongPath);
         CPPUNIT_TEST(isSubDir);
         CPPUNIT_TEST(testNormalizedSyncPath);
         CPPUNIT_TEST_SUITE_END();
@@ -92,7 +94,9 @@ class TestUtility : public CppUnit::TestFixture {
         void testComputeMd5Hash(void);
         void testXxHash(void);
         void testToUpper(void);
+        void testErrId(void);
         void isSubDir(void);
+        void testLongPath(void);
         void testNormalizedSyncPath(void);
 
     private:

@@ -286,9 +286,24 @@ void TestUtility::testToUpper(void) {
     CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("AbC"));
     CPPUNIT_ASSERT_EQUAL(std::string(""), Utility::toUpper(""));
     CPPUNIT_ASSERT_EQUAL(std::string("123"), Utility::toUpper("123"));
+    CPPUNIT_ASSERT_EQUAL(std::string("EA"), Utility::toUpper("éà"));
+
     CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
                          Utility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
 }
+
+void TestUtility::testErrId(void) {
+    // The macro ERRID expands to Utility::errId(__FILE__, __LINE__) (see types.h)
+    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), ERRID);
+    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), Utility::errId(__FILE__, __LINE__));
+    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), Utility::errId("abc/defgh", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), Utility::errId("abc\\defgh", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), Utility::errId("abc/d", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), Utility::errId("abc/d.r", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("DE:10"), Utility::errId("abc/de.r", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), Utility::errId("abc/def.r", 10));
+}
+
 
 void TestUtility::isSubDir() {
     SyncPath path1 = "A/AA/AAA";
@@ -303,51 +318,76 @@ void TestUtility::isSubDir() {
     CPPUNIT_ASSERT(!CommonUtility::isSubDir(path2, path1));
 }
 
-void TestUtility::testFormatStdError() {
-    const std::error_code ec;
-    std::wstring result = Utility::formatStdError(ec);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15);
+void TestUtility::testLongPath(void) {
+    SyncPath result;
+    bool longPathNotfound = false;
+    // Non existing path
+    CPPUNIT_ASSERT(!Utility::longPath("A/AA/AAA", result, longPathNotfound));
 
-    const SyncPath path = "A/AA";
-    result = Utility::formatStdError(path, ec);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
+    // Existing path with short name
+    {
+        TemporaryDirectory tempDir;
+        SyncPath path = tempDir.path / "test.txt";
+        std::ofstream file(path);
+        file << "test";
+        file.close();
+
+        CPPUNIT_ASSERT(Utility::longPath(path, result, longPathNotfound));
+        CPPUNIT_ASSERT(result == path);
+        CPPUNIT_ASSERT(longPathNotfound);
+    }
+
+    //TO DO, see with Christophe.L What is the expected behavior of this function.
 }
 
-void TestUtility::testFormatIoError(void) {
-    const IoError ioError = IoErrorSuccess;
-    const SyncPath path = "A/AA";
-    const std::wstring result = Utility::formatIoError(path, ioError);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''", result.find(L"err='Success'") != std::wstring::npos);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
-}
+    void TestUtility::testFormatStdError() {
+        const std::error_code ec;
+        std::wstring result = Utility::formatStdError(ec);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15);
 
-void TestUtility::testFormatSyncPath(void) {
-    const SyncPath path = "A/AA";
-    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(path) != std::wstring::npos);
-}
+        const SyncPath path = "A/AA";
+        result = Utility::formatStdError(path, ec);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
+                               (result.length() - path.native().length()) > 20);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
+    }
 
-void TestUtility::testFormatRequest(void) {
-    const std::string uri("http://www.example.com");
-    const std::string code = "404";
-    const std::string description = "Not Found";
-    const std::string result = Utility::formatRequest(Poco::URI(uri), code, description);
-    CPPUNIT_ASSERT(result.find(uri) != std::string::npos);
-    CPPUNIT_ASSERT(result.find(code) != std::string::npos);
-    CPPUNIT_ASSERT(result.find(description) != std::string::npos);
-}
+    void TestUtility::testFormatIoError(void) {
+        const IoError ioError = IoErrorSuccess;
+        const SyncPath path = "A/AA";
+        const std::wstring result = Utility::formatIoError(path, ioError);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
+                               result.find(L"err='Success'") != std::wstring::npos);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
+                               (result.length() - path.native().length()) > 20);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
+    }
+
+    void TestUtility::testFormatSyncPath(void) {
+        const SyncPath path = "A/AA";
+        CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(path) != std::wstring::npos);
+    }
+
+    void TestUtility::testFormatRequest(void) {
+        const std::string uri("http://www.example.com");
+        const std::string code = "404";
+        const std::string description = "Not Found";
+        const std::string result = Utility::formatRequest(Poco::URI(uri), code, description);
+        CPPUNIT_ASSERT(result.find(uri) != std::string::npos);
+        CPPUNIT_ASSERT(result.find(code) != std::string::npos);
+        CPPUNIT_ASSERT(result.find(description) != std::string::npos);
+    }
 
 
-void TestUtility::testNormalizedSyncPath() {
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
+    void TestUtility::testNormalizedSyncPath() {
+        CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
+        CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
 #ifdef _WIN32
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)") == SyncPath("a/b/c"));
-    CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)") == SyncPath("/a/b/c"));
+        CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(a\b\c)") == SyncPath("a/b/c"));
+        CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)") == SyncPath("/a/b/c"));
 #endif
-}
+    }
 
 }  // namespace KDC
