@@ -233,6 +233,11 @@ void TestUtility::testFormatIoError(void) {
     CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
 }
 
+void TestUtility::testFormatSyncPath(void) {
+    SyncPath path = "A/AA";
+    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(path) != std::wstring::npos);
+}
+
 void TestUtility::testNormalizedSyncPath() {
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
