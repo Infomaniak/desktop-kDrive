@@ -56,19 +56,16 @@ void TestLog::testLargeLogRolling(void) {
         testLog += "Test info log/";
     }
     uint64_t currentSize = 0;
-    std::cout << std::endl
-              << "|......................................................................................................[100%]|"
-              << std::endl
-              << "|";
     int progressBarProgress = 0;
     while (currentSize < CommonUtility::logMaxSize) {
         currentSize += testLog.size() * sizeof(testLog[0]);
         LOG_DEBUG(_logger, testLog.c_str());
         if (currentSize > CommonUtility::logMaxSize / 100 * progressBarProgress) {
-            std::cout << ".";
             progressBarProgress++;
+            std::cout << (progressBarProgress - 1 < 10 ? "\b\b\b" : "\b\b\b\b") << " " << progressBarProgress << "%";
         }
     }
+    std::cout << "\b\b\b\b\b     \b\b\b\b\b\b";
 
     // Check that a new log file has been created
     CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
@@ -77,13 +74,13 @@ void TestLog::testLargeLogRolling(void) {
 void TestLog::testExpiredLogFiles(void) {
     clearLogDirectory();
 
-    //Generate a fake log file
+    // Generate a fake log file
     std::ofstream fakeLogFile(_logDir / APPLICATION_NAME "_fake.log.gz");
     fakeLogFile << "Fake old log file" << std::endl;
     fakeLogFile.close();
     CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
 
-    LOG_DEBUG(_logger , "Ensure the log file is not older than 5s");
+    LOG_DEBUG(_logger, "Ensure the log file is not older than 5s");
 
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())->setExpire(5);
@@ -92,7 +89,7 @@ void TestLog::testExpiredLogFiles(void) {
     CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
     Utility::msleep(4000);  // Wait for the fake log file to expire
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())
-        ->setExpire(5);                   // Force the check of exspired files at the next log
+        ->setExpire(5);                                  // Force the check of exspired files at the next log
     LOG_DEBUG(_logger, "Log to trigger the appender.");  // Generate a log to trigger the appender
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
 }
