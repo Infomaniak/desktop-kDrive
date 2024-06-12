@@ -17,6 +17,7 @@
  */
 
 #include "testutility.h"
+#include "test_utility/temporarydirectory.h"
 #include "config.h"
 
 #include "libcommon/utility/utility.h"  // CommonUtility::isSubDir
@@ -26,7 +27,12 @@
 #include <iostream>
 #include <filesystem>
 
+#ifdef _WIN32
+#include <Windows.h>
+#include <ShObjIdl_core.h>
 
+#endif
+#include <ShlObj_core.h>
 
 using namespace CppUnit;
 
@@ -158,6 +164,43 @@ void TestUtility::testEndsWithInsensitive() {
     CPPUNIT_ASSERT(_testObj->endsWithInsensitive(SyncName(Str("abcdefg")), SyncName(Str("dEfG"))));
 }
 
+void TestUtility::testIsEqualInsensitive(void) {
+    const std::string strA = "abcdefg";
+    const std::string strB = "aBcDeFg";
+    CPPUNIT_ASSERT(_testObj->isEqualInsensitive(strA, strB));
+    CPPUNIT_ASSERT(_testObj->isEqualInsensitive(strA, strA));
+    CPPUNIT_ASSERT(_testObj->isEqualInsensitive(strB, strB));
+    CPPUNIT_ASSERT(_testObj->isEqualInsensitive(strB, strA));
+    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive(strA, "abcdef"));
+    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive("abcdef", strA));
+
+    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive(strA, "abcdefh"));
+    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive("abcdefh", strA));
+
+    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive(strA, "abcdefgh"));
+    CPPUNIT_ASSERT(!_testObj->isEqualInsensitive("abcdefgh", strA));
+}
+
+void TestUtility::testMoveItemToTrash(void) {
+    TemporaryDirectory tempDir;
+    SyncPath path = tempDir.path / "test.txt";
+    std::ofstream file(path);
+    file << "test";
+    file.close();
+
+    CPPUNIT_ASSERT(_testObj->moveItemToTrash(path));
+    CPPUNIT_ASSERT(!std::filesystem::exists(path));
+
+    // Test with a non existing file
+    CPPUNIT_ASSERT(!_testObj->moveItemToTrash(tempDir.path / "test2.txt"));
+
+    // Test with a directory
+    SyncPath dirPath = tempDir.path / "testDir";
+    std::filesystem::create_directory(dirPath);
+    CPPUNIT_ASSERT(_testObj->moveItemToTrash(dirPath));
+    CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
+}
+
 void TestUtility::testStr2HexStr() {
     std::string hexStr;
     _testObj->str2hexstr("0123[]{}", hexStr);
@@ -249,6 +292,7 @@ void TestUtility::testFormatRequest(void) {
     CPPUNIT_ASSERT(result.find(description) != std::string::npos);
 }
 
+
 void TestUtility::testNormalizedSyncPath() {
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));
@@ -257,4 +301,5 @@ void TestUtility::testNormalizedSyncPath() {
     CPPUNIT_ASSERT(Utility::normalizedSyncPath(R"(\a\b\c)") == SyncPath("/a/b/c"));
 #endif
 }
+
 }  // namespace KDC

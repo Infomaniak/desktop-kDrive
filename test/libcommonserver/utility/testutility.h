@@ -43,6 +43,8 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testStartsWithInsensitive);
         CPPUNIT_TEST(testEndsWith);
         CPPUNIT_TEST(testEndsWithInsensitive);
+        CPPUNIT_TEST(testIsEqualInsensitive);
+        CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testStr2HexStr);
         CPPUNIT_TEST(testStrHex2Str);
         CPPUNIT_TEST(testSplitStr);
@@ -75,6 +77,8 @@ class TestUtility : public CppUnit::TestFixture {
         void testStartsWithInsensitive(void);
         void testEndsWith(void);
         void testEndsWithInsensitive(void);
+        void testIsEqualInsensitive(void);
+        void testMoveItemToTrash(void);
         void testGetAppSupportDir(void);
         void testStr2HexStr(void);
         void testStrHex2Str(void);
