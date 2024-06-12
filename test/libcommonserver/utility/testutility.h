@@ -34,6 +34,8 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testTrim);
         CPPUNIT_TEST(testMsSleep);
         CPPUNIT_TEST(testV2ws);
+        CPPUNIT_TEST(testFormatStdError);
+        CPPUNIT_TEST(testFormatIoError);
         CPPUNIT_TEST(testFileSystemName);
         CPPUNIT_TEST(testStartsWith);
         CPPUNIT_TEST(testStartsWithInsensitive);
@@ -45,7 +47,6 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testJoinStr);
         CPPUNIT_TEST(testXxHash);
         CPPUNIT_TEST(isSubDir);
-        CPPUNIT_TEST(testFormatStdError);
         CPPUNIT_TEST(testNormalizedSyncPath);
         CPPUNIT_TEST_SUITE_END();
 
