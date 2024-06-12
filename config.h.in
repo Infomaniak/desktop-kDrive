@@ -27,6 +27,7 @@
 #cmakedefine GLOBAL_API_V2_URL "@GLOBAL_API_V2_URL@"
 #cmakedefine KDRIVE_API_V2_URL "@KDRIVE_API_V2_URL@"
 #cmakedefine NOTIFY_KDRIVE_V2_URL "@NOTIFY_KDRIVE_V2_URL@"
+#cmakedefine INFOMANIAK_API_URL "@INFOMANIAK_API_URL@"
 #cmakedefine TEST_DIR "@TEST_DIR@"
 #cmakedefine LOGIN_URL "@LOGIN_URL@"
 #cmakedefine CLIENT_ID "@CLIENT_ID@"

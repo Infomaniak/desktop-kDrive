@@ -32,6 +32,7 @@
 
 #define API_PREFIX_DRIVE "/drive"
 #define API_PREFIX_PROFILE "/profile"
+#define API_PREFIX_APP_INFO "/app-information"
 
 #define ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG "Failed to create AbstractTokenNetworkJob instance!"
 #define ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN "Invalid Token"
@@ -45,7 +46,7 @@ std::unordered_map<int, std::pair<std::shared_ptr<Login>, int>> AbstractTokenNet
 std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToApiKeyMap;
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId,
-                                                 bool returnJson)
+                                                 bool returnJson /*= true*/)
     : _apiType(apiType), _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
     if (!ParmsDb::instance()) {
         LOG_WARN(_logger, "ParmsDb must be initialized!");
@@ -63,8 +64,8 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
     addRawHeader("Authorization", "Bearer " + _token);
 }
 
-AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, bool returnJson)
-    : AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, returnJson) {}
+AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, bool returnJson /*= true*/)
+    : AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, false) {}
 
 bool AbstractTokenNetworkJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) {
     if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
@@ -125,6 +126,9 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
             break;
         case ApiProfile:
             str += API_PREFIX_PROFILE;
+            break;
+        case ApiInfomaniak:
+            str += API_PREFIX_APP_INFO;
             break;
     }
 
@@ -299,6 +303,8 @@ std::string AbstractTokenNetworkJob::getUrl() {
         case ApiProfile:
             apiUrl = GLOBAL_API_V2_URL;
             break;
+        case ApiInfomaniak:
+            apiUrl = INFOMANIAK_API_URL;
     }
     return apiUrl + getSpecificUrl();
 }
@@ -453,7 +459,8 @@ std::string AbstractTokenNetworkJob::loadToken() {
             break;
         }
         case ApiProfile:
-        case ApiDriveByUser: {
+        case ApiDriveByUser:
+        case ApiInfomaniak: {
             auto it = _userToApiKeyMap.find(_userDbId);
             if (it != _userToApiKeyMap.end()) {
                 // userDbId found in User cache

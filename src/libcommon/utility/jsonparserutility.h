@@ -33,7 +33,7 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
             if (!obj) {
                 LOG_WARN(Log::instance()->getLogger(), "JSON object is NULL");
                 return false;
-            }
+            }  // namespace KDC
 
             if (obj->has(key) && obj->isNull(key)) {
                 // Item exist in JSON but is null, this is ok
@@ -57,6 +57,34 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
             }
 
             return true;
+        }
+
+        static Poco::JSON::Object::Ptr extractJsonObject(const Poco::JSON::Object::Ptr parentObj, const std::string &key) {
+            if (!parentObj) {
+                LOG_WARN(Log::instance()->getLogger(), "Parent object is NULL.");
+                return nullptr;
+            }
+
+            Poco::JSON::Object::Ptr obj = parentObj->getObject(key);
+            if (!obj) {
+                LOG_WARN(Log::instance()->getLogger(), "Missing JSON object: " << key.c_str());
+            }
+
+            return obj;
+        }
+
+        static Poco::JSON::Array::Ptr extractArrayObject(const Poco::JSON::Object::Ptr parentObj, const std::string &key) {
+            if (!parentObj) {
+                LOG_WARN(Log::instance()->getLogger(), "Parent object is NULL.");
+                return nullptr;
+            }
+
+            Poco::JSON::Array::Ptr array = parentObj->getArray(key);
+            if (!array) {
+                LOG_WARN(Log::instance()->getLogger(), "Missing JSON array: " << key.c_str());
+            }
+
+            return array;
         }
 };
 
