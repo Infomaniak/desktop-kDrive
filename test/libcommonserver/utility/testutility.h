@@ -55,7 +55,7 @@ class TestUtility : public CppUnit::TestFixture {
 
     protected:
         void testFreeDiskSpace(void);
-        void testIsCreationDateValid(void) const;
+        void testIsCreationDateValid(void);
         void testS2ws(void);
         void testWs2s(void);
         void testLtrim(void);
@@ -63,6 +63,9 @@ class TestUtility : public CppUnit::TestFixture {
         void testTrim(void);
         void testMsSleep(void);
         void testV2ws(void);
+        void testFormatStdError(void);
+        void testFormatIoError(void);
+        void testFormatSyncPath(void);
         void testFileSystemName(void);
         void testStartsWith(void);
         void testStartsWithInsensitive(void);
@@ -75,7 +78,6 @@ class TestUtility : public CppUnit::TestFixture {
         void testJoinStr(void);
         void testXxHash(void);
         void isSubDir(void);
-        void testFormatStdError(void);
         void testNormalizedSyncPath(void);
 
     private:

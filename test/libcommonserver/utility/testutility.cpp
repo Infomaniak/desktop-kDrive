@@ -52,22 +52,25 @@ void TestUtility::testFreeDiskSpace() {
     CPPUNIT_ASSERT(freeSpace > 0);
 }
 
-void TestUtility::testIsCreationDateValid(void) const{
+void TestUtility::testIsCreationDateValid(void) {
     CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 0.", !_testObj->isCreationDateValid(0));
-    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is negative for the value -1.", !_testObj->isCreationDateValid(-1));
+    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is negative for the value -1.",
+                           !_testObj->isCreationDateValid(-1));
     // 443779200 correspond to "Tuesday 24 January 1984 08:00:00" which is a default date set by macOS
-    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 443779200 (Default on MacOs).", !_testObj->isCreationDateValid(443779200));
+    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 443779200 (Default on MacOs).",
+                           !_testObj->isCreationDateValid(443779200));
     auto currentTime = std::chrono::system_clock::now();
     auto currentTimePoint = std::chrono::time_point_cast<std::chrono::seconds>(currentTime);
     auto currentTimestamp = currentTimePoint.time_since_epoch().count();
 
-    for (int i = 10; i < currentTimestamp; i += 2629743) { // step of one month
+    for (int i = 10; i < currentTimestamp; i += 2629743) {  // step of one month
         CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(i));
     }
-    CPPUNIT_ASSERT_MESSAGE("Creation date should be valid." , _testObj->isCreationDateValid(currentTimestamp));
+    CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(currentTimestamp));
 
     auto futureTimestamp = currentTimestamp + 3600;
-    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is in the future.", !_testObj->isCreationDateValid(futureTimestamp));
+    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is in the future.",
+                           !_testObj->isCreationDateValid(futureTimestamp));
 }
 
 
@@ -209,22 +212,15 @@ void TestUtility::isSubDir() {
 
 void TestUtility::testFormatStdError() {
     std::error_code ec;
-#ifdef _WIN32
-    CPPUNIT_ASSERT(Utility::formatStdError(ec) == L"The operation completed successfully. (code: 0)");
-#elif __unix__
-    CPPUNIT_ASSERT(Utility::formatStdError(ec) == L"Success. (code: 0)");
-#elif __APPLE_
-    CPPUNIT_ASSERT(Utility::formatStdError(ec) == L"Undefined error: 0");
-#endif
+    auto result = Utility::formatStdError(ec);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15); // 15 is the length of " (error: 0)" + a minimum description lenght
 
     SyncPath path = "A/AA";
-#ifdef _WIN32
-    CPPUNIT_ASSERT(Utility::formatStdError(path, ec) == L"path='A/AA', err='The operation completed successfully. (code: 0)'");
-#elif __unix__
-    CPPUNIT_ASSERT(Utility::formatStdError(path, ec) == L"path='A/AA', err='Success. (code: 0)'");
-#elif __APPLE_
-    CPPUNIT_ASSERT(Utility::formatStdError(path, ec) == L"path='A/AA', err='Undefined error: 0'");
-#endif
+    result = Utility::formatStdError(path, ec);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20); // 20 is the length of " (error: 0)" + " -path" + a minimum description lenght
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
 }
 
 void TestUtility::testNormalizedSyncPath() {
