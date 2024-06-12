@@ -19,7 +19,6 @@
 #pragma once
 
 #include "abstracttokennetworkjob.h"
-#include "jobs/network/networkjobsparams.h"
 
 namespace KDC {
 
