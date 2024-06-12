@@ -46,8 +46,6 @@ class URI;
 namespace KDC {
 
 struct COMMONSERVER_EXPORT Utility {
-
-
         inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
 
         static bool init();
@@ -76,7 +74,8 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
         static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
-        static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+        static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
+                                          std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
 #ifdef _WIN32
         static bool isNtfs(const SyncPath &dirPath);
@@ -105,11 +104,17 @@ struct COMMONSERVER_EXPORT Utility {
         static std::vector<std::string> splitStr(const std::string &str, char sep);
         static std::string joinStr(const std::vector<std::string> &strList, char sep = 0);
         static std::string opType2Str(OperationType opType);
+        static std::wstring opType2WStr(OperationType opType);
         static std::string conflictType2Str(ConflictType conflictType);
+        static std::wstring conflictType2WStr(ConflictType conflictType);
         static std::string side2Str(ReplicaSide side);
+        static std::wstring side2WStr(ReplicaSide side);
         static std::string nodeType2Str(NodeType type);
+        static std::wstring nodeType2WStr(NodeType type);
         static std::string logLevel2Str(LogLevel level);
+        static std::wstring logLevel2WStr(LogLevel level);
         static std::string syncFileStatus2Str(SyncFileStatus status);
+        static std::wstring syncFileStatus2WStr(SyncFileStatus status);
         static std::string list2str(std::unordered_set<std::string> inList);
         static std::string list2str(std::list<std::string> inList);
 

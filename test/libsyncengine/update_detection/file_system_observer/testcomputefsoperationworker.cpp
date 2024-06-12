@@ -192,8 +192,7 @@ void TestComputeFSOperationWorker::testComputeOps() {
     _syncPal->_localSnapshot->removeItem("lbb");
 
     // Create operation on a too big directory
-    _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("raf", "ra", Str("AF_too_big"), tLoc, tLoc, NodeTypeDirectory, 0));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("raf", "ra", Str("AF_too_big"), tLoc, tLoc, NodeTypeDirectory, 0));
     _syncPal->_remoteSnapshot->updateItem(
         SnapshotItem("rafa", "raf", Str("AFA"), tLoc, tLoc, NodeTypeFile, 550 * 1024 * 1024));  // File size: 550MB
 

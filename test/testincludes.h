@@ -30,7 +30,7 @@
 #include <cppunit/CompilerOutputter.h>
 
 #ifdef _WIN32
-#define _WINSOCKAPI_   /* Prevent inclusion of winsock.h in windows.h */
+#define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */
 #endif
 
 #include "config.h"
