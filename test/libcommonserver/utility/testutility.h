@@ -79,6 +79,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testEndsWithInsensitive(void);
         void testIsEqualInsensitive(void);
         void testMoveItemToTrash(void);
+        void testGetLinuxDesktopType(void);
         void testGetAppSupportDir(void);
         void testStr2HexStr(void);
         void testStrHex2Str(void);

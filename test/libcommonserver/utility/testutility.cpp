@@ -201,6 +201,18 @@ void TestUtility::testMoveItemToTrash(void) {
     CPPUNIT_ASSERT(!std::filesystem::exists(dirPath));
 }
 
+void TestUtility::testGetLinuxDesktopType(void) {
+    std::string currentDesktop;
+
+#ifdef __unix__
+    CPPUNIT_ASSERT(_testObj->getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(!currentDesktop.empty());
+    return;
+#endif
+
+    CPPUNIT_ASSERT_MESSAGE("This test is only for Linux", !_testObj->getLinuxDesktopType(currentDesktop));
+}
+
 void TestUtility::testStr2HexStr() {
     std::string hexStr;
     _testObj->str2hexstr("0123[]{}", hexStr);
