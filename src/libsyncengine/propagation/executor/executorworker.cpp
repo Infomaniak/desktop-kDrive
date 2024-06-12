@@ -107,7 +107,7 @@ void ExecutorWorker::execute() {
             }
 
             if (JobManager::instance()->countManagedJobs() > JobManager::instance()->maxNbThreads() * 2) {
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOG_SYNCPAL_DEBUG(_logger, "Maximum number of jobs reached");
                 }
                 Utility::msleep(LOOP_PAUSE_SLEEP_PERIOD);
@@ -613,7 +613,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                     // Normal in lite sync mode
                     // or in case where a remote item and a local item have same name with different cases
                     // (ex: 'test.txt' on local replica needs to be uploaded, 'Text.txt' on remote replica needs to be downloaded)
-                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                    if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"File: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                               << L" already exists on local replica");
                     }
@@ -1388,10 +1388,8 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
     } else {
         try {
             job = std::make_shared<DeleteJob>(
-                _syncPal->_driveDbId
-                , syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string()
-                , syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string()
-                , absoluteLocalFilePath);
+                _syncPal->_driveDbId, syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
+                syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(), absoluteLocalFilePath);
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DeleteJob::DeleteJob for driveDbId=" << _syncPal->_driveDbId << L" : "
                                                                                        << Utility::s2ws(e.what()).c_str());
@@ -1644,7 +1642,8 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
     return !hasError;
 }
 
-bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue, bool downloadImpossible) {
+bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue,
+                                            bool downloadImpossible) {
     _executorExitCode = ExitCodeOk;
 
     if (jobExitCause == ExitCauseNotFound && !downloadImpossible) {
@@ -2058,7 +2057,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
                   ,
                   syncOp->omit() ? SyncFileStatusSuccess : SyncFileStatusUnknown);
 
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger,
                            L"Inserting in DB: "
                                << L" localName=" << SyncName2WStr(localName).c_str() << L" / remoteName="
@@ -2211,7 +2210,7 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
         dbNode.setStatus(SyncFileStatusSuccess);
     }
 
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(
             _logger,
             L"Updating DB: " << L" / localName=" << SyncName2WStr(localName).c_str() << L" / remoteName="
@@ -2317,7 +2316,7 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
         dbNode.setStatus(SyncFileStatusSuccess);
     }
 
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(
             _logger,
             L"Updating DB: " << L" localName=" << SyncName2WStr(localName).c_str() << L" / remoteName="
@@ -2400,7 +2399,7 @@ bool ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
         return false;
     }
 
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger, L"Item \"" << SyncName2WStr(node->name()).c_str() << L"\" removed from DB");
     }
 

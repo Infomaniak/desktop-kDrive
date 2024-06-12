@@ -24,7 +24,6 @@
 
 #include "qtsingleapplication.h"
 #include "libcommonserver/commserver.h"
-#include "login/login.h"
 #include "syncpal/syncpal.h"
 #include "libcommonserver/vfs.h"
 #include "navigationpanehelper.h"
@@ -185,7 +184,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
         void sendErrorsCleared(int syncDbId);
-        
+
         // See types.h -> AppStateKey for the possible values of status
         void cancelLogUpload();
         void uploadLog(bool includeArchivedLogs);
@@ -234,6 +233,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void showSettings();
         void showSynthesis();
+
+        void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
     private slots:
         void onLoadInfo();

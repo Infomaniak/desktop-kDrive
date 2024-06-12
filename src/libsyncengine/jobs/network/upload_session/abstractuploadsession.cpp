@@ -277,7 +277,7 @@ bool AbstractUploadSession::sendChunks() {
 
     for (uint64_t chunkNb = 1; chunkNb <= _totalChunks; chunkNb++) {
         if (isAborted() || _jobExecutionError) {
-            LOG_DEBUG(_logger, "Request " << jobId() << ": aborting upload job");
+            LOG_DEBUG(_logger, "Request " << jobId() << ": aborted");
             break;
         }
 

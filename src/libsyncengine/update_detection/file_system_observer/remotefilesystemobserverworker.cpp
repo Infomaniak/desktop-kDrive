@@ -361,8 +361,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (!insertInfo.second) {
             // Item with exact same name already exist in parent folder
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                              L"Item \"" << SyncName2WStr(item.name()).c_str() << L"\" already exist in directory \""
-                                         << SyncName2WStr(_snapshot->name(item.parentId())).c_str() << L"\"");
+                               L"Item \"" << SyncName2WStr(item.name()).c_str() << L"\" already exist in directory \""
+                                          << SyncName2WStr(_snapshot->name(item.parentId())).c_str() << L"\"");
 
             SyncPath path;
             _snapshot->path(item.parentId(), path);
@@ -376,7 +376,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         }
 
         if (_snapshot->updateItem(item)) {
-            if (ParametersCache::instance()->parameters().extendedLog()) {
+            if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
                                                 << SyncName2WStr(item.name()).c_str() << L", inode:"
                                                 << Utility::s2ws(item.id()).c_str() << L", parent inode:"
@@ -394,8 +394,9 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     while (nodeIdIt != nodeIds.end()) {
         if (_snapshot->isOrphan(*nodeIdIt)) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_snapshot->name(*nodeIdIt)).c_str() << L"' ("
-                                                << Utility::s2ws(*nodeIdIt).c_str() << L") is orphan. Removing it from "
-                                                << Utility::s2ws(Utility::side2Str(_snapshot->side())).c_str() << L" snapshot.");
+                                                  << Utility::s2ws(*nodeIdIt).c_str() << L") is orphan. Removing it from "
+                                                  << Utility::s2ws(Utility::side2Str(_snapshot->side())).c_str()
+                                                  << L" snapshot.");
             _snapshot->removeItem(*nodeIdIt);
         }
         nodeIdIt++;
@@ -420,8 +421,8 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
         JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_HIGHEST);
         while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
-                notifyJob->abort();
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
+                notifyJob->abort();
                 return ExitCodeOk;
             }
 
@@ -690,7 +691,8 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
     return ExitCodeOk;
 }
 
-ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem) {
+ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights,
+                                                                  SnapshotItem &snapshotItem) {
     GetFileInfoJob job(_syncPal->driveDbId(), nodeId);
     job.runSynchronously();
     if (job.hasHttpError() || job.exitCode() != ExitCodeOk) {

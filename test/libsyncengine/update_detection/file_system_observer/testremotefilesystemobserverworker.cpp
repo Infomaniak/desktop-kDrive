@@ -114,7 +114,8 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
     // Delete file
     if (!_testFileId.empty()) {
-        DeleteJob job(_driveDbId, _testFileId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
+        DeleteJob job(_driveDbId, _testFileId, "",
+                      "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
         job.runSynchronously();
     }
 
@@ -174,7 +175,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         std::string testCallStr = R"(echo "This is an edit test" >> )" + localFilepath.make_preferred().string();
         std::system(testCallStr.c_str());
 
-        SyncTime prevModTime = _syncPal->_remoteFSObserverWorker->_snapshot->lastModifed(_testFileId);
+        SyncTime prevModTime = _syncPal->_remoteFSObserverWorker->_snapshot->lastModified(_testFileId);
 
         Utility::msleep(1000);
 
@@ -184,7 +185,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->lastModifed(_testFileId) > prevModTime);
+        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->lastModified(_testFileId) > prevModTime);
     }
 
     {
@@ -214,7 +215,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOGW_DEBUG(_logger, L"***** test delete file *****");
 
-        DeleteJob job(_driveDbId, _testFileId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
+        DeleteJob job(_driveDbId, _testFileId, "",
+                      "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
         job.runSynchronously();
 
         // Get activity from the server

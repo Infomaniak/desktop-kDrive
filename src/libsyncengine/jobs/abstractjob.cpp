@@ -38,7 +38,7 @@ AbstractJob::AbstractJob()
     const std::lock_guard<std::mutex> lock(_nextJobIdMutex);
     _jobId = _nextJobId++;
 
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         _isExtendedLog = true;
         LOG_DEBUG(_logger, "Job " << _jobId << " created");
     }
@@ -47,7 +47,7 @@ AbstractJob::AbstractJob()
 AbstractJob::~AbstractJob() {
     _mainCallback = nullptr;
     _additionalCallback = nullptr;
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(_logger, "Job " << _jobId << " deleted");
     }
 }
@@ -83,7 +83,7 @@ bool AbstractJob::progressChanged() {
 }
 
 void AbstractJob::abort() {
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(_logger, "Aborting job " << jobId());
     }
     _abort = true;

@@ -29,4 +29,14 @@
 #include <cppunit/BriefTestProgressListener.h>
 #include <cppunit/CompilerOutputter.h>
 
+#ifdef _WIN32
+#define _WINSOCKAPI_ /* Prevent inclusion of winsock.h in windows.h */
+#endif
+
+#include "config.h"
+#include "utility/types.h"
+#include "libcommonserver/utility/utility.h"
+
+static const KDC::SyncPath localTestDirPath(KDC::Utility::s2ws(TEST_DIR) + L"/test_ci");
+
 int runTestSuite(const std::string &logFileName);

@@ -37,6 +37,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
 
         AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId, bool returnJson = true);
         AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
+        ~AbstractTokenNetworkJob() override = default;
 
         bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr);
         ExitCause getExitCause();

@@ -34,11 +34,6 @@ struct RightsSet {
 };
 
 void TestIo::testCheckSetAndGetRights() {
-#ifdef _WIN32
-    Utility::init();  // Initialize the utility library, needed to access/change the permissions on Windows
-    CPPUNIT_ASSERT(Utility::_psid != nullptr);  // Check that the Win32 API is correctly initialized
-#endif
-
     // Test if the rights are correctly set and get on a directory
     {
         const TemporaryDirectory temporaryDirectory("io_rights");
