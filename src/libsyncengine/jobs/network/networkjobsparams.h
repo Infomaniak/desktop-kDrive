@@ -67,6 +67,16 @@ static const std::string cursorKey = "cursor";
 static const std::string hasMoreKey = "has_more";
 static const std::string tokenKey = "token";
 static const std::string preferenceKey = "preference";
+static const std::string applicationKey = "application";
+static const std::string publishedVersionsKey = "published_versions";
+static const std::string versionTypeProdKey = "production";
+static const std::string versionTypeNextKey = "production-next";
+static const std::string versionTypeBetaKey = "beta";
+static const std::string versionTypeInternalKey = "internal";
+static const std::string tagKey = "tag";
+static const std::string changeLogKey = "version_changelog";
+static const std::string buildVersionKey = "build_version";
+static const std::string downloadUrlKey = "download_link";
 
 static const std::string changesKey = "changes";
 static const std::string actionsKey = "actions";
@@ -188,7 +198,9 @@ enum class NetworkErrorReason {
 };
 
 ActionCode getActionCode(const std::string &action) noexcept;
+
 NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept;
+
 NetworkErrorReason getNetworkErrorReason(const std::string &errorCode) noexcept;
 
 

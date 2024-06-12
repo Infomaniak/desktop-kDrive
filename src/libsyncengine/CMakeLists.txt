@@ -129,47 +129,47 @@ set(syncengine_SRCS
 if (WIN32)
     list(APPEND syncengine_SRCS update_detection/file_system_observer/localfilesystemobserverworker_win.h update_detection/file_system_observer/localfilesystemobserverworker_win.cpp)
     list(APPEND syncengine_SRCS update_detection/file_system_observer/folderwatcher_win.h update_detection/file_system_observer/folderwatcher_win.cpp)
-elseif(UNIX)
+elseif (UNIX)
     list(APPEND syncengine_SRCS update_detection/file_system_observer/localfilesystemobserverworker_unix.h update_detection/file_system_observer/localfilesystemobserverworker_unix.cpp)
-    if(APPLE)
+    if (APPLE)
         list(APPEND syncengine_SRCS update_detection/file_system_observer/folderwatcher_mac.h update_detection/file_system_observer/folderwatcher_mac.cpp)
-    else()
+    else ()
         list(APPEND syncengine_SRCS update_detection/file_system_observer/folderwatcher_linux.h update_detection/file_system_observer/folderwatcher_linux.cpp)
-    endif()
-endif()
+    endif ()
+endif ()
 
 # Target
 add_library(${libsyncengine_NAME} STATIC ${syncengine_SRCS})
 
 set_target_properties(${libsyncengine_NAME} PROPERTIES
-    VERSION ${KDRIVE_VERSION}
-    SOVERSION ${KDRIVE_SOVERSION}
-    RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
+        VERSION ${KDRIVE_VERSION}
+        SOVERSION ${KDRIVE_SOVERSION}
+        RUNTIME_OUTPUT_DIRECTORY ${BIN_OUTPUT_DIRECTORY}
 )
 
 GENERATE_EXPORT_HEADER(${libsyncengine_NAME}
-    BASE_NAME ${libsyncengine_NAME}
-    EXPORT_MACRO_NAME SYNCENGINE_EXPORT
-    EXPORT_FILE_NAME syncenginelib.h
+        BASE_NAME ${libsyncengine_NAME}
+        EXPORT_MACRO_NAME SYNCENGINE_EXPORT
+        EXPORT_FILE_NAME syncenginelib.h
 )
 
 # Includes
 if (WIN32)
     target_include_directories(${libsyncengine_NAME} PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include")
-else()
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_BINARY_DIR}
+            "C:/Program Files (x86)/log4cplus/include")
+else ()
     target_include_directories(${libsyncengine_NAME} PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_BINARY_DIR}
-        "/usr/local/include")
-endif()
+            ${CMAKE_CURRENT_SOURCE_DIR}
+            ${CMAKE_CURRENT_BINARY_DIR}
+            "/usr/local/include")
+endif ()
 
 # Link
 target_link_libraries(${libsyncengine_NAME}
-    ${libparms_NAME}
-    Poco::Foundation Poco::Net Poco::NetSSL Poco::JSON Poco::Util
-    OpenSSL::SSL OpenSSL::Crypto)
+        ${libparms_NAME}
+        Poco::Foundation Poco::Net Poco::NetSSL Poco::JSON Poco::Util
+        OpenSSL::SSL OpenSSL::Crypto)
 
 

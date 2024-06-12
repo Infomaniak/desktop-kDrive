@@ -1,0 +1,85 @@
+/*
+ *
+ *  * Infomaniak kDrive - Desktop
+ *  * Copyright (C) 2023-2024 Infomaniak Network SA
+ *  *
+ *  * This program is free software: you can redistribute it and/or modify
+ *  * it under the terms of the GNU General Public License as published by
+ *  * the Free Software Foundation, either version 3 of the License, or
+ *  * (at your option) any later version.
+ *  *
+ *  * This program is distributed in the hope that it will be useful,
+ *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  * GNU General Public License for more details.
+ *  *
+ *  * You should have received a copy of the GNU General Public License
+ *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+#include "getappversion.h"
+#include "utility/jsonparserutility.h"
+
+namespace KDC {
+
+GetAppVersion::GetAppVersion(const std::string &platform, const std::string &appID)
+    : AbstractTokenNetworkJob(ApiInfomaniak), _platform(platform), _appId(appID) {}
+
+std::string GetAppVersion::getSpecificUrl() {
+    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
+    str += "/kstore-update/";
+    str += _platform;
+    str += "com.infomaniak.drive/";
+    str += _appId;
+    return str;
+}
+
+bool GetAppVersion::handleResponse(std::istream &is) {
+    if (!AbstractTokenNetworkJob::handleResponse(is)) {
+        return false;
+    }
+
+    const Poco::JSON::Object::Ptr dataObj = JsonParserUtility::extractJsonObject(jsonRes(), dataKey);
+    if (!dataObj) return false;
+
+    const Poco::JSON::Object::Ptr applicationObj = JsonParserUtility::extractJsonObject(dataObj, applicationKey);
+    if (applicationObj) return false;
+
+    const Poco::JSON::Array::Ptr publishedVersions = JsonParserUtility::extractArrayObject(applicationObj, publishedVersionsKey);
+    if (publishedVersions) return false;
+
+    for (const auto &versionInfo : *publishedVersions) {
+        const auto obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
+        std::string versionType;
+        if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) {
+            return false;
+        }
+
+        // TODO : For now, we only look pour production versions. Other channel to be implemented
+        if (versionType == versionTypeProdKey) {
+            if (!JsonParserUtility::extractValue(obj, tagKey, _tag)) {
+                return false;
+            }
+            if (!JsonParserUtility::extractValue(obj, changeLogKey, _changeLog)) {
+                return false;
+            }
+            if (!JsonParserUtility::extractValue(obj, buildVersionKey, _buildVersion)) {
+                return false;
+            }
+            if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _downloadUrl)) {
+                return false;
+            }
+            break;
+        }
+    }
+
+    if (_tag.empty() || _changeLog.empty() || _buildVersion == 0 || _downloadUrl.empty()) {
+        LOG_WARN(_logger, "Missing mandatory value.");
+        return false;
+    }
+
+    return true;
+}
+
+}  // namespace KDC
