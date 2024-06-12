@@ -280,6 +280,16 @@ void TestUtility::testXxHash() {
     CPPUNIT_ASSERT(contentHash == "5dcc477e35136516");
 }
 
+void TestUtility::testToUpper(void) {
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("abc"));
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("ABC"));
+    CPPUNIT_ASSERT_EQUAL(std::string("ABC"), Utility::toUpper("AbC"));
+    CPPUNIT_ASSERT_EQUAL(std::string(""), Utility::toUpper(""));
+    CPPUNIT_ASSERT_EQUAL(std::string("123"), Utility::toUpper("123"));
+    CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
+                         Utility::toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));
+}
+
 void TestUtility::isSubDir() {
     SyncPath path1 = "A/AA/AAA";
     SyncPath path2 = "A/AA";
