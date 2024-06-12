@@ -145,12 +145,12 @@ ExitCode ExclusionTemplateCache::update(bool def, const std::vector<ExclusionTem
     return ExitCodeOk;
 }
 
-bool ExclusionTemplateCache::isExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning, bool &isExcluded,
-                                        IoError &ioError) noexcept {
+bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning,
+                                               bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
     ioError = IoErrorSuccess;
 
-    if (!isExcludedHidden(basePath, relativePath, isExcluded, ioError)) {
+    if (!checkIfIsExcludedBecauseHidden(basePath, relativePath, isExcluded, ioError)) {
         return false;
     }
 
@@ -163,8 +163,8 @@ bool ExclusionTemplateCache::isExcluded(const SyncPath &basePath, const SyncPath
     return true;
 }
 
-bool ExclusionTemplateCache::isExcludedHidden(const SyncPath &basePath, const SyncPath &relativePath, bool &isExcluded,
-                                              IoError &ioError) noexcept {
+bool ExclusionTemplateCache::checkIfIsExcludedBecauseHidden(const SyncPath &basePath, const SyncPath &relativePath,
+                                                            bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
     ioError = IoErrorSuccess;
 

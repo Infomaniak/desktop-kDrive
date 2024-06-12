@@ -35,17 +35,23 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
         static std::shared_ptr<ExclusionTemplateCache> instance();
 
         ExclusionTemplateCache(ExclusionTemplateCache const &) = delete;
+
         void operator=(ExclusionTemplateCache const &) = delete;
 
         inline const std::vector<ExclusionTemplate> &exclusionTemplates() { return _undeletedExclusionTemplates; }
+
         inline const std::vector<ExclusionTemplate> &exclusionTemplates(bool def) {
             return def ? _defExclusionTemplates : _userExclusionTemplates;
         }
+
         ExitCode update(bool def, const std::vector<ExclusionTemplate> &exclusionTemplates);
-        bool isExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning, bool &isExcluded,
-                        IoError &ioError) noexcept;
-        bool isExcludedHidden(const SyncPath &basePath, const SyncPath &relativePath, bool &isExcluded,
-                              IoError &ioError) noexcept;
+
+        bool checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning, bool &isExcluded,
+                               IoError &ioError) noexcept;
+
+        bool checkIfIsExcludedBecauseHidden(const SyncPath &basePath, const SyncPath &relativePath, bool &isExcluded,
+                                            IoError &ioError) noexcept;
+
         bool isExcludedByTemplate(const SyncPath &relativePath, bool &isWarning) noexcept;
 
     private:
@@ -58,8 +64,11 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
         std::mutex _mutex;
 
         ExclusionTemplateCache();
+
         void populateUndeletedExclusionTemplates();
+
         void updateRegexPatterns();
+
         void escapeRegexSpecialChar(std::string &in);
 };
 

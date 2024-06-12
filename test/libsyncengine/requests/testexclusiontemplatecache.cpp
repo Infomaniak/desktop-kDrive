@@ -132,7 +132,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcludedByTemplate(str, isWarning));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded("", str, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("", str, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(!isWarning);
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
@@ -144,7 +144,7 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(!ExclusionTemplateCache::instance()->isExcludedByTemplate(str, isWarning));
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcluded("", str, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded("", str, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(!isWarning);
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
@@ -157,9 +157,10 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcludedHidden(localTestDirPath, testPath, isExcluded, ioError));
         CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->isExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+            ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(localTestDirPath, testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
@@ -170,9 +171,10 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcludedHidden(localTestDirPath, testPath, isExcluded, ioError));
         CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->isExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+            ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(localTestDirPath, testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
@@ -186,9 +188,10 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcludedHidden(localTestDirPath, testPath, isExcluded, ioError));
         CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->isExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+            ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(localTestDirPath, testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
@@ -198,9 +201,10 @@ void TestExclusionTemplateCache::testIsExcluded() {
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->isExcludedHidden(localTestDirPath, testPath, isExcluded, ioError));
         CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->isExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+            ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(localTestDirPath, testPath, isExcluded, ioError));
+        CPPUNIT_ASSERT(
+            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
