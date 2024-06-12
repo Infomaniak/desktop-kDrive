@@ -216,11 +216,11 @@ std::wstring Utility::formatSyncPath(const SyncPath &path) {
 std::wstring Utility::formatStdError(const std::error_code &ec) {
 #ifdef _WIN32
     std::stringstream ss;
-    ss << ec.message() << " (code: " << ec.value() << ")";
+    ss << ec.message() << " (error: " << ec.value() << ")";
     return Utility::s2ws(ss.str());
 #elif defined(__unix__)
     std::stringstream ss;
-    ss << ec.message() << ". (code: " << ec.value() << ")";
+    ss << ec.message() << ". (error: " << ec.value() << ")";
     return Utility::s2ws(ss.str());
 #elif defined(__APPLE__)
     return Utility::s2ws(ec.message());
