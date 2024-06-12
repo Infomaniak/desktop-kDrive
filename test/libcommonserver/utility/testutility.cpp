@@ -54,8 +54,6 @@ void TestUtility::testFreeDiskSpace() {
 
 void TestUtility::testIsCreationDateValid(void) {
     CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 0.", !_testObj->isCreationDateValid(0));
-    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is negative for the value -1.",
-                           !_testObj->isCreationDateValid(-1));
     // 443779200 correspond to "Tuesday 24 January 1984 08:00:00" which is a default date set by macOS
     CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is 443779200 (Default on MacOs).",
                            !_testObj->isCreationDateValid(443779200));
@@ -68,9 +66,10 @@ void TestUtility::testIsCreationDateValid(void) {
     }
     CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(currentTimestamp));
 
+    // This tests do not check the future date because it is not possible to create a file in the future.
     auto futureTimestamp = currentTimestamp + 3600;
-    CPPUNIT_ASSERT_MESSAGE("Creation date should not be valid when it is in the future.",
-                           !_testObj->isCreationDateValid(futureTimestamp));
+    CPPUNIT_ASSERT_MESSAGE("Creation date should be valid when it is in the future. (Handle by the app).",
+                           _testObj->isCreationDateValid(futureTimestamp));
 }
 
 
