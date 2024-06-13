@@ -39,11 +39,9 @@ namespace KDC {
 
 static const SyncPath localTestDirPath(TEST_DIR "/test_ci");
 
-void TestUtility::setUp() {
-}
+void TestUtility::setUp() {}
 
-void TestUtility::tearDown() {
-}
+void TestUtility::tearDown() {}
 
 void TestUtility::testFreeDiskSpace() {
     int64_t freeSpace;
@@ -360,7 +358,8 @@ void TestUtility::testFormatStdError() {
     result = _testObj->formatStdError(path, ec);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
+                           result.find(Utility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatIoError(void) {
@@ -369,12 +368,13 @@ void TestUtility::testFormatIoError(void) {
     const std::wstring result = _testObj->formatIoError(path, ioError);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''", result.find(L"err='Success'") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.", result.find(path) != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
+                           result.find(Utility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatSyncPath(void) {
     const SyncPath path = "A/AA";
-    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(path) != std::wstring::npos);
+    CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(Utility::s2ws(path.string())) != std::wstring::npos);
 }
 
 void TestUtility::testFormatRequest(void) {

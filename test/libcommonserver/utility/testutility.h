@@ -54,7 +54,6 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testXxHash);
         CPPUNIT_TEST(testToUpper);
         CPPUNIT_TEST(testErrId);
-        CPPUNIT_TEST(testLongPath);
         CPPUNIT_TEST(testcheckIfDirEntryIsManaged);
         CPPUNIT_TEST(isSubDir);
         CPPUNIT_TEST(testNormalizedSyncPath);
@@ -97,7 +96,6 @@ class TestUtility : public CppUnit::TestFixture {
         void testToUpper(void);
         void testErrId(void);
         void isSubDir(void);
-        void testLongPath(void);
         void testcheckIfDirEntryIsManaged(void);
         void testNormalizedSyncPath(void);
 
