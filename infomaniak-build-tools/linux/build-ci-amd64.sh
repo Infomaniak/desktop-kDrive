@@ -57,6 +57,13 @@ CMAKE_PARAMS=()
 
 export KDRIVE_DEBUG=0
 
+# Activate code coverage computation
+if [ ! -f "${HOME}/BullseyeCoverageEnv.txt" ]; then
+	# Tells BullseyeCoverage where to store the coverage information generated during the build and the run of the tests
+	echo "COVFILE=${BASEPATH}/src/test.cov" >  "${HOME}/BullseyeCoverageEnv.txt"
+fi
+cov01 -1 # coverage on
+
 cmake -B$BUILDDIR -H$BASEPATH \
     -DOPENSSL_ROOT_DIR=/usr/local \
     -DOPENSSL_INCLUDE_DIR=/usr/local/include \
@@ -79,5 +86,7 @@ extract_debug ./bin kDrive
 extract_debug ./bin kDrive_client
 
 make DESTDIR=$APPDIR install
+
+cov01 -0 # coverage off
 
 cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst

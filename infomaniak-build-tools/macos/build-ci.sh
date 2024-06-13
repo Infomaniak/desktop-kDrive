@@ -79,8 +79,7 @@ if [ ! -f "${HOME}/BullseyeCoverageEnv.txt" ]; then
 	# Tells BullseyeCoverage where to store the coverage information generated during the build and the run of the tests
 	echo "COVFILE=${SRCDIR}/src/test.cov" >  "${HOME}/BullseyeCoverageEnv.txt"
 fi
-/Applications/BullseyeCoverage/bin/cov01 -1 # coverage on
-
+cov01 -1 # coverage on
 
 # Configure the build of desktop-kDrive and its unit tests
 cmake \
@@ -98,10 +97,10 @@ cmake \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
 
-/Applications/BullseyeCoverage/bin/cov01 -0 # coverage off
-
 # Build kDrive sources
 make -j6 install
+
+cov01 -0 # coverage off
 
 popd
 
