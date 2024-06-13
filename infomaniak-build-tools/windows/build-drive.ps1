@@ -389,9 +389,10 @@ foreach ($file in $dependencies)
 	}
 }
 
+Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
+
 if ($ci)
 {
-	Copy-Item -Path "$path/sync-exclude-win.lst" -Destination "$archivePath/sync-exclude.lst"
 	exit $LASTEXITCODE
 }
 
