@@ -50,25 +50,20 @@ void TestLog::testLog() {
 
 void TestLog::testLargeLogRolling(void) {
     clearLogDirectory();
-    // Generate a log larger than the max log file size.
-    std::string testLog = "Test info log/";
-    for (int i = 0; i < 1000; i++) {
-        testLog += "Test info log/";
-    }
-    uint64_t currentSize = 0;
-    int progressBarProgress = 0;
-    while (currentSize < CommonUtility::logMaxSize) {
-        currentSize += testLog.size() * sizeof(testLog[0]);
-        LOG_DEBUG(_logger, testLog.c_str());
-        if (currentSize > CommonUtility::logMaxSize / 100 * progressBarProgress) {
-            progressBarProgress++;
-            std::cout << (progressBarProgress - 1 < 10 ? "\b\b\b" : "\b\b\b\b") << " " << progressBarProgress << "%";
-        }
-    }
-    std::cout << "\b\b\b\b\b     \b\b\b\b\b\b";
+    log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
+    auto customRollingFileAppender = static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get());
 
-    // Check that a new log file has been created
-    CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
+    const int maxSize = 1024 * 1024 * 1;  // 1MB
+    const int previousMaxSize = customRollingFileAppender->getMaxFileSize();
+    customRollingFileAppender->setMaxFileSize(maxSize);
+
+    // Generate a log larger than the max log file size. (log header is 50bytes)
+    const std::string testLog = std::string(maxSize, 'a');  
+    LOG_DEBUG(_logger, testLog.c_str());
+
+    customRollingFileAppender->setMaxFileSize(previousMaxSize);
+    // Check that a new log file has been created and the old one has been archived.
+    CPPUNIT_ASSERT_EQUAL(3, countFilesInDirectory(_logDir));
 }
 
 void TestLog::testExpiredLogFiles(void) {
