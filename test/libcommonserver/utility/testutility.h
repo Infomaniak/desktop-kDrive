@@ -102,7 +102,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testNormalizedSyncPath(void);
 
     private:
-        Utility *_testObj;
+        std::unique_ptr<Utility> _testObj;
 };
 
 }  // namespace KDC

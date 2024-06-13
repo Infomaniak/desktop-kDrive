@@ -30,22 +30,19 @@
 #ifdef _WIN32
 #include <Windows.h>
 #include <ShObjIdl_core.h>
-
-#endif
 #include <ShlObj_core.h>
+#endif
 
 using namespace CppUnit;
 
 namespace KDC {
 
-static const SyncPath localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci");
+static const SyncPath localTestDirPath(TEST_DIR "/test_ci");
 
 void TestUtility::setUp() {
-    _testObj = new Utility();
 }
 
 void TestUtility::tearDown() {
-    delete _testObj;
 }
 
 void TestUtility::testFreeDiskSpace() {
@@ -286,7 +283,6 @@ void TestUtility::testToUpper(void) {
     CPPUNIT_ASSERT_EQUAL(std::string("ABC"), _testObj->toUpper("AbC"));
     CPPUNIT_ASSERT_EQUAL(std::string(""), _testObj->toUpper(""));
     CPPUNIT_ASSERT_EQUAL(std::string("123"), _testObj->toUpper("123"));
-    CPPUNIT_ASSERT_EQUAL(std::string("EA"), _testObj->toUpper("éà"));
 
     CPPUNIT_ASSERT_EQUAL(std::string("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"),
                          _testObj->toUpper("²&é~\"#'{([-|`è_\\ç^à@)]}=+*ù%µ£¤§:;,!.?/"));

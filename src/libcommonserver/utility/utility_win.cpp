@@ -47,9 +47,6 @@
 namespace KDC {
 
 static bool moveItemToTrash_private(const SyncPath &itemPath) {
-    if(CoInitialize(nullptr) != S_OK) {
-        LOGW_WARN(Log::instance()->getLogger(), L"Error in CoUninitialize - path=" << Path2WStr(itemPath).c_str());
-    }
     // Create the IFileOperation object
     IFileOperation *fileOperation = nullptr;
     HRESULT hr = CoCreateInstance(__uuidof(FileOperation), NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
