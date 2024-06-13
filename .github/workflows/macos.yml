@@ -35,11 +35,31 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
       - name: Build kDrive desktop
         run : ./infomaniak-build-tools/macos/build-ci.sh
-
+      
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
+
       - name: Execute tests
         run : ./infomaniak-build-tools/run-tests.sh
+
+      - name: Compute code coverage
+        run : |
+          echo "/Application/BullseyeCoverage/covhtml" >> $GITHUB_PATH
+          echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
+          covselect --import BullseyeCoverageExclusions
+          covhtml -a coverage_report_dir
+
+      - name: Install sonar-scanner
+        uses: sonarsource/sonarqube-github-c-cpp@v1
+        env:
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      - name: Run sonar-scanner
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SONAR_TOKEN: ${{ secrets.DESKTOP_KDRIVE_SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+        run: sonar-scanner --define sonar.cfamily.bullseye.reportPath=coverage_report_dir
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV

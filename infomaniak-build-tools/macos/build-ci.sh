@@ -33,7 +33,7 @@ export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 SRCDIR="${1-$PWD}"
 APPNAME="kDrive"
 
-# define Qt6 directory
+# Define Qt6 directory
 QTDIR="${QTDIR-$HOME/Qt/6.2.3/macos}"
 export PATH=$QTDIR/bin:$PATH
 
@@ -74,7 +74,15 @@ if [ -n "$APPLICATION_SERVER_URL" ]; then
 	CMAKE_PARAMS+=(-DAPPLICATION_SERVER_URL="$APPLICATION_SERVER_URL")
 fi
 
-# Configure infomaniakdrive
+# Activate code coverage computation
+if [ ! -f "${HOME}/BullseyeCoverageEnv.txt" ]; then
+	# Tells BullseyeCoverage where to store the coverage information generated during the build and the run of the tests
+	echo "COVFILE=${SRCDIR}/src/test.cov" >  "${HOME}/BullseyeCoverageEnv.txt"
+fi
+/Applications/BullseyeCoverage/bin/cov01 -1 # coverage on
+
+
+# Configure the build of desktop-kDrive and its unit tests
 cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
 	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
@@ -90,7 +98,11 @@ cmake \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
 
+/Applications/BullseyeCoverage/bin/cov01 -0 # coverage off
+
 # Build kDrive sources
 make -j6 install
 
 popd
+
+

@@ -29,6 +29,8 @@ testers=$(find . -type f -name "kDrive_test_*")
 errors=0
 failures=()
 
+/Applications/BullseyeCoverage/bin/cov01 -1 # coverage on
+
 for tester in ${testers[@]}; do
 
     echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
@@ -55,4 +57,7 @@ else
     done
     echo -e "${NC}"
 fi
+
+/Applications/BullseyeCoverage/bin/cov01 -0 # coverage off
+
 exit $errors
