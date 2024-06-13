@@ -52,7 +52,7 @@ class UploadSessionDrive : public AbstractUploadSession {
 
     private:
         int _driveDbId = 0;
-        std::shared_ptr<SyncDb> _syncDb = nullptr;
+        std::shared_ptr<SyncDb> _syncDb;
 
         NodeId _fileId;
         SyncTime _modtimeIn = 0;

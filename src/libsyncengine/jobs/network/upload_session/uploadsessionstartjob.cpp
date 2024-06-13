@@ -45,10 +45,8 @@ UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, const
 UploadSessionStartJob::~UploadSessionStartJob() {
     switch (_uploadType) {
         case UploadSessionType::Standard:
-            if (_vfsForceStatus) {
-                if (!_vfsForceStatus(_filePath, true, 0, true)) {
-                    LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
-                }
+            if (_vfsForceStatus && !_vfsForceStatus(_filePath, true, 0, true)) {
+                LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
             }
             break;
         case UploadSessionType::LogUpload:
@@ -69,7 +67,7 @@ void UploadSessionStartJob::setData(bool &canceled) {
     Poco::JSON::Object json;
     auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch());
-    
+
     switch (_uploadType) {
         case UploadSessionType::Standard:
             if (_fileId.empty()) {

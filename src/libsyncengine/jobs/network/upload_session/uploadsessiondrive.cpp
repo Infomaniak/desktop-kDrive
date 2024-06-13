@@ -66,9 +66,9 @@ std::shared_ptr<UploadSessionCancelJob> UploadSessionDrive::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken());
 }
 
+// Set VFS callbacks
 bool UploadSessionDrive::prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) {
     if (_liteSyncActivated) {
-        // Set VFS callbacks
         chunkJob->setVfsUpdateFetchStatusCallback(_vfsUpdateFetchStatus);
         chunkJob->setVfsSetPinStateCallback(_vfsSetPinState);
         chunkJob->setVfsForceStatusCallback(_vfsForceStatus);
