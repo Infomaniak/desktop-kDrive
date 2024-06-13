@@ -61,14 +61,7 @@ void AbstractUploadSession::runJob() {
 
     auto start = std::chrono::steady_clock::now();
 
-    if (_uploadSessionType ==
-        UploadSessionType::Unknown) {  // Should never happen, the type should be set in the child class constructor
-        LOGW_ERROR(_logger, L"Upload session type is unknown");
-        _exitCode = ExitCodeDataError;
-        _exitCause = ExitCauseUnknown;
-        abort();
-        _state = StateFinished;
-    }
+    assert(_uploadSessionType != UploadSessionType::Unknown);
 
     runJobInit();
 
