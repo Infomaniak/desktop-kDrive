@@ -36,17 +36,21 @@ jobs:
 
       - name: Build kDrive desktop
         run : | 
-          echo "/opt/BullseyeCoverage/bin/" >> $GITHUB_PATH
+          export PATH="${PATH}:/Applications/BullseyeCoverage/bin/"
           ./infomaniak-build-tools/linux/build-ci-amd64.sh
 
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
       
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-tests.sh
+        run : |
+          echo $PATH
+          export PATH="${PATH}:/Applications/BullseyeCoverage/bin/"
+          ./infomaniak-build-tools/run-tests.sh
 
       - name: Compute code coverage
         run : |
+          PATH="${PATH}:/Applications/BullseyeCoverage/bin/"
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
           covselect --import BullseyeCoverageExclusions
           covhtml -a coverage_report_dir
