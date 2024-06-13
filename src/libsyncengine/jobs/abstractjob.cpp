@@ -62,15 +62,14 @@ void AbstractJob::setProgress(int64_t newProgress) {
     if (_progressPercentCallback) {
         if (_expectedFinishProgress == -2) {
             LOG_DEBUG(_logger,
-                     "Could not calculate progress percentage as _expectedFinishProgress is not set by the derived class (but "
-                     "_progressPercentCallback is set by the caller).");
+                      "Could not calculate progress percentage as _expectedFinishProgress is not set by the derived class (but "
+                      "_progressPercentCallback is set by the caller).");
             _expectedFinishProgress = -1;
-        }
-        if (_expectedFinishProgress == -1) {
+        } else if (_expectedFinishProgress == -1) {
             _progressPercentCallback(_jobId, 100);
+        } else {
+            _progressPercentCallback(_jobId, static_cast<int>((_progress * 100) / _expectedFinishProgress));
         }
-    } else {
-        _progressPercentCallback(_jobId, int((_progress * 100) / _expectedFinishProgress));
     }
 }
 
