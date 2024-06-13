@@ -44,7 +44,7 @@ jobs:
 
       - name: Compute code coverage
         run : |
-          echo "/Application/BullseyeCoverage/covhtml" >> $GITHUB_PATH
+          echo "/Application/BullseyeCoverage/bin/" >> $GITHUB_PATH
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
           covselect --import BullseyeCoverageExclusions
           covhtml -a coverage_report_dir
