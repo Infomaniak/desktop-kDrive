@@ -41,7 +41,7 @@ jobs:
 
       - name: Execute tests
         run : |
-          export PATH="${PATH}:/Applications/BullseyeCoverage/bin/"
+          echo "/Applications/BullseyeCoverage/bin/" >> $GITHUB_PATH
           ./infomaniak-build-tools/run-tests.sh
 
       - name: Compute code coverage
