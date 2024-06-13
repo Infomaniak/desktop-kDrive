@@ -44,10 +44,10 @@ jobs:
 
       - name: Compute code coverage
         run : |
-          PATH="${PATH}:/Application/BullseyeCoverage/bin/"
+          bullseye_path="/Application/BullseyeCoverage/bin/"
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
-          covselect --import BullseyeCoverageExclusions
-          covhtml -a coverage_report_dir
+          ${bullseye_path}/covselect --import BullseyeCoverageExclusions
+          ${bullseye_path}/covhtml -a coverage_report_dir
 
       - name: Install sonar-scanner
         uses: sonarsource/sonarqube-github-c-cpp@v1
