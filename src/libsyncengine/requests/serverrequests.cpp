@@ -1083,8 +1083,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
 
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
-        // We do not delete the archive here, The path is stored in the app state and the user can try to upload it
-        // manually
+        // We do not delete the archive here. The path is stored in the app state so that the user can still try to upload it
+        // manually.
         return exitCode;
     }
 
