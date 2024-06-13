@@ -145,7 +145,7 @@ void JobManager::run() {
             }
 
             {
-                const std::lock_guard<std::mutex> lock(_mutex);
+                const std::scoped_lock<std::mutex> lock(_mutex);
 
                 if (_queuedJobs.empty()) {
                     break;
@@ -154,11 +154,9 @@ void JobManager::run() {
                 const auto &job = jobItem.first;
                 _queuedJobs.pop();
 
-                if (isParentPendingOrRunning(job->jobId()) ||
-                    (std::dynamic_pointer_cast<AbstractUploadSession>(job) &&
-                     uploadSessionCount >= Poco::ThreadPool::defaultPool().capacity() / 10)) {
+                if (!canStartJob(job, uploadSessionCount)) {
                     try {
-                        _pendingJobs.insert({job->jobId(), jobItem});
+                        _pendingJobs.try_emplace(job->jobId(), jobItem);
                         if (job->hasParentJob()) {
                             LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->jobId()
                                                                            << " is pending (waiting for parent job "
@@ -219,6 +217,11 @@ bool JobManager::isParentPendingOrRunning(UniqueId jobIb) {
                                    _pendingJobs.find(job->parentJobId()) != _pendingJobs.end());
 }
 
+bool JobManager::canStartJob(std::shared_ptr<AbstractJob> job, int uploadSessionCount) {
+    return !isParentPendingOrRunning(job->jobId()) && !(std::dynamic_pointer_cast<AbstractUploadSession>(job) &&
+                                                        uploadSessionCount >= Poco::ThreadPool::defaultPool().capacity() / 10);
+}
+
 void JobManager::adjustMaxNbThread() {
     auto now = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = now - _maxNbThreadChrono;
@@ -265,14 +268,11 @@ int JobManager::countUploadSession() {
 }
 
 void JobManager::managePendingJobs(int uploadSessionCount) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock<std::mutex> lock(_mutex);
 
     // Check if parent jobs of the pending jobs has finished
-    auto it = _pendingJobs.begin();
-    for (; it != _pendingJobs.end();) {
-        const auto &job = it->second.first;
-        if (!isParentPendingOrRunning(job->jobId()) && !(std::dynamic_pointer_cast<AbstractUploadSession>(job) &&
-                                                         uploadSessionCount >= Poco::ThreadPool::defaultPool().capacity() / 10)) {
+    std::erase_if(_pendingJobs, [](const auto &item) {
+        if (const auto &job = it->second.first; canStartJob(job, uploadSessionCount)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completly from job manager
                 _managedJobs.erase(it->first);
@@ -284,14 +284,13 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
                     LOG_DEBUG(Log::instance()->getLogger(),
                               "The thread pool has recovered capacity, queuing job " << job->jobId() << " for execution");
                 }
-
                 _queuedJobs.push(it->second);
             }
-            it = _pendingJobs.erase(it);
+            return true;
         } else {
-            it++;
+            return false;
         }
-    }
+    });
 }
 
 }  // namespace KDC

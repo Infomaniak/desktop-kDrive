@@ -81,6 +81,7 @@ class JobManager {
         static void managePendingJobs(int uploadSessionCount);
 
         static bool isParentPendingOrRunning(UniqueId jobIb);
+        static bool canStartJob(std::shared_ptr<AbstractJob> job, int uploadSessionCount);
 
         static JobManager *_instance;
         static bool _stop;
