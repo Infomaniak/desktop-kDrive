@@ -25,27 +25,23 @@ UploadSessionDrive::UploadSessionDrive(int driveDbId, std::shared_ptr<SyncDb> sy
                                        const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
                                        bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/)
     : AbstractUploadSession(filepath, filename, nbParalleleThread),
-      _remoteParentDirId(remoteParentDirId),
-      _liteSyncActivated(liteSyncActivated),
-      _modtimeIn(modtime),
+      _driveDbId(driveDbId),
       _syncDb(syncDb),
-      _driveDbId(driveDbId) {
+      _modtimeIn(modtime),
+      _liteSyncActivated(liteSyncActivated),
+      _remoteParentDirId(remoteParentDirId) {
     _uploadSessionType = UploadSessionType::Standard;
 }
 
 UploadSessionDrive::~UploadSessionDrive() {
-    if (_vfsForceStatus) {
-        if (!_vfsForceStatus(getFilePath(), false, 100, true)) {
-            LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
-        }
+    if (_vfsForceStatus && !_vfsForceStatus(getFilePath(), false, 100, true)) {
+        LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
     }
 }
 
 bool UploadSessionDrive::runJobInit() {
-    if (_vfsForceStatus) {
-        if (!_vfsForceStatus(getFilePath(), true, 0, true)) {
-            LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
-        }
+    if (_vfsForceStatus && !_vfsForceStatus(getFilePath(), true, 0, true)) {
+        LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
     }
     return true;
 }
