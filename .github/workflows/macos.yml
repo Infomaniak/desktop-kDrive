@@ -40,7 +40,9 @@ jobs:
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
 
       - name: Execute tests
-        run : ./infomaniak-build-tools/run-tests.sh
+        run : |
+          export PATH="${PATH}:/Applications/BullseyeCoverage/bin/"
+          ./infomaniak-build-tools/run-tests.sh
 
       - name: Compute code coverage
         run : |
@@ -50,11 +52,13 @@ jobs:
           covhtml -a coverage_report_dir
 
       - name: Install sonar-scanner
+        if: false  # The MacOSX runner has architecture arm64 which is not supported yet.
         uses: sonarsource/sonarqube-github-c-cpp@v1
         env:
           SONAR_HOST_URL: https://sonarcloud.io
 
       - name: Run sonar-scanner
+        if: false # The MacOSX runner has an architecture arm64 which is not supported yet.
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.DESKTOP_KDRIVE_SONAR_TOKEN }}
