@@ -34,18 +34,21 @@ jobs:
       - name: Grant building script execute permission
         run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
       - name: Build kDrive desktop
-        run : ./infomaniak-build-tools/macos/build-ci.sh
+        run : |
+          export PATH="${PATH}:/Applications/BullseyeCoverage/bin/"
+          ./infomaniak-build-tools/macos/build-ci.sh
       
       - name: Grant tests script execute permission
         run : chmod +x ./infomaniak-build-tools/run-tests.sh
 
       - name: Execute tests
         run : |
-          echo "/Applications/BullseyeCoverage/bin/" >> $GITHUB_PATH
+          export PATH="${PATH}:/Applications/BullseyeCoverage/bin/"
           ./infomaniak-build-tools/run-tests.sh
 
       - name: Compute code coverage
         run : |
+          echo $PATH
           PATH="${PATH}:/Applications/BullseyeCoverage/bin/"
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
           covselect --import BullseyeCoverageExclusions
