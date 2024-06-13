@@ -44,7 +44,7 @@ UploadSessionDrive::~UploadSessionDrive() {
 bool UploadSessionDrive::runJobInit() {
     if (_vfsForceStatus) {
         if (!_vfsForceStatus(getFilePath(), true, 0, true)) {
-            LOG_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
+            LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
         }
     }
     return true;

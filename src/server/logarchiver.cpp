@@ -342,8 +342,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
             uint64_t fileSize = 0;
             IoHelper::getFileSize(entry.path(), fileSize, ioError);
             if (ioError != IoErrorSuccess) {
-                LOG_WARN(Log::instance()->getLogger(),
-                         "Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
+                LOGW_WARN(Log::instance()->getLogger(),
+                         L"Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
                 // Do not return, at worst the progress will be wrong
             } else {
                 totalSize += fileSize;
@@ -379,8 +379,8 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
         bool canceled = false;
         uint64_t fileSize = 0;
         if (!IoHelper::getFileSize(entry.path(), fileSize, ioError) || ioError != IoErrorSuccess) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
+            LOGW_WARN(Log::instance()->getLogger(),
+                     L"Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
         }
         std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
                                                              &destPath, &totalSize, &fileSize](int progressPercent) {

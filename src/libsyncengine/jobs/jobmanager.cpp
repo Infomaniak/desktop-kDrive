@@ -271,20 +271,20 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
     const std::scoped_lock<std::mutex> lock(_mutex);
 
     // Check if parent jobs of the pending jobs has finished
-    std::erase_if(_pendingJobs, [](const auto &item) {
-        if (const auto &job = it->second.first; canStartJob(job, uploadSessionCount)) {
+    std::erase_if(_pendingJobs, [&uploadSessionCount](const auto &item) {
+        if (const auto &job = item.second.first; canStartJob(job, uploadSessionCount)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completly from job manager
-                _managedJobs.erase(it->first);
+                _managedJobs.erase(item.first);
             } else {
                 if (job->hasParentJob()) {
                     LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->parentJobId() << " has finished, queuing child job "
                                                                    << job->jobId() << " for execution");
                 } else {
-                    LOG_DEBUG(Log::instance()->getLogger(),
+                    LOGW_DEBUG(Log::instance()->getLogger(),
                               "The thread pool has recovered capacity, queuing job " << job->jobId() << " for execution");
                 }
-                _queuedJobs.push(it->second);
+                _queuedJobs.push(item.second);
             }
             return true;
         } else {
