@@ -48,7 +48,6 @@ jobs:
 
       - name: Compute code coverage
         run : |
-          echo $PATH
           PATH="${PATH}:/Applications/BullseyeCoverage/bin/"
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
           covselect --import BullseyeCoverageExclusions
@@ -66,7 +65,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.DESKTOP_KDRIVE_SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
-        run: sonar-scanner --define sonar.cfamily.bullseye.reportPath=coverage_report_dir
+        run: |
+          sonar-scanner --define sonar.projectKey=Infomaniak_desktop-kDrive \
+            --define sonar.organization=Infomaniak \
+            --define sonar.cfamily.bullseye.reportPath=coverage_report_dir
 
       - name: Get the path to kDrive-logdir
         run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV

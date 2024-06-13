@@ -44,7 +44,6 @@ jobs:
       
       - name: Execute tests
         run : |
-          echo $PATH
           export PATH="${PATH}:/opt/BullseyeCoverage/bin/"
           ./infomaniak-build-tools/run-tests.sh
 
@@ -65,9 +64,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.DESKTOP_KDRIVE_SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
         run: |
-          sonar-scanner --define sonar.projectKey=${BRANCH_NAME} \
+          sonar-scanner --define sonar.projectKey=Infomaniak_desktop-kDrive \
             --define sonar.organization=Infomaniak \
             --define sonar.cfamily.bullseye.reportPath=coverage_report_dir
 
