@@ -61,7 +61,10 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           SONAR_TOKEN: ${{ secrets.DESKTOP_KDRIVE_SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
-        run: sonar-scanner --define sonar.projectKey=desktop-kDrive sonar.organization=Infomaniak sonar.cfamily.bullseye.reportPath=coverage_report_dir
+        run: |
+          sonar-scanner --define sonar.projectKey=desktop-kDrive \
+            --define sonar.organization=Infomaniak \
+            --define sonar.cfamily.bullseye.reportPath=coverage_report_dir
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
