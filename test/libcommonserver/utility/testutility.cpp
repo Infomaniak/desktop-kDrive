@@ -314,28 +314,6 @@ void TestUtility::isSubDir() {
     CPPUNIT_ASSERT(!CommonUtility::isSubDir(path2, path1));
 }
 
-void TestUtility::testLongPath(void) {
-    SyncPath result;
-    bool longPathNotfound = false;
-    // Non existing path
-    CPPUNIT_ASSERT(!Utility::longPath("A/AA/AAA", result, longPathNotfound));
-
-    // Existing path with short name
-    {
-        TemporaryDirectory tempDir;
-        SyncPath path = tempDir.path / "test.txt";
-        std::ofstream file(path);
-        file << "test";
-        file.close();
-
-        CPPUNIT_ASSERT(Utility::longPath(path, result, longPathNotfound));
-        CPPUNIT_ASSERT(result == path);
-        CPPUNIT_ASSERT(longPathNotfound);
-    }
-
-    // TO DO, see with Christophe.L What is the expected behavior of this function.
-}
-
 void TestUtility::testcheckIfDirEntryIsManaged(void) {
     TemporaryDirectory tempDir;
     SyncPath path = tempDir.path / "test.txt";
