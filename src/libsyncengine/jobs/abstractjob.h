@@ -48,11 +48,11 @@ class AbstractJob : public Poco::Runnable {
         inline ExitCode exitCode() const { return _exitCode; }
         inline ExitCause exitCause() const { return _exitCause; }
 
-        inline virtual void setProgressExpectedFinalValue(int64_t newExpectedFinishProgress) {
+        inline void setProgressExpectedFinalValue(int64_t newExpectedFinishProgress) {
             _expectedFinishProgress = newExpectedFinishProgress;
         }
         inline virtual int64_t getProgress() { return _progress; }
-        virtual void setProgress(int64_t newProgress);
+        void setProgress(int64_t newProgress);
         bool progressChanged();
         inline const SyncPath &affectedFilePath() const { return _affectedFilePath; }
         inline void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
