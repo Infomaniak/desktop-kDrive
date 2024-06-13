@@ -441,9 +441,9 @@ bool AbstractUploadSession::cancelSession() {
     {
         std::scoped_lock lock(_mutex);
         auto it = _ongoingChunkJobs.begin();
-        for (; it != _ongoingChunkJobs.end(); it++) {
-            if (it->second->sessionToken() == _sessionToken) {
-                it->second->abort();
+        for (const auto &[_, job] : _ongoingChunkJobs) {
+            if (job->sessionToken() == _sessionToken) {
+                job->abort();
             }
         }
     }
