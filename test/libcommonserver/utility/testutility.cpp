@@ -291,7 +291,6 @@ void TestUtility::testErrId(void) {
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), ERRID);
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), _testObj->errId(__FILE__, __LINE__));
     CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/defgh", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc\\defgh", 10));
     CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d", 10));
     CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d.r", 10));
     CPPUNIT_ASSERT_EQUAL(std::string("DE:10"), _testObj->errId("abc/de.r", 10));

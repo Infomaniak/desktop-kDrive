@@ -47,7 +47,7 @@
 namespace KDC {
 
 static bool moveItemToTrash_private(const SyncPath &itemPath) {
-    if (CoInitializeEx(NULL, COINIT_APARTMENTTHREADED) != S_OK) {
+    if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
         LOGW_INFO(Log::instance()->getLogger(), L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to CoCreateInstance is failing.");
     }
     
