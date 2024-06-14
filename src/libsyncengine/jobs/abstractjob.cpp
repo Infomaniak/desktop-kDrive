@@ -60,12 +60,13 @@ ExitCode AbstractJob::runSynchronously() {
 void AbstractJob::setProgress(int64_t newProgress) {
     _progress = newProgress;
     if (_progressPercentCallback) {
-        if (_expectedFinishProgress == -2) {
+        if (_expectedFinishProgress == expectedFinishProgressNotSetValue) {
             LOG_DEBUG(_logger,
                       "Could not calculate progress percentage as _expectedFinishProgress is not set by the derived class (but "
                       "_progressPercentCallback is set by the caller).");
-            _expectedFinishProgress = -1;
-        } else if (_expectedFinishProgress == -1) {
+            _expectedFinishProgress = expectedFinishProgressNotSetValueWarningLogged;
+            _progressPercentCallback(_jobId, 100);
+        } else if (_expectedFinishProgress == expectedFinishProgressNotSetValueWarningLogged) {
             _progressPercentCallback(_jobId, 100);
         } else {
             _progressPercentCallback(_jobId, static_cast<int>((_progress * 100) / _expectedFinishProgress));

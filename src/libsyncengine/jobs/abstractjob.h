@@ -26,6 +26,8 @@
 #include "libcommonserver/log/log.h"
 
 namespace KDC {
+static const int expectedFinishProgressNotSetValue = -2;
+static const int expectedFinishProgressNotSetValueWarningLogged = -1;
 
 class AbstractJob : public Poco::Runnable {
     public:
@@ -56,15 +58,15 @@ class AbstractJob : public Poco::Runnable {
         bool progressChanged();
         inline const SyncPath &affectedFilePath() const { return _affectedFilePath; }
         inline void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
-        inline bool isProgressTracked() { return _progress > -1; }
+        inline bool isProgressTracked() const { return _progress > -1; }
 
         inline UniqueId jobId() const { return _jobId; }
         inline UniqueId parentJobId() const { return _parentJobId; }
         inline void setParentJobId(UniqueId newParentId) { _parentJobId = newParentId; }
         inline bool hasParentJob() const { return _parentJobId > -1; }
 
-        inline bool isExtendedLog() { return _isExtendedLog; }
-        inline bool isRunning() { return _isRunning; }
+        inline bool isExtendedLog() const { return _isExtendedLog; }
+        inline bool isRunning() const { return _isRunning; }
 
         inline void setVfsUpdateFetchStatusCallback(
             std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> callback) noexcept {
@@ -127,10 +129,11 @@ class AbstractJob : public Poco::Runnable {
         UniqueId _jobId = 0;
         UniqueId _parentJobId = -1;  // ID of that parent job i.e. the job that must be completed before starting this one
 
-        int64_t _expectedFinishProgress = -2;  // Expected progress value when the job is finished. -2 means it is not set.
-        int64_t _progress = -1;      // Progress is -1 when it is not relevant for the current job
-        int64_t _lastProgress = -1;  // Progress last time it was checked using progressChanged()
-        SyncPath _affectedFilePath;  // The file path associated to _progress
+        int64_t _expectedFinishProgress =
+            expectedFinishProgressNotSetValue;  // Expected progress value when the job is finished. -2 means it is not set.
+        int64_t _progress = -1;                 // Progress is -1 when it is not relevant for the current job
+        int64_t _lastProgress = -1;             // Progress last time it was checked using progressChanged()
+        SyncPath _affectedFilePath;             // The file path associated to _progress
 
         bool _abort = false;
         bool _bypassCheck = false;
