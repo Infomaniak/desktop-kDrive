@@ -1099,7 +1099,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
 
     if (bool found = false;
         !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) || !found ||
-        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string(""), found) || !found) {
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string{}, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
     return ExitCodeOk;
