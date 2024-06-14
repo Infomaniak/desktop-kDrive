@@ -27,15 +27,8 @@ namespace KDC {
 UniqueId AbstractJob::_nextJobId = 0;
 std::mutex AbstractJob::_nextJobIdMutex;
 
-AbstractJob::AbstractJob()
-    : _logger(Log::instance()->getLogger()),
-      _vfsUpdateFetchStatus(nullptr),
-      _vfsSetPinState(nullptr),
-      _vfsForceStatus(nullptr),
-      _vfsStatus(nullptr),
-      _vfsUpdateMetadata(nullptr),
-      _vfsCancelHydrate(nullptr) {
-    const std::lock_guard<std::mutex> lock(_nextJobIdMutex);
+AbstractJob::AbstractJob() : _logger(Log::instance()->getLogger()) {
+    const std::lock_guard lock(_nextJobIdMutex);
     _jobId = _nextJobId++;
 
     if (ParametersCache::isExtendedLogEnabled()) {

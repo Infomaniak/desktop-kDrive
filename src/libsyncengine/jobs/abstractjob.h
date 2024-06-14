@@ -105,15 +105,15 @@ class AbstractJob : public Poco::Runnable {
         ExitCause _exitCause = ExitCauseUnknown;
 
         std::function<bool(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled, bool &finished)>
-            _vfsUpdateFetchStatus;
-        std::function<bool(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState;
-        std::function<bool(const SyncPath &path, bool isSyncing, int progress, bool isHydrated)> _vfsForceStatus;
+            _vfsUpdateFetchStatus = nullptr;
+        std::function<bool(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState = nullptr;
+        std::function<bool(const SyncPath &path, bool isSyncing, int progress, bool isHydrated)> _vfsForceStatus = nullptr;
         std::function<bool(const SyncPath &path, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress)>
-            _vfsStatus;
+            _vfsStatus = nullptr;
         std::function<bool(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
                            const NodeId &id, std::string &error)>
-            _vfsUpdateMetadata;
-        std::function<bool(const SyncPath &path)> _vfsCancelHydrate;
+            _vfsUpdateMetadata = nullptr;
+        std::function<bool(const SyncPath &path)> _vfsCancelHydrate = nullptr;
 
     private:
         virtual void run() final;
