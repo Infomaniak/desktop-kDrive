@@ -713,7 +713,6 @@ std::string Utility::toUpper(const std::string &str) {
 std::string Utility::errId(const char *file, int line) {
     std::string err =
         std::format("{}:{}", Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)), line);
-
     return err;
 }
 

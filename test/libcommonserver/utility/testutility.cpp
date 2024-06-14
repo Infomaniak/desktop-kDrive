@@ -204,8 +204,7 @@ void TestUtility::testGetLinuxDesktopType(void) {
     CPPUNIT_ASSERT(!currentDesktop.empty());
     return;
 #endif
-
-    CPPUNIT_ASSERT_MESSAGE("This test is only for Linux", !_testObj->getLinuxDesktopType(currentDesktop));
+    CPPUNIT_ASSERT(!_testObj->getLinuxDesktopType(currentDesktop));
 }
 
 void TestUtility::testStr2HexStr() {
@@ -297,7 +296,6 @@ void TestUtility::testErrId(void) {
     CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/def.r", 10));
 }
 
-
 void TestUtility::isSubDir() {
     SyncPath path1 = "A/AA/AAA";
     SyncPath path2 = "A/AA";
@@ -385,7 +383,6 @@ void TestUtility::testFormatRequest(void) {
     CPPUNIT_ASSERT(result.find(code) != std::string::npos);
     CPPUNIT_ASSERT(result.find(description) != std::string::npos);
 }
-
 
 void TestUtility::testNormalizedSyncPath() {
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
