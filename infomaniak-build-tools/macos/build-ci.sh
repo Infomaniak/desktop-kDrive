@@ -28,7 +28,7 @@ export QTDIR="$HOME/Qt/6.2.3/macos"
 # Uncomment to build for testing
 # export KDRIVE_DEBUG=1
 
-export MACOSX_DEPLOYMENT_TARGET="10.15"
+export MACOSX_DEPLOYMENT_TARGET="13.3"
 export CODE_SIGN_INJECT_BASE_ENTITLEMENTS="NO"
 SRCDIR="${1-$PWD}"
 APPNAME="kDrive"
