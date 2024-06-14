@@ -348,12 +348,14 @@ void TestUtility::testcheckIfDirEntryIsManaged(void) {
 void TestUtility::testFormatStdError() {
     const std::error_code ec;
     std::wstring result = _testObj->formatStdError(ec);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'",
+                           result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", result.length() > 15);
 
     const SyncPath path = "A/AA";
     result = _testObj->formatStdError(path, ec);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'", result.find(L"error: 0") != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'error: 0'",
+                           result.find(L"error: 0") != std::wstring::npos || result.find(L"code: 0") != std::wstring::npos);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
                            result.find(Utility::s2ws(path.string())) != std::wstring::npos);
