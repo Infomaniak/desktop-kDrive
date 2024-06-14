@@ -75,8 +75,7 @@ bool UploadSessionLog::handleStartJobResult(const std::shared_ptr<UploadSessionS
         }
     }
 
-    AppStateValue value = uploadToken;
-    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, value, found) || !found) {
+    if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, uploadToken, found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
     }
     return true;
