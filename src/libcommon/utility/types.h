@@ -30,25 +30,26 @@ namespace KDC {
 
 #define ERRID Utility::errId(__FILE__, __LINE__)
 
-typedef int64_t SyncTime;
-typedef int64_t DbNodeId;
-typedef int64_t UniqueId;
-typedef std::string NodeId;
-typedef std::filesystem::path SyncPath;
-typedef std::filesystem::path::string_type SyncName;
-typedef std::filesystem::path::value_type SyncChar;
-typedef std::filesystem::directory_entry DirectoryEntry;
-typedef std::filesystem::directory_options DirectoryOptions;
 
-typedef std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring> SigValueType;
+using SyncTime = int64_t;
+using DbNodeId = int64_t;
+using UniqueId = int64_t;
+using NodeId = std::string;
+using SyncPath = std::filesystem::path;
+using SyncName = std::filesystem::path::string_type;
+using SyncChar = std::filesystem::path::value_type;
+using DirectoryEntry = std::filesystem::directory_entry;
+using DirectoryOptions = std::filesystem::directory_options;
+
+using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
 struct hashPathFunction {
         std::size_t operator()(const std::optional<SyncPath> &path) const { return path ? hash_value(path.value()) : 0; }
 };
 
 #ifdef _WIN32
-typedef std::wstringstream StringStream;
-typedef std::wostringstream OStringStream;
+using StringStream = std::wstringstream;
+using OStringStream = std::wostringstream;
 #define Str(s) L##s
 #define SyncName2QStr(s) QString::fromStdWString(s)
 #define QStr2SyncName(s) s.toStdWString()
@@ -57,8 +58,8 @@ typedef std::wostringstream OStringStream;
 #define WStr2SyncName(s) s
 #define SyncName2WStr(s) s
 #else
-typedef std::stringstream StringStream;
-typedef std::ostringstream OStringStream;
+using StringStream = std::stringstream;
+using OStringStream = std::ostringstream;
 #define Str(s) s
 #define SyncName2QStr(s) QString::fromStdString(s)
 #define QStr2SyncName(s) s.toStdString()
@@ -89,9 +90,9 @@ typedef std::ostringstream OStringStream;
 #define Str2Path(s) std::filesystem::path(KDC::Utility::s2ws(s))
 #endif
 
-typedef std::function<void(const char *)> ExecuteCommand;
+using ExecuteCommand = std::function<void (const char *)>;
 
-typedef enum { ReplicaSideUnknown, ReplicaSideLocal, ReplicaSideRemote } ReplicaSide;
+using ReplicaSide = enum { ReplicaSideUnknown, ReplicaSideLocal, ReplicaSideRemote };
 
 inline ReplicaSide otherSide(ReplicaSide side) {
     return side == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal;
@@ -190,6 +191,7 @@ typedef enum {
 
 static const std::unordered_set<ConflictType> conflictsWithLocalRename = {  // All conflicts that rename the local file
     ConflictTypeCreateCreate, ConflictTypeEditEdit, ConflictTypeMoveCreate, ConflictTypeMoveMoveDest};
+
 inline bool isConflictsWithLocalRename(ConflictType type) {
     return conflictsWithLocalRename.find(type) != conflictsWithLocalRename.end();
 }
@@ -301,15 +303,15 @@ typedef enum {
     SyncStepDone
 } SyncStep;
 
-typedef enum { ActionTypeStop = 0, ActionTypeStart } ActionType;
+using ActionType = enum { ActionTypeStop = 0, ActionTypeStart };
 
-typedef enum { ActionTargetDrive = 0, ActionTargetSync, ActionTargetAllDrives } ActionTarget;
+using ActionTarget = enum { ActionTargetDrive = 0, ActionTargetSync, ActionTargetAllDrives };
 
-typedef enum { ErrorLevelUnknown = 0, ErrorLevelServer, ErrorLevelSyncPal, ErrorLevelNode } ErrorLevel;
+using ErrorLevel = enum { ErrorLevelUnknown = 0, ErrorLevelServer, ErrorLevelSyncPal, ErrorLevelNode };
 
-typedef enum { LanguageDefault = 0, LanguageEnglish, LanguageFrench, LanguageGerman, LanguageSpanish, LanguageItalian } Language;
+using Language = enum { LanguageDefault = 0, LanguageEnglish, LanguageFrench, LanguageGerman, LanguageSpanish, LanguageItalian };
 
-typedef enum { LogLevelDebug = 0, LogLevelInfo, LogLevelWarning, LogLevelError, LogLevelFatal } LogLevel;
+using LogLevel = enum { LogLevelDebug = 0, LogLevelInfo, LogLevelWarning, LogLevelError, LogLevelFatal };
 
 typedef enum {
     NotificationsDisabledNever,
@@ -320,9 +322,9 @@ typedef enum {
     NotificationsDisabledAlways
 } NotificationsDisabled;
 
-typedef enum { VirtualFileModeOff, VirtualFileModeWin, VirtualFileModeMac, VirtualFileModeSuffix } VirtualFileMode;
+using VirtualFileMode = enum { VirtualFileModeOff, VirtualFileModeWin, VirtualFileModeMac, VirtualFileModeSuffix };
 
-typedef enum { PinStateInherited, PinStateAlwaysLocal, PinStateOnlineOnly, PinStateUnspecified } PinState;
+using PinState = enum { PinStateInherited, PinStateAlwaysLocal, PinStateOnlineOnly, PinStateUnspecified };
 
 typedef enum {
     ProxyTypeUndefined = 0,
@@ -338,7 +340,7 @@ typedef enum {
     ExclusionTemplateComplexityComplex
 } ExclusionTemplateComplexity;
 
-typedef enum { LinkTypeNone = 0, LinkTypeSymlink, LinkTypeHardlink, LinkTypeFinderAlias, LinkTypeJunction } LinkType;
+using LinkType = enum { LinkTypeNone = 0, LinkTypeSymlink, LinkTypeHardlink, LinkTypeFinderAlias, LinkTypeJunction };
 
 typedef enum {
     IoErrorSuccess = 0,
