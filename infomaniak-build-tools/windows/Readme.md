@@ -267,9 +267,9 @@ Once installed, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDrive
 
 To build in `Debug` mode, you will need to build and deploy the Windows extension first.
 
-## Link dependencies
+## Linking dependencies
 
-In order for CMake to be able to find all dependencies. Add all libraries install folder in the `PATH` environment variable:
+In order for CMake to be able to find all dependencies, add all libraries installation folder in the `PATH` environment variable:
 ```
 C:\Program Files (x86)\Poco\bin
 C:\Program Files (x86)\libzip\bin
@@ -282,6 +282,7 @@ C:\Program Files\OpenSSL\bin
 ```
 
 ## Using Qt Creator
+
 You can disable QML debugger from the settings to avoid some error pop-ups.
 
 ### Additionnal Requirements
