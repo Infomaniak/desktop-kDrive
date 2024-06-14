@@ -288,7 +288,7 @@ void TestLogArchiver::testCompressLogs(void) {
         };
 
         ExitCause cause = ExitCauseUnknown;
-        ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, progress, cause);
+        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, progress, cause);
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseOperationCanceled, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
@@ -300,7 +300,7 @@ void TestLogArchiver::testGenerateUserDescriptionFile(void) {
         TemporaryDirectory tempDir("logArchiver");
         const SyncPath userDescriptionFile = tempDir.path / "user_description.txt";
         ExitCause cause = ExitCauseUnknown;
-        ExitCode code = LogArchiver::generateUserDescriptionFile(userDescriptionFile, cause);
+        const ExitCode code = LogArchiver::generateUserDescriptionFile(userDescriptionFile, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
 
@@ -342,7 +342,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
             return true;
         };
 
-        ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archivePath, cause, true);
+        const ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archivePath, cause, true);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
         CPPUNIT_ASSERT_EQUAL(tempDir.path / archivePath.filename(), archivePath);
@@ -360,7 +360,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
         ExitCause cause = ExitCauseUnknown;
         std::function<bool(int)> progress = [](int) { return false; };
 
-        ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archiveFile, cause, true);
+        const ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archiveFile, cause, true);
         CPPUNIT_ASSERT_EQUAL(ExitCauseOperationCanceled, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
     }

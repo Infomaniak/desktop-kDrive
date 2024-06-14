@@ -26,8 +26,9 @@
 #include "libcommonserver/log/log.h"
 
 namespace KDC {
-static const int expectedFinishProgressNotSetValue = -2;
-static const int expectedFinishProgressNotSetValueWarningLogged = -1;
+
+constexpr int expectedFinishProgressNotSetValue = -2;
+constexpr int expectedFinishProgressNotSetValueWarningLogged = -1;
 
 class AbstractJob : public Poco::Runnable {
     public:
