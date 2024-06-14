@@ -238,6 +238,9 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 
 # Build in Debug
 
+In order that all libraries are found, you might need to define `DYLD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
+Either add `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib` in your personal `.zshrc` file or add the environment variable in your IDE.
+
 ## Using Qt Creator
 
 ### Qt Configuration
