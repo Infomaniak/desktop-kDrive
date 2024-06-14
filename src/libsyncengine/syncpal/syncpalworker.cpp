@@ -278,15 +278,15 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             workers[0] = _syncPal->_computeFSOperationsWorker;
             workers[1] = nullptr;
             _syncPal->copySnapshots();
-            inputSharedObject[0] = _syncPal->snapshot(ReplicaSideLocal, true);
-            inputSharedObject[1] = _syncPal->snapshot(ReplicaSideRemote, true);
+            inputSharedObject[0] = _syncPal->snapshot(ReplicaSide::Local, true);
+            inputSharedObject[1] = _syncPal->snapshot(ReplicaSide::Remote, true);
             _syncPal->_restart = false;
             break;
         case SyncStepUpdateDetection2:
             workers[0] = _syncPal->_localUpdateTreeWorker;
             workers[1] = _syncPal->_remoteUpdateTreeWorker;
-            inputSharedObject[0] = _syncPal->operationSet(ReplicaSideLocal);
-            inputSharedObject[1] = _syncPal->operationSet(ReplicaSideRemote);
+            inputSharedObject[0] = _syncPal->operationSet(ReplicaSide::Local);
+            inputSharedObject[1] = _syncPal->operationSet(ReplicaSide::Remote);
             break;
         case SyncStepReconciliation1:
             workers[0] = _syncPal->_platformInconsistencyCheckerWorker;
@@ -384,7 +384,7 @@ bool SyncPalWorker::interruptCondition() const {
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
         case SyncStepIdle:
-            return (_syncPal->isSnapshotValid(ReplicaSideLocal) && _syncPal->isSnapshotValid(ReplicaSideRemote) &&
+            return (_syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote) &&
                     !_syncPal->_localFSObserverWorker->updating() && !_syncPal->_remoteFSObserverWorker->updating() &&
                     (_syncPal->_localSnapshot->updated() || _syncPal->_remoteSnapshot->updated() || _syncPal->_restart))
                        ? SyncStepUpdateDetection1
@@ -402,8 +402,8 @@ SyncStep SyncPalWorker::nextStep() const {
                                                << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete)
                                                << ")");
             };
-            logNbOps(ReplicaSideLocal);
-            logNbOps(ReplicaSideRemote);
+            logNbOps(ReplicaSide::Local);
+            logNbOps(ReplicaSide::Remote);
 
             if (!_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap().empty()) {
                 _syncPal->fixCorruptedFile(_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap());
@@ -411,13 +411,13 @@ SyncStep SyncPalWorker::nextStep() const {
                 return SyncStepIdle;
             }
 
-            return (_syncPal->operationSet(ReplicaSideLocal)->updated() || _syncPal->operationSet(ReplicaSideRemote)->updated())
+            return (_syncPal->operationSet(ReplicaSide::Local)->updated() || _syncPal->operationSet(ReplicaSide::Remote)->updated())
                        ? SyncStepUpdateDetection2
                        : SyncStepDone;
             break;
         }
         case SyncStepUpdateDetection2:
-            return (_syncPal->updateTree(ReplicaSideLocal)->updated() || _syncPal->updateTree(ReplicaSideRemote)->updated())
+            return (_syncPal->updateTree(ReplicaSide::Local)->updated() || _syncPal->updateTree(ReplicaSide::Remote)->updated())
                        ? SyncStepReconciliation1
                        : SyncStepDone;
             break;

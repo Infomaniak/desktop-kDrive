@@ -279,7 +279,7 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
     OldUtility::UnixTimeToFiletime(item.creationTime(), &findData.ftCreationTime);
     OldUtility::UnixTimeToFiletime(item.modTime(), &findData.ftLastWriteTime);
     findData.ftLastAccessTime = findData.ftLastWriteTime;
-    findData.dwFileAttributes = (item.type() == NodeTypeDirectory ? FILE_ATTRIBUTE_DIRECTORY : 0);
+    findData.dwFileAttributes = (item.type() == NodeType::Directory ? FILE_ATTRIBUTE_DIRECTORY : 0);
 
     if (vfsCreatePlaceHolder(Utility::s2ws(item.remoteNodeId().value()).c_str(),
                              relativeLocalPath.lexically_normal().native().c_str(),

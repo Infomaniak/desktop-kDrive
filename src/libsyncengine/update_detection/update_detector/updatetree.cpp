@@ -24,11 +24,11 @@ namespace KDC {
 UpdateTree::UpdateTree(ReplicaSide side, const DbNode &dbNode)
     : _nodes(std::unordered_map<NodeId, std::shared_ptr<Node>>()),
       _rootNode(std::shared_ptr<Node>(
-          new Node(dbNode.nodeId(), side, (side == ReplicaSide::ReplicaSideLocal ? dbNode.nameLocal() : dbNode.nameRemote()),
-                   NodeTypeDirectory, {}, (side == ReplicaSide::ReplicaSideLocal ? dbNode.nodeIdLocal() : dbNode.nodeIdRemote()),
-                   (side == ReplicaSide::ReplicaSideLocal ? dbNode.created() : dbNode.created()),
-                   (side == ReplicaSide::ReplicaSideLocal ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()),
-                   0,  //(side == ReplicaSide::ReplicaSideLocal ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()),
+          new Node(dbNode.nodeId(), side, (side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote()),
+                   NodeType::Directory, {}, (side == ReplicaSide::Local ? dbNode.nodeIdLocal() : dbNode.nodeIdRemote()),
+                   (side == ReplicaSide::Local ? dbNode.created() : dbNode.created()),
+                   (side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()),
+                   0,  //(side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()),
                    nullptr))),
       _side(side) {}
 

@@ -42,7 +42,7 @@ void ConflictFinderWorker::execute() {
 void ConflictFinderWorker::findConflicts() {
     std::vector<std::shared_ptr<Node>> remoteMoveDirNodes;
     std::vector<std::shared_ptr<Node>> localMoveDirNodes;
-    findConflictsInTree(_syncPal->updateTree(ReplicaSideLocal), _syncPal->updateTree(ReplicaSideRemote), localMoveDirNodes,
+    findConflictsInTree(_syncPal->updateTree(ReplicaSide::Local), _syncPal->updateTree(ReplicaSide::Remote), localMoveDirNodes,
                         remoteMoveDirNodes);
 
     // Move-Move Cycle
@@ -91,8 +91,8 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
         // get next node
         node = queue.front();
 
-        if (node->type() == NodeType::NodeTypeDirectory && node->hasChangeEvent(OperationType::OperationTypeMove)) {
-            if (node->side() == ReplicaSideLocal) {
+        if (node->type() == NodeType::Directory && node->hasChangeEvent(OperationType::OperationTypeMove)) {
+            if (node->side() == ReplicaSide::Local) {
                 localMoveDirNodes.push_back(node);
             } else {
                 remoteMoveDirNodes.push_back(node);
@@ -129,7 +129,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
         }
         // Delete
         if (node->hasChangeEvent(OperationType::OperationTypeDelete)) {
-            if (node->type() == NodeType::NodeTypeDirectory) {
+            if (node->type() == NodeType::Directory) {
                 std::optional<std::vector<Conflict>> moveParentDeleteConf = checkMoveParentDeleteConflicts(node);
                 std::optional<std::vector<Conflict>> createParentDeleteConf = checkCreateParentDeleteConflicts(node);
                 if (moveParentDeleteConf) {
@@ -284,7 +284,7 @@ std::optional<Conflict> ConflictFinderWorker::checkMoveCreateConflict(std::share
 }
 
 std::optional<Conflict> ConflictFinderWorker::checkEditDeleteConflict(std::shared_ptr<Node> deleteNode) {
-    if (deleteNode->type() == NodeType::NodeTypeDirectory) {
+    if (deleteNode->type() == NodeType::Directory) {
         return std::nullopt;
     }
 
@@ -394,8 +394,8 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 return std::nullopt;
             }
             if (!found) {
-                LOG_SYNCPAL_WARN(_logger,
-                                 "Node not found for id = " << localNode->id()->c_str() << " side = " << localNode->side());
+                LOG_SYNCPAL_WARN(_logger, "Node not found for id = " << localNode->id()->c_str()
+                                                                     << " side = " << enumClassToInt(localNode->side()));
                 // break loop because localNode's path is not found
                 break;
             }
@@ -405,8 +405,8 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 return std::nullopt;
             }
             if (!found) {
-                LOG_SYNCPAL_WARN(_logger,
-                                 "Node not found for id = " << remoteNode->id()->c_str() << " side = " << remoteNode->side());
+                LOG_SYNCPAL_WARN(_logger, "Node not found for id = " << remoteNode->id()->c_str()
+                                                                     << " side = " << enumClassToInt(remoteNode->side()));
                 // continue loop because remoteNode's path is not found
                 continue;
             }

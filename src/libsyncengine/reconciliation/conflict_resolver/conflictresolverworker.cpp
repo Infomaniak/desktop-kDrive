@@ -73,11 +73,11 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             op->setType(OperationTypeMove);
             op->setAffectedNode(conflict.remoteNode());
             op->setCorrespondingNode(conflict.localNode());
-            op->setTargetSide(ReplicaSideLocal);
+            op->setTargetSide(ReplicaSide::Local);
 
             SyncName newName;
             if (!generateConflictedName(conflict.localNode(), newName)) {
-                op->setNewParentNode(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
+                op->setNewParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
             }
             op->setNewName(newName);
             op->setConflict(conflict);
@@ -191,7 +191,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 deletedChildNodeDbIds.insert(*childNode->idb());
             }
 
-            if (deleteNode->type() == NodeTypeDirectory) {
+            if (deleteNode->type() == NodeType::Directory) {
                 // Get all DB IDs of the child nodes
                 std::unordered_set<DbNodeId> allChildNodeDbIds;
                 ExitCode res = findAllChildNodeIdsFromDb(deleteNode, allChildNodeDbIds);
@@ -312,7 +312,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
             // Check if this node is a registered orphan
             if (_registeredOrphans.find(*conflict.node()->idb()) != _registeredOrphans.end()) {
-                loserNode = _registeredOrphans.find(*conflict.node()->idb())->second == ReplicaSideLocal ? conflict.remoteNode()
+                loserNode = _registeredOrphans.find(*conflict.node()->idb())->second == ReplicaSide::Local ? conflict.remoteNode()
                                                                                                          : conflict.localNode();
             }
 
@@ -379,7 +379,7 @@ void ConflictResolverWorker::findAllChildNodes(const std::shared_ptr<Node> paren
                                                std::unordered_set<std::shared_ptr<Node>> &children) {
     for (auto &child : parentNode->children()) {
         auto childNode = child.second;
-        if (childNode->type() == NodeTypeDirectory) {
+        if (childNode->type() == NodeType::Directory) {
             findAllChildNodes(childNode, children);
         }
         children.insert(childNode);

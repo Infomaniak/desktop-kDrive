@@ -23,7 +23,7 @@
 namespace KDC {
 
 SyncFileItem::SyncFileItem()
-    : _type(NodeTypeUnknown),
+    : _type(NodeType::Unknown),
       _path(SyncPath()),
       _newPath(std::nullopt),
       _localNodeId(std::nullopt),

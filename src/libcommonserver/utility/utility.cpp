@@ -500,10 +500,10 @@ std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
 
 std::string Utility::side2Str(ReplicaSide side) {
     switch (side) {
-        case ReplicaSideLocal: {
+        case ReplicaSide::Local: {
             return "Local";
         }
-        case ReplicaSideRemote: {
+        case ReplicaSide::Remote: {
             return "Remote";
         }
         default: {
@@ -518,10 +518,10 @@ std::wstring Utility::side2WStr(ReplicaSide side) {
 
 std::string Utility::nodeType2Str(NodeType type) {
     switch (type) {
-        case NodeTypeDirectory: {
+        case NodeType::Directory: {
             return "Directory";
         }
-        case NodeTypeFile: {
+        case NodeType::File: {
             return "File";
         }
         default: {

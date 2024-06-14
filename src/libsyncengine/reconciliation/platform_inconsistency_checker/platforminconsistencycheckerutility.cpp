@@ -201,7 +201,7 @@ bool PlatformInconsistencyCheckerUtility::checkPathLength(size_t pathSize, NodeT
     size_t maxLength = _maxPathLength;
 
 #ifdef _WIN32
-    if (type == NodeTypeDirectory) {
+    if (type == NodeType::Directory) {
         maxLength = _maxPathLengthFolder;
     }
 #else

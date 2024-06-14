@@ -47,7 +47,7 @@ namespace KDC {
 
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                                const std::string &shortName)
-    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSideRemote), _driveDbId(syncPal->_driveDbId) {}
+    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote), _driveDbId(syncPal->_driveDbId) {}
 
 RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~RemoteFileSystemObserverWorker");
@@ -368,7 +368,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             _snapshot->path(item.parentId(), path);
             path /= item.name();
 
-            Error err(_syncPal->syncDbId(), "", item.id(), NodeTypeDirectory, path, ConflictTypeNone, InconsistencyTypeNone,
+            Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictTypeNone, InconsistencyTypeNone,
                       CancelTypeAlreadyExistLocal);
             _syncPal->addError(err);
 
@@ -382,7 +382,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
                                                 << Utility::s2ws(item.id()).c_str() << L", parent inode:"
                                                 << Utility::s2ws(item.parentId()).c_str() << L", createdAt:" << item.createdAt()
                                                 << L", modtime:" << item.lastModified() << L", isDir:"
-                                                << (item.type() == NodeTypeDirectory) << L", size:" << item.size());
+                                                << (item.type() == NodeType::Directory) << L", size:" << item.size());
             }
         }
     }
@@ -572,9 +572,9 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     if (!JsonParserUtility::extractValue(actionObj, fileTypeKey, tmpStr)) {
         return ExitCodeBackError;
     }
-    actionInfo.type = tmpStr == fileKey ? NodeTypeFile : NodeTypeDirectory;
+    actionInfo.type = tmpStr == fileKey ? NodeType::File : NodeType::Directory;
 
-    if (actionInfo.type == NodeTypeFile) {
+    if (actionInfo.type == NodeType::File) {
         if (!JsonParserUtility::extractValue(actionObj, sizeKey, actionInfo.size, false)) {
             return ExitCodeBackError;
         }
@@ -617,7 +617,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
         case ActionCode::actionCodeRestore:
         case ActionCode::actionCodeCreate:
             _snapshot->updateItem(item);
-            if (actionInfo.type == NodeTypeDirectory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
+            if (actionInfo.type == NodeType::Directory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
                 // Retrieve all children
                 ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
                 ExitCause exitCause = this->exitCause();
@@ -636,7 +636,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
 
         // Item renamed
         case ActionCode::actionCodeRename:
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
+            _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSide::Remote);
             _snapshot->updateItem(item);
             break;
 
@@ -662,7 +662,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             if (movedItems.find(actionInfo.nodeId) != movedItems.end()) break;
             [[fallthrough]];
         case ActionCode::actionCodeTrash:
-            _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSideRemote);
+            _syncPal->removeItemFromTmpBlacklist(actionInfo.nodeId, ReplicaSide::Remote);
             if (!_snapshot->removeItem(actionInfo.nodeId)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Fail to remove item: " << SyncName2WStr(actionInfo.name).c_str() << L" ("
                                                                     << Utility::s2ws(actionInfo.nodeId).c_str() << L")");
@@ -720,9 +720,9 @@ bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &na
 #ifdef __APPLE__
     // Check that the name doesn't contain a character not yet supported by the filesystem (ex: U+1FA77 on pre macOS 13.4)
     bool valid = false;
-    if (type == NodeTypeFile) {
+    if (type == NodeType::File) {
         valid = CommonUtility::fileNameIsValid(name);
-    } else if (type == NodeTypeDirectory) {
+    } else if (type == NodeType::Directory) {
         valid = CommonUtility::dirNameIsValid(name);
     }
 

@@ -96,7 +96,7 @@ int getQFontWeightFromQSSFontWeight(int weight);
 qint64 folderSize(const QString &dirPath);
 qint64 folderDiskSize(const QString &dirPath);
 
-// Returns `path` if `nodeType` is `NodeTypeDirectory`, else the parent folder path.
+// Returns `path` if `nodeType` is `NodeType::Directory`, else the parent folder path.
 QString getFolderPath(const QString &path, NodeType nodeType);
 
 // Opens the folder indicated by `path`, if `path` is valid, otherwise tries to open the parent folder.

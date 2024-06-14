@@ -72,11 +72,11 @@ Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::sh
 
 Node::Node()
     : _idb(std::nullopt),
-      _side(ReplicaSide::ReplicaSideUnknown),
+      _side(ReplicaSide::Unknown),
       _name(SyncName()),
       _validLocalName(SyncName()),
       _inconsistencyType(InconsistencyTypeNone),
-      _type(NodeTypeUnknown),
+      _type(NodeType::Unknown),
       _id(std::string()),
       _previousId(std::nullopt),
       _status(NodeStatusUnprocessed),

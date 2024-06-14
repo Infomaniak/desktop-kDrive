@@ -50,7 +50,7 @@ DbNode::DbNode()
       _created(0),
       _lastModifiedLocal(0),
       _lastModifiedRemote(0),
-      _type(NodeTypeUnknown),
+      _type(NodeType::Unknown),
       _size(0),
       _checksum(std::string()),
       _status(SyncFileStatusUnknown),

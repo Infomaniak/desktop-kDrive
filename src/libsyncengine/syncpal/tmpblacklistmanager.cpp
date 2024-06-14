@@ -36,7 +36,7 @@ TmpBlacklistManager::~TmpBlacklistManager() {
 }
 
 int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept {
-    const auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
+    const auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     const auto errorItem = errors.find(nodeId);
 
     return errorItem == errors.end() ? 0 : errorItem->second.count + 1;
@@ -50,7 +50,7 @@ void logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide sid
 
 void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath,
                                              ReplicaSide side) {
-    auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
+    auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
 
     auto errorItem = errors.find(nodeId);
     if (errorItem != errors.end()) {
@@ -79,7 +79,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
 }
 
 void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {
-    auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
+    auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     if (auto errorItem = errors.find(nodeId); errorItem != errors.end()) {
         // Reset error timer
         errorItem->second.count++;
@@ -97,8 +97,8 @@ void TmpBlacklistManager::blacklistItem(const NodeId &nodeId, const SyncPath &re
 void TmpBlacklistManager::refreshBlacklist() {
     auto now = std::chrono::steady_clock::now();
     for (int i = 0; i < 2; i++) {
-        ReplicaSide side = i == 0 ? ReplicaSideLocal : ReplicaSideRemote;
-        auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
+        ReplicaSide side = i == 0 ? ReplicaSide::Local : ReplicaSide::Remote;
+        auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
 
         auto errorIt = errors.begin();
         while (errorIt != errors.end()) {
@@ -107,7 +107,7 @@ void TmpBlacklistManager::refreshBlacklist() {
                 logMessage(L"Removing item from tmp blacklist", errorIt->first, side);
 
                 SyncNodeType blacklistType =
-                    side == ReplicaSideLocal ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
+                    side == ReplicaSide::Local ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
 
                 std::unordered_set<NodeId> tmp;
                 SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType, tmp);
@@ -124,7 +124,7 @@ void TmpBlacklistManager::refreshBlacklist() {
 }
 
 void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
-    SyncNodeType blacklistType = side == ReplicaSideLocal ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
+    SyncNodeType blacklistType = side == ReplicaSide::Local ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
 
     std::unordered_set<NodeId> tmp;
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType, tmp);
@@ -133,12 +133,12 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
         SyncNodeCache::instance()->update(_syncPal->syncDbId(), blacklistType, tmp);
     }
 
-    auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
+    auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     errors.erase(nodeId);
 }
 
 bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const {
-    auto &errors = side == ReplicaSideLocal ? _localErrors : _remoteErrors;
+    auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
     for (const auto &errorInfo : errors) {
         if (Utility::startsWith(path, errorInfo.second.path)) {
             return true;
@@ -149,7 +149,7 @@ bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide sid
 }
 
 void TmpBlacklistManager::insertInBlacklist(const NodeId &nodeId, ReplicaSide side) {
-    SyncNodeType blacklistType = side == ReplicaSideLocal ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
+    SyncNodeType blacklistType = side == ReplicaSide::Local ? SyncNodeTypeTmpLocalBlacklist : SyncNodeTypeTmpRemoteBlacklist;
 
     std::unordered_set<NodeId> tmp;
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType, tmp);

@@ -251,7 +251,7 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
     const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
     for (const auto &deleteOpId : deleteOps) {
         SyncOpPtr deleteOp = _unsortedList.getOp(deleteOpId);
-        if (deleteOp->affectedNode()->type() != NodeTypeDirectory) {
+        if (deleteOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
@@ -308,7 +308,7 @@ void OperationSorterWorker::fixCreateBeforeMove() {
     const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
     for (const auto &createOpId : createOps) {
         SyncOpPtr createOp = _unsortedList.getOp(createOpId);
-        if (createOp->affectedNode()->type() != NodeTypeDirectory) {
+        if (createOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
@@ -570,7 +570,7 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
     std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
     for (const auto &xOpId : moveOps) {
         SyncOpPtr xOp = _unsortedList.getOp(xOpId);
-        if (xOp->affectedNode()->type() != NodeTypeDirectory) {
+        if (xOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
@@ -583,7 +583,7 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
 
         for (const auto &yOpId : moveOps) {
             SyncOpPtr yOp = _unsortedList.getOp(yOpId);
-            if (yOp->affectedNode()->type() != NodeTypeDirectory || xOp == yOp || xOp->targetSide() != yOp->targetSide()) {
+            if (yOp->affectedNode()->type() != NodeType::Directory || xOp == yOp || xOp->targetSide() != yOp->targetSide()) {
                 continue;
             }
 
@@ -616,7 +616,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     UniqueId opId1 = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr o1 = _syncPal->_syncOps->getOp(opId1);
     // check if o1 is move-directory operation
-    if (o1->type() != OperationTypeMove && o1->affectedNode()->type() != NodeTypeDirectory) {
+    if (o1->type() != OperationTypeMove && o1->affectedNode()->type() != NodeType::Directory) {
         return std::nullopt;
     }
 
@@ -640,7 +640,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     while (tmpNode->parentNode() != nullptr && tmpNode != correspondingDestinationParentNode) {
         tmpNode = tmpNode->parentNode();
         // storing all move-directory nodes
-        if (tmpNode->type() == NodeTypeDirectory && tmpNode->hasChangeEvent(OperationTypeMove)) {
+        if (tmpNode->type() == NodeType::Directory && tmpNode->hasChangeEvent(OperationTypeMove)) {
             moveDirectoryList.push_back(tmpNode);
         }
     }

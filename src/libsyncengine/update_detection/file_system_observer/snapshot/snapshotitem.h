@@ -70,7 +70,7 @@ class SnapshotItem {
         SyncName _name;
         SyncTime _createdAt = 0;
         SyncTime _lastModified = 0;
-        NodeType _type = NodeTypeUnknown;
+        NodeType _type = NodeType::Unknown;
         int64_t _size = 0;
         bool _isLink = false;
         std::string _contentChecksum;

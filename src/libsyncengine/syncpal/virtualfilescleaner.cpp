@@ -156,7 +156,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
 
                     DbNodeId dbId = -1;
                     bool found = false;
-                    if (!_syncDb->dbId(ReplicaSideLocal, entryPath, dbId, found)) {
+                    if (!_syncDb->dbId(ReplicaSide::Local, entryPath, dbId, found)) {
                         LOG_WARN(_logger, "Error in SyncDb::dbId");
                         _exitCode = ExitCodeDbError;
                         _exitCause = ExitCauseDbAccessError;

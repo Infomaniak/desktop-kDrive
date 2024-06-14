@@ -35,14 +35,14 @@ ReplicaSide Conflict::sideOfEvent(OperationType opType) const {
     } else if (correspondingNode()->hasChangeEvent(opType)) {
         return correspondingNode()->side();
     } else {
-        return ReplicaSide::ReplicaSideUnknown;
+        return ReplicaSide::Unknown;
     }
 }
 
 std::shared_ptr<Node> Conflict::localNode() const {
-    if (node()->side() == ReplicaSide::ReplicaSideLocal) {
+    if (node()->side() == ReplicaSide::Local) {
         return node();
-    } else if (correspondingNode()->side() == ReplicaSide::ReplicaSideLocal) {
+    } else if (correspondingNode()->side() == ReplicaSide::Local) {
         return correspondingNode();
     } else {
         return nullptr;
@@ -131,9 +131,9 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
 
 SyncPath ConflictCmp::pathOfEvent(const Conflict &conflict, OperationType optype) const {
     ReplicaSide side = conflict.sideOfEvent(optype);
-    SyncPath path = (side == ReplicaSide::ReplicaSideLocal    ? conflict.node()->getPath()
-                     : side == ReplicaSide::ReplicaSideRemote ? conflict.correspondingNode()->getPath()
-                                                              : std::filesystem::path());
+    SyncPath path = (side == ReplicaSide::Local                 ? conflict.node()->getPath()
+                     : side == ReplicaSide::Remote ? conflict.correspondingNode()->getPath()
+                                                                : std::filesystem::path());
 
     return path;
 }

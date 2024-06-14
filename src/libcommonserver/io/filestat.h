@@ -29,8 +29,8 @@ struct FileStat {
         uint64_t inode = 0;
         bool isHidden = false;
         // Type of the item or target item if symlink
-        // Value for a dangling symlink: NodeTypeUnknown (macOS & Linux), NodeTypeFile/NodeTypeDirectory (Windows)
-        NodeType nodeType = NodeTypeUnknown;
+        // Value for a dangling symlink: NodeType::Unknown (macOS & Linux), NodeType::File/NodeType::Directory (Windows)
+        NodeType nodeType = NodeType::Unknown;
 };
 
 }  // namespace KDC

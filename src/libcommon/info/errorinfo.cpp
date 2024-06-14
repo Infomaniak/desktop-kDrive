@@ -31,7 +31,7 @@ ErrorInfo::ErrorInfo()
       _exitCause(ExitCauseUnknown),
       _localNodeId(QString()),
       _remoteNodeId(QString()),
-      _nodeType(NodeTypeUnknown),
+      _nodeType(NodeType::Unknown),
       _path(QString()),
       _conflictType(ConflictTypeNone),
       _inconsistencyType(InconsistencyTypeNone),

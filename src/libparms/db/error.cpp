@@ -30,7 +30,7 @@ Error::Error()
       _syncDbId(0),
       _exitCode(ExitCodeUnknown),
       _exitCause(ExitCauseUnknown),
-      _nodeType(NodeTypeUnknown),
+      _nodeType(NodeType::Unknown),
       _conflictType(ConflictTypeNone),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}
@@ -44,7 +44,7 @@ Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitC
       _workerName(std::string()),
       _exitCode(exitCode),
       _exitCause(exitCause),
-      _nodeType(NodeTypeUnknown),
+      _nodeType(NodeType::Unknown),
       _conflictType(ConflictTypeNone),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}
@@ -57,7 +57,7 @@ Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, Exi
       _workerName(workerName),
       _exitCode(exitCode),
       _exitCause(exitCause),
-      _nodeType(NodeTypeUnknown),
+      _nodeType(NodeType::Unknown),
       _conflictType(ConflictTypeNone),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}

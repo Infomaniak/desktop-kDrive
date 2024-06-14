@@ -87,7 +87,7 @@ ExitCode BlacklistPropagator::checkNodes() {
         // Check if item still exist
         DbNodeId dbId;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(ReplicaSideRemote, remoteNodeId, dbId, found)) {
+        if (!_syncPal->_syncDb->dbId(ReplicaSide::Remote, remoteNodeId, dbId, found)) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::dbId");
             exitCode = ExitCodeDbError;
             break;
@@ -97,7 +97,7 @@ ExitCode BlacklistPropagator::checkNodes() {
             noItemToRemoveFound = false;
 
             NodeId localNodeId;
-            if (!_syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, remoteNodeId, localNodeId, found)) {
+            if (!_syncPal->_syncDb->correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found)) {
                 LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::correspondingNodeId");
                 exitCode = ExitCodeDbError;
                 break;
@@ -248,7 +248,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             PlatformInconsistencyCheckerUtility::renameLocalFile(
                 absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
 
-            Error err(_syncPal->syncDbId(), "", "", NodeTypeDirectory, absolutePath, ConflictTypeNone, InconsistencyTypeNone,
+            Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictTypeNone, InconsistencyTypeNone,
                       CancelTypeMoveToBinFailed, destPath);
             _syncPal->addError(err);
         } else {

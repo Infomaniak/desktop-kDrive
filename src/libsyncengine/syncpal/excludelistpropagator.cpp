@@ -94,8 +94,8 @@ ExitCode ExcludeListPropagator::checkItems() {
                 return ExitCodeSystemError;
             } else if (isExcluded) {
                 if (isWarning) {
-                    NodeId localNodeId = _syncPal->snapshot(ReplicaSideLocal)->itemId(relativePath);
-                    NodeType localNodeType = _syncPal->snapshot(ReplicaSideLocal)->type(localNodeId);
+                    NodeId localNodeId = _syncPal->snapshot(ReplicaSide::Local)->itemId(relativePath);
+                    NodeType localNodeType = _syncPal->snapshot(ReplicaSide::Local)->type(localNodeId);
                     Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictTypeNone,
                                 InconsistencyTypeNone, CancelTypeExcludedByTemplate);
                     _syncPal->addError(error);
@@ -103,7 +103,7 @@ ExitCode ExcludeListPropagator::checkItems() {
                 // Find dbId from the entry path
                 DbNodeId dbNodeId = -1;
                 bool found = false;
-                if (!_syncPal->_syncDb->dbId(ReplicaSideLocal, relativePath, dbNodeId, found)) {
+                if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, relativePath, dbNodeId, found)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                       L"Error in SyncDb::dbId for path=" << Path2WStr(relativePath).c_str());
                     return ExitCodeDbError;

@@ -132,11 +132,11 @@ class Node {
 
     private:
         std::optional<DbNodeId> _idb = std::nullopt;
-        ReplicaSide _side = ReplicaSideUnknown;
+        ReplicaSide _side = ReplicaSide::Unknown;
         SyncName _name;
         SyncName _validLocalName;
         InconsistencyType _inconsistencyType = InconsistencyTypeNone;
-        NodeType _type = NodeTypeUnknown;
+        NodeType _type = NodeType::Unknown;
         int _changeEvents = OperationTypeNone;
         std::optional<NodeId> _id = std::nullopt;
         std::optional<NodeId> _previousId = std::nullopt;

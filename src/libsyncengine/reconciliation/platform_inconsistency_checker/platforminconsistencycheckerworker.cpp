@@ -39,14 +39,14 @@ void PlatformInconsistencyCheckerWorker::execute() {
     ExitCode exitCode = checkTree(_syncPal->_remoteUpdateTree->rootNode(), _syncPal->_remoteUpdateTree->rootNode()->name());
 
     for (const auto &idItem : _idsToBeRemoved) {
-        _syncPal->updateTree(ReplicaSideRemote)->deleteNode(idItem.remoteId);
-        _syncPal->updateTree(ReplicaSideLocal)->deleteNode(idItem.localId);
+        _syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId);
+        _syncPal->updateTree(ReplicaSide::Local)->deleteNode(idItem.localId);
     }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     LOG_SYNCPAL_DEBUG(_logger, "Platform Inconsistency checked tree in: " << elapsed_seconds.count() << "s");
 
-    _syncPal->updateTree(ReplicaSideRemote)->setInconsistencyCheckDone();
+    _syncPal->updateTree(ReplicaSide::Remote)->setInconsistencyCheckDone();
 
     setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());

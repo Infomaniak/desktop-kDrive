@@ -53,11 +53,11 @@ void TestSyncDb::testNodes() {
     time_t tDrive = std::time(0);
 
     DbNode nodeDir1(0, _testObj->rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id loc 1", "id drive 1", tLoc, tLoc,
-                    tDrive, NodeType::NodeTypeDirectory, 0, std::nullopt);
+                    tDrive, NodeType::Directory, 0, std::nullopt);
     DbNode nodeDir2(0, _testObj->rootNode().nodeId(), Str("Dir loc 2"), Str("Dir drive 2"), "id loc 2", "id drive 2", tLoc, tLoc,
-                    tDrive, NodeType::NodeTypeDirectory, 0, std::nullopt);
+                    tDrive, NodeType::Directory, 0, std::nullopt);
     DbNode nodeDir3(0, _testObj->rootNode().nodeId(), Str("家屋香袈睷晦"), Str("家屋香袈睷晦"), "id loc 3", "id drive 3", tLoc,
-                    tLoc, tDrive, NodeType::NodeTypeDirectory, 0, std::nullopt);
+                    tLoc, tDrive, NodeType::Directory, 0, std::nullopt);
     DbNodeId dbNodeIdDir1;
     DbNodeId dbNodeIdDir2;
     DbNodeId dbNodeIdDir3;
@@ -67,15 +67,15 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->insertNode(nodeDir3, dbNodeIdDir3, constraintError));
 
     DbNode nodeFile1(0, dbNodeIdDir1, Str("File loc 1.1"), Str("File drive 1.1"), "id loc 1.1", "id drive 1.1", tLoc, tLoc,
-                     tDrive, NodeType::NodeTypeFile, 0, "cs 1.1");
+                     tDrive, NodeType::File, 0, "cs 1.1");
     DbNode nodeFile2(0, dbNodeIdDir1, Str("File loc 1.2"), Str("File drive 1.2"), "id loc 1.2", "id drive 1.2", tLoc, tLoc,
-                     tDrive, NodeType::NodeTypeFile, 0, "cs 1.2");
+                     tDrive, NodeType::File, 0, "cs 1.2");
     DbNode nodeFile3(0, dbNodeIdDir1, Str("File loc 1.3"), Str("File drive 1.3"), "id loc 1.3", "id drive 1.3", tLoc, tLoc,
-                     tDrive, NodeType::NodeTypeFile, 0, "cs 1.3");
+                     tDrive, NodeType::File, 0, "cs 1.3");
     DbNode nodeFile4(0, dbNodeIdDir1, Str("File loc 1.4"), Str("File drive 1.4"), "id loc 1.4", "id drive 1.4", tLoc, tLoc,
-                     tDrive, NodeType::NodeTypeFile, 0, "cs 1.4");
+                     tDrive, NodeType::File, 0, "cs 1.4");
     DbNode nodeFile5(0, dbNodeIdDir1, Str("File loc 1.5"), Str("File drive 1.5"), "id loc 1.5", "id drive 1.5", tLoc, tLoc,
-                     tDrive, NodeType::NodeTypeFile, 0, "cs 1.5");
+                     tDrive, NodeType::File, 0, "cs 1.5");
     DbNodeId dbNodeIdFile1;
     DbNodeId dbNodeIdFile2;
     DbNodeId dbNodeIdFile3;
@@ -88,7 +88,7 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile5, dbNodeIdFile5, constraintError));
 
     DbNode nodeFile6(0, dbNodeIdDir2, Str("File loc 2.1"), Str("File drive 2.1"), "id loc 2.1", "id drive 2.1", tLoc, tLoc,
-                     tDrive, NodeType::NodeTypeFile, 0, "cs 2.1");
+                     tDrive, NodeType::File, 0, "cs 2.1");
     DbNodeId dbNodeIdFile6;
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile6, dbNodeIdFile6, constraintError));
 
@@ -105,16 +105,16 @@ void TestSyncDb::testNodes() {
     SyncName name;
     std::optional<SyncTime> time;
     std::optional<std::string> cs;
-    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideLocal, nodeFile6.nodeIdLocal().value(), name, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, nodeFile6.nodeIdLocal().value(), name, found) && found);
     CPPUNIT_ASSERT(name == nodeFile6.nameLocal());
-    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideRemote, nodeFile6.nodeIdRemote().value(), name, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSide::Remote, nodeFile6.nodeIdRemote().value(), name, found) && found);
     CPPUNIT_ASSERT(name == nodeFile6.nameRemote());
-    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::ReplicaSideLocal, nodeFile6.nodeIdLocal().value(), time, found) && found);
+    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::Local, nodeFile6.nodeIdLocal().value(), time, found) && found);
     CPPUNIT_ASSERT(time == nodeFile6.lastModifiedLocal());
-    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::ReplicaSideRemote, nodeFile6.nodeIdRemote().value(), time, found) &&
+    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::ReplicaSide::Remote, nodeFile6.nodeIdRemote().value(), time, found) &&
                    found);
     CPPUNIT_ASSERT(time == nodeFile6.lastModifiedRemote());
-    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::ReplicaSideLocal, nodeFile6.nodeIdLocal().value(), cs, found) && found);
+    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::Local, nodeFile6.nodeIdLocal().value(), cs, found) && found);
     CPPUNIT_ASSERT(cs == nodeFile6.checksum());
 
     // Delete node
@@ -122,206 +122,206 @@ void TestSyncDb::testNodes() {
 
     // id
     std::optional<NodeId> nodeIdRoot;
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideLocal, SyncPath(""), nodeIdRoot, found) && found);
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::Local, SyncPath(""), nodeIdRoot, found) && found);
     CPPUNIT_ASSERT(_testObj->rootNode().nodeIdLocal() == nodeIdRoot);
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideRemote, SyncPath(""), nodeIdRoot, found) && found);
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSide::Remote, SyncPath(""), nodeIdRoot, found) && found);
     CPPUNIT_ASSERT(_testObj->rootNode().nodeIdRemote() == nodeIdRoot);
     std::optional<NodeId> nodeIdFile3;
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideLocal, SyncPath("Dir loc 1/File loc 1.3"), nodeIdFile3, found) && found);
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::Local, SyncPath("Dir loc 1/File loc 1.3"), nodeIdFile3, found) && found);
     CPPUNIT_ASSERT(nodeFile3.nodeIdLocal() == nodeIdFile3);
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideRemote, SyncPath("Dir drive 1/File drive 1.3"), nodeIdFile3, found) &&
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSide::Remote, SyncPath("Dir drive 1/File drive 1.3"), nodeIdFile3, found) &&
                    found);
     CPPUNIT_ASSERT(nodeFile3.nodeIdRemote() == nodeIdFile3);
     std::optional<NodeId> nodeIdFile4;
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideRemote, SyncPath("Dir drive 1/File drive 1.4"), nodeIdFile4, found) &&
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSide::Remote, SyncPath("Dir drive 1/File drive 1.4"), nodeIdFile4, found) &&
                    found);
     CPPUNIT_ASSERT(nodeIdFile4);
     std::optional<NodeId> nodeIdFile5;
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideLocal, SyncPath("Dir loc 1/File loc 1.5"), nodeIdFile5, found) && found);
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::Local, SyncPath("Dir loc 1/File loc 1.5"), nodeIdFile5, found) && found);
     CPPUNIT_ASSERT(nodeIdFile5);
 
     // type
     NodeType typeDir1;
-    CPPUNIT_ASSERT(_testObj->type(ReplicaSide::ReplicaSideLocal, nodeDir1.nodeIdLocal().value(), typeDir1, found) && found);
+    CPPUNIT_ASSERT(_testObj->type(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), typeDir1, found) && found);
     CPPUNIT_ASSERT(nodeDir1.type() == typeDir1);
-    CPPUNIT_ASSERT(_testObj->type(ReplicaSide::ReplicaSideRemote, nodeDir1.nodeIdRemote().value(), typeDir1, found) && found);
+    CPPUNIT_ASSERT(_testObj->type(ReplicaSide::ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), typeDir1, found) && found);
     CPPUNIT_ASSERT(nodeDir1.type() == typeDir1);
     NodeType typeFile3;
-    CPPUNIT_ASSERT(_testObj->type(ReplicaSide::ReplicaSideLocal, nodeFile3.nodeIdLocal().value(), typeFile3, found) && found);
+    CPPUNIT_ASSERT(_testObj->type(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), typeFile3, found) && found);
     CPPUNIT_ASSERT(nodeFile3.type() == typeFile3);
-    CPPUNIT_ASSERT(_testObj->type(ReplicaSide::ReplicaSideRemote, nodeFile3.nodeIdRemote().value(), typeFile3, found) && found);
+    CPPUNIT_ASSERT(_testObj->type(ReplicaSide::ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), typeFile3, found) && found);
     CPPUNIT_ASSERT(nodeFile3.type() == typeFile3);
 
     // lastModified
     std::optional<SyncTime> timeDir1;
-    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::ReplicaSideLocal, nodeDir1.nodeIdLocal().value(), timeDir1, found) &&
+    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), timeDir1, found) &&
                    found);
     CPPUNIT_ASSERT(nodeDir1.lastModifiedLocal() == timeDir1);
-    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::ReplicaSideRemote, nodeDir1.nodeIdRemote().value(), timeDir1, found) &&
+    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), timeDir1, found) &&
                    found);
     CPPUNIT_ASSERT(nodeDir1.lastModifiedRemote() == timeDir1);
     std::optional<SyncTime> timeFile3;
-    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::ReplicaSideLocal, nodeFile3.nodeIdLocal().value(), timeFile3, found) &&
+    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), timeFile3, found) &&
                    found);
     CPPUNIT_ASSERT(nodeFile3.lastModifiedLocal() == timeFile3);
-    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::ReplicaSideRemote, nodeFile3.nodeIdRemote().value(), timeFile3, found) &&
+    CPPUNIT_ASSERT(_testObj->lastModified(ReplicaSide::ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), timeFile3, found) &&
                    found);
     CPPUNIT_ASSERT(nodeFile3.lastModifiedRemote() == timeFile3);
 
     // parent
     NodeId parentNodeidFile3;
-    CPPUNIT_ASSERT(_testObj->parent(ReplicaSide::ReplicaSideLocal, nodeFile3.nodeIdLocal().value(), parentNodeidFile3, found) &&
+    CPPUNIT_ASSERT(_testObj->parent(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), parentNodeidFile3, found) &&
                    found);
     CPPUNIT_ASSERT(nodeDir1.nodeIdLocal() == parentNodeidFile3);
-    CPPUNIT_ASSERT(_testObj->parent(ReplicaSide::ReplicaSideRemote, nodeFile3.nodeIdRemote().value(), parentNodeidFile3, found) &&
+    CPPUNIT_ASSERT(_testObj->parent(ReplicaSide::ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), parentNodeidFile3, found) &&
                    found);
     CPPUNIT_ASSERT(nodeDir1.nodeIdRemote() == parentNodeidFile3);
     NodeId parentNodeidDir1;
-    CPPUNIT_ASSERT(_testObj->parent(ReplicaSide::ReplicaSideLocal, nodeDir1.nodeIdLocal().value(), parentNodeidDir1, found) &&
+    CPPUNIT_ASSERT(_testObj->parent(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), parentNodeidDir1, found) &&
                    found);
     CPPUNIT_ASSERT(_testObj->rootNode().nodeIdLocal() == parentNodeidDir1);
-    CPPUNIT_ASSERT(_testObj->parent(ReplicaSide::ReplicaSideRemote, nodeDir1.nodeIdRemote().value(), parentNodeidDir1, found) &&
+    CPPUNIT_ASSERT(_testObj->parent(ReplicaSide::ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), parentNodeidDir1, found) &&
                    found);
     CPPUNIT_ASSERT(_testObj->rootNode().nodeIdRemote() == parentNodeidDir1);
 
     // path
     SyncPath pathFile3;
-    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideLocal, nodeFile3.nodeIdLocal().value(), pathFile3, found) && found);
+    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), pathFile3, found) && found);
     CPPUNIT_ASSERT(pathFile3 == SyncPath("Dir loc 1/File loc 1.3"));
-    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideRemote, nodeFile3.nodeIdRemote().value(), pathFile3, found) && found);
+    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), pathFile3, found) && found);
     CPPUNIT_ASSERT(pathFile3 == SyncPath("Dir drive 1/File drive 1.3"));
     SyncPath pathDir1;
-    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideLocal, nodeDir1.nodeIdLocal().value(), pathDir1, found) && found);
+    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), pathDir1, found) && found);
     CPPUNIT_ASSERT(pathDir1 == SyncPath("Dir loc 1"));
-    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideRemote, nodeDir1.nodeIdRemote().value(), pathDir1, found) && found);
+    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), pathDir1, found) && found);
     CPPUNIT_ASSERT(pathDir1 == SyncPath("Dir drive 1"));
     SyncPath pathDir3;
-    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideLocal, nodeDir3.nodeIdLocal().value(), pathDir3, found) && found);
+    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::Local, nodeDir3.nodeIdLocal().value(), pathDir3, found) && found);
     CPPUNIT_ASSERT(pathDir3 == SyncPath("家屋香袈睷晦"));
     SyncPath pathRoot;
-    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideLocal, _testObj->rootNode().nodeIdLocal().value(), pathRoot, found) &&
+    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(), pathRoot, found) &&
                    found);
     CPPUNIT_ASSERT(pathRoot == SyncPath(""));
-    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideRemote, _testObj->rootNode().nodeIdRemote().value(), pathRoot, found) &&
+    CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSide::Remote, _testObj->rootNode().nodeIdRemote().value(), pathRoot, found) &&
                    found);
     CPPUNIT_ASSERT(pathRoot == SyncPath(""));
 
     // name
-    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideLocal, nodeFile3.nodeIdLocal().value(), name, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), name, found) && found);
     CPPUNIT_ASSERT(name == nodeFile3.nameLocal());
-    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideRemote, nodeFile3.nodeIdRemote().value(), name, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), name, found) && found);
     CPPUNIT_ASSERT(name == nodeFile3.nameRemote());
-    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideLocal, nodeDir1.nodeIdLocal().value(), name, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), name, found) && found);
     CPPUNIT_ASSERT(name == nodeDir1.nameLocal());
-    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideRemote, nodeDir1.nodeIdRemote().value(), name, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), name, found) && found);
     CPPUNIT_ASSERT(name == nodeDir1.nameRemote());
-    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideLocal, nodeDir3.nodeIdLocal().value(), name, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, nodeDir3.nodeIdLocal().value(), name, found) && found);
     CPPUNIT_ASSERT(name == nodeDir3.nameLocal());
-    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideRemote, nodeDir3.nodeIdRemote().value(), name, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSide::Remote, nodeDir3.nodeIdRemote().value(), name, found) && found);
     CPPUNIT_ASSERT(name == nodeDir3.nameRemote());
 
     // checksum
-    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::ReplicaSideLocal, _testObj->rootNode().nodeIdLocal().value(), cs, found) &&
+    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(), cs, found) &&
                    found);
     CPPUNIT_ASSERT(!cs);
-    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::ReplicaSideRemote, nodeDir1.nodeIdRemote().value(), cs, found) && found);
+    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), cs, found) && found);
     CPPUNIT_ASSERT(!cs);
-    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::ReplicaSideLocal, nodeFile3.nodeIdLocal().value(), cs, found) && found);
+    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), cs, found) && found);
     CPPUNIT_ASSERT(cs == nodeFile3.checksum());
-    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::ReplicaSideRemote, nodeFile3.nodeIdRemote().value(), cs, found) && found);
+    CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), cs, found) && found);
     CPPUNIT_ASSERT(cs == nodeFile3.checksum());
 
     // ids
     std::vector<NodeId> ids;
-    CPPUNIT_ASSERT(_testObj->ids(ReplicaSide::ReplicaSideLocal, ids, found) && found);
+    CPPUNIT_ASSERT(_testObj->ids(ReplicaSide::Local, ids, found) && found);
     CPPUNIT_ASSERT(ids.size() == 9);
     CPPUNIT_ASSERT(ids[0] == _testObj->rootNode().nodeIdLocal());
     CPPUNIT_ASSERT(ids[8] == nodeFile5.nodeIdLocal());
     ids.clear();
-    CPPUNIT_ASSERT(_testObj->ids(ReplicaSide::ReplicaSideRemote, ids, found) && found);
+    CPPUNIT_ASSERT(_testObj->ids(ReplicaSide::ReplicaSide::Remote, ids, found) && found);
     CPPUNIT_ASSERT(ids.size() == 9);
     CPPUNIT_ASSERT(ids[0] == _testObj->rootNode().nodeIdRemote());
     CPPUNIT_ASSERT(ids[8] == nodeFile5.nodeIdRemote());
 
     // ancestor
     bool ancestor;
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideLocal, _testObj->rootNode().nodeIdLocal().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(),
                                       _testObj->rootNode().nodeIdLocal().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideRemote, _testObj->rootNode().nodeIdRemote().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSide::Remote, _testObj->rootNode().nodeIdRemote().value(),
                                       _testObj->rootNode().nodeIdRemote().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideLocal, _testObj->rootNode().nodeIdLocal().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(),
                                       nodeDir1.nodeIdLocal().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideRemote, _testObj->rootNode().nodeIdRemote().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSide::Remote, _testObj->rootNode().nodeIdRemote().value(),
                                       nodeDir1.nodeIdRemote().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideLocal, _testObj->rootNode().nodeIdLocal().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(),
                                       nodeFile3.nodeIdLocal().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideRemote, _testObj->rootNode().nodeIdRemote().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSide::Remote, _testObj->rootNode().nodeIdRemote().value(),
                                       nodeFile3.nodeIdRemote().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideLocal, nodeDir1.nodeIdLocal().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(),
                                       nodeFile3.nodeIdLocal().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideRemote, nodeDir1.nodeIdRemote().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(),
                                       nodeFile3.nodeIdRemote().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideLocal, nodeFile2.nodeIdLocal().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::Local, nodeFile2.nodeIdLocal().value(),
                                       nodeDir1.nodeIdLocal().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(!ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideRemote, nodeFile2.nodeIdRemote().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSide::Remote, nodeFile2.nodeIdRemote().value(),
                                       nodeDir1.nodeIdRemote().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(!ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideLocal, nodeFile1.nodeIdLocal().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::Local, nodeFile1.nodeIdLocal().value(),
                                       nodeFile2.nodeIdLocal().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(!ancestor);
-    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSideRemote, nodeFile1.nodeIdRemote().value(),
+    CPPUNIT_ASSERT(_testObj->ancestor(ReplicaSide::ReplicaSide::Remote, nodeFile1.nodeIdRemote().value(),
                                       nodeFile2.nodeIdRemote().value(), ancestor, found) &&
                    found);
     CPPUNIT_ASSERT(!ancestor);
 
     // dbId
     DbNodeId dbNodeId;
-    CPPUNIT_ASSERT(_testObj->dbId(ReplicaSide::ReplicaSideLocal, _testObj->rootNode().nodeIdLocal().value(), dbNodeId, found) &&
+    CPPUNIT_ASSERT(_testObj->dbId(ReplicaSide::Local, _testObj->rootNode().nodeIdLocal().value(), dbNodeId, found) &&
                    found);
     CPPUNIT_ASSERT(dbNodeId == _testObj->rootNode().nodeId());
-    CPPUNIT_ASSERT(_testObj->dbId(ReplicaSide::ReplicaSideRemote, _testObj->rootNode().nodeIdRemote().value(), dbNodeId, found) &&
+    CPPUNIT_ASSERT(_testObj->dbId(ReplicaSide::ReplicaSide::Remote, _testObj->rootNode().nodeIdRemote().value(), dbNodeId, found) &&
                    found);
     CPPUNIT_ASSERT(dbNodeId == _testObj->rootNode().nodeId());
-    CPPUNIT_ASSERT(_testObj->dbId(ReplicaSide::ReplicaSideLocal, nodeFile3.nodeIdLocal().value(), dbNodeId, found) && found);
+    CPPUNIT_ASSERT(_testObj->dbId(ReplicaSide::Local, nodeFile3.nodeIdLocal().value(), dbNodeId, found) && found);
     CPPUNIT_ASSERT(dbNodeId == dbNodeIdFile3);
-    CPPUNIT_ASSERT(_testObj->dbId(ReplicaSide::ReplicaSideRemote, nodeFile3.nodeIdRemote().value(), dbNodeId, found) && found);
+    CPPUNIT_ASSERT(_testObj->dbId(ReplicaSide::ReplicaSide::Remote, nodeFile3.nodeIdRemote().value(), dbNodeId, found) && found);
     CPPUNIT_ASSERT(dbNodeId == dbNodeIdFile3);
 
     // id
     NodeId nodeId;
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideLocal, _testObj->rootNode().nodeId(), nodeId, found) && found);
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::Local, _testObj->rootNode().nodeId(), nodeId, found) && found);
     CPPUNIT_ASSERT(nodeId == _testObj->rootNode().nodeIdLocal().value());
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideRemote, _testObj->rootNode().nodeId(), nodeId, found) && found);
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSide::Remote, _testObj->rootNode().nodeId(), nodeId, found) && found);
     CPPUNIT_ASSERT(nodeId == _testObj->rootNode().nodeIdRemote().value());
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideLocal, dbNodeIdFile3, nodeId, found) && found);
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::Local, dbNodeIdFile3, nodeId, found) && found);
     CPPUNIT_ASSERT(nodeId == nodeFile3.nodeIdLocal().value());
-    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSideRemote, dbNodeIdFile3, nodeId, found) && found);
+    CPPUNIT_ASSERT(_testObj->id(ReplicaSide::ReplicaSide::Remote, dbNodeIdFile3, nodeId, found) && found);
     CPPUNIT_ASSERT(nodeId == nodeFile3.nodeIdRemote().value());
 
     // node from local ID
     {
         DbNode nodeDirLocal;
-        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::ReplicaSideLocal, nodeDir1.nodeIdLocal().value(), nodeDirLocal, found) &&
+        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::Local, nodeDir1.nodeIdLocal().value(), nodeDirLocal, found) &&
                        found);
         CPPUNIT_ASSERT(nodeDirLocal.nodeId() == dbNodeIdDir1);
         CPPUNIT_ASSERT(nodeDirLocal.parentNodeId() == nodeDir1.parentNodeId());
@@ -332,13 +332,13 @@ void TestSyncDb::testNodes() {
         CPPUNIT_ASSERT(nodeDirLocal.size() == nodeDir1.size());
 
         DbNode nodeDirRemote;
-        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::ReplicaSideRemote, nodeDir1.nodeIdRemote().value(), nodeDirRemote, found) &&
+        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::ReplicaSide::Remote, nodeDir1.nodeIdRemote().value(), nodeDirRemote, found) &&
                        found);
         CPPUNIT_ASSERT(nodeDirRemote.nameRemote() == nodeDir1.nameRemote());
         CPPUNIT_ASSERT(nodeDirRemote.lastModifiedRemote() == nodeDir1.lastModifiedRemote());
 
         DbNode nodeFileLocal;
-        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::ReplicaSideLocal, nodeFile1.nodeIdLocal().value(), nodeFileLocal, found) &&
+        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::Local, nodeFile1.nodeIdLocal().value(), nodeFileLocal, found) &&
                        found);
         CPPUNIT_ASSERT(nodeFileLocal.nodeId() == dbNodeIdFile1);
         CPPUNIT_ASSERT(nodeFileLocal.parentNodeId() == nodeFile1.parentNodeId());
@@ -349,7 +349,7 @@ void TestSyncDb::testNodes() {
         CPPUNIT_ASSERT(nodeFileLocal.size() == nodeFile1.size());
 
         DbNode nodeFileRemote;
-        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::ReplicaSideRemote, nodeFile1.nodeIdRemote().value(), nodeFileRemote, found) &&
+        CPPUNIT_ASSERT(_testObj->node(ReplicaSide::ReplicaSide::Remote, nodeFile1.nodeIdRemote().value(), nodeFileRemote, found) &&
                        found);
         CPPUNIT_ASSERT(nodeFileRemote.nameRemote() == nodeFile1.nameRemote());
         CPPUNIT_ASSERT(nodeFileRemote.lastModifiedRemote() == nodeFile1.lastModifiedRemote());

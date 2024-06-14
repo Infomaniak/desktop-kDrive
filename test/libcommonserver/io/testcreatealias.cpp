@@ -39,7 +39,7 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeType::File);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
@@ -54,7 +54,7 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeDirectory);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeType::Directory);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
@@ -82,7 +82,7 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeType::File);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
@@ -100,9 +100,9 @@ void TestIo::testCreateAlias() {
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeDirectory);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::Directory);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeNone);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
     }
 
     // The alias path is the target path (of an existing file): no error!
@@ -119,7 +119,7 @@ void TestIo::testCreateAlias() {
 
         const auto privateTargetPath =
             SyncPath{"/private" + std::string(targetPath.c_str())};  // Simple concatenation doesn't append the `/private` prefix.
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, privateTargetPath, LinkTypeFinderAlias, NodeTypeFile);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, privateTargetPath, LinkTypeFinderAlias, NodeType::File);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
@@ -186,7 +186,7 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeType::File);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 }

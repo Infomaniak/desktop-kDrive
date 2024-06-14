@@ -30,7 +30,6 @@ namespace KDC {
 
 #define ERRID Utility::errId(__FILE__, __LINE__)
 
-
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
@@ -90,28 +89,39 @@ using OStringStream = std::ostringstream;
 #define Str2Path(s) std::filesystem::path(KDC::Utility::s2ws(s))
 #endif
 
-using ExecuteCommand = std::function<void (const char *)>;
-
-using ReplicaSide = enum { ReplicaSideUnknown, ReplicaSideLocal, ReplicaSideRemote };
-
-inline ReplicaSide otherSide(ReplicaSide side) {
-    return side == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal;
+template <class C>
+requires(std::is_enum_v<C> && std::same_as<std::underlying_type_t<C>, int>) 
+inline int enumClassToInt(C e) {
+    return static_cast<int>(e);
 }
 
-typedef enum {
-    NodeTypeUnknown,
-    NodeTypeFile,  // File or symlink
-    NodeTypeDirectory
-} NodeType;
+template <class C>
+requires(std::is_enum_v<C> && std::same_as<std::underlying_type_t<C>, int>)
+inline C intToEnumClass(int e) {
+    return static_cast<C>(e);
+}
 
-typedef enum {
+using ExecuteCommand = std::function<void(const char *)>;
+enum class ReplicaSide { Unknown, Local, Remote };
+
+inline ReplicaSide otherSide(ReplicaSide side) {
+    return side == ReplicaSide::Local ? ReplicaSide::Remote : ReplicaSide::Local;
+}
+
+enum class NodeType {
+    Unknown,
+    File,  // File or symlink
+    Directory,
+};
+
+using OperationType = enum {
     OperationTypeNone = 0x00,
     OperationTypeCreate = 0x01,
     OperationTypeMove = 0x02,
     OperationTypeEdit = 0x04,
     OperationTypeDelete = 0x08,
     OperationTypeRights = 0x10
-} OperationType;
+};
 
 typedef enum {
     ExitCodeUnknown,
@@ -362,9 +372,9 @@ typedef enum {
 } IoError;
 
 struct ItemType {
-        NodeType nodeType{NodeTypeUnknown};  // The type of a link is `NodeTypeFile`.
+        NodeType nodeType{NodeType::Unknown};  // The type of a link is `NodeType::File`.
         LinkType linkType{LinkTypeNone};
-        NodeType targetType{NodeTypeUnknown};  // The type of the target item when `linkType` is not `LinkTypeNone`.
+        NodeType targetType{NodeType::Unknown};  // The type of the target item when `linkType` is not `LinkTypeNone`.
         SyncPath targetPath;
         // The value of the data member `ioError` is `IoErrorNoSuchFileOrDirectory` if
         // - the file or directory indicated by `path` doesn't exist

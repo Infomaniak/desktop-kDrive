@@ -156,7 +156,7 @@ bool IoHelper::_isExpectedError(IoError ioError) noexcept {
 */
 bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
     if (itemType.targetPath.empty()) {
-        itemType.targetType = NodeTypeUnknown;
+        itemType.targetType = NodeType::Unknown;
         return true;
     }
 
@@ -174,7 +174,7 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
         return expected;
     }
 
-    itemType.targetType = isDir ? NodeTypeDirectory : NodeTypeFile;
+    itemType.targetType = isDir ? NodeType::Directory : NodeType::File;
 
     return true;
 }
@@ -233,12 +233,12 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
         struct stat sbTarget;
         if (stat(path.string().c_str(), &sbTarget) < 0) {
             // Cannot access target => undetermined
-            buf->nodeType = NodeTypeUnknown;
+            buf->nodeType = NodeType::Unknown;
         } else {
-            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
         }
     } else {
-        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeTypeDirectory : NodeTypeFile;
+        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
     }
 
     return true;
@@ -306,7 +306,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
             return success;
         }
 
-        itemType.nodeType = NodeTypeFile;
+        itemType.nodeType = NodeType::File;
         itemType.linkType = LinkTypeSymlink;
 
         // Get target type
@@ -348,7 +348,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
             return false;
         }
 
-        itemType.nodeType = NodeTypeFile;
+        itemType.nodeType = NodeType::File;
         itemType.linkType = LinkTypeFinderAlias;
 
         if (itemType.ioError != IoErrorSuccess) {
@@ -375,9 +375,9 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         }
 
         if (isJunction) {
-            itemType.nodeType = NodeTypeFile;
+            itemType.nodeType = NodeType::File;
             itemType.linkType = LinkTypeJunction;
-            itemType.targetType = NodeTypeDirectory;
+            itemType.targetType = NodeType::Directory;
 
             std::string data;
             if (!IoHelper::readJunction(path, data, itemType.targetPath, itemType.ioError)) {
@@ -402,7 +402,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         return success;
     }
 
-    itemType.nodeType = isDir ? NodeTypeDirectory : NodeTypeFile;
+    itemType.nodeType = isDir ? NodeType::Directory : NodeType::File;
 
     return true;
 }
@@ -417,7 +417,7 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
 
     assert(ioError != IoErrorUnknown);
 
-    if (itemType.nodeType == NodeTypeDirectory) {
+    if (itemType.nodeType == NodeType::Directory) {
         ioError = IoErrorIsADirectory;
         return false;
     }
@@ -426,7 +426,7 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
     if (isSymlink) {
         size = itemType.targetPath.native().length();
     } else {
-        if (itemType.nodeType != NodeTypeFile) {
+        if (itemType.nodeType != NodeType::File) {
             assert(ioError != IoErrorSuccess);
             return ioError != IoErrorUnknown;
         }
@@ -456,7 +456,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
 
     assert(ioError != IoErrorUnknown);
 
-    if (itemType.nodeType != NodeTypeDirectory) {
+    if (itemType.nodeType != NodeType::Directory) {
         ioError = IoErrorIsAFile;
         return false;
     }
@@ -654,7 +654,7 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
         return false;
     }
 
-    isDirectory = itemType.nodeType == NodeTypeDirectory;
+    isDirectory = itemType.nodeType == NodeType::Directory;
 
     return true;
 }

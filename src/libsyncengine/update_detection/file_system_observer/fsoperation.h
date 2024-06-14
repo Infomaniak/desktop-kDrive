@@ -28,7 +28,7 @@ namespace KDC {
 struct FSOperation {
     public:
         FSOperation() {}
-        FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType = NodeTypeUnknown,
+        FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType = NodeType::Unknown,
                     SyncTime createdAt = 0, SyncTime lastModified = 0, int64_t size = 0, const SyncPath &path = "",
                     const SyncPath &destinationPath = "");
 
@@ -52,7 +52,7 @@ struct FSOperation {
         UniqueId _id = 0;
         OperationType _operationType = OperationTypeNone;
         NodeId _nodeId;
-        NodeType _objectType = NodeTypeUnknown;
+        NodeType _objectType = NodeType::Unknown;
         SyncTime _createdAt = 0;
         SyncTime _lastModified = 0;
         int64_t _size = 0;

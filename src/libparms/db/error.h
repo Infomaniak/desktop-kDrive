@@ -94,7 +94,7 @@ class PARMS_EXPORT Error {
         ExitCause _exitCause{ExitCauseUnknown};
         NodeId _localNodeId;
         NodeId _remoteNodeId;
-        NodeType _nodeType{NodeTypeUnknown};
+        NodeType _nodeType{NodeType::Unknown};
         SyncPath _path;
         ConflictType _conflictType{ConflictTypeNone};
         InconsistencyType _inconsistencyType{InconsistencyTypeNone};

@@ -36,7 +36,7 @@ static const int waitForUpdateDelay = 1000;         // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName)
-    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSideLocal), _rootFolder(syncPal->_localPath) {}
+    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->_localPath) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -123,7 +123,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         NodeId nodeId = std::to_string(fileStat.inode);
-        NodeType nodeType = NodeTypeUnknown;
+        NodeType nodeType = NodeType::Unknown;
 
         bool isLink = false;
         if (exists) {
@@ -200,7 +200,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 continue;
             }
 
-            _syncPal->removeItemFromTmpBlacklist(itemId, ReplicaSideLocal);
+            _syncPal->removeItemFromTmpBlacklist(itemId, ReplicaSide::Local);
 
             if (_snapshot->removeItem(itemId)) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: " << Utility::formatSyncPath(absolutePath).c_str()
@@ -336,7 +336,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: " << Utility::formatSyncPath(absolutePath).c_str()
                                                                                  << L" (" << Utility::s2ws(nodeId).c_str()
                                                                                  << L") at " << fileStat.modtime);
-                //                if (nodeType == NodeTypeFile) {
+                //                if (nodeType == NodeType::File) {
                 //                    if (canComputeChecksum(absolutePath)) {
                 //                        // Start asynchronous checkum generation
                 //                        _checksumWorker->computeChecksum(nodeId, absolutePath);
@@ -350,7 +350,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
 
             // Manage directories moved from outside the synchronized directory
-            if (nodeType == NodeTypeDirectory) {
+            if (nodeType == NodeType::Directory) {
                 if (absolutePath.native().length() > CommonUtility::maxPathLength()) {
                     LOGW_SYNCPAL_WARN(_logger, L"Ignore item: " << Utility::formatSyncPath(absolutePath).c_str()
                                                                 << L" because size > " << CommonUtility::maxPathLength());
@@ -396,7 +396,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                                                       << fileStat.modtime);
             }
 
-            if (nodeType == NodeTypeFile) {
+            if (nodeType == NodeType::File) {
                 //                if (canComputeChecksum(absolutePath)) {
                 //                    // Start asynchronous checkum generation
                 //                    _checksumWorker->computeChecksum(nodeId, absolutePath);
@@ -533,7 +533,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
         // Check if it is a metadata update
         DbNodeId dbNodeId;
         bool found;
-        if (!_syncPal->_syncDb->dbId(ReplicaSideLocal, nodeId, dbNodeId, found)) {
+        if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             return ExitCodeDbError;
         }
@@ -593,11 +593,11 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
             LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getLocalNodeId: " << Utility::formatSyncPath(absolutePath).c_str());
         } else {
             // Blacklist file/directory
-            _syncPal->blacklistTemporarily(nodeId, relativePath, ReplicaSideLocal);
+            _syncPal->blacklistTemporarily(nodeId, relativePath, ReplicaSide::Local);
         }
     }
 
-    Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, absolutePath, ConflictTypeNone, InconsistencyTypeNone,
+    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absolutePath, ConflictTypeNone, InconsistencyTypeNone,
                 CancelTypeNone, "", ExitCodeSystemError, ExitCauseFileAccessError);
     _syncPal->addError(error);
 }
@@ -845,7 +845,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                     << Utility::formatSyncPath(absolutePath.filename()).c_str() << L" inode:"
                                                     << nodeId.c_str() << L" parent inode:" << Utility::s2ws(parentNodeId).c_str()
                                                     << L" createdAt:" << fileStat.creationTime << L" modtime:" << fileStat.modtime
-                                                    << L" isDir:" << (itemType.nodeType == NodeTypeDirectory) << L" size:"
+                                                    << L" isDir:" << (itemType.nodeType == NodeType::Directory) << L" size:"
                                                     << fileStat.size);
                 }
             } else {

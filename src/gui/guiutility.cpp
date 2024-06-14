@@ -482,7 +482,7 @@ qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
 }
 
 QString GuiUtility::getFolderPath(const QString &path, NodeType nodeType) {
-    return nodeType == NodeTypeDirectory ? path : QFileInfo(path).path();
+    return nodeType == NodeType::Directory ? path : QFileInfo(path).path();
 }
 
 bool GuiUtility::openFolder(const QString &dirPath) {

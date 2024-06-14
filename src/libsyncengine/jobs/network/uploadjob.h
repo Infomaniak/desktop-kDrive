@@ -66,7 +66,7 @@ class UploadJob : public AbstractTokenNetworkJob {
 
         LinkType _linkType = LinkTypeNone;
         SyncPath _linkTarget;
-        NodeType _targetType = NodeTypeFile;
+        NodeType _targetType = NodeType::File;
 };
 
 }  // namespace KDC

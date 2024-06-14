@@ -498,7 +498,7 @@ bool SyncPal::wipeOldPlaceholders() {
     if (!virtualFileCleaner.removeDehydratedPlaceholders(failedToRemovePlaceholders)) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
         for (auto &failedItem : failedToRemovePlaceholders) {
-            addError(Error(_syncDbId, "", "", NodeTypeFile, failedItem, ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone,
+            addError(Error(_syncDbId, "", "", NodeType::File, failedItem, ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone,
                            "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
         }
         return false;
@@ -517,14 +517,14 @@ void SyncPal::loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &c
 
 void SyncPal::createSharedObjects() {
     // Create shared objects
-    _localSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
-    _remoteSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
-    _localSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
-    _remoteSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
+    _localSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::Local, _syncDb->rootNode()));
+    _remoteSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::Remote, _syncDb->rootNode()));
+    _localSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::Local, _syncDb->rootNode()));
+    _remoteSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::Remote, _syncDb->rootNode()));
     _localOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
     _remoteOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
-    _localUpdateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
-    _remoteUpdateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
+    _localUpdateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::Local, _syncDb->rootNode()));
+    _remoteUpdateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::Remote, _syncDb->rootNode()));
     _conflictQueue = std::shared_ptr<ConflictQueue>(new ConflictQueue(_localUpdateTree, _remoteUpdateTree));
     _syncOps = std::shared_ptr<SyncOperationList>(new SyncOperationList());
 
@@ -559,9 +559,9 @@ void SyncPal::createWorkers() {
     _computeFSOperationsWorker = std::shared_ptr<ComputeFSOperationWorker>(
         new ComputeFSOperationWorker(shared_from_this(), "Compute FS Operations", "COOP"));
     _localUpdateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
-        new UpdateTreeWorker(shared_from_this(), "Local Tree Updater", "LTRU", ReplicaSideLocal));
+        new UpdateTreeWorker(shared_from_this(), "Local Tree Updater", "LTRU", ReplicaSide::Local));
     _remoteUpdateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
-        new UpdateTreeWorker(shared_from_this(), "Remote Tree Updater", "RTRU", ReplicaSideRemote));
+        new UpdateTreeWorker(shared_from_this(), "Remote Tree Updater", "RTRU", ReplicaSide::Remote));
     _platformInconsistencyCheckerWorker = std::shared_ptr<PlatformInconsistencyCheckerWorker>(
         new PlatformInconsistencyCheckerWorker(shared_from_this(), "Platform Inconsistency Checker", "PICH"));
     _conflictFinderWorker =
@@ -669,7 +669,7 @@ void SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
     _progressInfo->setProgress(relativePath, current);
 
     bool found;
-    if (!_syncDb->setStatus(ReplicaSideRemote, relativePath, SyncFileStatusSyncing, found)) {
+    if (!_syncDb->setStatus(ReplicaSide::Remote, relativePath, SyncFileStatusSyncing, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setStatus");
         return;
     }
@@ -691,7 +691,7 @@ void SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileSta
     vfsFileStatusChanged(_localPath / relativeLocalPath, status);
 
     bool found;
-    if (!_syncDb->setStatus(ReplicaSideLocal, relativeLocalPath, status, found)) {
+    if (!_syncDb->setStatus(ReplicaSide::Local, relativeLocalPath, status, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setStatus");
         return;
     }
@@ -732,13 +732,13 @@ bool SyncPal::getSyncFileItem(const SyncPath &path, SyncFileItem &item) {
 }
 
 bool SyncPal::isSnapshotValid(ReplicaSide side) {
-    return side == ReplicaSideLocal ? _localSnapshot->isValid() : _remoteSnapshot->isValid();
+    return side == ReplicaSide::Local ? _localSnapshot->isValid() : _remoteSnapshot->isValid();
 }
 
 ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &localPath) {
     std::optional<NodeId> localNodeId = std::nullopt;
     bool found = false;
-    if (!_syncDb->id(ReplicaSideLocal, relativePath, localNodeId, found)) {
+    if (!_syncDb->id(ReplicaSide::Local, relativePath, localNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return ExitCodeDbError;
     }
@@ -748,7 +748,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     }
 
     NodeId remoteNodeId;
-    if (!_syncDb->correspondingNodeId(ReplicaSideLocal, *localNodeId, remoteNodeId, found)) {
+    if (!_syncDb->correspondingNodeId(ReplicaSide::Local, *localNodeId, remoteNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::correspondingNodeId");
         return ExitCodeDbError;
     }
@@ -758,7 +758,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     }
 
     int64_t expectedSize = -1;
-    if (!_syncDb->size(ReplicaSideLocal, *localNodeId, expectedSize, found)) {
+    if (!_syncDb->size(ReplicaSide::Local, *localNodeId, expectedSize, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::size");
         return ExitCodeDbError;
     }
@@ -968,24 +968,24 @@ ExitCode SyncPal::updateSyncNode() {
 
 std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
     if (copy) {
-        return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshotCopy : _remoteSnapshotCopy);
+        return (side == ReplicaSide::Local ? _localSnapshotCopy : _remoteSnapshotCopy);
     } else {
-        return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshot : _remoteSnapshot);
+        return (side == ReplicaSide::Local ? _localSnapshot : _remoteSnapshot);
     }
 }
 
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) {
-    return (side == ReplicaSide::ReplicaSideLocal ? _localOperationSet : _remoteOperationSet);
+    return (side == ReplicaSide::Local ? _localOperationSet : _remoteOperationSet);
 }
 
 std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) {
-    return (side == ReplicaSide::ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree);
+    return (side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree);
 }
 
 ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const {
     DbNodeId dbNodeId = -1;
     bool found = false;
-    if (!_syncDb->dbId(ReplicaSideLocal, path, dbNodeId, found)) {
+    if (!_syncDb->dbId(ReplicaSide::Local, path, dbNodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
         return ExitCodeDbError;
     }
@@ -994,7 +994,7 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
         return ExitCodeDataError;
     }
 
-    if (!_syncDb->id(ReplicaSideRemote, dbNodeId, nodeId, found)) {
+    if (!_syncDb->id(ReplicaSide::Remote, dbNodeId, nodeId, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return ExitCodeDbError;
     }
@@ -1114,7 +1114,7 @@ ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &l
 
         DbNodeId dbId = -1;
         bool found = false;
-        if (!_syncDb->dbId(ReplicaSideLocal, localFileInfo.first, dbId, found)) {
+        if (!_syncDb->dbId(ReplicaSide::Local, localFileInfo.first, dbId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId for nodeId=" << localFileInfo.first.c_str());
             return ExitCodeDbError;
         }

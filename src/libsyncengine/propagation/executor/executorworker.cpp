@@ -250,7 +250,7 @@ bool ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
         }
     }
 
-    if (syncOp->targetSide() == ReplicaSideLocal) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
         syncItem.setLocalNodeId(syncOp->correspondingNode() ? syncOp->correspondingNode()->id() : std::nullopt);
         syncItem.setRemoteNodeId(syncOp->affectedNode()->id());
         syncItem.setDirection(SyncDirectionDown);
@@ -325,11 +325,11 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
 
         bool exists = false;
         if (!hasRight(syncOp, exists)) {
-            if (syncOp->targetSide() == ReplicaSideLocal) {
+            if (syncOp->targetSide() == ReplicaSide::Local) {
                 // Ignore operation
                 _syncPal->setProgressComplete(relativeLocalFilePath,
                                               SyncFileStatusIgnored);  // TODO : do not exclude item from sync, rollback
-            } else if (syncOp->targetSide() == ReplicaSideRemote) {
+            } else if (syncOp->targetSide() == ReplicaSide::Remote) {
                 if (!exists) {
                     _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusError);
                     _executorExitCode = ExitCodeDataError;
@@ -373,7 +373,7 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
             return;
         }
 
-        if (job && syncOp->affectedNode()->type() == NodeTypeDirectory) {
+        if (job && syncOp->affectedNode()->type() == NodeType::Directory) {
             // Propagate the directory creation immediately in order to avoid blocking other dependant job creation
             if (!runCreateDirJob(syncOp, job)) {
                 _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusError);
@@ -386,10 +386,10 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
 
                 hasError = true;
 
-                if (syncOp->targetSide() == ReplicaSideLocal) {
+                if (syncOp->targetSide() == ReplicaSide::Local) {
                     _executorExitCode = job->exitCode() == ExitCodeNeedRestart ? ExitCodeDataError : job->exitCode();
                     _executorExitCause = job->exitCode() == ExitCodeNeedRestart ? ExitCauseFileAlreadyExist : job->exitCause();
-                } else if (syncOp->targetSide() == ReplicaSideRemote) {
+                } else if (syncOp->targetSide() == ReplicaSide::Remote) {
                     _executorExitCode = job->exitCode() == ExitCodeNeedRestart ? ExitCodeBackError : job->exitCode();
                     _executorExitCause = job->exitCode() == ExitCodeNeedRestart ? ExitCauseFileAlreadyExist : job->exitCause();
                 }
@@ -398,7 +398,7 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
             }
 
             bool needRestart = false;
-            if (!convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSideRemote, needRestart)) {
+            if (!convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote, needRestart)) {
                 LOGW_SYNCPAL_WARN(
                     _logger, L"Failed to convert to placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 if (needRestart) {
@@ -486,11 +486,11 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
         }
     }
 
-    if (syncOp->targetSide() == ReplicaSideLocal) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
         SyncPath relativeLocalFilePath = newCorrespondingParentNode->getPath(true) / syncOp->newName();
         SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
 
-        bool placeholderCreation = isLiteSyncActivated() && syncOp->affectedNode()->type() == NodeTypeFile;
+        bool placeholderCreation = isLiteSyncActivated() && syncOp->affectedNode()->type() == NodeType::File;
         if (placeholderCreation && syncOp->affectedNode()->id().has_value()) {
             const bool isLink = _syncPal->_remoteSnapshot->isLink(*syncOp->affectedNode()->id());
             placeholderCreation = !isLink;
@@ -596,7 +596,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
 
             _syncPal->setProgressComplete(relativeLocalFilePath, status);
         } else {
-            if (syncOp->affectedNode()->type() == NodeTypeDirectory) {
+            if (syncOp->affectedNode()->type() == NodeType::Directory) {
                 job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath);
             } else {
                 bool exists = false;
@@ -643,9 +643,9 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
     } else {
         SyncPath relativeLocalFilePath = syncOp->affectedNode()->getPath(true);
         SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
-        if (syncOp->affectedNode()->type() == NodeTypeDirectory) {
+        if (syncOp->affectedNode()->type() == NodeType::Directory) {
             bool needRestart = false;
-            if (!convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSideRemote, needRestart)) {
+            if (!convertToPlaceholder(relativeLocalFilePath, syncOp->targetSide() == ReplicaSide::Remote, needRestart)) {
                 if (needRestart) {
                     LOGW_SYNCPAL_DEBUG(_logger, SyncName2WStr(syncOp->affectedNode()->name()).c_str()
                                                     << L" does not exist anymore. Aborting jobs and restarting sync.");
@@ -657,7 +657,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 _executorExitCode = needRestart ? ExitCodeOk : ExitCodeSystemError;
                 _executorExitCause = ExitCauseUnknown;
                 _syncPal->_restart = true;
-                _syncPal->updateTree(ReplicaSideLocal)->deleteNode(syncOp->affectedNode());
+                _syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->affectedNode());
                 return false;
             }
 
@@ -776,8 +776,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
 bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path, bool &isDehydratedPlaceholder) {
     isDehydratedPlaceholder = false;
 
-    if (syncOp->targetSide() == ReplicaSideRemote) {
-        if (syncOp->affectedNode()->type() == NodeTypeDirectory) {
+    if (syncOp->targetSide() == ReplicaSide::Remote) {
+        if (syncOp->affectedNode()->type() == NodeType::Directory) {
             return true;
         }
 
@@ -939,7 +939,7 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
 
 bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) {
     // 1. If omit-flag is False, propagate the file to replicaY, replacing the existing one.
-    if (syncOp->targetSide() == ReplicaSideLocal) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
         SyncPath relativeLocalFilePath = syncOp->affectedNode()->getPath(true);
         SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
 
@@ -1066,7 +1066,7 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
         return false;
     }
 
-    if (syncOp->targetSide() == ReplicaSideRemote) {
+    if (syncOp->targetSide() == ReplicaSide::Remote) {
         if (isPlaceholder && !isHydrated) {
             std::string id = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";
             LOGW_SYNCPAL_DEBUG(_logger, L"Do not upload dehydrated placeholders: "
@@ -1150,7 +1150,7 @@ void ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &hasError) {
                 syncOp->conflict().remoteNode() != nullptr
                     ? (syncOp->conflict().remoteNode()->id().has_value() ? syncOp->conflict().remoteNode()->id().value() : "")
                     : "",
-                syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeTypeUnknown,
+                syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeType::Unknown,
                 syncOp->affectedNode()->moveOrigin().has_value() ? syncOp->affectedNode()->moveOrigin().value()
                                                                  : syncOp->affectedNode()->getPath(),
                 syncOp->conflict().type());
@@ -1204,7 +1204,7 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
     SyncPath relativeSourceLocalFilePath = correspondingNode->getPath(true);
     SyncPath absoluteDestLocalFilePath = _syncPal->_localPath / relativeDestLocalFilePath;
 
-    if (syncOp->targetSide() == ReplicaSideLocal) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
         SyncPath absoluteSourceLocalFilePath = _syncPal->_localPath / relativeSourceLocalFilePath;
         job = std::make_shared<LocalMoveJob>(absoluteSourceLocalFilePath, absoluteDestLocalFilePath);
     } else {
@@ -1275,10 +1275,10 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
         // Send conflict notification
         SyncFileItem syncItem;
         if (_syncPal->getSyncFileItem(syncOp->affectedNode()->getPath(true), syncItem)) {
-            NodeId localNodeId = syncOp->correspondingNode()->side() == ReplicaSideLocal
+            NodeId localNodeId = syncOp->correspondingNode()->side() == ReplicaSide::Local
                                      ? syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : ""
                                      : "";
-            NodeId remoteNodeId = syncOp->correspondingNode()->side() == ReplicaSideLocal ? ""
+            NodeId remoteNodeId = syncOp->correspondingNode()->side() == ReplicaSide::Local ? ""
                                   : syncItem.remoteNodeId().has_value()                   ? syncItem.remoteNodeId().value()
                                                                                           : "";
 
@@ -1321,7 +1321,7 @@ void ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &hasError) {
                 syncOp->conflict().remoteNode() != nullptr
                     ? (syncOp->conflict().remoteNode()->id().has_value() ? syncOp->conflict().remoteNode()->id().value() : "")
                     : "",
-                syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeTypeUnknown,
+                syncOp->conflict().localNode() != nullptr ? syncOp->conflict().localNode()->type() : NodeType::Unknown,
                 syncOp->affectedNode()->moveOrigin().has_value() ? syncOp->affectedNode()->moveOrigin().value()
                                                                  : syncOp->affectedNode()->getPath(),
                 syncOp->conflict().type());
@@ -1360,7 +1360,7 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
     std::shared_ptr<AbstractJob> job = nullptr;
     SyncPath relativeLocalFilePath = syncOp->correspondingNode()->getPath(true);
     SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
-    if (syncOp->targetSide() == ReplicaSideLocal) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
         bool isDehydratedPlaceholder = false;
         if (_syncPal->vfsMode() != VirtualFileModeOff) {
             bool isPlaceholder = false;
@@ -1428,13 +1428,13 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
     }
     exists = ioError != IoErrorNoSuchFileOrDirectory;
 
-    if (syncOp->targetSide() == ReplicaSideLocal) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
         switch (syncOp->type()) {
             case OperationTypeCreate: {
                 if (exists && !writePermission) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                           << L" already exists but doesn't have write permissions!");
-                    Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, absoluteLocalFilePath, ConflictTypeNone,
+                    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictTypeNone,
                                 InconsistencyTypeNone, CancelTypeNone, "", ExitCodeSystemError, ExitCauseFileAccessError);
                     _syncPal->addError(error);
                     return false;
@@ -1451,7 +1451,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                 }
 
                 if (!writePermission) {
-                    Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, absoluteLocalFilePath, ConflictTypeNone,
+                    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictTypeNone,
                                 InconsistencyTypeNone, CancelTypeNone, "", ExitCodeSystemError, ExitCauseFileAccessError);
                     _syncPal->addError(error);
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
@@ -1465,7 +1465,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                 break;
             }
         }
-    } else if (syncOp->targetSide() == ReplicaSideRemote) {
+    } else if (syncOp->targetSide() == ReplicaSide::Remote) {
         switch (syncOp->type()) {
             case OperationTypeCreate: {
                 if (!exists) {
@@ -1492,7 +1492,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                 }
 
                 if (newCorrespondingParentNode->isCommonDocumentsFolder() &&
-                    syncOp->affectedNode()->type() == NodeTypeDirectory) {
+                    syncOp->affectedNode()->type() == NodeType::Directory) {
                     return true;
                 }
 
@@ -1529,12 +1529,12 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
 }
 
 bool ExecutorWorker::enoughLocalSpace(SyncOpPtr syncOp) {
-    if (syncOp->targetSide() != ReplicaSideLocal) {
+    if (syncOp->targetSide() != ReplicaSide::Local) {
         // This is not a download operation
         return true;
     }
 
-    if (syncOp->affectedNode()->type() != NodeTypeFile) {
+    if (syncOp->affectedNode()->type() != NodeType::File) {
         return true;
     }
 
@@ -1668,7 +1668,7 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
 
     NodeId locaNodeId;
     NodeId remoteNodeId;
-    if (syncOp->targetSide() == ReplicaSideLocal) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
         if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) locaNodeId = *syncOp->correspondingNode()->id();
         remoteNodeId = syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string();
     } else {
@@ -1713,7 +1713,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
 
     NodeId locaNodeId;
     NodeId remoteNodeId;
-    if (syncOp->targetSide() == ReplicaSideLocal) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
         if (syncOp->correspondingNode() && syncOp->correspondingNode()->id()) locaNodeId = *syncOp->correspondingNode()->id();
         if (syncOp->affectedNode()->id()) remoteNodeId = *syncOp->affectedNode()->id();
     } else {
@@ -1738,7 +1738,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             _syncPal->blacklistTemporarily(
                 syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), relativeLocalPath,
                 otherSide(syncOp->targetSide()));
-            Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, _syncPal->_localPath / relativeLocalPath,
+            Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, _syncPal->_localPath / relativeLocalPath,
                         ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone, "", job->exitCode(), job->exitCause());
             _syncPal->addError(error);
 
@@ -1902,7 +1902,7 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
                     syncOp->conflict().localNode()->previousId().has_value() ? *syncOp->conflict().localNode()->previousId()
                     : syncOp->conflict().localNode()->id().has_value()       ? *syncOp->conflict().localNode()->id()
                                                                              : std::string();
-                _syncPal->_syncDb->dbId(ReplicaSideLocal, effectiveNodeId, dbId, localNodeFoundInDb);
+                _syncPal->_syncDb->dbId(ReplicaSide::Local, effectiveNodeId, dbId, localNodeFoundInDb);
                 if (localNodeFoundInDb) {
                     // Remove local node from DB
                     if (!deleteFromDb(syncOp->conflict().localNode())) {
@@ -1913,8 +1913,8 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
             }
 
             // Remove node from update tree
-            _syncPal->updateTree(ReplicaSideLocal)->deleteNode(syncOp->conflict().localNode());
-            _syncPal->updateTree(ReplicaSideRemote)->deleteNode(syncOp->conflict().remoteNode());
+            _syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->conflict().localNode());
+            _syncPal->updateTree(ReplicaSide::Remote)->deleteNode(syncOp->conflict().remoteNode());
 
             propagateChange = false;
             break;
@@ -1966,7 +1966,7 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
         case OperationTypeEdit: {
             NodeId nodeId;
             SyncTime modtime = 0;
-            if (syncOp->targetSide() == ReplicaSideLocal) {
+            if (syncOp->targetSide() == ReplicaSide::Local) {
                 auto castJob(std::dynamic_pointer_cast<DownloadJob>(job));
                 nodeId = castJob->localNodeId();
                 modtime = castJob->modtime();
@@ -2034,13 +2034,13 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
 
     // 2. Insert a new entry into the database, to avoid that the object is detected again by compute_ops() on the next sync
     // iteration.
-    std::string localId = syncOp->targetSide() == ReplicaSideLocal
+    std::string localId = syncOp->targetSide() == ReplicaSide::Local
                               ? newNodeId
                               : (syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : "");
-    std::string remoteId = syncOp->targetSide() == ReplicaSideLocal
+    std::string remoteId = syncOp->targetSide() == ReplicaSide::Local
                                ? (syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : "")
                                : newNodeId;
-    SyncName localName = syncOp->targetSide() == ReplicaSideLocal ? syncOp->newName() : syncOp->affectedNode()->finalLocalName();
+    SyncName localName = syncOp->targetSide() == ReplicaSide::Local ? syncOp->newName() : syncOp->affectedNode()->finalLocalName();
     SyncName remoteName = localName;
 
     if (localId.empty() || remoteId.empty()) {
@@ -2067,12 +2067,12 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
                                << L" / createdAt="
                                << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
                                << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                               << syncOp->affectedNode()->type());
+                               << enumClassToInt(syncOp->affectedNode()->type()));
     }
 
     if (dbNode.nameLocal().empty() || dbNode.nameRemote().empty() || !dbNode.nodeIdLocal().has_value() ||
         !dbNode.nodeIdRemote().has_value() || !dbNode.created().has_value() || !dbNode.lastModifiedLocal().has_value() ||
-        !dbNode.lastModifiedRemote().has_value() || dbNode.type() == NodeTypeUnknown) {
+        !dbNode.lastModifiedRemote().has_value() || dbNode.type() == NodeType::Unknown) {
         LOG_SYNCPAL_ERROR(_logger, "Error inserting new node in DB!!!");
         assert(false);
     }
@@ -2099,7 +2099,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
         // => A unique constraint error on the remote node id will occur when inserting the new node in DB
         DbNodeId dbNodeId;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(ReplicaSideRemote, remoteId, dbNodeId, found)) {
+        if (!_syncPal->_syncDb->dbId(ReplicaSide::Remote, remoteId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
             _executorExitCode = ExitCodeDbError;
             _executorExitCause = ExitCauseDbAccessError;
@@ -2137,7 +2137,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
     } else {
         // insert new node
         node = std::shared_ptr<Node>(
-            new Node(newDbNodeId, syncOp->targetSide() == ReplicaSideLocal ? ReplicaSideLocal : ReplicaSideRemote, remoteName,
+            new Node(newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote, remoteName,
                      syncOp->affectedNode()->type(), OperationTypeNone, newNodeId, newLastModTime, newLastModTime,
                      syncOp->affectedNode()->size(), newCorrespondingParentNode));
         if (node == nullptr) {
@@ -2183,10 +2183,10 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
     }
 
     // 2. Update the database entry, to avoid detecting the edit operation again.
-    std::string localId = syncOp->targetSide() == ReplicaSideLocal   ? newNodeId
+    std::string localId = syncOp->targetSide() == ReplicaSide::Local   ? newNodeId
                           : syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id()
                                                                      : std::string();
-    std::string remoteId = syncOp->targetSide() == ReplicaSideLocal
+    std::string remoteId = syncOp->targetSide() == ReplicaSide::Local
                                ? syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string()
                                : newNodeId;
     SyncName localName = syncOp->affectedNode()->finalLocalName();
@@ -2219,7 +2219,7 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
                              << (dbNode.parentNodeId().has_value() ? dbNode.parentNodeId().value() : -1) << L" / createdAt="
                              << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
                              << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                             << syncOp->affectedNode()->type());
+                             << enumClassToInt(syncOp->affectedNode()->type()));
     }
 
     if (!_syncPal->_syncDb->updateNode(dbNode, found)) {
@@ -2241,7 +2241,7 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
     // 3. If the omit flag is False, update the updatetreeY structure to ensure that follow-up operations can execute
     // correctly, as they are based on the information in this structure
     if (!syncOp->omit()) {
-        syncOp->correspondingNode()->setId(syncOp->targetSide() == ReplicaSideLocal
+        syncOp->correspondingNode()->setId(syncOp->targetSide() == ReplicaSide::Local
                                                ? localId
                                                : remoteId);  // ID might have changed in the case of a delete+create
         syncOp->correspondingNode()->setLastModified(newLastModTime);
@@ -2290,11 +2290,11 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
         return false;
     }
 
-    std::string localId = syncOp->targetSide() == ReplicaSideLocal
+    std::string localId = syncOp->targetSide() == ReplicaSide::Local
                               ? correspondingNode->id().has_value() ? *correspondingNode->id() : std::string()
                           : syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id()
                                                                      : std::string();
-    std::string remoteId = syncOp->targetSide() == ReplicaSideLocal
+    std::string remoteId = syncOp->targetSide() == ReplicaSide::Local
                                ? syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string()
                            : correspondingNode->id().has_value() ? *correspondingNode->id()
                                                                  : std::string();
@@ -2327,7 +2327,7 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                              << L" / lastModTime="
                              << (syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified()
                                                                                     : -1)
-                             << L" / type=" << syncOp->affectedNode()->type());
+                             << L" / type=" << enumClassToInt(syncOp->affectedNode()->type()));
     }
 
     if (!_syncPal->_syncDb->updateNode(dbNode, found)) {
@@ -2420,7 +2420,7 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
             _executorExitCode = ExitCodeOk;
             _syncPal->blacklistTemporarily(
                 syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(),
-                syncOp->affectedNode()->getPath(), ReplicaSideLocal);
+                syncOp->affectedNode()->getPath(), ReplicaSide::Local);
             Error error(_syncPal->_syncDbId,
                         syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(), "",
                         syncOp->affectedNode()->type(), syncOp->affectedNode()->getPath(), ConflictTypeNone,
@@ -2440,9 +2440,9 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         _executorExitCode = ExitCodeOk;
         _syncPal->_restart = true;
         return false;
-    } else if ((syncOp->targetSide() == ReplicaSideLocal && job->exitCode() == ExitCodeDataError &&
+    } else if ((syncOp->targetSide() == ReplicaSide::Local && job->exitCode() == ExitCodeDataError &&
                 job->exitCause() == ExitCauseFileAlreadyExist) ||
-               (syncOp->targetSide() == ReplicaSideRemote && job->exitCode() == ExitCodeBackError &&
+               (syncOp->targetSide() == ReplicaSide::Remote && job->exitCode() == ExitCodeBackError &&
                 job->exitCause() == ExitCauseFileAlreadyExist)) {
         auto localCreateDirJob(std::dynamic_pointer_cast<LocalCreateDirJob>(job));
         if (localCreateDirJob) {
@@ -2462,7 +2462,7 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
     NodeId newNodeId;
     SyncTime newModTime = 0;
 
-    if (syncOp->targetSide() == ReplicaSideLocal) {
+    if (syncOp->targetSide() == ReplicaSide::Local) {
         auto castJob(std::dynamic_pointer_cast<LocalCreateDirJob>(job));
         newNodeId = castJob->nodeId();
         newModTime = castJob->modtime();

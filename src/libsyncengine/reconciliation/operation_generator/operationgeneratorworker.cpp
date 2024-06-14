@@ -37,14 +37,14 @@ void OperationGeneratorWorker::execute() {
     _bytesToDownload = 0;
 
     // Mark all nodes "Unprocessed"
-    _syncPal->updateTree(ReplicaSideLocal)->markAllNodesUnprocessed();
-    _syncPal->updateTree(ReplicaSideRemote)->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSide::Local)->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSide::Remote)->markAllNodesUnprocessed();
 
     _deletedNodes.clear();
 
     // Initiate breadth-first search with root nodes from both update trees
-    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
-    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideRemote)->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     // Explore both update trees
     while (!_queuedToExplore.empty()) {
@@ -91,7 +91,7 @@ void OperationGeneratorWorker::execute() {
         }
 
         if (currentNode->hasChangeEvent(OperationTypeCreate)) {
-            if (!(currentNode->side() == ReplicaSideLocal && currentNode->isSharedFolder())) {
+            if (!(currentNode->side() == ReplicaSide::Local && currentNode->isSharedFolder())) {
                 generateCreateOperation(currentNode, correspondingNode);
             }
         }
@@ -149,7 +149,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
     op->setTargetSide(targetSide);
     // We do not set parent node here since it might has been just created as well. In that case, parent node does not exist yet
     // in update tree.
-    op->setNewName(targetSide == ReplicaSideLocal ? currentNode->finalLocalName()
+    op->setNewName(targetSide == ReplicaSide::Local ? currentNode->finalLocalName()
                                                   : currentNode->name());  // Use validName only on local replica
     currentNode->setStatus(NodeStatusProcessed);
     _syncPal->_syncOps->pushOp(op);
@@ -169,8 +169,8 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
                              << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSideLocal &&
-            currentNode->type() == NodeTypeFile) {
+        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSide::Local &&
+            currentNode->type() == NodeType::File) {
             _bytesToDownload += currentNode->size();
         }
     }
@@ -214,8 +214,8 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
                                             << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSideLocal &&
-            currentNode->type() == NodeTypeFile) {
+        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSide::Local &&
+            currentNode->type() == NodeType::File) {
             // Keep only the difference between remote size and local size
             int64_t diffSize = currentNode->size() - correspondingNode->size();
 
@@ -242,7 +242,7 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
      * local replica and appears now "test%3a2.png" on remote. 3 - The file is renamed "test:2.png" on remote replica. We then try
      * to rename the local file "test%3a2.png" but fail since it already exist
      */
-    if (currentNode->side() == ReplicaSideRemote && correspondingNode->validLocalName().empty() &&
+    if (currentNode->side() == ReplicaSide::Remote && correspondingNode->validLocalName().empty() &&
         currentNode->validLocalName() == correspondingNode->name()) {
         // Only update DB and tree
         op->setOmit(true);
@@ -252,7 +252,7 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
-    op->setNewName(op->targetSide() == ReplicaSideLocal ? currentNode->finalLocalName()
+    op->setNewName(op->targetSide() == ReplicaSide::Local ? currentNode->finalLocalName()
                                                         : currentNode->name());  // Use validName only on local replica
     if (currentNode->hasChangeEvent(OperationTypeEdit) && currentNode->status() == NodeStatusUnprocessed) {
         currentNode->setStatus(NodeStatusPartiallyProcessed);
@@ -334,7 +334,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
 
 void OperationGeneratorWorker::findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode) {
     for (auto &childNode : parentNode->children()) {
-        if (childNode.second->type() == NodeTypeDirectory) {
+        if (childNode.second->type() == NodeType::Directory) {
             findAndMarkAllChildNodes(childNode.second);
         }
         childNode.second->setStatus(NodeStatusProcessed);

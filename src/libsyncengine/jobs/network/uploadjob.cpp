@@ -182,7 +182,7 @@ std::string UploadJob::getContentType(bool &canceled) {
     canceled = false;
 
     if (_linkType == LinkTypeSymlink) {
-        return _targetType == NodeTypeFile ? mimeTypeSymlink : mimeTypeSymlinkFolder;
+        return _targetType == NodeType::File ? mimeTypeSymlink : mimeTypeSymlinkFolder;
     } else if (_linkType == LinkTypeHardlink) {
         return mimeTypeHardlink;
     } else if (_linkType == LinkTypeFinderAlias) {

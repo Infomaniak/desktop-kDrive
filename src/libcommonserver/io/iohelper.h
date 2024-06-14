@@ -236,7 +236,7 @@ struct IoHelper {
         //! Check if the item indicated by `path` is a directory.
         /*!
          \param path is the file system path of the item to check for.
-         \param isDirectory is boolean that is set to true if the type of the item indicated by path is `NodeTypeFile`, false
+         \param isDirectory is boolean that is set to true if the type of the item indicated by path is `NodeType::File`, false
          otherwise.
          \param ioError holds the error returned when an underlying OS API call fails. Defaults to false.
          \return true if no unexpected error occurred, false otherwise. If the return value is false, isDirectory is also set with

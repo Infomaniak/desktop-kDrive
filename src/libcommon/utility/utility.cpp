@@ -522,9 +522,9 @@ SyncPath CommonUtility::getAppWorkingDir() {
 }
 
 QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, NodeType type) {
-    if (type == NodeTypeDirectory) {
+    if (type == NodeType::Directory) {
         return QString(":/client/resources/icons/document types/folder.svg");
-    } else if (type == NodeTypeFile) {
+    } else if (type == NodeType::File) {
         QMimeDatabase db;
         QMimeType mime = db.mimeTypeForFile(fileName, QMimeDatabase::MatchExtension);
         if (mime.name().startsWith("image/")) {

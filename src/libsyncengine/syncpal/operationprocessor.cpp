@@ -36,7 +36,7 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     // Create-Create pseudo-conflict
     if (node->hasChangeEvent(OperationTypeCreate) && correspondingNode->hasChangeEvent(OperationTypeCreate) &&
-        node->type() == NodeTypeDirectory && correspondingNode->type() == NodeTypeDirectory) {
+        node->type() == NodeType::Directory && correspondingNode->type() == NodeType::Directory) {
         return true;
     }
 
@@ -56,7 +56,7 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
         !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
     bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
                            snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
-    if (node->type() == NodeType::NodeTypeFile && correspondingNode->type() == node->type() &&
+    if (node->type() == NodeType::File && correspondingNode->type() == node->type() &&
         node->hasChangeEvent((OperationTypeCreate | OperationTypeEdit)) &&
         correspondingNode->hasChangeEvent(OperationTypeCreate | OperationTypeEdit) &&
         (useContentChecksum ? snapshot->contentChecksum(*node->id()) == otherSnapshot->contentChecksum(*correspondingNode->id())

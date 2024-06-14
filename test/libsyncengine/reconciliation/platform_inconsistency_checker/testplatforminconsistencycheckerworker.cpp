@@ -69,7 +69,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
             "N7ujP9elhx1bWT");
 
     std::shared_ptr<Node> node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name,
-                                                                NodeTypeFile, OperationTypeNone, "0", 0, 0, 12345, nullptr));
+                                                                NodeType::File, OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameSize(node->name())) {
         // TODO : remove this, files are not renamed anymore
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
@@ -83,7 +83,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
             "xywNr1W6Fjy3RnHVYJxTho5PJlc3zh0bnPwBEUqT6wtuOm5Iz5BQNBaJfbQ40HWulNZ5b9uk1wHHuLoYXIg9TpH49K4U68tsr16NjWzjBZ7pU3aV5XDc"
             "LokPLaCGNfwBXYVzEbw4xnGeQQHSoSNgAK3w3GoS");
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameSize(node->name())) {
         // TODO : remove this, files are not renamed anymore
@@ -96,7 +96,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
 void TestPlatformInconsistencyCheckerWorker::testFixNameForbiddenChars() {
     SyncName name = Str("a/b:c/d:e:");
     std::shared_ptr<Node> node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name,
-                                                                NodeTypeFile, OperationTypeNone, "0", 0, 0, 12345, nullptr));
+                                                                NodeType::File, OperationTypeNone, "0", 0, 0, 12345, nullptr));
     SyncName newvalidLocalName;
     if (PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(node->name(), newvalidLocalName)) {
         node->setValidLocalName(newvalidLocalName);
@@ -110,7 +110,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameForbiddenChars() {
 #endif
 
     name = Str("bcd:ef:");
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(node->name(), newvalidLocalName)) {
         node->setValidLocalName(newvalidLocalName);
@@ -124,7 +124,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameForbiddenChars() {
 #endif
 
     name = Str("/b:/");
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(node->name(), newvalidLocalName)) {
         node->setValidLocalName(newvalidLocalName);
@@ -138,7 +138,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameForbiddenChars() {
 #endif
 
     name = Str("testKdrive");
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(node->name(), newvalidLocalName)) {
         node->setValidLocalName(newvalidLocalName);
@@ -155,7 +155,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     SyncName dot2 = Str("..");
     SyncName dot1 = Str(".");
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dots, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dots, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         // TODO : remove this, files are not renamed anymore
@@ -163,7 +163,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     }
     CPPUNIT_ASSERT(node->name() == dots && node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dotsText, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dotsText, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         // TODO : remove this, files are not renamed anymore
@@ -171,7 +171,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     }
     CPPUNIT_ASSERT(node->name() == dotsText && node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot2, NodeTypeDirectory,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot2, NodeType::Directory,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         // TODO : remove this, files are not renamed anymore
@@ -179,7 +179,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     }
     CPPUNIT_ASSERT(node->name() == dot2 && !node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot1, NodeTypeDirectory,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot1, NodeType::Directory,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         // TODO : remove this, files are not renamed anymore
@@ -187,7 +187,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     }
     CPPUNIT_ASSERT(node->name() == dot1 && !node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot2, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot2, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         // TODO : remove this, files are not renamed anymore
@@ -195,7 +195,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     }
     CPPUNIT_ASSERT(node->name() == dot2 && !node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot1, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot1, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         // TODO : remove this, files are not renamed anymore
@@ -216,34 +216,34 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     SyncName com77dot = L"COM77.";
 
     node = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), con, NodeTypeFile, OperationTypeNone, "0", 0, 0, 0, nullptr));
+        new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), con, NodeType::File, OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(!node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), lpt11, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), lpt11, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), com8, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), com8, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(!node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), lpt11ext, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), lpt11ext, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), lpt6ext, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), lpt6ext, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
@@ -251,34 +251,34 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     CPPUNIT_ASSERT(!node->validLocalName().empty());
 
     node = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), nul, NodeTypeFile, OperationTypeNone, "0", 0, 0, 0, nullptr));
+        new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), nul, NodeType::File, OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(!node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), aux6, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), aux6, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), com1dot, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), com1dot, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(!node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), prndot, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), prndot, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(!node->validLocalName().empty());
 
-    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), com77dot, NodeTypeFile,
+    node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), com77dot, NodeType::File,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
         node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
@@ -292,10 +292,10 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash_noExtension() {
     SyncName name_A = Str("A");
 
     std::shared_ptr<Node> node_a =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeTypeFile,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeType::File,
                                        OperationTypeCreate, "1", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
     std::shared_ptr<Node> node_A =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeTypeFile,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeType::File,
                                        OperationTypeCreate, "2", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
 
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(node_a);
@@ -314,10 +314,10 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash_withExtension() {
     SyncName name_A = Str("A.jpg");
 
     std::shared_ptr<Node> node_a =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeTypeFile,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeType::File,
                                        OperationTypeCreate, "1", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
     std::shared_ptr<Node> node_A =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeTypeFile,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeType::File,
                                        OperationTypeCreate, "2", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
 
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(node_a);
@@ -336,10 +336,10 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash_extensionFinishWithDo
     SyncName name_A = Str("A.");
 
     std::shared_ptr<Node> node_a =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeTypeFile,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeType::File,
                                        OperationTypeCreate, "1", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
     std::shared_ptr<Node> node_A =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeTypeFile,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeType::File,
                                        OperationTypeCreate, "2", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
 
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(node_a);
@@ -366,40 +366,40 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
             "kqtpzhufctqvr:nyzyonhrhrqqrjvwxlexxbwlkyoecaxg:dk");
 
     std::shared_ptr<Node> node1 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir:1"), NodeTypeDirectory,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir:1"), NodeType::Directory,
                                        OperationTypeNone, "1", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
     std::shared_ptr<Node> node2 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("D/ir 2/"), NodeTypeDirectory,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("D/ir 2/"), NodeType::Directory,
                                        OperationTypeNone, "2", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
     std::shared_ptr<Node> node3 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 3"), NodeType::Directory,
                                        OperationTypeNone, "3", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
     std::shared_ptr<Node> node4 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 4"), NodeTypeDirectory,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 4"), NodeType::Directory,
                                        OperationTypeNone, "4", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
     std::shared_ptr<Node> node11 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1"), NodeType::Directory,
                                        OperationTypeNone, "11", 0, 0, 12345, node1));
     std::shared_ptr<Node> node111 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1.1"), NodeTypeDirectory,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1.1"), NodeType::Directory,
                                        OperationTypeNone, "111", 0, 0, 12345, node11));
     std::shared_ptr<Node> node1111 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("File 1.1::/.1.1"), NodeTypeFile,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("File 1.1::/.1.1"), NodeType::File,
                                        OperationTypeNone, "1111", 0, 0, 12345, node111));
     std::shared_ptr<Node> node31 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 3.1"), NodeTypeDirectory,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir 3.1"), NodeType::Directory,
                                        OperationTypeNone, "31", 0, 0, 12345, node3));
     std::shared_ptr<Node> node41 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), namespecial, NodeTypeDirectory,
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), namespecial, NodeType::Directory,
                                        OperationTypeNone, "41", 0, 0, 12345, node4));
     std::shared_ptr<Node> node411bis =
         std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("dIR//::4.1.1😀"),
-                                       NodeTypeDirectory, OperationTypeNone, "411bis", 0, 0, 12345, node41));
+                                       NodeType::Directory, OperationTypeNone, "411bis", 0, 0, 12345, node41));
     std::shared_ptr<Node> node411 =
         std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("Dir//::4.1.1😀"),
-                                       NodeTypeDirectory, OperationTypeNone, "411", 0, 0, 12345, node41));
+                                       NodeType::Directory, OperationTypeNone, "411", 0, 0, 12345, node41));
     std::shared_ptr<Node> node4111 = std::shared_ptr<Node>(new Node(
-        std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeTypeFile, OperationTypeNone, "4111", 0, 0, 12345, node411));
+        std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeType::File, OperationTypeNone, "4111", 0, 0, 12345, node411));
 
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(node1);
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(node2);

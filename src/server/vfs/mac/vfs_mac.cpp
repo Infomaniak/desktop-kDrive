@@ -289,7 +289,7 @@ bool VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
     fileStat.st_mtimespec = {item.modTime(), 0};
     fileStat.st_atimespec = {item.modTime(), 0};
     fileStat.st_birthtimespec = {item.creationTime(), 0};
-    if (item.type() == NodeTypeDirectory) {
+    if (item.type() == NodeType::Directory) {
         fileStat.st_mode = S_IFDIR;
     } else {
         fileStat.st_mode = S_IFREG;
@@ -394,7 +394,7 @@ bool VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item,
         const bool isLink = itemType.linkType != LinkTypeNone;
         bool isDirectory = false;
         if (!isLink) {
-            isDirectory = itemType.nodeType == NodeTypeDirectory;
+            isDirectory = itemType.nodeType == NodeType::Directory;
             if (!isDirectory && itemType.ioError != IoErrorSuccess) {
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
                                         << Utility::formatIoError(fullPath, itemType.ioError).c_str());
@@ -748,7 +748,7 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
         if (isLink) {
             isDirectory = false;
         } else {
-            isDirectory = itemType.nodeType == NodeTypeDirectory;
+            isDirectory = itemType.nodeType == NodeType::Directory;
             if (!isDirectory && itemType.ioError != IoErrorSuccess) {
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
                                         << Utility::formatIoError(fullPath, itemType.ioError).c_str());

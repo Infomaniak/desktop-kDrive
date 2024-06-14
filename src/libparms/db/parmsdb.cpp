@@ -2922,7 +2922,7 @@ bool ParmsDb::insertError(const Error &err) {
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 7, err.exitCause()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 8, err.localNodeId()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 9, err.remoteNodeId()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 10, err.nodeType()));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 10, enumClassToInt(err.nodeType())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 11, err.path().native()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 12, 0));  // TODO : Not used anymore
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 13, err.conflictType()));

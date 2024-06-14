@@ -2434,7 +2434,7 @@ void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatu
         return;
     }
 
-    ExitCode exitCode = _syncPalMap[syncDbId]->fileStatus(ReplicaSideLocal, path, status);
+    ExitCode exitCode = _syncPalMap[syncDbId]->fileStatus(ReplicaSide::Local, path, status);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::fileStatus for syncDbId=" << syncDbId);
         addError(Error(ERRID, exitCode, ExitCauseUnknown));
@@ -2448,7 +2448,7 @@ void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncin
         return;
     }
 
-    ExitCode exitCode = _syncPalMap[syncDbId]->fileSyncing(ReplicaSideLocal, path, syncing);
+    ExitCode exitCode = _syncPalMap[syncDbId]->fileSyncing(ReplicaSide::Local, path, syncing);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::fileSyncing for syncDbId=" << syncDbId);
         addError(Error(ERRID, exitCode, ExitCauseUnknown));
@@ -2462,7 +2462,7 @@ void AppServer::setSyncFileSyncing(int syncDbId, const SyncPath &path, bool sync
         return;
     }
 
-    ExitCode exitCode = _syncPalMap[syncDbId]->setFileSyncing(ReplicaSideLocal, path, syncing);
+    ExitCode exitCode = _syncPalMap[syncDbId]->setFileSyncing(ReplicaSide::Local, path, syncing);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::setFileSyncing for syncDbId=" << syncDbId);
         addError(Error(ERRID, exitCode, ExitCauseUnknown));

@@ -102,11 +102,11 @@ void UpdateTreeWorker::execute() {
 }
 
 ExitCode UpdateTreeWorker::step1MoveDirectory() {
-    return createMoveNodes(NodeTypeDirectory);
+    return createMoveNodes(NodeType::Directory);
 }
 
 ExitCode UpdateTreeWorker::step2MoveFile() {
-    return createMoveNodes(NodeTypeFile);
+    return createMoveNodes(NodeType::File);
 }
 
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
@@ -129,7 +129,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
         FSOpPtr deleteOp = nullptr;
         _operationSet->getOp(deleteOpId, deleteOp);
 
-        if (deleteOp->objectType() != NodeTypeDirectory) {
+        if (deleteOp->objectType() != NodeType::Directory) {
             continue;
         }
 
@@ -269,10 +269,10 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
         std::pair<FSOpPtrMap::iterator, bool> insertionResult;
         switch (createOp->objectType()) {
-            case NodeTypeFile:
+            case NodeType::File:
                 insertionResult = _createFileOperationSet.try_emplace(normalizedPath, createOp);
                 break;
-            case NodeTypeDirectory:
+            case NodeType::Directory:
                 insertionResult = createDirectoryOperationSet.try_emplace(normalizedPath, createOp);
                 break;
             default:
@@ -379,12 +379,12 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
         FSOpPtr deleteOp = nullptr;
         _operationSet->getOp(deleteOpId, deleteOp);
-        if (deleteOp->objectType() != NodeTypeFile) {
+        if (deleteOp->objectType() != NodeType::File) {
             continue;
         }
 
         FSOpPtr op = deleteOp;
-        if (_side == ReplicaSideLocal) {
+        if (_side == ReplicaSide::Local) {
             // Transform a Delete and a Create operations into one Edit operation.
             // Some software, such as Excel, keeps the current version into a temporary directory and move it to the destination,
             // replacing the original file. However, this behavior should be applied only on local side.
@@ -515,7 +515,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
 
         FSOpPtr createOp = nullptr;
         _operationSet->getOp(createOpId, createOp);
-        if (createOp->objectType() != NodeTypeDirectory) {
+        if (createOp->objectType() != NodeType::Directory) {
             continue;
         }
 
@@ -636,7 +636,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
 
         FSOpPtr editOp = nullptr;
         _operationSet->getOp(editOpId, editOp);
-        if (editOp->objectType() != NodeTypeFile) {
+        if (editOp->objectType() != NodeType::File) {
             continue;
         }
         // find parentNode by path because should have been created
@@ -714,7 +714,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
         return ExitCodeDbError;
     }
     if (!found) {
-        LOG_SYNCPAL_DEBUG(_logger, "There is no dbNodeIds for side=" << _side);
+        LOG_SYNCPAL_DEBUG(_logger, "There is no dbNodeIds for side=" << enumClassToInt(_side));
         return ExitCodeOk;
     }
 
@@ -733,7 +733,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
     }
 
     std::optional<NodeId> rootNodeId =
-        (_side == ReplicaSideLocal ? _syncDb->rootNode().nodeIdLocal() : _syncDb->rootNode().nodeIdRemote());
+        (_side == ReplicaSide::Local ? _syncDb->rootNode().nodeIdLocal() : _syncDb->rootNode().nodeIdRemote());
 
     // creating missing nodes
     for (const NodeId &dbNodeId : dbNodeIds) {
@@ -791,7 +791,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
             }
 
             SyncTime lastModified =
-                _side == ReplicaSideLocal ? dbNode.lastModifiedLocal().value() : dbNode.lastModifiedRemote().value();
+                _side == ReplicaSide::Local ? dbNode.lastModifiedLocal().value() : dbNode.lastModifiedRemote().value();
             SyncName name = dbNode.nameRemote();
             std::shared_ptr<Node> n = std::shared_ptr<Node>(new Node(dbNode.nodeId(), _side, name, dbNode.type(), {}, newNodeId,
                                                                      dbNode.created(), lastModified, dbNode.size(), parentNode));
@@ -881,7 +881,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
 
             currentNode->setName(moveOp->destinationPath().filename().native());
 
-            if (_side == ReplicaSideRemote) {
+            if (_side == ReplicaSide::Remote) {
                 currentNode->setValidLocalName(
                     Str(""));  // Clear valid name. If remote name is not valid, it will be fixed by InconsistencyChecker later.
             }
@@ -996,7 +996,7 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
     for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
         for (auto &childNode : tmpNode->children()) {
-            if (childNode.second->type() == NodeTypeDirectory && *nameIt == childNode.second->name()) {
+            if (childNode.second->type() == NodeType::Directory && *nameIt == childNode.second->name()) {
                 tmpChildNode = childNode.second;
                 break;
             }
@@ -1004,7 +1004,7 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
 
         if (tmpChildNode == nullptr) {
             // create tmp Node
-            tmpChildNode = std::shared_ptr<Node>(new Node(_side, *nameIt, NodeTypeDirectory, tmpNode));
+            tmpChildNode = std::shared_ptr<Node>(new Node(_side, *nameIt, NodeType::Directory, tmpNode));
 
             if (tmpChildNode == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
@@ -1202,7 +1202,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for DB ID=" << node->idb().value());
                 return ExitCodeDataError;
             }
-            node->setMoveOrigin(_side == ReplicaSideLocal ? localPath
+            node->setMoveOrigin(_side == ReplicaSide::Local ? localPath
                                                           : remotePath);  // TODO : no need to keep both remote and local paths
                                                                           // since we do not rename the file locally anymore.
         } else {
@@ -1222,7 +1222,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
             node->setCreatedAt(dbNode.created());
         }
         if (!node->lastmodified().has_value()) {
-            node->setLastModified(_side == ReplicaSideLocal ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote());
+            node->setLastModified(_side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote());
         }
         if (node->size() == 0) {
             node->setSize(dbNode.size());
@@ -1361,7 +1361,7 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
             path = localPath;
             break;
         } else {
-            names.push_back(_side == ReplicaSideRemote ? tmpNode->name() : tmpNode->finalLocalName());
+            names.push_back(_side == ReplicaSide::Remote ? tmpNode->name() : tmpNode->finalLocalName());
             tmpNode = tmpNode->parentNode();
         }
     }
@@ -1374,7 +1374,7 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
 }
 
 ExitCode UpdateTreeWorker::updateNameFromDbForMoveOp(const std::shared_ptr<Node> node, FSOpPtr moveOp) {
-    if (_side == ReplicaSideRemote) {
+    if (_side == ReplicaSide::Remote) {
         return ExitCodeOk;
     }
 

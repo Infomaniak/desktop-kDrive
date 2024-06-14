@@ -90,24 +90,24 @@ void TestComputeFSOperationWorker::setUp() {
 
     /// Insert nodes in DB
     DbNode nodeDirA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", tLoc, tLoc, tDrive,
-                    NodeType::NodeTypeDirectory, 0, std::nullopt);
+                    NodeType::Directory, 0, std::nullopt);
     DbNode nodeDirB(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", tLoc, tLoc, tDrive,
-                    NodeType::NodeTypeDirectory, 0, std::nullopt);
+                    NodeType::Directory, 0, std::nullopt);
     DbNodeId dbNodeIdDirA;
     DbNodeId dbNodeIdDirB;
     bool constraintError = false;
     _syncPal->_syncDb->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
     _syncPal->_syncDb->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
 
-    DbNode nodeFileAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", tLoc, tLoc, tDrive, NodeType::NodeTypeFile, 0,
+    DbNode nodeFileAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", tLoc, tLoc, tDrive, NodeType::File, 0,
                       "cs_aa");
-    DbNode nodeFileAB(0, dbNodeIdDirA, Str("AB"), Str("AB"), "lab", "rab", tLoc, tLoc, tDrive, NodeType::NodeTypeFile, 0,
+    DbNode nodeFileAB(0, dbNodeIdDirA, Str("AB"), Str("AB"), "lab", "rab", tLoc, tLoc, tDrive, NodeType::File, 0,
                       "cs_ab");
-    DbNode nodeFileAC(0, dbNodeIdDirA, Str("AC"), Str("AC"), "lac", "rac", tLoc, tLoc, tDrive, NodeType::NodeTypeFile, 0,
+    DbNode nodeFileAC(0, dbNodeIdDirA, Str("AC"), Str("AC"), "lac", "rac", tLoc, tLoc, tDrive, NodeType::File, 0,
                       "cs_ac");
-    DbNode nodeFileBA(0, dbNodeIdDirB, Str("BA"), Str("BA"), "lba", "rba", tLoc, tLoc, tDrive, NodeType::NodeTypeFile, 0,
+    DbNode nodeFileBA(0, dbNodeIdDirB, Str("BA"), Str("BA"), "lba", "rba", tLoc, tLoc, tDrive, NodeType::File, 0,
                       "cs_ba");
-    DbNode nodeFileBB(0, dbNodeIdDirB, Str("BB"), Str("BB"), "lbb", "rbb", tLoc, tLoc, tDrive, NodeType::NodeTypeFile, 0,
+    DbNode nodeFileBB(0, dbNodeIdDirB, Str("BB"), Str("BB"), "lbb", "rbb", tLoc, tLoc, tDrive, NodeType::File, 0,
                       "cs_bb");
     DbNodeId dbNodeIdFileAA;
     DbNodeId dbNodeIdFileAB;
@@ -181,7 +181,7 @@ void TestComputeFSOperationWorker::testComputeOps() {
 
     // On local replica
     // Create operation
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), tLoc, tLoc, NodeTypeFile, 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), tLoc, tLoc, NodeType::File, 123));
     // Edit operation
     _syncPal->_localSnapshot->setLastModified("laa", tLoc + 60);
     // Move operation
@@ -192,9 +192,9 @@ void TestComputeFSOperationWorker::testComputeOps() {
     _syncPal->_localSnapshot->removeItem("lbb");
 
     // Create operation on a too big directory
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("raf", "ra", Str("AF_too_big"), tLoc, tLoc, NodeTypeDirectory, 0));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("raf", "ra", Str("AF_too_big"), tLoc, tLoc, NodeType::Directory, 0));
     _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("rafa", "raf", Str("AFA"), tLoc, tLoc, NodeTypeFile, 550 * 1024 * 1024));  // File size: 550MB
+        SnapshotItem("rafa", "raf", Str("AFA"), tLoc, tLoc, NodeType::File, 550 * 1024 * 1024));  // File size: 550MB
 
     // Rename operation on a blacklisted directory
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-blacklisted"));

@@ -352,7 +352,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
             return ExitCodeSystemError;
         }
 
-        if (itemType.nodeType != NodeTypeFile) {
+        if (itemType.nodeType != NodeType::File) {
             continue;
         }
         const std::string entryPathStr = entry.path().string();

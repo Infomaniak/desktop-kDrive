@@ -39,9 +39,9 @@ void TestIo::testCreateSymlink() {
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeSymlink);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeFile);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::File);
     }
 
     // Successfully creates a symlink on a regular directory.
@@ -58,9 +58,9 @@ void TestIo::testCreateSymlink() {
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeSymlink);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeDirectory);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::Directory);
     }
 
     // Successfully creates a symlink whose target path indicates a non-existing item.
@@ -77,12 +77,12 @@ void TestIo::testCreateSymlink() {
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);  // Although the target path is invalid.
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeSymlink);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeFile);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::File);
 #else
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
 #endif
     }
 
@@ -114,9 +114,9 @@ void TestIo::testCreateSymlink() {
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeDirectory);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::Directory);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeNone);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
     }
 
     // Fails to create a symlink whose path is the target path (of an existing file)
@@ -134,9 +134,9 @@ void TestIo::testCreateSymlink() {
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeNone);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
     }
 
     // Fails to create a symlink whose name is very long
@@ -170,9 +170,9 @@ void TestIo::testCreateSymlink() {
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
         CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkTypeSymlink);
-        CPPUNIT_ASSERT(itemType.targetType == NodeTypeFile);
+        CPPUNIT_ASSERT(itemType.targetType == NodeType::File);
     }
 }
 
