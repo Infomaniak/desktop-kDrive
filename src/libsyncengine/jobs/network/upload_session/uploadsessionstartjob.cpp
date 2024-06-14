@@ -65,8 +65,8 @@ std::string UploadSessionStartJob::getSpecificUrl() {
 
 void UploadSessionStartJob::setData(bool &canceled) {
     Poco::JSON::Object json;
-    auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch());
+    using namespace std::chrono;
+    auto timestamp = duration_cast<seconds>(time_point_cast<seconds>(system_clock::now()).time_since_epoch());
 
     switch (_uploadType) {
         case UploadSessionType::Standard:
