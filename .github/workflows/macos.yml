@@ -51,4 +51,5 @@ jobs:
         continue-on-error: true
 
       - name: Clean-up generated code
+        if: false
         run : rm -rf build-macos
