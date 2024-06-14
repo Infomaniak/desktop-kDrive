@@ -265,9 +265,24 @@ Once installed, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDrive
 
 # Build in Debug
 
-To build in `Debug` mode, you will need to build and deploy the Windows extension first.  
+To build in `Debug` mode, you will need to build and deploy the Windows extension first.
+
+## Linking dependencies
+
+In order for CMake to be able to find all dependencies, add all libraries installation folder in the `PATH` environment variable:
+```
+C:\Program Files (x86)\Poco\bin
+C:\Program Files (x86)\libzip\bin
+C:\Program Files (x86)\zlib-1.2.11\bin
+C:\Program Files (x86)\xxHash\bin
+C:\Program Files (x86)\Sentry-Native\bin
+C:\Program Files (x86)\log4cplus\bin
+C:\Program Files (x86)\cppunit\bin
+C:\Program Files\OpenSSL\bin
+```
 
 ## Using Qt Creator
+
 You can disable QML debugger from the settings to avoid some error pop-ups.
 
 ### Additionnal Requirements
