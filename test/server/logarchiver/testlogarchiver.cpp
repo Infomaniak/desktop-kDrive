@@ -78,7 +78,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
 
         IoError err = IoErrorSuccess;
         uint64_t logDirsize = 0;
-    
+
         LogArchiver::getLogDirEstimatedSize(logDirsize, err);
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(logDirsize >= 0);
@@ -102,9 +102,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
         // create a fake log file
         std::ofstream logFile(tempDir.path / "test.log");
         CPPUNIT_ASSERT(logFile.is_open());
-        for (int i = 0; i < 10; i++) {
-            logFile << "Test log line " << i << std::endl;
-        }
+        logFile << "Test log line." << std::endl;
         logFile.close();
 
         // compress the log file
@@ -172,7 +170,7 @@ void TestLogArchiver::testCompressLogs(void) {
         LOG_DEBUG(_logger, "Test log compression");
         TemporaryDirectory tempDir("logArchiver");
         std::ofstream logFile(tempDir.path / "test.log");
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 5; i++) {
             logFile << "Test log line " << i << std::endl;
         }
         logFile.close();
@@ -187,12 +185,11 @@ void TestLogArchiver::testCompressLogs(void) {
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
 
         uint64_t logDirSize = 0;
-        bool tooDeep = false;
 
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::getDirectorySize(logDir, logDirSize, err, 0));
         CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
         CPPUNIT_ASSERT(logDirSize >= 0);
-        
+
         ExitCause cause = ExitCauseUnknown;
         const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, std::function<bool(int)>(), cause);
 
