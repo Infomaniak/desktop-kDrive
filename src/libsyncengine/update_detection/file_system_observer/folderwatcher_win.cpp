@@ -51,8 +51,8 @@ void FolderWatcher_win::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder: " << _folder.wstring().c_str());
     LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
 
-    _resultEventHandle = CreateEvent(NULL, true, false, NULL);
-    _stopEventHandle = CreateEvent(NULL, true, false, NULL);
+    _resultEventHandle = CreateEvent(nullptr, true, false, nullptr);
+    _stopEventHandle = CreateEvent(nullptr, true, false, nullptr);
 
     while (!_stop) {
         watchChanges();
@@ -79,8 +79,8 @@ void FolderWatcher_win::watchChanges() {
     LOG_DEBUG(_logger, "Start watching changes");
 
     _directoryHandle =
-        CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, NULL,
-                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, NULL);
+        CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, nullptr,
+                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
 
     if (_directoryHandle == INVALID_HANDLE_VALUE) {
         DWORD errorCode = GetLastError();
@@ -102,7 +102,7 @@ void FolderWatcher_win::watchChanges() {
                                    FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_ATTRIBUTES |
                                        FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION |
                                        FILE_NOTIFY_CHANGE_SECURITY,
-                                   &dwBytesReturned, &overlapped, NULL)) {
+                                   &dwBytesReturned, &overlapped, nullptr)) {
             DWORD errorCode = GetLastError();
             if (errorCode == ERROR_NOTIFY_ENUM_DIR) {
                 LOG_DEBUG(_logger, "The buffer for changes overflowed! Fallback to static sync");

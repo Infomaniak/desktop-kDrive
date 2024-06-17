@@ -94,7 +94,7 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
     CFRelease(aliasPathStr);
 
-    CFDataRef bookmarkRef = CFDataCreate(NULL, (const UInt8 *)data.data(), data.size());
+    CFDataRef bookmarkRef = CFDataCreate(nullptr, (const UInt8 *)data.data(), data.size());
 
     CFErrorRef error = nil;
     bool ret = CFURLWriteBookmarkDataToFile(bookmarkRef, aliasUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, &error);
@@ -187,7 +187,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
     CFErrorRef error = nil;
     CFDataRef bookmarkRef = CFURLCreateBookmarkData(
         // The obj-c/swift doc: https://developer.apple.com/documentation/corefoundation/1542923-cfurlcreatebookmarkdata
-        NULL, targetUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, CFArrayRef{}, nil, &error);
+        nullptr, targetUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, CFArrayRef{}, nil, &error);
 
     if (bookmarkRef == nil) {
         if (error) {

@@ -56,7 +56,7 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
     const bool isSymlink = itemType.linkType == LinkType::Symlink;
 
     for (;;) {
-        const long bufferLength = getxattr(path.native().c_str(), attrName.c_str(), NULL, 0, 0, isSymlink ? XATTR_NOFOLLOW : 0);
+        const long bufferLength = getxattr(path.native().c_str(), attrName.c_str(), nullptr, 0, 0, isSymlink ? XATTR_NOFOLLOW : 0);
         if (bufferLength == -1) {
             ioError = posixError2ioError(errno);
             return _isXAttrValueExpectedError(ioError);

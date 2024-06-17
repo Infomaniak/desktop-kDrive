@@ -674,8 +674,8 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
     uint32 length;
 
     OSStatus status =
-        SecKeychainFindGenericPassword(NULL, static_cast<uint32>(serviceName.length()), serviceName.c_str(),
-                                       static_cast<uint32>(keychainKey.length()), keychainKey.c_str(), &length, &data, NULL);
+        SecKeychainFindGenericPassword(nullptr, static_cast<uint32>(serviceName.length()), serviceName.c_str(),
+                                       static_cast<uint32>(keychainKey.length()), keychainKey.c_str(), &length, &data, nullptr);
 
     if (status == errSecNoSuchKeychain) {
         LOG_DEBUG(_logger, "Application password not found");
@@ -683,11 +683,11 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
     } else if (status != errSecSuccess) {
         LOG_WARN(_logger, "Unable to read application password");
         return ExitCode::SystemError;
-    } else if (data != NULL) {
+    } else if (data != nullptr) {
         LOG_DEBUG(_logger, "Application password found");
         appPassword = std::string(reinterpret_cast<const char *>(data), length);
         found = true;
-        SecKeychainItemFreeContent(NULL, data);
+        SecKeychainItemFreeContent(nullptr, data);
     }
 #elif defined(__unix__)
     const std::string package = "kDrive";
@@ -705,20 +705,20 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
                                          {userFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
                                          {serverFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
                                          {typeFieldName, SECRET_SCHEMA_ATTRIBUTE_STRING},
-                                         {NULL, SecretSchemaAttributeType(0)},
+                                         {nullptr, SecretSchemaAttributeType(0)},
                                      }};
 
-    GError *error = NULL;
+    GError *error = nullptr;
 
     gchar *raw_passwords = secret_password_lookup_sync(&schema,
-                                                       NULL,  // not cancellable
+                                                       nullptr,  // not cancellable
                                                        &error, userFieldName, keychainKey.c_str(), serverFieldName,
-                                                       server.c_str(), typeFieldName, type.c_str(), NULL);
+                                                       server.c_str(), typeFieldName, type.c_str(), nullptr);
 
-    if (error != NULL) {
+    if (error != nullptr) {
         LOG_WARN(_logger, "Unable to read application password");
         return ExitCode::SystemError;
-    } else if (raw_passwords == NULL) {
+    } else if (raw_passwords == nullptr) {
         LOG_DEBUG(_logger, "Application password not found");
         found = false;
     } else {

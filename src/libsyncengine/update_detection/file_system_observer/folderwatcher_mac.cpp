@@ -106,13 +106,13 @@ void FolderWatcher_mac::startWatching() {
     LOGW_DEBUG(_logger, L"Start watching folder: " << Path2WStr(_folder).c_str());
     LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
 
-    CFStringRef path = CFStringCreateWithCString(NULL, _folder.c_str(), kCFStringEncodingUTF8);
-    CFArrayRef pathsToWatch = CFArrayCreate(NULL, (const void **)&path, 1, NULL);
+    CFStringRef path = CFStringCreateWithCString(nullptr, _folder.c_str(), kCFStringEncodingUTF8);
+    CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **)&path, 1, nullptr);
 
-    FSEventStreamContext ctx = {0, this, NULL, NULL, NULL};
+    FSEventStreamContext ctx = {0, this, nullptr, nullptr, nullptr};
 
     _stream = FSEventStreamCreate(
-        NULL, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
+        nullptr, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
         0,  // latency
         kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents /*| kFSEventStreamCreateFlagIgnoreSelf*/);
     // TODO : try kFSEventStreamCreateFlagUseExtendedData to get inode directly from event
