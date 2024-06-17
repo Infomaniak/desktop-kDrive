@@ -38,7 +38,7 @@ SyncInfo::SyncInfo()
       _targetPath(QString()),
       _targetNodeId(QString()),
       _supportVfs(false),
-      _virtualFileMode(VirtualFileModeOff),
+      _virtualFileMode(VirtualFileMode::Off),
       _navigationPaneClsid(QString()) {}
 
 QDataStream &operator>>(QDataStream &in, SyncInfo &info) {

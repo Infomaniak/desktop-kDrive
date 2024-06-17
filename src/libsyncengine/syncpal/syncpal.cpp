@@ -782,7 +782,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         return ExitCode::Unknown;
     }
 
-    if (_vfsMode == VirtualFileModeMac || _vfsMode == VirtualFileModeWin) {
+    if (_vfsMode == VirtualFileMode::Mac || _vfsMode == VirtualFileMode::Win) {
         // Set callbacks
         std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
             std::bind(&SyncPal::vfsUpdateFetchStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,

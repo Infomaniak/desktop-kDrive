@@ -43,7 +43,7 @@ Parameters::Parameters()
       _monoIcons(false),
       _autoStart(true),
       _moveToTrash(true),
-      _notificationsDisabled(NotificationsDisabledNever),
+      _notificationsDisabled(NotificationsDisabled::Never),
       _useLog(true),
       _logLevel(LogLevel::Debug),
       _extendedLog(false),

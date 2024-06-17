@@ -457,7 +457,7 @@ bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &st
         return false;
     }
 
-    if (vfsMapIt->second->mode() == KDC::VirtualFileModeMac || vfsMapIt->second->mode() == KDC::VirtualFileModeWin) {
+    if (vfsMapIt->second->mode() == KDC::VirtualFileMode::Mac || vfsMapIt->second->mode() == KDC::VirtualFileMode::Win) {
         bool isSyncing = false;
         if (!vfsMapIt->second->status(fileData._localPath, isPlaceholder, isHydrated, isSyncing, progress)) {
             LOGW_WARN(KDC::Log::instance()->getLogger(),
@@ -614,7 +614,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
 #ifdef __APPLE__
         // Not done in Windows case: triggers an hydration
         // Set pin state
-        if (!setPinState(fileData, KDC::PinStateAlwaysLocal)) {
+        if (!setPinState(fileData, KDC::PinState::AlwaysLocal)) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
                       L"Error in SocketApi::setPinState - path=" << Path2WStr(filePath).c_str());
             continue;
@@ -710,7 +710,7 @@ void SocketApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, SocketL
         }
 
         // Set pin state
-        if (!setPinState(fileData, KDC::PinStateOnlineOnly)) {
+        if (!setPinState(fileData, KDC::PinState::OnlineOnly)) {
             LOGW_INFO(KDC::Log::instance()->getLogger(),
                       L"Error in SocketApi::setPinState - path=" << Path2WStr(filePath).c_str());
             continue;
@@ -1095,7 +1095,7 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
     _dehydrationMutex.unlock();
 
     // File availability actions
-    if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileModeOff && vfsMapIt->second->socketApiPinStateActionsShown()) {
+    if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileMode::Off && vfsMapIt->second->socketApiPinStateActionsShown()) {
         ENFORCE(!files.isEmpty());
 
         bool canHydrate = true;
@@ -1262,7 +1262,7 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
     bool canCancelDehydration = false;
 
     // File availability actions
-    if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileModeOff) {
+    if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileMode::Off) {
         ENFORCE(!argumentList.isEmpty());
 
         for (const auto &file : qAsConst(argumentList)) {
@@ -1297,7 +1297,7 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<KDC::Sy
     // Process all files
     for (const QString &path : qAsConst(inFileList)) {
         FileData fileData = FileData::get(path);
-        if (fileData._virtualFileMode == KDC::VirtualFileModeMac) {
+        if (fileData._virtualFileMode == KDC::VirtualFileMode::Mac) {
             QFileInfo info(path);
             if (info.isDir()) {
                 const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
@@ -1370,7 +1370,7 @@ FileData::FileData()
       _syncDbId(0),
       _driveDbId(0),
       _isDirectory(false),
-      _virtualFileMode(KDC::VirtualFileModeOff) {}
+      _virtualFileMode(KDC::VirtualFileMode::Off) {}
 
 FileData FileData::get(const QString &path) {
     std::filesystem::path localPath = QStr2Path(path);

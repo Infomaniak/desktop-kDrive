@@ -72,20 +72,20 @@ static const int defaultLogoIconSize = 50;
 static const int maxSynchronizedItems = 50;
 
 const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsDisabledMap = {
-    {NotificationsDisabledNever, QString(tr("Never"))},
-    {NotificationsDisabledOneHour, QString(tr("During 1 hour"))},
-    {NotificationsDisabledUntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-    {NotificationsDisabledTreeDays, QString(tr("During 3 days"))},
-    {NotificationsDisabledOneWeek, QString(tr("During 1 week"))},
-    {NotificationsDisabledAlways, QString(tr("Always"))}};
+    {NotificationsDisabled::Never, QString(tr("Never"))},
+    {NotificationsDisabled::OneHour, QString(tr("During 1 hour"))},
+    {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
+    {NotificationsDisabled::TreeDays, QString(tr("During 3 days"))},
+    {NotificationsDisabled::OneWeek, QString(tr("During 1 week"))},
+    {NotificationsDisabled::Always, QString(tr("Always"))}};
 
 const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsDisabledForPeriodMap = {
-    {NotificationsDisabledNever, QString(tr("Never"))},
-    {NotificationsDisabledOneHour, QString(tr("For 1 more hour"))},
-    {NotificationsDisabledUntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-    {NotificationsDisabledTreeDays, QString(tr("For 3 more days"))},
-    {NotificationsDisabledOneWeek, QString(tr("For 1 more week"))},
-    {NotificationsDisabledAlways, QString(tr("Always"))}};
+    {NotificationsDisabled::Never, QString(tr("Never"))},
+    {NotificationsDisabled::OneHour, QString(tr("For 1 more hour"))},
+    {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
+    {NotificationsDisabled::TreeDays, QString(tr("For 3 more days"))},
+    {NotificationsDisabled::OneWeek, QString(tr("For 1 more week"))},
+    {NotificationsDisabled::Always, QString(tr("Always"))}};
 
 Q_LOGGING_CATEGORY(lcSynthesisPopover, "gui.synthesispopover", QtInfoMsg)
 
@@ -616,7 +616,7 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
             if (syncInfo.step() != SyncStep::Propagation2) {
                 syncsInPropagationStep++;
             }
-            if (syncInfo.virtualFileMode() != VirtualFileModeOff) {
+            if (syncInfo.virtualFileMode() != VirtualFileMode::Off) {
                 statusInfo._liteSyncActivated = true;
             }
         }
@@ -1077,7 +1077,7 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     // Disable Notifications
     QWidgetAction *notificationsMenuAction = new QWidgetAction(this);
     bool notificationAlreadyDisabledForPeriod =
-        _notificationsDisabled != NotificationsDisabledNever && _notificationsDisabled != NotificationsDisabledAlways;
+        _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
     MenuItemWidget *notificationsMenuItemWidget =
         new MenuItemWidget(notificationAlreadyDisabledForPeriod
                                ? tr("Notifications disabled until %1").arg(_notificationsDisabledUntilDateTime.toString())
@@ -1094,14 +1094,14 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     notificationActionGroup->setExclusive(true);
 
     const std::map<NotificationsDisabled, QString> &notificationMap =
-        _notificationsDisabled == NotificationsDisabledNever || _notificationsDisabled == NotificationsDisabledAlways
+        _notificationsDisabled == NotificationsDisabled::Never || _notificationsDisabled == NotificationsDisabled::Always
             ? _notificationsDisabledMap
             : _notificationsDisabledForPeriodMap;
 
     QWidgetAction *notificationAction;
     for (auto const &notificationMapElt : notificationMap) {
         notificationAction = new QWidgetAction(this);
-        notificationAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), notificationMapElt.first);
+        notificationAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), enumClassToInt(notificationMapElt.first));
         QString text = QCoreApplication::translate("KDC::SynthesisPopover", notificationMapElt.second.toStdString().c_str());
         MenuItemWidget *notificationMenuItemWidget = new MenuItemWidget(text);
         notificationMenuItemWidget->setChecked(notificationMapElt.first == _notificationsDisabled);
@@ -1204,32 +1204,32 @@ void SynthesisPopover::onNotificationActionTriggered(bool checked) {
     Q_UNUSED(checked)
 
     bool notificationAlreadyDisabledForPeriod =
-        _notificationsDisabled != NotificationsDisabledNever && _notificationsDisabled != NotificationsDisabledAlways;
+        _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
 
     _notificationsDisabled = qvariant_cast<NotificationsDisabled>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
     switch (_notificationsDisabled) {
-        case NotificationsDisabledNever:
+        case NotificationsDisabled::Never:
             _notificationsDisabledUntilDateTime = QDateTime();
             break;
-        case NotificationsDisabledOneHour:
+        case NotificationsDisabled::OneHour:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                       ? _notificationsDisabledUntilDateTime.addSecs(60 * 60)
                                                       : QDateTime::currentDateTime().addSecs(60 * 60);
             break;
-        case NotificationsDisabledUntilTomorrow:
+        case NotificationsDisabled::UntilTomorrow:
             _notificationsDisabledUntilDateTime = QDateTime(QDateTime::currentDateTime().addDays(1).date(), QTime(8, 0));
             break;
-        case NotificationsDisabledTreeDays:
+        case NotificationsDisabled::TreeDays:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                       ? _notificationsDisabledUntilDateTime.addDays(3)
                                                       : QDateTime::currentDateTime().addDays(3);
             break;
-        case NotificationsDisabledOneWeek:
+        case NotificationsDisabled::OneWeek:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                       ? _notificationsDisabledUntilDateTime.addDays(7)
                                                       : QDateTime::currentDateTime().addDays(7);
             break;
-        case NotificationsDisabledAlways:
+        case NotificationsDisabled::Always:
             _notificationsDisabledUntilDateTime = QDateTime();
             break;
     }

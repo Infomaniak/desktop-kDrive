@@ -774,7 +774,7 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<Snapshot> remoteSn
     }
 
     if (ParametersCache::instance()->parameters().useBigFolderSizeLimit() &&
-        size > ParametersCache::instance()->parameters().bigFolderSizeLimitB() && _sync.virtualFileMode() == VirtualFileModeOff) {
+        size > ParametersCache::instance()->parameters().bigFolderSizeLimitB() && _sync.virtualFileMode() == VirtualFileMode::Off) {
         // Update undecided list
         std::unordered_set<NodeId> tmp;
         SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::UndecidedList, tmp);

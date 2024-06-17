@@ -91,7 +91,7 @@ class ExecutorWorker : public OperationProcessor {
 
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
-        inline bool isLiteSyncActivated() { return _syncPal->_vfsMode != VirtualFileModeOff; }
+        inline bool isLiteSyncActivated() { return _syncPal->_vfsMode != VirtualFileMode::Off; }
 
         inline std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) {
             return _syncPal->updateTree(otherSide(syncOp->targetSide()));

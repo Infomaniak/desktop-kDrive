@@ -727,7 +727,7 @@ void ClientGui::onShowTrayMessage(const QString &title, const QString &msg) {
 }
 
 void ClientGui::onShowOptionalTrayMessage(const QString &title, const QString &msg) {
-    if (ParametersCache::instance()->parametersInfo().notificationsDisabled() != NotificationsDisabledNever) {
+    if (ParametersCache::instance()->parametersInfo().notificationsDisabled() != NotificationsDisabled::Never) {
         if (_notificationEnableDate != QDateTime() && _notificationEnableDate > QDateTime::currentDateTime()) {
             return;
         }
@@ -755,9 +755,9 @@ void ClientGui::onDisableNotifications(NotificationsDisabled type, QDateTime val
     ParametersCache::instance()->parametersInfo().setNotificationsDisabled(type);
     ParametersCache::instance()->saveParametersInfo();
 
-    if (type == NotificationsDisabledNever) {
+    if (type == NotificationsDisabled::Never) {
         _notificationEnableDate = QDateTime();
-    } else if (type == NotificationsDisabledAlways) {
+    } else if (type == NotificationsDisabled::Always) {
         _notificationEnableDate = QDateTime();
     } else {
         _notificationEnableDate = value;

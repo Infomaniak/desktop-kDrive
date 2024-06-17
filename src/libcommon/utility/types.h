@@ -274,16 +274,7 @@ enum class SyncDirection { Unknown = 0, Up, Down };
 
 enum class SyncFileStatus { Unknown = 0, Error, Success, Conflict, Inconsistency, Ignored, Syncing };
 
-enum class SyncFileInstruction {
-    None = 0,
-    Update,
-    UpdateMetadata,
-    Remove,
-    Move,
-    Get,
-    Put,
-    Ignore
-};
+enum class SyncFileInstruction { None = 0, Update, UpdateMetadata, Remove, Move, Get, Put, Ignore };
 
 enum class SyncStep {
     None = 0,
@@ -307,34 +298,27 @@ enum class ErrorLevel { Unknown = 0, Server, SyncPal, Node };
 
 enum class Language { Default = 0, English, French, German, Spanish, Italian };
 
-enum class LogLevel {Debug = 0, Info, Warning, Error, Fatal};
+enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal };
 
-typedef enum {
-    NotificationsDisabledNever,
-    NotificationsDisabledOneHour,
-    NotificationsDisabledUntilTomorrow,
-    NotificationsDisabledTreeDays,
-    NotificationsDisabledOneWeek,
-    NotificationsDisabledAlways
-} NotificationsDisabled;
+enum class NotificationsDisabled { Never, OneHour, UntilTomorrow, TreeDays, OneWeek, Always };
 
-using VirtualFileMode = enum { VirtualFileModeOff, VirtualFileModeWin, VirtualFileModeMac, VirtualFileModeSuffix };
+enum class VirtualFileMode { Off, Win, Mac, Suffix };
 
-using PinState = enum { PinStateInherited, PinStateAlwaysLocal, PinStateOnlineOnly, PinStateUnspecified };
+enum class PinState { Inherited, AlwaysLocal, OnlineOnly, Unspecified };
 
-typedef enum {
-    ProxyTypeUndefined = 0,
-    ProxyTypeNone,
-    ProxyTypeSystem,
-    ProxyTypeHTTP,
-    ProxyTypeSocks5  // Don't use, not implemented in Poco library
-} ProxyType;
+enum class ProxyType {
+    Undefined = 0,
+    None,
+    System,
+    HTTP,
+    Socks5  // Don't use, not implemented in Poco library
+};
 
-typedef enum {
-    ExclusionTemplateComplexitySimplest = 0,
-    ExclusionTemplateComplexitySimple,
-    ExclusionTemplateComplexityComplex
-} ExclusionTemplateComplexity;
+enum class ExclusionTemplateComplexity {
+    Simplest = 0,
+    Simple,
+    Complex
+} ;
 
 using LinkType = enum { LinkTypeNone = 0, LinkTypeSymlink, LinkTypeHardlink, LinkTypeFinderAlias, LinkTypeJunction };
 

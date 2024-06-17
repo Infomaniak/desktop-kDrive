@@ -46,8 +46,8 @@ static const int defaultPortNumber = 8080;
 static const int hostNameMaxLength = 200;
 
 std::map<ProxyType, std::pair<int, QString>> ProxyServerDialog::_manualProxyMap = {
-    {ProxyType::ProxyTypeHTTP, {0, QString(tr("HTTP(S) Proxy"))}}
-    //, { ProxyType::ProxyTypeSocks5, { 0, QString(tr("SOCKS5 Proxy")) } }
+    {ProxyType::HTTP, {0, QString(tr("HTTP(S) Proxy"))}}
+    //, { ProxyType::Socks5, { 0, QString(tr("SOCKS5 Proxy")) } }
 };
 
 Q_LOGGING_CATEGORY(lcProxyServerDialog, "gui.proxyserverdialog", QtInfoMsg)
@@ -130,7 +130,7 @@ void ProxyServerDialog::initUI() {
     _proxyTypeComboBox->setAttribute(Qt::WA_MacShowFocusRect, false);
 
     for (auto const &manualProxyMapElt : _manualProxyMap) {
-        _proxyTypeComboBox->insertItem(manualProxyMapElt.second.first, manualProxyMapElt.second.second, manualProxyMapElt.first);
+        _proxyTypeComboBox->insertItem(manualProxyMapElt.second.first, manualProxyMapElt.second.second, enumClassToInt(manualProxyMapElt.first));
     }
     manualProxyTypeHBox->addWidget(_proxyTypeComboBox);
     manualProxyTypeHBox->addStretch();
@@ -223,11 +223,11 @@ void ProxyServerDialog::initUI() {
 }
 
 void ProxyServerDialog::updateUI() {
-    if (_proxyConfigInfo.type() == ProxyTypeNone) {
+    if (_proxyConfigInfo.type() == ProxyType::None) {
         if (!_noProxyButton->isChecked()) {
             _noProxyButton->setChecked(true);
         }
-    } else if (_proxyConfigInfo.type() == ProxyTypeSystem) {
+    } else if (_proxyConfigInfo.type() == ProxyType::System) {
         if (!_systemProxyButton->isChecked()) {
             _systemProxyButton->setChecked(true);
         }
@@ -274,7 +274,7 @@ void ProxyServerDialog::setNeedToSave(bool value) {
 bool ProxyServerDialog::isSaveEnabled() {
     bool saveButtonEnabled =
         _needToSave &&
-        (_proxyConfigInfo.type() == ProxyTypeNone || _proxyConfigInfo.type() == ProxyTypeSystem ||
+        (_proxyConfigInfo.type() == ProxyType::None || _proxyConfigInfo.type() == ProxyType::System ||
          (!_proxyConfigInfo.hostName().isEmpty() &&
           (!_proxyConfigInfo.needsAuth() || (!_proxyConfigInfo.user().isEmpty() && !_proxyConfigInfo.pwd().isEmpty()))));
 
@@ -349,7 +349,7 @@ void ProxyServerDialog::onSaveButtonTriggered(bool checked) {
 
 void ProxyServerDialog::onNoProxyButtonClicked(bool checked) {
     if (checked) {
-        _proxyConfigInfo.setType(ProxyTypeNone);
+        _proxyConfigInfo.setType(ProxyType::None);
         resetManualProxy();
         updateUI();
         setNeedToSave(true);
@@ -358,7 +358,7 @@ void ProxyServerDialog::onNoProxyButtonClicked(bool checked) {
 
 void ProxyServerDialog::onSystemProxyButtonClicked(bool checked) {
     if (checked) {
-        _proxyConfigInfo.setType(ProxyTypeSystem);
+        _proxyConfigInfo.setType(ProxyType::System);
         resetManualProxy();
         updateUI();
         setNeedToSave(true);
@@ -367,7 +367,7 @@ void ProxyServerDialog::onSystemProxyButtonClicked(bool checked) {
 
 void ProxyServerDialog::onManualProxyButtonClicked(bool checked) {
     if (checked) {
-        _proxyConfigInfo.setType(ProxyTypeHTTP);  // Default manual proxy type
+        _proxyConfigInfo.setType(ProxyType::HTTP);  // Default manual proxy type
         updateUI();
         setNeedToSave(true);
     }

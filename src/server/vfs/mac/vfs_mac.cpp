@@ -93,7 +93,7 @@ VfsMac::~VfsMac() {
 
 
 VirtualFileMode VfsMac::mode() const {
-    return VirtualFileModeMac;
+    return VirtualFileMode::Mac;
 }
 
 bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
@@ -587,7 +587,7 @@ bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
 
     const QString strPath = Path2QStr(fullPath);
     if (!_connector->vfsSetPinState(strPath, _localSyncPath,
-                                    (state == PinStateAlwaysLocal ? VFS_PIN_STATE_PINNED : VFS_PIN_STATE_UNPINNED))) {
+                                    (state == PinState::AlwaysLocal ? VFS_PIN_STATE_PINNED : VFS_PIN_STATE_UNPINNED))) {
         LOG_WARN(logger(), "Error in vfsSetPinState!");
         return false;
     }
@@ -600,16 +600,16 @@ PinState VfsMac::pinState(const QString &relativePath) {
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     QString pinState;
     if (!_connector->vfsGetPinState(Path2QStr(fullPath), pinState)) {
-        return PinStateUnspecified;
+        return PinState::Unspecified;
     }
 
     if (pinState == VFS_PIN_STATE_PINNED) {
-        return PinStateAlwaysLocal;
+        return PinState::AlwaysLocal;
     } else if (pinState == VFS_PIN_STATE_UNPINNED) {
-        return PinStateOnlineOnly;
+        return PinState::OnlineOnly;
     }
 
-    return PinStateUnspecified;
+    return PinState::Unspecified;
 }
 
 bool VfsMac::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
@@ -760,13 +760,13 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
             QString fileRelativePath = QStringView(path).mid(_vfsSetupParams._localPath.string().size()).toUtf8();
             auto localPinState = pinState(fileRelativePath);
             bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
-            if (localPinState == PinStateOnlineOnly && !isDehydrated) {
+            if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
                 _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
                 _workerInfo[WORKER_DEHYDRATION]._queue.push_front(path);
                 _workerInfo[WORKER_DEHYDRATION]._mutex.unlock();
                 _workerInfo[WORKER_DEHYDRATION]._queueWC.wakeOne();
-            } else if (localPinState == PinStateAlwaysLocal && isDehydrated) {
+            } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
                 bool syncing;
                 _syncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), syncing);
                 if (!syncing) {

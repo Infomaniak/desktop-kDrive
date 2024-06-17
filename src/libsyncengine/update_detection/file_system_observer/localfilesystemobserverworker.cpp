@@ -254,7 +254,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     return;
                 }
 
-                PinState pinstate = PinStateUnspecified;
+                PinState pinstate = PinState::Unspecified;
                 if (!_syncPal->vfsPinState(absolutePath, pinstate)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState: " << Utility::formatSyncPath(absolutePath).c_str());
                     invalidateSnapshot();
@@ -262,7 +262,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 }
 
                 if (isPlaceholder) {
-                    if ((isHydrated && pinstate == PinStateOnlineOnly) || (!isHydrated && pinstate == PinStateAlwaysLocal)) {
+                    if ((isHydrated && pinstate == PinState::OnlineOnly) || (!isHydrated && pinstate == PinState::AlwaysLocal)) {
                         // Change status in order to start hydration/dehydration
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
                         if (!_syncPal->vfsFileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
@@ -370,7 +370,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (fileStat.modtime > _snapshot->lastModified(nodeId)) {
             // This is an edit operation
 #ifdef __APPLE__
-            if (_syncPal->_vfsMode == VirtualFileModeMac) {
+            if (_syncPal->_vfsMode == VirtualFileMode::Mac) {
                 // Exclude spurious operations (for example setIcon)
                 bool valid = true;
                 ExitCode exitCode = isEditValid(nodeId, absolutePath, fileStat.modtime, valid);

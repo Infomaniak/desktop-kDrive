@@ -549,7 +549,7 @@ bool ParmsDb::insertDefaultParameters() {
     Parameters parameters;
 
     ProxyConfig proxyConfig(parameters.proxyConfig());
-    proxyConfig.setType(ProxyTypeNone);
+    proxyConfig.setType(ProxyType::None);
     parameters.setProxyConfig(proxyConfig);
 
     int errId = 0;

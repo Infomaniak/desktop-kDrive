@@ -133,26 +133,26 @@ LogLevel MigrationParams::intToLogLevel(int log) {
 
 VirtualFileMode MigrationParams::modeFromString(const QString &str) {
     if (str == "suffix") {
-        return VirtualFileModeSuffix;
+        return VirtualFileMode::Suffix;
     } else if (str == "wincfapi") {
-        return VirtualFileModeWin;
+        return VirtualFileMode::Win;
     } else if (str == "mac") {
-        return VirtualFileModeMac;
+        return VirtualFileMode::Mac;
     } else {
-        return VirtualFileModeOff;
+        return VirtualFileMode::Off;
     }
 }
 
 ProxyType intToProxyType(int pTypeInt) {
     switch (pTypeInt) {
         case 0:
-            return ProxyTypeSystem;
+            return ProxyType::System;
         case 1:
-            return ProxyTypeSocks5;
+            return ProxyType::Socks5;
         case 3:
-            return ProxyTypeHTTP;
+            return ProxyType::HTTP;
         default:
-            return ProxyTypeNone;
+            return ProxyType::None;
     }
 }
 
@@ -391,7 +391,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
 
     // list used to analyse .cfg consistency
     std::vector<std::pair<bool, Sync>> syncConsistencyCheckList;
-    VirtualFileMode masterVfs = VirtualFileModeOff;
+    VirtualFileMode masterVfs = VirtualFileMode::Off;
 
     // Sync
     bool hasMaster = false;
@@ -598,8 +598,8 @@ ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
     ProxyType pType = intToProxyType(pTypeInt);
 
     // SOCKS5 is not supported
-    if (pType == ProxyTypeSocks5) {
-        pType = ProxyTypeSystem;
+    if (pType == ProxyType::Socks5) {
+        pType = ProxyType::System;
         setProxyNotSupported(true);
     }
     proxyConfig = ProxyConfig(pType, host.toStdString(), port, needsAuth);

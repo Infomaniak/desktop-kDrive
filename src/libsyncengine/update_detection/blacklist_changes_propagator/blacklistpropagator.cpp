@@ -140,7 +140,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     SyncPath absolutePath = _sync.localPath() / localPath;
 
     // Cancel hydration
-    const bool liteSyncActivated = _syncPal->_vfsMode != VirtualFileModeOff;
+    const bool liteSyncActivated = _syncPal->_vfsMode != VirtualFileMode::Off;
     if (liteSyncActivated) {
         try {
             std::error_code ec;

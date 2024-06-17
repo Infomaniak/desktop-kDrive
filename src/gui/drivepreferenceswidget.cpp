@@ -316,7 +316,7 @@ void DrivePreferencesWidget::onVfsConversionCompleted(int syncDbId) {
         if (folderItemWidget && folderItemWidget->syncDbId() == syncDbId) {
             auto syncInfoMapIt = _gui->syncInfoMap().find(folderItemWidget->syncDbId());
             if (syncInfoMapIt != _gui->syncInfoMap().end()) {
-                folderItemWidget->setLiteSyncActivated(syncInfoMapIt->second.virtualFileMode() != VirtualFileModeOff);
+                folderItemWidget->setLiteSyncActivated(syncInfoMapIt->second.virtualFileMode() != VirtualFileMode::Off);
             }
         }
     }
@@ -331,8 +331,8 @@ bool DrivePreferencesWidget::existUndecidedSet() {
                     continue;
                 }
 
-                if (syncInfoMapElt.second.virtualFileMode() == VirtualFileModeWin ||
-                    syncInfoMapElt.second.virtualFileMode() == VirtualFileModeMac) {
+                if (syncInfoMapElt.second.virtualFileMode() == VirtualFileMode::Win ||
+                    syncInfoMapElt.second.virtualFileMode() == VirtualFileMode::Mac) {
                     continue;
                 }
 
@@ -394,8 +394,8 @@ void DrivePreferencesWidget::askEnableLiteSync(const std::function<void(bool)> &
         return;
     }
 
-    if (virtualFileMode == VirtualFileModeWin || virtualFileMode == VirtualFileModeMac ||
-        virtualFileMode == VirtualFileModeSuffix) {
+    if (virtualFileMode == VirtualFileMode::Win || virtualFileMode == VirtualFileMode::Mac ||
+        virtualFileMode == VirtualFileMode::Suffix) {
         CustomMessageBox msgBox(QMessageBox::Question, tr("Do you really want to turn on Lite Sync?"),
                                 tr("This operation may take from a few seconds to a few minutes depending on the size of the "
                                    "folder to be converted."),
@@ -456,7 +456,7 @@ bool DrivePreferencesWidget::switchVfsOn(int syncDbId) {
     }
 
 #ifdef Q_OS_MAC
-    if (virtualFileMode == VirtualFileModeMac) {
+    if (virtualFileMode == VirtualFileMode::Mac) {
         // Check LiteSync ext authorizations
         std::string liteSyncExtErrorDescr;
         bool liteSyncExtOk =
@@ -476,7 +476,7 @@ bool DrivePreferencesWidget::switchVfsOn(int syncDbId) {
 #endif
 
     // Setting to Unspecified retains existing data.
-    exitCode = GuiRequests::setRootPinState(syncDbId, PinStateUnspecified);
+    exitCode = GuiRequests::setRootPinState(syncDbId, PinState::Unspecified);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setRootPinState";
         return false;
@@ -493,7 +493,7 @@ bool DrivePreferencesWidget::switchVfsOff(int syncDbId, bool diskSpaceWarning) {
     }
 
     // Wipe pin states
-    exitCode = GuiRequests::setRootPinState(syncDbId, PinStateAlwaysLocal);
+    exitCode = GuiRequests::setRootPinState(syncDbId, PinState::AlwaysLocal);
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcDrivePreferencesWidget()) << "Error in Requests::setRootPinState";
         return false;
@@ -560,7 +560,7 @@ void DrivePreferencesWidget::updateGuardedFoldersBlocs() {
 
             FolderItemWidget *folderItemWidget = new FolderItemWidget(syncInfoMapElt.first, _gui, this);
             folderItemWidget->setSupportVfs(syncInfoMapElt.second.supportVfs());
-            folderItemWidget->setLiteSyncActivated(syncInfoMapElt.second.virtualFileMode() != VirtualFileModeOff);
+            folderItemWidget->setLiteSyncActivated(syncInfoMapElt.second.virtualFileMode() != VirtualFileMode::Off);
             folderBox->addWidget(folderItemWidget);
 
             QFrame *line = folderBloc->addSeparator();

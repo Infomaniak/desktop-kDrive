@@ -263,11 +263,11 @@ AppServer::AppServer(int &argc, char **argv)
     // Check vfs plugins
     QString error;
 #ifdef Q_OS_WIN
-    if (KDC::isVfsPluginAvailable(VirtualFileModeWin, error)) LOG_INFO(_logger, "VFS windows plugin is available");
+    if (KDC::isVfsPluginAvailable(VirtualFileMode::Win, error)) LOG_INFO(_logger, "VFS windows plugin is available");
 #elif defined(Q_OS_MAC)
-    if (KDC::isVfsPluginAvailable(VirtualFileModeMac, error)) LOG_INFO(_logger, "VFS mac plugin is available");
+    if (KDC::isVfsPluginAvailable(VirtualFileMode::Mac, error)) LOG_INFO(_logger, "VFS mac plugin is available");
 #endif
-    if (KDC::isVfsPluginAvailable(VirtualFileModeSuffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
+    if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
     // Update checks
     UpdaterScheduler *updaterScheduler = new UpdaterScheduler(this);
@@ -1557,7 +1557,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             if (exitCode == ExitCode::Ok) {
                 for (const auto &vfsMapElt : _vfsMap) {
-                    if (vfsMapElt.second->mode() == VirtualFileModeMac) {
+                    if (vfsMapElt.second->mode() == VirtualFileMode::Mac) {
                         if (!vfsMapElt.second->setAppExcludeList()) {
                             exitCode = ExitCode::SystemError;
                             LOG_WARN(_logger, "Error in Vfs::setAppExcludeList!");
@@ -1575,7 +1575,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExitCode exitCode = ExitCode::Ok;
             QHash<QString, QString> appTable;
             for (const auto &vfsMapElt : _vfsMap) {
-                if (vfsMapElt.second->mode() == VirtualFileModeMac) {
+                if (vfsMapElt.second->mode() == VirtualFileMode::Mac) {
                     if (!vfsMapElt.second->getFetchingAppList(appTable)) {
                         exitCode = ExitCode::SystemError;
                         LOG_WARN(_logger, "Error in Vfs::getFetchingAppList!");
@@ -2262,7 +2262,7 @@ bool AppServer::vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState
 
     SyncPath relativePath = CommonUtility::relativePath(_syncPalMap[syncDbId]->localPath(), absolutePath);
     PinState tmpPinState = _vfsMap[syncDbId]->pinState(SyncName2QStr(relativePath.native()));
-    pinState = tmpPinState ? tmpPinState : PinStateUnspecified;
+    pinState = enumClassToInt(tmpPinState) ? tmpPinState : PinState::Unspecified;
     return true;
 }
 
@@ -2719,7 +2719,7 @@ std::string liteSyncActivationLogMessage(bool enabled, int syncDbId) {
 
 // This function will pause the synchronization in case of errors.
 ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
-    const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileModeOff, sync.dbId());
+    const std::string liteSyncMsg = liteSyncActivationLogMessage(sync.virtualFileMode() != VirtualFileMode::Off, sync.dbId());
     LOG_INFO(_logger, liteSyncMsg.c_str());
 
     ExitCause exitCause = ExitCause::Unknown;
@@ -3157,7 +3157,7 @@ void AppServer::showAlreadyRunning() {
 ExitCode AppServer::sendShowFileNotification(int syncDbId, const QString &filename, const QString &renameTarget,
                                              SyncFileInstruction status, int count) {
     // Check if notifications are disabled globally
-    if (ParametersCache::instance()->parameters().notificationsDisabled() == NotificationsDisabledAlways) {
+    if (ParametersCache::instance()->parameters().notificationsDisabled() == NotificationsDisabled::Always) {
         return ExitCode::Ok;
     }
 
@@ -3527,7 +3527,7 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
         QString error;
         _vfsMap[sync.dbId()] = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
         if (!_vfsMap[sync.dbId()]) {
-            LOG_WARN(_logger, "Error in Vfs::createVfsFromPlugin for mode " << sync.virtualFileMode() << " : "
+            LOG_WARN(_logger, "Error in Vfs::createVfsFromPlugin for mode " << enumClassToInt(sync.virtualFileMode()) << " : "
                                                                             << error.toStdString().c_str());
             exitCause = ExitCause::UnableToCreateVfs;
             return ExitCode::SystemError;
@@ -3546,7 +3546,7 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
     // Start VFS
     if (!_vfsMap[sync.dbId()]->start(_vfsInstallationDone, _vfsActivationDone, _vfsConnectionDone)) {
 #ifdef Q_OS_MAC
-        if (sync.virtualFileMode() == VirtualFileModeMac) {
+        if (sync.virtualFileMode() == VirtualFileMode::Mac) {
             if (_vfsInstallationDone && !_vfsActivationDone) {
                 // Check LiteSync ext authorizations
                 std::string liteSyncExtErrorDescr;
@@ -3576,7 +3576,7 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
     Sync tmpSync(sync);
     tmpSync.setNavigationPaneClsid(_vfsMap[sync.dbId()]->namespaceCLSID());
 
-    if (tmpSync.virtualFileMode() == KDC::VirtualFileModeWin) {
+    if (tmpSync.virtualFileMode() == KDC::VirtualFileMode::Win) {
         OldUtility::setFolderPinState(QUuid(QString::fromStdString(tmpSync.navigationPaneClsid())),
                                       _navigationPaneHelper->showInExplorerNavigationPane());
     } else {
@@ -3644,10 +3644,10 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
     }
 
     VirtualFileMode newMode;
-    if (value && sync.virtualFileMode() == VirtualFileModeOff) {
+    if (value && sync.virtualFileMode() == VirtualFileMode::Off) {
         newMode = KDC::bestAvailableVfsMode();
     } else {
-        newMode = VirtualFileModeOff;
+        newMode = VirtualFileMode::Off;
     }
 
     if (newMode != sync.virtualFileMode()) {
@@ -3661,7 +3661,7 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
             return exitCode;
         }
 
-        if (newMode == VirtualFileModeOff) {
+        if (newMode == VirtualFileMode::Off) {
 #ifdef Q_OS_WIN
             LOG_INFO(_logger, "Clearing node DB");
             _syncPalMap[syncDbId]->clearNodes();
@@ -3672,11 +3672,11 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         }
 
 #ifdef Q_OS_WIN
-        if (newMode == VirtualFileModeWin) {
+        if (newMode == VirtualFileMode::Win) {
             // Remove legacy sync root keys
             OldUtility::removeLegacySyncRootKeys(QUuid(QString::fromStdString(sync.navigationPaneClsid())));
             sync.setNavigationPaneClsid(std::string());
-        } else if (sync.virtualFileMode() == VirtualFileModeWin) {
+        } else if (sync.virtualFileMode() == VirtualFileMode::Win) {
             // Add legacy sync root keys
             bool show = _navigationPaneHelper->showInExplorerNavigationPane();
             if (sync.navigationPaneClsid().empty()) {
@@ -3706,7 +3706,7 @@ ExitCode AppServer::setSupportsVirtualFiles(int syncDbId, bool value) {
         QTimer::singleShot(100, this, [=]() {
             bool ok = true;
 
-            if (newMode != VirtualFileModeOff) {
+            if (newMode != VirtualFileMode::Off) {
                 // Clear file system
                 _vfsMap[sync.dbId()]->convertDirContentToPlaceholder(SyncName2QStr(sync.localPath()), true);
             }
@@ -4146,7 +4146,7 @@ void AppServer::onRestartSyncs() {
     // Check if at least one LiteSync sync exists
     bool vfsSync = false;
     for (const auto &vfsMapElt : _vfsMap) {
-        if (vfsMapElt.second->mode() == VirtualFileModeMac) {
+        if (vfsMapElt.second->mode() == VirtualFileMode::Mac) {
             vfsSync = true;
             break;
         }
@@ -4175,7 +4175,7 @@ void AppServer::onRestartSyncs() {
             }
 
             for (const auto &syncPalMapElt : _syncPalMap) {
-                if (_vfsMap[syncPalMapElt.first]->mode() == VirtualFileModeMac) {
+                if (_vfsMap[syncPalMapElt.first]->mode() == VirtualFileMode::Mac) {
                     // Ask client to refresh SyncPal error list
                     sendErrorsCleared(syncPalMapElt.first);
 

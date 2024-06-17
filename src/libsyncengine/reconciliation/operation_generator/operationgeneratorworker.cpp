@@ -169,7 +169,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
                              << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSide::Local &&
+        if (_syncPal->_vfsMode == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
             currentNode->type() == NodeType::File) {
             _bytesToDownload += currentNode->size();
         }
@@ -214,7 +214,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
                                             << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSide::Local &&
+        if (_syncPal->_vfsMode == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
             currentNode->type() == NodeType::File) {
             // Keep only the difference between remote size and local size
             int64_t diffSize = currentNode->size() - correspondingNode->size();

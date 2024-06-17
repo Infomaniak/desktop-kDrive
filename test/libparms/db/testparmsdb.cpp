@@ -71,12 +71,12 @@ void TestParmsDb::testParameters() {
     parameters2.setMonoIcons(true);
     parameters2.setAutoStart(false);
     parameters2.setMoveToTrash(false);
-    parameters2.setNotificationsDisabled(NotificationsDisabledAlways);
+    parameters2.setNotificationsDisabled(NotificationsDisabled::Always);
     parameters2.setUseLog(true);
     parameters2.setLogLevel(LogLevel::Warning);
     parameters2.setPurgeOldLogs(true);
     parameters2.setSyncHiddenFiles(true);
-    parameters2.setProxyConfig(ProxyConfig(ProxyTypeHTTP, "host name", 44444444, true, "user", "token"));
+    parameters2.setProxyConfig(ProxyConfig(ProxyType::HTTP, "host name", 44444444, true, "user", "token"));
     parameters2.setUseBigFolderSizeLimit(true);
     parameters2.setBigFolderSizeLimit(1000);
     parameters2.setDarkTheme(true);

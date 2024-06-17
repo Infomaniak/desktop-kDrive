@@ -1622,11 +1622,11 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setSupportVfs(supportVfs);
 
 #if defined(Q_OS_MAC)
-    sync.setVirtualFileMode(liteSync ? VirtualFileModeMac : VirtualFileModeOff);
+    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Mac : VirtualFileMode::Off);
 #elif defined(Q_OS_WIN32)
-    sync.setVirtualFileMode(liteSync ? VirtualFileModeWin : VirtualFileModeOff);
+    sync.setVirtualFileMode(liteSync ? VirtualFileMode::Win : VirtualFileMode::Off);
 #else
-    sync.setVirtualFileMode(VirtualFileModeOff);
+    sync.setVirtualFileMode(VirtualFileMode::Off);
 #endif
 
     sync.setNotificationsDisabled(false);

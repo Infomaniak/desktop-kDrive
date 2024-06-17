@@ -279,7 +279,7 @@ void AbstractNetworkJob::createSession(const Poco::URI &uri) {
     }
 
     // Set proxy params
-    if (Proxy::instance()->proxyConfig().type() == ProxyTypeHTTP) {
+    if (Proxy::instance()->proxyConfig().type() == ProxyType::HTTP) {
         _session->setProxy(Proxy::instance()->proxyConfig().hostName(), Proxy::instance()->proxyConfig().port());
         if (Proxy::instance()->proxyConfig().needsAuth()) {
             _session->setProxyCredentials(Proxy::instance()->proxyConfig().user(), Proxy::instance()->proxyConfig().token());

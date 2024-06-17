@@ -200,7 +200,7 @@ bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bo
         isWarning = pattern.second.warning();
 
         switch (pattern.second.complexity()) {
-            case ExclusionTemplateComplexitySimplest: {
+            case ExclusionTemplateComplexity::Simplest: {
                 if (fileName == patternStr) {
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(),
@@ -211,7 +211,7 @@ bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bo
                 }
                 break;
             }
-            case ExclusionTemplateComplexitySimple: {
+            case ExclusionTemplateComplexity::Simple: {
                 std::string tmpStr = patternStr;
                 bool atBegining = tmpStr[0] == '*';
                 bool atEnd = tmpStr[tmpStr.length() - 1] == '*';
@@ -243,7 +243,7 @@ bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bo
                 }
                 break;
             }
-            case ExclusionTemplateComplexityComplex:
+            case ExclusionTemplateComplexity::Complex:
             default: {
                 if (std::regex_match(fileName, pattern.first)) {
                     if (ParametersCache::isExtendedLogEnabled()) {

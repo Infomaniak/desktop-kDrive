@@ -127,7 +127,7 @@ void AddDriveWizard::startNextStep(bool backward) {
             return;
         }
 
-        if (virtualFileMode != VirtualFileModeWin && virtualFileMode != VirtualFileModeMac) {
+        if (virtualFileMode != VirtualFileMode::Win && virtualFileMode != VirtualFileMode::Mac) {
             // Skip Lite Sync step
             _currentStep = (Step)(_currentStep + (backward ? -1 : 1));
         }
@@ -146,7 +146,7 @@ void AddDriveWizard::startNextStep(bool backward) {
 
         bool skipExtSetup = true;
 #ifdef Q_OS_MAC
-        if (virtualFileMode == VirtualFileModeMac && _liteSync) {
+        if (virtualFileMode == VirtualFileMode::Mac && _liteSync) {
             // Check LiteSync ext authorizations
             std::string liteSyncExtErrorDescr;
             bool liteSyncExtOk =

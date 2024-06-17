@@ -746,7 +746,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
     }
 
     if (job) {
-        if (_syncPal->_vfsMode == VirtualFileModeMac || _syncPal->_vfsMode == VirtualFileModeWin) {
+        if (_syncPal->_vfsMode == VirtualFileMode::Mac || _syncPal->_vfsMode == VirtualFileMode::Win) {
             // Set VFS callbacks
             std::function<bool(const SyncPath &, PinState)> vfsSetPinStateCallback =
                 std::bind(&SyncPal::vfsSetPinState, _syncPal, std::placeholders::_1, std::placeholders::_2);
@@ -861,7 +861,7 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
         return false;
     }
 
-    if (!_syncPal->vfsSetPinState(absoluteLocalFilePath, hydrated ? PinStateAlwaysLocal : PinStateOnlineOnly)) {
+    if (!_syncPal->vfsSetPinState(absoluteLocalFilePath, hydrated ? PinState::AlwaysLocal : PinState::OnlineOnly)) {
         LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
@@ -962,7 +962,7 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         // Set callbacks
         std::shared_ptr<DownloadJob> downloadJob = std::dynamic_pointer_cast<DownloadJob>(job);
 
-        if (_syncPal->_vfsMode == VirtualFileModeMac || _syncPal->_vfsMode == VirtualFileModeWin) {
+        if (_syncPal->_vfsMode == VirtualFileMode::Mac || _syncPal->_vfsMode == VirtualFileMode::Win) {
             std::function<bool(const SyncPath &, PinState)> vfsSetPinStateCallback =
                 std::bind(&SyncPal::vfsSetPinState, _syncPal, std::placeholders::_1, std::placeholders::_2);
             downloadJob->setVfsSetPinStateCallback(vfsSetPinStateCallback);
@@ -1038,7 +1038,7 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
 
             // Set callbacks
             std::shared_ptr<UploadJob> uploadJob = std::dynamic_pointer_cast<UploadJob>(job);
-            if (_syncPal->_vfsMode == VirtualFileModeMac || _syncPal->_vfsMode == VirtualFileModeWin) {
+            if (_syncPal->_vfsMode == VirtualFileMode::Mac || _syncPal->_vfsMode == VirtualFileMode::Win) {
                 std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
                     std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
                               std::placeholders::_3, std::placeholders::_4);
@@ -1077,7 +1077,7 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
         }
     } else {
         if (isPlaceholder) {
-            PinState pinState = PinStateUnspecified;
+            PinState pinState = PinState::Unspecified;
             if (!_syncPal->vfsPinState(absolutePath, pinState)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Utility::formatSyncPath(absolutePath).c_str());
                 _executorExitCode = ExitCode::SystemError;
@@ -1086,14 +1086,14 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
             }
 
             switch (pinState) {
-                case PinStateInherited: {
+                case PinState::Inherited: {
                     // TODO : what do we do in that case??
                     LOG_SYNCPAL_WARN(_logger, "Inherited pin state not implemented yet");
                     _executorExitCode = ExitCode::DataError;
                     _executorExitCause = ExitCause::Unknown;
                     return false;
                 }
-                case PinStateAlwaysLocal: {
+                case PinState::AlwaysLocal: {
                     if (isSyncingTmp) {
                         // Ignore this item until it is synchronized
                         isSyncing = true;
@@ -1102,7 +1102,7 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
                     }
                     break;
                 }
-                case PinStateOnlineOnly: {
+                case PinState::OnlineOnly: {
                     // Update metadata
                     std::string error;
                     _syncPal->vfsUpdateMetadata(
@@ -1113,7 +1113,7 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
                     syncOp->setOmit(true);  // Do not propagate change in file system, only in DB
                     break;
                 }
-                case PinStateUnspecified:
+                case PinState::Unspecified:
                 default: {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignore EDIT for file: " << Path2WStr(absolutePath).c_str());
                     ignoreItem = true;
@@ -1239,7 +1239,7 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
             }
 
             // Set callbacks
-            if (_syncPal->_vfsMode == VirtualFileModeMac || _syncPal->_vfsMode == VirtualFileModeWin) {
+            if (_syncPal->_vfsMode == VirtualFileMode::Mac || _syncPal->_vfsMode == VirtualFileMode::Win) {
                 std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
                     std::bind(&SyncPal::vfsForceStatus, _syncPal, std::placeholders::_1, std::placeholders::_2,
                               std::placeholders::_3, std::placeholders::_4);
@@ -1362,7 +1362,7 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
     SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
     if (syncOp->targetSide() == ReplicaSide::Local) {
         bool isDehydratedPlaceholder = false;
-        if (_syncPal->vfsMode() != VirtualFileModeOff) {
+        if (_syncPal->vfsMode() != VirtualFileMode::Off) {
             bool isPlaceholder = false;
             bool isHydrated = false;
             bool isSyncing = false;

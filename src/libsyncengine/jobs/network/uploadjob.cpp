@@ -54,7 +54,7 @@ UploadJob::~UploadJob() {
     }
 
     if (_vfsSetPinState) {
-        if (!_vfsSetPinState(_filePath, PinStateAlwaysLocal)) {
+        if (!_vfsSetPinState(_filePath, PinState::AlwaysLocal)) {
             LOGW_WARN(_logger, L"Error in vfsSetPinState - path=" << Path2WStr(_filePath).c_str());
         }
     }

@@ -44,13 +44,13 @@ void SyncPalWorker::execute() {
 
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
 
-    if (_syncPal->_vfsMode != VirtualFileModeOff) {
+    if (_syncPal->_vfsMode != VirtualFileMode::Off) {
         // Reset vfs files status
         if (!resetVfsFilesStatus()) {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
         }
 
-        if (_syncPal->_vfsMode == VirtualFileModeMac) {
+        if (_syncPal->_vfsMode == VirtualFileMode::Mac) {
             // Reset nodes syncing flag
             if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::updateNodesSyncing for syncDbId=" << _syncPal->syncDbId());
@@ -602,15 +602,15 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                 }
 
                 // Fix pinstate if needed
-                if (isHydrated && pinState != PinStateAlwaysLocal) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinStateAlwaysLocal)) {
+                if (isHydrated && pinState != PinState::AlwaysLocal) {
+                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::AlwaysLocal)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;
                         continue;
                     }
-                } else if (!isHydrated && pinState != PinStateOnlineOnly) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinStateOnlineOnly)) {
+                } else if (!isHydrated && pinState != PinState::OnlineOnly) {
+                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::OnlineOnly)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;
@@ -618,8 +618,8 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                     }
                 }
             } else {
-                if (pinState == PinStateAlwaysLocal || pinState == PinStateOnlineOnly) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinStateUnspecified)) {
+                if (pinState == PinState::AlwaysLocal || pinState == PinState::OnlineOnly) {
+                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::Unspecified)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;

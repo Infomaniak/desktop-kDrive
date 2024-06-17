@@ -266,7 +266,7 @@ class VfsOff : public Vfs {
 
         virtual ~VfsOff();
 
-        KDC::VirtualFileMode mode() const override { return KDC::VirtualFileModeOff; }
+        KDC::VirtualFileMode mode() const override { return KDC::VirtualFileMode::Off; }
 
         bool socketApiPinStateActionsShown() const override { return false; }
         bool isHydrating() const override { return false; }
@@ -282,7 +282,7 @@ class VfsOff : public Vfs {
         bool isDehydratedPlaceholder(const QString &, bool) override { return false; }
 
         bool setPinState(const QString &, KDC::PinState) override { return true; }
-        KDC::PinState pinState(const QString &) override { return KDC::PinStateAlwaysLocal; }
+        KDC::PinState pinState(const QString &) override { return KDC::PinState::AlwaysLocal; }
         bool status(const QString &, bool &, bool &, bool &, int &) override { return true; }
         virtual bool setThumbnail(const QString &, const QPixmap &) override { return true; }
         virtual bool setAppExcludeList() override { return true; }
