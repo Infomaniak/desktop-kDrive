@@ -574,10 +574,10 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
         QVector<SyncStatus>() << SyncStatus::Error << SyncStatus::Running << SyncStatus::PauseAsked << SyncStatus::Paused
                               << SyncStatus::StopAsked << SyncStatus::Stoped << SyncStatus::Starting << SyncStatus::Idle;
 
-    static QVector<SyncStep> syncStepPriority =
-        QVector<SyncStep>() << SyncStepPropagation2 << SyncStepPropagation1 << SyncStepReconciliation4 << SyncStepReconciliation3
-                            << SyncStepReconciliation2 << SyncStepReconciliation1 << SyncStepUpdateDetection2
-                            << SyncStepUpdateDetection1 << SyncStepIdle << SyncStepDone << SyncStepNone;
+    static QVector<SyncStep> SyncStepPriority =
+        QVector<SyncStep>() << SyncStep::Propagation2 << SyncStep::Propagation1 << SyncStep::Reconciliation4 << SyncStep::Reconciliation3
+                            << SyncStep::Reconciliation2 << SyncStep::Reconciliation1 << SyncStep::UpdateDetection2
+                            << SyncStep::UpdateDetection1 << SyncStep::Idle << SyncStep::Done << SyncStep::None;
 
     const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfo.accountDbId());
     if (accountInfoMapIt == _gui->accountInfoMap().end()) {
@@ -610,10 +610,10 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
             if (statusPriority.indexOf(statusInfo._status) > statusPriority.indexOf(syncInfo.status())) {
                 statusInfo._status = syncInfo.status();
             }
-            if (syncStepPriority.indexOf(statusInfo._syncStep) > syncStepPriority.indexOf(syncInfo.step())) {
+            if (SyncStepPriority.indexOf(statusInfo._syncStep) > SyncStepPriority.indexOf(syncInfo.step())) {
                 statusInfo._syncStep = syncInfo.step();
             }
-            if (syncInfo.step() != SyncStepPropagation2) {
+            if (syncInfo.step() != SyncStep::Propagation2) {
                 syncsInPropagationStep++;
             }
             if (syncInfo.virtualFileMode() != VirtualFileModeOff) {
@@ -824,8 +824,8 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
         return;
     }
 
-    if (itemInfo.status() == SyncFileStatusUnknown || itemInfo.status() == SyncFileStatusError ||
-        itemInfo.status() == SyncFileStatusIgnored) {
+    if (itemInfo.status() == SyncFileStatus::Unknown || itemInfo.status() == SyncFileStatus::Error ||
+        itemInfo.status() == SyncFileStatus::Ignored) {
         return;
     }
 

@@ -252,21 +252,21 @@ void GuiUtility::setStyle(QApplication *app, bool isDarkTheme) {
 QString GuiUtility::getFileStatusIconPath(::KDC::SyncFileStatus status) {
     QString path;
     switch (status) {
-        case ::KDC::SyncFileStatusUnknown:
+        case ::KDC::SyncFileStatus::Unknown:
             path = QString();
             break;
-        case ::KDC::SyncFileStatusError:
+        case ::KDC::SyncFileStatus::Error:
             path = QString(":/client/resources/icons/statuts/error-sync.svg");
             break;
-        case ::KDC::SyncFileStatusSuccess:
-        case ::KDC::SyncFileStatusInconsistency:
+        case ::KDC::SyncFileStatus::Success:
+        case ::KDC::SyncFileStatus::Inconsistency:
             path = QString(":/client/resources/icons/statuts/success.svg");
             break;
-        case ::KDC::SyncFileStatusConflict:
-        case ::KDC::SyncFileStatusIgnored:
+        case ::KDC::SyncFileStatus::Conflict:
+        case ::KDC::SyncFileStatus::Ignored:
             path = QString(":/client/resources/icons/statuts/warning.svg");
             break;
-        case ::KDC::SyncFileStatusSyncing:
+        case ::KDC::SyncFileStatus::Syncing:
             path = QString(":/client/resources/icons/statuts/sync.svg");
             break;
     }
@@ -335,8 +335,8 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                     }
                 } else if (statusInfo._oneSyncInPropagationStep) {
                     text = QCoreApplication::translate("utility", "Sync in progress (Step %1/%2).")
-                               .arg(statusInfo._syncStep)
-                               .arg(KDC::SyncStepDone);
+                               .arg(enumClassToInt(statusInfo._syncStep))
+                               .arg(enumClassToInt(KDC::SyncStep::Done));
                 } else if (statusInfo._status == KDC::SyncStatus::Starting) {
                     text = QCoreApplication::translate("utility", "Synchronization starting");
                 } else {

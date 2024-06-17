@@ -55,7 +55,7 @@ struct StatusInfo {
         qint64 _syncedFiles = 0;
         qint64 _totalFiles = 0;
         qint64 _estimatedRemainingTime = 0;
-        KDC::SyncStep _syncStep = KDC::SyncStepNone;
+        KDC::SyncStep _syncStep = KDC::SyncStep::None;
         bool _oneSyncInPropagationStep = false;
         bool _liteSyncActivated = false;
         bool _disconnected = false;

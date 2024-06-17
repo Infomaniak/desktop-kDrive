@@ -217,7 +217,7 @@ SyncStatus SyncPal::status() const {
             } else if (_syncPalWorker->stopAsked()) {
                 // Stopping at the request of the user
                 return SyncStatus::StopAsked;
-            } else if (_syncPalWorker->step() == SyncStepIdle && !_restart && !_localSnapshot->updated() &&
+            } else if (_syncPalWorker->step() == SyncStep::Idle && !_restart && !_localSnapshot->updated() &&
                        !_remoteSnapshot->updated()) {
                 // Sync pending
                 return SyncStatus::Idle;
@@ -242,15 +242,15 @@ SyncStatus SyncPal::status() const {
 }
 
 SyncStep SyncPal::step() const {
-    return (_syncPalWorker ? _syncPalWorker->step() : SyncStepNone);
+    return (_syncPalWorker ? _syncPalWorker->step() : SyncStep::None);
 }
 
 ExitCode SyncPal::fileStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const {
     if (_tmpBlacklistManager && _tmpBlacklistManager->isTmpBlacklisted(path, side)) {
         if (path == Utility::sharedFolderName()) {
-            status = SyncFileStatusSuccess;
+            status = SyncFileStatus::Success;
         } else {
-            status = SyncFileStatusIgnored;
+            status = SyncFileStatus::Ignored;
         }
         return ExitCode::Ok;
     }
@@ -261,7 +261,7 @@ ExitCode SyncPal::fileStatus(ReplicaSide side, const SyncPath &path, SyncFileSta
         return ExitCode::DbError;
     }
     if (!found) {
-        status = SyncFileStatusUnknown;
+        status = SyncFileStatus::Unknown;
         return ExitCode::Ok;
     }
 
@@ -669,7 +669,7 @@ void SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
     _progressInfo->setProgress(relativePath, current);
 
     bool found;
-    if (!_syncDb->setStatus(ReplicaSide::Remote, relativePath, SyncFileStatusSyncing, found)) {
+    if (!_syncDb->setStatus(ReplicaSide::Remote, relativePath, SyncFileStatus::Syncing, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::setStatus");
         return;
     }
@@ -679,7 +679,7 @@ void SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::getSyncFileItem");
             return;
         }
-        if (item.instruction() != SyncFileInstructionGet && item.instruction() != SyncFileInstructionPut) {
+        if (item.instruction() != SyncFileInstruction::Get && item.instruction() != SyncFileInstruction::Put) {
             LOGW_SYNCPAL_WARN(_logger, L"Node not found : " << Utility::formatSyncPath(relativePath).c_str());
             return;
         }
@@ -1261,7 +1261,7 @@ bool SyncPal::isPaused(std::chrono::time_point<std::chrono::system_clock> &pause
 
 bool SyncPal::isIdle() const {
     if (_syncPalWorker) {
-        return (_syncPalWorker->step() == SyncStepIdle && _restart == false);
+        return (_syncPalWorker->step() == SyncStep::Idle && _restart == false);
     }
     return false;
 }

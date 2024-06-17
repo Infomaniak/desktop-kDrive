@@ -95,7 +95,7 @@ requires(std::is_enum_v<C> &&std::same_as<std::underlying_type_t<C>, int>) inlin
 }
 
 template <class C>
-requires(std::is_enum_v<C> && std::same_as<std::underlying_type_t<C>, int>) inline C intToEnumClass(int e) {
+requires(std::is_enum_v<C> &&std::same_as<std::underlying_type_t<C>, int>) inline C intToEnumClass(int e) {
     return static_cast<C>(e);
 }
 
@@ -272,40 +272,32 @@ enum class SyncNodeType {
 
 enum class SyncDirection { Unknown = 0, Up, Down };
 
-typedef enum {
-    SyncFileStatusUnknown = 0,
-    SyncFileStatusError,
-    SyncFileStatusSuccess,
-    SyncFileStatusConflict,
-    SyncFileStatusInconsistency,
-    SyncFileStatusIgnored,
-    SyncFileStatusSyncing
-} SyncFileStatus;
+enum class SyncFileStatus { Unknown = 0, Error, Success, Conflict, Inconsistency, Ignored, Syncing };
 
-typedef enum {
-    SyncFileInstructionNone = 0,
-    SyncFileInstructionUpdate,
-    SyncFileInstructionUpdateMetadata,
-    SyncFileInstructionRemove,
-    SyncFileInstructionMove,
-    SyncFileInstructionGet,
-    SyncFileInstructionPut,
-    SyncFileInstructionIgnore
-} SyncFileInstruction;
+enum class SyncFileInstruction {
+    None = 0,
+    Update,
+    UpdateMetadata,
+    Remove,
+    Move,
+    Get,
+    Put,
+    Ignore
+};
 
-typedef enum {
-    SyncStepNone = 0,
-    SyncStepIdle,
-    SyncStepUpdateDetection1,  // Compute operations
-    SyncStepUpdateDetection2,  // Update Trees
-    SyncStepReconciliation1,   // Platform Inconstistency Checker
-    SyncStepReconciliation2,   // Conflict Finder
-    SyncStepReconciliation3,   // Conflict Resolver
-    SyncStepReconciliation4,   // Operation Generator
-    SyncStepPropagation1,      // Sorter
-    SyncStepPropagation2,      // Executor
-    SyncStepDone
-} SyncStep;
+enum class SyncStep {
+    None = 0,
+    Idle,
+    UpdateDetection1,  // Compute operations
+    UpdateDetection2,  // Update Trees
+    Reconciliation1,   // Platform Inconstistency Checker
+    Reconciliation2,   // Conflict Finder
+    Reconciliation3,   // Conflict Resolver
+    Reconciliation4,   // Operation Generator
+    Propagation1,      // Sorter
+    Propagation2,      // Executor
+    Done
+};
 
 using ActionType = enum { ActionTypeStop = 0, ActionTypeStart };
 

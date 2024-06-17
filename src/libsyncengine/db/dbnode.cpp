@@ -53,7 +53,7 @@ DbNode::DbNode()
       _type(NodeType::Unknown),
       _size(0),
       _checksum(std::string()),
-      _status(SyncFileStatusUnknown),
+      _status(SyncFileStatus::Unknown),
       _syncing(false) {}
 
 }  // namespace KDC

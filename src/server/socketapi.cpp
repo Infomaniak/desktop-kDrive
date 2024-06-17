@@ -335,7 +335,7 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
         listener->registerMonitoredDirectory(static_cast<unsigned int>(qHash(directory)));
     }
 
-    KDC::SyncFileStatus status = KDC::SyncFileStatusUnknown;
+    KDC::SyncFileStatus status = KDC::SyncFileStatus::Unknown;
     bool isPlaceholder = false;
     bool isHydrated = false;
     int progress = 0;
@@ -345,7 +345,7 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
         return;
     }
 
-    if (status != KDC::SyncFileStatusUnknown) {
+    if (status != KDC::SyncFileStatus::Unknown) {
         QString message =
             buildMessage(QString("STATUS"), fileData._localPath, socketAPIString(status, isPlaceholder, isHydrated, progress));
         listener->sendMessage(message);
@@ -433,7 +433,7 @@ void SocketApi::fetchPrivateLinkUrlHelper(const QString &localFile, const std::f
 
 bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &status, bool &isPlaceholder, bool &isHydrated,
                                int &progress) {
-    status = KDC::SyncFileStatusUnknown;
+    status = KDC::SyncFileStatus::Unknown;
     isPlaceholder = false;
     isHydrated = false;
 
@@ -448,7 +448,7 @@ bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &st
     }
 
     if (syncPalMapIt->second->existOnServer(QStr2Path(fileData._relativePath))) {
-        status = KDC::SyncFileStatusSuccess;
+        status = KDC::SyncFileStatus::Success;
     }
 
     auto vfsMapIt = _vfsMap.find(fileData._syncDbId);
@@ -466,7 +466,7 @@ bool SocketApi::syncFileStatus(const FileData &fileData, KDC::SyncFileStatus &st
         }
 
         if (isSyncing) {
-            status = KDC::SyncFileStatusSyncing;
+            status = KDC::SyncFileStatus::Syncing;
         }
     }
 
@@ -590,7 +590,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
         }
 
         // Check file status
-        KDC::SyncFileStatus status = KDC::SyncFileStatusUnknown;
+        KDC::SyncFileStatus status = KDC::SyncFileStatus::Unknown;
         bool isPlaceholder = false;
         bool isHydrated = false;
         int progress = 0;
@@ -606,7 +606,7 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
             continue;
         }
 
-        if (isHydrated || status == KDC::SyncFileStatusSyncing) {
+        if (isHydrated || status == KDC::SyncFileStatus::Syncing) {
             LOGW_INFO(KDC::Log::instance()->getLogger(), L"File is already hydrated/ing - path=" << Path2WStr(filePath).c_str());
             continue;
         }
@@ -652,25 +652,25 @@ QString SocketApi::socketAPIString(KDC::SyncFileStatus status, bool isPlaceholde
     QString statusString;
 
     switch (status) {
-        case KDC::SyncFileStatusUnknown:
+        case KDC::SyncFileStatus::Unknown:
             statusString = QLatin1String("NOP");
             break;
-        case KDC::SyncFileStatusSyncing:
+        case KDC::SyncFileStatus::Syncing:
             statusString = QLatin1String("SYNC_%1").arg(QString::number(progress));
             break;
-        case KDC::SyncFileStatusConflict:
-        case KDC::SyncFileStatusIgnored:
+        case KDC::SyncFileStatus::Conflict:
+        case KDC::SyncFileStatus::Ignored:
             statusString = QLatin1String("IGNORE");
             break;
-        case KDC::SyncFileStatusSuccess:
-        case KDC::SyncFileStatusInconsistency:
+        case KDC::SyncFileStatus::Success:
+        case KDC::SyncFileStatus::Inconsistency:
             if ((isPlaceholder && isHydrated) || !isPlaceholder) {
                 statusString = QLatin1String("OK");
             } else {
                 statusString = QLatin1String("ONLINE");
             }
             break;
-        case KDC::SyncFileStatusError:
+        case KDC::SyncFileStatus::Error:
             statusString = QLatin1String("ERROR");
             break;
     }
@@ -1306,7 +1306,7 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<KDC::Sy
                     QString tmpPath(tmpInfo.filePath());
                     FileData tmpFileData = FileData::get(tmpPath);
 
-                    KDC::SyncFileStatus status = KDC::SyncFileStatusUnknown;
+                    KDC::SyncFileStatus status = KDC::SyncFileStatus::Unknown;
                     bool isPlaceholder = false;
                     bool isHydrated = false;
                     int progress = 0;
@@ -1316,7 +1316,7 @@ void SocketApi::processFileList(const QStringList &inFileList, std::list<KDC::Sy
                         continue;
                     }
 
-                    if (status == KDC::SyncFileStatusUnknown || status == KDC::SyncFileStatusIgnored) {
+                    if (status == KDC::SyncFileStatus::Unknown || status == KDC::SyncFileStatus::Ignored) {
                         continue;
                     }
 

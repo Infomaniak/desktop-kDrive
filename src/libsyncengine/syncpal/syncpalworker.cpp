@@ -36,7 +36,7 @@ namespace KDC {
 
 SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName)
     : ISyncWorker(syncPal, name, shortName),
-      _step(SyncStepIdle),
+      _step(SyncStep::Idle),
       _pauseTime(std::chrono::time_point<std::chrono::system_clock>()) {}
 
 void SyncPalWorker::execute() {
@@ -221,37 +221,37 @@ std::string SyncPalWorker::stepName(SyncStep step) {
     name = "<";
 
     switch (step) {
-        case SyncStepNone:
+        case SyncStep::None:
             name += "None";
             break;
-        case SyncStepIdle:
+        case SyncStep::Idle:
             name += "Idle";
             break;
-        case SyncStepUpdateDetection1:
+        case SyncStep::UpdateDetection1:
             name += "Compute FS operations";
             break;
-        case SyncStepUpdateDetection2:
+        case SyncStep::UpdateDetection2:
             name += "Update Trees";
             break;
-        case SyncStepReconciliation1:
+        case SyncStep::Reconciliation1:
             name += "Platform Inconsistency Checker";
             break;
-        case SyncStepReconciliation2:
+        case SyncStep::Reconciliation2:
             name += "Conflict Finder";
             break;
-        case SyncStepReconciliation3:
+        case SyncStep::Reconciliation3:
             name += "Conflict Resolver";
             break;
-        case SyncStepReconciliation4:
+        case SyncStep::Reconciliation4:
             name += "Operation Generator";
             break;
-        case SyncStepPropagation1:
+        case SyncStep::Propagation1:
             name += "Sorter";
             break;
-        case SyncStepPropagation2:
+        case SyncStep::Propagation2:
             name += "Executor";
             break;
-        case SyncStepDone:
+        case SyncStep::Done:
             name += "Done";
             break;
     }
@@ -266,7 +266,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
     _step = step;
 
     switch (step) {
-        case SyncStepIdle:
+        case SyncStep::Idle:
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
@@ -274,7 +274,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->resetEstimateUpdates();
             _syncPal->refreshTmpBlacklist();
             break;
-        case SyncStepUpdateDetection1:
+        case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->_computeFSOperationsWorker;
             workers[1] = nullptr;
             _syncPal->copySnapshots();
@@ -282,50 +282,50 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[1] = _syncPal->snapshot(ReplicaSide::Remote, true);
             _syncPal->_restart = false;
             break;
-        case SyncStepUpdateDetection2:
+        case SyncStep::UpdateDetection2:
             workers[0] = _syncPal->_localUpdateTreeWorker;
             workers[1] = _syncPal->_remoteUpdateTreeWorker;
             inputSharedObject[0] = _syncPal->operationSet(ReplicaSide::Local);
             inputSharedObject[1] = _syncPal->operationSet(ReplicaSide::Remote);
             break;
-        case SyncStepReconciliation1:
+        case SyncStep::Reconciliation1:
             workers[0] = _syncPal->_platformInconsistencyCheckerWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = _syncPal->_remoteUpdateTree;
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepReconciliation2:
+        case SyncStep::Reconciliation2:
             workers[0] = _syncPal->_conflictFinderWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepReconciliation3:
+        case SyncStep::Reconciliation3:
             workers[0] = _syncPal->_conflictResolverWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepReconciliation4:
+        case SyncStep::Reconciliation4:
             workers[0] = _syncPal->_operationsGeneratorWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepPropagation1:
+        case SyncStep::Propagation1:
             workers[0] = _syncPal->_operationsSorterWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->startEstimateUpdates();
             break;
-        case SyncStepPropagation2:
+        case SyncStep::Propagation2:
             workers[0] = _syncPal->_executorWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case SyncStepDone:
+        case SyncStep::Done:
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
@@ -355,23 +355,23 @@ void SyncPalWorker::initStepFirst(std::shared_ptr<ISyncWorker> (&workers)[2],
 
     *_syncPal->_interruptSync = false;
 
-    initStep(SyncStepIdle, workers, inputSharedObject);
+    initStep(SyncStep::Idle, workers, inputSharedObject);
 }
 
 bool SyncPalWorker::interruptCondition() const {
     switch (_step) {
-        case SyncStepIdle:
+        case SyncStep::Idle:
             return false;
             break;
-        case SyncStepUpdateDetection1:
-        case SyncStepUpdateDetection2:
-        case SyncStepReconciliation1:
-        case SyncStepReconciliation2:
-        case SyncStepReconciliation3:
-        case SyncStepReconciliation4:
-        case SyncStepPropagation1:
-        case SyncStepPropagation2:
-        case SyncStepDone:
+        case SyncStep::UpdateDetection1:
+        case SyncStep::UpdateDetection2:
+        case SyncStep::Reconciliation1:
+        case SyncStep::Reconciliation2:
+        case SyncStep::Reconciliation3:
+        case SyncStep::Reconciliation4:
+        case SyncStep::Propagation1:
+        case SyncStep::Propagation2:
+        case SyncStep::Done:
             return _syncPal->interruptSync();
             break;
         default:
@@ -383,14 +383,14 @@ bool SyncPalWorker::interruptCondition() const {
 
 SyncStep SyncPalWorker::nextStep() const {
     switch (_step) {
-        case SyncStepIdle:
+        case SyncStep::Idle:
             return (_syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote) &&
                     !_syncPal->_localFSObserverWorker->updating() && !_syncPal->_remoteFSObserverWorker->updating() &&
                     (_syncPal->_localSnapshot->updated() || _syncPal->_remoteSnapshot->updated() || _syncPal->_restart))
-                       ? SyncStepUpdateDetection1
-                       : SyncStepIdle;
+                       ? SyncStep::UpdateDetection1
+                       : SyncStep::Idle;
             break;
-        case SyncStepUpdateDetection1: {
+        case SyncStep::UpdateDetection1: {
             auto logNbOps = [=](const ReplicaSide side) {
                 auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->ops().size()
@@ -408,43 +408,43 @@ SyncStep SyncPalWorker::nextStep() const {
             if (!_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap().empty()) {
                 _syncPal->fixCorruptedFile(_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap());
                 _syncPal->_restart = true;
-                return SyncStepIdle;
+                return SyncStep::Idle;
             }
 
             return (_syncPal->operationSet(ReplicaSide::Local)->updated() || _syncPal->operationSet(ReplicaSide::Remote)->updated())
-                       ? SyncStepUpdateDetection2
-                       : SyncStepDone;
+                       ? SyncStep::UpdateDetection2
+                       : SyncStep::Done;
             break;
         }
-        case SyncStepUpdateDetection2:
+        case SyncStep::UpdateDetection2:
             return (_syncPal->updateTree(ReplicaSide::Local)->updated() || _syncPal->updateTree(ReplicaSide::Remote)->updated())
-                       ? SyncStepReconciliation1
-                       : SyncStepDone;
+                       ? SyncStep::Reconciliation1
+                       : SyncStep::Done;
             break;
-        case SyncStepReconciliation1:
-            return SyncStepReconciliation2;
+        case SyncStep::Reconciliation1:
+            return SyncStep::Reconciliation2;
             break;
-        case SyncStepReconciliation2:
+        case SyncStep::Reconciliation2:
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_conflictQueue->size() << " conflicts found");
-            return _syncPal->_conflictQueue->empty() ? SyncStepReconciliation4 : SyncStepReconciliation3;
+            return _syncPal->_conflictQueue->empty() ? SyncStep::Reconciliation4 : SyncStep::Reconciliation3;
             break;
-        case SyncStepReconciliation3:
-        case SyncStepReconciliation4:
+        case SyncStep::Reconciliation3:
+        case SyncStep::Reconciliation4:
             LOG_SYNCPAL_DEBUG(_logger, _syncPal->_syncOps->size() << " operations generated");
-            return _syncPal->_conflictQueue->empty() ? SyncStepPropagation1 : SyncStepPropagation2;
+            return _syncPal->_conflictQueue->empty() ? SyncStep::Propagation1 : SyncStep::Propagation2;
             break;
-        case SyncStepPropagation1:
-            return SyncStepPropagation2;
+        case SyncStep::Propagation1:
+            return SyncStep::Propagation2;
             break;
-        case SyncStepPropagation2:
-            return SyncStepDone;
+        case SyncStep::Propagation2:
+            return SyncStep::Done;
             break;
-        case SyncStepDone:
-            return SyncStepIdle;
+        case SyncStep::Done:
+            return SyncStep::Idle;
             break;
         default:
             LOG_SYNCPAL_WARN(_logger, "Invalid status");
-            return SyncStepIdle;
+            return SyncStep::Idle;
             break;
     }
 }

@@ -113,8 +113,8 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring nodeType2WStr(NodeType type);
         static std::string logLevel2Str(LogLevel level);
         static std::wstring logLevel2WStr(LogLevel level);
-        static std::string syncFileStatus2Str(SyncFileStatus status);
-        static std::wstring syncFileStatus2WStr(SyncFileStatus status);
+        static std::string SyncFileInstruction2Str(SyncFileStatus status);
+        static std::wstring SyncFileInstruction2WStr(SyncFileStatus status);
         static std::string list2str(std::unordered_set<std::string> inList);
         static std::string list2str(std::list<std::string> inList);
 

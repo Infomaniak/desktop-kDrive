@@ -654,7 +654,7 @@ bool VfsWin::status(const QString &filePath, bool &isPlaceholder, bool &isHydrat
 
 bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
     LOGW_DEBUG(logger(), L"fileStatusChanged: " << Utility::formatSyncPath(QStr2Path(path)).c_str() << L" status = "
-                                                << Utility::s2ws(Utility::syncFileStatus2Str(status)).c_str());
+                                                << Utility::s2ws(Utility::SyncFileInstruction2Str(status)).c_str());
 
     SyncPath fullPath(QStr2Path(path));
     bool exists = false;
@@ -669,9 +669,9 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
         return true;
     }
 
-    if (status == SyncFileStatusConflict || status == SyncFileStatusIgnored) {
+    if (status == SyncFileStatus::Conflict || status == SyncFileStatus::Ignored) {
         exclude(path);
-    } else if (status == SyncFileStatusSuccess) {
+    } else if (status == SyncFileStatus::Success) {
         bool isDirectory = false;
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
@@ -685,7 +685,7 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
             bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
             forceStatus(path, false, 100, !isDehydrated);
         }
-    } else if (status == SyncFileStatusSyncing) {
+    } else if (status == SyncFileStatus::Syncing) {
         bool isDirectory = false;
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
@@ -720,7 +720,7 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
                 }
             }
         }
-    } else if (status == SyncFileStatusError) {
+    } else if (status == SyncFileStatus::Error) {
         // Nothing to do
     }
 

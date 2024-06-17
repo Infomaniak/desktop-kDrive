@@ -719,11 +719,11 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
         return true;
     }
 
-    if (status == SyncFileStatusIgnored) {
+    if (status == SyncFileStatus::Ignored) {
         exclude(QString::fromStdString(fullPath.native()));
-    } else if (status == SyncFileStatusSuccess) {
+    } else if (status == SyncFileStatus::Success) {
         // Do nothing
-    } else if (status == SyncFileStatusSyncing) {
+    } else if (status == SyncFileStatus::Syncing) {
         ItemType itemType;
         if (!IoHelper::getItemType(fullPath, itemType)) {
             LOGW_WARN(KDC::Log::instance()->getLogger(),
@@ -781,7 +781,7 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
                 }
             }
         }
-    } else if (status == SyncFileStatusError) {
+    } else if (status == SyncFileStatus::Error) {
         // Nothing to do
     }
 

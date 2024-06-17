@@ -3192,28 +3192,28 @@ ExitCode AppServer::sendShowFileNotification(int syncDbId, const QString &filena
         QString text;
 
         switch (status) {
-            case SyncFileInstructionRemove:
+            case SyncFileInstruction::Remove:
                 if (count > 1) {
                     text = tr("%1 and %n other file(s) have been removed.", "", count - 1).arg(file);
                 } else {
                     text = tr("%1 has been removed.", "%1 names a file.").arg(file);
                 }
                 break;
-            case SyncFileInstructionGet:
+            case SyncFileInstruction::Get:
                 if (count > 1) {
                     text = tr("%1 and %n other file(s) have been added.", "", count - 1).arg(file);
                 } else {
                     text = tr("%1 has been added.", "%1 names a file.").arg(file);
                 }
                 break;
-            case SyncFileInstructionUpdate:
+            case SyncFileInstruction::Update:
                 if (count > 1) {
                     text = tr("%1 and %n other file(s) have been updated.", "", count - 1).arg(file);
                 } else {
                     text = tr("%1 has been updated.", "%1 names a file.").arg(file);
                 }
                 break;
-            case SyncFileInstructionMove:
+            case SyncFileInstruction::Move:
                 if (count > 1) {
                     text = tr("%1 has been moved to %2 and %n other file(s) have been moved.", "", count - 1)
                                .arg(file, renameTarget);
@@ -4065,7 +4065,7 @@ void AppServer::onUpdateSyncsProgress() {
         // Get progress
         status = syncPal->status();
         step = syncPal->step();
-        if (status == SyncStatus::Running && step == SyncStepPropagation2) {
+        if (status == SyncStatus::Running && step == SyncStep::Propagation2) {
             syncPal->loadProgress(currentFile, totalFiles, completedSize, totalSize, estimatedRemainingTime);
         } else {
             currentFile = 0;

@@ -962,8 +962,8 @@ void ParametersDialog::onRefreshStatusNeeded() {
 }
 
 void ParametersDialog::onItemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo) {
-    if (itemInfo.status() != SyncFileStatusError && itemInfo.status() != SyncFileStatusConflict &&
-        itemInfo.status() != SyncFileStatusInconsistency) {
+    if (itemInfo.status() != SyncFileStatus::Error && itemInfo.status() != SyncFileStatus::Conflict &&
+        itemInfo.status() != SyncFileStatus::Inconsistency) {
         return;
     }
 
