@@ -332,6 +332,14 @@ elseif(BUILD_CLIENT)
             install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
         endif()
 
-        install_shared_libs(${SYSCONFDIR}/${APPLICATION_SHORTNAME})
+        # Sentry
+        find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
+        message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
+        install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
+
+        # xxHash
+        find_library(XXHASH_SHARED_LIBRARY NAMES xxhash NO_CACHE)
+        message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
+        install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
     endif()
 endif()
