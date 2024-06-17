@@ -71,7 +71,7 @@ SyncFileItem::SyncFileItem(NodeType type, const SyncPath &path, const std::optio
       _status(SyncFileStatusUnknown),
       _conflict(conflict),
       _inconsistency(InconsistencyTypeNone),
-      _cancelType(CancelTypeNone),
+      _cancelType(CancelType::None),
       _size(size),
       _dehydrated(false),
       _confirmed(false),

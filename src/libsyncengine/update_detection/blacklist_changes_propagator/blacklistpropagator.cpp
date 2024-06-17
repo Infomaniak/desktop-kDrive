@@ -249,7 +249,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                 absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
 
             Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictType::None, InconsistencyTypeNone,
-                      CancelTypeMoveToBinFailed, destPath);
+                      CancelType::MoveToBinFailed, destPath);
             _syncPal->addError(err);
         } else {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absolutePath).c_str()

@@ -67,7 +67,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
 #endif
 
             Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyTypeNone,
-                      CancelTypeTmpBlacklisted);
+                      CancelType::TmpBlacklisted);
             _syncPal->addError(err);
         }
     } else {

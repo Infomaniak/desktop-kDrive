@@ -260,7 +260,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                 // Blacklist node
                                 _syncPal->blacklistTemporarily(nodeId, dbPath, side);
                                 Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, dbPath, ConflictType::None,
-                                            InconsistencyTypeNone, CancelTypeNone, "", ExitCode::SystemError,
+                                            InconsistencyTypeNone, CancelType::None, "", ExitCode::SystemError,
                                             ExitCause::FileAccessError);
                                 _syncPal->addError(error);
 

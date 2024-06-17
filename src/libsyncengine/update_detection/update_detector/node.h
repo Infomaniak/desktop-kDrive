@@ -143,7 +143,7 @@ class Node {
         std::optional<SyncTime> _createdAt = std::nullopt;
         std::optional<SyncTime> _lastModified = std::nullopt;
         int64_t _size = 0;
-        NodeStatus _status = NodeStatusUnprocessed;  // node was already processed during reconciliation
+        NodeStatus _status = NodeStatus::Unprocessed;  // node was already processed during reconciliation
         std::unordered_map<NodeId, std::shared_ptr<Node>> _childrenById;
         std::shared_ptr<Node> _parentNode = nullptr;
         // For moved items

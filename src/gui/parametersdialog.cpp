@@ -712,17 +712,17 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
 QString ParametersDialog::getCancelText(CancelType cancelType, const QString &path,
                                         const QString &destinationPath /*= ""*/) const noexcept {
     switch (cancelType) {
-        case CancelTypeCreate: {
+        case CancelType::Create: {
             return tr(
                 "You are not allowed to create item.<br>"
                 "The item has been excluded from synchronization.");
         }
-        case CancelTypeEdit: {
+        case CancelType::Edit: {
             return tr(
                 "You are not allowed to edit item.<br>"
                 "The file containing your modifications has been renamed and excluded from synchronization.");
         }
-        case CancelTypeMove: {
+        case CancelType::Move: {
             QFileInfo fileInfo(path);
             QFileInfo destFileInfo(destinationPath);
             if (fileInfo.dir() == destFileInfo.dir()) {
@@ -737,31 +737,31 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
                     .arg(destinationPath);
             }
         }
-        case CancelTypeDelete: {
+        case CancelType::Delete: {
             return tr(
                 "You are not allowed to delete item.<br>"
                 "It will be restored to its original location.");
         }
-        case CancelTypeAlreadyExistRemote: {
+        case CancelType::AlreadyExistRemote: {
             return tr("\"%1\" already exists on remote kDrive. It is not synced because it has been blacklisted.").arg(path);
         }
-        case CancelTypeMoveToBinFailed: {
+        case CancelType::MoveToBinFailed: {
             return tr("Failed to move item \"%1\" to bin, it has been blacklisted.").arg(path);
         }
-        case CancelTypeAlreadyExistLocal: {
+        case CancelType::AlreadyExistLocal: {
             return tr("\"%1\" already exists on local file system. It is not synced.").arg(path);
         }
-        case CancelTypeTmpBlacklisted: {
+        case CancelType::TmpBlacklisted: {
             return tr("Failed to synchronize item \"%1\". It has been temporarily blacklisted.<br>"
                       "Another attempt to sync it will be done in one hour or on next application startup.")
                 .arg(path);
         }
-        case CancelTypeExcludedByTemplate: {
+        case CancelType::ExcludedByTemplate: {
             return tr("The item \"%1\" has been excluded from sync by a custom template.<br>"
                       "You can disable this type of notification from the Preferences")
                 .arg(path);
         }
-        case CancelTypeHardlink: {
+        case CancelType::Hardlink: {
             return tr("The item \"%1\" has been excluded from sync because it's an hard link").arg(path);
         }
         default: {
@@ -769,7 +769,7 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
         }
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged cancel type: " << cancelType;
+    qCDebug(lcParametersDialog()) << "Unmanaged cancel type: " << enumClassToInt(cancelType);
 
     return {};
 }
@@ -810,7 +810,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
         return getInconsistencyText(errorInfo.inconsistencyType());
     }
 
-    if (errorInfo.cancelType() != CancelTypeNone) {
+    if (errorInfo.cancelType() != CancelType::None) {
         return getCancelText(errorInfo.cancelType(), errorInfo.path(), errorInfo.destinationPath());
     }
 

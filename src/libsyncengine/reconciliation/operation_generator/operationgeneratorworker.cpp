@@ -77,7 +77,7 @@ void OperationGeneratorWorker::execute() {
             _queuedToExplore.push(child.second);
         }
 
-        if (currentNode->status() == NodeStatusProcessed) {
+        if (currentNode->status() == NodeStatus::Processed) {
             continue;
         }
 
@@ -140,7 +140,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
     if (correspondingNode && isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
         op->setCorrespondingNode(correspondingNode);
-        correspondingNode->setStatus(NodeStatusProcessed);
+        correspondingNode->setStatus(NodeStatus::Processed);
     }
 
     op->setType(OperationTypeCreate);
@@ -151,7 +151,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
     // in update tree.
     op->setNewName(targetSide == ReplicaSide::Local ? currentNode->finalLocalName()
                                                   : currentNode->name());  // Use validName only on local replica
-    currentNode->setStatus(NodeStatusProcessed);
+    currentNode->setStatus(NodeStatus::Processed);
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
@@ -184,17 +184,17 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     // Check for Edit-Edit pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
-        correspondingNode->setStatus(NodeStatusProcessed);
+        correspondingNode->setStatus(NodeStatus::Processed);
     }
 
     op->setType(OperationTypeEdit);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
-    if (currentNode->hasChangeEvent(OperationTypeMove) && currentNode->status() == NodeStatusUnprocessed) {
-        currentNode->setStatus(NodeStatusPartiallyProcessed);
+    if (currentNode->hasChangeEvent(OperationTypeMove) && currentNode->status() == NodeStatus::Unprocessed) {
+        currentNode->setStatus(NodeStatus::PartiallyProcessed);
     } else {
-        currentNode->setStatus(NodeStatusProcessed);
+        currentNode->setStatus(NodeStatus::Processed);
     }
     _syncPal->_syncOps->pushOp(op);
 
@@ -232,7 +232,7 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
     // Check for Move-Move (Source) pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
-        correspondingNode->setStatus(NodeStatusProcessed);
+        correspondingNode->setStatus(NodeStatus::Processed);
     }
 
     /*
@@ -254,10 +254,10 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
     op->setTargetSide(correspondingNode->side());
     op->setNewName(op->targetSide() == ReplicaSide::Local ? currentNode->finalLocalName()
                                                         : currentNode->name());  // Use validName only on local replica
-    if (currentNode->hasChangeEvent(OperationTypeEdit) && currentNode->status() == NodeStatusUnprocessed) {
-        currentNode->setStatus(NodeStatusPartiallyProcessed);
+    if (currentNode->hasChangeEvent(OperationTypeEdit) && currentNode->status() == NodeStatus::Unprocessed) {
+        currentNode->setStatus(NodeStatus::PartiallyProcessed);
     } else {
-        currentNode->setStatus(NodeStatusProcessed);
+        currentNode->setStatus(NodeStatus::Processed);
     }
     _syncPal->_syncOps->pushOp(op);
 
@@ -298,14 +298,14 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
 
     op->setType(OperationTypeDelete);
     findAndMarkAllChildNodes(currentNode);
-    currentNode->setStatus(NodeStatusProcessed);
+    currentNode->setStatus(NodeStatus::Processed);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
 
     // Also mark all corresponding nodes as Processed
     findAndMarkAllChildNodes(correspondingNode);
-    correspondingNode->setStatus(NodeStatusProcessed);
+    correspondingNode->setStatus(NodeStatus::Processed);
 
     _syncPal->_syncOps->pushOp(op);
 
@@ -337,7 +337,7 @@ void OperationGeneratorWorker::findAndMarkAllChildNodes(std::shared_ptr<Node> pa
         if (childNode.second->type() == NodeType::Directory) {
             findAndMarkAllChildNodes(childNode.second);
         }
-        childNode.second->setStatus(NodeStatusProcessed);
+        childNode.second->setStatus(NodeStatus::Processed);
     }
 }
 

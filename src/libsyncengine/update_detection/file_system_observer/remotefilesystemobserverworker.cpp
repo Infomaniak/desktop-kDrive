@@ -369,7 +369,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             path /= item.name();
 
             Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyTypeNone,
-                      CancelTypeAlreadyExistLocal);
+                      CancelType::AlreadyExistLocal);
             _syncPal->addError(err);
 
             continue;
@@ -509,7 +509,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         if (ExclusionTemplateCache::instance()->isExcludedTemplate(usedName, isWarning)) {
             if (isWarning) {
                 Error error(_syncPal->syncDbId(), "", actionInfo.nodeId, actionInfo.type, actionInfo.path, ConflictType::None,
-                            InconsistencyTypeNone, CancelTypeExcludedByTemplate);
+                            InconsistencyTypeNone, CancelType::ExcludedByTemplate);
                 _syncPal->addError(error);
             }
             // Remove it from snapshot

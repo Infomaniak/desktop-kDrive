@@ -206,7 +206,7 @@ inline bool isConflictsWithLocalRename(ConflictType type) {
 
 enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
 
-typedef enum {
+using InconsistencyType = enum { // Can't be easily converted to enum class because of the numerous bitwise operations
     InconsistencyTypeNone = 0x00,
     InconsistencyTypeCase = 0x01,
     InconsistencyTypeForbiddenChar = 0x02,  // Char unsupported by OS
@@ -217,7 +217,7 @@ typedef enum {
         0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
     InconsistencyTypeDuplicateNames =
         0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
-} InconsistencyType;
+};
 
 inline InconsistencyType operator|(InconsistencyType a, InconsistencyType b) {
     return static_cast<InconsistencyType>(static_cast<int>(a) | static_cast<int>(b));
@@ -232,21 +232,26 @@ inline InconsistencyType operator&=(InconsistencyType &a, InconsistencyType b) {
     return a = a & b;
 }
 
-typedef enum {
-    CancelTypeNone,
-    CancelTypeCreate,
-    CancelTypeEdit,
-    CancelTypeMove,
-    CancelTypeDelete,
-    CancelTypeAlreadyExistRemote,
-    CancelTypeMoveToBinFailed,
-    CancelTypeAlreadyExistLocal,
-    CancelTypeTmpBlacklisted,
-    CancelTypeExcludedByTemplate,
-    CancelTypeHardlink
-} CancelType;
+enum class CancelType{
+    None,
+    Create,
+    Edit,
+    Move,
+    Delete,
+    AlreadyExistRemote,
+    MoveToBinFailed,
+    AlreadyExistLocal,
+    TmpBlacklisted,
+    ExcludedByTemplate,
+    Hardlink
+};
 
-typedef enum { NodeStatusUnknown = 0, NodeStatusUnprocessed, NodeStatusPartiallyProcessed, NodeStatusProcessed } NodeStatus;
+enum class NodeStatus {
+    Unknown = 0,
+    Unprocessed,
+    PartiallyProcessed,
+    Processed
+};
 
 typedef enum {
     SyncStatusUndefined,

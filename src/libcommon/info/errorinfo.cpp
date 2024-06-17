@@ -35,12 +35,12 @@ ErrorInfo::ErrorInfo()
       _path(QString()),
       _conflictType(ConflictType::None),
       _inconsistencyType(InconsistencyTypeNone),
-      _cancelType(CancelTypeNone) {}
+      _cancelType(CancelType::None) {}
 
 ErrorInfo::ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
                      ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
                      NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
-                     CancelType cancelType /*= CancelTypeNone*/, const QString &destinationPath /*= ""*/)
+                     CancelType cancelType /*= CancelType::None*/, const QString &destinationPath /*= ""*/)
     : _time(time),
       _level(level),
       _functionName(functionName),
@@ -60,7 +60,7 @@ ErrorInfo::ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName,
 ErrorInfo::ErrorInfo(int dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId,
                      const QString &workerName, ExitCode exitCode, ExitCause exitCause, const QString &localNodeId,
                      const QString &remoteNodeId, NodeType nodeType, const QString &path, ConflictType conflictType,
-                     InconsistencyType inconsistencyType, CancelType cancelType /*= CancelTypeNone*/,
+                     InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
                      const QString &destinationPath /*= ""*/)
     : _dbId(dbId),
       _time(time),

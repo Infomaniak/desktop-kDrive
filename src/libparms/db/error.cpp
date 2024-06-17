@@ -33,7 +33,7 @@ Error::Error()
       _nodeType(NodeType::Unknown),
       _conflictType(ConflictType::None),
       _inconsistencyType(InconsistencyTypeNone),
-      _cancelType(CancelTypeNone) {}
+      _cancelType(CancelType::None) {}
 
 Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitCause)
     : _dbId(0),
@@ -47,7 +47,7 @@ Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitC
       _nodeType(NodeType::Unknown),
       _conflictType(ConflictType::None),
       _inconsistencyType(InconsistencyTypeNone),
-      _cancelType(CancelTypeNone) {}
+      _cancelType(CancelType::None) {}
 
 Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause)
     : _dbId(0),
@@ -60,11 +60,11 @@ Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, Exi
       _nodeType(NodeType::Unknown),
       _conflictType(ConflictType::None),
       _inconsistencyType(InconsistencyTypeNone),
-      _cancelType(CancelTypeNone) {}
+      _cancelType(CancelType::None) {}
 
 Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
              ConflictType conflictType, InconsistencyType inconsistencyType /*= InconsistencyTypeNone */,
-             CancelType cancelType /*= CancelTypeNone*/, const SyncPath &destinationPath /*= ""*/
+             CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/
              ,
              ExitCode exitCode /*= ExitCode::Unknown*/, ExitCause exitCause /*= ExitCause::Unknown*/)
     : _dbId(0),
@@ -85,7 +85,7 @@ Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId
 Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &functionName, int syncDbId,
              const std::string &workerName, ExitCode exitCode, ExitCause exitCause, const NodeId &localNodeId,
              const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path, ConflictType conflictType,
-             InconsistencyType inconsistencyType, CancelType cancelType /*= CancelTypeNone*/,
+             InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
              const SyncPath &destinationPath /*= ""*/)
     : _dbId(dbId),
       _time(time),
@@ -115,7 +115,7 @@ std::string Error::errorString() const {
     } else if (_level == ErrorLevelNode) {
         errStream << "Level: SyncPal - conflictType: " << enumClassToInt(_conflictType)
                   << " - inconsistencyType: " << enumClassToInt(_inconsistencyType)
-                  << " - cancelType: " << _cancelType;
+                  << " - cancelType: " << enumClassToInt(_cancelType);
     }
 
     return errStream.str();

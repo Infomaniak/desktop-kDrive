@@ -129,7 +129,7 @@ void UpdateTree::markAllNodesUnprocessed() {
     startUpdate();
 
     for (auto &node : _nodes) {
-        node.second->setStatus(NodeStatusUnprocessed);
+        node.second->setStatus(NodeStatus::Unprocessed);
     }
 }
 
