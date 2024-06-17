@@ -713,6 +713,7 @@ std::string Utility::toUpper(const std::string &str) {
 std::string Utility::errId(std::source_location location) {
     std::string err = Utility::toUpper(std::filesystem::path(location.file_name()).filename().stem().string().substr(0, 3)) +
                       ":" + std::to_string(location.line());
+    return err;
 }
 
 // Be careful, some characters have 2 different encodings in Unicode
