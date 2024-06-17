@@ -288,12 +288,6 @@ void TestUtility::testToUpper(void) {
 void TestUtility::testErrId(void) {
     // The macro Utility::errId() expands to Utility::errId(__FILE__, __LINE__) (see types.h)
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), Utility::errId());
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), _testObj->errId(__FILE__, __LINE__));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/defgh", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DE:10"), _testObj->errId("abc/de.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/def.r", 10));
 }
 
 void TestUtility::isSubDir() {

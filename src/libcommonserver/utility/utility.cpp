@@ -74,7 +74,6 @@ static const SyncName excludedTemplateFileName(Str("sync-exclude.lst"));
 static const SyncName excludedAppFileName(Str("litesync-exclude.lst"));
 #endif
 
-
 // Resources relative path from working dir
 #if defined(__APPLE__)
 static const SyncName resourcesPath(Str("../../Contents/Resources"));
