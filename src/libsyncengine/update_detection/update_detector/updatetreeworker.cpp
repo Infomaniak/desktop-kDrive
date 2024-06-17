@@ -1164,7 +1164,9 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
 
         // if node is temporary node
         if (node->isTmp()) {
-            updateTmpNode(node);
+            if (ExitCode exitCode = updateTmpNode(node); exitCode != ExitCodeOk) {
+                return exitCode;
+            }
         }
 
         // use previous nodeId if it's an Edit from Delete-Create
