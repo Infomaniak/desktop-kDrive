@@ -338,17 +338,17 @@ void UpdateTreeWorker::logUpdate(const std::shared_ptr<Node> node, const Operati
                                     << opTypeStr.c_str() << L" inserted in change events.");
 }
 
-void UpdateTreeWorker::updateTmpNode(std::shared_ptr<Node> newNode, const FSOpPtr op, const FSOpPtr deleteOp) {
+void UpdateTreeWorker::updateTmpNode(std::shared_ptr<Node> newNode, const FSOpPtr op, const FSOpPtr deleteOp,
+                                     OperationType opType) {
     assert(newNode != nullptr && newNode->isTmp());
 
     updateNodeId(newNode, op->nodeId());
     newNode->setCreatedAt(op->createdAt());
     newNode->setLastModified(op->lastModified());
     newNode->setSize(op->size());
-    newNode->insertChangeEvent(op->operationType());
+    newNode->insertChangeEvent(opType);
     newNode->setIsTmp(false);
 
-    const auto opType = op->operationType();
     if (opType == OperationTypeEdit) {
         newNode->setPreviousId(deleteOp->nodeId());
         _updateTree->previousIdSet()[deleteOp->nodeId()] = op->nodeId();
@@ -457,7 +457,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             std::shared_ptr<Node> newNode = parentNode->findChildrenById(deleteOp->nodeId());
             if (newNode != nullptr && newNode->isTmp()) {
                 // Tmp node already exists, update it
-                updateTmpNode(newNode, op, deleteOp);
+                updateTmpNode(newNode, op, deleteOp, opType);
             } else {
                 // create node
                 DbNodeId idb;

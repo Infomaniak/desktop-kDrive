@@ -98,7 +98,7 @@ cmake \
 	"$SRCDIR"
 
 # Build kDrive sources
-make install
+make -j6 install
 
 cov01 -0 # coverage off
 

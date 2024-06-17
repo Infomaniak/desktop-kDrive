@@ -119,7 +119,7 @@ class UpdateTreeWorker : public ISyncWorker {
         // Log update information if extended logging is on.
         void logUpdate(const std::shared_ptr<Node> node, const OperationType opType,
                        const std::shared_ptr<Node> parentNode = nullptr);
-        void updateTmpNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp);
+        void updateTmpNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp, OperationType opType);
 
 
         /**

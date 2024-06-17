@@ -43,5 +43,4 @@ The kDrive Desktop Application is using the following libraries :
 - We are monitoring the application behaviour with [Sentry](https://sentry.io/)
 - [log4cplus](https://github.com/log4cplus/log4cplus) is the logging API to create and populate the log files for the application
 - Our Unit-Testing is done with the [CppUnit](https://www.freedesktop.org/wiki/Software/cppunit/) framework module
-
-
+- We use [libizip](https://libzip.org/) to create log archives for our support team

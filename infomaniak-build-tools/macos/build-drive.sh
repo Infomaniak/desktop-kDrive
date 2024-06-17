@@ -94,7 +94,7 @@ cmake \
 	"$SRCDIR"
 
 # Build kDrive sources
-make
+make -j6
 
 # Generate Debug files
 dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ../kDrive.dSYM

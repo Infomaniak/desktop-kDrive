@@ -47,6 +47,10 @@
 namespace KDC {
 
 static bool moveItemToTrash_private(const SyncPath &itemPath) {
+    if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to CoCreateInstance is failing.");
+    }
+    
     // Create the IFileOperation object
     IFileOperation *fileOperation = nullptr;
     HRESULT hr = CoCreateInstance(__uuidof(FileOperation), NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
@@ -60,7 +64,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
                     << L" - CoCreateInstance failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
-
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "CoCreateInstance failed"));
 
@@ -79,6 +83,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
                     << L" - SetOperationFlags failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "SetOperationFlags failed"));
@@ -102,6 +107,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
                     << L" - SHCreateItemFromParsingName failed with error: "
                     << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed"));
@@ -124,6 +130,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstring errorStr = errorStream.str();
 
         sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "DeleteItem failed"));
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         fileOrFolderItem->Release();
         fileOperation->Release();
@@ -142,6 +149,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
                     << L" - PerformOperations failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "PerformOperations failed"));
@@ -163,6 +171,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstringstream errorStream;
         errorStream << L"Move to trash aborted for item " << Path2WStr(itemPath).c_str();
         std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "Move to trash aborted"));
@@ -176,7 +185,6 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     fileOrFolderItem->Release();
     fileOperation->Release();
     CoUninitialize();
-
     return true;
 }
 

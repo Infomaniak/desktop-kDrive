@@ -95,8 +95,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             const bool success =
                 ExclusionTemplateCache::instance()->checkIfIsExcluded(_rootPath, relativePath, isWarning, isExcluded, ioError);
             if (!success || ioError != IoErrorSuccess) {
-                LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                                       << Utility::formatIoError(entryPath, ioError).c_str());
+                LOGW_WARN(_logger,
+                          L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(entryPath, ioError).c_str());
                 continue;
             }
             if (isExcluded) {

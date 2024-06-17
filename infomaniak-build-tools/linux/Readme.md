@@ -171,6 +171,10 @@ make install
 
 # Build in Debug
 
+## Linking dependencies
+
+In order for CMake to be able to find all dependencies, you might need to define `LD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
+
 ## Using Qt Creator 
 
 ### Configuration
@@ -194,7 +198,6 @@ In the project build settings, paste the following lines in the Initial Configur
 
 ### Debugging
 
-In order that all libraries are found, you might need to define `LD_LIBRARY_PATH=/usr/local/lib`in your environment variables.
 The configuration and database files are stored in the `~/.config/kDrive` directory.  
 The log files will be generated in the `/tmp/kDrive-logdir` directory.
 

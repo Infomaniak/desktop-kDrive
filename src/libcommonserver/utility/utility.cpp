@@ -706,15 +706,13 @@ SyncName Utility::logFileNameWithTime() {
 
 std::string Utility::toUpper(const std::string &str) {
     std::string upperStr(str);
-    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
-
+    std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
     return upperStr;
 }
 
 std::string Utility::errId(const char *file, int line) {
     std::string err =
         Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
-
     return err;
 }
 
