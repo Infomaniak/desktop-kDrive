@@ -2928,9 +2928,9 @@ ExitCode AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
             }
 
             if (!nodeId.isEmpty()) {
-                if (migrationSelectiveSync.type() == SyncNodeType::BlackList) {
+                if (migrationSelectiveSync.type() == enumClassToInt(SyncNodeType::BlackList)) {
                     blackList << nodeId;
-                } else if (migrationSelectiveSync.type() == SyncNodeType::UndecidedList) {
+                } else if (migrationSelectiveSync.type() == enumClassToInt(SyncNodeType::UndecidedList)) {
                     undecidedList << nodeId;
                 }
             }
