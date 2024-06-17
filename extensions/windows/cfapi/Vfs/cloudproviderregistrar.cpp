@@ -59,7 +59,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
         if (found) {
             HKEY hKey;
             std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID;
-            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), nullptr, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
+            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
                 if (namespaceCLSID) {
                     // Get CLSID
                     if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) !=
@@ -120,7 +120,7 @@ std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInf
 
             HKEY hKey;
             std::wstring subKey = REGPATH_SYNCROOTMANAGER + syncRootID;
-            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), nullptr, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
+            if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, subKey.c_str(), 0, KEY_ALL_ACCESS, &hKey) == ERROR_SUCCESS) {
                 if (namespaceCLSID) {
                     // Get CLSID
                     if (RegGetValue(hKey, 0, REGKEY_NAMESPACECLSID, RRF_RT_ANY, nullptr, namespaceCLSID, namespaceCLSIDSize) !=
