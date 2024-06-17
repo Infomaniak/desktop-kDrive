@@ -128,7 +128,7 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
 
         if (exitCode == ExitCode::NetworkError && exitCause == ExitCause::NetworkTimeout) {
-            _syncPal->addError(Error(ERRID, exitCode, exitCause));
+            _syncPal->addError(Error(Utility::errId(), exitCode, exitCause));
         }
     }
     _updating = false;
@@ -444,7 +444,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             LOG_SYNCPAL_DEBUG(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
                                                                                    << " and cursor: " << _cursor.c_str());
             if (notifyJob->exitCause() == ExitCause::NetworkTimeout) {
-                _syncPal->addError(Error(ERRID, notifyJob->exitCode(), notifyJob->exitCause()));
+                _syncPal->addError(Error(Utility::errId(), notifyJob->exitCode(), notifyJob->exitCause()));
             }
             return ExitCode::NetworkError;
         } else if (notifyJob->hasHttpError()) {
@@ -623,7 +623,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
                 ExitCause exitCause = this->exitCause();
 
                 if (exitCode == ExitCode::NetworkError && exitCause == ExitCause::NetworkTimeout) {
-                    _syncPal->addError(Error(ERRID, exitCode, exitCause));
+                    _syncPal->addError(Error(Utility::errId(), exitCode, exitCause));
                 }
 
                 if (exitCode != ExitCode::Ok) return exitCode;

@@ -74,6 +74,7 @@ static const SyncName excludedTemplateFileName(Str("sync-exclude.lst"));
 static const SyncName excludedAppFileName(Str("litesync-exclude.lst"));
 #endif
 
+
 // Resources relative path from working dir
 #if defined(__APPLE__)
 static const SyncName resourcesPath(Str("../../Contents/Resources"));
@@ -710,10 +711,9 @@ std::string Utility::toUpper(const std::string &str) {
     return upperStr;
 }
 
-std::string Utility::errId(const char *file, int line) {
-    std::string err =
-        Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
-    return err;
+std::string Utility::errId(std::source_location location) {
+    std::string err = Utility::toUpper(std::filesystem::path(location.file_name()).filename().stem().string().substr(0, 3)) +
+                      ":" + std::to_string(location.line());
 }
 
 // Be careful, some characters have 2 different encodings in Unicode

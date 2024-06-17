@@ -131,7 +131,7 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
 
     if (!_localServer.listen(socketPath)) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Can't start server - path=" << QStr2WStr(socketPath).c_str());
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::SystemError, KDC::ExitCause::Unknown));
+        _addError(KDC::Error(KDC::Utility::errId(), KDC::ExitCode::SystemError, KDC::ExitCause::Unknown));
     } else {
         LOGW_INFO(KDC::Log::instance()->getLogger(), L"Server started - path=" << QStr2WStr(socketPath).c_str());
     }
@@ -205,7 +205,7 @@ void SocketApi::slotNewConnection() {
     std::vector<KDC::Sync> syncList;
     if (!KDC::ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
+        _addError(KDC::Error(KDC::Utility::errId(), KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
         return;
     }
 
@@ -275,12 +275,12 @@ void SocketApi::registerSync(int syncDbId) {
     bool found;
     if (!KDC::ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectSync - syncDbId=" << syncDbId);
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
+        _addError(KDC::Error(KDC::Utility::errId(), KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
         return;
     }
     if (!found) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Sync not found in sync table - syncDbId=" << syncDbId);
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DataError, KDC::ExitCause::Unknown));
+        _addError(KDC::Error(KDC::Utility::errId(), KDC::ExitCode::DataError, KDC::ExitCause::Unknown));
         return;
     }
 
@@ -301,12 +301,12 @@ void SocketApi::unregisterSync(int syncDbId) {
     bool found;
     if (!KDC::ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectSync - syncDbId=" << syncDbId);
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
+        _addError(KDC::Error(KDC::Utility::errId(), KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
         return;
     }
     if (!found) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Sync not found in sync table - syncDbId=" << syncDbId);
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DataError, KDC::ExitCause::Unknown));
+        _addError(KDC::Error(KDC::Utility::errId(), KDC::ExitCode::DataError, KDC::ExitCause::Unknown));
         return;
     }
 

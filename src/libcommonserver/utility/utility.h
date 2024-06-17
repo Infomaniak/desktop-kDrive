@@ -38,6 +38,7 @@
 #include <windows.h>
 #include <Accctrl.h>
 #endif
+#include <source_location>
 
 namespace Poco {
 class URI;
@@ -134,7 +135,7 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncName logFileName();
         static SyncName logFileNameWithTime();
         static std::string toUpper(const std::string &str);
-        static std::string errId(const char *file, int line);
+        static std::string errId(std::source_location location = std::source_location::current());
 
         static SyncName normalizedSyncName(const SyncName &name);
         static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;

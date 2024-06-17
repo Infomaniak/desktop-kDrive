@@ -28,8 +28,6 @@
 
 namespace KDC {
 
-#define ERRID Utility::errId(__FILE__, __LINE__)
-
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
