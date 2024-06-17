@@ -131,7 +131,7 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
 
     if (!_localServer.listen(socketPath)) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Can't start server - path=" << QStr2WStr(socketPath).c_str());
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCodeSystemError, KDC::ExitCauseUnknown));
+        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::SystemError, KDC::ExitCause::Unknown));
     } else {
         LOGW_INFO(KDC::Log::instance()->getLogger(), L"Server started - path=" << QStr2WStr(socketPath).c_str());
     }
@@ -205,7 +205,7 @@ void SocketApi::slotNewConnection() {
     std::vector<KDC::Sync> syncList;
     if (!KDC::ParmsDb::instance()->selectAllSyncs(syncList)) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectAllSyncs");
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCodeDbError, KDC::ExitCauseUnknown));
+        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
         return;
     }
 
@@ -275,12 +275,12 @@ void SocketApi::registerSync(int syncDbId) {
     bool found;
     if (!KDC::ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectSync - syncDbId=" << syncDbId);
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCodeDbError, KDC::ExitCauseUnknown));
+        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
         return;
     }
     if (!found) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Sync not found in sync table - syncDbId=" << syncDbId);
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCodeDataError, KDC::ExitCauseUnknown));
+        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DataError, KDC::ExitCause::Unknown));
         return;
     }
 
@@ -301,12 +301,12 @@ void SocketApi::unregisterSync(int syncDbId) {
     bool found;
     if (!KDC::ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error in ParmsDb::selectSync - syncDbId=" << syncDbId);
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCodeDbError, KDC::ExitCauseUnknown));
+        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DbError, KDC::ExitCause::Unknown));
         return;
     }
     if (!found) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Sync not found in sync table - syncDbId=" << syncDbId);
-        _addError(KDC::Error(KDC::ERRID, KDC::ExitCodeDataError, KDC::ExitCauseUnknown));
+        _addError(KDC::Error(KDC::ERRID, KDC::ExitCode::DataError, KDC::ExitCause::Unknown));
         return;
     }
 
@@ -372,7 +372,7 @@ void SocketApi::command_COPY_PUBLIC_LINK(const QString &localFile, SocketListene
     // Get NodeId
     KDC::NodeId nodeId;
     KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData._relativePath), nodeId);
-    if (exitCode != KDC::ExitCodeOk) {
+    if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
                   L"Error in SyncPal::itemId - path=" << QStr2WStr(fileData._relativePath).c_str());
         return;
@@ -381,7 +381,7 @@ void SocketApi::command_COPY_PUBLIC_LINK(const QString &localFile, SocketListene
     // Get public link URL
     QString linkUrl;
     exitCode = _getPublicLinkUrl(fileData._driveDbId, QString::fromStdString(nodeId), linkUrl);
-    if (exitCode != KDC::ExitCodeOk) {
+    if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
                   L"Error in getPublicLinkUrl - path=" << QStr2WStr(fileData._relativePath).c_str());
         return;
@@ -422,7 +422,7 @@ void SocketApi::fetchPrivateLinkUrlHelper(const QString &localFile, const std::f
 
     FileData fileData = FileData::get(localFile);
     KDC::NodeId itemId;
-    if (syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData._relativePath), itemId) != KDC::ExitCodeOk) {
+    if (syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData._relativePath), itemId) != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in SyncPal::itemId - path=" << localFile.toStdWString().c_str());
         return;
     }
@@ -517,7 +517,7 @@ bool SocketApi::addDownloadJob(const FileData &fileData) {
     // Create download job
     KDC::ExitCode exitCode =
         syncPalMapIt->second->addDlDirectJob(QStr2Path(fileData._relativePath), QStr2Path(fileData._localPath));
-    if (exitCode != KDC::ExitCodeOk) {
+    if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
                   L"Error in SyncPal::addDownloadJob - path=" << QStr2WStr(fileData._relativePath).c_str());
         return false;
@@ -544,7 +544,7 @@ bool SocketApi::cancelDownloadJobs(int syncDbId, const QStringList &fileList) {
 
     // Cancel download jobs
     KDC::ExitCode exitCode = syncPalMapIt->second->cancelDlDirectJobs(syncPathList);
-    if (exitCode != KDC::ExitCodeOk) {
+    if (exitCode != KDC::ExitCode::Ok) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncPal::cancelDlDirectJobs");
         return false;
     }
@@ -842,7 +842,7 @@ void SocketApi::command_GET_THUMBNAIL(const QString &argument, SocketListener *l
     // Get NodeId
     KDC::NodeId nodeId;
     KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2WStr(fileData._relativePath), nodeId);
-    if (exitCode != KDC::ExitCodeOk) {
+    if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in SyncPal::itemId - path=" << QStr2WStr(filePath).c_str());
         return;
     }
@@ -850,7 +850,7 @@ void SocketApi::command_GET_THUMBNAIL(const QString &argument, SocketListener *l
     // Get thumbnail
     std::string thumbnail;
     exitCode = _getThumbnail(fileData._driveDbId, nodeId, 256, thumbnail);
-    if (exitCode != KDC::ExitCodeOk) {
+    if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in getThumbnail - path=" << QStr2WStr(filePath).c_str());
         return;
     }
@@ -920,7 +920,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
     // Get NodeId
     KDC::NodeId nodeId;
     KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData._relativePath), nodeId);
-    if (exitCode != KDC::ExitCodeOk) {
+    if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in SyncPal::itemId - path=" << QStr2WStr(filePath).c_str());
         return;
     }
@@ -928,7 +928,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
     // Get thumbnail
     std::string thumbnail;
     exitCode = _getThumbnail(fileData._driveDbId, nodeId, 256, thumbnail);
-    if (exitCode != KDC::ExitCodeOk) {
+    if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"Error in getThumbnail - path=" << QStr2WStr(filePath).c_str());
         return;
     }
@@ -1169,7 +1169,7 @@ void SocketApi::manageActionsOnSingleFile(SocketListener *listener, const QStrin
 
     KDC::NodeId nodeId;
     KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData._relativePath), nodeId);
-    if (exitCode != KDC::ExitCodeOk) {
+    if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
                   L"Error in SyncPal::itemId - path=" << QStr2WStr(fileData._relativePath).c_str());
         return;
@@ -1243,7 +1243,7 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
         FileData fileData = FileData::get(argumentList.first());
         KDC::NodeId nodeId;
         KDC::ExitCode exitCode = syncPalMapIt->second->fileRemoteIdFromLocalPath(QStr2Path(fileData._relativePath), nodeId);
-        if (exitCode != KDC::ExitCodeOk) {
+        if (exitCode != KDC::ExitCode::Ok) {
             LOGW_WARN(KDC::Log::instance()->getLogger(),
                       L"Error in SyncPal::itemId - path=" << QStr2WStr(fileData._relativePath).c_str());
             listener->sendMessage(responseStr);

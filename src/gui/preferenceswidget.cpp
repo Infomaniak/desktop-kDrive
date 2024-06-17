@@ -318,7 +318,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     launchAtStartupSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
     bool hasSystemLauchAtStartup = false;
     ExitCode exitCode = GuiRequests::hasSystemLaunchOnStartup(hasSystemLauchAtStartup);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcPreferencesWidget()) << "Error in GuiRequests::hasSystemLaunchOnStartup";
     }
     if (hasSystemLauchAtStartup) {
@@ -328,7 +328,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     } else {
         bool hasLaunchAtStartup = false;
         ExitCode exitCode = GuiRequests::hasLaunchOnStartup(hasLaunchAtStartup);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcPreferencesWidget()) << "Error in GuiRequests::hasLaunchOnStartup";
         }
         launchAtStartupSwitch->setCheckState(hasLaunchAtStartup ? Qt::Checked : Qt::Unchecked);
@@ -479,7 +479,7 @@ void PreferencesWidget::clearUndecidedLists() {
     for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
         // Clear the undecided list
         ExitCode exitCode = GuiRequests::setSyncIdSet(syncInfoMapElt.first, SyncNodeTypeUndecidedList, QSet<QString>());
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcPreferencesWidget()) << "Error in Requests::setSyncIdSet";
             return;
         }
@@ -537,7 +537,7 @@ void PreferencesWidget::onLaunchAtStartupSwitchClicked(bool checked) {
     }
 
     const ExitCode exitCode = GuiRequests::setLaunchOnStartup(checked);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcPreferencesWidget()) << "Error in GuiRequests::setLaunchOnStartup";
     }
 }

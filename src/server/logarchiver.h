@@ -38,7 +38,7 @@ class LogArchiver {
          *      cancels the operation (else true). 
          * \param archivePath The path to the generated archive.
          * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to
-         *      ExitCauseUnknown;
+         *      ExitCause::Unknown;
          * \param test If true, the archive will be generated with test.zip name.
          * \return True if the archive
          * was generated successfully, false otherwise.
@@ -59,7 +59,7 @@ class LogArchiver {
          * \param progressCallback The callback to be called with the progress percentage, the callback retruns false if the user
          *      cancels the operation (else true). 
          * \param exitCause The exit cause to be filled in case of error. If no error occurred,
-         *      it will be set to ExitCauseUnknown; 
+         *      it will be set to ExitCause::Unknown; 
          * \return The exit code of the operation.
          */
         static ExitCode compressLogFiles(const SyncPath &directoryToCompress, std::function<bool(int)> progressCallback,
@@ -69,7 +69,7 @@ class LogArchiver {
          * The file will contain: Current OS, current architecture, current version, current user(s), current drive(s).
          * \param outputPath The path where the file will be generated.
          * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to
-         *      ExitCauseUnknown; 
+         *      ExitCause::Unknown; 
          * \return The exit code of the operation.
          */
         static ExitCode generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);

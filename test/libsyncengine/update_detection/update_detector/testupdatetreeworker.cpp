@@ -275,14 +275,14 @@ void TestUpdateTreeWorker::testUtilsFunctions() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeMove, "id3", NodeType::Directory, 1654788256, 1654788256,
                                                           12345, "Dir 3", "Dir 3bis"));
     _updateTree->getNodeByPath("Dir 3")->setName(Str("Dir 3bis"));
-    CPPUNIT_ASSERT(_updateTreeWorker->getNewPathAfterMove("Dir 3/Dir 3.1", newPath) == ExitCodeOk);
+    CPPUNIT_ASSERT(_updateTreeWorker->getNewPathAfterMove("Dir 3/Dir 3.1", newPath) == ExitCode::Ok);
     CPPUNIT_ASSERT(newPath == "Dir 3bis/Dir 3.1");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath(newPath)->id() == "id31");
 
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeMove, "id41", NodeType::Directory, 1654788256, 1654788256,
                                                           12345, "Dir 4/Dir 4.1", "Dir 4/Dir 4.2"));
     _updateTree->getNodeByPath("Dir 4/Dir 4.1")->setName(Str("Dir 4.2"));
-    CPPUNIT_ASSERT(_updateTreeWorker->getNewPathAfterMove("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1", newPath) == ExitCodeOk);
+    CPPUNIT_ASSERT(_updateTreeWorker->getNewPathAfterMove("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1", newPath) == ExitCode::Ok);
     CPPUNIT_ASSERT(newPath == "Dir 4/Dir 4.2/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath(newPath)->id() == "id4111");
 }
@@ -615,7 +615,7 @@ void TestUpdateTreeWorker::testGetOriginPath() {
     // Test without move operation
     std::shared_ptr<Node> node = _updateTree->getNodeById("id4111");
     SyncPath path;
-    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node, path) == ExitCodeOk);
+    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(node->getPath() == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
 
@@ -625,7 +625,7 @@ void TestUpdateTreeWorker::testGetOriginPath() {
     node->setName(Str("File 4.1.1.1 renamed"));            // Rename node
     node->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     node->setMoveOriginParentDbId(_dbnodeIdDir411);
-    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node, path) == ExitCodeOk);
+    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(node->getPath() == "Dir 4/File 4.1.1.1 renamed");
 }
@@ -644,12 +644,12 @@ void TestUpdateTreeWorker::testGetOriginPath2() {
     node->setMoveOriginParentDbId(_dbnodeIdDir41);
 
     SyncPath path;
-    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node, path) == ExitCodeOk);
+    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1");
     CPPUNIT_ASSERT(node->getPath() == "Dir 4/Dir 4.1.1 renamed");
 
     node = _updateTree->getNodeById("id4111");
-    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node, path) == ExitCodeOk);
+    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(node->getPath() == "Dir 4/Dir 4.1.1 renamed/File 4.1.1.1");
 }
@@ -673,7 +673,7 @@ void TestUpdateTreeWorker::testGetOriginPath3() {
     node411->setMoveOriginParentDbId(_dbnodeIdDir41);
 
     SyncPath path;
-    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node4111, path) == ExitCodeOk);
+    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node4111, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(node4111->getPath() == "Dir 4/Dir 4.1.1/File 4.1.1.1 renamed");
 }
@@ -697,7 +697,7 @@ void TestUpdateTreeWorker::testGetOriginPath4() {
     node4111->setMoveOriginParentDbId(_dbnodeIdDir411);
 
     SyncPath path;
-    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node4111, path) == ExitCodeOk);
+    CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node4111, path) == ExitCode::Ok);
     CPPUNIT_ASSERT(path == "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(node4111->getPath() == "Dir 4/Dir 4.1.1/File 4.1.1.1 renamed");
 }

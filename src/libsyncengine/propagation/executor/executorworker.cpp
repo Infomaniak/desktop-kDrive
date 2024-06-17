@@ -58,8 +58,8 @@ void ExecutorWorker::executorCallback(UniqueId jobId) {
 }
 
 void ExecutorWorker::execute() {
-    _executorExitCode = ExitCodeUnknown;
-    _executorExitCause = ExitCauseUnknown;
+    _executorExitCode = ExitCode::Unknown;
+    _executorExitCause = ExitCause::Unknown;
     _snapshotToInvalidate = false;
 
     _jobToSyncOpMap.clear();
@@ -147,8 +147,8 @@ void ExecutorWorker::execute() {
                     LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type: "
                                                    << Utility::s2ws(Utility::opType2Str(syncOp->type())).c_str() << L" on file "
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-                    _executorExitCode = ExitCodeDataError;
-                    _executorExitCause = ExitCauseUnknown;
+                    _executorExitCode = ExitCode::DataError;
+                    _executorExitCause = ExitCause::Unknown;
                     hasError = true;
                     cancelAllOngoingJobs();
                     break;
@@ -185,7 +185,7 @@ void ExecutorWorker::execute() {
     }
 
     if (!hasError) {
-        _executorExitCode = ExitCodeOk;
+        _executorExitCode = ExitCode::Ok;
     }
 
     _syncPal->_syncOps->clear();
@@ -316,8 +316,8 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
         _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusSuccess);
     } else {
         if (!isLiteSyncActivated() && !enoughLocalSpace(syncOp)) {
-            _executorExitCode = ExitCodeSystemError;
-            _executorExitCause = ExitCauseNotEnoughDiskSpace;
+            _executorExitCode = ExitCode::SystemError;
+            _executorExitCause = ExitCause::NotEnoughDiskSpace;
             _syncPal->addError(Error(_syncPal->syncDbId(), name(), _executorExitCode, _executorExitCause));
             hasError = true;
             return;
@@ -332,8 +332,8 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
             } else if (syncOp->targetSide() == ReplicaSide::Remote) {
                 if (!exists) {
                     _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusError);
-                    _executorExitCode = ExitCodeDataError;
-                    _executorExitCause = ExitCauseUnexpectedFileSystemEvent;
+                    _executorExitCode = ExitCode::DataError;
+                    _executorExitCause = ExitCause::UnexpectedFileSystemEvent;
                     hasError = true;
                     return;
                 }
@@ -343,8 +343,8 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
                     LOGW_SYNCPAL_WARN(
                         _logger, L"Failed to create placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                     _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusError);
-                    _executorExitCode = needRestart ? ExitCodeDataError : ExitCodeSystemError;
-                    _executorExitCause = needRestart ? ExitCauseUnexpectedFileSystemEvent : ExitCauseUnknown;
+                    _executorExitCode = needRestart ? ExitCode::DataError : ExitCode::SystemError;
+                    _executorExitCause = needRestart ? ExitCause::UnexpectedFileSystemEvent : ExitCause::Unknown;
                     hasError = true;
                     return;
                 }
@@ -387,11 +387,11 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
                 hasError = true;
 
                 if (syncOp->targetSide() == ReplicaSide::Local) {
-                    _executorExitCode = job->exitCode() == ExitCodeNeedRestart ? ExitCodeDataError : job->exitCode();
-                    _executorExitCause = job->exitCode() == ExitCodeNeedRestart ? ExitCauseFileAlreadyExist : job->exitCause();
+                    _executorExitCode = job->exitCode() == ExitCode::NeedRestart ? ExitCode::DataError : job->exitCode();
+                    _executorExitCause = job->exitCode() == ExitCode::NeedRestart ? ExitCause::FileAlreadyExist : job->exitCause();
                 } else if (syncOp->targetSide() == ReplicaSide::Remote) {
-                    _executorExitCode = job->exitCode() == ExitCodeNeedRestart ? ExitCodeBackError : job->exitCode();
-                    _executorExitCause = job->exitCode() == ExitCodeNeedRestart ? ExitCauseFileAlreadyExist : job->exitCause();
+                    _executorExitCode = job->exitCode() == ExitCode::NeedRestart ? ExitCode::BackError : job->exitCode();
+                    _executorExitCause = job->exitCode() == ExitCode::NeedRestart ? ExitCause::FileAlreadyExist : job->exitCause();
                 }
 
                 return;
@@ -402,12 +402,12 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
                 LOGW_SYNCPAL_WARN(
                     _logger, L"Failed to convert to placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 if (needRestart) {
-                    _executorExitCode = ExitCodeDataError;
-                    _executorExitCause = ExitCauseUnexpectedFileSystemEvent;
+                    _executorExitCode = ExitCode::DataError;
+                    _executorExitCause = ExitCause::UnexpectedFileSystemEvent;
                 } else {
                     _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusError);
-                    _executorExitCode = ExitCodeSystemError;
-                    _executorExitCause = ExitCauseUnknown;
+                    _executorExitCode = ExitCode::SystemError;
+                    _executorExitCause = ExitCause::Unknown;
                 }
 
                 hasError = true;
@@ -456,8 +456,8 @@ void ExecutorWorker::checkAlreadyExcluded(const SyncPath &absolutePath, const No
     PlatformInconsistencyCheckerUtility::renameLocalFile(absolutePath,
                                                          PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
 
-    _executorExitCode = ExitCodeDataError;
-    _executorExitCause = ExitCauseFileAlreadyExist;
+    _executorExitCode = ExitCode::DataError;
+    _executorExitCause = ExitCause::FileAlreadyExist;
 }
 
 bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept {
@@ -469,8 +469,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
         if (!newCorrespondingParentNode) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to get target root node");
             _syncPal->setProgressComplete(syncOp->affectedNode()->getPath(true), SyncFileStatusError);
-            _executorExitCode = ExitCodeDataError;
-            _executorExitCause = ExitCauseUnknown;
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
             return false;
         }
     } else {
@@ -480,8 +480,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             LOGW_SYNCPAL_WARN(
                 _logger, L"Failed to get corresponding parent node: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
             _syncPal->setProgressComplete(syncOp->affectedNode()->getPath(true), SyncFileStatusError);
-            _executorExitCode = ExitCodeDataError;
-            _executorExitCause = ExitCauseUnknown;
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
             return false;
         }
     }
@@ -507,16 +507,16 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 if (!IoHelper::checkIfPathExists(absoluteLocalFilePath.parent_path(), parentExists, ioError)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                            << Utility::formatIoError(absoluteLocalFilePath.parent_path(), ioError).c_str());
-                    _executorExitCode = ExitCodeSystemError;
-                    _executorExitCause = ExitCauseFileAccessError;
+                    _executorExitCode = ExitCode::SystemError;
+                    _executorExitCause = ExitCause::FileAccessError;
                     return false;
                 }
 
                 if (ioError == IoErrorAccessDenied) {
                     LOGW_WARN(_logger, L"Item misses search permission: "
                                            << Utility::formatSyncPath(absoluteLocalFilePath.parent_path()).c_str());
-                    _executorExitCode = ExitCodeSystemError;
-                    _executorExitCause = ExitCauseNoSearchPermission;
+                    _executorExitCode = ExitCode::SystemError;
+                    _executorExitCause = ExitCause::NoSearchPermission;
                     return false;
                 }
 
@@ -524,24 +524,24 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                            << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
-                    _executorExitCode = ExitCodeSystemError;
-                    _executorExitCause = ExitCauseFileAccessError;
+                    _executorExitCode = ExitCode::SystemError;
+                    _executorExitCause = ExitCause::FileAccessError;
                     return false;
                 }
 
                 if (ioError == IoErrorAccessDenied) {
                     LOGW_WARN(_logger,
                               L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-                    _executorExitCode = ExitCodeSystemError;
-                    _executorExitCause = ExitCauseNoSearchPermission;
+                    _executorExitCode = ExitCode::SystemError;
+                    _executorExitCause = ExitCause::NoSearchPermission;
                     return false;
                 }
 
                 bool restart = !parentExists  // Parent path does not exist on local replica. Rebuild the snapshots.
                                || exists;     // Item already exist. Rebuild the snapshots.
 
-                _executorExitCode = restart ? ExitCodeDataError : ExitCodeSystemError;
-                _executorExitCause = restart ? ExitCauseInvalidSnapshot : ExitCauseFileAccessError;
+                _executorExitCode = restart ? ExitCode::DataError : ExitCode::SystemError;
+                _executorExitCause = restart ? ExitCause::InvalidSnapshot : ExitCause::FileAccessError;
                 return false;
             }
 
@@ -551,20 +551,20 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: "
                                                << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
                 _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusError);
-                _executorExitCode = ExitCodeSystemError;
-                _executorExitCause = ExitCauseUnknown;
+                _executorExitCode = ExitCode::SystemError;
+                _executorExitCause = ExitCause::Unknown;
                 return false;
             }
 
             if (ioError == IoErrorNoSuchFileOrDirectory) {
                 LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-                _executorExitCode = ExitCodeDataError;
-                _executorExitCause = ExitCauseInvalidSnapshot;
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::InvalidSnapshot;
                 return false;
             } else if (ioError == IoErrorAccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-                _executorExitCode = ExitCodeSystemError;
-                _executorExitCause = ExitCauseNoSearchPermission;
+                _executorExitCode = ExitCode::SystemError;
+                _executorExitCause = ExitCause::NoSearchPermission;
                 return false;
             }
 
@@ -604,8 +604,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                            << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
-                    _executorExitCode = ExitCodeSystemError;
-                    _executorExitCause = ExitCauseFileAccessError;
+                    _executorExitCode = ExitCode::SystemError;
+                    _executorExitCause = ExitCause::FileAccessError;
                     return false;
                 }
 
@@ -631,8 +631,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                     } catch (std::exception const &e) {
                         LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId="
                                                        << _syncPal->_driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
-                        _executorExitCode = ExitCodeDataError;
-                        _executorExitCause = ExitCauseUnknown;
+                        _executorExitCode = ExitCode::DataError;
+                        _executorExitCause = ExitCause::Unknown;
                         return false;
                     }
 
@@ -654,8 +654,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                         _logger, L"Failed to create placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 }
                 _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusError);
-                _executorExitCode = needRestart ? ExitCodeOk : ExitCodeSystemError;
-                _executorExitCause = ExitCauseUnknown;
+                _executorExitCode = needRestart ? ExitCode::Ok : ExitCode::SystemError;
+                _executorExitCause = ExitCause::Unknown;
                 _syncPal->_restart = true;
                 _syncPal->updateTree(ReplicaSide::Local)->deleteNode(syncOp->affectedNode());
                 return false;
@@ -669,8 +669,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in CreateDirJob::CreateDirJob for driveDbId="
                                                << _syncPal->_driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
-                _executorExitCode = ExitCodeDataError;
-                _executorExitCause = ExitCauseUnknown;
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
                 return false;
             }
         } else {
@@ -680,10 +680,10 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                                   L"Failed to create placeholder for: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                 _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusError);
                 _executorExitCode = needRestart
-                                        ? ExitCodeDataError
-                                        : ExitCodeSystemError;  // TODO : data error here leads to a rebuild of the snapshots
+                                        ? ExitCode::DataError
+                                        : ExitCode::SystemError;  // TODO : data error here leads to a rebuild of the snapshots
                                                                 // while just running the sync again should be enough
-                _executorExitCause = needRestart ? ExitCauseUnexpectedFileSystemEvent : ExitCauseUnknown;
+                _executorExitCause = needRestart ? ExitCause::UnexpectedFileSystemEvent : ExitCause::Unknown;
                 return false;
             }
 
@@ -692,22 +692,22 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             if (!IoHelper::getFileSize(absoluteLocalFilePath, filesize, ioError)) {
                 LOGW_WARN(_logger,
                           L"Error in IoHelper::getFileSize: " << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
-                _executorExitCode = ExitCodeSystemError;
-                _executorExitCause = ExitCauseUnknown;
+                _executorExitCode = ExitCode::SystemError;
+                _executorExitCause = ExitCause::Unknown;
                 return false;
             }
 
             if (ioError == IoErrorNoSuchFileOrDirectory) {  // The synchronization will be re-started.
                 LOGW_WARN(_logger, L"Item doesn't exist for path=" << Path2WStr(absoluteLocalFilePath).c_str());
-                _executorExitCode = ExitCodeDataError;
-                _executorExitCause = ExitCauseUnknown;
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
                 return false;
             }
 
             if (ioError == IoErrorAccessDenied) {  // An action from the user is requested.
                 LOGW_WARN(_logger, L"Item search permission missing for path=" << Path2WStr(absoluteLocalFilePath).c_str());
-                _executorExitCode = ExitCodeSystemError;
-                _executorExitCause = ExitCauseNoSearchPermission;
+                _executorExitCode = ExitCode::SystemError;
+                _executorExitCause = ExitCause::NoSearchPermission;
                 return false;
             }
 
@@ -722,8 +722,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 } catch (std::exception const &e) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UploadSession::UploadSession for driveDbId="
                                                    << _syncPal->_driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
-                    _executorExitCode = ExitCodeDataError;
-                    _executorExitCause = ExitCauseUnknown;
+                    _executorExitCode = ExitCode::DataError;
+                    _executorExitCause = ExitCause::Unknown;
                     return false;
                 };
             } else {
@@ -735,8 +735,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 } catch (std::exception const &e) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId="
                                                    << _syncPal->_driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
-                    _executorExitCode = ExitCodeDataError;
-                    _executorExitCause = ExitCauseUnknown;
+                    _executorExitCode = ExitCode::DataError;
+                    _executorExitCause = ExitCause::Unknown;
                     return false;
                 }
             }
@@ -787,8 +787,8 @@ bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path
         int progress = 0;
         if (!_syncPal->vfsStatus(path, isPlaceholder, isHydrated, isSyncing, progress)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(path).c_str());
-            _executorExitCode = ExitCodeSystemError;
-            _executorExitCause = ExitCauseFileAccessError;
+            _executorExitCode = ExitCode::SystemError;
+            _executorExitCause = ExitCause::FileAccessError;
             return false;
         }
 
@@ -806,8 +806,8 @@ bool ExecutorWorker::createPlaceholder(const SyncPath &relativeLocalPath) {
     if (!_syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve SyncFileItem associated to item: "
                                        << Utility::formatSyncPath(relativeLocalPath).c_str());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseUnknown;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::Unknown;
         return false;
     }
     return _syncPal->vfsCreatePlaceholder(relativeLocalPath, syncItem);  // TODO : should not use SyncFileItem
@@ -818,8 +818,8 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
     if (!_syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve SyncFileItem associated to item: "
                                        << Utility::formatSyncPath(relativeLocalPath).c_str());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseUnknown;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::Unknown;
         return false;
     }
 
@@ -832,20 +832,20 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
-        _executorExitCode = ExitCodeSystemError;
-        _executorExitCause = ExitCauseUnknown;
+        _executorExitCode = ExitCode::SystemError;
+        _executorExitCause = ExitCause::Unknown;
         return false;
     }
 
     if (ioError == IoErrorNoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseInvalidSnapshot;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::InvalidSnapshot;
         return false;
     } else if (ioError == IoErrorAccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-        _executorExitCode = ExitCodeSystemError;
-        _executorExitCause = ExitCauseNoSearchPermission;
+        _executorExitCode = ExitCode::SystemError;
+        _executorExitCause = ExitCause::NoSearchPermission;
         return false;
     }
 
@@ -879,8 +879,8 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
     SyncPath relativeLocalFilePath = syncOp->affectedNode()->getPath(true);
 
     if (relativeLocalFilePath.empty()) {
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseUnknown;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::Unknown;
         hasError = true;
         return;
     }
@@ -913,8 +913,8 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
         }
     } else {
         if (!enoughLocalSpace(syncOp)) {
-            _executorExitCode = ExitCodeSystemError;
-            _executorExitCause = ExitCauseNotEnoughDiskSpace;
+            _executorExitCode = ExitCode::SystemError;
+            _executorExitCause = ExitCause::NotEnoughDiskSpace;
             _syncPal->addError(Error(_syncPal->syncDbId(), name(), _executorExitCode, _executorExitCause));
             hasError = true;
             return;
@@ -952,8 +952,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DownloadJob::DownloadJob for driveDbId=" << _syncPal->_driveDbId << L" : "
                                                                                            << Utility::s2ws(e.what()).c_str());
-            _executorExitCode = ExitCodeDataError;
-            _executorExitCause = ExitCauseUnknown;
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
             return false;
         }
 
@@ -987,22 +987,22 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         IoError ioError = IoErrorSuccess;
         if (!IoHelper::getFileSize(absoluteLocalFilePath, filesize, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getFileSize: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-            _executorExitCode = ExitCodeSystemError;
-            _executorExitCause = ExitCauseUnknown;
+            _executorExitCode = ExitCode::SystemError;
+            _executorExitCause = ExitCause::Unknown;
             return false;
         }
 
         if (ioError == IoErrorNoSuchFileOrDirectory) {  // The synchronization will re-started.
             LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-            _executorExitCode = ExitCodeDataError;
-            _executorExitCause = ExitCauseUnknown;
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
             return false;
         }
 
         if (ioError == IoErrorAccessDenied) {  // An action from the user is requested.
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-            _executorExitCode = ExitCodeSystemError;
-            _executorExitCause = ExitCauseNoSearchPermission;
+            _executorExitCode = ExitCode::SystemError;
+            _executorExitCause = ExitCause::NoSearchPermission;
             return false;
         }
 
@@ -1018,8 +1018,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UploadSession::UploadSession for driveDbId="
                                                << _syncPal->_driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
-                _executorExitCode = ExitCodeDataError;
-                _executorExitCause = ExitCauseUnknown;
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
                 return false;
             };
         } else {
@@ -1031,8 +1031,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
             } catch (std::exception const &e) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in UploadJob::UploadJob for driveDbId=" << _syncPal->_driveDbId << L" : "
                                                                                            << Utility::s2ws(e.what()).c_str());
-                _executorExitCode = ExitCodeDataError;
-                _executorExitCause = ExitCauseUnknown;
+                _executorExitCode = ExitCode::DataError;
+                _executorExitCause = ExitCause::Unknown;
                 return false;
             }
 
@@ -1061,8 +1061,8 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
     int progress = 0;
     if (!_syncPal->vfsStatus(absolutePath, isPlaceholder, isHydrated, isSyncingTmp, progress)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absolutePath).c_str());
-        _executorExitCode = ExitCodeSystemError;
-        _executorExitCause = ExitCauseFileAccessError;
+        _executorExitCode = ExitCode::SystemError;
+        _executorExitCause = ExitCause::FileAccessError;
         return false;
     }
 
@@ -1080,8 +1080,8 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
             PinState pinState = PinStateUnspecified;
             if (!_syncPal->vfsPinState(absolutePath, pinState)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsPinState for file: " << Utility::formatSyncPath(absolutePath).c_str());
-                _executorExitCode = ExitCodeSystemError;
-                _executorExitCause = ExitCauseInconsistentPinState;
+                _executorExitCode = ExitCode::SystemError;
+                _executorExitCause = ExitCause::InconsistentPinState;
                 return false;
             }
 
@@ -1089,8 +1089,8 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
                 case PinStateInherited: {
                     // TODO : what do we do in that case??
                     LOG_SYNCPAL_WARN(_logger, "Inherited pin state not implemented yet");
-                    _executorExitCode = ExitCodeDataError;
-                    _executorExitCause = ExitCauseUnknown;
+                    _executorExitCode = ExitCode::DataError;
+                    _executorExitCause = ExitCause::Unknown;
                     return false;
                 }
                 case PinStateAlwaysLocal: {
@@ -1253,8 +1253,8 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in MoveJob::MoveJob for driveDbId=" << _syncPal->_driveDbId << L" : "
                                                                                    << Utility::s2ws(e.what()).c_str());
-            _executorExitCode = ExitCodeDataError;
-            _executorExitCause = ExitCauseUnknown;
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
             return false;
         }
     }
@@ -1262,7 +1262,7 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
     job->setAffectedFilePath(relativeDestLocalFilePath);
     job->runSynchronously();
 
-    if (job->exitCode() == ExitCodeOk && syncOp->conflict().type() != ConflictTypeNone) {
+    if (job->exitCode() == ExitCode::Ok && syncOp->conflict().type() != ConflictTypeNone) {
         // Conflict fixing job finished successfully
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode = nullptr;
@@ -1369,8 +1369,8 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
             int progress = 0;
             if (!_syncPal->vfsStatus(absoluteLocalFilePath, isPlaceholder, isHydrated, isSyncing, progress)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in vfsStatus: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-                _executorExitCode = ExitCodeSystemError;
-                _executorExitCause = ExitCauseFileAccessError;
+                _executorExitCode = ExitCode::SystemError;
+                _executorExitCause = ExitCause::FileAccessError;
                 return false;
             }
             isDehydratedPlaceholder = isPlaceholder && !isHydrated;
@@ -1379,8 +1379,8 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
         NodeId remoteNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";
         if (remoteNodeId.empty()) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve node ID");
-            _executorExitCode = ExitCodeDataError;
-            _executorExitCause = ExitCauseUnknown;
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
             return false;
         }
         job = std::make_shared<LocalDeleteJob>(_syncPal->_driveDbId, _syncPal->_localPath, relativeLocalFilePath,
@@ -1393,8 +1393,8 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DeleteJob::DeleteJob for driveDbId=" << _syncPal->_driveDbId << L" : "
                                                                                        << Utility::s2ws(e.what()).c_str());
-            _executorExitCode = ExitCodeDataError;
-            _executorExitCause = ExitCauseUnknown;
+            _executorExitCode = ExitCode::DataError;
+            _executorExitCause = ExitCause::Unknown;
             return false;
         }
     }
@@ -1435,7 +1435,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                           << L" already exists but doesn't have write permissions!");
                     Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictTypeNone,
-                                InconsistencyTypeNone, CancelTypeNone, "", ExitCodeSystemError, ExitCauseFileAccessError);
+                                InconsistencyTypeNone, CancelTypeNone, "", ExitCode::SystemError, ExitCause::FileAccessError);
                     _syncPal->addError(error);
                     return false;
                 }
@@ -1452,7 +1452,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
 
                 if (!writePermission) {
                     Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictTypeNone,
-                                InconsistencyTypeNone, CancelTypeNone, "", ExitCodeSystemError, ExitCauseFileAccessError);
+                                InconsistencyTypeNone, CancelTypeNone, "", ExitCode::SystemError, ExitCause::FileAccessError);
                     _syncPal->addError(error);
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                           << L" doesn't have write permissions!");
@@ -1644,16 +1644,16 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
 
 bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue,
                                             bool downloadImpossible) {
-    _executorExitCode = ExitCodeOk;
+    _executorExitCode = ExitCode::Ok;
 
-    if (jobExitCause == ExitCauseNotFound && !downloadImpossible) {
+    if (jobExitCause == ExitCause::NotFound && !downloadImpossible) {
         // The operation failed because the destination does not exist anymore
-        _executorExitCode = ExitCodeDataError;
+        _executorExitCode = ExitCode::DataError;
         LOG_DEBUG(_logger, "Destination does not exist anymore, restarting sync.");
         return false;
     }
 
-    if (jobExitCause == ExitCauseQuotaExceeded) {
+    if (jobExitCause == ExitCause::QuotaExceeded) {
         _syncPal->pause();
     } else {
         // The item should be temporarily blacklisted
@@ -1683,7 +1683,7 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
     } else {
         error = Error(_syncPal->syncDbId(), locaNodeId, remoteNodeId, syncOp->affectedNode()->type(),
                       syncOp->affectedNode()->getPath(), ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone, "",
-                      ExitCodeBackError, jobExitCause);
+                      ExitCode::BackError, jobExitCause);
     }
     _syncPal->addError(error);
 
@@ -1692,21 +1692,21 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
 
 namespace details {
 bool isManagedBackError(ExitCause exitCause) {
-    static const std::set<ExitCause> managedExitCauses = {ExitCauseInvalidName,   ExitCauseApiErr,
-                                                          ExitCauseFileTooBig,    ExitCauseNotFound,
-                                                          ExitCauseQuotaExceeded, ExitCauseUploadNotTerminated};
+    static const std::set<ExitCause> managedExitCauses= {ExitCause::InvalidName,   ExitCause::ApiErr,
+                                                          ExitCause::FileTooBig,    ExitCause::NotFound,
+                                                          ExitCause::QuotaExceeded, ExitCause::UploadNotTerminated};
 
     return managedExitCauses.find(exitCause) != managedExitCauses.cend();
 }
 }  // namespace details
 
 bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath) {
-    if (job->exitCode() == ExitCodeNeedRestart) {
+    if (job->exitCode() == ExitCode::NeedRestart) {
         cancelAllOngoingJobs();
         _syncPal->_restart = true;
         _syncPal->setProgressComplete(
             relativeLocalPath, SyncFileStatusSuccess);  // Not really success but the file should not appear in error in Finder
-        _executorExitCode = ExitCodeOk;
+        _executorExitCode = ExitCode::Ok;
 
         return false;
     }
@@ -1722,17 +1722,17 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
     }
 
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
-    if (const bool isInconsistencyIssue = job->exitCause() == ExitCauseInvalidName;
-        job->exitCode() == ExitCodeBackError && details::isManagedBackError(job->exitCause())) {
+    if (const bool isInconsistencyIssue = job->exitCause() == ExitCause::InvalidName;
+        job->exitCode() == ExitCode::BackError && details::isManagedBackError(job->exitCause())) {
         return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue, networkJob->isDownloadImpossible());
     }
 
-    if (job->exitCode() != ExitCodeOk) {
+    if (job->exitCode() != ExitCode::Ok) {
         if (networkJob && (networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
                            networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT)) {
             handleForbiddenAction(syncOp, relativeLocalPath);
-        } else if (job->exitCode() == ExitCodeSystemError &&
-                   (job->exitCause() == ExitCauseFileAccessError || job->exitCause() == ExitCauseMoveToTrashFailed)) {
+        } else if (job->exitCode() == ExitCode::SystemError &&
+                   (job->exitCause() == ExitCause::FileAccessError || job->exitCause() == ExitCause::MoveToTrashFailed)) {
             LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(relativeLocalPath).c_str()
                                           << L" doesn't have write permissions or is locked!");
             _syncPal->blacklistTemporarily(
@@ -1750,8 +1750,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             // Cancel all queued jobs
             _executorExitCode = job->exitCode();
             _executorExitCause = job->exitCause();
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Cancelling jobs. exit code: " << _executorExitCode << L" exit cause: " << _executorExitCause);
+            LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. exit code: " << enumClassToInt(_executorExitCode) << L" exit cause: "
+                                                                       << enumClassToInt(_executorExitCause));
             cancelAllOngoingJobs();
             _syncPal->setProgressComplete(relativeLocalPath, SyncFileStatusError);
             return false;
@@ -1988,8 +1988,8 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
 
                 if (!jobOk) {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to cast upload job " << job->jobId());
-                    _executorExitCode = ExitCodeSystemError;
-                    _executorExitCause = ExitCauseUnknown;
+                    _executorExitCode = ExitCode::SystemError;
+                    _executorExitCause = ExitCause::Unknown;
                     return false;
                 }
             }
@@ -2027,8 +2027,8 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
 
     if (!newCorrespondingParentNode) {
         LOG_SYNCPAL_WARN(_logger, "Corresponding parent node not found");
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseUnknown;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::Unknown;
         return false;
     }
 
@@ -2046,8 +2046,8 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
                                              << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseUnknown;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::Unknown;
         return false;
     }
 
@@ -2088,8 +2088,8 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
                          << (newCorrespondingParentNode->idb().has_value() ? newCorrespondingParentNode->idb().value() : -1));
 
         if (!constraintError) {
-            _executorExitCode = ExitCodeDbError;
-            _executorExitCause = ExitCauseDbAccessError;
+            _executorExitCode = ExitCode::DbError;
+            _executorExitCause = ExitCause::DbAccessError;
             return false;
         }
 
@@ -2101,16 +2101,16 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
         bool found = false;
         if (!_syncPal->_syncDb->dbId(ReplicaSide::Remote, remoteId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
-            _executorExitCode = ExitCodeDbError;
-            _executorExitCause = ExitCauseDbAccessError;
+            _executorExitCode = ExitCode::DbError;
+            _executorExitCause = ExitCause::DbAccessError;
             return false;
         }
         if (found) {
             // Delete old node
             if (!_syncPal->_syncDb->deleteNode(dbNodeId, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::deleteNode");
-                _executorExitCode = ExitCodeDbError;
-                _executorExitCause = ExitCauseDbAccessError;
+                _executorExitCode = ExitCode::DbError;
+                _executorExitCause = ExitCause::DbAccessError;
                 return false;
             }
         }
@@ -2118,8 +2118,8 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
         // Create new node
         if (!_syncPal->_syncDb->insertNode(dbNode, newDbNodeId, constraintError)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::insertNode");
-            _executorExitCode = constraintError ? ExitCodeDataError : ExitCodeDbError;
-            _executorExitCause = ExitCauseDbAccessError;
+            _executorExitCode = constraintError ? ExitCode::DataError : ExitCode::DbError;
+            _executorExitCause = ExitCause::DbAccessError;
             return false;
         }
 
@@ -2141,8 +2141,8 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
                      syncOp->affectedNode()->type(), OperationTypeNone, newNodeId, newLastModTime, newLastModTime,
                      syncOp->affectedNode()->size(), newCorrespondingParentNode));
         if (node == nullptr) {
-            _executorExitCode = ExitCodeSystemError;
-            _executorExitCause = ExitCauseNotEnoughtMemory;
+            _executorExitCode = ExitCode::SystemError;
+            _executorExitCause = ExitCause::NotEnoughtMemory;
             std::cout << "Failed to allocate memory" << std::endl;
             LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
             return false;
@@ -2171,14 +2171,14 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
     bool found = false;
     if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
-        _executorExitCode = ExitCodeDbError;
-        _executorExitCause = ExitCauseDbAccessError;
+        _executorExitCode = ExitCode::DbError;
+        _executorExitCause = ExitCause::DbAccessError;
         return false;
     }
     if (!found) {
         LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->correspondingNode()->idb());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseDbEntryNotFound;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::DbEntryNotFound;
         return false;
     }
 
@@ -2195,8 +2195,8 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
                                              << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseUnknown;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::Unknown;
         return false;
     }
 
@@ -2228,13 +2228,13 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
                                        << Utility::s2ws(remoteId).c_str() << L", local name: " << SyncName2WStr(localName).c_str()
                                        << L", remote name: " << SyncName2WStr(remoteName).c_str() << L", parent DB ID: "
                                        << (dbNode.parentNodeId().has_value() ? dbNode.parentNodeId().value() : -1));
-        _executorExitCode = ExitCodeDbError;
-        _executorExitCause = ExitCauseDbAccessError;
+        _executorExitCode = ExitCode::DbError;
+        _executorExitCause = ExitCause::DbAccessError;
         return false;
     }
     if (!found) {
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseDbEntryNotFound;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::DbEntryNotFound;
         return false;
     }
 
@@ -2257,7 +2257,7 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
     if (!correspondingNode || !correspondingNode->idb().has_value()) {
         LOG_SYNCPAL_WARN(_logger, "Invalid corresponding node");
-        _executorExitCode = ExitCodeDataError;
+        _executorExitCode = ExitCode::DataError;
         return false;
     }
 
@@ -2265,14 +2265,14 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     bool found = false;
     if (!_syncPal->_syncDb->node(*correspondingNode->idb(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
-        _executorExitCode = ExitCodeDbError;
-        _executorExitCause = ExitCauseDbAccessError;
+        _executorExitCode = ExitCode::DbError;
+        _executorExitCause = ExitCause::DbAccessError;
         return false;
     }
     if (!found) {
         LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *correspondingNode->idb());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseDbEntryNotFound;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::DbEntryNotFound;
         return false;
     }
 
@@ -2285,8 +2285,8 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     if (!parentNode) {
         LOGW_SYNCPAL_DEBUG(_logger,
                            L"Failed to get corresponding parent node: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseUnknown;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::Unknown;
         return false;
     }
 
@@ -2304,8 +2304,8 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
                                              << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseUnknown;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::Unknown;
         return false;
     }
 
@@ -2336,13 +2336,13 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                                        << Utility::s2ws(remoteId).c_str() << L", local name: " << SyncName2WStr(localName).c_str()
                                        << L", remote name: " << SyncName2WStr(remoteName).c_str() << L", parent DB ID: "
                                        << (dbNode.parentNodeId().has_value() ? dbNode.parentNodeId().value() : -1));
-        _executorExitCode = ExitCodeDbError;
-        _executorExitCause = ExitCauseDbAccessError;
+        _executorExitCode = ExitCode::DbError;
+        _executorExitCause = ExitCause::DbAccessError;
         return false;
     }
     if (!found) {
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseDbEntryNotFound;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::DbEntryNotFound;
         return false;
     }
 
@@ -2379,8 +2379,8 @@ bool ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
     if (!node->idb().has_value()) {
         LOGW_SYNCPAL_WARN(_logger, L"Node " << SyncName2WStr(node->name()).c_str() << L" does not have a DB ID");
 
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseDbEntryNotFound;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::DbEntryNotFound;
         return false;
     }
 
@@ -2388,14 +2388,14 @@ bool ExecutorWorker::deleteFromDb(std::shared_ptr<Node> node) {
     bool found = false;
     if (!_syncPal->_syncDb->deleteNode(*node->idb(), found)) {
         LOG_SYNCPAL_WARN(_logger, "Failed to remove node " << *node->idb() << " from DB");
-        _executorExitCode = ExitCodeDbError;
-        _executorExitCause = ExitCauseDbAccessError;
+        _executorExitCode = ExitCode::DbError;
+        _executorExitCause = ExitCause::DbAccessError;
         return false;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Node DB ID " << *node->idb() << " not found");
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseDbEntryNotFound;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::DbEntryNotFound;
         return false;
     }
 
@@ -2417,14 +2417,14 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
             // Folder is already there, ignore this error
         } else if (code == NetworkErrorCode::forbiddenError) {
             // The item should be blacklisted
-            _executorExitCode = ExitCodeOk;
+            _executorExitCode = ExitCode::Ok;
             _syncPal->blacklistTemporarily(
                 syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(),
                 syncOp->affectedNode()->getPath(), ReplicaSide::Local);
             Error error(_syncPal->_syncDbId,
                         syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(), "",
                         syncOp->affectedNode()->type(), syncOp->affectedNode()->getPath(), ConflictTypeNone,
-                        InconsistencyTypeNone, CancelTypeNone, "", ExitCodeBackError, ExitCauseHttpErrForbidden);
+                        InconsistencyTypeNone, CancelTypeNone, "", ExitCode::BackError, ExitCause::HttpErrForbidden);
             _syncPal->addError(error);
 
             affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
@@ -2435,15 +2435,15 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         }
     }
 
-    if (job->exitCode() == ExitCodeNeedRestart) {
+    if (job->exitCode() == ExitCode::NeedRestart) {
         // Special case: not an error but sync needs to be restarted
-        _executorExitCode = ExitCodeOk;
+        _executorExitCode = ExitCode::Ok;
         _syncPal->_restart = true;
         return false;
-    } else if ((syncOp->targetSide() == ReplicaSide::Local && job->exitCode() == ExitCodeDataError &&
-                job->exitCause() == ExitCauseFileAlreadyExist) ||
-               (syncOp->targetSide() == ReplicaSide::Remote && job->exitCode() == ExitCodeBackError &&
-                job->exitCause() == ExitCauseFileAlreadyExist)) {
+    } else if ((syncOp->targetSide() == ReplicaSide::Local && job->exitCode() == ExitCode::DataError &&
+                job->exitCause() == ExitCause::FileAlreadyExist) ||
+               (syncOp->targetSide() == ReplicaSide::Remote && job->exitCode() == ExitCode::BackError &&
+                job->exitCause() == ExitCause::FileAlreadyExist)) {
         auto localCreateDirJob(std::dynamic_pointer_cast<LocalCreateDirJob>(job));
         if (localCreateDirJob) {
             LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(localCreateDirJob->destFilePath()).c_str()
@@ -2452,7 +2452,7 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                                                                  PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
         }
         return false;
-    } else if (job->exitCode() != ExitCodeOk) {
+    } else if (job->exitCode() != ExitCode::Ok) {
         LOGW_SYNCPAL_WARN(_logger, L"Failed to create directory: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
         _executorExitCode = job->exitCode();
         _executorExitCause = job->exitCause();
@@ -2475,8 +2475,8 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
     if (newNodeId.empty()) {
         LOGW_SYNCPAL_WARN(_logger,
                           L"Failed to retreive ID for directory: " << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
-        _executorExitCode = ExitCodeDataError;
-        _executorExitCause = ExitCauseApiErr;
+        _executorExitCode = ExitCode::DataError;
+        _executorExitCause = ExitCause::ApiErr;
         return false;
     }
 

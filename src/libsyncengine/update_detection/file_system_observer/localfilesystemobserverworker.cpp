@@ -357,7 +357,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     continue;
                 }
 
-                if (exploreDir(absolutePath) != ExitCodeOk) {
+                if (exploreDir(absolutePath) != ExitCode::Ok) {
                     // Error while exploring directory, we need to invalidate the snapshot
                     invalidateSnapshot();
                     return;
@@ -374,7 +374,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 // Exclude spurious operations (for example setIcon)
                 bool valid = true;
                 ExitCode exitCode = isEditValid(nodeId, absolutePath, fileStat.modtime, valid);
-                if (exitCode != ExitCodeOk) {
+                if (exitCode != ExitCode::Ok) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in LocalFileSystemObserverWorker::isEditValid");
                     invalidateSnapshot();
                     return;
@@ -417,7 +417,7 @@ void LocalFileSystemObserverWorker::forceUpdate() {
 }
 
 void LocalFileSystemObserverWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
@@ -426,7 +426,7 @@ void LocalFileSystemObserverWorker::execute() {
     // Sync loop
     for (;;) {
         if (stopAsked()) {
-            exitCode = ExitCodeOk;
+            exitCode = ExitCode::Ok;
             invalidateSnapshot();
             break;
         }
@@ -438,15 +438,15 @@ void LocalFileSystemObserverWorker::execute() {
             timerStart = std::chrono::steady_clock::now();
             invalidateSnapshot();
             exitCode = generateInitialSnapshot();
-            if (exitCode != ExitCodeOk) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << exitCode);
+            if (exitCode != ExitCode::Ok) {
+                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << enumClassToInt(exitCode));
                 break;
             }
         } else {
             if (!_snapshot->isValid()) {
                 exitCode = generateInitialSnapshot();
-                if (exitCode != ExitCodeOk) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << exitCode);
+                if (exitCode != ExitCode::Ok) {
+                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << enumClassToInt(exitCode));
                     break;
                 }
             }
@@ -479,7 +479,7 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     ExitCode res = exploreDir(_rootFolder);
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
-    if (res == ExitCodeOk && !stopAsked()) {
+    if (res == ExitCode::Ok && !stopAsked()) {
         _snapshot->setValid(true);
         LOG_SYNCPAL_INFO(
             _logger, "Local snapshot generated in: " << elapsed_seconds.count() << "s for " << _snapshot->nbItems() << " items");
@@ -526,7 +526,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
     int progress = 0;
     if (!_syncPal->vfsStatus(path.native(), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::vfsStatus");
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     }
 
     if (isPlaceholder && !isHydrated) {
@@ -535,21 +535,21 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
         bool found;
         if (!_syncPal->_syncDb->dbId(ReplicaSide::Local, nodeId, dbNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::dbId");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
         if (!found) {
             LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table for nodeId=" << Utility::s2ws(nodeId).c_str());
-            return ExitCodeDataError;
+            return ExitCode::DataError;
         }
 
         DbNode dbNode;
         if (!_syncPal->_syncDb->node(dbNodeId, dbNode, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
         if (!found) {
             LOGW_SYNCPAL_WARN(_logger, L"Node not found in node table: nodeId=" << Utility::s2ws(nodeId).c_str());
-            return ExitCodeDataError;
+            return ExitCode::DataError;
         }
 
         auto lastModifiedRemote = dbNode.lastModifiedRemote();
@@ -558,7 +558,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
         valid = true;
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 #endif
 
@@ -598,7 +598,7 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     }
 
     Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absolutePath, ConflictTypeNone, InconsistencyTypeNone,
-                CancelTypeNone, "", ExitCodeSystemError, ExitCauseFileAccessError);
+                CancelTypeNone, "", ExitCode::SystemError, ExitCause::FileAccessError);
     _syncPal->addError(error);
 }
 
@@ -610,47 +610,47 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::getRights(absoluteParentDirPath, readPermission, writePermission, execPermission, ioError)) {
         LOGW_WARN(_logger, L"Error in Utility::getRights: " << Utility::formatSyncPath(absoluteParentDirPath).c_str());
-        setExitCause(ExitCauseFileAccessError);
-        return ExitCodeSystemError;
+        setExitCause(ExitCause::FileAccessError);
+        return ExitCode::SystemError;
     }
 
     if (ioError == IoErrorNoSuchFileOrDirectory) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, ioError).c_str());
-        setExitCause(ExitCauseSyncDirDoesntExist);
-        return ExitCodeSystemError;
+        setExitCause(ExitCause::SyncDirDoesntExist);
+        return ExitCode::SystemError;
     }
 
     if (!writePermission) {
         LOGW_DEBUG(_logger,
                    L"Item: " << Utility::formatSyncPath(absoluteParentDirPath).c_str() << L" doesn't have write permissions!");
-        return ExitCodeNoWritePermission;
+        return ExitCode::NoWritePermission;
     }
 
     ItemType itemType;
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, itemType.ioError).c_str());
-        setExitCause(ExitCauseFileAccessError);
-        return ExitCodeSystemError;
+        setExitCause(ExitCause::FileAccessError);
+        return ExitCode::SystemError;
     }
 
     if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger,
                           L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str() << L" doesn't exist");
-        setExitCause(ExitCauseSyncDirDoesntExist);
-        return ExitCodeSystemError;
+        setExitCause(ExitCause::SyncDirDoesntExist);
+        return ExitCode::SystemError;
     }
 
     if (itemType.ioError == IoErrorAccessDenied) {
         LOGW_SYNCPAL_WARN(
             _logger, L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str() << L" misses read permission");
-        setExitCause(ExitCauseSyncDirReadError);
-        return ExitCodeSystemError;
+        setExitCause(ExitCause::SyncDirReadError);
+        return ExitCode::SystemError;
     }
 
     if (itemType.linkType != LinkTypeNone) {
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     // Process all files
@@ -660,8 +660,8 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             absoluteParentDirPath, std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
             LOGW_SYNCPAL_DEBUG(_logger, "Error in exploreDir: " << Utility::formatStdError(ec).c_str());
-            setExitCause(ExitCauseFileAccessError);
-            return ExitCodeSystemError;
+            setExitCause(ExitCause::FileAccessError);
+            return ExitCode::SystemError;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
             if (ParametersCache::isExtendedLogEnabled()) {
@@ -669,7 +669,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             }
 
             if (stopAsked()) {
-                return ExitCodeOk;
+                return ExitCode::Ok;
             }
 
             const SyncPath absolutePath = dirIt->path();
@@ -811,8 +811,8 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, ioError)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: "
                                            << Utility::formatIoError(absolutePath.parent_path(), ioError).c_str());
-                    setExitCause(ExitCauseFileAccessError);
-                    return ExitCodeSystemError;
+                    setExitCause(ExitCause::FileAccessError);
+                    return ExitCode::SystemError;
                 }
 
                 if (ioError == IoErrorNoSuchFileOrDirectory) {
@@ -856,14 +856,14 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     } catch (std::filesystem::filesystem_error &e) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                          "Error caught in LocalFileSystemObserverWorker::exploreDir: " << e.code() << " - " << e.what());
-        setExitCause(ExitCauseFileAccessError);
-        return ExitCodeSystemError;
+        setExitCause(ExitCause::FileAccessError);
+        return ExitCode::SystemError;
     } catch (...) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in LocalFileSystemObserverWorker::exploreDir");
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 }  // namespace KDC

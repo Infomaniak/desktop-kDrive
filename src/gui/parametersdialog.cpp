@@ -333,16 +333,16 @@ void ParametersDialog::reset() {
 }
 
 QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const noexcept {
-    const QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
+    const QString err = QString("%1:%2:%3").arg(fctCode).arg(enumClassToInt(exitCode)).arg(enumClassToInt(exitCause));
     // TODO: USELESS CODE : this switch should be simplified !!!!
     switch (exitCode) {
-        case ExitCodeUnknown:
+        case ExitCode::Unknown:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case ExitCodeNetworkError:
-            if (exitCause == ExitCauseNetworkTimeout) {
+        case ExitCode::NetworkError:
+            if (exitCause == ExitCause::NetworkTimeout) {
                 return tr("It seems that your network connection is configured with too low a timeout for the application to "
                           "work correctly (error %1).<br>"
                           "Please check your network configuration.")
@@ -353,18 +353,18 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                     .arg(err);
             }
             break;
-        case ExitCodeInvalidToken:
+        case ExitCode::InvalidToken:
             return tr("A login problem has occurred (error %1).<br>"
                       "Please log in again and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case ExitCodeDataError:
+        case ExitCode::DataError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case ExitCodeDbError:
-            if (exitCause == ExitCauseDbAccessError) {
+        case ExitCode::DbError:
+            if (exitCause == ExitCause::DbAccessError) {
                 return tr("A technical error has occurred (error %1).<br>"
                           "Please empty the history and if the error persists, contact our support team.")
                     .arg(err);
@@ -374,13 +374,13 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                     .arg(err);
             }
             break;
-        case ExitCodeBackError:
+        case ExitCode::BackError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case ExitCodeSystemError:
-            if (exitCause == ExitCauseMigrationError) {
+        case ExitCode::SystemError:
+            if (exitCause == ExitCause::MigrationError) {
                 return tr(
                     "Old synchronisation database doesn't exist or is not accessible.<br>"
                     "Old blacklist data haven't been migrated.");
@@ -390,63 +390,63 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                     .arg(err);
             }
             break;
-        case ExitCodeFatalError:
+        case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case ExitCodeOk:
-        case ExitCodeNeedRestart:
-        case ExitCodeInconsistencyError:
-        case ExitCodeNoWritePermission:
-        case ExitCodeTokenRefreshed:
-        case ExitCodeRateLimited:
-        case ExitCodeInvalidSync:
+        case ExitCode::Ok:
+        case ExitCode::NeedRestart:
+        case ExitCode::InconsistencyError:
+        case ExitCode::NoWritePermission:
+        case ExitCode::TokenRefreshed:
+        case ExitCode::RateLimited:
+        case ExitCode::InvalidSync:
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << enumClassToInt(exitCode);
 
     return {};
 }
 
 QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const noexcept {
     switch (exitCause) {
-        case ExitCauseNoSearchPermission:
+        case ExitCause::NoSearchPermission:
             return tr("The item misses search permission (error %1).<br>"
                       "Please check that you have search/exec access to the parent folder.")
                 .arg(err);
-        case ExitCauseSyncDirDoesntExist:
+        case ExitCause::SyncDirDoesntExist:
             return tr("The synchronization folder is no longer accessible (error %1).<br>"
                       "Synchronization will resume as soon as the folder is accessible.")
                 .arg(err);
 
-        case ExitCauseSyncDirReadError:
+        case ExitCause::SyncDirReadError:
             return tr("The synchronization folder is inaccessible (error %1).<br>"
                       "Please check that you have read access to this folder.")
                 .arg(err);
 
-        case ExitCauseSyncDirWriteError:
+        case ExitCause::SyncDirWriteError:
             return tr("The synchronization folder is inaccessible (error %1).<br>"
                       "Please check that you have write access to this folder.")
                 .arg(err);
 
-        case ExitCauseNotEnoughDiskSpace:
+        case ExitCause::NotEnoughDiskSpace:
             return tr(
                 "There is not enough space left on your disk.<br>"
                 "The synchronization has been stopped.");
 
-        case ExitCauseNotEnoughtMemory:
+        case ExitCause::NotEnoughtMemory:
             return tr(
                 "There is not enough memory left on your machine.<br>"
                 "The synchronization has been stopped.");
-        case ExitCauseLiteSyncNotAllowed:
+        case ExitCause::LiteSyncNotAllowed:
             return tr("Unable to start synchronization (error %1).<br>"
                       "You must allow:<br>"
                       "- kDrive in System Settings >> Privacy & Security >> Security<br>"
                       "- kDrive LiteSync Extension in System Settings >> Privacy & Security >> Full Disk Access.")
                 .arg(err);
-        case ExitCauseUnableToCreateVfs: {
+        case ExitCause::UnableToCreateVfs: {
             if (OldUtility::isWindows()) {
                 return tr("Unable to start Lite Sync plugin (error %1).<br>"
                           "Check that the Lite Sync extension is installed and Windows Search service is enabled.<br>"
@@ -472,12 +472,12 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCaus
 
 QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const noexcept {
     switch (exitCause) {
-        case ExitCauseDriveMaintenance:
+        case ExitCause::DriveMaintenance:
             return tr(
                 "The kDrive is in maintenance mode.<br>"
                 "Synchronization will begin again as soon as possible. Please contact our support team if the error "
                 "persists.");
-        case ExitCauseDriveNotRenew: {
+        case ExitCause::DriveNotRenew: {
             if (userIsAdmin) {
                 return tr(
                     "The kDrive is blocked.<br>"
@@ -490,7 +490,7 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
                     "permanently deleted and it will be impossible to recover them.");
             }
         }
-        case ExitCauseDriveAccessError:
+        case ExitCause::DriveAccessError:
             return tr(
                 "You are not authorised to access this kDrive.<br>"
                 "Synchronization has been paused. Please contact an administrator.");
@@ -504,16 +504,16 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
 
 QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause,
                                               bool userIsAdmin) const noexcept {
-    const QString err = QString("%1:%2:%3").arg(fctCode).arg(exitCode).arg(exitCause);
+    const QString err = QString("%1:%2:%3").arg(fctCode).arg(enumClassToInt(exitCode)).arg(enumClassToInt(exitCause));
 
     switch (exitCode) {
-        case ExitCodeUnknown:
+        case ExitCode::Unknown:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case ExitCodeNetworkError:
-            if (exitCause == ExitCauseSocketsDefuncted) {
+        case ExitCode::NetworkError:
+            if (exitCause == ExitCause::SocketsDefuncted) {
                 return tr("The network connections have been dropped by the kernel (error %1).<br>"
                           "Please empty the history and if the error persists, contact our support team.")
                     .arg(err);
@@ -523,12 +523,12 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
                     .arg(err);
             }
             break;
-        case ExitCodeDataError:
-            if (exitCause == ExitCauseMigrationError) {
+        case ExitCode::DataError:
+            if (exitCause == ExitCause::MigrationError) {
                 return tr(
                     "Unfortunately your old configuration could not be migrated.<br>"
                     "The application will use a blank configuration.");
-            } else if (exitCause == ExitCauseMigrationProxyNotImplemented) {
+            } else if (exitCause == ExitCause::MigrationProxyNotImplemented) {
                 return tr(
                     "Unfortunately your old proxy configuration could not be migrated, SOCKS5 proxies are not supported at this "
                     "time.<br>"
@@ -540,8 +540,8 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
                     .arg(err);
             }
             break;
-        case ExitCodeDbError:
-            if (exitCause == ExitCauseDbAccessError) {
+        case ExitCode::DbError:
+            if (exitCause == ExitCause::DbAccessError) {
                 return tr("A technical error has occurred (error %1).<br>"
                           "Please empty the history and if the error persists, contact our support team.")
                     .arg(err);
@@ -551,38 +551,38 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
                     .arg(err);
             }
             break;
-        case ExitCodeBackError:
+        case ExitCode::BackError:
             return getSyncPalBackErrorText(err, exitCause, userIsAdmin);
-        case ExitCodeSystemError:
+        case ExitCode::SystemError:
             return getSyncPalSystemErrorText(err, exitCause);
-        case ExitCodeFatalError:
+        case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case ExitCodeInvalidToken:
+        case ExitCode::InvalidToken:
             return tr("A login problem has occurred (error %1).<br>"
                       "Token invalid or revoked.")
                 .arg(err);
             break;
-        case ExitCodeInvalidSync:
+        case ExitCode::InvalidSync:
             return tr("Nested synchronizations are prohibited (error %1).<br>"
                       "You should only keep synchronizations whose folders are not nested.")
                 .arg(err);
-        case ExitCodeNoWritePermission:
+        case ExitCode::NoWritePermission:
             return tr(
                 "The app does not have write rights to the synchronization folder.<br>"
                 "The synchronization has been stopped.");
             break;
-        case ExitCodeOk:
-        case ExitCodeNeedRestart:
-        case ExitCodeInconsistencyError:
-        case ExitCodeTokenRefreshed:
-        case ExitCodeRateLimited:
+        case ExitCode::Ok:
+        case ExitCode::NeedRestart:
+        case ExitCode::InconsistencyError:
+        case ExitCode::TokenRefreshed:
+        case ExitCode::RateLimited:
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << enumClassToInt(exitCode);
 
     return {};
 }
@@ -776,24 +776,24 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
 
 QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noexcept {
     switch (errorInfo.exitCause()) {
-        case ExitCauseHttpErrForbidden: {
+        case ExitCause::HttpErrForbidden: {
             return tr("The operation performed on item %1 is forbidden.<br>"
                       "The file/directory has been temporarily blacklisted.")
                 .arg(errorInfo.path());
         }
-        case ExitCauseApiErr:
-        case ExitCauseUploadNotTerminated: {
+        case ExitCause::ApiErr:
+        case ExitCause::UploadNotTerminated: {
             return tr("The operation performed on item %1 failed.<br>"
                       "The file/directory has been temporarily blacklisted.")
                 .arg(errorInfo.path());
         }
-        case ExitCauseFileTooBig: {
+        case ExitCause::FileTooBig: {
             return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.").arg(errorInfo.path());
         }
-        case ExitCauseQuotaExceeded: {
+        case ExitCause::QuotaExceeded: {
             return tr("You have exceeded your quota. Increase your space quota to re-enable file upload.");
         }
-        case ExitCauseNotFound: {
+        case ExitCause::NotFound: {
             return tr("Impossible to download file \"%1\"").arg(errorInfo.path());
         }
         default:
@@ -815,18 +815,18 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
     }
 
     switch (errorInfo.exitCode()) {
-        case ExitCodeSystemError: {
-            if (errorInfo.exitCause() == ExitCauseFileAccessError) {
+        case ExitCode::SystemError: {
+            if (errorInfo.exitCause() == ExitCause::FileAccessError) {
                 return tr("Can't access item %1.<br>"
                           "Please fix the write permissions and restart the synchronization.")
                     .arg(errorInfo.path());
             }
 
-            if (errorInfo.exitCause() == ExitCauseMoveToTrashFailed) {
+            if (errorInfo.exitCause() == ExitCause::MoveToTrashFailed) {
                 return tr("Move to trash failed for item %1").arg(errorInfo.path());
             }
         }
-        case ExitCodeBackError: {
+        case ExitCode::BackError: {
             return getBackErrorText(errorInfo);
         }
 
@@ -1091,7 +1091,7 @@ void ParametersDialog::onSendLogs() {
                 for (const auto &driveInfoMapElt : _gui->driveInfoMap()) {
                     if (driveInfoMapElt.second.accountDbId() == accountInfoMapElt.first) {
                         int userId = 0;
-                        if (GuiRequests::getUserIdFromUserDbId(userInfoMapElt.second.dbId(), userId) != ExitCodeOk) {
+                        if (GuiRequests::getUserIdFromUserDbId(userInfoMapElt.second.dbId(), userId) != ExitCode::Ok) {
                             qCWarning(lcParametersDialog()) << "Error in GuiRequests::getUserIdFromUserDbId";
                         }
 
@@ -1239,7 +1239,7 @@ void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
 
         errorTabWidget = static_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
 
-        if (!GuiRequests::deleteErrorsServer()) {
+        if (!enumClassToInt(GuiRequests::deleteErrorsServer())) {
             qCWarning(lcParametersDialog()) << "Error in GuiRequests::deleteErrorsServer";
             return;
         }
@@ -1255,7 +1255,7 @@ void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
 
         for (const auto &syncInfoMapIt : _gui->syncInfoMap()) {
             if (syncInfoMapIt.second.driveDbId() == driveDbId) {
-                if (!GuiRequests::deleteErrorsForSync(syncInfoMapIt.first, autoResolved)) {
+                if (!enumClassToInt(GuiRequests::deleteErrorsForSync(syncInfoMapIt.first, autoResolved))) {
                     qCWarning(lcParametersDialog()) << "Error in GuiRequests::deleteErrorsForSync syncId=" << syncInfoMapIt.first;
                     return;
                 }

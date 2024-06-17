@@ -440,8 +440,8 @@
     "DELETE FROM error "                     \
     "WHERE exitCode=?1;"
 
-#define DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID "delete_error_by_exitcause"
-#define DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST \
+#define DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID "delete_error_by_exitcause"
+#define DELETE_ALL_ERROR_BY_ExitCauseREQUEST \
     "DELETE FROM error "                      \
     "WHERE exitCause=?1;"
 
@@ -1185,10 +1185,10 @@ bool ParmsDb::prepare() {
         return sqlFail(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, error);
     }
 
-    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID, DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID);
-        return sqlFail(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID, error);
+    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID));
+    if (!queryPrepare(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID, DELETE_ALL_ERROR_BY_ExitCauseREQUEST, false, errId, error)) {
+        queryFree(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID);
+        return sqlFail(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID, error);
     }
 
     ASSERT(queryCreate(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID));
@@ -2918,16 +2918,16 @@ bool ParmsDb::insertError(const Error &err) {
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 3, err.functionName()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 4, err.syncDbId() ? dbtype(err.syncDbId()) : std::monostate()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 5, err.workerName()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 6, err.exitCode()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 7, err.exitCause()));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 6, enumClassToInt(err.exitCode())));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 7, enumClassToInt(err.exitCause())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 8, err.localNodeId()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 9, err.remoteNodeId()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 10, enumClassToInt(err.nodeType())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 11, err.path().native()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 12, 0));  // TODO : Not used anymore
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 13, err.conflictType()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 14, err.inconsistencyType()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 15, err.cancelType()));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 13, enumClassToInt(err.conflictType())));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 14, enumClassToInt(err.inconsistencyType())));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 15, enumClassToInt(err.cancelType())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 16, err.destinationPath()));
     if (!queryExec(INSERT_ERROR_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_ERROR_REQUEST_ID);
@@ -2982,10 +2982,10 @@ bool ParmsDb::deleteAllErrorsByExitCause(ExitCause exitCause) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID, 1, static_cast<int>(exitCause)));
-    if (!queryExec(DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_EXITCAUSE_REQUEST_ID);
+    ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID));
+    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID, 1, static_cast<int>(exitCause)));
+    if (!queryExec(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID);
         return false;
     }
 

@@ -105,7 +105,7 @@ bool GenericErrorItemWidget::openInWebview() const {
            _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar ||
            _errorInfo.cancelType() == CancelTypeAlreadyExistLocal ||
            (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
-           (_errorInfo.exitCode() == ExitCodeBackError && _errorInfo.exitCause() == ExitCauseNotFound);
+           (_errorInfo.exitCode() == ExitCode::BackError && _errorInfo.exitCause() == ExitCause::NotFound);
 }
 
 }  // namespace KDC

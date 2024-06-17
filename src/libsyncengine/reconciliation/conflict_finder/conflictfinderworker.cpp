@@ -26,13 +26,13 @@ ConflictFinderWorker::ConflictFinderWorker(std::shared_ptr<SyncPal> syncPal, con
     : OperationProcessor(syncPal, name, shortName) {}
 
 void ConflictFinderWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
     _syncPal->_conflictQueue->startUpdate();
 
     findConflicts();
-    exitCode = ExitCodeOk;
+    exitCode = ExitCode::Ok;
 
     setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());

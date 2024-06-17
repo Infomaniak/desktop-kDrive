@@ -122,7 +122,7 @@ void AddDriveWizard::startNextStep(bool backward) {
     } else if (_currentStep == LiteSync) {
         VirtualFileMode virtualFileMode;
         ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::bestAvailableVfsMode";
             return;
         }
@@ -139,7 +139,7 @@ void AddDriveWizard::startNextStep(bool backward) {
 
         VirtualFileMode virtualFileMode;
         ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard) << "Error in Requests::bestAvailableVfsMode";
             return;
         }
@@ -192,7 +192,7 @@ void AddDriveWizard::startNextStep(bool backward) {
         QString goodLocalFolderPath;
         QString error;
         ExitCode exitCode = GuiRequests::findGoodPathForNewSync(_syncDbId, localFolderPath, goodLocalFolderPath, error);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveWizard()) << "Error in Requests::findGoodPathForNewSyncFolder : " << error;
             goodLocalFolderPath = localFolderPath;
         }
@@ -236,7 +236,7 @@ bool AddDriveWizard::addSync(int userDbId, int accountId, int driveId, const QSt
 
     ExitCode exitCode = GuiRequests::addSync(userDbId, accountId, driveId, localFolderPathNormalized, serverFolderPath, QString(),
                                              liteSync, blackList, whiteList, _syncDbId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcAddDriveWizard()) << "Error in Requests::addSync";
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to create new synchronization"), QMessageBox::Ok, this);
         msgBox.exec();

@@ -53,56 +53,56 @@ class UpdateTreeWorker : public ISyncWorker {
         /**
          * Create node where opType is Move
          * and nodeType is Directory.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step1MoveDirectory();
 
         /**
          * Create node where opType is Move
          * and nodeType is File.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step2MoveFile();
 
         /**
          * Create node where opType is Delete
          * and nodeType is Directory.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step3DeleteDirectory();
 
         /**
          * Create node where opType is Delete
          * and nodeType is File.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step4DeleteFile();
 
         /**
          * Create node where opType is Create
          * and nodeType is Directory.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step5CreateDirectory();
 
         /**
          * Create node where opType is Create
          * and nodeType is File.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step6CreateFile();
 
         /**
          * Create node where opType is Edit
          * and nodeType is File.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step7EditFile();
 
         /**
          * Update existing node with information from DB
          * and add missing nodes without change events.
-         * return : ExitCodeOk if task is successful.
+         * return : ExitCode::Ok if task is successful.
          */
         ExitCode step8CompleteUpdateTree();
 
@@ -130,7 +130,7 @@ class UpdateTreeWorker : public ISyncWorker {
          * - the user has created several files whose names have different encodings but same normalization (an issue
          *reported on Windows 10 and 11). This function fills `_createFileOperation` with all create operations on files.
          *
-         *\return : ExitCodeOk if no problematic create operations were detected.
+         *\return : ExitCode::Ok if no problematic create operations were detected.
          */
         ExitCode handleCreateOperationsWithSamePath();
 

@@ -54,13 +54,13 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
 ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath) {
     if (remoteNode->hasChangeEvent(OperationTypeDelete)) {
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     if (remoteNode->hasChangeEvent(OperationTypeCreate) || remoteNode->hasChangeEvent(OperationTypeMove)) {
         if (!checkPathAndName(remoteNode)) {
             // Item has been blacklisted
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
     }
 
@@ -69,7 +69,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
     auto it = remoteNode->children().begin();
     for (; it != remoteNode->children().end(); it++) {
         if (stopAsked()) {
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
 
         while (pauseAsked() || isPaused()) {
@@ -87,7 +87,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
         }
 
         ExitCode exitCode = checkTree(currentChildNode, parentPath / remoteNode->finalLocalName());
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             return exitCode;
         }
     }
@@ -96,7 +96,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
         checkNameClashAgainstSiblings(remoteNode);
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Node> remoteNode, const SyncPath &relativePath,

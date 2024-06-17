@@ -29,7 +29,7 @@ OperationSorterWorker::OperationSorterWorker(std::shared_ptr<SyncPal> syncPal, c
     : OperationProcessor(syncPal, name, shortName), _hasOrderChanged(false) {}
 
 void OperationSorterWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
@@ -52,7 +52,7 @@ ExitCode OperationSorterWorker::sortOperations() {
     std::list<SyncOperationList> completeCycles;
     while (true) {
         if (stopAsked()) {
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
         while (pauseAsked() || isPaused()) {
             if (!isPaused()) {
@@ -91,7 +91,7 @@ ExitCode OperationSorterWorker::sortOperations() {
             // If a cycle is discover, the sync must be restarted after the execution of the operation in _syncOrderedOps
             _syncPal->_restart = true;
 
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
     }
 
@@ -103,7 +103,7 @@ ExitCode OperationSorterWorker::sortOperations() {
         _syncPal->_restart = true;
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 /**

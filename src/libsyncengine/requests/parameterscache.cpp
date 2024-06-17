@@ -63,21 +63,21 @@ ExitCode ParametersCache::save() {
     bool found = false;
     if (!ParmsDb::instance()->selectParameters(oldParameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectParameters");
-        return ExitCodeDbError;
+        return ExitCode::DbError;
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
-        return ExitCodeDataError;
+        return ExitCode::DataError;
     }
 
     // Update parameters
     if (!ParmsDb::instance()->updateParameters(_parameters, found)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateParameters");
-        return ExitCodeDbError;
+        return ExitCode::DbError;
     }
     if (!found) {
         LOG_WARN(Log::instance()->getLogger(), "Parameters not found");
-        return ExitCodeDataError;
+        return ExitCode::DataError;
     }
 
     // Check if Log parameters have been updated
@@ -85,11 +85,11 @@ ExitCode ParametersCache::save() {
         oldParameters.purgeOldLogs() != _parameters.purgeOldLogs()) {
         if (!Log::instance()->configure(_parameters.useLog(), _parameters.logLevel(), _parameters.purgeOldLogs())) {
             LOG_WARN(Log::instance()->getLogger(), "Error in Log::configure");
-            return ExitCodeSystemError;
+            return ExitCode::SystemError;
         }
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 }  // namespace KDC

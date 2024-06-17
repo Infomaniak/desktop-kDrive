@@ -82,10 +82,10 @@ void TestLogArchiver::testCopyLogsTo(void) {
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(logDirsize >= 0);
 
-        ExitCause cause = ExitCauseUnknown;
+        ExitCause cause = ExitCause::Unknown;
         ExitCode exitCode = LogArchiver::copyLogsTo(tempDir.path, true, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         uint64_t tempDirSize = 0;
         bool tooDeep = false;
@@ -106,10 +106,10 @@ void TestLogArchiver::testCopyLogsTo(void) {
         logFile.close();
 
         // compress the log file
-        ExitCause cause = ExitCauseUnknown;
+        ExitCause cause = ExitCause::Unknown;
         ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, nullptr, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         // copy the compressed log file to the log directory
         IoError err = IoErrorSuccess;
@@ -121,8 +121,8 @@ void TestLogArchiver::testCopyLogsTo(void) {
         exitCode = LogArchiver::copyLogsTo(tempDir.path, false, cause);
         IoHelper::deleteDirectory(logDir / "test.log.gz", err);
 
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         // Check that `test.log.gz` does not exist anymore.
         bool exists = false;
@@ -152,10 +152,10 @@ void TestLogArchiver::testCopyParmsDbTo(void) {
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(parmsDbSize >= 0);
 
-        ExitCause cause = ExitCauseUnknown;
+        ExitCause cause = ExitCause::Unknown;
         ExitCode exitCode = LogArchiver::copyParmsDbTo(tempDir.path, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         uint64_t tempDirSize = 0;
         bool tooDeep = false;
@@ -191,11 +191,11 @@ void TestLogArchiver::testCompressLogs(void) {
         CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
         CPPUNIT_ASSERT(logDirSize >= 0);
 
-        ExitCause cause = ExitCauseUnknown;
+        ExitCause cause = ExitCause::Unknown;
         const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, nullptr, cause);
 
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         uint64_t tempDirSize = 0;
         IoHelper::getDirectorySize(tempDir.path, tempDirSize, err, 0);
@@ -231,11 +231,11 @@ void TestLogArchiver::testCompressLogs(void) {
             return true;
         };
 
-        ExitCause cause = ExitCauseUnknown;
+        ExitCause cause = ExitCause::Unknown;
         ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path, progress, cause);
 
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
         CPPUNIT_ASSERT_EQUAL(100, percent);
 
         // Test the progress callback with a cancel
@@ -249,8 +249,8 @@ void TestLogArchiver::testCompressLogs(void) {
         };
 
         exitCode = LogArchiver::compressLogFiles(tempDir.path, progress, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOperationCanceled, exitCode);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::OperationCanceled, exitCode);
     }
 }
 
@@ -258,10 +258,10 @@ void TestLogArchiver::testGenerateUserDescriptionFile(void) {
     {
         TemporaryDirectory tempDir;
         const SyncPath userDescriptionFile = tempDir.path / "user_description.txt";
-        ExitCause cause = ExitCauseUnknown;
+        ExitCause cause = ExitCause::Unknown;
         ExitCode code = LogArchiver::generateUserDescriptionFile(userDescriptionFile, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, code);
 
         bool exists = false;
         IoError err = IoErrorSuccess;
@@ -291,7 +291,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
     { // Test the generation of the archive
         TemporaryDirectory tempDir;
         SyncPath archivePath;
-        ExitCause cause = ExitCauseUnknown;
+        ExitCause cause = ExitCause::Unknown;
         int previousPercent = 0;
         std::function<bool(int)> progress = [&previousPercent](int percent) {
             CPPUNIT_ASSERT(percent >= 0);
@@ -302,8 +302,8 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
         };
 
         ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archivePath, cause, true);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, code);
         CPPUNIT_ASSERT_EQUAL(tempDir.path / archivePath.filename(), archivePath);
 
         bool exists = false;
@@ -316,14 +316,14 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
     { // Test with a cancel
         TemporaryDirectory tempDir;
         SyncPath archiveFile;
-        ExitCause cause = ExitCauseUnknown;
+        ExitCause cause = ExitCause::Unknown;
         std::function<bool(int)> progress = [](int) {
             return false;
         };
 
         ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archiveFile, cause, true);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOperationCanceled, code);
+        CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::OperationCanceled, code);
     }
 }
 

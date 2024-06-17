@@ -38,8 +38,8 @@ class PARMS_EXPORT Error {
         // Error level Node constructor
         Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
               ConflictType conflictType, InconsistencyType inconsistencyType = InconsistencyTypeNone,
-              CancelType cancelType = CancelTypeNone, const SyncPath &destinationPath = "", ExitCode exitCode = ExitCodeUnknown,
-              ExitCause exitCause = ExitCauseUnknown);
+              CancelType cancelType = CancelTypeNone, const SyncPath &destinationPath = "", ExitCode exitCode = ExitCode::Unknown,
+              ExitCause exitCause = ExitCause::Unknown);
 
         Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &functionName, int syncDbId,
               const std::string &workerName, ExitCode exitCode, ExitCause exitCause, const NodeId &localNodeId,
@@ -90,8 +90,8 @@ class PARMS_EXPORT Error {
         std::string _functionName;
         int _syncDbId{0};
         std::string _workerName;
-        ExitCode _exitCode{ExitCodeUnknown};
-        ExitCause _exitCause{ExitCauseUnknown};
+        ExitCode _exitCode{ExitCode::Unknown};
+        ExitCause _exitCause{ExitCause::Unknown};
         NodeId _localNodeId;
         NodeId _remoteNodeId;
         NodeType _nodeType{NodeType::Unknown};

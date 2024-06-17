@@ -65,7 +65,7 @@ ConfirmSynchronizationDialog::ConfirmSynchronizationDialog(std::shared_ptr<Clien
 
     // Get remote folder size
     ExitCode exitCode = GuiRequests::getFolderSize(userDbId, driveId, serverFolderNodeId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcConfirmSynchronizationDialog()) << "Error in GuiRequests::getFolderSize for userDbId=" << userDbId
                                                     << " driveId=" << driveId << " nodeId=" << serverFolderNodeId;
     }

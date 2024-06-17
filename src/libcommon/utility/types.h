@@ -90,14 +90,12 @@ using OStringStream = std::ostringstream;
 #endif
 
 template <class C>
-requires(std::is_enum_v<C> && std::same_as<std::underlying_type_t<C>, int>) 
-inline int enumClassToInt(C e) {
+requires(std::is_enum_v<C> &&std::same_as<std::underlying_type_t<C>, int>) inline int enumClassToInt(C e) {
     return static_cast<int>(e);
 }
 
 template <class C>
-requires(std::is_enum_v<C> && std::same_as<std::underlying_type_t<C>, int>)
-inline C intToEnumClass(int e) {
+requires(std::is_enum_v<C> &&std::same_as<std::underlying_type_t<C>, int>) inline C intToEnumClass(int e) {
     return static_cast<C>(e);
 }
 
@@ -114,7 +112,7 @@ enum class NodeType {
     Directory,
 };
 
-using OperationType = enum {
+using OperationType = enum {  // Can't be easily converted to enum class because of the numerous bitwise operations
     OperationTypeNone = 0x00,
     OperationTypeCreate = 0x01,
     OperationTypeMove = 0x02,
@@ -123,66 +121,66 @@ using OperationType = enum {
     OperationTypeRights = 0x10
 };
 
-typedef enum {
-    ExitCodeUnknown,
-    ExitCodeOk,
-    ExitCodeNeedRestart,  // A propagation job cannot be executed because the situation that led to its creation is no longer
-                          // verified
-    ExitCodeNetworkError,
-    ExitCodeInvalidToken,
-    ExitCodeDataError,    // Corruption of data
-    ExitCodeDbError,      // Error in a DB function
-    ExitCodeBackError,    // Error in an API call
-    ExitCodeSystemError,  // IO error etc.
-    ExitCodeFatalError,   // SyncPal fatal error
-    ExitCodeInconsistencyError,
-    ExitCodeTokenRefreshed,
-    ExitCodeNoWritePermission,
-    ExitCodeRateLimited,
-    ExitCodeInvalidSync,  // The sync configuration is not valid
-    ExitCodeOperationCanceled,
-    ExitCodeInvalidOperation
-} ExitCode;
+enum class ExitCode {
+    Unknown,
+    Ok,
+    NeedRestart,  // A propagation job cannot be executed because the situation that led to its creation is no longer
+                  // verified
+    NetworkError,
+    InvalidToken,
+    DataError,    // Corruption of data
+    DbError,      // Error in a DB function
+    BackError,    // Error in an API call
+    SystemError,  // IO error etc.
+    FatalError,   // SyncPal fatal error
+    InconsistencyError,
+    TokenRefreshed,
+    NoWritePermission,
+    RateLimited,
+    InvalidSync,  // The sync configuration is not valid
+    OperationCanceled,
+    InvalidOperation
+};
 
-typedef enum {
-    ExitCauseUnknown,
-    ExitCauseWorkerExited,  // The SyncPal worker exits because a sub worker has exited
-    ExitCauseDbAccessError,
-    ExitCauseDbEntryNotFound,
-    ExitCauseInvalidSnapshot,
-    ExitCauseSyncDirDoesntExist,
-    ExitCauseSyncDirReadError,
-    ExitCauseSyncDirWriteError,
-    ExitCauseHttpErr,
-    ExitCauseHttpErrForbidden,
-    ExitCauseRedirectionError,
-    ExitCauseApiErr,
-    ExitCauseInvalidSize,
-    ExitCauseFileAlreadyExist,
-    ExitCauseFileAccessError,
-    ExitCauseUnexpectedFileSystemEvent,
-    ExitCauseNotEnoughDiskSpace,
-    ExitCauseDriveAccessError,
-    ExitCauseLoginError,
-    ExitCauseDriveMaintenance,
-    ExitCauseDriveNotRenew,
-    ExitCauseMigrationError,
-    ExitCauseMigrationProxyNotImplemented,
-    ExitCauseInconsistentPinState,
-    ExitCauseFileSizeMismatch,
-    ExitCauseUploadNotTerminated,
-    ExitCauseUnableToCreateVfs,
-    ExitCauseNotEnoughtMemory,
-    ExitCauseFileTooBig,
-    ExitCauseMoveToTrashFailed,
-    ExitCauseInvalidName,
-    ExitCauseLiteSyncNotAllowed,
-    ExitCauseNetworkTimeout,
-    ExitCauseSocketsDefuncted,  // macOS: sockets defuncted by kernel
-    ExitCauseNoSearchPermission,
-    ExitCauseNotFound,
-    ExitCauseQuotaExceeded
-} ExitCause;
+enum class ExitCause{
+    Unknown,
+    WorkerExited,  // The SyncPal worker exits because a sub worker has exited
+    DbAccessError,
+    DbEntryNotFound,
+    InvalidSnapshot,
+    SyncDirDoesntExist,
+    SyncDirReadError,
+    SyncDirWriteError,
+    HttpErr,
+    HttpErrForbidden,
+    RedirectionError,
+    ApiErr,
+    InvalidSize,
+    FileAlreadyExist,
+    FileAccessError,
+    UnexpectedFileSystemEvent,
+    NotEnoughDiskSpace,
+    DriveAccessError,
+    LoginError,
+    DriveMaintenance,
+    DriveNotRenew,
+    MigrationError,
+    MigrationProxyNotImplemented,
+    InconsistentPinState,
+    FileSizeMismatch,
+    UploadNotTerminated,
+    UnableToCreateVfs,
+    NotEnoughtMemory,
+    FileTooBig,
+    MoveToTrashFailed,
+    InvalidName,
+    LiteSyncNotAllowed,
+    NetworkTimeout,
+    SocketsDefuncted,  // macOS: sockets defuncted by kernel
+    NoSearchPermission,
+    NotFound,
+    QuotaExceeded
+};
 
 // Conflict types ordered by priority
 typedef enum {

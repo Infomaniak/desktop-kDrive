@@ -188,14 +188,14 @@ void FileExclusionDialog::updateUI() {
 
     ExitCode exitCode;
     exitCode = GuiRequests::getExclusionTemplateList(true, _defaultTemplateList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList : " << enumClassToInt(exitCode);
         return;
     }
 
     exitCode = GuiRequests::getExclusionTemplateList(false, _userTemplateList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::getExclusionTemplateList : " << enumClassToInt(exitCode);
         return;
     }
 
@@ -460,16 +460,16 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
     Q_UNUSED(checked)
 
     ExitCode exitCode = GuiRequests::setExclusionTemplateList(true, _defaultTemplateList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList : " << enumClassToInt(exitCode);
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
         return;
     }
 
     exitCode = GuiRequests::setExclusionTemplateList(false, _userTemplateList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::setExclusionTemplateList : " << enumClassToInt(exitCode);
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
         return;
@@ -479,8 +479,8 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
     ParametersCache::instance()->saveParametersInfo();
 
     exitCode = GuiRequests::propagateExcludeListChange();
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcFileExclusionDialog()) << "Error in Requests::propagateExcludeListChange : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcFileExclusionDialog()) << "Error in Requests::propagateExcludeListChange : " << enumClassToInt(exitCode);
     }
 
     accept();

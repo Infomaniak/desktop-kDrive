@@ -40,7 +40,7 @@ SyncPalWorker::SyncPalWorker(std::shared_ptr<SyncPal> syncPal, const std::string
       _pauseTime(std::chrono::time_point<std::chrono::system_clock>()) {}
 
 void SyncPalWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
 
@@ -93,7 +93,7 @@ void SyncPalWorker::execute() {
             stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
 
             // Exit
-            exitCode = ExitCodeOk;
+            exitCode = ExitCode::Ok;
             break;
         }
 
@@ -126,10 +126,10 @@ void SyncPalWorker::execute() {
             ExitCode workersExitCode[2];
             for (int index = 0; index < 2; index++) {
                 workersExitCode[index] =
-                    (stepWorkers[index] && !stepWorkers[index]->isRunning() ? stepWorkers[index]->exitCode() : ExitCodeUnknown);
+                    (stepWorkers[index] && !stepWorkers[index]->isRunning() ? stepWorkers[index]->exitCode() : ExitCode::Unknown);
             }
 
-            if ((!stepWorkers[0] || workersExitCode[0] == ExitCodeOk) && (!stepWorkers[1] || workersExitCode[1] == ExitCodeOk)) {
+            if ((!stepWorkers[0] || workersExitCode[0] == ExitCode::Ok) && (!stepWorkers[1] || workersExitCode[1] == ExitCode::Ok)) {
                 // Next step
                 SyncStep step = nextStep();
                 if (step != _step) {
@@ -137,8 +137,8 @@ void SyncPalWorker::execute() {
                     initStep(step, stepWorkers, inputSharedObject);
                     isStepInProgress = false;
                 }
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeNetworkError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeNetworkError)) {
+            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::NetworkError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::NetworkError)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop the step workers and pause sync
@@ -146,12 +146,12 @@ void SyncPalWorker::execute() {
                 isStepInProgress = false;
                 pause();
                 continue;
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeDataError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeDataError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeBackError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeBackError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeInconsistencyError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeInconsistencyError)) {
+            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DataError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::DataError) ||
+                       (stepWorkers[0] && workersExitCode[0] == ExitCode::BackError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::BackError) ||
+                       (stepWorkers[0] && workersExitCode[0] == ExitCode::InconsistencyError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::InconsistencyError)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop the step workers and restart a full sync
@@ -161,25 +161,25 @@ void SyncPalWorker::execute() {
                 _syncPal->_remoteFSObserverWorker->invalidateSnapshot();
                 initStepFirst(stepWorkers, inputSharedObject, true);
                 continue;
-            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeDbError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeDbError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeSystemError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeSystemError)) {
+            } else if ((stepWorkers[0] && workersExitCode[0] == ExitCode::DbError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::DbError) ||
+                       (stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop all workers and exit
                 stopAndWaitForExitOfAllWorkers(fsoWorkers, stepWorkers);
-                if ((stepWorkers[0] && workersExitCode[0] == ExitCodeSystemError &&
-                     (stepWorkers[0]->exitCause() == ExitCauseNotEnoughDiskSpace ||
-                      stepWorkers[0]->exitCause() == ExitCauseFileAccessError)) ||
-                    (stepWorkers[1] && workersExitCode[1] == ExitCodeSystemError &&
-                     (stepWorkers[1]->exitCause() == ExitCauseNotEnoughDiskSpace ||
-                      stepWorkers[1]->exitCause() == ExitCauseFileAccessError))) {
+                if ((stepWorkers[0] && workersExitCode[0] == ExitCode::SystemError &&
+                     (stepWorkers[0]->exitCause() == ExitCause::NotEnoughDiskSpace ||
+                      stepWorkers[0]->exitCause() == ExitCause::FileAccessError)) ||
+                    (stepWorkers[1] && workersExitCode[1] == ExitCode::SystemError &&
+                     (stepWorkers[1]->exitCause() == ExitCause::NotEnoughDiskSpace ||
+                      stepWorkers[1]->exitCause() == ExitCause::FileAccessError))) {
                     // Exit without error
-                    exitCode = ExitCodeOk;
+                    exitCode = ExitCode::Ok;
                 } else {
-                    exitCode = ExitCodeFatalError;
-                    setExitCause(ExitCauseWorkerExited);
+                    exitCode = ExitCode::FatalError;
+                    setExitCause(ExitCause::WorkerExited);
                 }
                 break;
             } else if (interruptCondition()) {
@@ -204,7 +204,7 @@ void SyncPalWorker::execute() {
             }
         }
 
-        if (exitCode != ExitCodeUnknown) {
+        if (exitCode != ExitCode::Unknown) {
             break;
         }
 

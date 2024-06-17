@@ -28,7 +28,7 @@ OperationGeneratorWorker::OperationGeneratorWorker(std::shared_ptr<SyncPal> sync
     : OperationProcessor(syncPal, name, shortName) {}
 
 void OperationGeneratorWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
@@ -49,7 +49,7 @@ void OperationGeneratorWorker::execute() {
     // Explore both update trees
     while (!_queuedToExplore.empty()) {
         if (stopAsked()) {
-            exitCode = ExitCodeOk;
+            exitCode = ExitCode::Ok;
             break;
         }
 
@@ -86,7 +86,7 @@ void OperationGeneratorWorker::execute() {
             (currentNode->hasChangeEvent(OperationTypeDelete) || currentNode->hasChangeEvent(OperationTypeEdit) ||
              currentNode->hasChangeEvent(OperationTypeMove))) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << SyncName2WStr(currentNode->name()).c_str());
-            exitCode = ExitCodeDataError;
+            exitCode = ExitCode::DataError;
             break;
         }
 
@@ -109,8 +109,8 @@ void OperationGeneratorWorker::execute() {
         }
     }
 
-    if (exitCode == ExitCodeUnknown && _queuedToExplore.empty()) {
-        exitCode = ExitCodeOk;
+    if (exitCode == ExitCode::Unknown && _queuedToExplore.empty()) {
+        exitCode = ExitCode::Ok;
     }
 
     if (_bytesToDownload > 0) {
@@ -120,8 +120,8 @@ void OperationGeneratorWorker::execute() {
                 LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only "
                                                << freeBytes << L" B available at path " << Path2WStr(_syncPal->_localPath).c_str()
                                                << L", " << _bytesToDownload << L" B to download. Synchronization canceled.");
-                exitCode = ExitCodeSystemError;
-                setExitCause(ExitCauseNotEnoughDiskSpace);
+                exitCode = ExitCode::SystemError;
+                setExitCause(ExitCause::NotEnoughDiskSpace);
             }
         } else {
             LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at" << Path2WStr(_syncPal->_localPath).c_str());

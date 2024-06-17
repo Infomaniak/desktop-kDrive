@@ -56,8 +56,8 @@ LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *pa
         if (syncInfoMapElt.second.virtualFileMode() == VirtualFileModeMac) {
             try {
                 ExitCode exitCode = GuiRequests::getFetchingAppList(_appTable);
-                if (exitCode != ExitCodeOk) {
-                    qCWarning(lcLiteSyncAppDialog()) << "Error in Requests::getFetchingAppList : " << exitCode;
+                if (exitCode != ExitCode::Ok) {
+                    qCWarning(lcLiteSyncAppDialog()) << "Error in Requests::getFetchingAppList : " << enumClassToInt(exitCode);
                 }
 
                 break;

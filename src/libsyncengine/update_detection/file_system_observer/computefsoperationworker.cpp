@@ -46,7 +46,7 @@ ComputeFSOperationWorker::ComputeFSOperationWorker(const std::shared_ptr<SyncDb>
       _remoteSnapshot(testRemoteSnapshot) {}
 
 void ComputeFSOperationWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
     auto start = std::chrono::steady_clock::now();
@@ -56,13 +56,13 @@ void ComputeFSOperationWorker::execute() {
     bool found = true;
     if (!ParmsDb::instance()->selectSync(_syncPal->syncDbId(), _sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        setExitCause(ExitCauseDbAccessError);
-        exitCode = ExitCodeDbError;
+        setExitCause(ExitCause::DbAccessError);
+        exitCode = ExitCode::DbError;
         ok = false;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        exitCode = ExitCodeDataError;
+        exitCode = ExitCode::DataError;
         ok = false;
     }
     if (!ok) {
@@ -86,12 +86,12 @@ void ComputeFSOperationWorker::execute() {
     std::unordered_set<NodeId> remoteIdsSet;
     if (ok && !stopAsked()) {
         exitCode = exploreDbTree(localIdsSet, remoteIdsSet);
-        ok = exitCode == ExitCodeOk;
+        ok = exitCode == ExitCode::Ok;
     }
 
     if (ok && !stopAsked()) {
         exitCode = exploreSnapshotTree(ReplicaSide::Local, localIdsSet);
-        ok = exitCode == ExitCodeOk;
+        ok = exitCode == ExitCode::Ok;
         if (ok) {
             exitCode = exploreSnapshotTree(ReplicaSide::Remote, remoteIdsSet);
         }
@@ -102,7 +102,7 @@ void ComputeFSOperationWorker::execute() {
         _syncPal->operationSet(ReplicaSide::Local)->clear();
         _syncPal->operationSet(ReplicaSide::Remote)->clear();
     } else {
-        exitCode = ExitCodeOk;
+        exitCode = ExitCode::Ok;
     }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
@@ -118,11 +118,11 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
     std::unordered_set<DbNodeId> remainingDbIds;
     if (!_syncDb->dbIds(remainingDbIds, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::ids");
-        setExitCause(ExitCauseDbAccessError);
-        return ExitCodeDbError;
+        setExitCause(ExitCause::DbAccessError);
+        return ExitCode::DbError;
     } else if (!found) {
         LOG_SYNCPAL_DEBUG(_logger, "No items found in db");
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     // Explore the tree twice:
@@ -143,7 +143,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
             }
 
             if (stopAsked()) {
-                return ExitCodeOk;
+                return ExitCode::Ok;
             }
 
             while (pauseAsked() || isPaused()) {
@@ -161,13 +161,13 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
             DbNode dbNode;
             if (!_syncDb->node(dbId, dbNode, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
-                setExitCause(ExitCauseDbAccessError);
-                return ExitCodeDbError;
+                setExitCause(ExitCause::DbAccessError);
+                return ExitCode::DbError;
             }
             if (!found) {
                 LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbId);
-                setExitCause(ExitCauseDbEntryNotFound);
-                return ExitCodeDataError;
+                setExitCause(ExitCause::DbEntryNotFound);
+                return ExitCode::DataError;
             }
 
             if (dbNode.nodeIdLocal().has_value()) {
@@ -190,13 +190,13 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
             SyncPath remoteDbPath;
             if (!_syncDb->path(dbId, localDbPath, remoteDbPath, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
-                setExitCause(ExitCauseDbAccessError);
-                return ExitCodeDbError;
+                setExitCause(ExitCause::DbAccessError);
+                return ExitCode::DbError;
             }
             if (!found) {
                 LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << dbId);
-                setExitCause(ExitCauseDbEntryNotFound);
-                return ExitCodeDataError;
+                setExitCause(ExitCause::DbEntryNotFound);
+                return ExitCode::DataError;
             }
 
             for (int j = 0; j <= 1; j++) {
@@ -213,8 +213,8 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 if (nodeId.empty()) {
                     LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(side)).c_str()
                                                    << L" node ID empty for for dbId=" << dbId);
-                    setExitCause(ExitCauseDbEntryNotFound);
-                    return ExitCodeDataError;
+                    setExitCause(ExitCause::DbEntryNotFound);
+                    return ExitCode::DataError;
                 }
 
                 SyncName dbName = side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote();
@@ -225,13 +225,13 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 NodeId parentId;
                 if (!_syncDb->parent(side, nodeId, parentId, found)) {
                     LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
-                    setExitCause(ExitCauseDbAccessError);
-                    return ExitCodeDbError;
+                    setExitCause(ExitCause::DbAccessError);
+                    return ExitCode::DbError;
                 }
                 if (!found) {
                     LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodeId.c_str());
-                    setExitCause(ExitCauseDbEntryNotFound);
-                    return ExitCodeDataError;
+                    setExitCause(ExitCause::DbEntryNotFound);
+                    return ExitCode::DataError;
                 }
 
                 bool remoteItemUnsynced = false;
@@ -255,13 +255,13 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                         // Check that the file/directory really does not exist on replica
                         bool isExcluded = false;
                         if (const ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded);
-                            exitCode != ExitCodeOk) {
-                            if (exitCode == ExitCodeNoWritePermission) {
+                            exitCode != ExitCode::Ok) {
+                            if (exitCode == ExitCode::NoWritePermission) {
                                 // Blacklist node
                                 _syncPal->blacklistTemporarily(nodeId, dbPath, side);
                                 Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, dbPath, ConflictTypeNone,
-                                            InconsistencyTypeNone, CancelTypeNone, "", ExitCodeSystemError,
-                                            ExitCauseFileAccessError);
+                                            InconsistencyTypeNone, CancelTypeNone, "", ExitCode::SystemError,
+                                            ExitCause::FileAccessError);
                                 _syncPal->addError(error);
 
                                 // Update unsynced list cache
@@ -299,7 +299,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                             if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
                                 LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                        << Utility::formatIoError(localPath, ioError).c_str());
-                                return ExitCodeSystemError;
+                                return ExitCode::SystemError;
                             }
                             checkTemplate = exists;
                         }
@@ -314,7 +314,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                         if (!success) {
                             LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
                                                    << Utility::formatIoError(dbPath, ioError).c_str());
-                            return ExitCodeSystemError;
+                            return ExitCode::SystemError;
                         }
                         if (isExcluded) {
                             // The item is excluded
@@ -345,8 +345,8 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
                                                    << SyncName2WStr(dbName).c_str() << L" (" << Utility::s2ws(nodeId).c_str()
                                                    << L")");
-                    setExitCause(ExitCauseInvalidSnapshot);
-                    return ExitCodeDataError;
+                    setExitCause(ExitCause::InvalidSnapshot);
+                    return ExitCode::DataError;
                 }
 
                 if (side == ReplicaSide::Local && !_testing) {
@@ -356,13 +356,13 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                << Utility::formatIoError(absolutePath, ioError).c_str());
-                        return ExitCodeSystemError;
+                        return ExitCode::SystemError;
                     }
                     if (!exists) {
                         LOGW_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - path="
                                                 << Path2WStr(absolutePath).c_str());
-                        setExitCause(ExitCauseInvalidSnapshot);
-                        return ExitCodeDataError;
+                        setExitCause(ExitCause::InvalidSnapshot);
+                        return ExitCode::DataError;
                     }
                 } else {
                     // Check path length
@@ -411,13 +411,13 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
 
             // Check file integrity
             ExitCode fileIntegrityOk = checkFileIntegrity(dbNode);
-            if (fileIntegrityOk != ExitCodeOk) {
+            if (fileIntegrityOk != ExitCode::Ok) {
                 return fileIntegrityOk;
             }
         }
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const std::unordered_set<NodeId> &idsSet) {
@@ -428,7 +428,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
     snapshot->ids(remainingDbIds);
     if (remainingDbIds.empty()) {
         LOG_SYNCPAL_DEBUG(_logger, "No items found in snapshot on side " << Utility::side2Str(side).c_str());
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     // Explore the tree twice:
@@ -440,7 +440,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
         auto snapIdIt = remainingDbIds.begin();
         while (snapIdIt != remainingDbIds.end()) {
             if (stopAsked()) {
-                return ExitCodeOk;
+                return ExitCode::Ok;
             }
 
             while (pauseAsked() || isPaused()) {
@@ -490,8 +490,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
             SyncPath snapPath;
             if (!snapshot->path(nodeId, snapPath)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << Utility::s2ws(nodeId).c_str());
-                setExitCause(ExitCauseInvalidSnapshot);
-                return ExitCodeDataError;
+                setExitCause(ExitCause::InvalidSnapshot);
+                return ExitCode::DataError;
             }
 
             // Manage file exclusion
@@ -542,7 +542,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
         }
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp) {
@@ -575,19 +575,19 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         dbNode.lastModifiedLocal().has_value()) {
         if (_fileSizeMismatchMap.find(dbNode.nodeIdLocal().value()) != _fileSizeMismatchMap.end()) {
             // Size mismatch already detected
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
 
         if (!_syncPal->snapshot(ReplicaSide::Local, true)->exists(dbNode.nodeIdLocal().value()) ||
             !_syncPal->snapshot(ReplicaSide::Remote, true)->exists(dbNode.nodeIdRemote().value())) {
             // Ignore if item does not exist
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
 
         const bool localSnapshotIsLink = _syncPal->_localSnapshotCopy->isLink(dbNode.nodeIdLocal().value());
         if (localSnapshotIsLink) {
             // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
 
         int64_t localSnapshotSize = _syncPal->snapshot(ReplicaSide::Local, true)->size(dbNode.nodeIdLocal().value());
@@ -605,8 +605,8 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
                                                << SyncName2WStr(dbNode.nameLocal()).c_str() << L" ("
                                                << Utility::s2ws(dbNode.nodeIdLocal().value()).c_str() << L")");
-                setExitCause(ExitCauseInvalidSnapshot);
-                return ExitCodeDataError;
+                setExitCause(ExitCause::InvalidSnapshot);
+                return ExitCode::DataError;
             }
 
             // OS might fail to notify all delete events, therefor we check that the file still exists
@@ -624,7 +624,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         }
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<Snapshot> snapshot, const ReplicaSide side,
@@ -811,12 +811,12 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
 
 ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId,
                                                      bool &isExcluded) {
-    if (side != ReplicaSide::Local) return ExitCodeOk;
+    if (side != ReplicaSide::Local) return ExitCode::Ok;
 
     if (!_syncPal->snapshot(ReplicaSide::Local, true)->itemId(relativePath).empty()) {
         // Item with the same path but different ID exist
         // This is an Edit operation (Delete-Create)
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     const SyncPath absolutePath = _syncPal->_localPath / relativePath;
@@ -828,27 +828,27 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
 
         if (ioError == IoErrorInvalidFileName) {
             // Observed on MacOSX under special circumstances; see getItemType unit test edge cases.
-            setExitCause(ExitCauseInvalidName);
+            setExitCause(ExitCause::InvalidName);
         } else
-            setExitCause(ExitCauseFileAccessError);
+            setExitCause(ExitCause::FileAccessError);
 
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     }
 
-    if (!exists) return ExitCodeOk;
+    if (!exists) return ExitCode::Ok;
 
     bool readPermission = false;
     bool writePermission = false;
     bool execPermission = false;
     if (!IoHelper::getRights(absolutePath, readPermission, writePermission, execPermission, ioError)) {
         LOGW_WARN(_logger, L"Error in Utility::getRights for path=" << Path2WStr(absolutePath).c_str());
-        setExitCause(ExitCauseFileAccessError);
-        return ExitCodeSystemError;
+        setExitCause(ExitCause::FileAccessError);
+        return ExitCode::SystemError;
     }
 
     if (!writePermission) {
         LOGW_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str() << L" doesn't have write permissions!");
-        return ExitCodeNoWritePermission;
+        return ExitCode::NoWritePermission;
     }
 
     // Check if file is synced
@@ -859,22 +859,22 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     if (!success) {
         LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
                                << Utility::formatIoError(absolutePath, ioError).c_str());
-        setExitCause(ExitCauseFileAccessError);
-        return ExitCodeSystemError;
+        setExitCause(ExitCause::FileAccessError);
+        return ExitCode::SystemError;
     }
 
     if (ioError == IoErrorAccessDenied) {
         LOGW_WARN(_logger, L"Item " << Path2WStr(absolutePath).c_str() << L" misses search permissions!");
-        setExitCause(ExitCauseNoSearchPermission);
-        return ExitCodeSystemError;
+        setExitCause(ExitCause::NoSearchPermission);
+        return ExitCode::SystemError;
     }
 
-    if (isExcluded) return ExitCodeOk;
+    if (isExcluded) return ExitCode::Ok;
 
     if (_syncPal->snapshot(ReplicaSide::Local, true)->isOrphan(nodeId)) {
         // This can happen if the propagation of template exclusions has been unexpectedly interrupted.
         // This special handling should be removed once the app keeps track on such interruptions.
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str()
@@ -884,9 +884,9 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
                                                         "Unwanted local delete operation averted"));
 #endif
 
-    setExitCause(ExitCauseInvalidSnapshot);
+    setExitCause(ExitCause::InvalidSnapshot);
 
-    return ExitCodeDataError;  // We need to rebuild the local snapshot from scratch.
+    return ExitCode::DataError;  // We need to rebuild the local snapshot from scratch.
 }
 
 void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<Snapshot> remoteSnapshot,

@@ -125,7 +125,7 @@ void ClientGui::init() {
 
     // Refresh status
     ExitCode exitCode = GuiRequests::askForStatus();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::askForStatus";
     }
 
@@ -137,7 +137,7 @@ bool ClientGui::isConnected() {
 }
 
 void ClientGui::onErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) {
-    if (exitCode == ExitCodeInvalidToken) {
+    if (exitCode == ExitCode::InvalidToken) {
         auto userIt = _userInfoMap.find(_currentUserDbId);
         if (userIt != _userInfoMap.end() && !userIt->second.credentialsAsked()) {
             userIt->second.setCredentialsAsked(true);
@@ -689,8 +689,8 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
                 return;
             }
             exitCode = GuiRequests::syncStop(syncDbId);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : " << exitCode;
+            if (exitCode != ExitCode::Ok) {
+                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : " << enumClassToInt(exitCode);
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatusPauseAsked);
@@ -701,8 +701,8 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
                 return;
             }
             exitCode = GuiRequests::syncStart(syncDbId);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : " << exitCode;
+            if (exitCode != ExitCode::Ok) {
+                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : " << enumClassToInt(exitCode);
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatusStarting);
@@ -812,7 +812,7 @@ void ClientGui::onAddDriveFinished() {
 void ClientGui::onCopyLinkItem(int driveDbId, const QString &nodeId) {
     QString linkUrl;
     ExitCode exitCode = GuiRequests::getPublicLinkUrl(driveDbId, nodeId, linkUrl);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPublicLinkUrl";
         return;
     }
@@ -826,7 +826,7 @@ void ClientGui::onCopyLinkItem(int driveDbId, const QString &nodeId) {
 void ClientGui::onOpenWebviewItem(int driveDbId, const QString &nodeId) {
     QString linkUrl;
     ExitCode exitCode = GuiRequests::getPrivateLinkUrl(driveDbId, nodeId, linkUrl);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPrivateLinkUrl";
         return;
     }
@@ -836,7 +836,7 @@ void ClientGui::onOpenWebviewItem(int driveDbId, const QString &nodeId) {
 
 void ClientGui::getWebviewDriveLink(int driveDbId, QString &driveLink) {
     ExitCode exitCode = GuiRequests::getPrivateLinkUrl(driveDbId, "", driveLink);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getPrivateLinkUrl";
         return;
     }
@@ -850,7 +850,7 @@ void ClientGui::errorInfoList(int driveDbId, QList<ErrorInfo> &errorInfoList) {
 
 void ClientGui::resolveConflictErrors(int driveDbId, bool keepLocalVersion) {
     ExitCode exitCode = GuiRequests::resolveConflictErrors(driveDbId, keepLocalVersion);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::resolveConflictErrors";
         return;
     }
@@ -858,7 +858,7 @@ void ClientGui::resolveConflictErrors(int driveDbId, bool keepLocalVersion) {
 
 void ClientGui::resolveUnsupportedCharErrors(int driveDbId) {
     ExitCode exitCode = GuiRequests::resolveUnsupportedCharErrors(driveDbId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::resolveUnsupportedCharErrors";
         return;
     }
@@ -880,7 +880,7 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
 
 ExitCode ClientGui::loadError(int driveDbId, int syncDbId, ErrorLevel level) {
     const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
     }
 
@@ -896,7 +896,7 @@ void ClientGui::onRefreshErrorList() {
     // Server level errors.
     if (_driveWithNewErrorSet.contains(0)) {
         _errorInfoMap[0].clear();
-        if (ExitCodeOk != ClientGui::loadError(0, 0, ErrorLevelServer)) {
+        if (ExitCode::Ok != ClientGui::loadError(0, 0, ErrorLevelServer)) {
             return;
         }
 
@@ -919,7 +919,7 @@ void ClientGui::onRefreshErrorList() {
         for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
             if (syncInfo.driveDbId() != driveDbId) continue;
             for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
-                if (ExitCodeOk != loadError(driveDbId, syncDbId, level)) return;
+                if (ExitCode::Ok != loadError(driveDbId, syncDbId, level)) return;
             }
         }
 
@@ -953,7 +953,7 @@ void ClientGui::onUserAdded(const UserInfo &userInfo) {
 
 void ClientGui::onRemoveUser(int userDbId) {
     ExitCode exitCode = GuiRequests::deleteUser(userDbId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteUser for userDbId=" << userDbId;
         return;
     }
@@ -1168,7 +1168,7 @@ void ClientGui::onRemoveDrive(int driveDbId) {
         emit driveBeingRemoved();  // Lock drive-related GUI actions.
         try {
             ExitCode exitCode = GuiRequests::deleteDrive(driveDbId);
-            if (exitCode != ExitCodeOk) {
+            if (exitCode != ExitCode::Ok) {
                 qCWarning(lcClientGui()) << "Error in Requests::deleteDrive for driveDbId=" << driveDbId;
                 onDriveDeletionFailed(driveDbId);
             }
@@ -1243,7 +1243,7 @@ void ClientGui::onSyncUpdated(const SyncInfo &syncInfo) {
 
 void ClientGui::onRemoveSync(int syncDbId) {
     const ExitCode exitCode = GuiRequests::deleteSync(syncDbId);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::deleteSync for syncDbId=" << syncDbId;
     }
 }
@@ -1327,7 +1327,7 @@ void ClientGui::retranslateUi() {
 
 void ClientGui::activateLoadInfo(bool value) {
     ExitCode exitCode = GuiRequests::activateLoadInfo(value);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::activateLoadInfo";
         return;
     }
@@ -1415,7 +1415,7 @@ bool ClientGui::loadInfoMaps() {
     ExitCode exitCode;
     QList<UserInfo> userInfoList;
     exitCode = GuiRequests::getUserInfoList(userInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getUserInfoList";
         return false;
     }
@@ -1427,7 +1427,7 @@ bool ClientGui::loadInfoMaps() {
     // Load account list
     QList<AccountInfo> accountInfoList;
     exitCode = GuiRequests::getAccountInfoList(accountInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getAccountInfoList";
         return false;
     }
@@ -1439,7 +1439,7 @@ bool ClientGui::loadInfoMaps() {
     // Load drive list
     QList<DriveInfo> driveInfoList;
     exitCode = GuiRequests::getDriveInfoList(driveInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getDriveInfoList";
         return false;
     }
@@ -1454,7 +1454,7 @@ bool ClientGui::loadInfoMaps() {
     // Load sync list
     QList<SyncInfo> syncInfoList;
     exitCode = GuiRequests::getSyncInfoList(syncInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcClientGui()) << "Error in Requests::getSyncInfoList";
         return false;
     }
@@ -1495,7 +1495,7 @@ void ClientGui::openLoginDialog(int userDbId, bool invalidTokenError) {
 
         qCDebug(lcClientGui()) << "startSyncs for userDbId=" << userDbId;
         ExitCode exitCode = GuiRequests::startSyncs(userDbId);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcClientGui()) << "Error in GuiRequests::startSyncs for userDbId=" << userDbId;
             CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to start synchronizations!"), QMessageBox::Ok);
             msgBox.exec();

@@ -112,8 +112,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             int progress = 0;
             if (!_vfsStatus(_syncDbId, dirIt->path(), isPlaceholder, isHydrated, isSyncing, progress)) {
                 LOGW_WARN(_logger, L"Error in vfsStatus for path=" << Path2WStr(dirIt->path()).c_str());
-                _exitCode = ExitCodeSystemError;
-                _exitCause = ExitCauseUnknown;
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::Unknown;
                 return false;
             }
 
@@ -137,14 +137,14 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
                             LOGW_WARN(_logger, L"Failed to remove all " << SyncName2WStr(entryPathStr).c_str() << L": "
                                                                         << Utility::s2ws(ec.message()).c_str() << L" ("
                                                                         << ec.value() << L")");
-                            _exitCode = ExitCodeSystemError;
-                            _exitCause = ExitCauseFileAccessError;
+                            _exitCode = ExitCode::SystemError;
+                            _exitCause = ExitCause::FileAccessError;
                             return false;
                         }
 
                         LOGW_WARN(_logger, L"Failed to remove all " << SyncName2WStr(entryPathStr).c_str());
-                        _exitCode = ExitCodeSystemError;
-                        _exitCause = ExitCauseFileAccessError;
+                        _exitCode = ExitCode::SystemError;
+                        _exitCause = ExitCause::FileAccessError;
                         return false;
                     }
 
@@ -158,8 +158,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
                     bool found = false;
                     if (!_syncDb->dbId(ReplicaSide::Local, entryPath, dbId, found)) {
                         LOG_WARN(_logger, "Error in SyncDb::dbId");
-                        _exitCode = ExitCodeDbError;
-                        _exitCause = ExitCauseDbAccessError;
+                        _exitCode = ExitCode::DbError;
+                        _exitCause = ExitCause::DbAccessError;
                         return false;
                     }
                     if (!found) {
@@ -170,8 +170,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
                     // Remove node (and childs by cascade) from DB
                     if (!_syncDb->deleteNode(dbId, found)) {
                         LOG_WARN(_logger, "Error in SyncDb::deleteNode");
-                        _exitCode = ExitCodeDbError;
-                        _exitCause = ExitCauseDbAccessError;
+                        _exitCode = ExitCode::DbError;
+                        _exitCause = ExitCause::DbAccessError;
                         return false;
                     }
                     if (!found) {
@@ -244,8 +244,8 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                             LOGW_WARN(_logger, L"Failed to remove " << SyncName2WStr(filePathStr).c_str() << L": "
                                                                     << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
                                                                     << L")");
-                            _exitCode = ExitCodeSystemError;
-                            _exitCause = ExitCauseFileAccessError;
+                            _exitCode = ExitCode::SystemError;
+                            _exitCause = ExitCause::FileAccessError;
 
                             failedToRemovePlaceholders.push_back(CommonUtility::relativePath(_rootPath, filePath));
                             ret = false;

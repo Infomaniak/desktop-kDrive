@@ -236,28 +236,28 @@ ExitCode MigrationParams::migrateGeneralParams() {
 
     ProxyConfig proxyConfig;
     ExitCode exitCode = migrateProxySettings(proxyConfig);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         LOG_WARN(_logger, "Error in MigrationParams::migrateProxySettings");
         return exitCode;
     }
     ParametersCache::instance()->parameters().setProxyConfig(proxyConfig);
     ParametersCache::instance()->save();
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode MigrationParams::migrateAccountsParams() {
     LOG_INFO(Log::instance()->getLogger(), "Migrate accounts params");
 
-    ExitCode code = ExitCodeOk;
+    ExitCode code = ExitCode::Ok;
     QSettings settings(configDir().filePath(configFileName()), QSettings::IniFormat);
     settings.beginGroup(accountsC);
     for (const auto &accountIdStr : settings.childGroups()) {
         LOG_INFO(Log::instance()->getLogger(), "Migrate account " << accountIdStr.toStdString().c_str());
         settings.beginGroup(accountIdStr);
         code = loadAccount(settings);
-        if (code != ExitCodeOk) {
-            LOG_WARN(_logger, "Error in loadAccount : " << code);
+        if (code != ExitCode::Ok) {
+            LOG_WARN(_logger, "Error in loadAccount : " << enumClassToInt(code));
             return code;
         }
         settings.endGroup();
@@ -273,14 +273,14 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     // User
     if (!ParmsDb::instance()->selectUserByUserId(userId, user, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectUserByUserId");
-        return ExitCodeDbError;
+        return ExitCode::DbError;
     }
 
     if (!found) {
         int userDbId;
         if (!ParmsDb::instance()->getNewUserDbId(userDbId)) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewUserDbId");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
         user.setUserId(userId);
         user.setDbId(userDbId);
@@ -290,7 +290,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
         user.setToMigrate(true);
         if (!ParmsDb::instance()->insertUser(user)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertUser");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
     }
 
@@ -304,40 +304,40 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     int driveId = extractDriveIdFromUrl(strDriveUrl.toStdString());
     if (!ParmsDb::instance()->selectDriveByDriveId(driveId, drive, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectDriveByDriveId");
-        return ExitCodeDbError;
+        return ExitCode::DbError;
     }
 
     if (!found) {
         // create account
         if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewAccountDbId");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
         account = Account(accountDbId, 0, user.dbId());
         if (!ParmsDb::instance()->insertAccount(account)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
 
         if (!ParmsDb::instance()->getNewDriveDbId(driveDbId)) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewDriveDbId");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
         std::string driveTmpName = "<" + std::to_string(driveId) + ">";
         drive = Drive(driveDbId, driveId, accountDbId, driveTmpName);
         if (!ParmsDb::instance()->insertDrive(drive)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertDrive");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
     } else {
         // get existing accound
         if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
-            return ExitCodeDbError;
+            return ExitCode::DbError;
         }
         if (!found) {
             LOG_WARN(_logger, "Account not found with accountId=" << drive.accountDbId());
-            return ExitCodeDataError;
+            return ExitCode::DataError;
         }
 
         driveDbId = drive.dbId();
@@ -365,13 +365,13 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
         found = false;
         std::string appPassword;
         bool appPasswordReadError = false;
-        if (getOldAppPwd(keychainKeyAppPassword, appPassword, found) != ExitCodeOk) {
+        if (getOldAppPwd(keychainKeyAppPassword, appPassword, found) != ExitCode::Ok) {
 #ifdef Q_OS_WIN
             appPasswordReadError = true;
 #else
             // Retry without :index
             keychainKeyAppPassword = user.email() + app_password + oldKeychainKeySeparator + urlKey;
-            if (getOldAppPwd(keychainKeyAppPassword, appPassword, found) != ExitCodeOk) {
+            if (getOldAppPwd(keychainKeyAppPassword, appPassword, found) != ExitCode::Ok) {
                 appPasswordReadError = true;
             }
 #endif
@@ -381,7 +381,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             LOG_WARN(_logger, "Error when trying to access keychain, user will be asked to connect again");
         } else {
             LOG_DEBUG(_logger, "Old app password has been read");
-            if (found && setToken(user, appPassword) == ExitCodeOk) {
+            if (found && setToken(user, appPassword) == ExitCode::Ok) {
                 LOG_DEBUG(_logger, "New token set");
             } else {
                 LOG_DEBUG(_logger, "Error when trying to set token, user will be asked to connect again");
@@ -405,7 +405,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             int syncDbId;
             if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
                 LOG_WARN(_logger, "Error in ParmsDb::getNewSyncDbId");
-                return ExitCodeDbError;
+                return ExitCode::DbError;
             }
             Sync sync;
             sync.setDbId(syncDbId);
@@ -442,7 +442,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
 
             if (!ParmsDb::instance()->insertSync(sync)) {
                 LOG_WARN(_logger, "Error in ParmsDb::insertSync");
-                return ExitCodeDbError;
+                return ExitCode::DbError;
             }
 
             bool isMaster = (targetPath == targetPath.root_path());
@@ -467,18 +467,18 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
                     bool found;
                     if (!ParmsDb::instance()->updateSync(syncCheckPair.second, found)) {
                         LOG_WARN(_logger, "Error in ParmsDb::updateSync");
-                        return ExitCodeDbError;
+                        return ExitCode::DbError;
                     }
                     if (!found) {
                         LOG_WARN(_logger, "Sync not found in ParmsDb :" << syncCheckPair.second.dbId());
-                        return ExitCodeDataError;
+                        return ExitCode::DataError;
                     }
                 }
             }
         }
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode MigrationParams::migrateTemplateExclusion() {
@@ -486,13 +486,13 @@ ExitCode MigrationParams::migrateTemplateExclusion() {
 
     QString excludeFilePath = excludeTemplatesFileName();
     if (excludeFilePath.isEmpty()) {
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     QFile excludeFile(excludeFilePath);
     if (!excludeFile.open(QIODevice::ReadOnly)) {
         LOGW_WARN(_logger, L"Unable to open file " << QStr2WStr(excludeFilePath).c_str());
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     }
 
     while (!excludeFile.atEnd()) {
@@ -517,14 +517,14 @@ ExitCode MigrationParams::migrateTemplateExclusion() {
         if (!ParmsDb::instance()->insertExclusionTemplate(excltmp, constraintError)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertExclusionTemplate");
             if (!constraintError) {
-                return ExitCodeDbError;
+                return ExitCode::DbError;
             }
         }
     }
 
     excludeFile.close();
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode MigrationParams::migrateAppExclusion() {
@@ -532,14 +532,14 @@ ExitCode MigrationParams::migrateAppExclusion() {
 
     QString excludeFilePath = excludeAppsFileName();
     if (excludeFilePath.isEmpty()) {
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     QFile excludeAppFile(excludeFilePath);
 
     if (!excludeAppFile.open(QIODevice::ReadOnly)) {
         LOGW_WARN(_logger, L"Unable to open file " << QStr2WStr(excludeFilePath).c_str());
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     }
 
     while (!excludeAppFile.atEnd()) {
@@ -561,7 +561,7 @@ ExitCode MigrationParams::migrateAppExclusion() {
         if (!ParmsDb::instance()->insertExclusionApp(exclApp, constraintError)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertExclusionApp");
             if (!constraintError) {
-                return ExitCodeDbError;
+                return ExitCode::DbError;
             }
         }
 #endif
@@ -569,7 +569,7 @@ ExitCode MigrationParams::migrateAppExclusion() {
 
     excludeAppFile.close();
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 void MigrationParams::migrateGeometry(std::shared_ptr<std::vector<char>> &geometry) {
@@ -614,20 +614,20 @@ ExitCode MigrationParams::migrateProxySettings(ProxyConfig &proxyConfig) {
         std::string keychainKeyProxyPass(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
         if (!KeyChainManager::instance()->writeToken(keychainKeyProxyPass, pwd)) {
             LOG_WARN(_logger, "Failed to write password token into keychain");
-            return ExitCodeSystemError;
+            return ExitCode::SystemError;
         }
         proxyConfig.setToken(keychainKeyProxyPass);
     }
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode MigrationParams::migrateSelectiveSyncs() {
     LOG_INFO(Log::instance()->getLogger(), "Migrate selective syncs");
 
-    ExitCode ret = ExitCodeOk;
+    ExitCode ret = ExitCode::Ok;
     for (auto &syncToMigrateElt : _syncToMigrate) {
         ExitCode code = ServerRequests::migrateSelectiveSync(syncToMigrateElt.first, syncToMigrateElt.second);
-        if (code != ExitCodeOk) {
+        if (code != ExitCode::Ok) {
             ret = code;
         }
     }
@@ -682,7 +682,7 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
         found = false;
     } else if (status != errSecSuccess) {
         LOG_WARN(_logger, "Unable to read application password");
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     } else if (data != NULL) {
         LOG_DEBUG(_logger, "Application password found");
         appPassword = std::string(reinterpret_cast<const char *>(data), length);
@@ -717,7 +717,7 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
 
     if (error != NULL) {
         LOG_WARN(_logger, "Unable to read application password");
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     } else if (raw_passwords == NULL) {
         LOG_DEBUG(_logger, "Application password not found");
         found = false;
@@ -745,20 +745,20 @@ ExitCode MigrationParams::getOldAppPwd(const std::string &keychainKey, std::stri
             found = false;
         } else {
             LOG_WARN(_logger, "Unable to read application password");
-            return ExitCodeSystemError;
+            return ExitCode::SystemError;
         }
     }
 #endif
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, const std::string &appPassword, ApiToken &apiToken) {
     std::string errorDescr, errorCode;
     GetTokenFromAppPasswordJob job(email, appPassword);
     ExitCode exitCode = job.runSynchronously();
-    if (exitCode != ExitCodeOk) {
-        LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << exitCode);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << enumClassToInt(exitCode));
         errorCode = std::string();
         errorDescr = std::string();
         return exitCode;
@@ -768,20 +768,20 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
     if (job.hasErrorApi(&errorCode, &errorDescr)) {
         LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : "
                                << KDC::Utility::s2ws(errorCode).c_str() << L" - " << KDC::Utility::s2ws(errorDescr).c_str());
-        return ExitCodeBackError;
+        return ExitCode::BackError;
     }
 
     LOG_DEBUG(_logger, "job.hasErrorApi done");
     apiToken = job.apiToken();
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode MigrationParams::setToken(User &user, const std::string &appPassword) {
     bool found;
     ApiToken apiToken;
     ExitCode tokenGetExitCode = getTokenFromAppPassword(user.email(), appPassword, apiToken);
-    if (tokenGetExitCode == ExitCodeOk) {
+    if (tokenGetExitCode == ExitCode::Ok) {
         std::string keychainKey(Utility::computeMd5Hash(std::to_string(std::time(nullptr))));
         if (KeyChainManager::instance()->writeToken(keychainKey, apiToken.rawData())) {
             // Update userInfo
@@ -789,22 +789,22 @@ ExitCode MigrationParams::setToken(User &user, const std::string &appPassword) {
             found = false;
             if (!ParmsDb::instance()->updateUser(user, found)) {
                 LOG_WARN(_logger, "Error in ParmsDb::insertUser");
-                return ExitCodeDbError;
+                return ExitCode::DbError;
             }
             if (!found) {
                 LOG_WARN(_logger, "Error user with dbId " << user.dbId() << " does not exist");
-                return ExitCodeDataError;
+                return ExitCode::DataError;
             }
         } else {
             LOG_WARN(_logger, "Failed to write token into keychain");
-            return ExitCodeSystemError;
+            return ExitCode::SystemError;
         }
     } else {
         LOG_WARN(_logger, "Can't get API Token from old application password, user will be asked to connect again");
-        return ExitCodeDataError;
+        return ExitCode::DataError;
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 

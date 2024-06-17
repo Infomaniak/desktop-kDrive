@@ -137,12 +137,12 @@ ExitCode ExclusionTemplateCache::update(bool def, const std::vector<ExclusionTem
     // Update exclusion templates
     if (!ParmsDb::instance()->updateAllExclusionTemplates(def, def ? _defExclusionTemplates : _userExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAllExclusionTemplates");
-        return ExitCodeDbError;
+        return ExitCode::DbError;
     }
 
     populateUndeletedExclusionTemplates();
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning,

@@ -110,8 +110,8 @@ class ExecutorWorker : public OperationProcessor {
         std::list<UniqueId> _opList;
 
         std::mutex _mutex;
-        ExitCode _executorExitCode = ExitCodeUnknown;
-        ExitCause _executorExitCause = ExitCauseUnknown;
+        ExitCode _executorExitCode = ExitCode::Unknown;
+        ExitCause _executorExitCause = ExitCause::Unknown;
 
         std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
 

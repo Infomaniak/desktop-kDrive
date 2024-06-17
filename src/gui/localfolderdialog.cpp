@@ -194,7 +194,7 @@ void LocalFolderDialog::updateUI() {
     if (_liteSync) {
         VirtualFileMode virtualFileMode;
         ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcLocalFolderDialog) << "Error in Requests::bestAvailableVfsMode";
             return;
         }

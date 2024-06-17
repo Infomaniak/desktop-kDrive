@@ -85,8 +85,8 @@ class ISyncWorker {
         bool _pauseAsked{false};
         bool _unpauseAsked{false};
         bool _isPaused{false};
-        ExitCode _exitCode{ExitCodeUnknown};
-        ExitCause _exitCause{ExitCauseUnknown};
+        ExitCode _exitCode{ExitCode::Unknown};
+        ExitCause _exitCause{ExitCause::Unknown};
 };
 
 }  // namespace KDC

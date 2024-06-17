@@ -28,7 +28,7 @@ namespace KDC {
 
 class AbstractTokenNetworkJob : public AbstractNetworkJob {
         struct ExitHandler {
-                ExitCause exitCause{ExitCauseUnknown};
+                ExitCause exitCause{ExitCause::Unknown};
                 std::string debugMessage;
         };
 

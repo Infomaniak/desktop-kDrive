@@ -176,7 +176,7 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
 #ifdef Q_OS_WIN
     ExitCode exitCode =
         GuiRequests::setShowInExplorerNavigationPane(ParametersCache::instance()->parametersInfo().showShortcuts());
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcAppClient) << "Error in Requests::setShowInExplorerNavigationPane";
     }
 #endif
@@ -515,7 +515,7 @@ void AppClient::onWizardDone(int res) {
         ExitCode exitCode;
         QList<int> userDbIdList;
         exitCode = GuiRequests::getUserDbIdList(userDbIdList);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAppClient) << "Error in Requests::getUserDbIdList";
         }
 
@@ -527,7 +527,7 @@ void AppClient::onWizardDone(int res) {
 #endif
         if (shouldSetAutoStart) {
             ExitCode exitCode = GuiRequests::setLaunchOnStartup(true);
-            if (exitCode != ExitCodeOk) {
+            if (exitCode != ExitCode::Ok) {
                 qCWarning(lcAppClient()) << "Error in GuiRequests::setLaunchOnStartup";
             }
         }
@@ -623,7 +623,7 @@ bool AppClient::connectToServer() {
     count = 0;
     while (count < CHECKCOMMSTATUS_TRIALS) {
         const ExitCode exitCode = GuiRequests::checkCommStatus();
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAppClient()) << "Check of comm status failed";
             count++;
         } else {

@@ -269,7 +269,7 @@ void AddDriveLocalFolderWidget::updateUI() {
     if (_liteSync) {
         VirtualFileMode virtualFileMode;
         const ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveLocalFolderWidget) << "Error in Requests::bestAvailableVfsMode";
             return;
         }
