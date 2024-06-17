@@ -41,22 +41,13 @@ LocalDeleteJob::LocalDeleteJob(int driveDbId, const SyncPath &syncPath, const Sy
       _isDehydratedPlaceholder(isDehydratedPlaceholder),
       _remoteNodeId(remoteId),
       _forceToTrash(forceToTrash) {
-#ifdef _WIN32
-    CoInitialize(NULL);
-#endif
 }
 
 LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) : _absolutePath(absolutePath) {
-#ifdef _WIN32
-    CoInitialize(NULL);
-#endif
     setBypassCheck(true);
 }
 
 LocalDeleteJob::~LocalDeleteJob() {
-#ifdef _WIN32
-    CoUninitialize();
-#endif
 }
 
 bool LocalDeleteJob::canRun() {

@@ -89,7 +89,7 @@ ExitCode ExcludeListPropagator::checkItems() {
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
                                                                                        isWarning, isExcluded, ioError);
             if (!success) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in ExclusionTemplateCache::isExcluded: "
                                                                     << Utility::formatIoError(dirIt->path(), ioError).c_str());
                 return ExitCode::SystemError;
             } else if (isExcluded) {

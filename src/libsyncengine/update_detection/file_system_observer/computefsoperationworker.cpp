@@ -390,7 +390,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                                              snapshot->createdAt(nodeId), snapshotLastModified,
                                                              snapshot->size(nodeId),
                                                              remoteDbPath  // We use the remotePath anyway here to display
-                                                                           // notifications with the real (remote) name
+                                                             // notifications with the real (remote) name
                                                              ,
                                                              snapPath);
                     } else {
@@ -399,7 +399,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                                              snapshot->createdAt(nodeId), snapshotLastModified,
                                                              snapshot->size(nodeId),
                                                              remoteDbPath  // We use the remotePath anyway here to display
-                                                                           // notifications with the real (remote) name
+                                                             // notifications with the real (remote) name
                                                              ,
                                                              snapPath);
                     }
@@ -504,7 +504,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 // Check if a local file is hidden, hence excluded.
                 bool isExcluded = false;
                 IoError ioError = IoError::Success;
-                const bool success = ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(
+                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(
                     _syncPal->_localPath, snapPath, isExcluded, ioError);
                 if (!success || ioError != IoError::Success || isExcluded) {
                     if (_testing && ioError == IoError::NoSuchFileOrDirectory) {
@@ -857,8 +857,8 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     const bool success =
         ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
     if (!success) {
-        LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                               << Utility::formatIoError(absolutePath, ioError).c_str());
+        LOGW_WARN(_logger,
+                  L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError).c_str());
         setExitCause(ExitCause::FileAccessError);
         return ExitCode::SystemError;
     }

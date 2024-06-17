@@ -150,7 +150,7 @@ bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const S
     isExcluded = false;
     ioError = IoError::Success;
 
-    if (!checkIfIsAnExcludedHiddenFile(basePath, relativePath, isExcluded, ioError)) {
+    if (!checkIfIsExcludedBecauseHidden(basePath, relativePath, isExcluded, ioError)) {
         return false;
     }
 
@@ -158,13 +158,13 @@ bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const S
         return true;
     }
 
-    isExcluded = isExcludedTemplate(relativePath, isWarning);
+    isExcluded = isExcludedByTemplate(relativePath, isWarning);
 
     return true;
 }
 
-bool ExclusionTemplateCache::checkIfIsAnExcludedHiddenFile(const SyncPath &basePath, const SyncPath &relativePath,
-                                                           bool &isExcluded, IoError &ioError) noexcept {
+bool ExclusionTemplateCache::checkIfIsExcludedBecauseHidden(const SyncPath &basePath, const SyncPath &relativePath,
+                                                            bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
     ioError = IoError::Success;
 
@@ -192,7 +192,7 @@ bool ExclusionTemplateCache::checkIfIsAnExcludedHiddenFile(const SyncPath &baseP
     return true;
 }
 
-bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bool &isWarning) noexcept {
+bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, bool &isWarning) noexcept {
     const std::lock_guard<std::mutex> lock(_mutex);
     const std::string fileName = SyncName2Str(relativePath.filename().native());
     for (const auto &pattern : _regexPatterns) {
