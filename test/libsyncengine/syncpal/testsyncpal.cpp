@@ -294,13 +294,13 @@ bool TestSyncPal::exec_case_6_4() {
     bool found;
 
     std::optional<NodeId> driveIdN;
-    _syncPal->_syncDb->id(ReplicaSide::ReplicaSide::Remote, remoteCasePath / "n", driveIdN, found);
+    _syncPal->_syncDb->id(ReplicaSide::Remote, remoteCasePath / "n", driveIdN, found);
     if (!found || !driveIdN.has_value()) {
         return false;
     }
 
     std::optional<NodeId> driveIdT;
-    _syncPal->_syncDb->id(ReplicaSide::ReplicaSide::Remote, remoteCasePath / "t", driveIdT, found);
+    _syncPal->_syncDb->id(ReplicaSide::Remote, remoteCasePath / "t", driveIdT, found);
     if (!found || !driveIdT.has_value()) {
         return false;
     }
@@ -326,7 +326,7 @@ bool TestSyncPal::check_case_6_4() {
     bool found;
 
     std::optional<NodeId> driveIdQ;
-    _syncPal->_syncDb->id(ReplicaSide::ReplicaSide::Remote, remoteCasePath / "n/g/w/q", driveIdQ, found);
+    _syncPal->_syncDb->id(ReplicaSide::Remote, remoteCasePath / "n/g/w/q", driveIdQ, found);
     if (!found || !driveIdQ.has_value()) {
         return false;
     }
