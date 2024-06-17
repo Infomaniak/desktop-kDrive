@@ -88,12 +88,12 @@ using OStringStream = std::ostringstream;
 #endif
 
 template <class C>
-requires(std::is_enum_v<C> &&std::same_as<std::underlying_type_t<C>, int>) inline int enumClassToInt(C e) {
+requires(std::is_enum_v<C> && std::is_convertible_v<std::underlying_type_t<C>, int>) inline int enumClassToInt(C e) {
     return static_cast<int>(e);
 }
 
 template <class C>
-requires(std::is_enum_v<C> &&std::same_as<std::underlying_type_t<C>, int>) inline C intToEnumClass(int e) {
+requires(std::is_enum_v<C> && std::is_convertible_v<int, std::underlying_type_t<C>>) inline C intToEnumClass(int e) {
     return static_cast<C>(e);
 }
 
