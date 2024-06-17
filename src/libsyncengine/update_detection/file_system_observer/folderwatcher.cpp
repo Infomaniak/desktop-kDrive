@@ -36,7 +36,7 @@ void FolderWatcher::start() {
     LOG_DEBUG(_logger, "Start Folder Watcher");
     _stop = false;
 
-    _thread = std::unique_ptr<std::jthread>(new std::jthread(executeFunc, this));
+    _thread = std::unique_ptr<std::thread>(new std::thread(executeFunc, this));
 
 #if defined(__APPLE__)
     _thread->detach();

@@ -27,7 +27,8 @@ PipeClient::PipeClient() : _endListener(false) {
 
     // Start listener
     TRACE_DEBUG(L"Start pipe client listener");
-    _listener = new std::jthread(pipeListener, this);
+    _listener = new std::thread(pipeListener, this);
+    //_listener->detach();
 }
 
 PipeClient::~PipeClient() {

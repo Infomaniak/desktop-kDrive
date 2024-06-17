@@ -44,7 +44,7 @@ class PipeClient {
         std::mutex _responseMapMutex;
         std::condition_variable _responseMapCV;
         bool _endListener;
-        std::jthread *_listener;
+        std::thread *_listener;
 
         PipeClient();
         ~PipeClient();

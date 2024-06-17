@@ -1380,7 +1380,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             std::function<void(const QString &, qint64)> callback =
                 std::bind(&AppServer::sendGetFolderSizeCompleted, this, std::placeholders::_1, std::placeholders::_2);
-            std::jthread getFolderSize(ServerRequests::getFolderSize, userDbId, driveId, nodeId.toStdString(), callback);
+            std::thread getFolderSize(ServerRequests::getFolderSize, userDbId, driveId, nodeId.toStdString(), callback);
             getFolderSize.detach();
 
             resultStream << enumClassToInt(ExitCode::Ok);
@@ -1802,7 +1802,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> includeArchivedLogs;
             resultStream << enumClassToInt(ExitCode::Ok);  // Return immediately, progress and error will be report via addError and signal
 
-            std::jthread uploadLogThread([this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); });
+            std::thread uploadLogThread([this, includeArchivedLogs]() { uploadLog(includeArchivedLogs); });
             uploadLogThread.detach();
             break;
         }

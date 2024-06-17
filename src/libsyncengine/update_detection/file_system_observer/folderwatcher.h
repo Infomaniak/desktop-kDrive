@@ -55,7 +55,7 @@ class FolderWatcher {
     private:
         static void *executeFunc(void *thisWorker);
 
-        std::unique_ptr<std::jthread> _thread = nullptr;
+        std::unique_ptr<std::thread> _thread = nullptr;
 };
 
 }  // namespace KDC
