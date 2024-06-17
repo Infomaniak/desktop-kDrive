@@ -178,15 +178,15 @@ ExitCode FolderTreeItemWidget::updateBlackUndecidedSet() {
         }
 
         if (userConnected) {
-            ExitCode exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeTypeBlackList, _oldBlackList);
+            ExitCode exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::BlackList, _oldBlackList);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeTypeBlackList";
+                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::BlackList";
                 return exitCode;
             }
 
-            exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeTypeUndecidedList, _oldUndecidedList);
+            exitCode = GuiRequests::getSyncIdSet(_syncDbId, SyncNodeType::UndecidedList, _oldUndecidedList);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeTypeUndecidedList";
+                qCWarning(lcFolderTreeItemWidget()) << "Error in GuiRequests::getSyncIdSet with SyncNodeType::UndecidedList";
                 return exitCode;
             }
         }

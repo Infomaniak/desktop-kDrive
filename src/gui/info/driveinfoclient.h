@@ -92,7 +92,7 @@ class DriveInfoClient : public DriveInfo {
                            const QString &filePath) const;
 
     private:
-        SyncStatus _status{SyncStatusUndefined};
+        SyncStatus _status{SyncStatus::Undefined};
         bool _unresolvedConflicts{false};
 
         qint64 _totalSize{0};

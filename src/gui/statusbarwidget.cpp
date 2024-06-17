@@ -95,7 +95,7 @@ void StatusBarWidget::setStatus(KDC::GuiUtility::StatusInfo &statusInfo) {
     } else {
         _pauseButton->setDisabled(false);
         _resumeButton->setDisabled(false);
-        if (_statusInfo._status == KDC::SyncStatusPauseAsked || _statusInfo._status == KDC::SyncStatusStopAsked) {
+        if (_statusInfo._status == KDC::SyncStatus::PauseAsked || _statusInfo._status == KDC::SyncStatus::StopAsked) {
             _pauseButton->setDisabled(true);
             _resumeButton->setDisabled(true);
         }
@@ -239,12 +239,12 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
             QWidgetAction *syncAction;
             for (auto const &syncInfoMapElt : syncOfCurrentDrive) {
                 if (pauseClicked &&
-                    (syncInfoMapElt.second.status() == SyncStatusStoped || syncInfoMapElt.second.status() == SyncStatusPaused)) {
+                    (syncInfoMapElt.second.status() == SyncStatus::Stoped || syncInfoMapElt.second.status() == SyncStatus::Paused)) {
                     continue;
                 }
 
                 if (!pauseClicked &&
-                    (syncInfoMapElt.second.status() != SyncStatusStoped && syncInfoMapElt.second.status() != SyncStatusPaused)) {
+                    (syncInfoMapElt.second.status() != SyncStatus::Stoped && syncInfoMapElt.second.status() != SyncStatus::Paused)) {
                     continue;
                 }
 

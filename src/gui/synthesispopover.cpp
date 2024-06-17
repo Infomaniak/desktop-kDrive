@@ -549,10 +549,10 @@ void SynthesisPopover::getFirstSyncWithStatus(SyncStatus status, int driveDbId, 
 
 void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool &found) {
     static QVector<SyncStatus> statusPriority = QVector<SyncStatus>()
-                                                << SyncStatus::SyncStatusStarting << SyncStatus::SyncStatusRunning
-                                                << SyncStatus::SyncStatusPauseAsked << SyncStatus::SyncStatusPaused
-                                                << SyncStatus::SyncStatusStopAsked << SyncStatus::SyncStatusStoped
-                                                << SyncStatus::SyncStatusError << SyncStatus::SyncStatusIdle;
+                                                << SyncStatus::Starting << SyncStatus::Running
+                                                << SyncStatus::PauseAsked << SyncStatus::Paused
+                                                << SyncStatus::StopAsked << SyncStatus::Stoped
+                                                << SyncStatus::Error << SyncStatus::Idle;
 
     found = false;
     for (SyncStatus status : qAsConst(statusPriority)) {
@@ -571,8 +571,8 @@ void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool
 
 void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
     static QVector<SyncStatus> statusPriority =
-        QVector<SyncStatus>() << SyncStatusError << SyncStatusRunning << SyncStatusPauseAsked << SyncStatusPaused
-                              << SyncStatusStopAsked << SyncStatusStoped << SyncStatusStarting << SyncStatusIdle;
+        QVector<SyncStatus>() << SyncStatus::Error << SyncStatus::Running << SyncStatus::PauseAsked << SyncStatus::Paused
+                              << SyncStatus::StopAsked << SyncStatus::Stoped << SyncStatus::Starting << SyncStatus::Idle;
 
     static QVector<SyncStep> syncStepPriority =
         QVector<SyncStep>() << SyncStepPropagation2 << SyncStepPropagation1 << SyncStepReconciliation4 << SyncStepReconciliation3
@@ -593,7 +593,7 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
 
     KDC::GuiUtility::StatusInfo statusInfo;
     if (userInfoMapIt->second.connected()) {
-        statusInfo._status = SyncStatusIdle;
+        statusInfo._status = SyncStatus::Idle;
         int syncsInPropagationStep = 0;
         for (const auto &sync : _gui->syncInfoMap()) {
             const auto &syncInfo = sync.second;

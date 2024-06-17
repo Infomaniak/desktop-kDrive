@@ -279,7 +279,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     std::shared_ptr<CsvFullFileListWithCursorJob> job = nullptr;
     try {
         std::unordered_set<NodeId> blackList;
-        SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeBlackList, blackList);
+        SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
         job = std::make_shared<CsvFullFileListWithCursorJob>(_driveDbId, dirId, blackList, true);
     } catch (std::exception const &e) {
         std::string what = e.what();

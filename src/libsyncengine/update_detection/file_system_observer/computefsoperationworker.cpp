@@ -733,7 +733,7 @@ bool ComputeFSOperationWorker::isInUnsyncedList(const std::shared_ptr<Snapshot> 
 
 bool ComputeFSOperationWorker::isWhitelisted(const std::shared_ptr<Snapshot> snapshot, const NodeId &nodeId) {
     std::unordered_set<NodeId> whiteList;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeWhiteList, whiteList);
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
 
     NodeId tmpNodeId = nodeId;
     while (!tmpNodeId.empty() && tmpNodeId != snapshot->rootFolderId()) {
@@ -777,13 +777,13 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<Snapshot> remoteSn
         size > ParametersCache::instance()->parameters().bigFolderSizeLimitB() && _sync.virtualFileMode() == VirtualFileModeOff) {
         // Update undecided list
         std::unordered_set<NodeId> tmp;
-        SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeUndecidedList, tmp);
+        SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::UndecidedList, tmp);
 
         // Delete all create operations that might have already been created on children
         deleteChildOpRecursively(remoteSnapshot, remoteNodeId, tmp);
 
         tmp.insert(remoteNodeId);
-        SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeUndecidedList, tmp);
+        SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::UndecidedList, tmp);
 
         // Update unsynced list cache
         updateUnsyncedList();
@@ -904,14 +904,14 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<Sn
 }
 
 void ComputeFSOperationWorker::updateUnsyncedList() {
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeUndecidedList, _remoteUnsyncedList);
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::UndecidedList, _remoteUnsyncedList);
     std::unordered_set<NodeId> tmp;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeBlackList, tmp);
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, tmp);
     _remoteUnsyncedList.merge(tmp);
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeTmpRemoteBlacklist, _remoteTmpUnsyncedList);
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, _remoteTmpUnsyncedList);
     _remoteUnsyncedList.merge(_remoteTmpUnsyncedList);
 
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeTmpLocalBlacklist,
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist,
                                          _localTmpUnsyncedList);  // Only tmp list on local side
 }
 

@@ -430,19 +430,19 @@ void TestSyncDb::testSyncNodes() {
     nodeIdSet2.insert("12");
     nodeIdSet2.insert("13");
 
-    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeTypeBlackList, nodeIdSet));
-    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeTypeUndecidedList, nodeIdSet2));
+    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, nodeIdSet));
+    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::UndecidedList, nodeIdSet2));
 
     std::unordered_set<NodeId> nodeIdSet3;
-    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeTypeBlackList, nodeIdSet3));
+    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet3));
     CPPUNIT_ASSERT(nodeIdSet3.size() == 5);
     nodeIdSet3.clear();
-    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeTypeUndecidedList, nodeIdSet3));
+    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::UndecidedList, nodeIdSet3));
     CPPUNIT_ASSERT(nodeIdSet3.size() == 3);
 
-    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeTypeBlackList, std::unordered_set<NodeId>()));
+    CPPUNIT_ASSERT(_testObj->updateAllSyncNodes(SyncNodeType::BlackList, std::unordered_set<NodeId>()));
     nodeIdSet3.clear();
-    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeTypeBlackList, nodeIdSet3));
+    CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeType::BlackList, nodeIdSet3));
     CPPUNIT_ASSERT(nodeIdSet3.size() == 0);
 }
 

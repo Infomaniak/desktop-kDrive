@@ -203,39 +203,39 @@ bool SyncPal::isRunning() const {
 SyncStatus SyncPal::status() const {
     if (!_syncPalWorker) {
         // Not started
-        return SyncStatusStoped;
+        return SyncStatus::Stoped;
     } else {
         // Has started
         if (_syncPalWorker->isRunning()) {
             // Still running
             if (_syncPalWorker->pauseAsked()) {
                 // Auto pausing after a NON fatal error (network, back...)
-                return SyncStatusPauseAsked;
+                return SyncStatus::PauseAsked;
             } else if (_syncPalWorker->isPaused()) {
                 // Auto paused after a NON fatal error
-                return SyncStatusPaused;
+                return SyncStatus::Paused;
             } else if (_syncPalWorker->stopAsked()) {
                 // Stopping at the request of the user
-                return SyncStatusStopAsked;
+                return SyncStatus::StopAsked;
             } else if (_syncPalWorker->step() == SyncStepIdle && !_restart && !_localSnapshot->updated() &&
                        !_remoteSnapshot->updated()) {
                 // Sync pending
-                return SyncStatusIdle;
+                return SyncStatus::Idle;
             } else {
                 // Syncing
-                return SyncStatusRunning;
+                return SyncStatus::Running;
             }
         } else {
             // Starting or exited
             if (_syncPalWorker->exitCode() == ExitCode::Unknown) {
                 // Starting
-                return SyncStatusStarting;
+                return SyncStatus::Starting;
             } else if (_syncPalWorker->exitCode() == ExitCode::Ok) {
                 // Stopped at the request of the user
-                return SyncStatusStoped;
+                return SyncStatus::Stoped;
             } else {
                 // Stopped after a fatal error (DB access, system...)
-                return SyncStatusError;
+                return SyncStatus::Error;
             }
         }
     }
@@ -934,7 +934,7 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshotCopy->exists(*nodeIdIt)
+        const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist ? _localSnapshotCopy->exists(*nodeIdIt)
                                                                       : _remoteSnapshotCopy->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
@@ -953,12 +953,14 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 }
 
 ExitCode SyncPal::updateSyncNode() {
-    for (int syncNodeTypeIdx = SyncNodeTypeWhiteList; syncNodeTypeIdx <= SyncNodeTypeUndecidedList; syncNodeTypeIdx++) {
-        SyncNodeType syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
+    for (int SyncNodeTypeIdx = enumClassToInt(SyncNodeType::WhiteList);
+         SyncNodeTypeIdx <= enumClassToInt(SyncNodeType::UndecidedList); SyncNodeTypeIdx++) {
+        auto syncNodeType = static_cast<SyncNodeType>(SyncNodeTypeIdx);
 
         ExitCode exitCode = updateSyncNode(syncNodeType);
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << syncNodeType);
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in SyncPal::updateSyncNode for syncNodeType=" << enumClassToInt(syncNodeType));
             return exitCode;
         }
     }
@@ -1153,8 +1155,8 @@ void SyncPal::start() {
     resetSharedObjects();
 
     // Clear tmp blacklist
-    SyncNodeCache::instance()->update(_syncDbId, SyncNodeTypeTmpRemoteBlacklist, std::unordered_set<NodeId>());
-    SyncNodeCache::instance()->update(_syncDbId, SyncNodeTypeTmpLocalBlacklist, std::unordered_set<NodeId>());
+    SyncNodeCache::instance()->update(_syncDbId, SyncNodeType::TmpRemoteBlacklist, std::unordered_set<NodeId>());
+    SyncNodeCache::instance()->update(_syncDbId, SyncNodeType::TmpLocalBlacklist, std::unordered_set<NodeId>());
 
     // Create ProgressInfo
     _progressInfo = std::shared_ptr<ProgressInfo>(new ProgressInfo(shared_from_this()));

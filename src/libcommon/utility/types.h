@@ -95,7 +95,7 @@ requires(std::is_enum_v<C> &&std::same_as<std::underlying_type_t<C>, int>) inlin
 }
 
 template <class C>
-requires(std::is_enum_v<C> &&std::same_as<std::underlying_type_t<C>, int>) inline C intToEnumClass(int e) {
+requires(std::is_enum_v<C> && std::same_as<std::underlying_type_t<C>, int>) inline C intToEnumClass(int e) {
     return static_cast<C>(e);
 }
 
@@ -206,7 +206,7 @@ inline bool isConflictsWithLocalRename(ConflictType type) {
 
 enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
 
-using InconsistencyType = enum { // Can't be easily converted to enum class because of the numerous bitwise operations
+using InconsistencyType = enum {  // Can't be easily converted to enum class because of the numerous bitwise operations
     InconsistencyTypeNone = 0x00,
     InconsistencyTypeCase = 0x01,
     InconsistencyTypeForbiddenChar = 0x02,  // Char unsupported by OS
@@ -232,7 +232,7 @@ inline InconsistencyType operator&=(InconsistencyType &a, InconsistencyType b) {
     return a = a & b;
 }
 
-enum class CancelType{
+enum class CancelType {
     None,
     Create,
     Edit,
@@ -246,36 +246,31 @@ enum class CancelType{
     Hardlink
 };
 
-enum class NodeStatus {
-    Unknown = 0,
-    Unprocessed,
-    PartiallyProcessed,
-    Processed
+enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed };
+
+enum class SyncStatus {
+    Undefined,
+    Starting,
+    Running,
+    Idle,
+    PauseAsked,
+    Paused,
+    StopAsked,
+    Stoped,
+    Error,
 };
 
-typedef enum {
-    SyncStatusUndefined,
-    SyncStatusStarting,
-    SyncStatusRunning,
-    SyncStatusIdle,
-    SyncStatusPauseAsked,
-    SyncStatusPaused,
-    SyncStatusStopAsked,
-    SyncStatusStoped,
-    SyncStatusError,
-} SyncStatus;
+enum class SyncNodeType {
+    Undefined = 0,
+    BlackList,           // Nodes that are excluded from sync
+    WhiteList,           // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
+                         // nodes in none of those lists are implicitly whitelisted
+    UndecidedList,       // Considered as blacklisted until user action
+    TmpRemoteBlacklist,  // Blacklisted temporarily
+    TmpLocalBlacklist    // Blacklisted temporarily
+};
 
-typedef enum {
-    SyncNodeTypeUndefined = 0,
-    SyncNodeTypeBlackList,  // Nodes that are excluded from sync
-    SyncNodeTypeWhiteList,  // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
-                            // nodes in none of those lists are implicitly whitelisted
-    SyncNodeTypeUndecidedList,       // Considered as blacklisted until user action
-    SyncNodeTypeTmpRemoteBlacklist,  // Blacklisted temporarily
-    SyncNodeTypeTmpLocalBlacklist    // Blacklisted temporarily
-} SyncNodeType;
-
-typedef enum { SyncDirectionUnknown = 0, SyncDirectionUp, SyncDirectionDown } SyncDirection;
+enum class SyncDirection { Unknown = 0, Up, Down };
 
 typedef enum {
     SyncFileStatusUnknown = 0,

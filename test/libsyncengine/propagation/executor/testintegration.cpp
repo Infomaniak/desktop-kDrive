@@ -115,7 +115,7 @@ void TestIntegration::setUp() {
     _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
 
     // Insert items to blacklist
-    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeBlackList, {test_beaucoupRemoteId});
+    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {test_beaucoupRemoteId});
 
     // Insert items to excluded templates in DB
     std::vector<ExclusionTemplate> templateVec = {

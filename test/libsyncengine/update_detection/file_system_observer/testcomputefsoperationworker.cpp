@@ -161,7 +161,7 @@ void TestComputeFSOperationWorker::setUp() {
         ExclusionTemplate("*_excluded", true)};
     ExclusionTemplateCache::instance()->update(true, templateVec);
     // Insert items to blacklist
-    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeBlackList, {"lac"});
+    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {"lac"});
 
     // Activate big folder limit
     ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(true);

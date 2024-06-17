@@ -51,7 +51,7 @@ enum WizardAction { OpenFolder = 0, OpenParameters, AddDrive };
 
 struct StatusInfo {
         bool _unresolvedConflicts = false;
-        KDC::SyncStatus _status = KDC::SyncStatusUndefined;
+        KDC::SyncStatus _status = KDC::SyncStatus::Undefined;
         qint64 _syncedFiles = 0;
         qint64 _totalFiles = 0;
         qint64 _estimatedRemainingTime = 0;

@@ -171,11 +171,11 @@ void ExecutorWorker::execute() {
             } else {
                 if (syncOp->affectedNode()->id().has_value()) {
                     std::unordered_set<NodeId> whiteList;
-                    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeWhiteList, whiteList);
+                    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
                     if (whiteList.find(syncOp->affectedNode()->id().value()) != whiteList.end()) {
                         // This item has been synchronized, it can now be removed from white list
                         whiteList.erase(syncOp->affectedNode()->id().value());
-                        SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeWhiteList, whiteList);
+                        SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
                     }
                 }
             }
@@ -253,14 +253,14 @@ bool ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
     if (syncOp->targetSide() == ReplicaSide::Local) {
         syncItem.setLocalNodeId(syncOp->correspondingNode() ? syncOp->correspondingNode()->id() : std::nullopt);
         syncItem.setRemoteNodeId(syncOp->affectedNode()->id());
-        syncItem.setDirection(SyncDirectionDown);
+        syncItem.setDirection(SyncDirection::Down);
         if (syncOp->type() & OperationTypeCreate) {
             syncItem.setInstruction(SyncFileInstructionGet);
         }
     } else {
         syncItem.setLocalNodeId(syncOp->affectedNode()->id());
         syncItem.setRemoteNodeId(syncOp->correspondingNode() ? syncOp->correspondingNode()->id() : std::nullopt);
-        syncItem.setDirection(SyncDirectionUp);
+        syncItem.setDirection(SyncDirection::Up);
         if (syncOp->type() & OperationTypeCreate) {
             syncItem.setInstruction(SyncFileInstructionPut);
         }
@@ -1624,11 +1624,11 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
             if (!hasError) {
                 if (syncOp->affectedNode()->id().has_value()) {
                     std::unordered_set<NodeId> whiteList;
-                    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeWhiteList, whiteList);
+                    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
                     if (whiteList.find(syncOp->affectedNode()->id().value()) != whiteList.end()) {
                         // This item has been synchronized, it can now be removed from white list
                         whiteList.erase(syncOp->affectedNode()->id().value());
-                        SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeWhiteList, whiteList);
+                        SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::WhiteList, whiteList);
                     }
                 }
             }

@@ -281,23 +281,23 @@ QString GuiUtility::getSyncStatusIconPath(StatusInfo &statusInfo) {
         path = QString(":/client/resources/icons/statuts/pause.svg");
     } else {
         switch (statusInfo._status) {
-            case KDC::SyncStatusUndefined:
+            case KDC::SyncStatus::Undefined:
                 path = QString(":/client/resources/icons/statuts/warning.svg");
                 break;
-            case KDC::SyncStatusStarting:
-            case KDC::SyncStatusRunning:
+            case KDC::SyncStatus::Starting:
+            case KDC::SyncStatus::Running:
                 path = QString(":/client/resources/icons/statuts/sync.svg");
                 break;
-            case KDC::SyncStatusIdle:
+            case KDC::SyncStatus::Idle:
                 path = QString(":/client/resources/icons/statuts/success.svg");
                 break;
-            case KDC::SyncStatusError:
+            case KDC::SyncStatus::Error:
                 path = QString(":/client/resources/icons/statuts/error-sync.svg");
                 break;
-            case KDC::SyncStatusPauseAsked:
-            case KDC::SyncStatusPaused:
-            case KDC::SyncStatusStopAsked:
-            case KDC::SyncStatusStoped:
+            case KDC::SyncStatus::PauseAsked:
+            case KDC::SyncStatus::Paused:
+            case KDC::SyncStatus::StopAsked:
+            case KDC::SyncStatus::Stoped:
                 path = QString(":/client/resources/icons/statuts/pause.svg");
                 break;
             default:
@@ -316,12 +316,12 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                    .arg(loginLink);
     } else {
         switch (statusInfo._status) {
-            case KDC::SyncStatusUndefined:
+            case KDC::SyncStatus::Undefined:
                 text =
                     QCoreApplication::translate("utility", "No folder to synchronize\nYou can add one from the kDrive settings.");
                 break;
-            case KDC::SyncStatusStarting:
-            case KDC::SyncStatusRunning:
+            case KDC::SyncStatus::Starting:
+            case KDC::SyncStatus::Running:
                 if (statusInfo._totalFiles > 0) {
                     if (statusInfo._liteSyncActivated) {
                         text = QCoreApplication::translate("utility", "Sync in progress (%1 of %2)")
@@ -337,31 +337,31 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                     text = QCoreApplication::translate("utility", "Sync in progress (Step %1/%2).")
                                .arg(statusInfo._syncStep)
                                .arg(KDC::SyncStepDone);
-                } else if (statusInfo._status == KDC::SyncStatusStarting) {
+                } else if (statusInfo._status == KDC::SyncStatus::Starting) {
                     text = QCoreApplication::translate("utility", "Synchronization starting");
                 } else {
                     text = QCoreApplication::translate("utility", "Sync in progress.");
                 }
                 break;
-            case KDC::SyncStatusIdle:
+            case KDC::SyncStatus::Idle:
                 if (statusInfo._unresolvedConflicts) {
                     text = QCoreApplication::translate("utility", "You are up to date, unresolved conflicts.");
                 } else {
                     text = QCoreApplication::translate("utility", "You are up to date!");
                 }
                 break;
-            case KDC::SyncStatusError:
+            case KDC::SyncStatus::Error:
                 text = QCoreApplication::translate(
                            "utility", "Some files couldn't be synchronized. <a style=\"%1\" href=\"%2\">Learn more</a>")
                            .arg(KDC::CommonUtility::linkStyle)
                            .arg(learnMoreLink);
                 break;
-            case KDC::SyncStatusPauseAsked:
-            case KDC::SyncStatusStopAsked:
+            case KDC::SyncStatus::PauseAsked:
+            case KDC::SyncStatus::StopAsked:
                 text = QCoreApplication::translate("utility", "Synchronization pausing ...");
                 break;
-            case KDC::SyncStatusPaused:
-            case KDC::SyncStatusStoped:
+            case KDC::SyncStatus::Paused:
+            case KDC::SyncStatus::Stoped:
                 text = QCoreApplication::translate("utility", "Synchronization paused.");
                 break;
             default:
@@ -377,8 +377,8 @@ QString GuiUtility::getDriveStatusIconPath(StatusInfo &statusInfo) {
 }
 
 bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
-    if (status == KDC::SyncStatusPauseAsked || status == KDC::SyncStatusPaused || status == KDC::SyncStatusStopAsked ||
-        status == KDC::SyncStatusStoped || status == KDC::SyncStatusError) {
+    if (status == KDC::SyncStatus::PauseAsked || status == KDC::SyncStatus::Paused || status == KDC::SyncStatus::StopAsked ||
+        status == KDC::SyncStatus::Stoped || status == KDC::SyncStatus::Error) {
         // Pause
         return false;
     } else {
@@ -387,8 +387,8 @@ bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
 }
 
 bool GuiUtility::getResumeActionAvailable(KDC::SyncStatus status) {
-    if (status == KDC::SyncStatusPauseAsked || status == KDC::SyncStatusPaused || status == KDC::SyncStatusStopAsked ||
-        status == KDC::SyncStatusStoped || status == KDC::SyncStatusError) {
+    if (status == KDC::SyncStatus::PauseAsked || status == KDC::SyncStatus::Paused || status == KDC::SyncStatus::StopAsked ||
+        status == KDC::SyncStatus::Stoped || status == KDC::SyncStatus::Error) {
         // Pause
         return true;
     }

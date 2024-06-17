@@ -478,7 +478,7 @@ void PreferencesWidget::showEvent(QShowEvent *event) {
 void PreferencesWidget::clearUndecidedLists() {
     for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
         // Clear the undecided list
-        ExitCode exitCode = GuiRequests::setSyncIdSet(syncInfoMapElt.first, SyncNodeTypeUndecidedList, QSet<QString>());
+        ExitCode exitCode = GuiRequests::setSyncIdSet(syncInfoMapElt.first, SyncNodeType::UndecidedList, QSet<QString>());
         if (exitCode != ExitCode::Ok) {
             qCWarning(lcPreferencesWidget()) << "Error in Requests::setSyncIdSet";
             return;

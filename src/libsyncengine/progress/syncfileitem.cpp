@@ -28,7 +28,7 @@ SyncFileItem::SyncFileItem()
       _newPath(std::nullopt),
       _localNodeId(std::nullopt),
       _remoteNodeId(std::nullopt),
-      _direction(SyncDirectionUnknown),
+      _direction(SyncDirection::Unknown),
       _instruction(SyncFileInstructionNone),
       _status(SyncFileStatusUnknown),
       _conflict(ConflictType::None),
