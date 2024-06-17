@@ -54,20 +54,20 @@ void TestLogArchiver::testLog() {
 }
 
 void TestLogArchiver::testGetLogEstimatedSize(void) {
-    IoError err = IoErrorSuccess;
+    IoError err = IoError::Success;
     uint64_t size = 0;
     LOG_DEBUG(_logger, "Ensure that the log file is created (test)");
     const bool res = LogArchiver::getLogDirEstimatedSize(size, err);
 
     CPPUNIT_ASSERT(res);
-    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
     CPPUNIT_ASSERT(size >= 0);
     for (int i = 0; i < 100; i++) {
         LOG_DEBUG(_logger, "Test debug log");
     }
     uint64_t newSize = 0;
     LogArchiver::getLogDirEstimatedSize(newSize, err);
-    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
     CPPUNIT_ASSERT(newSize > size);
 }
 
@@ -76,10 +76,10 @@ void TestLogArchiver::testCopyLogsTo(void) {
         TemporaryDirectory tempDir;
         LOG_DEBUG(_logger, "Ensure that the log file is created (test)");
 
-        IoError err = IoErrorSuccess;
+        IoError err = IoError::Success;
         uint64_t logDirsize = 0;
         LogArchiver::getLogDirEstimatedSize(logDirsize, err);
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
         CPPUNIT_ASSERT(logDirsize >= 0);
 
         ExitCause cause = ExitCause::Unknown;
@@ -90,7 +90,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
         uint64_t tempDirSize = 0;
         bool tooDeep = false;
         IoHelper::getDirectorySize(tempDir.path, tempDirSize, err, 0);
-        CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
+        CPPUNIT_ASSERT(err == IoError::Success || err == IoError::MaxDepthExceeded);
         CPPUNIT_ASSERT_EQUAL(logDirsize, tempDirSize);
     }
 
@@ -112,9 +112,9 @@ void TestLogArchiver::testCopyLogsTo(void) {
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);
 
         // copy the compressed log file to the log directory
-        IoError err = IoErrorSuccess;
+        IoError err = IoError::Success;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path / "test.log.gz", logDir / "test.log.gz", err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
 
         IoHelper::deleteDirectory(tempDir.path / "test.log.gz", err);
 
@@ -127,7 +127,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
         // Check that `test.log.gz` does not exist anymore.
         bool exists = false;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(tempDir.path / "test.log.gz", exists, err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, err);
         CPPUNIT_ASSERT_EQUAL(false, exists);
     }
 }
@@ -145,11 +145,11 @@ void TestLogArchiver::testCopyParmsDbTo(void) {
         const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
 
         uint64_t parmsDbSize = 0;
-        IoError err = IoErrorSuccess;
+        IoError err = IoError::Success;
         IoHelper::getFileSize(parmsDbPath, parmsDbSize, err);
 
 
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
         CPPUNIT_ASSERT(parmsDbSize >= 0);
 
         ExitCause cause = ExitCause::Unknown;
@@ -160,7 +160,7 @@ void TestLogArchiver::testCopyParmsDbTo(void) {
         uint64_t tempDirSize = 0;
         bool tooDeep = false;
         IoHelper::getDirectorySize(tempDir.path, tempDirSize, err, 0);
-        CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
+        CPPUNIT_ASSERT(err == IoError::Success || err == IoError::MaxDepthExceeded);
         CPPUNIT_ASSERT_EQUAL(parmsDbSize, tempDirSize);
     }
 }
@@ -176,19 +176,19 @@ void TestLogArchiver::testCompressLogs(void) {
         logFile.close();
 
         const SyncPath logDir = tempDir.path / "log";
-        IoError err = IoErrorSuccess;
+        IoError err = IoError::Success;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::createDirectory(logDir, err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
 
         const SyncPath logFilePath = logDir / "test.log";
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path / "test.log", logFilePath, err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
 
         uint64_t logDirSize = 0;
         bool tooDeep = false;
 
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::getDirectorySize(logDir, logDirSize, err, 0));
-        CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
+        CPPUNIT_ASSERT(err == IoError::Success || err == IoError::MaxDepthExceeded);
         CPPUNIT_ASSERT(logDirSize >= 0);
 
         ExitCause cause = ExitCause::Unknown;
@@ -199,16 +199,16 @@ void TestLogArchiver::testCompressLogs(void) {
 
         uint64_t tempDirSize = 0;
         IoHelper::getDirectorySize(tempDir.path, tempDirSize, err, 0);
-        CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
+        CPPUNIT_ASSERT(err == IoError::Success || err == IoError::MaxDepthExceeded);
         CPPUNIT_ASSERT(tempDirSize < logDirSize);
 
         bool exists = false;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(tempDir.path / "test.log.gz", exists, err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
         CPPUNIT_ASSERT(exists);
 
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(logDir / "test.log.gz", exists, err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
         CPPUNIT_ASSERT(exists);
     }
 
@@ -264,9 +264,9 @@ void TestLogArchiver::testGenerateUserDescriptionFile(void) {
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, code);
 
         bool exists = false;
-        IoError err = IoErrorSuccess;
+        IoError err = IoError::Success;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(userDescriptionFile, exists, err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
         CPPUNIT_ASSERT(exists);
 
         // Check if there is at least 5 lines in the file
@@ -307,9 +307,9 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
         CPPUNIT_ASSERT_EQUAL(tempDir.path / archivePath.filename(), archivePath);
 
         bool exists = false;
-        IoError err = IoErrorSuccess;
+        IoError err = IoError::Success;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(archivePath, exists, err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
         CPPUNIT_ASSERT(exists);
     }
 
@@ -331,7 +331,7 @@ bool TestLogArchiver::parmsDbFileExist() {
     const SyncPath parmsDbName = ".parms.db";
     const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
 
-    IoError err = IoErrorSuccess;
+    IoError err = IoError::Success;
     bool exists = false;
 
     if (!IoHelper::checkIfPathExists(parmsDbPath, exists, err)) {

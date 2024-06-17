@@ -172,7 +172,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                 // Check if the directory entry is managed
                 bool isManaged = true;
                 bool isLink = false;
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                       L"Error in Utility::checkIfDirEntryIsManaged - path=" << Path2WStr(absolutePath).c_str());
@@ -180,14 +180,14 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                     continue;
                 }
 
-                if (ioError == IoErrorNoSuchFileOrDirectory) {
+                if (ioError == IoError::NoSuchFileOrDirectory) {
                     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
                                        L"Directory entry does not exist anymore - path=" << Path2WStr(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 }
 
-                if (ioError == IoErrorAccessDenied) {
+                if (ioError == IoError::AccessDenied) {
                     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
                                        L"Directory misses search permission: " << Utility::formatSyncPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
@@ -220,7 +220,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
     // Remove item from filesystem
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(absolutePath, ioError).c_str());

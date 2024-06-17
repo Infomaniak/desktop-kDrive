@@ -38,7 +38,7 @@ ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> sy
 void ConflictingFilesCorrector::runJob() {
     for (auto &error : _errors) {
         bool exists = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(error.destinationPath(), exists, ioError)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: "
                                                         << Utility::formatIoError(error.destinationPath(), ioError).c_str());

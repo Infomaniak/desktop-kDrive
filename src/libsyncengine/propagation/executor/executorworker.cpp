@@ -503,7 +503,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatus::Error);
 
                 bool parentExists = false;
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 if (!IoHelper::checkIfPathExists(absoluteLocalFilePath.parent_path(), parentExists, ioError)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                            << Utility::formatIoError(absoluteLocalFilePath.parent_path(), ioError).c_str());
@@ -512,7 +512,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                     return false;
                 }
 
-                if (ioError == IoErrorAccessDenied) {
+                if (ioError == IoError::AccessDenied) {
                     LOGW_WARN(_logger, L"Item misses search permission: "
                                            << Utility::formatSyncPath(absoluteLocalFilePath.parent_path()).c_str());
                     _executorExitCode = ExitCode::SystemError;
@@ -529,7 +529,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                     return false;
                 }
 
-                if (ioError == IoErrorAccessDenied) {
+                if (ioError == IoError::AccessDenied) {
                     LOGW_WARN(_logger,
                               L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
                     _executorExitCode = ExitCode::SystemError;
@@ -546,7 +546,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             }
 
             FileStat fileStat;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getFileStat: "
                                                << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
@@ -556,12 +556,12 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 return false;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
                 _executorExitCode = ExitCode::DataError;
                 _executorExitCause = ExitCause::InvalidSnapshot;
                 return false;
-            } else if (ioError == IoErrorAccessDenied) {
+            } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
                 _executorExitCode = ExitCode::SystemError;
                 _executorExitCause = ExitCause::NoSearchPermission;
@@ -600,7 +600,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 job = std::make_shared<LocalCreateDirJob>(absoluteLocalFilePath);
             } else {
                 bool exists = false;
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 if (!IoHelper::checkIfPathExists(absoluteLocalFilePath, exists, ioError)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                            << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
@@ -688,7 +688,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             }
 
             uint64_t filesize = 0;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!IoHelper::getFileSize(absoluteLocalFilePath, filesize, ioError)) {
                 LOGW_WARN(_logger,
                           L"Error in IoHelper::getFileSize: " << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
@@ -697,14 +697,14 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 return false;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {  // The synchronization will be re-started.
+            if (ioError == IoError::NoSuchFileOrDirectory) {  // The synchronization will be re-started.
                 LOGW_WARN(_logger, L"Item doesn't exist for path=" << Path2WStr(absoluteLocalFilePath).c_str());
                 _executorExitCode = ExitCode::DataError;
                 _executorExitCause = ExitCause::Unknown;
                 return false;
             }
 
-            if (ioError == IoErrorAccessDenied) {  // An action from the user is requested.
+            if (ioError == IoError::AccessDenied) {  // An action from the user is requested.
                 LOGW_WARN(_logger, L"Item search permission missing for path=" << Path2WStr(absoluteLocalFilePath).c_str());
                 _executorExitCode = ExitCode::SystemError;
                 _executorExitCause = ExitCause::NoSearchPermission;
@@ -829,7 +829,7 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
 
     // Update the local ID
     FileStat fileStat;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::getFileStat(absoluteLocalFilePath, &fileStat, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
         _executorExitCode = ExitCode::SystemError;
@@ -837,12 +837,12 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
         return false;
     }
 
-    if (ioError == IoErrorNoSuchFileOrDirectory) {
+    if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         _executorExitCode = ExitCode::DataError;
         _executorExitCause = ExitCause::InvalidSnapshot;
         return false;
-    } else if (ioError == IoErrorAccessDenied) {
+    } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         _executorExitCode = ExitCode::SystemError;
         _executorExitCause = ExitCause::NoSearchPermission;
@@ -984,7 +984,7 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
 
         uint64_t filesize;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::getFileSize(absoluteLocalFilePath, filesize, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::getFileSize: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
             _executorExitCode = ExitCode::SystemError;
@@ -992,14 +992,14 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
             return false;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {  // The synchronization will re-started.
+        if (ioError == IoError::NoSuchFileOrDirectory) {  // The synchronization will re-started.
             LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
             _executorExitCode = ExitCode::DataError;
             _executorExitCause = ExitCause::Unknown;
             return false;
         }
 
-        if (ioError == IoErrorAccessDenied) {  // An action from the user is requested.
+        if (ioError == IoError::AccessDenied) {  // An action from the user is requested.
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
             _executorExitCode = ExitCode::SystemError;
             _executorExitCause = ExitCause::NoSearchPermission;
@@ -1421,12 +1421,12 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
     bool readPermission = false;
     bool writePermission = false;
     bool execPermission = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::getRights(absoluteLocalFilePath, readPermission, writePermission, execPermission, ioError)) {
         LOGW_WARN(_logger, L"Error in Utility::getRights: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
-    exists = ioError != IoErrorNoSuchFileOrDirectory;
+    exists = ioError != IoError::NoSuchFileOrDirectory;
 
     if (syncOp->targetSide() == ReplicaSide::Local) {
         switch (syncOp->type()) {

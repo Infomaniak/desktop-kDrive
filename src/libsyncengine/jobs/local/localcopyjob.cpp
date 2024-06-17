@@ -33,7 +33,7 @@ bool LocalCopyJob::canRun() {
 
     // Check that we can copy the file in destination
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError).c_str());
         _exitCode = ExitCode::SystemError;

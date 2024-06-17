@@ -296,7 +296,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                         if (!snapshot->exists(nodeId)) {
                             bool exists = false;
 
-                            if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
+                            if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
                                 LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                        << Utility::formatIoError(localPath, ioError).c_str());
                                 return ExitCode::SystemError;
@@ -306,7 +306,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     }
 
                     if (checkTemplate) {
-                        IoError ioError = IoErrorSuccess;
+                        IoError ioError = IoError::Success;
                         bool warn = false;
                         bool isExcluded = false;
                         const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, dbPath,
@@ -353,7 +353,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     // OS might fail to notify all delete events, therefore we check that the file still exists.
                     SyncPath absolutePath = _syncPal->_localPath / snapPath;
                     bool exists = false;
-                    if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+                    if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                                << Utility::formatIoError(absolutePath, ioError).c_str());
                         return ExitCode::SystemError;
@@ -503,11 +503,11 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
             if (side == ReplicaSide::Local) {
                 // Check if a local file is hidden, hence excluded.
                 bool isExcluded = false;
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 const bool success = ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(
                     _syncPal->_localPath, snapPath, isExcluded, ioError);
-                if (!success || ioError != IoErrorSuccess || isExcluded) {
-                    if (_testing && ioError == IoErrorNoSuchFileOrDirectory) {
+                if (!success || ioError != IoError::Success || isExcluded) {
+                    if (_testing && ioError == IoError::NoSuchFileOrDirectory) {
                         // Files does exist in test, this fine, ignore ioError.
                     } else {
                         continue;
@@ -656,7 +656,7 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<Snapshot
 
             // Check that file exists
             bool exists = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!IoHelper::checkIfPathExists(absoluteFilePath, exists, ioError)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists for path="
                                        << Utility::formatIoError(absoluteFilePath, ioError).c_str());
@@ -821,12 +821,12 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
 
     const SyncPath absolutePath = _syncPal->_localPath / relativePath;
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExistsWithSameNodeId: "
                                << Utility::formatIoError(absolutePath, ioError).c_str());
 
-        if (ioError == IoErrorInvalidFileName) {
+        if (ioError == IoError::InvalidFileName) {
             // Observed on MacOSX under special circumstances; see getItemType unit test edge cases.
             setExitCause(ExitCause::InvalidName);
         } else
@@ -853,7 +853,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
 
     // Check if file is synced
     bool isWarning = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
     const bool success =
         ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
     if (!success) {
@@ -863,7 +863,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
         return ExitCode::SystemError;
     }
 
-    if (ioError == IoErrorAccessDenied) {
+    if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item " << Path2WStr(absolutePath).c_str() << L" misses search permissions!");
         setExitCause(ExitCause::NoSearchPermission);
         return ExitCode::SystemError;

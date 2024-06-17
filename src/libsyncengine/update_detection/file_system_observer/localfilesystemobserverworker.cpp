@@ -90,7 +90,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (opTypeFromOS == OperationTypeDelete) {
             NodeId prevNodeId = _snapshot->itemId(relativePath);
             bool exists = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!prevNodeId.empty()) {
                 if (IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, exists, ioError) && !exists) {
                     if (_snapshot->removeItem(prevNodeId)) {
@@ -104,7 +104,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         FileStat fileStat;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
             LOGW_SYNCPAL_WARN(_logger,
                               L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError).c_str());
@@ -113,12 +113,12 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         }
 
         bool exists = true;
-        if (ioError == IoErrorAccessDenied) {
+        if (ioError == IoError::AccessDenied) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Item: " << Utility::formatSyncPath(absolutePath).c_str() << L" misses search permissions!");
             sendAccessDeniedError(absolutePath);
             continue;
-        } else if (ioError == IoErrorNoSuchFileOrDirectory) {
+        } else if (ioError == IoError::NoSuchFileOrDirectory) {
             exists = false;
         }
 
@@ -137,7 +137,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
 
             nodeType = itemType.nodeType;
-            isLink = itemType.linkType != LinkTypeNone;
+            isLink = itemType.linkType != LinkType::None;
 
             // Check if excluded by a file exclusion rule
             bool isWarning = false;
@@ -188,7 +188,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 invalidateSnapshot();
                 return;
             }
-            exists = ioError != IoErrorNoSuchFileOrDirectory;
+            exists = ioError != IoError::NoSuchFileOrDirectory;
         }
 
         if (!exists || !writePermission) {
@@ -227,18 +227,18 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (opTypeFromOS == OperationTypeEdit) {
             // Filter out hydration/dehydration
             bool changed = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             const bool success = IoHelper::checkIfFileChanged(absolutePath, _snapshot->size(nodeId),
                                                               _snapshot->lastModified(nodeId), changed, ioError);
             if (!success) {
                 LOGW_SYNCPAL_WARN(
                     _logger, L"Error in IoHelper::checkIfFileChanged: " << Utility::formatIoError(absolutePath, ioError).c_str());
             }
-            if (ioError == IoErrorAccessDenied) {
+            if (ioError == IoError::AccessDenied) {
                 LOGW_SYNCPAL_DEBUG(_logger,
                                    L"Item: " << Utility::formatSyncPath(absolutePath).c_str() << L" misses search permissions!");
                 sendAccessDeniedError(absolutePath);
-            } else if (ioError == IoErrorNoSuchFileOrDirectory) {
+            } else if (ioError == IoError::NoSuchFileOrDirectory) {
                 continue;
             }
 
@@ -568,7 +568,7 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     const SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
     bool isWarning = false;
     bool isExcluded = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     const bool success =
         ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
     if (!success) {
@@ -607,14 +607,14 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     bool readPermission = false;
     bool writePermission = false;
     bool execPermission = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::getRights(absoluteParentDirPath, readPermission, writePermission, execPermission, ioError)) {
         LOGW_WARN(_logger, L"Error in Utility::getRights: " << Utility::formatSyncPath(absoluteParentDirPath).c_str());
         setExitCause(ExitCause::FileAccessError);
         return ExitCode::SystemError;
     }
 
-    if (ioError == IoErrorNoSuchFileOrDirectory) {
+    if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, ioError).c_str());
         setExitCause(ExitCause::SyncDirDoesntExist);
@@ -635,21 +635,21 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         return ExitCode::SystemError;
     }
 
-    if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_SYNCPAL_WARN(_logger,
                           L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str() << L" doesn't exist");
         setExitCause(ExitCause::SyncDirDoesntExist);
         return ExitCode::SystemError;
     }
 
-    if (itemType.ioError == IoErrorAccessDenied) {
+    if (itemType.ioError == IoError::AccessDenied) {
         LOGW_SYNCPAL_WARN(
             _logger, L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str() << L" misses read permission");
         setExitCause(ExitCause::SyncDirReadError);
         return ExitCode::SystemError;
     }
 
-    if (itemType.linkType != LinkTypeNone) {
+    if (itemType.linkType != LinkType::None) {
         return ExitCode::Ok;
     }
 
@@ -695,18 +695,18 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             if (!toExclude) {
                 // Check if the directory entry is managed
                 bool isManaged = false;
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
                                                    << Utility::formatSyncPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
-                } else if (ioError == IoErrorNoSuchFileOrDirectory) {
+                } else if (ioError == IoError::NoSuchFileOrDirectory) {
                     LOGW_SYNCPAL_DEBUG(
                         _logger, L"Directory entry does not exist anymore: " << Utility::formatSyncPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
-                } else if (ioError == IoErrorAccessDenied) {
+                } else if (ioError == IoError::AccessDenied) {
                     LOGW_SYNCPAL_DEBUG(_logger,
                                        L"Directory misses search permission: " << Utility::formatSyncPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
@@ -724,7 +724,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 // Check template exclusion
                 bool isWarning = false;
                 bool isExcluded = false;
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
                                                                                            isWarning, isExcluded, ioError);
                 if (!success) {
@@ -743,7 +743,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             FileStat fileStat;
             NodeId nodeId;
             if (!toExclude) {
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
                     LOGW_SYNCPAL_DEBUG(
                         _logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError).c_str());
@@ -751,12 +751,12 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                     continue;
                 }
 
-                if (ioError == IoErrorNoSuchFileOrDirectory) {
+                if (ioError == IoError::NoSuchFileOrDirectory) {
                     LOGW_SYNCPAL_DEBUG(
                         _logger, L"Directory entry does not exist anymore: " << Utility::formatSyncPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
-                } else if (ioError == IoErrorAccessDenied) {
+                } else if (ioError == IoError::AccessDenied) {
                     LOGW_SYNCPAL_INFO(_logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str()
                                                          << L" rejected because access is denied");
                     sendAccessDeniedError(absolutePath);
@@ -773,7 +773,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                         continue;
                     }
 
-                    if (ioError == IoErrorNoSuchFileOrDirectory) {
+                    if (ioError == IoError::NoSuchFileOrDirectory) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore: "
                                                         << Utility::formatSyncPath(absolutePath).c_str());
                         dirIt.disable_recursion_pending();
@@ -807,7 +807,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
             } else {
                 FileStat parentFileStat;
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, ioError)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: "
                                            << Utility::formatIoError(absolutePath.parent_path(), ioError).c_str());
@@ -815,12 +815,12 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                     return ExitCode::SystemError;
                 }
 
-                if (ioError == IoErrorNoSuchFileOrDirectory) {
+                if (ioError == IoError::NoSuchFileOrDirectory) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Directory doesn't exist anymore: "
                                                     << Utility::formatSyncPath(absolutePath.parent_path()).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
-                } else if (ioError == IoErrorAccessDenied) {
+                } else if (ioError == IoError::AccessDenied) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission: "
                                                     << Utility::formatSyncPath(absolutePath.parent_path()).c_str());
                     dirIt.disable_recursion_pending();

@@ -97,7 +97,7 @@ void FolderWatcher_linux::startWatching() {
 
                         changeDetected(path, opType);
                         bool isDirectory = false;
-                        IoError ioError = IoErrorSuccess;
+                        IoError ioError = IoError::Success;
                         const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
                         if (!isDirSuccess) {
                             LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: "
@@ -105,7 +105,7 @@ void FolderWatcher_linux::startWatching() {
                             continue;
                         }
 
-                        if (ioError == IoErrorAccessDenied) {
+                        if (ioError == IoError::AccessDenied) {
                             LOGW_WARN(_logger, L"The item misses search/exec permission - path=" << Path2WStr(path).c_str());
                         }
 

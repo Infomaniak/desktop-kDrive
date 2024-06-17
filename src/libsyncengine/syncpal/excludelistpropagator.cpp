@@ -85,7 +85,7 @@ ExitCode ExcludeListPropagator::checkItems() {
             const SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, dirIt->path());
             bool isWarning = false;
             bool isExcluded = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
                                                                                        isWarning, isExcluded, ioError);
             if (!success) {

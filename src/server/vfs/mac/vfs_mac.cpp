@@ -212,7 +212,7 @@ bool VfsMac::forceStatus(const QString &path, bool isSyncing, int progress, bool
     SyncPath stdPath = QStr2Path(path);
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError).c_str());
         return false;
@@ -379,23 +379,23 @@ bool VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item,
             return false;
         }
 
-        if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(KDC::Log::instance()->getLogger(),
                        L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
-        if (itemType.ioError == IoErrorAccessDenied) {
+        if (itemType.ioError == IoError::AccessDenied) {
             LOGW_DEBUG(KDC::Log::instance()->getLogger(),
                        L"Item misses search permission : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
-        const bool isLink = itemType.linkType != LinkTypeNone;
+        const bool isLink = itemType.linkType != LinkType::None;
         bool isDirectory = false;
         if (!isLink) {
             isDirectory = itemType.nodeType == NodeType::Directory;
-            if (!isDirectory && itemType.ioError != IoErrorSuccess) {
+            if (!isDirectory && itemType.ioError != IoError::Success) {
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
                                         << Utility::formatIoError(fullPath, itemType.ioError).c_str());
                 return false;
@@ -436,7 +436,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             // Check if the directory entry is managed
             bool isManaged = true;
             bool isLink = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                 LOGW_WARN(logger(),
                           L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath).c_str());
@@ -444,14 +444,14 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
                 continue;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(logger(),
                            L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
-            if (ioError == IoErrorAccessDenied) {
+            if (ioError == IoError::AccessDenied) {
                 LOGW_DEBUG(logger(), L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
                 continue;
@@ -573,7 +573,7 @@ bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
     std::filesystem::path fullPath(_vfsSetupParams._localPath / QStr2Path(fileRelativePath));
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -731,25 +731,25 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
             return false;
         }
 
-        if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(KDC::Log::instance()->getLogger(),
                        L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
-        if (itemType.ioError == IoErrorAccessDenied) {
+        if (itemType.ioError == IoError::AccessDenied) {
             LOGW_DEBUG(KDC::Log::instance()->getLogger(),
                        L"Item misses search permission : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
-        bool isLink = itemType.linkType != LinkTypeNone;
+        bool isLink = itemType.linkType != LinkType::None;
         bool isDirectory;
         if (isLink) {
             isDirectory = false;
         } else {
             isDirectory = itemType.nodeType == NodeType::Directory;
-            if (!isDirectory && itemType.ioError != IoErrorSuccess) {
+            if (!isDirectory && itemType.ioError != IoError::Success) {
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
                                         << Utility::formatIoError(fullPath, itemType.ioError).c_str());
                 return false;

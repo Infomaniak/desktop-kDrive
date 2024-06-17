@@ -1153,7 +1153,7 @@ void SocketApi::manageActionsOnSingleFile(SocketListener *listener, const QStrin
                                           std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator vfsMapIt,
                                           const KDC::Sync &sync) {
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!KDC::IoHelper::checkIfPathExists(QStr2Path(files.first()), exists, ioError) || !exists) {
         return;
     }
@@ -1413,12 +1413,12 @@ FileData FileData::get(const KDC::SyncPath &path) {
         return FileData();
     }
 
-    if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Item does not exist anymore - path=" << Path2WStr(tmpPath).c_str());
         return FileData();
     }
 
-    data._isLink = itemType.linkType != KDC::LinkTypeNone;
+    data._isLink = itemType.linkType != KDC::LinkType::None;
     if (data._isLink) {
         data._isDirectory = false;
     } else {

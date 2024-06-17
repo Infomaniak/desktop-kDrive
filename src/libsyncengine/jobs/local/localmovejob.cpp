@@ -32,7 +32,7 @@ bool LocalMoveJob::canRun() {
     }
 
     std::error_code ec;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!Utility::isEqualInsensitive(_source, _dest)) {
         // Check that we can move the file in destination
         bool exists = false;

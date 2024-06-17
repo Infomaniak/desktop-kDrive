@@ -34,7 +34,7 @@ bool LocalCreateDirJob::canRun() {
 
     // Check that we can create the directory here
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
@@ -57,7 +57,7 @@ void LocalCreateDirJob::runJob() {
         return;
     }
 
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (IoHelper::createDirectory(_destFilePath, ioError)) {
         if (isExtendedLog()) {
             LOGW_DEBUG(_logger, L"Directory: " << Utility::formatSyncPath(_destFilePath).c_str() << L" created");
@@ -65,14 +65,14 @@ void LocalCreateDirJob::runJob() {
         _exitCode = ExitCode::Ok;
     }
 
-    if (ioError == IoErrorAccessDenied) {
+    if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Search permission missing: =" << Utility::formatSyncPath(_destFilePath).c_str());
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::NoSearchPermission;
         return;
     }
 
-    if (ioError != IoErrorSuccess) {  // Unexpected error
+    if (ioError != IoError::Success) {  // Unexpected error
         LOGW_WARN(_logger, L"Failed to create directory: " << Utility::formatIoError(_destFilePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
@@ -88,12 +88,12 @@ void LocalCreateDirJob::runJob() {
             return;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_destFilePath).c_str());
             _exitCode = ExitCode::DataError;
             _exitCause = ExitCause::InvalidSnapshot;
             return;
-        } else if (ioError == IoErrorAccessDenied) {
+        } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_destFilePath).c_str());
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::NoSearchPermission;

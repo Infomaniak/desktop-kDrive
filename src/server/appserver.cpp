@@ -147,7 +147,7 @@ AppServer::AppServer(int &argc, char **argv)
     }
 
     bool newDbExists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
         throw std::runtime_error("Unable to check if parmsdb exists.");
@@ -1781,9 +1781,9 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         }
         case REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE: {
             uint64_t logSize = 0;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             bool res = LogArchiver::getLogDirEstimatedSize(logSize, ioError);
-            if (ioError != IoErrorSuccess) {
+            if (ioError != IoError::Success) {
                 LOG_WARN(_logger,
                          "Error in LogArchiver::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError).c_str());
 
@@ -2955,7 +2955,7 @@ void AppServer::onCrashFatal() {
 
 void AppServer::initLogging() {
     // Setup log4cplus
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     SyncPath logDirPath;
     if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
         throw std::runtime_error("Error in initLogging: failed to get the log directory path.");
@@ -3460,7 +3460,7 @@ ExitCode AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
 ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) noexcept {
     // Check that the sync folder exists.
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(sync.localPath(), exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists " << Utility::formatIoError(sync.localPath(), ioError).c_str());
         exitCause = ExitCause::Unknown;

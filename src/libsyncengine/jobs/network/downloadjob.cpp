@@ -116,7 +116,7 @@ bool DownloadJob::canRun() {
 
     // Check that we can create the item here
     bool exists;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_localpath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
@@ -140,16 +140,16 @@ void DownloadJob::runJob() noexcept {
         // Update size on file system
         if (_vfsUpdateMetadata) {
             FileStat filestat;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError).c_str());
                 return;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath).c_str());
                 return;
-            } else if (ioError == IoErrorAccessDenied) {
+            } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath).c_str());
                 return;
             }
@@ -215,7 +215,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 #endif
 
         SyncPath tmpPath;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::tempDirectoryPath(tmpPath, ioError)) {
             LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpPath, ioError).c_str());
             _exitCode = ExitCode::SystemError;
@@ -405,7 +405,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
     // Retrieve inode
     FileStat filestat;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
@@ -413,12 +413,12 @@ bool DownloadJob::handleResponse(std::istream &is) {
         return false;
     }
 
-    if (ioError == IoErrorNoSuchFileOrDirectory) {
+    if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath).c_str());
         _exitCode = ExitCode::DataError;
         _exitCause = ExitCause::InvalidSnapshot;
         return false;
-    } else if (ioError == IoErrorAccessDenied) {
+    } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath).c_str());
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::NoSearchPermission;
@@ -448,7 +448,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
                                                 << Utility::formatSyncPath(_localpath).c_str());
 
         bool isFolder = mimeType == mimeTypeSymlinkFolder;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::createSymlink(targetPath, _localpath, isFolder, ioError)) {
             LOGW_WARN(_logger, L"Failed to create symlink: " << Utility::formatIoError(targetPath, ioError).c_str());
             return false;
@@ -476,7 +476,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 #if defined(_WIN32)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_localpath).c_str());
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::createJunction(data, _localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_localpath, ioError).c_str());
             return false;
@@ -486,7 +486,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 #if defined(__APPLE__)
         LOGW_DEBUG(_logger, L"Create alias: " << Utility::formatSyncPath(_localpath).c_str());
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::createAlias(data, _localpath, ioError)) {
             const std::wstring message = Utility::s2ws(IoHelper::ioError2StdString(ioError));
             LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError).c_str());
@@ -561,7 +561,7 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
 #endif
         else if (ec) {
             bool exists = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                        << Utility::formatIoError(_localpath.parent_path(), ioError).c_str());

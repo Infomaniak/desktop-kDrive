@@ -50,7 +50,7 @@ UploadSession::UploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, cons
       _modtimeIn(modtime),
       _liteSyncActivated(liteSyncActivated),
       _nbParalleleThread(nbParalleleThread) {
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(_filePath, ioError).c_str());
 
@@ -156,7 +156,7 @@ bool UploadSession::canRun() {
 
     // Check that the item still exist
     bool exists;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;

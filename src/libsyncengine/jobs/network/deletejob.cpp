@@ -53,7 +53,7 @@ bool DeleteJob::canRun() {
 
     // The item must be absent on local replica for the job to run
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _localItemId, exists, ioError)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
@@ -64,7 +64,7 @@ bool DeleteJob::canRun() {
 
     if (exists) {
         FileStat filestat;
-        ioError = IoErrorSuccess;
+        ioError = IoError::Success;
         if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
             LOGW_WARN(_logger,
                       L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
@@ -73,12 +73,12 @@ bool DeleteJob::canRun() {
             return false;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
             _exitCode = ExitCode::DataError;
             _exitCause = ExitCause::InvalidSnapshot;
             return false;
-        } else if (ioError == IoErrorAccessDenied) {
+        } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::NoSearchPermission;

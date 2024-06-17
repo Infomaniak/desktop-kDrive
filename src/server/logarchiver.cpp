@@ -41,7 +41,7 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     bool result = false;
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
         result = IoHelper::getDirectorySize(logPath, size, ioError);
-        if (ioError == IoErrorSuccess) {
+        if (ioError == IoError::Success) {
             return true;
         }
     }
@@ -59,7 +59,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     const SyncPath tempLogArchiveDir =
         logPath / "temp_support_archive_generator" / ("tempLogArchive_" + CommonUtility::generateRandomStringAlphaNum(10));
     exitCause = ExitCause::Unknown;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
 
     // Generate archive name: <drive id 1>-<drive id 2>...-<drive id N>-yyyyMMdd-HHmmss.zip
     std::string archiveName;
@@ -106,10 +106,10 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     archivePath = outputPath / archiveName;
 
     // Create temp folder
-    if (!IoHelper::createDirectory(tempLogArchiveDir.parent_path(), ioError) && ioError != IoErrorDirectoryExists) {
+    if (!IoHelper::createDirectory(tempLogArchiveDir.parent_path(), ioError) && ioError != IoError::DirectoryExists) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::createDirectory: "
                                                     << Utility::formatIoError(tempLogArchiveDir.parent_path(), ioError).c_str());
-        if (ioError == IoErrorDiskFull) {
+        if (ioError == IoError::DiskFull) {
             exitCause = ExitCause::NotEnoughDiskSpace;
         } else {
             exitCause = ExitCause::Unknown;
@@ -120,9 +120,9 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     if (!IoHelper::createDirectory(tempLogArchiveDir, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::createDirectory: " << Utility::formatIoError(tempLogArchiveDir, ioError).c_str());
-        IoError ignoreError = IoErrorSuccess;
+        IoError ignoreError = IoError::Success;
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ignoreError);
-        if (ioError == IoErrorDiskFull) {
+        if (ioError == IoError::DiskFull) {
             exitCause = ExitCause::NotEnoughDiskSpace;
         } else {
             exitCause = ExitCause::Unknown;
@@ -237,7 +237,7 @@ ExitCode LogArchiver::copyLogsTo(const SyncPath &outputPath, bool includeArchive
     exitCause = ExitCause::Unknown;
     SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
 
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dir;
     if (!IoHelper::getDirectoryIterator(logPath, false, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
@@ -261,7 +261,7 @@ ExitCode LogArchiver::copyLogsTo(const SyncPath &outputPath, bool includeArchive
         if (!IoHelper::copyFileOrDirectory(entry.path(), outputPath / entry.path().filename(), ioError)) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
-            if (ioError == IoErrorDiskFull) {
+            if (ioError == IoError::DiskFull) {
                 exitCause = ExitCause::NotEnoughDiskSpace;
             }
             return ExitCode::SystemError;
@@ -281,7 +281,7 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
     const SyncPath parmsDbName = ".parms.db";
     const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
     DirectoryEntry entryParmsDb;
-    IoError ioError = IoErrorUnknown;
+    IoError ioError = IoError::Unknown;
     exitCause = ExitCause::Unknown;
 
     if (!IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {
@@ -289,7 +289,7 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
 
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             exitCause = ExitCause::FileAccessError;
         }
         return ExitCode::SystemError;
@@ -299,7 +299,7 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
 
-        if (ioError == IoErrorDiskFull) {
+        if (ioError == IoError::DiskFull) {
             exitCause = ExitCause::NotEnoughDiskSpace;
         }
         return ExitCode::SystemError;
@@ -310,7 +310,7 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
 ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std::function<bool(int)> progressCallback,
                                        ExitCause &exitCause) {
     IoHelper::DirectoryIterator dir;
-    IoError ioError = IoErrorUnknown;
+    IoError ioError = IoError::Unknown;
     exitCause = ExitCause::Unknown;
 
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {

@@ -67,7 +67,7 @@ bool UploadJob::canRun() {
 
     // Check that the item still exist
     bool exists;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;
@@ -152,12 +152,12 @@ void UploadJob::setData(bool &canceled) {
         return;
     }
 
-    if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_filePath).c_str());
         return;
     }
 
-    if (itemType.ioError == IoErrorAccessDenied) {
+    if (itemType.ioError == IoError::AccessDenied) {
         LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_filePath).c_str());
         return;
     }
@@ -166,7 +166,7 @@ void UploadJob::setData(bool &canceled) {
     _targetType = itemType.targetType;
 
     if (IoHelper::isLink(_linkType)) {
-        LOG_DEBUG(_logger, "Read link data - type=" << _linkType);
+        LOG_DEBUG(_logger, "Read link data - type=" << enumClassToInt(_linkType));
         if (!readLink()) return;
     } else {
         LOG_DEBUG(_logger, "Read file data");
@@ -181,13 +181,13 @@ void UploadJob::setData(bool &canceled) {
 std::string UploadJob::getContentType(bool &canceled) {
     canceled = false;
 
-    if (_linkType == LinkTypeSymlink) {
+    if (_linkType == LinkType::Symlink) {
         return _targetType == NodeType::File ? mimeTypeSymlink : mimeTypeSymlinkFolder;
-    } else if (_linkType == LinkTypeHardlink) {
+    } else if (_linkType == LinkType::Hardlink) {
         return mimeTypeHardlink;
-    } else if (_linkType == LinkTypeFinderAlias) {
+    } else if (_linkType == LinkType::FinderAlias) {
         return mimeTypeFinderAlias;
-    } else if (_linkType == LinkTypeJunction) {
+    } else if (_linkType == LinkType::Junction) {
         return mimeTypeJunction;
     } else {
         return AbstractTokenNetworkJob::getContentType(canceled);
@@ -244,7 +244,7 @@ bool UploadJob::readFile() {
 }
 
 bool UploadJob::readLink() {
-    if (_linkType == LinkTypeSymlink) {
+    if (_linkType == LinkType::Symlink) {
         std::error_code ec;
         _linkTarget = std::filesystem::read_symlink(_filePath, ec);
         if (ec.value() != 0) {
@@ -270,16 +270,16 @@ bool UploadJob::readLink() {
         }
 
         _data = Path2Str(_linkTarget);
-    } else if (_linkType == LinkTypeHardlink) {
+    } else if (_linkType == LinkType::Hardlink) {
         if (!readFile()) {
             LOGW_WARN(_logger, L"Failed to read file - path=" << Path2WStr(_filePath).c_str());
             return false;
         }
 
         _linkTarget = _filePath;
-    } else if (_linkType == LinkTypeJunction) {
+    } else if (_linkType == LinkType::Junction) {
 #ifdef _WIN32
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::readJunction(_filePath, _data, _linkTarget, ioError)) {
             LOGW_WARN(_logger, L"Failed to read junction - " << Utility::formatIoError(_filePath, ioError).c_str());
             _exitCode = ExitCode::SystemError;
@@ -288,23 +288,23 @@ bool UploadJob::readLink() {
             return false;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(_logger, L"File doesn't exist - " << Utility::formatSyncPath(_filePath).c_str());
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::FileAccessError;
             return false;
         }
 
-        if (ioError == IoErrorAccessDenied) {
+        if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File misses search permissions - " << Utility::formatSyncPath(_filePath).c_str());
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::NoSearchPermission;
             return false;
         }
 #endif
-    } else if (_linkType == LinkTypeFinderAlias) {
+    } else if (_linkType == LinkType::FinderAlias) {
 #ifdef __APPLE__
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::readAlias(_filePath, _data, _linkTarget, ioError)) {
             LOGW_WARN(_logger, L"Failed to read alias - path=" << Path2WStr(_filePath).c_str());
             _exitCode = ExitCode::SystemError;
@@ -313,7 +313,7 @@ bool UploadJob::readLink() {
             return false;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_filePath).c_str());
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::FileAccessError;
@@ -321,7 +321,7 @@ bool UploadJob::readLink() {
             return false;
         }
 
-        if (ioError == IoErrorAccessDenied) {
+        if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File with insufficient access rights - path=" << Path2WStr(_filePath).c_str());
             _exitCode = ExitCode::SystemError;
             _exitCause = ExitCause::NoSearchPermission;
@@ -329,10 +329,10 @@ bool UploadJob::readLink() {
             return false;
         }
 
-        assert(ioError == IoErrorSuccess);  // For every other error type, false should have been returned.
+        assert(ioError == IoError::Success);  // For every other error type, false should have been returned.
 #endif
     } else {
-        LOG_WARN(_logger, "Link type not managed - type=" << _linkType);
+        LOG_WARN(_logger, "Link type not managed - type=" << enumClassToInt(_linkType));
         return false;
     }
 

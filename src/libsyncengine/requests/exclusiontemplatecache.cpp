@@ -148,7 +148,7 @@ ExitCode ExclusionTemplateCache::update(bool def, const std::vector<ExclusionTem
 bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning,
                                                bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     if (!checkIfIsAnExcludedHiddenFile(basePath, relativePath, isExcluded, ioError)) {
         return false;
@@ -166,7 +166,7 @@ bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const S
 bool ExclusionTemplateCache::checkIfIsAnExcludedHiddenFile(const SyncPath &basePath, const SyncPath &relativePath,
                                                            bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     if (!basePath.empty() && !ParametersCache::instance()->parameters().syncHiddenFiles()) {
         // Call from local FS observer

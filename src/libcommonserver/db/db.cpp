@@ -118,7 +118,7 @@ std::filesystem::path Db::makeDbName(int userId, int accountId, int driveId, int
     std::filesystem::path dbPath(CommonUtility::getAppSupportDir());
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
 
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
@@ -200,7 +200,7 @@ bool Db::exists() {
         return false;
     } else {
         bool exists = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError).c_str());
@@ -474,7 +474,7 @@ bool Db::checkConnect(const std::string &version) {
         // Unfortunately the sqlite isOpen check can return true even when the underlying storage
         // has become unavailable - and then some operations may cause crashes.
         bool exists = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dbPath, ioError).c_str());
@@ -504,7 +504,7 @@ bool Db::checkConnect(const std::string &version) {
     }
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(_dbPath, ioError).c_str());

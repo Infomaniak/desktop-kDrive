@@ -153,14 +153,14 @@ void FolderWatcher_win::watchChanges() {
 
             if (notifInfo->Action == FILE_ACTION_MODIFIED) {
                 bool isDirectory = false;
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 const bool isDirectorySuccess = IoHelper::checkIfIsDirectory(filepath, isDirectory, ioError);
                 if (!isDirectorySuccess) {
                     LOGW_WARN(_logger,
                               L"Error in IoHelper::checkIfIsDirectory: " << Utility::formatIoError(filepath, ioError).c_str());
                 }
                 if (!isDirectory) {
-                    if (ioError == IoErrorNoSuchFileOrDirectory) {
+                    if (ioError == IoError::NoSuchFileOrDirectory) {
                         LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
                                                                << L" detected on item " << Path2WStr(filepath).c_str()
                                                                << L" (item doesn't exist)");

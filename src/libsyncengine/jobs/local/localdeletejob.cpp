@@ -66,7 +66,7 @@ bool LocalDeleteJob::canRun() {
 
     // The item must exist locally for the job to run
     bool exists;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError).c_str());
         _exitCode = ExitCode::SystemError;

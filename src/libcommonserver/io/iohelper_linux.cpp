@@ -32,7 +32,7 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     (void)(itemPath);
 
     isDehydrated = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     return true;
 }
@@ -48,7 +48,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
         ioError = stdError2ioError(ec);
         if (!exists) {
-            ioError = IoErrorNoSuchFileOrDirectory;
+            ioError = IoError::NoSuchFileOrDirectory;
         }
         return _isExpectedError(ioError);
     }

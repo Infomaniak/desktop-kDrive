@@ -815,7 +815,7 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
                                        IoError &ioError) {
     isManaged = true;
     isLink = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     ItemType itemType;
     bool result = IoHelper::getItemType(dirIt->path(), itemType);
@@ -825,12 +825,12 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
         return false;
     }
 
-    if (itemType.ioError == IoErrorNoSuchFileOrDirectory || itemType.ioError == IoErrorAccessDenied) {
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
         LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirIt->path(), ioError).c_str());
         return true;
     }
 
-    isLink = itemType.linkType != LinkTypeNone;
+    isLink = itemType.linkType != LinkType::None;
     if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
         LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
                                        << L" because it's not a directory, a regular file or a symlink");

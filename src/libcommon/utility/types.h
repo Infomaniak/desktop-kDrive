@@ -314,43 +314,39 @@ enum class ProxyType {
     Socks5  // Don't use, not implemented in Poco library
 };
 
-enum class ExclusionTemplateComplexity {
-    Simplest = 0,
-    Simple,
-    Complex
-} ;
+enum class ExclusionTemplateComplexity { Simplest = 0, Simple, Complex };
 
-using LinkType = enum { LinkTypeNone = 0, LinkTypeSymlink, LinkTypeHardlink, LinkTypeFinderAlias, LinkTypeJunction };
+enum class LinkType { None = 0, Symlink, Hardlink, FinderAlias, Junction };
 
-typedef enum {
-    IoErrorSuccess = 0,
-    IoErrorAccessDenied,
-    IoErrorAttrNotFound,
-    IoErrorDirectoryExists,
-    IoErrorDiskFull,
-    IoErrorFileExists,
-    IoErrorFileNameTooLong,
-    IoErrorInvalidArgument,
-    IoErrorInvalidDirectoryIterator,
-    IoErrorInvalidFileName,
-    IoErrorIsADirectory,
-    IoErrorIsAFile,
-    IoErrorMaxDepthExceeded,
-    IoErrorNoSuchFileOrDirectory,
-    IoErrorResultOutOfRange,
-    IoErrorUnknown
-} IoError;
+enum class IoError {
+    Success = 0,
+    AccessDenied,
+    AttrNotFound,
+    DirectoryExists,
+    DiskFull,
+    FileExists,
+    FileNameTooLong,
+    InvalidArgument,
+    InvalidDirectoryIterator,
+    InvalidFileName,
+    IsADirectory,
+    IsAFile,
+    MaxDepthExceeded,
+    NoSuchFileOrDirectory,
+    ResultOutOfRange,
+    Unknown
+};
 
 struct ItemType {
         NodeType nodeType{NodeType::Unknown};  // The type of a link is `NodeType::File`.
-        LinkType linkType{LinkTypeNone};
-        NodeType targetType{NodeType::Unknown};  // The type of the target item when `linkType` is not `LinkTypeNone`.
+        LinkType linkType{LinkType::None};
+        NodeType targetType{NodeType::Unknown};  // The type of the target item when `linkType` is not `LinkType::None`.
         SyncPath targetPath;
-        // The value of the data member `ioError` is `IoErrorNoSuchFileOrDirectory` if
+        // The value of the data member `ioError` is `IoError::NoSuchFileOrDirectory` if
         // - the file or directory indicated by `path` doesn't exist
         // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
-        // `LinkTypeUnknown`) and its target doesn't exist.
-        IoError ioError{IoErrorSuccess};
+        // `LinkType::Unknown`) and its target doesn't exist.
+        IoError ioError{IoError::Success};
 };
 
 enum class AppStateKey {

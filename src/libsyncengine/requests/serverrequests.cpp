@@ -728,14 +728,14 @@ ExitCode ServerRequests::migrateSelectiveSync(int syncDbId, std::pair<SyncPath, 
     dbPath /= syncToMigrate.second;
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(dbPath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dbPath, ioError).c_str());
         return ExitCode::SystemError;
     }
 
-    if (ioError == IoErrorAccessDenied) {
+    if (ioError == IoError::AccessDenied) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"DB to migrate " << Path2WStr(dbPath).c_str() << L" misses search permission.");
         return ExitCode::SystemError;
     }
@@ -1005,25 +1005,25 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog, std::function
     }
 
     SyncPath logUploadTempFolder;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
 
     IoHelper::logArchiverDirectoryPath(logUploadTempFolder, ioError);
-    if (ioError != IoErrorSuccess) {
+    if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::logArchiverDirectoryPath: "
                                                     << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         return ExitCode::SystemError;
     }
 
     IoHelper::createDirectory(logUploadTempFolder, ioError);
-    if (ioError == IoErrorDirectoryExists) {  // If the directory already exists, we delete it and recreate it
+    if (ioError == IoError::DirectoryExists) {  // If the directory already exists, we delete it and recreate it
         IoHelper::deleteDirectory(logUploadTempFolder, ioError);
         IoHelper::createDirectory(logUploadTempFolder, ioError);
     }
 
-    if (ioError != IoErrorSuccess) {
+    if (ioError != IoError::Success) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::createDirectory: " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
-        exitCause = ioError == IoErrorDiskFull ? ExitCause::NotEnoughDiskSpace : ExitCause::Unknown;
+        exitCause = ioError == IoError::DiskFull ? ExitCause::NotEnoughDiskSpace : ExitCause::Unknown;
         return ExitCode::SystemError;
     }
 
@@ -1451,7 +1451,7 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
                 return ExitCode::DataError;
             }
 
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             const SyncPath dest = sync.localPath() / error.destinationPath();
             const bool success = IoHelper::checkIfPathExists(dest, found, ioError);
             if (!success) {
@@ -1461,7 +1461,7 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
             }
 
             // If conflict file still exists, keep the error.
-            if (found || ioError != IoErrorNoSuchFileOrDirectory) {
+            if (found || ioError != IoError::NoSuchFileOrDirectory) {
                 continue;
             }
         }

@@ -112,7 +112,7 @@ VfsOff::~VfsOff() {}
 bool VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
     KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     bool exists = false;
-    KDC::IoError ioError = KDC::IoErrorSuccess;
+    KDC::IoError ioError = KDC::IoError::Success;
     if (!KDC::IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << KDC::Utility::formatIoError(fullPath, ioError).c_str());
         return false;

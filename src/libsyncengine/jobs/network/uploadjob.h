@@ -64,7 +64,7 @@ class UploadJob : public AbstractTokenNetworkJob {
         NodeId _nodeIdOut;
         SyncTime _modtimeOut = 0;
 
-        LinkType _linkType = LinkTypeNone;
+        LinkType _linkType = LinkType::None;
         SyncPath _linkTarget;
         NodeType _targetType = NodeType::File;
 };

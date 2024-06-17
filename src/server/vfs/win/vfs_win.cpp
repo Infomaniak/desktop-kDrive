@@ -219,7 +219,7 @@ bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t
 
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(filePath));
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -261,7 +261,7 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
 
     SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -307,7 +307,7 @@ bool VfsWin::dehydratePlaceholder(const QString &path) {
 
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -397,7 +397,7 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
 
         SyncPath fullPath(QStr2Path(tmpPath));
         bool exists = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
             return;
@@ -418,16 +418,16 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
 
         if (!isPlaceholder) {
             FileStat fileStat;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!IoHelper::getFileStat(fullPath, &fileStat, ioError)) {
                 LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(fullPath, ioError).c_str());
                 break;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(logger(), L"Directory entry does not exist anymore: " << Utility::formatSyncPath(fullPath).c_str());
                 continue;
-            } else if (ioError == IoErrorAccessDenied) {
+            } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(logger(),
                           L"Item: " << Utility::formatSyncPath(fullPath).c_str() << L" rejected because access is denied");
                 continue;
@@ -468,7 +468,7 @@ bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     SyncPath fullPath(QStr2Path(path));
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -508,7 +508,7 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
     SyncPath stdPath = QStr2Path(absolutePath);
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError).c_str());
         return false;
@@ -542,16 +542,16 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
     // placeholder
     if (!isPlaceholder) {
         FileStat filestat;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::getFileStat(stdPath, &filestat, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(stdPath, ioError).c_str());
             return false;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(stdPath).c_str());
             return true;
-        } else if (ioError == IoErrorAccessDenied) {
+        } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(logger(), L"Item: " << Utility::formatSyncPath(stdPath).c_str() << L" rejected because access is denied");
             return true;
         }
@@ -658,7 +658,7 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
 
     SyncPath fullPath(QStr2Path(path));
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -673,7 +673,7 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
         exclude(path);
     } else if (status == SyncFileStatus::Success) {
         bool isDirectory = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
             LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
             return false;
@@ -687,7 +687,7 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
         }
     } else if (status == SyncFileStatus::Syncing) {
         bool isDirectory = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
             LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
             return false;

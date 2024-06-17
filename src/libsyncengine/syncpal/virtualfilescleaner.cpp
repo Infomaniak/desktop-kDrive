@@ -91,10 +91,10 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             SyncPath relativePath = CommonUtility::relativePath(_rootPath, entryPath);
             bool isWarning = false;
             bool isExcluded = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             const bool success =
                 ExclusionTemplateCache::instance()->checkIfIsExcluded(_rootPath, relativePath, isWarning, isExcluded, ioError);
-            if (!success || ioError != IoErrorSuccess) {
+            if (!success || ioError != IoError::Success) {
                 LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
                                        << Utility::formatIoError(entryPath, ioError).c_str());
                 continue;
@@ -226,9 +226,9 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
 
             if (!dirIt->is_directory()) {
                 bool isDehydrated = false;
-                IoError ioError = IoErrorSuccess;
+                IoError ioError = IoError::Success;
                 const bool success = IoHelper::checkIfFileIsDehydrated(dirIt->path(), isDehydrated, ioError);
-                if (!success || ioError == IoErrorNoSuchFileOrDirectory || ioError == IoErrorAccessDenied) {
+                if (!success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfFileIsDehydrated: "
                                            << Utility::formatIoError(dirIt->path(), ioError).c_str());
                     continue;

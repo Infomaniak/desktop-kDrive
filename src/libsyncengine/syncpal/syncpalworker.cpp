@@ -538,7 +538,7 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             // Check if the directory entry is managed
             bool isManaged = true;
             bool isLink = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                 LOGW_SYNCPAL_WARN(
                     _logger, L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath).c_str());
@@ -547,14 +547,14 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                 continue;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_SYNCPAL_DEBUG(_logger,
                                    L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
-            if (ioError == IoErrorAccessDenied) {
+            if (ioError == IoError::AccessDenied) {
                 LOGW_SYNCPAL_DEBUG(_logger,
                                    L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
