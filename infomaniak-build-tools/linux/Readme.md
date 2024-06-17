@@ -48,7 +48,7 @@ sudo apt install -y cmake
 sudo apt install -y clang
 ```
 
-Ensure that CLANG is installed with a version higher than 18 with the following command :
+Ensure that CLANG is installed with at least version 18 by running the following command :
 
 ```bash
 clang --version
