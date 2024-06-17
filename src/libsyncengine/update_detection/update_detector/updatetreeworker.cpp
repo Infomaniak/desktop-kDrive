@@ -304,7 +304,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
                 // We are in situation (2), i.e. duplicate normalized names.
                 // We display to the user an explicit error message about item name inconsistency.
                 Error err(_syncPal->syncDbId(), "", createOp->nodeId(), createOp->objectType(), createOp->path(),
-                          ConflictTypeNone, InconsistencyTypeDuplicateNames, CancelTypeNone);
+                          ConflictType::None, InconsistencyTypeDuplicateNames, CancelTypeNone);
                 _syncPal->addError(err);
             }
 

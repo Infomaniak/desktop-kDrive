@@ -589,44 +589,44 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
 
 QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const noexcept {
     switch (conflictType) {
-        case ConflictTypeNone:
+        case ConflictType::None:
             break;
-        case ConflictTypeMoveParentDelete:
+        case ConflictType::MoveParentDelete:
             return tr(
                 "An element was moved to a deleted folder.<br>"
                 "The move has been canceled.");
             break;
-        case ConflictTypeMoveDelete:
+        case ConflictType::MoveDelete:
             return tr(
                 "This element was moved by another user.<br>"
                 "The deletion has been canceled.");
             break;
-        case ConflictTypeCreateParentDelete:
+        case ConflictType::CreateParentDelete:
             return tr(
                 "An element was created in this folder while it was being deleted.<br>"
                 "The delete operation has been propagated anyway.");
             break;
-        case ConflictTypeMoveMoveSource:
+        case ConflictType::MoveMoveSource:
             return tr(
                 "This element has been moved somewhere else.<br>"
                 "The local operation has been canceled.");
             break;
-        case ConflictTypeMoveMoveDest:
+        case ConflictType::MoveMoveDest:
             return tr(
                 "An element with the same name already exists in this location.<br>"
                 "The local element has been renamed.");
             break;
-        case ConflictTypeMoveCreate:
+        case ConflictType::MoveCreate:
             return tr(
                 "An element with the same name already exists in this location.<br>"
                 "The local operation has been canceled.");
             break;
-        case ConflictTypeEditDelete:
-            if (resolution == ConflictTypeResolutionDeleteCanceled) {
+        case ConflictType::EditDelete:
+            if (resolution == ConflictTypeResolution::DeleteCanceled) {
                 return tr(
                     "The content of the file was modified while it was being deleted.<br>"
                     "The deletion has been canceled.");
-            } else if (resolution == ConflictTypeResolutionFileMovedToRoot) {
+            } else if (resolution == ConflictTypeResolution::FileMovedToRoot) {
                 return tr(
                     "The content of a synchronized element was modified while a parent folder was being deleted (e.g. the folder "
                     "containing the current folder).<br>"
@@ -638,24 +638,24 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
                     "has been deleted.<br>");
             }
             break;
-        case ConflictTypeCreateCreate:
+        case ConflictType::CreateCreate:
             return tr(
                 "An element with the same name already exists in this location.<br>"
                 "The local element has been renamed.");
             break;
-        case ConflictTypeEditEdit:
+        case ConflictType::EditEdit:
             return tr(
                 "The file was modified at the same time by another user.<br>"
                 "Your modifications have been saved in a copy.");
             break;
-        case ConflictTypeMoveMoveCycle:
+        case ConflictType::MoveMoveCycle:
             return tr(
                 "Another user has moved a parent folder of the destination.<br>"
                 "The local operation has been canceled.");
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << conflictType;
+    qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << enumClassToInt(conflictType);
 
     return {};
 }
@@ -802,8 +802,8 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noe
 }
 
 QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept {
-    if (errorInfo.conflictType() != ConflictTypeNone) {
-        return getConflictText(errorInfo.conflictType(), ConflictTypeResolutionNone);
+    if (errorInfo.conflictType() != ConflictType::None) {
+        return getConflictText(errorInfo.conflictType(), ConflictTypeResolution::None);
     }
 
     if (errorInfo.inconsistencyType() != InconsistencyTypeNone) {

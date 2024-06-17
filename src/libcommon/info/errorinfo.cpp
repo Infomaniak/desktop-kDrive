@@ -33,7 +33,7 @@ ErrorInfo::ErrorInfo()
       _remoteNodeId(QString()),
       _nodeType(NodeType::Unknown),
       _path(QString()),
-      _conflictType(ConflictTypeNone),
+      _conflictType(ConflictType::None),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}
 

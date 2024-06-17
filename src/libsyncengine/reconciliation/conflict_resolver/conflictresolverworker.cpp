@@ -56,7 +56,7 @@ void ConflictResolverWorker::execute() {
 }
 
 ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bool &continueSolving) {
-    LOGW_SYNCPAL_INFO(_logger, L"Solving " << Utility::s2ws(Utility::conflictType2Str(conflict.type())).c_str()
+    LOGW_SYNCPAL_INFO(_logger, L"Solving " << Utility::s2ws(Utility::ConflictType2Str(conflict.type())).c_str()
                                            << L" conflict for items " << SyncName2WStr(conflict.node()->name()).c_str() << L" ("
                                            << Utility::s2ws(*conflict.node()->id()).c_str() << L") and "
                                            << SyncName2WStr(conflict.correspondingNode()->name()).c_str() << L" ("
@@ -64,10 +64,10 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
     continueSolving = false;
     switch (conflict.type()) {
-        case ConflictTypeCreateCreate:
-        case ConflictTypeEditEdit:
-        case ConflictTypeMoveCreate:
-        case ConflictTypeMoveMoveDest: {
+        case ConflictType::CreateCreate:
+        case ConflictType::EditEdit:
+        case ConflictType::MoveCreate:
+        case ConflictType::MoveMoveDest: {
             // Rename the file on the local replica and remove it from DB
             SyncOpPtr op = std::make_shared<SyncOperation>();
             op->setType(OperationTypeMove);
@@ -93,7 +93,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             continueSolving = isConflictsWithLocalRename(conflict.type());  // solve them all in the same sync
             break;
         }
-        case ConflictTypeEditDelete: {
+        case ConflictType::EditDelete: {
             // Edit operation win
             auto deleteNode =
                 conflict.node()->hasChangeEvent(OperationTypeDelete) ? conflict.node() : conflict.correspondingNode();
@@ -165,14 +165,14 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
             break;
         }
-        case ConflictTypeMoveDelete: {
+        case ConflictType::MoveDelete: {
             // Move operation win
             auto deleteNode =
                 conflict.node()->hasChangeEvent(OperationTypeDelete) ? conflict.node() : conflict.correspondingNode();
             auto moveNode = conflict.node()->hasChangeEvent(OperationTypeMove) ? conflict.node() : conflict.correspondingNode();
             auto correspondingMoveNodeParent = correspondingNodeDirect(moveNode->parentNode());
             if (correspondingMoveNodeParent && correspondingMoveNodeParent->hasChangeEvent(OperationTypeDelete) &&
-                _syncPal->_conflictQueue->hasConflict(ConflictTypeMoveParentDelete)) {
+                _syncPal->_conflictQueue->hasConflict(ConflictType::MoveParentDelete)) {
                 // If the move operation happen within a directory that was deleted on the other replica,
                 // therefor, we ignore the Move-Delete conflict
                 // This conflict will be handled as Move-ParentDelete conflict
@@ -267,7 +267,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             _syncPal->_syncOps->pushOp(op);
             break;
         }
-        case ConflictTypeMoveParentDelete: {
+        case ConflictType::MoveParentDelete: {
             // Undo move, the delete operation will be executed on a next sync iteration
             auto moveNode = conflict.node()->hasChangeEvent(OperationTypeMove) ? conflict.node() : conflict.correspondingNode();
             SyncOpPtr moveOp = std::make_shared<SyncOperation>();
@@ -286,7 +286,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             _syncPal->_syncOps->pushOp(moveOp);
             break;
         }
-        case ConflictTypeCreateParentDelete: {
+        case ConflictType::CreateParentDelete: {
             // Delete operation always win
             auto deleteNode =
                 conflict.node()->hasChangeEvent(OperationTypeDelete) ? conflict.node() : conflict.correspondingNode();
@@ -307,7 +307,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             _syncPal->_syncOps->pushOp(op);
             break;
         }
-        case ConflictTypeMoveMoveSource: {
+        case ConflictType::MoveMoveSource: {
             auto loserNode = conflict.localNode();
 
             // Check if this node is a registered orphan
@@ -333,7 +333,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             _syncPal->_syncOps->pushOp(moveOp);
             break;
         }
-        case ConflictTypeMoveMoveCycle: {
+        case ConflictType::MoveMoveCycle: {
             // Undo move on the local replica
             SyncOpPtr moveOp = std::make_shared<SyncOperation>();
             ExitCode res = undoMove(conflict.localNode(), moveOp);
@@ -350,7 +350,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             break;
         }
         default: {
-            LOG_SYNCPAL_WARN(_logger, "Unknown conflict type: " << conflict.type());
+            LOG_SYNCPAL_WARN(_logger, "Unknown conflict type: " << enumClassToInt(conflict.type()));
             return ExitCode::DataError;
         }
     }

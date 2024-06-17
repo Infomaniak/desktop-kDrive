@@ -73,15 +73,15 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
         SyncPath path1;
         SyncPath path2;
         switch (c1.type()) {
-            case ConflictTypeMoveParentDelete:
-            case ConflictTypeCreateParentDelete:
-            case ConflictTypeMoveDelete:
-            case ConflictTypeEditDelete:
+            case ConflictType::MoveParentDelete:
+            case ConflictType::CreateParentDelete:
+            case ConflictType::MoveDelete:
+            case ConflictType::EditDelete:
                 // Path of deleted node
                 path1 = pathOfEvent(c1, OperationType::OperationTypeDelete);
                 path2 = pathOfEvent(c2, OperationType::OperationTypeDelete);
                 break;
-            case ConflictTypeMoveMoveSource:
+            case ConflictType::MoveMoveSource:
                 // Move origin path of the local node
                 localNode = c1.localNode();
                 if (localNode && localNode->moveOrigin().has_value()) {
@@ -92,10 +92,10 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
                     path2 = *c2.correspondingNode()->moveOrigin();
                 }
                 break;
-            case ConflictTypeMoveMoveDest:
-            case ConflictTypeMoveMoveCycle:
-            case ConflictTypeCreateCreate:
-            case ConflictTypeEditEdit:
+            case ConflictType::MoveMoveDest:
+            case ConflictType::MoveMoveCycle:
+            case ConflictType::CreateCreate:
+            case ConflictType::EditEdit:
                 // Path of local node
                 localNode = c1.localNode();
                 if (localNode) {
@@ -106,7 +106,7 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
                     path2 = localNode->getPath();
                 }
                 break;
-            case ConflictTypeMoveCreate:
+            case ConflictType::MoveCreate:
                 // Path of the created node
                 path1 = pathOfEvent(c1, OperationType::OperationTypeCreate);
                 path2 = pathOfEvent(c2, OperationType::OperationTypeCreate);

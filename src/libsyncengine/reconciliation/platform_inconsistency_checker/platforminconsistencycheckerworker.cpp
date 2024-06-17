@@ -115,7 +115,7 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     }
 
     _syncPal->blacklistTemporarily(remoteNode->id().value(), relativePath, remoteNode->side());
-    Error error(_syncPal->syncDbId(), "", remoteNode->id().value(), remoteNode->type(), relativePath, ConflictTypeNone,
+    Error error(_syncPal->syncDbId(), "", remoteNode->id().value(), remoteNode->type(), relativePath, ConflictType::None,
                 inconsistencyType);
     _syncPal->addError(error);
 

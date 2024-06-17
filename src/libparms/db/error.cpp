@@ -31,7 +31,7 @@ Error::Error()
       _exitCode(ExitCode::Unknown),
       _exitCause(ExitCause::Unknown),
       _nodeType(NodeType::Unknown),
-      _conflictType(ConflictTypeNone),
+      _conflictType(ConflictType::None),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}
 
@@ -45,7 +45,7 @@ Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitC
       _exitCode(exitCode),
       _exitCause(exitCause),
       _nodeType(NodeType::Unknown),
-      _conflictType(ConflictTypeNone),
+      _conflictType(ConflictType::None),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}
 
@@ -58,7 +58,7 @@ Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, Exi
       _exitCode(exitCode),
       _exitCause(exitCause),
       _nodeType(NodeType::Unknown),
-      _conflictType(ConflictTypeNone),
+      _conflictType(ConflictType::None),
       _inconsistencyType(InconsistencyTypeNone),
       _cancelType(CancelTypeNone) {}
 
@@ -113,7 +113,8 @@ std::string Error::errorString() const {
     } else if (_level == ErrorLevelSyncPal) {
         errStream << "Level: SyncPal - worker: " << _workerName << " - exitCode: " << enumClassToInt(_exitCode) << " - exitCause: " << enumClassToInt(_exitCause);
     } else if (_level == ErrorLevelNode) {
-        errStream << "Level: SyncPal - conflictType: " << _conflictType << " - inconsistencyType: " << _inconsistencyType
+        errStream << "Level: SyncPal - conflictType: " << enumClassToInt(_conflictType)
+                  << " - inconsistencyType: " << enumClassToInt(_inconsistencyType)
                   << " - cancelType: " << _cancelType;
     }
 

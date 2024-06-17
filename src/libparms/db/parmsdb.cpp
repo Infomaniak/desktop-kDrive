@@ -3054,12 +3054,12 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
 bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Error> &errs) {
     const std::scoped_lock lock(_mutex);
 
-    std::string requestId = (filter == ConflictTypeNone ? SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID
+    std::string requestId = (filter == ConflictType::None ? SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID
                                                         : SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
 
     ASSERT(queryResetAndClearBindings(requestId));
     ASSERT(queryBindValue(requestId, 1, syncDbId));
-    ASSERT(queryBindValue(requestId, 2, std::to_string(filter)));
+    ASSERT(queryBindValue(requestId, 2, std::to_string(enumClassToInt(filter))));
 
     bool found = false;
     for (;;) {

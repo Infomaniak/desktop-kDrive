@@ -96,7 +96,7 @@ class PARMS_EXPORT Error {
         NodeId _remoteNodeId;
         NodeType _nodeType{NodeType::Unknown};
         SyncPath _path;
-        ConflictType _conflictType{ConflictTypeNone};
+        ConflictType _conflictType{ConflictType::None};
         InconsistencyType _inconsistencyType{InconsistencyTypeNone};
         CancelType _cancelType{CancelTypeNone};
         SyncPath _destinationPath;

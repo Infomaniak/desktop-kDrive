@@ -456,36 +456,36 @@ std::wstring Utility::opType2WStr(OperationType opType) {
     return s2ws(opType2Str(opType));
 }
 
-std::string Utility::conflictType2Str(ConflictType conflictType) {
+std::string Utility::ConflictType2Str(ConflictType conflictType) {
     switch (conflictType) {
-        case ConflictTypeMoveParentDelete: {
+        case ConflictType::MoveParentDelete: {
             return "Move-ParentDelete";
         }
-        case ConflictTypeMoveDelete: {
+        case ConflictType::MoveDelete: {
             return "Move-Delete";
         }
-        case ConflictTypeCreateParentDelete: {
+        case ConflictType::CreateParentDelete: {
             return "Create-ParentDelete";
         }
-        case ConflictTypeMoveMoveSource: {
+        case ConflictType::MoveMoveSource: {
             return "Move-Move(Source)";
         }
-        case ConflictTypeMoveMoveDest: {
+        case ConflictType::MoveMoveDest: {
             return "Move-Move(Dest)";
         }
-        case ConflictTypeMoveCreate: {
+        case ConflictType::MoveCreate: {
             return "Move-Create";
         }
-        case ConflictTypeEditDelete: {
+        case ConflictType::EditDelete: {
             return "Edit-Delete";
         }
-        case ConflictTypeCreateCreate: {
+        case ConflictType::CreateCreate: {
             return "Create-Create";
         }
-        case ConflictTypeEditEdit: {
+        case ConflictType::EditEdit: {
             return "Edit-Edit";
         }
-        case ConflictTypeMoveMoveCycle: {
+        case ConflictType::MoveMoveCycle: {
             return "Move-Move(Cycle)";
         }
         default: {
@@ -494,8 +494,8 @@ std::string Utility::conflictType2Str(ConflictType conflictType) {
     }
 }
 
-std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
-    return s2ws(conflictType2Str(conflictType));
+std::wstring Utility::ConflictType2WStr(ConflictType conflictType) {
+    return s2ws(ConflictType2Str(conflictType));
 }
 
 std::string Utility::side2Str(ReplicaSide side) {

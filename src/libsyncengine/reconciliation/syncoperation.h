@@ -45,7 +45,7 @@ class SyncOperation {
         inline void setNewName(const SyncName &newNewName) { _newName = newNewName; }
         inline const std::shared_ptr<Node> &newParentNode() const { return _newParentNode; }
         inline void setNewParentNode(const std::shared_ptr<Node> &newParentNode) { _newParentNode = newParentNode; }
-        inline bool hasConflict() { return _conflict.type() != ConflictTypeNone; }
+        inline bool hasConflict() { return _conflict.type() != ConflictType::None; }
         inline const Conflict &conflict() const { return _conflict; }
         inline void setConflict(const Conflict &newConflict) { _conflict = newConflict; }
 

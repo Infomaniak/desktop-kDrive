@@ -96,7 +96,7 @@ ExitCode ExcludeListPropagator::checkItems() {
                 if (isWarning) {
                     NodeId localNodeId = _syncPal->snapshot(ReplicaSide::Local)->itemId(relativePath);
                     NodeType localNodeType = _syncPal->snapshot(ReplicaSide::Local)->type(localNodeId);
-                    Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictTypeNone,
+                    Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictType::None,
                                 InconsistencyTypeNone, CancelTypeExcludedByTemplate);
                     _syncPal->addError(error);
                 }

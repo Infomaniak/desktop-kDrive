@@ -932,7 +932,7 @@ bool ServerRequests::isAutoResolvedError(const Error &error) {
                  && error.exitCause() != ExitCause::DriveAccessError && error.exitCause() != ExitCause::DriveNotRenew) ||
              error.exitCode() == ExitCode::DataError);  // Sync is stoped and a full sync is restarted
     } else if (error.level() == ErrorLevelNode) {
-        autoResolved = (error.conflictType() != ConflictTypeNone && !isConflictsWithLocalRename(error.conflictType())) ||
+        autoResolved = (error.conflictType() != ConflictType::None && !isConflictsWithLocalRename(error.conflictType())) ||
                        (error.inconsistencyType() !=
                         InconsistencyTypeNone /*&& error.inconsistencyType() != InconsistencyTypeForbiddenChar*/) ||
                        error.cancelType() != CancelTypeNone;
@@ -1384,7 +1384,7 @@ ExitCode ServerRequests::getErrorInfoList(ErrorLevel level, int syncDbId, int li
 ExitCode ServerRequests::getConflictList(int syncDbId, const std::unordered_set<ConflictType> &filter,
                                          std::vector<Error> &errorList) {
     if (filter.empty()) {
-        if (!ParmsDb::instance()->selectConflicts(syncDbId, ConflictTypeNone, errorList)) {
+        if (!ParmsDb::instance()->selectConflicts(syncDbId, ConflictType::None, errorList)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
             return ExitCode::DbError;
         }

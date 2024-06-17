@@ -234,14 +234,14 @@ void TestSyncPal::testConflictQueue() {
     _syncPal->_localUpdateTree->insertNode(remoteDirD1);
     _syncPal->_localUpdateTree->insertNode(remoteDirD2);
 
-    Conflict conflict1(localFileC1, remoteFileC1, ConflictTypeMoveMoveSource);
-    Conflict conflict2(localFileC2, remoteFileC2, ConflictTypeMoveMoveSource);
-    Conflict conflict3(localFileC1, remoteDirB, ConflictTypeMoveParentDelete);
-    Conflict conflict4(localFileC2, remoteDirB, ConflictTypeMoveParentDelete);
-    Conflict conflict5(localFileC4, remoteFileC3, ConflictTypeMoveCreate);
-    Conflict conflict6(localFileC4, remoteFileC4, ConflictTypeMoveDelete);
-    Conflict conflict7(localDirD1, remoteDirC1, ConflictTypeMoveMoveCycle);
-    Conflict conflict8(localDirD2, remoteDirC2, ConflictTypeMoveMoveCycle);
+    Conflict conflict1(localFileC1, remoteFileC1, ConflictType::MoveMoveSource);
+    Conflict conflict2(localFileC2, remoteFileC2, ConflictType::MoveMoveSource);
+    Conflict conflict3(localFileC1, remoteDirB, ConflictType::MoveParentDelete);
+    Conflict conflict4(localFileC2, remoteDirB, ConflictType::MoveParentDelete);
+    Conflict conflict5(localFileC4, remoteFileC3, ConflictType::MoveCreate);
+    Conflict conflict6(localFileC4, remoteFileC4, ConflictType::MoveDelete);
+    Conflict conflict7(localDirD1, remoteDirC1, ConflictType::MoveMoveCycle);
+    Conflict conflict8(localDirD2, remoteDirC2, ConflictType::MoveMoveCycle);
 
     // Insert conflicts in queue
     _syncPal->_conflictQueue->push(conflict7);
@@ -254,25 +254,25 @@ void TestSyncPal::testConflictQueue() {
     _syncPal->_conflictQueue->push(conflict6);
 
     // Check order
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveParentDelete);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveParentDelete);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveParentDelete);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveParentDelete);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveDelete);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveDelete);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localFileC4);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveMoveSource);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveSource);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localFileC1);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveMoveSource);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveSource);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localFileC2);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveCreate);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveCreate);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveMoveCycle);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveCycle);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localDirD1);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveMoveCycle);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveCycle);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localDirD2);
 }
 

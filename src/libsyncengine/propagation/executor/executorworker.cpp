@@ -1218,9 +1218,9 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
                 // This is a move
 
                 // For all conflict involving an "undo move" operation, the correct parent is already stored in the syncOp
-                std::shared_ptr<Node> remoteParentNode = syncOp->conflict().type() == ConflictTypeMoveParentDelete ||
-                                                                 syncOp->conflict().type() == ConflictTypeMoveMoveSource ||
-                                                                 syncOp->conflict().type() == ConflictTypeMoveMoveCycle
+                std::shared_ptr<Node> remoteParentNode = syncOp->conflict().type() == ConflictType::MoveParentDelete ||
+                                                                 syncOp->conflict().type() == ConflictType::MoveMoveSource ||
+                                                                 syncOp->conflict().type() == ConflictType::MoveMoveCycle
                                                              ? parentNode
                                                              : correspondingNodeInOtherTree(parentNode);
                 if (!remoteParentNode) {
@@ -1262,7 +1262,7 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
     job->setAffectedFilePath(relativeDestLocalFilePath);
     job->runSynchronously();
 
-    if (job->exitCode() == ExitCode::Ok && syncOp->conflict().type() != ConflictTypeNone) {
+    if (job->exitCode() == ExitCode::Ok && syncOp->conflict().type() != ConflictType::None) {
         // Conflict fixing job finished successfully
         // Propagate changes to DB and update trees
         std::shared_ptr<Node> newNode = nullptr;
@@ -1309,7 +1309,7 @@ void ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &hasError) {
         // Do not generate job, only push changes in DB and update tree
         if (syncOp->hasConflict() &&
             syncOp->conflict().type() !=
-                ConflictTypeEditDelete) {  // Error message handled with move operation in case Edit-Delete conflict
+                ConflictType::EditDelete) {  // Error message handled with move operation in case Edit-Delete conflict
             bool propagateChange = true;
             hasError = propagateConflictToDbAndTree(syncOp, propagateChange);
 
@@ -1434,7 +1434,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                 if (exists && !writePermission) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                           << L" already exists but doesn't have write permissions!");
-                    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictTypeNone,
+                    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictType::None,
                                 InconsistencyTypeNone, CancelTypeNone, "", ExitCode::SystemError, ExitCause::FileAccessError);
                     _syncPal->addError(error);
                     return false;
@@ -1451,7 +1451,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                 }
 
                 if (!writePermission) {
-                    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictTypeNone,
+                    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictType::None,
                                 InconsistencyTypeNone, CancelTypeNone, "", ExitCode::SystemError, ExitCause::FileAccessError);
                     _syncPal->addError(error);
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
@@ -1679,10 +1679,10 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
     Error error;
     if (isInconsistencyIssue) {
         error = Error(_syncPal->syncDbId(), locaNodeId, remoteNodeId, syncOp->affectedNode()->type(),
-                      syncOp->affectedNode()->getPath(), ConflictTypeNone, InconsistencyTypeForbiddenChar);
+                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyTypeForbiddenChar);
     } else {
         error = Error(_syncPal->syncDbId(), locaNodeId, remoteNodeId, syncOp->affectedNode()->type(),
-                      syncOp->affectedNode()->getPath(), ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone, "",
+                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyTypeNone, CancelTypeNone, "",
                       ExitCode::BackError, jobExitCause);
     }
     _syncPal->addError(error);
@@ -1739,7 +1739,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
                 syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), relativeLocalPath,
                 otherSide(syncOp->targetSide()));
             Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, _syncPal->_localPath / relativeLocalPath,
-                        ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone, "", job->exitCode(), job->exitCause());
+                        ConflictType::None, InconsistencyTypeNone, CancelTypeNone, "", job->exitCode(), job->exitCause());
             _syncPal->addError(error);
 
             affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
@@ -1768,7 +1768,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         SyncFileStatus status = SyncFileStatusSuccess;
         // Check for conflict or inconsistency
         if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
-            if (syncOp->conflict().type() != ConflictTypeNone) {
+            if (syncOp->conflict().type() != ConflictType::None) {
                 status = SyncFileStatusConflict;
             } else if (syncItem.inconsistency() != InconsistencyTypeNone) {
                 status = SyncFileStatusInconsistency;
@@ -1888,13 +1888,13 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
     propagateChange = true;
 
     switch (syncOp->conflict().type()) {
-        case ConflictTypeEditEdit:        // Edit conflict pattern
-        case ConflictTypeCreateCreate:    // Name clash conflict pattern
-        case ConflictTypeMoveCreate:      // Name clash conflict pattern
-        case ConflictTypeMoveMoveDest:    // Name clash conflict pattern
-        case ConflictTypeMoveMoveSource:  // Name clash conflict pattern
+        case ConflictType::EditEdit:        // Edit conflict pattern
+        case ConflictType::CreateCreate:    // Name clash conflict pattern
+        case ConflictType::MoveCreate:      // Name clash conflict pattern
+        case ConflictType::MoveMoveDest:    // Name clash conflict pattern
+        case ConflictType::MoveMoveSource:  // Name clash conflict pattern
         {
-            if (syncOp->conflict().type() != ConflictTypeMoveMoveSource) {
+            if (syncOp->conflict().type() != ConflictType::MoveMoveSource) {
                 DbNodeId dbId = -1;
                 bool localNodeFoundInDb = false;
                 // when it's an Edit-Edit we want to delete the node
@@ -1919,7 +1919,7 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
             propagateChange = false;
             break;
         }
-        case ConflictTypeEditDelete:  // Delete conflict pattern
+        case ConflictType::EditDelete:  // Delete conflict pattern
         {
             if (syncOp->type() == OperationTypeDelete) {
                 // Just apply normal behavior for delete operations
@@ -1930,7 +1930,7 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
             propagateChange = false;
             break;
         }
-        case ConflictTypeCreateParentDelete:  // Indirect conflict pattern
+        case ConflictType::CreateParentDelete:  // Indirect conflict pattern
         {
             // Remove node from update tree
             std::shared_ptr<UpdateTree> updateTree = affectedUpdateTree(syncOp);
@@ -1941,10 +1941,10 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
             propagateChange = false;
             break;
         }
-        case ConflictTypeMoveDelete:        // Delete conflict pattern
-        case ConflictTypeMoveParentDelete:  // Indirect conflict pattern
-        case ConflictTypeMoveMoveCycle:     // Name clash conflict pattern
-        case ConflictTypeNone:
+        case ConflictType::MoveDelete:        // Delete conflict pattern
+        case ConflictType::MoveParentDelete:  // Indirect conflict pattern
+        case ConflictType::MoveMoveCycle:     // Name clash conflict pattern
+        case ConflictType::None:
         default:
             // Just apply normal behavior
             break;
@@ -2423,7 +2423,7 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                 syncOp->affectedNode()->getPath(), ReplicaSide::Local);
             Error error(_syncPal->_syncDbId,
                         syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(), "",
-                        syncOp->affectedNode()->type(), syncOp->affectedNode()->getPath(), ConflictTypeNone,
+                        syncOp->affectedNode()->type(), syncOp->affectedNode()->getPath(), ConflictType::None,
                         InconsistencyTypeNone, CancelTypeNone, "", ExitCode::BackError, ExitCause::HttpErrForbidden);
             _syncPal->addError(error);
 

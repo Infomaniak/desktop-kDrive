@@ -31,7 +31,7 @@ SyncFileItem::SyncFileItem()
       _direction(SyncDirectionUnknown),
       _instruction(SyncFileInstructionNone),
       _status(SyncFileStatusUnknown),
-      _conflict(ConflictTypeNone),
+      _conflict(ConflictType::None),
       _inconsistency(InconsistencyTypeNone),
       _size(0),
       _dehydrated(false),

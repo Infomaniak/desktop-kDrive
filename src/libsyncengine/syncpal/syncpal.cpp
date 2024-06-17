@@ -498,7 +498,7 @@ bool SyncPal::wipeOldPlaceholders() {
     if (!virtualFileCleaner.removeDehydratedPlaceholders(failedToRemovePlaceholders)) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
         for (auto &failedItem : failedToRemovePlaceholders) {
-            addError(Error(_syncDbId, "", "", NodeType::File, failedItem, ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone,
+            addError(Error(_syncDbId, "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyTypeNone, CancelTypeNone,
                            "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
         }
         return false;

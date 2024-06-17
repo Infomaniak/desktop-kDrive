@@ -66,7 +66,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
                                                                 "Blacklisting item temporarily to avoid infinite loop"));
 #endif
 
-            Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictTypeNone, InconsistencyTypeNone,
+            Error err(_syncPal->syncDbId(), "", nodeId, type, relativePath, ConflictType::None, InconsistencyTypeNone,
                       CancelTypeTmpBlacklisted);
             _syncPal->addError(err);
         }

@@ -105,8 +105,8 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string joinStr(const std::vector<std::string> &strList, char sep = 0);
         static std::string opType2Str(OperationType opType);
         static std::wstring opType2WStr(OperationType opType);
-        static std::string conflictType2Str(ConflictType conflictType);
-        static std::wstring conflictType2WStr(ConflictType conflictType);
+        static std::string ConflictType2Str(ConflictType conflictType);
+        static std::wstring ConflictType2WStr(ConflictType conflictType);
         static std::string side2Str(ReplicaSide side);
         static std::wstring side2WStr(ReplicaSide side);
         static std::string nodeType2Str(NodeType type);

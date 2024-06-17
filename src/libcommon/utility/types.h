@@ -142,7 +142,7 @@ enum class ExitCode {
     InvalidOperation
 };
 
-enum class ExitCause{
+enum class ExitCause {
     Unknown,
     WorkerExited,  // The SyncPal worker exits because a sub worker has exited
     DbAccessError,
@@ -183,32 +183,28 @@ enum class ExitCause{
 };
 
 // Conflict types ordered by priority
-typedef enum {
-    ConflictTypeNone,
-    ConflictTypeMoveParentDelete,
-    ConflictTypeMoveDelete,
-    ConflictTypeCreateParentDelete,
-    ConflictTypeMoveMoveSource,
-    ConflictTypeMoveMoveDest,
-    ConflictTypeMoveCreate,
-    ConflictTypeEditDelete,
-    ConflictTypeCreateCreate,
-    ConflictTypeEditEdit,
-    ConflictTypeMoveMoveCycle
-} ConflictType;
+enum class ConflictType {
+    None,
+    MoveParentDelete,
+    MoveDelete,
+    CreateParentDelete,
+    MoveMoveSource,
+    MoveMoveDest,
+    MoveCreate,
+    EditDelete,
+    CreateCreate,
+    EditEdit,
+    MoveMoveCycle
+};
 
 static const std::unordered_set<ConflictType> conflictsWithLocalRename = {  // All conflicts that rename the local file
-    ConflictTypeCreateCreate, ConflictTypeEditEdit, ConflictTypeMoveCreate, ConflictTypeMoveMoveDest};
+    ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
 
 inline bool isConflictsWithLocalRename(ConflictType type) {
     return conflictsWithLocalRename.find(type) != conflictsWithLocalRename.end();
 }
 
-typedef enum {
-    ConflictTypeResolutionNone,
-    ConflictTypeResolutionDeleteCanceled,
-    ConflictTypeResolutionFileMovedToRoot
-} ConflictTypeResolution;
+enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
 
 typedef enum {
     InconsistencyTypeNone = 0x00,

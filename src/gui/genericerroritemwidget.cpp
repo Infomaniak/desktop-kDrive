@@ -59,7 +59,7 @@ void GenericErrorItemWidget::init() {
         } else if (_errorInfo.level() == ErrorLevelNode) {
             const bool useDestPath = _errorInfo.cancelType() == CancelTypeAlreadyExistRemote ||
                                      _errorInfo.cancelType() == CancelTypeMoveToBinFailed ||
-                                     _errorInfo.conflictType() == ConflictTypeEditDelete;
+                                     _errorInfo.conflictType() == ConflictType::EditDelete;
             const QString &filePath = useDestPath ? _errorInfo.destinationPath() : _errorInfo.path();
             setFilePath(filePath, _errorInfo.nodeType());
         }
@@ -104,7 +104,7 @@ bool GenericErrorItemWidget::openInWebview() const {
            _errorInfo.inconsistencyType() == InconsistencyTypeNameLength ||
            _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar ||
            _errorInfo.cancelType() == CancelTypeAlreadyExistLocal ||
-           (_errorInfo.conflictType() == ConflictTypeEditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
+           (_errorInfo.conflictType() == ConflictType::EditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
            (_errorInfo.exitCode() == ExitCode::BackError && _errorInfo.exitCause() == ExitCause::NotFound);
 }
 

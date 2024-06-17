@@ -147,7 +147,7 @@ void TestConflictResolverWorker::testCreateCreate() {
     _syncPal->_remoteSnapshot->updateItem(
         SnapshotItem("rAAB", "rAA", Str("AAB.txt"), 1654788079, 1654788079, NodeType::File, 123, "rcs1"));
 
-    Conflict conflict(lNodeAAB, rNodeAA, ConflictTypeCreateCreate);
+    Conflict conflict(lNodeAAB, rNodeAA, ConflictType::CreateCreate);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -166,7 +166,7 @@ void TestConflictResolverWorker::testEditEdit() {
     lNodeAAA->setChangeEvents(OperationTypeEdit);
     std::shared_ptr<Node> rNodeAAA = _syncPal->_remoteUpdateTree->getNodeById("rAAA");
     rNodeAAA->setChangeEvents(OperationTypeEdit);
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeEditEdit);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditEdit);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -202,7 +202,7 @@ void TestConflictResolverWorker::testMoveCreate() {
     rNodeABA->setChangeEvents(OperationTypeMove);
     rNodeABA->setMoveOriginParentDbId(rNodeAA->idb());
 
-    Conflict conflict(lNodeABA, rNodeABA, ConflictTypeMoveCreate);
+    Conflict conflict(lNodeABA, rNodeABA, ConflictType::MoveCreate);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -227,7 +227,7 @@ void TestConflictResolverWorker::testEditDelete1() {
     rNodeAA->deleteChildren(rNodeAAA);
     _syncPal->_remoteUpdateTree->insertNode(rNodeAAA);
 
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeEditDelete);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -254,7 +254,7 @@ void TestConflictResolverWorker::testEditDelete2() {
     rNodeA->deleteChildren(rNodeAA);
     rNodeAA->deleteChildren(rNodeAAA);
 
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeEditDelete);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -292,7 +292,7 @@ void TestConflictResolverWorker::testMoveDelete1() {
     rNodeA->setChangeEvents(OperationTypeDelete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -345,7 +345,7 @@ void TestConflictResolverWorker::testMoveDelete2() {
     rNodeA->setChangeEvents(OperationTypeDelete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -391,7 +391,7 @@ void TestConflictResolverWorker::testMoveDelete3() {
     rNodeA->setChangeEvents(OperationTypeDelete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -437,7 +437,7 @@ void TestConflictResolverWorker::testMoveDelete4() {
     rNodeA->setChangeEvents(OperationTypeDelete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -487,7 +487,7 @@ void TestConflictResolverWorker::testMoveDelete5() {
     rNodeA->setChangeEvents(OperationTypeDelete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict1(lNodeAA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict1(lNodeAA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict1);
 
     // This should be treated as a Move-ParentDelete conflict, the Move-Delete conflict must be ignored
@@ -513,7 +513,7 @@ void TestConflictResolverWorker::testMoveParentDelete() {
     rNodeA->setChangeEvents(OperationTypeDelete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeAAA, rNodeA, ConflictTypeMoveParentDelete);
+    Conflict conflict(lNodeAAA, rNodeA, ConflictType::MoveParentDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -548,7 +548,7 @@ void TestConflictResolverWorker::testCreateParentDelete() {
     rNodeAA->setChangeEvents(OperationTypeDelete);
     rNodeA->deleteChildren(rNodeAA);
 
-    Conflict conflict(lNodeAAB, rNodeAA, ConflictTypeCreateParentDelete);
+    Conflict conflict(lNodeAAB, rNodeAA, ConflictType::CreateParentDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -582,7 +582,7 @@ void TestConflictResolverWorker::testMoveMoveSource1() {
     rNodeAA->deleteChildren(lNodeAAA);
     rNodeA->insertChildren(lNodeAAA);
 
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeMoveMoveSource);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -618,7 +618,7 @@ void TestConflictResolverWorker::testMoveMoveSource2() {
     rNodeAA->deleteChildren(lNodeAAA);
     rNodeA->insertChildren(lNodeAAA);
 
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeMoveMoveSource);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->_registeredOrphans.insert({*rNodeAAA->idb(), ReplicaSide::Remote});
@@ -657,7 +657,7 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     rNodeA->deleteChildren(rNodeAA);
     rNodeAB->insertChildren(rNodeAA);
 
-    Conflict conflict(lNodeAAA, rNodeAA, ConflictTypeMoveMoveDest);
+    Conflict conflict(lNodeAAA, rNodeAA, ConflictType::MoveMoveDest);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -693,7 +693,7 @@ void TestConflictResolverWorker::testMoveMoveCycle() {
     rNodeA->deleteChildren(rNodeAB);
     rNodeAA->insertChildren(rNodeAB);
 
-    Conflict conflict(lNodeAA, rNodeAA, ConflictTypeMoveMoveCycle);
+    Conflict conflict(lNodeAA, rNodeAA, ConflictType::MoveMoveCycle);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
