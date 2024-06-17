@@ -201,7 +201,7 @@ static const std::unordered_set<ConflictType> conflictsWithLocalRename = {  // A
     ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
 
 inline bool isConflictsWithLocalRename(ConflictType type) {
-    return conflictsWithLocalRename.find(type) != conflictsWithLocalRename.end();
+    return conflictsWithLocalRename.contains(type);
 }
 
 enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };

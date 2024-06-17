@@ -573,7 +573,7 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
     if (dbNode.type() == NodeType::File && dbNode.nodeIdLocal().has_value() && dbNode.nodeIdRemote().has_value() &&
         dbNode.lastModifiedLocal().has_value()) {
-        if (_fileSizeMismatchMap.find(dbNode.nodeIdLocal().value()) != _fileSizeMismatchMap.end()) {
+        if (_fileSizeMismatchMap.contains(dbNode.nodeIdLocal().value())) {
             // Size mismatch already detected
             return ExitCode::Ok;
         }
@@ -683,7 +683,7 @@ bool ComputeFSOperationWorker::isInUnsyncedList(const NodeId &nodeId, const Repl
     NodeId tmpNodeId = nodeId;
     bool found = false;
     do {
-        if (unsyncedList.find(tmpNodeId) != unsyncedList.end()) {
+        if (unsyncedList.contains(tmpNodeId)) {
             return true;
         }
 
@@ -710,7 +710,7 @@ bool ComputeFSOperationWorker::isInUnsyncedList(const std::shared_ptr<Snapshot> 
     NodeId tmpNodeId = nodeId;
     while (!tmpNodeId.empty() && tmpNodeId != snapshot->rootFolderId()) {
         // Check if node is in black list or undecided list
-        if (unsyncedList.find(tmpNodeId) != unsyncedList.end()) {
+        if (unsyncedList.contains(tmpNodeId)) {
             return true;
         }
 
@@ -720,7 +720,7 @@ bool ComputeFSOperationWorker::isInUnsyncedList(const std::shared_ptr<Snapshot> 
         _syncPal->_syncDb->correspondingNodeId(side, tmpNodeId, tmpCorrespondingNodeId, found);
         if (found) {
             // Check if corresponding node is in black list or undecided list
-            if (correspondingUnsyncedList.find(tmpCorrespondingNodeId) != correspondingUnsyncedList.end()) {
+            if (correspondingUnsyncedList.contains(tmpCorrespondingNodeId)) {
                 return true;
             }
         }
@@ -737,7 +737,7 @@ bool ComputeFSOperationWorker::isWhitelisted(const std::shared_ptr<Snapshot> sna
 
     NodeId tmpNodeId = nodeId;
     while (!tmpNodeId.empty() && tmpNodeId != snapshot->rootFolderId()) {
-        if (whiteList.find(tmpNodeId) != whiteList.end()) {
+        if (whiteList.contains(tmpNodeId)) {
             return true;
         }
 

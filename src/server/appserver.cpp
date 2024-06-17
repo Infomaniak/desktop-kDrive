@@ -666,7 +666,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             ExitCode exitCode = ExitCode::Ok;
             for (auto &sync : syncs) {
-                if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
+                if (!_syncPalMap.contains(sync.dbId())) {
                     LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << sync.dbId());
                     exitCode = ExitCode::DataError;
                     break;
@@ -926,7 +926,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
 
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            if (!_syncPalMap.contains(syncDbId)) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << enumClassToInt(ExitCode::DataError);
                 resultStream << SyncStatus::Undefined;
@@ -944,7 +944,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
 
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            if (!_syncPalMap.contains(syncDbId)) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << enumClassToInt(ExitCode::DataError);
                 resultStream << false;
@@ -1227,7 +1227,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> syncDbId;
             paramsStream >> type;
 
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            if (!_syncPalMap.contains(syncDbId)) {
                 LOG_DEBUG(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << enumClassToInt(ExitCode::DataError);
                 resultStream << QSet<QString>();
@@ -1259,7 +1259,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> type;
             paramsStream >> nodeIdSet;
 
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            if (!_syncPalMap.contains(syncDbId)) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << enumClassToInt(ExitCode::DataError);
                 break;
@@ -1286,7 +1286,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> syncDbId;
             paramsStream >> nodeId;
 
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            if (!_syncPalMap.contains(syncDbId)) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << enumClassToInt(ExitCode::DataError);
                 resultStream << QString();
@@ -1831,7 +1831,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> syncDbId;
             paramsStream >> state;
 
-            if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+            if (!_vfsMap.contains(syncDbId)) {
                 LOG_WARN(_logger, "Vfs not found in vfsMap for syncDbId=" << syncDbId);
                 resultStream << enumClassToInt(ExitCode::DataError);
                 break;
@@ -1853,7 +1853,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             paramsStream >> syncDbId;
             paramsStream >> restartSync;
 
-            if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+            if (!_syncPalMap.contains(syncDbId)) {
                 LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
                 resultStream << enumClassToInt(ExitCode::DataError);
                 break;
@@ -2233,7 +2233,7 @@ void AppServer::sendSignal(int sigId, int syncDbId, const SigValueType &val) {
 }
 
 bool AppServer::vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2244,7 +2244,7 @@ bool AppServer::vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isEx
 }
 
 bool AppServer::vfsExclude(int syncDbId, const SyncPath &itemPath) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2255,7 +2255,7 @@ bool AppServer::vfsExclude(int syncDbId, const SyncPath &itemPath) {
 }
 
 bool AppServer::vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState &pinState) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2267,7 +2267,7 @@ bool AppServer::vfsPinState(int syncDbId, const SyncPath &absolutePath, PinState
 }
 
 bool AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState pinState) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2284,7 +2284,7 @@ bool AppServer::vfsSetPinState(int syncDbId, const SyncPath &itemPath, PinState 
 
 bool AppServer::vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
                           int &progress) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2309,7 +2309,7 @@ bool AppServer::vfsCreatePlaceholder(int syncDbId, const SyncPath &relativeLocal
 }
 
 bool AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, const SyncFileItem &item, bool &needRestart) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2328,7 +2328,7 @@ bool AppServer::vfsConvertToPlaceholder(int syncDbId, const SyncPath &path, cons
 
 bool AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
                                   const int64_t size, const NodeId &id, std::string &error) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2347,7 +2347,7 @@ bool AppServer::vfsUpdateMetadata(int syncDbId, const SyncPath &path, const Sync
 
 bool AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
                                      bool &canceled, bool &finished) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2362,7 +2362,7 @@ bool AppServer::vfsUpdateFetchStatus(int syncDbId, const SyncPath &tmpPath, cons
 }
 
 bool AppServer::vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFileStatus status) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2377,7 +2377,7 @@ bool AppServer::vfsFileStatusChanged(int syncDbId, const SyncPath &path, SyncFil
 }
 
 bool AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2392,7 +2392,7 @@ bool AppServer::vfsForceStatus(int syncDbId, const SyncPath &path, bool isSyncin
 }
 
 bool AppServer::vfsCleanUpStatuses(int syncDbId) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2406,7 +2406,7 @@ bool AppServer::vfsCleanUpStatuses(int syncDbId) {
 }
 
 bool AppServer::vfsClearFileAttributes(int syncDbId, const SyncPath &path) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2417,7 +2417,7 @@ bool AppServer::vfsClearFileAttributes(int syncDbId, const SyncPath &path) {
 }
 
 bool AppServer::vfsCancelHydrate(int syncDbId, const SyncPath &path) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return false;
     }
@@ -2428,7 +2428,7 @@ bool AppServer::vfsCancelHydrate(int syncDbId, const SyncPath &path) {
 }
 
 void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatus &status) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         addError(Error(ERRID, ExitCode::DataError, ExitCause::Unknown));
         return;
@@ -2442,7 +2442,7 @@ void AppServer::syncFileStatus(int syncDbId, const SyncPath &path, SyncFileStatu
 }
 
 void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncing) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         addError(Error(ERRID, ExitCode::DataError, ExitCause::Unknown));
         return;
@@ -2456,7 +2456,7 @@ void AppServer::syncFileSyncing(int syncDbId, const SyncPath &path, bool &syncin
 }
 
 void AppServer::setSyncFileSyncing(int syncDbId, const SyncPath &path, bool syncing) {
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(Log::instance()->getLogger(), "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         addError(Error(ERRID, ExitCode::DataError, ExitCause::Unknown));
         return;
@@ -3320,7 +3320,7 @@ ExitCode AppServer::initSyncPal(const Sync &sync, const std::unordered_set<NodeI
     }
     _lastSyncPalStart = std::chrono::steady_clock::now();
 
-    if (_syncPalMap.find(sync.dbId()) == _syncPalMap.end()) {
+    if (!_syncPalMap.contains(sync.dbId())) {
         // Create SyncPal
         try {
             _syncPalMap[sync.dbId()] = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), _theme->version().toStdString()));
@@ -3445,7 +3445,7 @@ ExitCode AppServer::stopSyncPal(int syncDbId, bool pausedByUser, bool quit, bool
     }
 
     // Stop SyncPal
-    if (_syncPalMap.find(syncDbId) == _syncPalMap.end()) {
+    if (!_syncPalMap.contains(syncDbId)) {
         LOG_WARN(_logger, "SyncPal not found in syncPalMap for syncDbId=" << syncDbId);
         return ExitCode::DataError;
     }
@@ -3473,7 +3473,7 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
         return ExitCode::SystemError;
     }
 
-    if (_vfsMap.find(sync.dbId()) == _vfsMap.end()) {
+    if (!_vfsMap.contains(sync.dbId())) {
 #ifdef Q_OS_WIN
         Drive drive;
         bool found;
@@ -3609,7 +3609,7 @@ ExitCode AppServer::stopVfs(int syncDbId, bool unregister) {
     LOG_DEBUG(_logger, "Stop VFS for syncDbId=" << syncDbId);
 
     // Stop Vfs
-    if (_vfsMap.find(syncDbId) == _vfsMap.end()) {
+    if (!_vfsMap.contains(syncDbId)) {
         LOG_WARN(_logger, "Vfs not found in vfsMap for syncDbId=" << syncDbId);
         return ExitCode::DataError;
     }
@@ -4075,7 +4075,7 @@ void AppServer::onUpdateSyncsProgress() {
             estimatedRemainingTime = 0;
         }
 
-        if (_syncCacheMap.find(syncDbId) == _syncCacheMap.end() || _syncCacheMap[syncDbId]._status != status ||
+        if (!_syncCacheMap.contains(syncDbId) || _syncCacheMap[syncDbId]._status != status ||
             _syncCacheMap[syncDbId]._step != step || _syncCacheMap[syncDbId]._currentFile != currentFile ||
             _syncCacheMap[syncDbId]._totalFiles != totalFiles || _syncCacheMap[syncDbId]._completedSize != completedSize ||
             _syncCacheMap[syncDbId]._totalSize != totalSize ||
@@ -4097,7 +4097,7 @@ void AppServer::onUpdateSyncsProgress() {
 
         bool undecidedSetUpdated = false;
         for (const NodeId &nodeId : undecidedSet) {
-            if (_undecidedListCacheMap[syncDbId].find(nodeId) == _undecidedListCacheMap[syncDbId].end()) {
+            if (!_undecidedListCacheMap[syncDbId].contains(nodeId)) {
                 undecidedSetUpdated = true;
 
                 QString path;
