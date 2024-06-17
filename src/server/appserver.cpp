@@ -559,7 +559,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case REQUEST_NUM_ERROR_INFOLIST: {
-            ErrorLevel level{ErrorLevelUnknown};
+            ErrorLevel level{ErrorLevel::Unknown};
             int syncDbId{0};
             int limit{100};
             ArgsWriter(params).write(level, syncDbId, limit);
@@ -3771,7 +3771,7 @@ void AppServer::addError(const Error &error) {
 
     if (ServerRequests::isDisplayableError(error)) {
         // Notify the client
-        sendErrorAdded(error.level() == ErrorLevelServer, error.exitCode(), error.syncDbId());
+        sendErrorAdded(error.level() == ErrorLevel::Server, error.exitCode(), error.syncDbId());
     }
 
     if (error.exitCode() == ExitCode::InvalidToken) {

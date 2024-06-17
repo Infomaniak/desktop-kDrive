@@ -587,15 +587,15 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
 
 QLocale GuiUtility::languageToQLocale(Language language) {
     switch (language) {
-        case LanguageSpanish:
+        case Language::Spanish:
             return QLocale::Spanish;
-        case LanguageEnglish:
+        case Language::English:
             return QLocale::English;
-        case LanguageFrench:
+        case Language::French:
             return QLocale::French;
-        case LanguageGerman:
+        case Language::German:
             return QLocale::German;
-        case LanguageItalian:
+        case Language::Italian:
             return QLocale::Italian;
         default:
             return QLocale();

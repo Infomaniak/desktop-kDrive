@@ -712,7 +712,7 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
 
     if (directDownloadJobsMapIt->second->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         Error error;
-        error.setLevel(ErrorLevelNode);
+        error.setLevel(ErrorLevel::Node);
         error.setSyncDbId(syncDbId());
         error.setRemoteNodeId(directDownloadJobsMapIt->second->remoteNodeId());
         error.setPath(directDownloadJobsMapIt->second->localPath());

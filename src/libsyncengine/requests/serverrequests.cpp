@@ -923,15 +923,15 @@ bool ServerRequests::isDisplayableError(const Error &error) {
 
 bool ServerRequests::isAutoResolvedError(const Error &error) {
     bool autoResolved = false;
-    if (error.level() == ErrorLevelServer) {
+    if (error.level() == ErrorLevel::Server) {
         autoResolved = false;
-    } else if (error.level() == ErrorLevelSyncPal) {
+    } else if (error.level() == ErrorLevel::SyncPal) {
         autoResolved =
             (error.exitCode() == ExitCode::NetworkError   // Sync is paused and we try to restart it every RESTART_SYNCS_INTERVAL
              || (error.exitCode() == ExitCode::BackError  // Sync is stoped and a full sync is restarted
                  && error.exitCause() != ExitCause::DriveAccessError && error.exitCause() != ExitCause::DriveNotRenew) ||
              error.exitCode() == ExitCode::DataError);  // Sync is stoped and a full sync is restarted
-    } else if (error.level() == ErrorLevelNode) {
+    } else if (error.level() == ErrorLevel::Node) {
         autoResolved = (error.conflictType() != ConflictType::None && !isConflictsWithLocalRename(error.conflictType())) ||
                        (error.inconsistencyType() !=
                         InconsistencyTypeNone /*&& error.inconsistencyType() != InconsistencyTypeForbiddenChar*/) ||
@@ -1417,7 +1417,7 @@ ExitCode ServerRequests::getConflictErrorInfoList(int syncDbId, const std::unord
 }
 
 ExitCode ServerRequests::deleteErrorsServer() {
-    if (!ParmsDb::instance()->deleteErrors(ErrorLevelServer)) {
+    if (!ParmsDb::instance()->deleteErrors(ErrorLevel::Server)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::deleteErrors");
         return ExitCode::DbError;
     }
@@ -1427,12 +1427,12 @@ ExitCode ServerRequests::deleteErrorsServer() {
 
 ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
     std::vector<Error> errorList;
-    if (!ParmsDb::instance()->selectAllErrors(ErrorLevelSyncPal, syncDbId, INT_MAX, errorList)) {
+    if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::SyncPal, syncDbId, INT_MAX, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
         return ExitCode::DbError;
     }
 
-    if (!ParmsDb::instance()->selectAllErrors(ErrorLevelNode, syncDbId, INT_MAX, errorList)) {
+    if (!ParmsDb::instance()->selectAllErrors(ErrorLevel::Node, syncDbId, INT_MAX, errorList)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectAllErrors");
         return ExitCode::DbError;
     }

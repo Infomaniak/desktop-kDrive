@@ -682,7 +682,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
     auto currentStatus = syncInfoMapIt->second.status();
     ExitCode exitCode;
     switch (type) {
-        case ActionTypeStop:
+        case ActionType::Stop:
             if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::PauseAsked ||
                 currentStatus == SyncStatus::Paused || currentStatus == SyncStatus::StopAsked || currentStatus == SyncStatus::Stoped ||
                 currentStatus == SyncStatus::Error) {
@@ -695,7 +695,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
             }
             syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
             break;
-        case ActionTypeStart:
+        case ActionType::Start:
             if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::Idle || currentStatus == SyncStatus::Running ||
                 currentStatus == SyncStatus::Starting) {
                 return;
@@ -881,7 +881,7 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
 ExitCode ClientGui::loadError(int driveDbId, int syncDbId, ErrorLevel level) {
     const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
+        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << enumClassToInt(level);
     }
 
     return exitCode;
@@ -896,7 +896,7 @@ void ClientGui::onRefreshErrorList() {
     // Server level errors.
     if (_driveWithNewErrorSet.contains(0)) {
         _errorInfoMap[0].clear();
-        if (ExitCode::Ok != ClientGui::loadError(0, 0, ErrorLevelServer)) {
+        if (ExitCode::Ok != ClientGui::loadError(0, 0, ErrorLevel::Server)) {
             return;
         }
 
@@ -918,7 +918,7 @@ void ClientGui::onRefreshErrorList() {
 
         for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
             if (syncInfo.driveDbId() != driveDbId) continue;
-            for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
+            for (auto level : std::vector<ErrorLevel>{ErrorLevel::SyncPal, ErrorLevel::Node}) {
                 if (ExitCode::Ok != loadError(driveDbId, syncDbId, level)) return;
             }
         }
@@ -1295,9 +1295,9 @@ void ClientGui::onProgressInfo(int syncDbId, SyncStatus status, SyncStep step, i
 }
 
 void ClientGui::onExecuteSyncAction(ActionType type, ActionTarget target, int dbId) {
-    if (target == ActionTargetSync) {
+    if (target == ActionTarget::Sync) {
         executeSyncAction(type, dbId);
-    } else if (target == ActionTargetDrive) {
+    } else if (target == ActionTarget::Drive) {
         for (const auto &syncInfoMapElt : _syncInfoMap) {
             if (syncInfoMapElt.second.driveDbId() == dbId) {
                 executeSyncAction(type, syncInfoMapElt.first);

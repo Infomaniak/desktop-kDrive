@@ -86,7 +86,7 @@ class PARMS_EXPORT Error {
     private:
         int64_t _dbId{0};
         int64_t _time{0};
-        ErrorLevel _level{ErrorLevelUnknown};
+        ErrorLevel _level{ErrorLevel::Unknown};
         std::string _functionName;
         int _syncDbId{0};
         std::string _workerName;

@@ -545,7 +545,7 @@ void AppClient::setupLogging() {
     logger->setLogDebug(_logDebug);
     logger->enterNextLogFile();
 
-    logger->setMinLogLevel(ParametersCache::instance()->parametersInfo().logLevel());
+    logger->setMinLogLevel(enumClassToInt(ParametersCache::instance()->parametersInfo().logLevel()));
 
     if (ParametersCache::instance()->parametersInfo().useLog()) {
         // Don't override other configured logging

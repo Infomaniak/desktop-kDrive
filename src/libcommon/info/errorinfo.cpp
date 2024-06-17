@@ -23,7 +23,7 @@ namespace KDC {
 ErrorInfo::ErrorInfo()
     : _dbId(0),
       _time(0),
-      _level(ErrorLevelUnknown),
+      _level(ErrorLevel::Unknown),
       _functionName(QString()),
       _syncDbId(0),
       _workerName(QString()),

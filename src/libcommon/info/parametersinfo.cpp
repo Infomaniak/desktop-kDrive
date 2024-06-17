@@ -42,13 +42,13 @@ ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart
       _maxAllowedCpu(maxAllowedCpu) {}
 
 ParametersInfo::ParametersInfo()
-    : _language(LanguageDefault),
+    : _language(Language::Default),
       _monoIcons(false),
       _autoStart(true),
       _moveToTrash(true),
       _notificationsDisabled(NotificationsDisabledNever),
       _useLog(true),
-      _logLevel(LogLevelDebug),
+      _logLevel(LogLevel::Debug),
       _extendedLog(false),
       _purgeOldLogs(true),
       _syncHiddenFiles(false),

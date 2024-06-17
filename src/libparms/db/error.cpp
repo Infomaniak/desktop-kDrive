@@ -26,7 +26,7 @@ namespace KDC {
 Error::Error()
     : _dbId(0),
       _time(std::time(0)),
-      _level(ErrorLevelUnknown),
+      _level(ErrorLevel::Unknown),
       _syncDbId(0),
       _exitCode(ExitCode::Unknown),
       _exitCause(ExitCause::Unknown),
@@ -38,7 +38,7 @@ Error::Error()
 Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitCause)
     : _dbId(0),
       _time(std::time(0)),
-      _level(ErrorLevelServer),
+      _level(ErrorLevel::Server),
       _functionName(functionName),
       _syncDbId(0),
       _workerName(std::string()),
@@ -52,7 +52,7 @@ Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitC
 Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause)
     : _dbId(0),
       _time(std::time(0)),
-      _level(ErrorLevelSyncPal),
+      _level(ErrorLevel::SyncPal),
       _syncDbId(syncDbId),
       _workerName(workerName),
       _exitCode(exitCode),
@@ -69,7 +69,7 @@ Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId
              ExitCode exitCode /*= ExitCode::Unknown*/, ExitCause exitCause /*= ExitCause::Unknown*/)
     : _dbId(0),
       _time(std::time(0)),
-      _level(ErrorLevelNode),
+      _level(ErrorLevel::Node),
       _syncDbId(syncDbId),
       _exitCode(exitCode),
       _exitCause(exitCause),
@@ -107,12 +107,12 @@ Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &fu
 std::string Error::errorString() const {
     std::ostringstream errStream;
 
-    if (_level == ErrorLevelServer) {
+    if (_level == ErrorLevel::Server) {
         errStream << "Level: Server - function: " << _functionName << " - exitCode: " << enumClassToInt(_exitCode)
                   << " - exitCause: " << enumClassToInt(_exitCause);
-    } else if (_level == ErrorLevelSyncPal) {
+    } else if (_level == ErrorLevel::SyncPal) {
         errStream << "Level: SyncPal - worker: " << _workerName << " - exitCode: " << enumClassToInt(_exitCode) << " - exitCause: " << enumClassToInt(_exitCause);
-    } else if (_level == ErrorLevelNode) {
+    } else if (_level == ErrorLevel::Node) {
         errStream << "Level: SyncPal - conflictType: " << enumClassToInt(_conflictType)
                   << " - inconsistencyType: " << enumClassToInt(_inconsistencyType)
                   << " - cancelType: " << enumClassToInt(_cancelType);
@@ -123,14 +123,14 @@ std::string Error::errorString() const {
 
 bool Error::isSimilarTo(const Error &other) const {
     switch (_level) {
-        case ErrorLevelServer: {
+        case ErrorLevel::Server: {
             return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) &&
                    (_functionName == other.functionName());
         }
-        case ErrorLevelSyncPal: {
+        case ErrorLevel::SyncPal: {
             return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) && (_workerName == other.workerName());
         }
-        case ErrorLevelNode: {
+        case ErrorLevel::Node: {
             return (_conflictType == other.conflictType()) && (_inconsistencyType == other.inconsistencyType()) &&
                    (_cancelType == other.cancelType()) && (_path == other.path() && _destinationPath == other.destinationPath());
         }

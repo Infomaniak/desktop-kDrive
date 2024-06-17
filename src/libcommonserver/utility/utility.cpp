@@ -536,19 +536,19 @@ std::wstring Utility::nodeType2WStr(NodeType type) {
 
 std::string Utility::logLevel2Str(LogLevel level) {
     switch (level) {
-        case LogLevelDebug: {
+        case LogLevel::Debug: {
             return "debug";
         }
-        case LogLevelInfo: {
+        case LogLevel::Info: {
             return "info";
         }
-        case LogLevelWarning: {
+        case LogLevel::Warning: {
             return "warning";
         }
-        case LogLevelError: {
+        case LogLevel::Error: {
             return "error";
         }
-        case LogLevelFatal: {
+        case LogLevel::Fatal: {
             return "fatal";
         }
         default:

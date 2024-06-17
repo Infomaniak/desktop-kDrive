@@ -40,11 +40,11 @@ static const int recordDebuggingBoxVMargin = 20;
 static const int debugLevelLabelBoxVMargin = 10;
 static const int debugLevelSelectBoxVMargin = 20;
 
-std::map<LogLevel, std::pair<int, QString>> DebuggingDialog::_logLevelMap = {{LogLevelDebug, {0, QString(tr("Debug"))}},
-                                                                             {LogLevelInfo, {1, QString(tr("Info"))}},
-                                                                             {LogLevelWarning, {2, QString(tr("Warning"))}},
-                                                                             {LogLevelError, {3, QString(tr("Error"))}},
-                                                                             {LogLevelFatal, {4, QString(tr("Fatal"))}}};
+std::map<LogLevel, std::pair<int, QString>> DebuggingDialog::_logLevelMap = {{LogLevel::Debug, {0, QString(tr("Debug"))}},
+                                                                             {LogLevel::Info, {1, QString(tr("Info"))}},
+                                                                             {LogLevel::Warning, {2, QString(tr("Warning"))}},
+                                                                             {LogLevel::Error, {3, QString(tr("Error"))}},
+                                                                             {LogLevel::Fatal, {4, QString(tr("Fatal"))}}};
 
 DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent)
     : CustomDialog(true, parent),
@@ -55,7 +55,7 @@ DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent
       _saveButton(nullptr),
       _recordDebugging(false),
       _extendedLog(false),
-      _minLogLevel(LogLevelInfo),
+      _minLogLevel(LogLevel::Info),
       _deleteLogs(false),
       _needToSave(false) {
     initUI();
@@ -118,7 +118,7 @@ void DebuggingDialog::initUI() {
     _debugLevelComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     _debugLevelComboBox->setAttribute(Qt::WA_MacShowFocusRect, false);
     for (auto const &debugLevelElt : _logLevelMap) {
-        _debugLevelComboBox->insertItem(debugLevelElt.second.first, debugLevelElt.second.second, debugLevelElt.first);
+        _debugLevelComboBox->insertItem(debugLevelElt.second.first, debugLevelElt.second.second, enumClassToInt(debugLevelElt.first));
     }
     debugLevelHBox->addWidget(_debugLevelComboBox);
     debugLevelHBox->addSpacing(debugLevelSelectBoxVMargin);
@@ -178,12 +178,12 @@ void DebuggingDialog::updateUI() {
     _extendedLogCheckBox->setCheckState(_extendedLog ? Qt::Checked : Qt::Unchecked);
 
     _debugLevelComboBox->setEnabled(_recordDebugging);
-    _debugLevelComboBox->setCurrentIndex(_recordDebugging ? _minLogLevel : -1);
+    _debugLevelComboBox->setCurrentIndex(_recordDebugging ? enumClassToInt(_minLogLevel) : -1);
 
     _deleteLogsCheckBox->setEnabled(_recordDebugging);
     _deleteLogsCheckBox->setChecked(_recordDebugging ? _deleteLogs : false);
 
-    if (_minLogLevel != LogLevel::LogLevelDebug) {
+    if (_minLogLevel != LogLevel::Debug) {
         _extendedLogCheckBox->hide();
         _extendedLog = false;
     } else {

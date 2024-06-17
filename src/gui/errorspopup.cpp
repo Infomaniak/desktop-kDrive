@@ -45,7 +45,7 @@ static const int shadowBlurRadius = 20;
 static const int menuOffsetX = -30;
 static const int menuOffsetY = 10;
 
-const std::string actionTypeProperty = "actionType";
+const std::string ActionTypeProperty = "actionType";
 
 Q_LOGGING_CATEGORY(lcErrorsPopup, "gui.errorspopup", QtInfoMsg)
 
@@ -80,7 +80,7 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErr
     // Drive errors
     for (auto const &driveError : driveErrorList) {
         ClickableWidget *driveWidget = new ClickableWidget(this);
-        driveWidget->setProperty(actionTypeProperty.c_str(), driveError.driveDbId);
+        driveWidget->setProperty(ActionTypeProperty.c_str(), driveError.driveDbId);
         mainVBox->addWidget(driveWidget);
 
         QHBoxLayout *driveErrorHBox = new QHBoxLayout();
@@ -231,7 +231,7 @@ void ErrorsPopup::setArrowIcon() {
 }
 
 void ErrorsPopup::onActionButtonClicked() {
-    QString accountIdStr = qvariant_cast<QString>(sender()->property(actionTypeProperty.c_str()));
+    QString accountIdStr = qvariant_cast<QString>(sender()->property(ActionTypeProperty.c_str()));
     int accountId = accountIdStr.toInt();
     QTimer::singleShot(0, this, [=]() { emit accountSelected(accountId); });
     done(QDialog::Accepted);

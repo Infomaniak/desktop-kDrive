@@ -148,9 +148,9 @@ void StatusBarWidget::showStatusMenu(bool pauseClicked) {
         createStatusActionMenu(menu, resetButtons, pauseClicked);
     } else {
         if (pauseClicked) {
-            emit pauseSync(ActionTargetDrive);
+            emit pauseSync(ActionTarget::Drive);
         } else {
-            emit resumeSync(ActionTargetDrive);
+            emit resumeSync(ActionTarget::Drive);
         }
         resetButtons = true;
     }
@@ -249,7 +249,7 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
                 }
 
                 syncAction = new QWidgetAction(this);
-                syncAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt.first);
+                syncAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), syncInfoMapElt.first);
                 MenuItemWidget *syncMenuItemWidget = new MenuItemWidget(syncInfoMapElt.second.name());
                 syncMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg");
                 syncAction->setDefaultWidget(syncMenuItemWidget);
@@ -291,29 +291,29 @@ void StatusBarWidget::showEvent(QShowEvent * /*event*/) {
 }
 
 void StatusBarWidget::onPauseSync() {
-    emit pauseSync(ActionTargetDrive);
+    emit pauseSync(ActionTarget::Drive);
 }
 
 void StatusBarWidget::onPauseFolderSync() {
-    int folderId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
-    emit pauseSync(ActionTargetSync, folderId);
+    int folderId = qvariant_cast<int>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
+    emit pauseSync(ActionTarget::Sync, folderId);
 }
 
 void StatusBarWidget::onPauseAllSync() {
-    emit pauseSync(ActionTargetAllDrives);
+    emit pauseSync(ActionTarget::AllDrives);
 }
 
 void StatusBarWidget::onResumeSync() {
-    emit resumeSync(ActionTargetDrive);
+    emit resumeSync(ActionTarget::Drive);
 }
 
 void StatusBarWidget::onResumeFolderSync() {
-    int folderId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
-    emit resumeSync(ActionTargetSync, folderId);
+    int folderId = qvariant_cast<int>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
+    emit resumeSync(ActionTarget::Sync, folderId);
 }
 
 void StatusBarWidget::onResumeAllSync() {
-    emit resumeSync(ActionTargetAllDrives);
+    emit resumeSync(ActionTarget::AllDrives);
 }
 
 void StatusBarWidget::retranslateUi() {

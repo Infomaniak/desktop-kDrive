@@ -1333,12 +1333,12 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
 
 bool ParmsDb::initData() {
     // Clear Server and SyncPal level errors
-    if (!deleteErrors(ErrorLevelServer)) {
+    if (!deleteErrors(ErrorLevel::Server)) {
         LOG_WARN(_logger, "Error in clearErrors");
         return false;
     }
 
-    if (!deleteErrors(ErrorLevelSyncPal)) {
+    if (!deleteErrors(ErrorLevel::SyncPal)) {
         LOG_WARN(_logger, "Error in clearErrors");
         return false;
     }
@@ -2914,7 +2914,7 @@ bool ParmsDb::insertError(const Error &err) {
 
     ASSERT(queryResetAndClearBindings(INSERT_ERROR_REQUEST_ID));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 1, err.time()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 2, err.level()));
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 2, enumClassToInt(err.level())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 3, err.functionName()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 4, err.syncDbId() ? dbtype(err.syncDbId()) : std::monostate()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 5, err.workerName()));
@@ -2996,7 +2996,7 @@ bool ParmsDb::selectAllErrors(ErrorLevel level, int syncDbId, int limit, std::ve
     const std::scoped_lock lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 1, level));
+    ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 1, enumClassToInt(level)));
     ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 2, syncDbId));
     ASSERT(queryBindValue(SELECT_ALL_ERROR_BY_LEVEL_AND_SYNCDBID_REQUEST_ID, 3, limit));
     bool found;
@@ -3102,7 +3102,7 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
         SyncName destinationPath;
         ASSERT(querySyncNameValue(requestId, 14, destinationPath));
 
-        errs.push_back(Error(dbId, time, ErrorLevelNode, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
+        errs.push_back(Error(dbId, time, ErrorLevel::Node, functionName, syncDbId, workerName, static_cast<ExitCode>(exitCode),
                              static_cast<ExitCause>(exitCause), static_cast<NodeId>(localNodeId),
                              static_cast<NodeId>(remoteNodeId), static_cast<NodeType>(nodeType), static_cast<SyncPath>(path),
                              static_cast<ConflictType>(conflictType), static_cast<InconsistencyType>(inconsistencyType),
@@ -3120,7 +3120,7 @@ bool ParmsDb::deleteErrors(ErrorLevel level) {
     std::string error;
 
     ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, 1, level));
+    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, 1, enumClassToInt(level)));
     if (!queryExec(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID);
         return false;

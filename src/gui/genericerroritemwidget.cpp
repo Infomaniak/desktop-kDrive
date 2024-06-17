@@ -41,7 +41,7 @@ void GenericErrorItemWidget::init() {
     setMessage(_errorMsg);
 
     // Path layout
-    if (_errorInfo.level() == ErrorLevelSyncPal || _errorInfo.level() == ErrorLevelNode) {
+    if (_errorInfo.level() == ErrorLevel::SyncPal || _errorInfo.level() == ErrorLevel::Node) {
         const auto &syncInfoMapIt = _gui->syncInfoMap().find(_errorInfo.syncDbId());
         if (syncInfoMapIt == _gui->syncInfoMap().end()) {
             throw std::runtime_error(GENERICERRORITEMWIDGET_NEW_ERROR_MSG);
@@ -53,10 +53,10 @@ void GenericErrorItemWidget::init() {
         }
 
         // Path
-        if (_errorInfo.level() == ErrorLevelSyncPal) {
+        if (_errorInfo.level() == ErrorLevel::SyncPal) {
             setDriveName(driveInfoMapIt->second.name(), syncInfoMapIt->second.localPath());
             setPathIconColor(driveInfoMapIt->second.color());
-        } else if (_errorInfo.level() == ErrorLevelNode) {
+        } else if (_errorInfo.level() == ErrorLevel::Node) {
             const bool useDestPath = _errorInfo.cancelType() == CancelType::AlreadyExistRemote ||
                                      _errorInfo.cancelType() == CancelType::MoveToBinFailed ||
                                      _errorInfo.conflictType() == ConflictType::EditDelete;

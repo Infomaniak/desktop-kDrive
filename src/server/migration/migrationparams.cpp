@@ -100,34 +100,34 @@ MigrationParams::MigrationParams() : _logger(Log::instance()->getLogger()), _pro
 
 Language MigrationParams::strToLanguage(QString lang) {
     if (lang == "en") {
-        return LanguageEnglish;
+        return Language::English;
     } else if (lang == "fr") {
-        return LanguageFrench;
+        return Language::French;
     } else if (lang == "de") {
-        return LanguageGerman;
+        return Language::German;
     } else if (lang == "es") {
-        return LanguageSpanish;
+        return Language::Spanish;
     } else if (lang == "it") {
-        return LanguageItalian;
+        return Language::Italian;
     } else {
-        return LanguageDefault;
+        return Language::Default;
     }
 }
 
 LogLevel MigrationParams::intToLogLevel(int log) {
     switch (log) {
         case 0:
-            return LogLevelDebug;
+            return LogLevel::Debug;
         case 1:
-            return LogLevelInfo;
+            return LogLevel::Info;
         case 2:
-            return LogLevelWarning;
+            return LogLevel::Warning;
         case 3:
-            return LogLevelError;
+            return LogLevel::Error;
         case 4:
-            return LogLevelFatal;
+            return LogLevel::Fatal;
         default:
-            return LogLevelInfo;
+            return LogLevel::Info;
     }
 }
 
@@ -210,10 +210,10 @@ ExitCode MigrationParams::migrateGeneralParams() {
 
     // Log level Info and Debug are to be switched
     LogLevel logLevel = intToLogLevel(minLogLevel);
-    if (logLevel == LogLevelInfo) {
-        logLevel = LogLevelDebug;
-    } else if (logLevel == LogLevelDebug) {
-        logLevel = LogLevelInfo;
+    if (logLevel == LogLevel::Info) {
+        logLevel = LogLevel::Debug;
+    } else if (logLevel == LogLevel::Debug) {
+        logLevel = LogLevel::Info;
     }
 
     ParametersCache::instance()->parameters().setDarkTheme(darkTheme);

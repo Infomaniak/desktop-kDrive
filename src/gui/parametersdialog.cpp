@@ -837,17 +837,17 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
 
 QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const noexcept {
     switch (errorInfo.level()) {
-        case ErrorLevelUnknown: {
+        case ErrorLevel::Unknown: {
             return tr(
                 "A technical error has occurred.<br>"
                 "Please empty the history and if the error persists, contact our support team.");
             break;
         }
-        case ErrorLevelServer: {
+        case ErrorLevel::Server: {
             return getAppErrorText(errorInfo.functionName(), errorInfo.exitCode(), errorInfo.exitCause());
             break;
         }
-        case ErrorLevelSyncPal: {
+        case ErrorLevel::SyncPal: {
             if (const auto &syncInfoMapIt = _gui->syncInfoMap().find(errorInfo.syncDbId());
                 syncInfoMapIt != _gui->syncInfoMap().end()) {
                 const auto &driveInfoMapIt = _gui->driveInfoMap().find(syncInfoMapIt->second.driveDbId());
@@ -862,11 +862,11 @@ QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const noex
             qCDebug(lcParametersDialog()) << "Sync not found in sync map for syncDbId=" << errorInfo.syncDbId();
             return {};
         }
-        case ErrorLevelNode:
+        case ErrorLevel::Node:
             return getErrorLevelNodeText(errorInfo);
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged error level : " << errorInfo.level();
+    qCDebug(lcParametersDialog()) << "Unmanaged error level : " << enumClassToInt(errorInfo.level());
 
     return {};
 }
@@ -1217,11 +1217,11 @@ void ParametersDialog::retranslateUi() {
 }
 
 void ParametersDialog::onPauseSync(int syncDbId) {
-    emit executeSyncAction(ActionTypeStop, ActionTargetSync, syncDbId);
+    emit executeSyncAction(ActionType::Stop, ActionTarget::Sync, syncDbId);
 }
 
 void ParametersDialog::onResumeSync(int syncDbId) {
-    emit executeSyncAction(ActionTypeStart, ActionTargetSync, syncDbId);
+    emit executeSyncAction(ActionType::Start, ActionTarget::Sync, syncDbId);
 }
 
 void ParametersDialog::onRunSync(int syncDbId) {

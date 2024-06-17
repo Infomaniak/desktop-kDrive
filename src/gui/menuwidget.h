@@ -35,7 +35,7 @@ class MenuWidget : public QMenu {
     public:
         enum Type { Menu = 0, Submenu, List };
 
-        static const std::string actionTypeProperty;
+        static const std::string ActionTypeProperty;
 
         MenuWidget(Type type, QWidget *parent = nullptr);
         MenuWidget(Type type, const QString &title, QWidget *parent = nullptr);

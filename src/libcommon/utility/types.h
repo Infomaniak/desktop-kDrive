@@ -299,15 +299,15 @@ enum class SyncStep {
     Done
 };
 
-using ActionType = enum { ActionTypeStop = 0, ActionTypeStart };
+enum class ActionType { Stop = 0, Start };
 
-using ActionTarget = enum { ActionTargetDrive = 0, ActionTargetSync, ActionTargetAllDrives };
+enum class ActionTarget { Drive = 0, Sync, AllDrives };
 
-using ErrorLevel = enum { ErrorLevelUnknown = 0, ErrorLevelServer, ErrorLevelSyncPal, ErrorLevelNode };
+enum class ErrorLevel { Unknown = 0, Server, SyncPal, Node };
 
-using Language = enum { LanguageDefault = 0, LanguageEnglish, LanguageFrench, LanguageGerman, LanguageSpanish, LanguageItalian };
+enum class Language { Default = 0, English, French, German, Spanish, Italian };
 
-using LogLevel = enum { LogLevelDebug = 0, LogLevelInfo, LogLevelWarning, LogLevelError, LogLevelFatal };
+enum class LogLevel {Debug = 0, Info, Warning, Error, Fatal};
 
 typedef enum {
     NotificationsDisabledNever,

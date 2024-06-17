@@ -67,13 +67,13 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.dialogGeometry() == defaultParameters.dialogGeometry());
 
     Parameters parameters2;
-    parameters2.setLanguage(LanguageFrench);
+    parameters2.setLanguage(Language::French);
     parameters2.setMonoIcons(true);
     parameters2.setAutoStart(false);
     parameters2.setMoveToTrash(false);
     parameters2.setNotificationsDisabled(NotificationsDisabledAlways);
     parameters2.setUseLog(true);
-    parameters2.setLogLevel(LogLevelWarning);
+    parameters2.setLogLevel(LogLevel::Warning);
     parameters2.setPurgeOldLogs(true);
     parameters2.setSyncHiddenFiles(true);
     parameters2.setProxyConfig(ProxyConfig(ProxyTypeHTTP, "host name", 44444444, true, "user", "token"));
