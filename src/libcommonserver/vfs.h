@@ -240,8 +240,6 @@ class Vfs : public QObject {
         inline log4cplus::Logger logger() { return _vfsSetupParams._logger; }
 
     private:
-        void effectivePinState(const QString &relativePath, KDC::PinState &effPinState);
-
         bool _extendedLog;
         bool _started;
 };

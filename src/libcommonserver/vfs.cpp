@@ -83,28 +83,6 @@ void Vfs::stop(bool unregister) {
     }
 }
 
-void Vfs::effectivePinState(const QString &relativePath, KDC::PinState &effPinState) {
-    const KDC::PinState basePinState = pinState(relativePath);
-    if (!enumClassToInt<PinState>(basePinState)) {
-        effPinState = {};
-        return;
-    }
-
-    // Check if all pin states are identical
-    QDir dir(relativePath);
-    for (const QString &entry :
-         dir.entryList(QStringList(), QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot)) {
-        QString entryPath = QDir::cleanPath(relativePath + QDir::separator() + entry);
-        const KDC::PinState entryPinState = pinState(entryPath);
-        if (entryPinState != basePinState) {
-            effPinState = KDC::PinState::Inherited;
-            return;
-        }
-    }
-
-    effPinState = basePinState;
-}
-
 VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
 VfsOff::~VfsOff() {}
