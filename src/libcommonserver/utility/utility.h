@@ -135,7 +135,19 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncName logFileName();
         static SyncName logFileNameWithTime();
         static std::string toUpper(const std::string &str);
+
+        /* There is a bug in the Apple clang compiler (Xcode 15.0), std::source_location::current() return the location of the
+         * declaration instead of the location of the call site.
+         * see: https://github.com/llvm/llvm-project/issues/68108
+         * The issue is fixed in Clang 16 but not yet propagated in Xcode
+         */
+#ifndef __APPLE__ // TODO: remove this when the issue is fixed in Xcode
         static std::string errId(std::source_location location = std::source_location::current());
+#else
+        static std::string _errId(std::source_location location);
+#define errId() _errId(std::source_location::current())
+#endif
+
 
         static SyncName normalizedSyncName(const SyncName &name);
         static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;

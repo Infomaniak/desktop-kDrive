@@ -710,7 +710,11 @@ std::string Utility::toUpper(const std::string &str) {
     return upperStr;
 }
 
+#ifndef __APPLE__
 std::string Utility::errId(std::source_location location) {
+#else
+std::string Utility::_errId(std::source_location location) {
+#endif
     std::string err = Utility::toUpper(std::filesystem::path(location.file_name()).filename().stem().string().substr(0, 3)) +
                       ":" + std::to_string(location.line());
     return err;
