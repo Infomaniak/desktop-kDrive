@@ -18,8 +18,6 @@
 
 #include "testintegration.h"
 
-#include <memory>
-
 #include "db/db.h"
 #include "jobs/local/localcopyjob.h"
 #include "jobs/local/localdeletejob.h"
@@ -66,16 +64,21 @@ void TestIntegration::setUp() {
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up");
 
-    // Insert api token into keystore
+    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
+    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
+    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
+    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
     const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-    if (apiTokenStr.empty()) {
-        throw std::runtime_error("API token environment variable is missing!");
+
+    if (accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() || apiTokenStr.empty()) {
+        throw std::runtime_error("Some environment variables are missing!");
     }
 
+    // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
 
-    const std::string keychainKey("123");
+    std::string keychainKey("123");
     KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
@@ -91,15 +94,17 @@ void TestIntegration::setUp() {
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    Account account(1, 123, user.dbId());
+    int accountId(atoi(accountIdStr.c_str()));
+    Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    Drive drive(_driveDbId, testCiDriveID, account.dbId(), std::string(), 0, std::string());
+    int driveId = atoi(driveIdStr.c_str());
+    Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    _localPath = "/test";
-    _remotePath = "/test";
+    _localPath = localPathStr;
+    _remotePath = remotePathStr;
     Sync sync(1, drive.dbId(), _localPath, _remotePath);
     ParmsDb::instance()->insertSync(sync);
 
@@ -110,7 +115,7 @@ void TestIntegration::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
 
     // Insert items to blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeBlackList, {test_beaucoupRemoteId});
@@ -185,7 +190,7 @@ void TestIntegration::testCreateLocal() {
     LOGW_DEBUG(_logger, L"$$$$$ test create local file");
     std::cout << "test create local file : " << std::endl;
 
-    // Simulate a creation by duplicating an existing file
+    // Simulate a create by duplicating an existing file
     SyncPath localExecutorFolderPath = _localPath / testExecutorFolderRelativePath;
     SyncPath testFile = localExecutorFolderPath / "test_executor.txt";
     SyncPath newFileName = Str("testLocal_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) + Str(".txt");
@@ -204,7 +209,7 @@ void TestIntegration::testCreateLocal() {
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
     CPPUNIT_ASSERT(dataArray);
 
-    for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
+    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
         Poco::JSON::Object::Ptr obj = it->extract<Poco::JSON::Object::Ptr>();
         if (newFileName == obj->get(nameKey).toString()) {
             newFileFound = true;
@@ -228,7 +233,7 @@ void TestIntegration::testEditLocal() {
 
     SyncTime prevModTime = _syncPal->_remoteSnapshot->lastModified(_newTestFileRemoteId);
     SyncName testCallStr = Str(R"(echo "This is an edit test )") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10)) +
-                           Str(R"(" >> ")") + _newTestFilePath.native() + Str(R"(")");
+                           Str(R"(" >> ")") + _newTestFilePath.native().c_str() + Str(R"(")");
     std::system(SyncName2Str(testCallStr).c_str());
 
     waitForSyncToFinish();

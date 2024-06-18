@@ -100,6 +100,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         int _driveDbId = 0;
         int _userDbId = 0;
         SyncName _dirName;
+        NodeId _remoteDirId;
         NodeId _dirId;
         bool _deleteTestDir = false;
 };

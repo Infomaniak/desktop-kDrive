@@ -30,16 +30,23 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestSnapshot::setUp() {
-    // Insert api token into keystore
+    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
+    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
+    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
+    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
+    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
     const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-    if (apiTokenStr.empty()) {
-        throw std::runtime_error("API token environment variable is missing!");
+
+    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
+        apiTokenStr.empty()) {
+        throw std::runtime_error("Some environment variables are missing!");
     }
 
+    // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
 
-    const std::string keychainKey("123");
+    std::string keychainKey("123");
     KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
@@ -51,17 +58,20 @@ void TestSnapshot::setUp() {
     ParmsDb::instance()->setAutoDelete(true);
 
     // Insert user, account, drive & sync
-    User user(1, 123, keychainKey);
+    int userId = atoi(userIdStr.c_str());
+    User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    Account account(1, 123, user.dbId());
+    int accountId(atoi(accountIdStr.c_str()));
+    Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
-    Drive drive(driveDbId, testCiDriveID, account.dbId(), std::string(), 0, std::string());
+    int driveId = atoi(driveIdStr.c_str());
+    Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    Sync sync(1, drive.dbId(), "test", "test");
+    Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
     ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
@@ -128,7 +138,7 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->name("aaa") == Str("AAA"));
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->lastModified("aaa") == 1640995205);
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->type("aaa") == NodeType::NodeTypeFile);
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->contentChecksum("aaa").empty());  // Checksum never computed for now
+    CPPUNIT_ASSERT(_syncPal->_localSnapshot->contentChecksum("aaa") == "");  // Checksum never computed for now
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->itemId(std::filesystem::path("A*/AA/AAA")) == "aaa");
 
     _syncPal->_localSnapshot->updateItem(

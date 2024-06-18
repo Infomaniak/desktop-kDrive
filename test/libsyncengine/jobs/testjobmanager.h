@@ -61,7 +61,7 @@ class TestJobManager : public CppUnit::TestFixture {
         void testReuseSocket();
 
     private:
-        int _driveDbId{1};
+        int _driveDbId;
         NodeId _dirId;
 };
 

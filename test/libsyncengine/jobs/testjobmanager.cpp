@@ -43,21 +43,26 @@ static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/
 static const SyncPath localTestDirPath_bigFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/big_file_dir");
 
 void KDC::TestJobManager::setUp() {
-    // Insert api token into keystore
+    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
+    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
+    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
+    const std::string remoteDirIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_DIR_ID");
     const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-    if (apiTokenStr.empty()) {
-        throw std::runtime_error("API token environment variable is missing!");
+
+    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remoteDirIdStr.empty() || apiTokenStr.empty()) {
+        throw std::runtime_error("Some environment variables are missing!");
     }
 
+    // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
 
-    const std::string keychainKey("123");
+    std::string keychainKey("123");
     KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    bool alreadyExists = false;
+    bool alreadyExists;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
@@ -65,14 +70,20 @@ void KDC::TestJobManager::setUp() {
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
-    User user(1, 123, keychainKey);
+    int userId(atoi(userIdStr.c_str()));
+    User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    Account account(1, 123, user.dbId());
+    int accountId(atoi(accountIdStr.c_str()));
+    Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
-    Drive drive(_driveDbId, testCiDriveID, account.dbId(), std::string(), 0, std::string());
+    _driveDbId = 1;
+    int driveId = atoi(driveIdStr.c_str());
+    Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
+
+    NodeId remoteDirId = std::string(remoteDirIdStr);
 
     // Setup proxy
     Parameters parameters;
@@ -82,7 +93,7 @@ void KDC::TestJobManager::setUp() {
     }
 
     SyncName dirName = Str("testJobManager_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
-    CreateDirJob job(_driveDbId, dirName, testCiRemoteFolderID, dirName);
+    CreateDirJob job(_driveDbId, dirName, remoteDirId, dirName);
     job.runSynchronously();
 
     // Extract file ID
