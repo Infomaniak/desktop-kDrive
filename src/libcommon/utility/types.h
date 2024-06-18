@@ -205,20 +205,7 @@ enum class InconsistencyType {
     NotYetSupportedChar = 0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
     DuplicateNames = 0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
 };
-/*
-inline InconsistencyType operator|(const InconsistencyType a, const InconsistencyType b) {
-    return static_cast<InconsistencyType>(static_cast<int>(a) | static_cast<int>(b));
-}
-inline InconsistencyType operator|=(InconsistencyType &a, const InconsistencyType b) {
-    return a = a | b;
-}
-inline InconsistencyType operator&(const InconsistencyType a, const InconsistencyType b) {
-    return static_cast<InconsistencyType>(static_cast<int>(a) & static_cast<int>(b));
-}
-inline InconsistencyType operator&=(InconsistencyType &a, const InconsistencyType b) {
-    return a = a & b;
-}
-*/
+
 enum class CancelType {
     None,
     Create,
