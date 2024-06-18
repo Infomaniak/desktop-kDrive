@@ -340,6 +340,7 @@ void UpdateTreeWorker::logUpdate(const std::shared_ptr<Node> node, const Operati
 
 void UpdateTreeWorker::updateTmpNode(std::shared_ptr<Node> newNode, const FSOpPtr op, const FSOpPtr deleteOp,
                                      OperationType opType) {
+    assert(false);
     assert(newNode != nullptr && newNode->isTmp());
 
     updateNodeId(newNode, op->nodeId());
@@ -388,8 +389,8 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             // Transform a Delete and a Create operations into one Edit operation.
             // Some software, such as Excel, keeps the current version into a temporary directory and move it to the destination,
             // replacing the original file. However, this behavior should be applied only on local side.
-            auto createFileOpSetIt = _createFileOperationSet.find(deleteOp->path());
-            if (createFileOpSetIt != _createFileOperationSet.end()) {
+            if (auto createFileOpSetIt = _createFileOperationSet.find(deleteOp->path());
+                createFileOpSetIt != _createFileOperationSet.end()) {
                 FSOpPtr tmp = nullptr;
                 if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(),
                                            tmp)) {
@@ -403,9 +404,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
         }
 
         const OperationType opType = op->operationType() == OperationTypeCreate ? OperationTypeEdit : OperationTypeDelete;
-
-        auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
-        if (currentNodeIt != _updateTree->nodes().end()) {
+        if (auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId()); currentNodeIt != _updateTree->nodes().end()) {
             // Node is already in the update tree, it can be a Delete or an Edit
             std::shared_ptr<Node> currentNode = currentNodeIt->second;
             updateNodeId(currentNode, op->nodeId());
