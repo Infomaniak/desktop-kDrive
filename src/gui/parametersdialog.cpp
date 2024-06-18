@@ -662,42 +662,42 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
 
 QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const noexcept {
     QString text;
-    if ((inconsistencyType & InconsistencyType::Case) == InconsistencyType::Case) {
+    if (enumClassToInt(inconsistencyType & InconsistencyType::Case)) {
         text += tr(
             "An existing file/directory has an identical name with the same case options (same upper and lower case letters).<br>"
             "The file/directory has been temporarily blacklisted.");
     }
-    if ((inconsistencyType & InconsistencyType::ForbiddenChar) == InconsistencyType::ForbiddenChar) {
+    if (enumClassToInt(inconsistencyType & InconsistencyType::ForbiddenChar)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory name contains an unsupported character.<br>"
                "The file/directory has been temporarily blacklisted.");
     }
-    if ((inconsistencyType & InconsistencyType::ReservedName) == InconsistencyType::ReservedName) {
+    if (enumClassToInt(inconsistencyType & InconsistencyType::ReservedName)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("This file/directory name is reserved by your operating system.<br>"
                "The file/directory has been temporarily blacklisted.");
     }
-    if ((inconsistencyType & InconsistencyType::NameLength) == InconsistencyType::NameLength) {
+    if (enumClassToInt(inconsistencyType & InconsistencyType::NameLength)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory name is too long.<br>"
                "The file/directory has been temporarily blacklisted.");
     }
-    if ((inconsistencyType & InconsistencyType::PathLength) == InconsistencyType::PathLength) {
+    if (enumClassToInt(inconsistencyType & InconsistencyType::PathLength)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory path is too long.<br>"
                "The file/directory is ignored.");
     }
-    if ((inconsistencyType & InconsistencyType::NotYetSupportedChar) == InconsistencyType::NotYetSupportedChar) {
+    if (enumClassToInt(inconsistencyType & InconsistencyType::NotYetSupportedChar)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory name contains a recent UNICODE character not yet supported by your filesystem.<br>"
                "The parent directory has been excluded from synchronization.");
     }
-    if ((inconsistencyType & InconsistencyType::DuplicateNames) == InconsistencyType::DuplicateNames) {
+    if (enumClassToInt(inconsistencyType & InconsistencyType::DuplicateNames)) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory name coincides with the name of another item in the same directory.<br>"
