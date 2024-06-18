@@ -25,8 +25,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-export KDRIVE_TEST_CI_API_TOKEN="$KDRIVE_TOKEN"
-env
+export KDRIVE_TEST_CI_API_TOKEN=$KDRIVE_TOKEN
 
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
