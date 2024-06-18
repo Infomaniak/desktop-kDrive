@@ -107,15 +107,24 @@ Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &fu
 std::string Error::errorString() const {
     std::ostringstream errStream;
 
-    if (_level == ErrorLevel::Server) {
-        errStream << "Level: Server - function: " << _functionName << " - exitCode: " << enumClassToInt(_exitCode)
-                  << " - exitCause: " << enumClassToInt(_exitCause);
-    } else if (_level == ErrorLevel::SyncPal) {
-        errStream << "Level: SyncPal - worker: " << _workerName << " - exitCode: " << enumClassToInt(_exitCode) << " - exitCause: " << enumClassToInt(_exitCause);
-    } else if (_level == ErrorLevel::Node) {
-        errStream << "Level: SyncPal - conflictType: " << enumClassToInt(_conflictType)
-                  << " - inconsistencyType: " << enumClassToInt(_inconsistencyType)
-                  << " - cancelType: " << enumClassToInt(_cancelType);
+    switch (_level) {
+        using enum KDC::ErrorLevel;
+        case Server:
+            errStream << "Level: Server - function: " << _functionName << " - exitCode: " << enumClassToInt(_exitCode)
+                      << " - exitCause: " << enumClassToInt(_exitCause);
+            break;
+        case SyncPal:
+            errStream << "Level: SyncPal - worker: " << _workerName << " - exitCode: " << enumClassToInt(_exitCode)
+                      << " - exitCause: " << enumClassToInt(_exitCause);
+            break;
+        case Node:
+            errStream << "Level: SyncPal - conflictType: " << enumClassToInt(_conflictType)
+                      << " - inconsistencyType: " << enumClassToInt(_inconsistencyType)
+                      << " - cancelType: " << enumClassToInt(_cancelType);
+            break;
+        default:
+            errStream << "Level: Unknown";
+            break;
     }
 
     return errStream.str();
