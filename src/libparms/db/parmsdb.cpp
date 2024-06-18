@@ -440,8 +440,8 @@
     "DELETE FROM error "                     \
     "WHERE exitCode=?1;"
 
-#define DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID "delete_error_by_exitcause"
-#define DELETE_ALL_ERROR_BY_ExitCauseREQUEST \
+#define DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID "delete_error_by_exitcause"
+#define DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST \
     "DELETE FROM error "                      \
     "WHERE exitCause=?1;"
 
@@ -1185,10 +1185,10 @@ bool ParmsDb::prepare() {
         return sqlFail(DELETE_ALL_ERROR_BY_EXITCODE_REQUEST_ID, error);
     }
 
-    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID));
-    if (!queryPrepare(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID, DELETE_ALL_ERROR_BY_ExitCauseREQUEST, false, errId, error)) {
-        queryFree(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID);
-        return sqlFail(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID, error);
+    ASSERT(queryCreate(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID));
+    if (!queryPrepare(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST, false, errId, error)) {
+        queryFree(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID);
+        return sqlFail(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, error);
     }
 
     ASSERT(queryCreate(DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID));
@@ -2982,10 +2982,10 @@ bool ParmsDb::deleteAllErrorsByExitCause(ExitCause exitCause) {
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID, 1, static_cast<int>(exitCause)));
-    if (!queryExec(DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_ExitCauseREQUEST_ID);
+    ASSERT(queryResetAndClearBindings(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID));
+    ASSERT(queryBindValue(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, 1, static_cast<int>(exitCause)));
+    if (!queryExec(DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID);
         return false;
     }
 
