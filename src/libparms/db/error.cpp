@@ -32,7 +32,7 @@ Error::Error()
       _exitCause(ExitCause::Unknown),
       _nodeType(NodeType::Unknown),
       _conflictType(ConflictType::None),
-      _inconsistencyType(InconsistencyTypeNone),
+      _inconsistencyType(InconsistencyType::None),
       _cancelType(CancelType::None) {}
 
 Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitCause)
@@ -46,7 +46,7 @@ Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitC
       _exitCause(exitCause),
       _nodeType(NodeType::Unknown),
       _conflictType(ConflictType::None),
-      _inconsistencyType(InconsistencyTypeNone),
+      _inconsistencyType(InconsistencyType::None),
       _cancelType(CancelType::None) {}
 
 Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause)
@@ -59,11 +59,11 @@ Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, Exi
       _exitCause(exitCause),
       _nodeType(NodeType::Unknown),
       _conflictType(ConflictType::None),
-      _inconsistencyType(InconsistencyTypeNone),
+      _inconsistencyType(InconsistencyType::None),
       _cancelType(CancelType::None) {}
 
 Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
-             ConflictType conflictType, InconsistencyType inconsistencyType /*= InconsistencyTypeNone */,
+             ConflictType conflictType, InconsistencyType inconsistencyType /*= InconsistencyType::None */,
              CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/
              ,
              ExitCode exitCode /*= ExitCode::Unknown*/, ExitCause exitCause /*= ExitCause::Unknown*/)

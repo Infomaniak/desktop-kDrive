@@ -205,29 +205,29 @@ inline bool isConflictsWithLocalRename(ConflictType type) {
 
 enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
 
-using InconsistencyType = enum {  // Can't be easily converted to enum class because of the numerous bitwise operations
-    InconsistencyTypeNone = 0x00,
-    InconsistencyTypeCase = 0x01,
-    InconsistencyTypeForbiddenChar = 0x02,  // Char unsupported by OS
-    InconsistencyTypeReservedName = 0x04,
-    InconsistencyTypeNameLength = 0x08,
-    InconsistencyTypePathLength = 0x10,
-    InconsistencyTypeNotYetSupportedChar =
+enum class InconsistencyType {
+    None = 0x00,
+    Case = 0x01,
+    ForbiddenChar = 0x02,  // Char unsupported by OS
+    ReservedName = 0x04,
+    NameLength = 0x08,
+    PathLength = 0x10,
+    NotYetSupportedChar =
         0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-    InconsistencyTypeDuplicateNames =
+    DuplicateNames =
         0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
 };
 
-inline InconsistencyType operator|(InconsistencyType a, InconsistencyType b) {
+inline InconsistencyType operator|(const InconsistencyType a, const InconsistencyType b) {
     return static_cast<InconsistencyType>(static_cast<int>(a) | static_cast<int>(b));
 }
-inline InconsistencyType operator|=(InconsistencyType &a, InconsistencyType b) {
+inline InconsistencyType operator|=(InconsistencyType &a, const InconsistencyType b) {
     return a = a | b;
 }
-inline InconsistencyType operator&(InconsistencyType a, InconsistencyType b) {
+inline InconsistencyType operator&(const InconsistencyType a, const InconsistencyType b) {
     return static_cast<InconsistencyType>(static_cast<int>(a) & static_cast<int>(b));
 }
-inline InconsistencyType operator&=(InconsistencyType &a, InconsistencyType b) {
+inline InconsistencyType operator&=(InconsistencyType &a, const InconsistencyType b) {
     return a = a & b;
 }
 

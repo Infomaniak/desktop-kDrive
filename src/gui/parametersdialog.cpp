@@ -661,45 +661,43 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
 }
 
 QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const noexcept {
-    const auto inconsistencyTypeInt = static_cast<int>(inconsistencyType);
     QString text;
-
-    if (inconsistencyTypeInt & InconsistencyTypeCase) {
+    if ((inconsistencyType & InconsistencyType::Case) == InconsistencyType::Case) {
         text += tr(
             "An existing file/directory has an identical name with the same case options (same upper and lower case letters).<br>"
             "The file/directory has been temporarily blacklisted.");
     }
-    if (inconsistencyTypeInt & InconsistencyTypeForbiddenChar) {
+    if ((inconsistencyType & InconsistencyType::ForbiddenChar) == InconsistencyType::ForbiddenChar) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory name contains an unsupported character.<br>"
                "The file/directory has been temporarily blacklisted.");
     }
-    if (inconsistencyTypeInt & InconsistencyTypeReservedName) {
+    if ((inconsistencyType & InconsistencyType::ReservedName) == InconsistencyType::ReservedName) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("This file/directory name is reserved by your operating system.<br>"
                "The file/directory has been temporarily blacklisted.");
     }
-    if (inconsistencyTypeInt & InconsistencyTypeNameLength) {
+    if ((inconsistencyType & InconsistencyType::NameLength) == InconsistencyType::NameLength) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory name is too long.<br>"
                "The file/directory has been temporarily blacklisted.");
     }
-    if (inconsistencyTypeInt & InconsistencyTypePathLength) {
+    if ((inconsistencyType & InconsistencyType::PathLength) == InconsistencyType::PathLength) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory path is too long.<br>"
                "The file/directory is ignored.");
     }
-    if (inconsistencyTypeInt & InconsistencyTypeNotYetSupportedChar) {
+    if ((inconsistencyType & InconsistencyType::NotYetSupportedChar) == InconsistencyType::NotYetSupportedChar) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory name contains a recent UNICODE character not yet supported by your filesystem.<br>"
                "The parent directory has been excluded from synchronization.");
     }
-    if (inconsistencyTypeInt & InconsistencyTypeDuplicateNames) {
+    if ((inconsistencyType & InconsistencyType::DuplicateNames) == InconsistencyType::DuplicateNames) {
         text += (text.isEmpty() ? "" : "\n");
         text +=
             tr("The file/directory name coincides with the name of another item in the same directory.<br>"
@@ -806,7 +804,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
         return getConflictText(errorInfo.conflictType(), ConflictTypeResolution::None);
     }
 
-    if (errorInfo.inconsistencyType() != InconsistencyTypeNone) {
+    if (errorInfo.inconsistencyType() != InconsistencyType::None) {
         return getInconsistencyText(errorInfo.inconsistencyType());
     }
 
@@ -1342,7 +1340,7 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
         if (isConflictsWithLocalRename(errorInfo.conflictType())) {
             errorTabWidget->showResolveConflicts(true);
         }
-        if (errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar) {
+        if (errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar) {
             errorTabWidget->showResolveUnsupportedCharacters(true);
         }
 

@@ -135,7 +135,7 @@ class Node {
         ReplicaSide _side = ReplicaSide::Unknown;
         SyncName _name;
         SyncName _validLocalName;
-        InconsistencyType _inconsistencyType = InconsistencyTypeNone;
+        InconsistencyType _inconsistencyType = InconsistencyType::None;
         NodeType _type = NodeType::Unknown;
         int _changeEvents = OperationTypeNone;
         std::optional<NodeId> _id = std::nullopt;

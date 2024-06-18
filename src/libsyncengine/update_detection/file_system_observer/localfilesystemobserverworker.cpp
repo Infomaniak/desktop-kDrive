@@ -152,7 +152,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
             if (toExclude) {
                 if (isWarning) {
-                    Error error(_syncPal->syncDbId(), "", nodeId, nodeType, relativePath, ConflictType::None, InconsistencyTypeNone,
+                    Error error(_syncPal->syncDbId(), "", nodeId, nodeType, relativePath, ConflictType::None, InconsistencyType::None,
                                 CancelType::ExcludedByTemplate);
                     _syncPal->addError(error);
                 }
@@ -599,7 +599,7 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
         }
     }
 
-    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absolutePath, ConflictType::None, InconsistencyTypeNone,
+    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absolutePath, ConflictType::None, InconsistencyType::None,
                 CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
     _syncPal->addError(error);
 }

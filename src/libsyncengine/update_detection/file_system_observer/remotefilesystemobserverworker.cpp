@@ -368,7 +368,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             _snapshot->path(item.parentId(), path);
             path /= item.name();
 
-            Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyTypeNone,
+            Error err(_syncPal->syncDbId(), "", item.id(), NodeType::Directory, path, ConflictType::None, InconsistencyType::None,
                       CancelType::AlreadyExistLocal);
             _syncPal->addError(err);
 
@@ -509,7 +509,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         if (ExclusionTemplateCache::instance()->isExcludedByTemplate(usedName, isWarning)) {
             if (isWarning) {
                 Error error(_syncPal->syncDbId(), "", actionInfo.nodeId, actionInfo.type, actionInfo.path, ConflictType::None,
-                            InconsistencyTypeNone, CancelType::ExcludedByTemplate);
+                            InconsistencyType::None, CancelType::ExcludedByTemplate);
                 _syncPal->addError(error);
             }
             // Remove it from snapshot
@@ -730,7 +730,7 @@ bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &na
         LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem "
                                         << SyncName2WStr(name).c_str() << L". Item is ignored.");
 
-        Error err(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyTypeNotYetSupportedChar);
+        Error err(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar);
         _syncPal->addError(err);
         return true;
     }

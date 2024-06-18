@@ -260,7 +260,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                 // Blacklist node
                                 _syncPal->blacklistTemporarily(nodeId, dbPath, side);
                                 Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, dbPath, ConflictType::None,
-                                            InconsistencyTypeNone, CancelType::None, "", ExitCode::SystemError,
+                                            InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,
                                             ExitCause::FileAccessError);
                                 _syncPal->addError(error);
 
@@ -801,7 +801,7 @@ bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId 
         LOGW_SYNCPAL_WARN(_logger, L"Path length too big (" << pathSize << L" characters) for item "
                                                             << Path2WStr(absolutePath).c_str() << L". Item is ignored.");
 
-        Error err(_syncPal->syncDbId(), "", nodeId, type, path, ConflictType::None, InconsistencyTypePathLength);
+        Error err(_syncPal->syncDbId(), "", nodeId, type, path, ConflictType::None, InconsistencyType::PathLength);
         _syncPal->addError(err);
 
         return true;

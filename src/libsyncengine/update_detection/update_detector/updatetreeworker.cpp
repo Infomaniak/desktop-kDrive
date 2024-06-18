@@ -58,7 +58,7 @@ void UpdateTreeWorker::execute() {
     for (const auto &nodeItem : _updateTree->nodes()) {
         nodeItem.second->clearChangeEvents();
         nodeItem.second->clearConflictAlreadyConsidered();
-        nodeItem.second->setInconsistencyType(InconsistencyTypeNone);
+        nodeItem.second->setInconsistencyType(InconsistencyType::None);
         nodeItem.second->setPreviousId(std::nullopt);
     }
 
@@ -304,7 +304,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
                 // We are in situation (2), i.e. duplicate normalized names.
                 // We display to the user an explicit error message about item name inconsistency.
                 Error err(_syncPal->syncDbId(), "", createOp->nodeId(), createOp->objectType(), createOp->path(),
-                          ConflictType::None, InconsistencyTypeDuplicateNames, CancelType::None);
+                          ConflictType::None, InconsistencyType::DuplicateNames, CancelType::None);
                 _syncPal->addError(err);
             }
 

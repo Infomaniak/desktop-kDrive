@@ -37,14 +37,14 @@ class PARMS_EXPORT Error {
 
         // Error level Node constructor
         Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
-              ConflictType conflictType, InconsistencyType inconsistencyType = InconsistencyTypeNone,
+              ConflictType conflictType, InconsistencyType inconsistencyType = InconsistencyType::None,
               CancelType cancelType = CancelType::None, const SyncPath &destinationPath = "", ExitCode exitCode = ExitCode::Unknown,
               ExitCause exitCause = ExitCause::Unknown);
 
         Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &functionName, int syncDbId,
               const std::string &workerName, ExitCode exitCode, ExitCause exitCause, const NodeId &localNodeId,
               const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path, ConflictType conflictType,
-              InconsistencyType inconsistencyType = InconsistencyTypeNone, CancelType cancelType = CancelType::None,
+              InconsistencyType inconsistencyType = InconsistencyType::None, CancelType cancelType = CancelType::None,
               const SyncPath &destinationPath = "");
 
         inline int64_t dbId() const { return _dbId; }
@@ -97,7 +97,7 @@ class PARMS_EXPORT Error {
         NodeType _nodeType{NodeType::Unknown};
         SyncPath _path;
         ConflictType _conflictType{ConflictType::None};
-        InconsistencyType _inconsistencyType{InconsistencyTypeNone};
+        InconsistencyType _inconsistencyType{InconsistencyType::None};
         CancelType _cancelType{CancelType::None};
         SyncPath _destinationPath;
 };

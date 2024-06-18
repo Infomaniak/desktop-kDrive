@@ -34,7 +34,7 @@ ErrorInfo::ErrorInfo()
       _nodeType(NodeType::Unknown),
       _path(QString()),
       _conflictType(ConflictType::None),
-      _inconsistencyType(InconsistencyTypeNone),
+      _inconsistencyType(InconsistencyType::None),
       _cancelType(CancelType::None) {}
 
 ErrorInfo::ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,

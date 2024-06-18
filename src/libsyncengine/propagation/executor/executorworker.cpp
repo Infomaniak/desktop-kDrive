@@ -580,7 +580,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             SyncFileStatus status = SyncFileStatus::Success;
 
             // Check for inconsistency
-            if (syncOp->affectedNode()->inconsistencyType() != InconsistencyTypeNone) {
+            if (syncOp->affectedNode()->inconsistencyType() != InconsistencyType::None) {
                 // Notify user that the file has been renamed
                 SyncFileItem syncItem;
                 if (_syncPal->getSyncFileItem(relativeLocalFilePath, syncItem)) {
@@ -1435,7 +1435,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                           << L" already exists but doesn't have write permissions!");
                     Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictType::None,
-                                InconsistencyTypeNone, CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
+                                InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
                     _syncPal->addError(error);
                     return false;
                 }
@@ -1452,7 +1452,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
 
                 if (!writePermission) {
                     Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absoluteLocalFilePath, ConflictType::None,
-                                InconsistencyTypeNone, CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
+                                InconsistencyType::None, CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
                     _syncPal->addError(error);
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                           << L" doesn't have write permissions!");
@@ -1679,10 +1679,10 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
     Error error;
     if (isInconsistencyIssue) {
         error = Error(_syncPal->syncDbId(), locaNodeId, remoteNodeId, syncOp->affectedNode()->type(),
-                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyTypeForbiddenChar);
+                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::ForbiddenChar);
     } else {
         error = Error(_syncPal->syncDbId(), locaNodeId, remoteNodeId, syncOp->affectedNode()->type(),
-                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyTypeNone, CancelType::None, "",
+                      syncOp->affectedNode()->getPath(), ConflictType::None, InconsistencyType::None, CancelType::None, "",
                       ExitCode::BackError, jobExitCause);
     }
     _syncPal->addError(error);
@@ -1739,7 +1739,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
                 syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string(), relativeLocalPath,
                 otherSide(syncOp->targetSide()));
             Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, _syncPal->_localPath / relativeLocalPath,
-                        ConflictType::None, InconsistencyTypeNone, CancelType::None, "", job->exitCode(), job->exitCause());
+                        ConflictType::None, InconsistencyType::None, CancelType::None, "", job->exitCode(), job->exitCause());
             _syncPal->addError(error);
 
             affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
@@ -1770,7 +1770,7 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         if (SyncFileItem syncItem; _syncPal->getSyncFileItem(relativeLocalPath, syncItem)) {
             if (syncOp->conflict().type() != ConflictType::None) {
                 status = SyncFileStatus::Conflict;
-            } else if (syncItem.inconsistency() != InconsistencyTypeNone) {
+            } else if (syncItem.inconsistency() != InconsistencyType::None) {
                 status = SyncFileStatus::Inconsistency;
             }
 
@@ -2424,7 +2424,7 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
             Error error(_syncPal->_syncDbId,
                         syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string(), "",
                         syncOp->affectedNode()->type(), syncOp->affectedNode()->getPath(), ConflictType::None,
-                        InconsistencyTypeNone, CancelType::None, "", ExitCode::BackError, ExitCause::HttpErrForbidden);
+                        InconsistencyType::None, CancelType::None, "", ExitCode::BackError, ExitCause::HttpErrForbidden);
             _syncPal->addError(error);
 
             affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());

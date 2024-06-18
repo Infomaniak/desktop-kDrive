@@ -914,7 +914,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             }
         }
         case ExitCode::Unknown: {
-            return error.inconsistencyType() != InconsistencyTypePathLength && error.cancelType() != CancelType::AlreadyExistRemote;
+            return error.inconsistencyType() != InconsistencyType::PathLength && error.cancelType() != CancelType::AlreadyExistRemote;
         }
         default:
             return true;
@@ -934,7 +934,7 @@ bool ServerRequests::isAutoResolvedError(const Error &error) {
     } else if (error.level() == ErrorLevel::Node) {
         autoResolved = (error.conflictType() != ConflictType::None && !isConflictsWithLocalRename(error.conflictType())) ||
                        (error.inconsistencyType() !=
-                        InconsistencyTypeNone /*&& error.inconsistencyType() != InconsistencyTypeForbiddenChar*/) ||
+                        InconsistencyType::None /*&& error.inconsistencyType() != InconsistencyType::ForbiddenChar*/) ||
                        error.cancelType() != CancelType::None;
     }
 

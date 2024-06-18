@@ -97,12 +97,12 @@ void GenericErrorItemWidget::openFolder(const QString &path) {
 }
 
 bool GenericErrorItemWidget::openInWebview() const {
-    return _errorInfo.inconsistencyType() == InconsistencyTypePathLength ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeCase ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeForbiddenChar ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeReservedName ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeNameLength ||
-           _errorInfo.inconsistencyType() == InconsistencyTypeNotYetSupportedChar ||
+    return _errorInfo.inconsistencyType() == InconsistencyType::PathLength ||
+           _errorInfo.inconsistencyType() == InconsistencyType::Case ||
+           _errorInfo.inconsistencyType() == InconsistencyType::ForbiddenChar ||
+           _errorInfo.inconsistencyType() == InconsistencyType::ReservedName ||
+           _errorInfo.inconsistencyType() == InconsistencyType::NameLength ||
+           _errorInfo.inconsistencyType() == InconsistencyType::NotYetSupportedChar ||
            _errorInfo.cancelType() == CancelType::AlreadyExistLocal ||
            (_errorInfo.conflictType() == ConflictType::EditDelete && !_errorInfo.remoteNodeId().isEmpty()) ||
            (_errorInfo.exitCode() == ExitCode::BackError && _errorInfo.exitCause() == ExitCause::NotFound);

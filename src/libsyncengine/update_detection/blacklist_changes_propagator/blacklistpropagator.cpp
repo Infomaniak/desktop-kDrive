@@ -248,7 +248,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             PlatformInconsistencyCheckerUtility::renameLocalFile(
                 absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
 
-            Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictType::None, InconsistencyTypeNone,
+            Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictType::None, InconsistencyType::None,
                       CancelType::MoveToBinFailed, destPath);
             _syncPal->addError(err);
         } else {

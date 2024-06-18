@@ -121,16 +121,16 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
 
     std::wstring causeStr;
     switch (inconsistencyType) {
-        case InconsistencyTypeCase:
+        case InconsistencyType::Case:
             causeStr = L"of a name clash";
             break;
-        case InconsistencyTypeForbiddenChar:
+        case InconsistencyType::ForbiddenChar:
             causeStr = L"of a forbidden character";
             break;
-        case InconsistencyTypeReservedName:
+        case InconsistencyType::ReservedName:
             causeStr = L"the name is reserved on this OS";
             break;
-        case InconsistencyTypeNameLength:
+        case InconsistencyType::NameLength:
             causeStr = L"the name is too long";
             break;
         default:
@@ -145,17 +145,17 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
     const SyncPath relativePath = remoteNode->getPath();
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(remoteNode->name())) {
-        blacklistNode(remoteNode, relativePath, InconsistencyTypeForbiddenChar);
+        blacklistNode(remoteNode, relativePath, InconsistencyType::ForbiddenChar);
         return false;
     }
 
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
-        blacklistNode(remoteNode, relativePath, InconsistencyTypeReservedName);
+        blacklistNode(remoteNode, relativePath, InconsistencyType::ReservedName);
         return false;
     }
 
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameSize(remoteNode->name())) {
-        blacklistNode(remoteNode, relativePath, InconsistencyTypeNameLength);
+        blacklistNode(remoteNode, relativePath, InconsistencyType::NameLength);
         return false;
     }
 
@@ -204,11 +204,11 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(std::shar
 
             if (currentChildNode->hasChangeEvent() && !isSpecialFolder) {
                 // Blacklist the new one
-                blacklistNode(currentChildNode, currentChildNode->getPath(), InconsistencyTypeCase);
+                blacklistNode(currentChildNode, currentChildNode->getPath(), InconsistencyType::Case);
                 continue;
             } else {
                 // Blacklist the previously discovered child
-                blacklistNode(prevChildNode, prevChildNode->getPath(), InconsistencyTypeCase);
+                blacklistNode(prevChildNode, prevChildNode->getPath(), InconsistencyType::Case);
                 continue;
             }
         }
