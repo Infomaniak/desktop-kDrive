@@ -185,7 +185,7 @@ QIcon Theme::syncStateIcon(KDC::SyncStatus status, bool sysTray, bool sysTrayMen
         case KDC::SyncStatus::PauseAsked:
         case KDC::SyncStatus::Paused:
         case KDC::SyncStatus::StopAsked:
-        case KDC::SyncStatus::Stoped:
+        case KDC::SyncStatus::Stopped:
             statusIcon = QLatin1String("state-pause");
             break;
         case KDC::SyncStatus::Error:

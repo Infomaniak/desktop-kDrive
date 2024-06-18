@@ -203,7 +203,7 @@ bool SyncPal::isRunning() const {
 SyncStatus SyncPal::status() const {
     if (!_syncPalWorker) {
         // Not started
-        return SyncStatus::Stoped;
+        return SyncStatus::Stopped;
     } else {
         // Has started
         if (_syncPalWorker->isRunning()) {
@@ -232,7 +232,7 @@ SyncStatus SyncPal::status() const {
                 return SyncStatus::Starting;
             } else if (_syncPalWorker->exitCode() == ExitCode::Ok) {
                 // Stopped at the request of the user
-                return SyncStatus::Stoped;
+                return SyncStatus::Stopped;
             } else {
                 // Stopped after a fatal error (DB access, system...)
                 return SyncStatus::Error;

@@ -297,7 +297,7 @@ QString GuiUtility::getSyncStatusIconPath(StatusInfo &statusInfo) {
             case KDC::SyncStatus::PauseAsked:
             case KDC::SyncStatus::Paused:
             case KDC::SyncStatus::StopAsked:
-            case KDC::SyncStatus::Stoped:
+            case KDC::SyncStatus::Stopped:
                 path = QString(":/client/resources/icons/statuts/pause.svg");
                 break;
             default:
@@ -361,7 +361,7 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                 text = QCoreApplication::translate("utility", "Synchronization pausing ...");
                 break;
             case KDC::SyncStatus::Paused:
-            case KDC::SyncStatus::Stoped:
+            case KDC::SyncStatus::Stopped:
                 text = QCoreApplication::translate("utility", "Synchronization paused.");
                 break;
             default:
@@ -378,7 +378,7 @@ QString GuiUtility::getDriveStatusIconPath(StatusInfo &statusInfo) {
 
 bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
     if (status == KDC::SyncStatus::PauseAsked || status == KDC::SyncStatus::Paused || status == KDC::SyncStatus::StopAsked ||
-        status == KDC::SyncStatus::Stoped || status == KDC::SyncStatus::Error) {
+        status == KDC::SyncStatus::Stopped || status == KDC::SyncStatus::Error) {
         // Pause
         return false;
     } else {
@@ -388,7 +388,7 @@ bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
 
 bool GuiUtility::getResumeActionAvailable(KDC::SyncStatus status) {
     if (status == KDC::SyncStatus::PauseAsked || status == KDC::SyncStatus::Paused || status == KDC::SyncStatus::StopAsked ||
-        status == KDC::SyncStatus::Stoped || status == KDC::SyncStatus::Error) {
+        status == KDC::SyncStatus::Stopped || status == KDC::SyncStatus::Error) {
         // Pause
         return true;
     }

@@ -66,7 +66,7 @@ void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
                         errorsSeen++;
                         break;
                     case SyncStatus::StopAsked:
-                    case SyncStatus::Stoped:
+                    case SyncStatus::Stopped:
                     case SyncStatus::PauseAsked:
                     case SyncStatus::Paused:
                         abortOrPausedSeen++;

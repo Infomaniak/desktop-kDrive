@@ -610,7 +610,7 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
                     case SyncStatus::PauseAsked:
                     case SyncStatus::Paused:
                     case SyncStatus::StopAsked:
-                    case SyncStatus::Stoped:
+                    case SyncStatus::Stopped:
                         abortOrPausedSeen++;
                 }
             }
@@ -656,7 +656,7 @@ QString ClientGui::trayTooltipStatusString(SyncStatus status, bool unresolvedCon
         case SyncStatus::Error:
             break;
         case SyncStatus::StopAsked:
-        case SyncStatus::Stoped:
+        case SyncStatus::Stopped:
             statusString = tr("User Abort.");
             break;
         case SyncStatus::PauseAsked:
@@ -684,7 +684,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
     switch (type) {
         case ActionType::Stop:
             if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::PauseAsked ||
-                currentStatus == SyncStatus::Paused || currentStatus == SyncStatus::StopAsked || currentStatus == SyncStatus::Stoped ||
+                currentStatus == SyncStatus::Paused || currentStatus == SyncStatus::StopAsked || currentStatus == SyncStatus::Stopped ||
                 currentStatus == SyncStatus::Error) {
                 return;
             }
@@ -1288,7 +1288,7 @@ void ClientGui::onProgressInfo(int syncDbId, SyncStatus status, SyncStep step, i
 
         emit refreshStatusNeeded();
         emit updateProgress(syncDbId);
-        if (status == SyncStatus::Idle || status == SyncStatus::Paused || status == SyncStatus::Stoped) {
+        if (status == SyncStatus::Idle || status == SyncStatus::Paused || status == SyncStatus::Stopped) {
             emit syncFinished(syncDbId);
         }
     }

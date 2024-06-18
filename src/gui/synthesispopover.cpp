@@ -551,7 +551,7 @@ void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool
     static QVector<SyncStatus> statusPriority = QVector<SyncStatus>()
                                                 << SyncStatus::Starting << SyncStatus::Running
                                                 << SyncStatus::PauseAsked << SyncStatus::Paused
-                                                << SyncStatus::StopAsked << SyncStatus::Stoped
+                                                << SyncStatus::StopAsked << SyncStatus::Stopped
                                                 << SyncStatus::Error << SyncStatus::Idle;
 
     found = false;
@@ -572,7 +572,7 @@ void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool
 void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
     static QVector<SyncStatus> statusPriority =
         QVector<SyncStatus>() << SyncStatus::Error << SyncStatus::Running << SyncStatus::PauseAsked << SyncStatus::Paused
-                              << SyncStatus::StopAsked << SyncStatus::Stoped << SyncStatus::Starting << SyncStatus::Idle;
+                              << SyncStatus::StopAsked << SyncStatus::Stopped << SyncStatus::Starting << SyncStatus::Idle;
 
     static QVector<SyncStep> SyncStepPriority =
         QVector<SyncStep>() << SyncStep::Propagation2 << SyncStep::Propagation1 << SyncStep::Reconciliation4 << SyncStep::Reconciliation3

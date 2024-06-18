@@ -239,12 +239,12 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
             QWidgetAction *syncAction;
             for (auto const &syncInfoMapElt : syncOfCurrentDrive) {
                 if (pauseClicked &&
-                    (syncInfoMapElt.second.status() == SyncStatus::Stoped || syncInfoMapElt.second.status() == SyncStatus::Paused)) {
+                    (syncInfoMapElt.second.status() == SyncStatus::Stopped || syncInfoMapElt.second.status() == SyncStatus::Paused)) {
                     continue;
                 }
 
                 if (!pauseClicked &&
-                    (syncInfoMapElt.second.status() != SyncStatus::Stoped && syncInfoMapElt.second.status() != SyncStatus::Paused)) {
+                    (syncInfoMapElt.second.status() != SyncStatus::Stopped && syncInfoMapElt.second.status() != SyncStatus::Paused)) {
                     continue;
                 }
 
