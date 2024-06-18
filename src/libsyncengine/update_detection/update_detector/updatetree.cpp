@@ -27,9 +27,7 @@ UpdateTree::UpdateTree(ReplicaSide side, const DbNode &dbNode)
           new Node(dbNode.nodeId(), side, (side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote()),
                    NodeType::Directory, {}, (side == ReplicaSide::Local ? dbNode.nodeIdLocal() : dbNode.nodeIdRemote()),
                    (side == ReplicaSide::Local ? dbNode.created() : dbNode.created()),
-                   (side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()),
-                   0,  //(side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()),
-                   nullptr))),
+                   (side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()), 0, nullptr))),
       _side(side) {}
 
 UpdateTree::~UpdateTree() {

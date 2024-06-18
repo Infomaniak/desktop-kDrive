@@ -47,27 +47,12 @@ static const int hostNameMaxLength = 200;
 
 std::map<ProxyType, std::pair<int, QString>> ProxyServerDialog::_manualProxyMap = {
     {ProxyType::HTTP, {0, QString(tr("HTTP(S) Proxy"))}}
-    //, { ProxyType::Socks5, { 0, QString(tr("SOCKS5 Proxy")) } }
 };
 
 Q_LOGGING_CATEGORY(lcProxyServerDialog, "gui.proxyserverdialog", QtInfoMsg)
 
 ProxyServerDialog::ProxyServerDialog(QWidget *parent)
     : CustomDialog(true, parent),
-      _proxyConfigInfo(ProxyConfigInfo()),
-      _noProxyButton(nullptr),
-      _systemProxyButton(nullptr),
-      _manualProxyButton(nullptr),
-      _manualProxyWidget(nullptr),
-      _proxyTypeComboBox(nullptr),
-      _portLineEdit(nullptr),
-      _addressLineEdit(nullptr),
-      _authenticationCheckBox(nullptr),
-      _authenticationWidget(nullptr),
-      _loginLineEdit(nullptr),
-      _pwdLineEdit(nullptr),
-      _saveButton(nullptr),
-      _needToSave(false),
       _portValidator(new PortValidator(this)) {
     initUI();
 
