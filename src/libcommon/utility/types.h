@@ -255,7 +255,7 @@ enum class SyncStatus {
     PauseAsked,
     Paused,
     StopAsked,
-    Stoped,
+    Stopped,
     Error,
 };
 
