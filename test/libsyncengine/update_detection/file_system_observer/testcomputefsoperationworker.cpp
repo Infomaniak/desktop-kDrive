@@ -25,6 +25,8 @@
 
 #include <update_detection/file_system_observer/computefsoperationworker.h>
 
+#include <memory>
+
 namespace KDC {
 
 static const time_t defaultTime = std::time(0);
@@ -43,23 +45,16 @@ static const time_t defaultTime = std::time(0);
  */
 
 void TestComputeFSOperationWorker::setUp() {
-    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
-    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
-    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
+    // Insert api token into keystore
     const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-
-    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
-        apiTokenStr.empty()) {
-        throw std::runtime_error("Some environment variables are missing!");
+    if (apiTokenStr.empty()) {
+        throw std::runtime_error("API token environment variable is missing!");
     }
 
-    /// Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
 
-    std::string keychainKey("123");
+    const std::string keychainKey("123");
     KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
@@ -70,24 +65,21 @@ void TestComputeFSOperationWorker::setUp() {
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
     ParmsDb::instance()->setAutoDelete(true);
 
-    /// Insert user, account, drive & sync
-    int userId = atoi(userIdStr.c_str());
-    User user(1, userId, keychainKey);
+    // Insert user, account, drive & sync
+    User user(1, 123, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, 123, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
-    int driveId = atoi(driveIdStr.c_str());
-    Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
+    Drive drive(driveDbId, testCiDriveID, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
+    Sync sync(1, drive.dbId(), "/test", "/test");
     ParmsDb::instance()->insertSync(sync);
 
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
     _syncPal->_syncDb->setAutoDelete(true);
 
     /// Insert node "AC" in blacklist

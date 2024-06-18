@@ -38,5 +38,7 @@
 #include "libcommonserver/utility/utility.h"
 
 static const KDC::SyncPath localTestDirPath(KDC::Utility::s2ws(TEST_DIR) + L"/test_ci");
+static const int testCiDriveID = 102489;
+static const std::string testCiRemoteFolderID = "56850";
 
 int runTestSuite(const std::string &logFileName);

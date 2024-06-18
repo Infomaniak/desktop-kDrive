@@ -17,6 +17,8 @@
  */
 
 #include "testremotefilesystemobserverworker.h"
+
+#include <memory>
 #include "config.h"
 #include "jobs/network/deletejob.h"
 #include "jobs/network/movejob.h"
@@ -52,24 +54,16 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
 
-    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
-    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
-    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
+    // Insert api token into keystore
     const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-    const std::string remoteDirIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_DIR_ID");
-
-    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
-        apiTokenStr.empty() || remoteDirIdStr.empty()) {
-        throw std::runtime_error("Some environment variables are missing!");
+    if (apiTokenStr.empty()) {
+        throw std::runtime_error("API token environment variable is missing!");
     }
 
-    // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
 
-    std::string keychainKey("123");
+    const std::string keychainKey("123");
     KeyChainManager::instance(true);
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
@@ -81,30 +75,27 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     ParmsDb::instance()->setAutoDelete(true);
 
     // Insert user, account, drive & sync
-    int userId(atoi(userIdStr.c_str()));
-    User user(1, userId, keychainKey);
+    User user(1, 123, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, 123, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    int driveId = atoi(driveIdStr.c_str());
-    Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
+    Drive drive(_driveDbId, testCiDriveID, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
+    Sync sync(1, drive.dbId(), "/test", "/test");
     ParmsDb::instance()->insertSync(sync);
 
     // Setup proxy
     Parameters parameters;
-    bool found;
+    bool found = false;
     if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
     _syncPal->_syncDb->setAutoDelete(true);
 
     _syncPal->_remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(

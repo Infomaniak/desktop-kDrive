@@ -64,17 +64,12 @@ static const std::string bigFileName = "big_text_file.txt";
 void TestNetworkJobs::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
-    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
-    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string remoteDirIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_DIR_ID");
+    // Insert api token into keystore
     const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-
-    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remoteDirIdStr.empty() || apiTokenStr.empty()) {
-        throw std::runtime_error("Some environment variables are missing!");
+    if (apiTokenStr.empty()) {
+        throw std::runtime_error("API token environment variable is missing!");
     }
 
-    // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
 
@@ -91,21 +86,16 @@ void TestNetworkJobs::setUp() {
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
-    const int userId(atoi(userIdStr.c_str()));
-    User user(1, userId, keychainKey);
+    User user(1, 123, keychainKey);
     ParmsDb::instance()->insertUser(user);
     _userDbId = user.dbId();
 
-    const int accountId(atoi(accountIdStr.c_str()));
-    Account account(1, accountId, user.dbId());
+    Account account(1, 123, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    const int driveId = atoi(driveIdStr.c_str());
-    Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
+    Drive drive(_driveDbId, testCiDriveID, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
-
-    _remoteDirId = remoteDirIdStr;
 
     // Setup proxy
     Parameters parameters;
@@ -130,7 +120,7 @@ void TestNetworkJobs::tearDown() {
 void TestNetworkJobs::testCreateDir() {
     CPPUNIT_ASSERT(createTestDir());
 
-    GetFileListJob fileListJob(_driveDbId, _remoteDirId);
+    GetFileListJob fileListJob(_driveDbId, testCiRemoteFolderID);
     ExitCode exitCode = fileListJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
@@ -189,7 +179,7 @@ void TestNetworkJobs::testDelete() {
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
-    GetFileListJob fileListJob(_driveDbId, _remoteDirId);
+    GetFileListJob fileListJob(_driveDbId, testCiRemoteFolderID);
     exitCode = fileListJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
@@ -485,7 +475,7 @@ void TestNetworkJobs::testGetInfoUser() {
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr data = job.jsonRes()->getObject(dataKey);
-    //    CPPUNIT_ASSERT(data->get(emailKey).toString() == _email);
+    CPPUNIT_ASSERT(!data->get(displayNameKey).toString().empty());
 }
 
 void TestNetworkJobs::testGetInfoDrive() {
@@ -498,7 +488,7 @@ void TestNetworkJobs::testGetInfoDrive() {
 }
 
 void TestNetworkJobs::testThumbnail() {
-    GetThumbnailJob job(_driveDbId, picture1RemoteId.c_str(), 50);
+    GetThumbnailJob job(_driveDbId, picture1RemoteId, 50);
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
@@ -730,12 +720,12 @@ void TestNetworkJobs::testUploadSessionAsynchronous5Aborted() {
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
     CPPUNIT_ASSERT(dataArray);
-    CPPUNIT_ASSERT(dataArray->size() == 0);
+    CPPUNIT_ASSERT(dataArray->empty());
 }
 
 bool TestNetworkJobs::createTestDir() {
     _dirName = Str("test_dir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
-    CreateDirJob job(_driveDbId, _dirName, _remoteDirId, _dirName);
+    CreateDirJob job(_driveDbId, _dirName, testCiRemoteFolderID, _dirName);
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
