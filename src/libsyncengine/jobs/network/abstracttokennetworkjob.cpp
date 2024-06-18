@@ -505,7 +505,7 @@ bool AbstractTokenNetworkJob::refreshToken() {
         std::shared_ptr<Login> login = it->second.first;
         ExitCode exitCode = login->refreshToken();
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Failed to refresh token : " << enumClassToInt(exitCode) << " - " << login->error().c_str() << " - "
+            LOG_WARN(_logger, "Failed to refresh token: " << enumClassToInt(exitCode) << " - " << login->error().c_str() << " - "
                                                            << login->errorDescr().c_str());
             _exitCause = ExitCause::LoginError;
             _exitCode = exitCode;
