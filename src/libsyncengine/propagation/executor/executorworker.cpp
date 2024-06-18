@@ -1098,7 +1098,7 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
                         // Ignore this item until it is synchronized
                         isSyncing = true;
                     } else if (isHydrated) {
-                        // Download
+                        // Downloaded
                     }
                     break;
                 }
