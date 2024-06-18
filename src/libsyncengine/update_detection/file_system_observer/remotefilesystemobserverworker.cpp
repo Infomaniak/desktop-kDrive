@@ -348,7 +348,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         }
 
         bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcludedTemplate(item.name(), isWarning)) {
+        if (ExclusionTemplateCache::instance()->isExcludedByTemplate(item.name(), isWarning)) {
             continue;
         }
 
@@ -421,8 +421,8 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
         JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_HIGHEST);
         while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
-                notifyJob->abort();
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
+                notifyJob->abort();
                 return ExitCodeOk;
             }
 
@@ -506,7 +506,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         }
 
         bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcludedTemplate(usedName, isWarning)) {
+        if (ExclusionTemplateCache::instance()->isExcludedByTemplate(usedName, isWarning)) {
             if (isWarning) {
                 Error error(_syncPal->syncDbId(), "", actionInfo.nodeId, actionInfo.type, actionInfo.path, ConflictTypeNone,
                             InconsistencyTypeNone, CancelTypeExcludedByTemplate);

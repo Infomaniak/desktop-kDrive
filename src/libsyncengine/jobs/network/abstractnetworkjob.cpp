@@ -84,6 +84,9 @@ AbstractNetworkJob::AbstractNetworkJob() {
     }
 }
 
+AbstractNetworkJob::~AbstractNetworkJob() {
+    clearSession();
+}
 
 bool AbstractNetworkJob::isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept {
     static const std::set<ExitCause> managedExitCauses = {ExitCauseInvalidName,   ExitCauseApiErr,
@@ -116,28 +119,12 @@ void AbstractNetworkJob::runJob() noexcept {
         }
 
         uri = Poco::URI(url);
-        Poco::Net::HTTPSClientSession session = createSession(uri);
-        {
-            const std::lock_guard<std::mutex> lock(_mutexSession);
-            _session = &session;
-        }
-        if (_customTimeout) {
-            session.setTimeout(Poco::Timespan(_customTimeout, 0));
-        }
 
-        // Set proxy params
-        if (Proxy::instance()->proxyConfig().type() == ProxyTypeHTTP) {
-            session.setProxy(Proxy::instance()->proxyConfig().hostName(), Proxy::instance()->proxyConfig().port());
-            if (Proxy::instance()->proxyConfig().needsAuth()) {
-                session.setProxyCredentials(Proxy::instance()->proxyConfig().user(), Proxy::instance()->proxyConfig().token());
-            }
-        }
+        createSession(uri);
 
         try {
             if (!canRun()) {
-                const std::lock_guard<std::mutex> lock(_mutexSession);
-                _session = nullptr;
-                LOG_INFO(_logger, "Session for job " << jobId() << " set to nullptr");
+                clearSession();
                 return;
             }
         } catch (Poco::Exception const &e) {
@@ -165,7 +152,7 @@ void AbstractNetworkJob::runJob() noexcept {
         auto sendChrono = std::chrono::steady_clock::now();
         bool ret = false;
         try {
-            ret = sendRequest(session, uri);
+            ret = sendRequest(uri);
         } catch (std::exception &e) {
             LOG_WARN(_logger, "Error in sendRequest " << jobId() << " err=" << e.what());
             _exitCode = ExitCodeNetworkError;
@@ -194,7 +181,7 @@ void AbstractNetworkJob::runJob() noexcept {
 
         // Receive response
         try {
-            ret = receiveResponse(session, uri);
+            ret = receiveResponse(uri);
         } catch (std::exception &e) {
             LOG_WARN(_logger, "Error in receiveResponse " << jobId() << " err=" << e.what());
             _exitCode = ExitCodeNetworkError;
@@ -241,8 +228,7 @@ void AbstractNetworkJob::runJob() noexcept {
     }
 
     if (!isAborted()) {
-        const std::lock_guard<std::mutex> lock(_mutexSession);
-        _session = nullptr;
+        clearSession();
     }
 }
 
@@ -261,22 +247,9 @@ void AbstractNetworkJob::abort() {
     LOG_DEBUG(_logger, "Aborting session for job " << jobId());
 
     AbstractJob::abort();
-    const std::lock_guard<std::mutex> lock(_mutexSession);
-    if (_session) {
-        Poco::Net::SocketImpl *socketImpl = _session->socket().impl();
-        if (socketImpl) {
-            if (socketImpl->sockfd()) {
-                try {
-                    _session->abort();
-                } catch (std::exception &e) {
-                    LOG_DEBUG(_logger, "Job " << jobId() << " abort error - err=" << e.what());
-                }
-            } else {
-                LOG_DEBUG(_logger, "Job " << jobId() << " already aborted");
-            }
-        }
-        _session = nullptr;
-    }
+
+    abortSession();
+    clearSession();
 }
 
 void AbstractNetworkJob::unzip(std::istream &is, std::stringstream &ss) {
@@ -291,11 +264,56 @@ void AbstractNetworkJob::getStringFromStream(std::istream &is, std::string &res)
     res = std::move(tmp);
 }
 
-Poco::Net::HTTPSClientSession AbstractNetworkJob::createSession(const Poco::URI &uri) {
-    return Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context);
+void AbstractNetworkJob::createSession(const Poco::URI &uri) {
+    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+
+    if (_session) {
+        // Redirection case
+        clearSession();
+    }
+
+    _session.reset(new Poco::Net::HTTPSClientSession(uri.getHost(), uri.getPort(), _context));
+
+    if (_customTimeout) {
+        _session->setTimeout(Poco::Timespan(_customTimeout, 0));
+    }
+
+    // Set proxy params
+    if (Proxy::instance()->proxyConfig().type() == ProxyTypeHTTP) {
+        _session->setProxy(Proxy::instance()->proxyConfig().hostName(), Proxy::instance()->proxyConfig().port());
+        if (Proxy::instance()->proxyConfig().needsAuth()) {
+            _session->setProxyCredentials(Proxy::instance()->proxyConfig().user(), Proxy::instance()->proxyConfig().token());
+        }
+    }
 }
 
-bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri) {
+void AbstractNetworkJob::clearSession() {
+    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+
+    if (_session) {
+        _session->reset();
+        _session = nullptr;
+    }
+}
+
+void AbstractNetworkJob::abortSession() {
+    if (_session) {
+        Poco::Net::SocketImpl *socketImpl = _session->socket().impl();
+        if (socketImpl) {
+            if (socketImpl->sockfd()) {
+                try {
+                    socketImpl->close();
+                } catch (std::exception &e) {
+                    LOG_DEBUG(_logger, "Job " << jobId() << " abort error - err=" << e.what());
+                }
+            } else {
+                LOG_DEBUG(_logger, "Job " << jobId() << " already aborted");
+            }
+        }
+    }
+}
+
+bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     std::string path(uri.getPathAndQuery());
     if (path.empty()) {
         path = "/";
@@ -328,15 +346,17 @@ bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, con
     // Send request, retrieve an open stream
     std::vector<std::reference_wrapper<std::ostream>> stream;
     try {
-        stream.push_back(session.sendRequest(req));
-        if (ioOrLogicalErrorOccurred(stream[0].get())) {
-            int err = session.socket().getError();
-            return processSocketError(session, "sendRequest failed failed", jobId(), err, Poco::Error::getMessage(err));
+        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        if (_session) {
+            stream.push_back(_session->sendRequest(req));
+            if (ioOrLogicalErrorOccurred(stream[0].get())) {
+                return processSocketError("invalid send stream", jobId());
+            }
         }
     } catch (Poco::Exception &e) {
-        return processSocketError(session, "sendRequest exception", jobId(), e.code(), e.message());
+        return processSocketError("sendRequest exception", jobId(), e);
     } catch (std::exception &e) {
-        return processSocketError(session, "sendRequest exception", jobId(), 0, e.what());
+        return processSocketError("sendRequest exception", jobId(), e);
     }
 
     // Send data
@@ -351,13 +371,12 @@ bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, con
         try {
             stream[0].get() << std::string(itBegin, itEnd);
             if (ioOrLogicalErrorOccurred(stream[0].get())) {
-                int err = session.socket().getError();
-                return processSocketError(session, "send data failed", jobId(), err, Poco::Error::getMessage(err));
+                return processSocketError("stream write error", jobId());
             }
         } catch (Poco::Exception &e) {
-            return processSocketError(session, "send data exception", jobId(), e.code(), e.message());
+            return processSocketError("send data exception", jobId(), e);
         } catch (std::exception &e) {
-            return processSocketError(session, "send data exception", jobId(), 0, e.what());
+            return processSocketError("send data exception", jobId(), e);
         }
 
         if (isProgressTracked()) {
@@ -370,18 +389,25 @@ bool AbstractNetworkJob::sendRequest(Poco::Net::HTTPSClientSession &session, con
     return true;
 }
 
-bool AbstractNetworkJob::receiveResponse(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri) {
+bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
     std::vector<std::reference_wrapper<std::istream>> stream;
     try {
-        stream.push_back(session.receiveResponse(_resHttp));
-        if (ioOrLogicalErrorOccurred(stream[0].get())) {
-            int err = session.socket().getError();
-            return processSocketError(session, "receiveResponse failed", jobId(), err, Poco::Error::getMessage(err));
+        const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+        if (_session) {
+            stream.push_back(_session->receiveResponse(_resHttp));
+            if (ioOrLogicalErrorOccurred(stream[0].get())) {
+                return processSocketError("invalid receive stream", jobId());
+            }
         }
     } catch (Poco::Exception &e) {
-        return processSocketError(session, "receiveResponse exception", jobId(), e.code(), e.message());
+        return processSocketError("receiveResponse exception", jobId(), e);
     } catch (std::exception &e) {
-        return processSocketError(session, "receiveResponse exception", jobId(), 0, e.what());
+        return processSocketError("receiveResponse exception", jobId(), e);
+    }
+
+    if (isAborted()) {
+        LOG_DEBUG(_logger, "Request " << jobId() << " aborted");
+        return true;
     }
 
     LOG_DEBUG(_logger, "Request " << jobId() << " finished with status: " << _resHttp.getStatus() << " / "
@@ -443,10 +469,6 @@ bool AbstractNetworkJob::receiveResponse(Poco::Net::HTTPSClientSession &session,
         }
     }
 
-    if (isAborted()) {
-        LOG_DEBUG(_logger, "Request " << jobId() << ": aborting session");
-    }
-
     return res;
 }
 
@@ -481,21 +503,14 @@ bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
 
     Poco::URI uri(redirectUrl);
 
-    LOG_DEBUG(_logger, "Request " << jobId() << ", following redirection: " << redirectUrl.c_str());
     // Follow redirection
-    Poco::Net::HTTPSClientSession session = createSession(uri);
-    {
-        const std::lock_guard<std::mutex> lock(_mutexSession);
-        _session = &session;
-    }
-    if (_customTimeout) {
-        session.setTimeout(Poco::Timespan(_customTimeout, 0));
-    }
+    LOG_DEBUG(_logger, "Request " << jobId() << ", following redirection: " << redirectUrl.c_str());
+    createSession(uri);
 
-    if (!sendRequest(session, uri)) {
+    if (!sendRequest(uri)) {
         return false;
     }
-    bool receiveOk = receiveResponse(session, uri);
+    bool receiveOk = receiveResponse(uri);
     if (!receiveOk && _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         // Special cases where the file exist in DB but not in storage
         _downloadImpossible = true;
@@ -504,11 +519,27 @@ bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
     return receiveOk;
 }
 
-bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &session, const std::string &msg, const UniqueId jobId,
-                                            int err /*= 0*/, const std::string &errMsg /*= std::string()*/) {
-    const std::lock_guard<std::mutex> lock(_mutexSession);
-    session.reset();
-    _session = nullptr;
+bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId) {
+    const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
+    if (_session) {
+        int err = _session->socket().getError();
+        std::string errMsg = Poco::Error::getMessage(err);
+        return processSocketError(msg, jobId, err, errMsg);
+    } else {
+        return processSocketError(msg, jobId, 0, std::string());
+    }
+}
+
+bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, const std::exception &e) {
+    return processSocketError(msg, jobId, 0, e.what());
+}
+
+bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e) {
+    return processSocketError(msg, jobId, e.code(), e.message());
+}
+
+bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, int err, const std::string &errMsg) {
+    clearSession();
 
     if (isAborted()) {
         _exitCode = ExitCodeOk;
@@ -521,7 +552,6 @@ bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &sessi
         if (!errMsg.empty()) errMsgStream << " - err message=" << errMsg.c_str();
         LOG_WARN(_logger, errMsgStream.str().c_str());
 
-        _exitCode = ExitCodeNetworkError;
         if (err == EBADF) {
             // !!! macOS
             // When too many sockets are opened, the kernel kills all the process' sockets!
@@ -531,6 +561,7 @@ bool AbstractNetworkJob::processSocketError(Poco::Net::HTTPSClientSession &sessi
         } else {
             _exitCause = ExitCauseUnknown;
         }
+
         return false;
     }
 }
@@ -561,20 +592,20 @@ void AbstractNetworkJob::TimeoutHelper::add(std::chrono::duration<double> durati
         }
 
         // Add event
-        const std::lock_guard<std::mutex> lock(_mutexEventsQueue);
+        const std::scoped_lock<std::mutex> lock(_mutexEventsQueue);
         unsigned int eventTime = static_cast<unsigned int>(time(NULL));
         _eventsQueue.push(eventTime);
     }
 }
 
 void AbstractNetworkJob::TimeoutHelper::clearAllEvents() {
-    const std::lock_guard<std::mutex> lock(_mutexEventsQueue);
+    const std::scoped_lock<std::mutex> lock(_mutexEventsQueue);
     std::queue<SyncTime> emptyQueue;
     std::swap(_eventsQueue, emptyQueue);
 }
 
 void AbstractNetworkJob::TimeoutHelper::deleteOldestEvents() {
-    const std::lock_guard<std::mutex> lock(_mutexEventsQueue);
+    const std::scoped_lock<std::mutex> lock(_mutexEventsQueue);
     if (!_eventsQueue.empty()) {
         unsigned int eventTime = static_cast<unsigned int>(time(NULL));
         while (eventTime - _eventsQueue.front() > PERIOD) {

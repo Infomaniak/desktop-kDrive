@@ -602,7 +602,7 @@ void TestNetworkJobs::testUploadAborted() {
 }
 
 void TestNetworkJobs::testUploadSessionConstructorException() {
-    LOG_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionConstructor");
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionConstructor");
 
     CPPUNIT_ASSERT(createTestDir());
 

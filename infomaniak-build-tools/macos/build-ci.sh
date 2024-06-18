@@ -91,6 +91,6 @@ cmake \
 	"$SRCDIR"
 
 # Build kDrive sources
-make install
+make -j6 install
 
 popd
