@@ -44,7 +44,7 @@ class ProxyConfig {
         inline void setToken(const std::string &token) { _token = token; }
 
     private:
-        ProxyType _type;
+        ProxyType _type = ProxyType::None;
         std::string _hostName;
         int _port = 0;
         bool _needsAuth = false;
