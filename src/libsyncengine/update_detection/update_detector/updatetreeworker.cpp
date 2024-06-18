@@ -998,8 +998,8 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
         for (auto &childNode : tmpNode->children()) {
             if (childNode.second->type() == NodeTypeDirectory && *nameIt == childNode.second->name()) {
                 if (!isDeleted && childNode.second->hasChangeEvent(OperationTypeDelete)) {
-                    // An item on a deleted branch can only have a DELETE change event. If it has any other change event, it
-                    // means its parent is on a different branch.
+                    // An item on a deleted branch can only have a DELETE change event. If it has any other
+                    // change event, it means its parent is on a different branch.
                     continue;
                 }
                 tmpChildNode = childNode.second;

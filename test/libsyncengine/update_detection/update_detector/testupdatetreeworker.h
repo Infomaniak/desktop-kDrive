@@ -49,6 +49,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testGetOriginPath3);
         CPPUNIT_TEST(testGetOriginPath4);
         CPPUNIT_TEST(testDeleteMove);
+        CPPUNIT_TEST(testDeleteRecreateBranch);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -88,6 +89,13 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
         void testGetOriginPath4();
 
         void testDeleteMove();
+
+        /**
+         * Specific test for https://github.com/Infomaniak/desktop-kDrive/pull/176.
+         * Let's imagine the following tree structure : A/AA/AAA. The test case is to delete this entire tree structure and
+         * re-create it immediately with different IDs but same names.
+         */
+        void testDeleteRecreateBranch();
 
     private:
         std::shared_ptr<UpdateTreeWorker> _updateTreeWorker;
