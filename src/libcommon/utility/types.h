@@ -88,12 +88,12 @@ using OStringStream = std::ostringstream;
 #endif
 
 template <class C>
-requires(std::is_enum_v<C> && std::is_convertible_v<std::underlying_type_t<C>, int>) inline int enumClassToInt(C e) {
+requires(std::is_enum_v<C> &&std::is_convertible_v<std::underlying_type_t<C>, int>) inline int enumClassToInt(C e) {
     return static_cast<int>(e);
 }
 
 template <class C>
-requires(std::is_enum_v<C> && std::is_convertible_v<int, std::underlying_type_t<C>>) inline C intToEnumClass(int e) {
+requires(std::is_enum_v<C> &&std::is_convertible_v<int, std::underlying_type_t<C>>) inline C intToEnumClass(int e) {
     return static_cast<C>(e);
 }
 
@@ -101,7 +101,8 @@ using ExecuteCommand = std::function<void(const char *)>;
 enum class ReplicaSide { Unknown, Local, Remote };
 
 inline ReplicaSide otherSide(ReplicaSide side) {
-    return side == ReplicaSide::Local ? ReplicaSide::Remote : ReplicaSide::Local;
+    using enum KDC::ReplicaSide;
+    return side == Local ? Remote : Local;
 }
 
 enum class NodeType {
