@@ -44,6 +44,13 @@ class ApiToken {
         inline const std::string &scope() const { return _scope; }
         inline void setScope(const std::string &newScope) { _scope = newScope; }
 
+        /**
+         * Reconstruct a JSON string based on the current values of the attributes.
+         * Especially useful in tests where we only inject the access token, without all the unnecessary information.
+         * @return JSON string containing all token information.
+         */
+        std::string reconstructJsonString();
+
     private:
         std::string _rawData;
 
@@ -51,7 +58,7 @@ class ApiToken {
         std::string _refreshToken;
         std::string _tokenType;
         uint64_t _expiresIn = 0;
-        int _userId;
+        int _userId = 0;
         std::string _scope;
 };
 

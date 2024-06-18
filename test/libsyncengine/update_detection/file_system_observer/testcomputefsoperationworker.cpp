@@ -57,9 +57,12 @@ void TestComputeFSOperationWorker::setUp() {
     }
 
     // Insert api token into keystore
+    ApiToken apiToken;
+    apiToken.setAccessToken(apiTokenStr);
+
     std::string keychainKey("123");
     KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiTokenStr);
+    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists = false;
@@ -192,8 +195,7 @@ void TestComputeFSOperationWorker::testComputeOps() {
     _syncPal->_localSnapshot->removeItem("lbb");
 
     // Create operation on a too big directory
-    _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("raf", "ra", Str("AF_too_big"), tLoc, tLoc, NodeTypeDirectory, 0));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("raf", "ra", Str("AF_too_big"), tLoc, tLoc, NodeTypeDirectory, 0));
     _syncPal->_remoteSnapshot->updateItem(
         SnapshotItem("rafa", "raf", Str("AFA"), tLoc, tLoc, NodeTypeFile, 550 * 1024 * 1024));  // File size: 550MB
 

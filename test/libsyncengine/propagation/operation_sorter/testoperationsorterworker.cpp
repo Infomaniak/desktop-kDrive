@@ -947,7 +947,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         std::cout << "Initial ops order : ";
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            std::wcout << op->affectedNode()->name().c_str() << " ";
         }
         std::cout << std::endl;
 
@@ -958,7 +958,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         std::cout << "Final ops order : ";
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            std::wcout << op->affectedNode()->name().c_str() << " ";
         }
         std::cout << std::endl;
 
@@ -983,7 +983,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         std::cout << "Initial ops order : ";
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            std::wcout << op->affectedNode()->name().c_str() << " ";
         }
         std::cout << std::endl;
         std::vector<SyncOpPtr> expectedRes = {opA, opAB, opAA, opAAB, opAAA, opB};
@@ -993,7 +993,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         std::cout << "Final ops order : ";
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            std::wcout << op->affectedNode()->name().c_str() << " ";
         }
         std::cout << std::endl;
 
@@ -1018,7 +1018,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         std::cout << "Initial ops order : ";
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            std::wcout << op->affectedNode()->name().c_str() << " ";
         }
         std::cout << std::endl;
         std::vector<SyncOpPtr> expectedRes = {opB, opA, opAB, opAA, opAAB, opAAA};
@@ -1028,7 +1028,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         std::cout << "Final ops order : ";
         for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
-            std::cout << op->affectedNode()->name().c_str() << " ";
+            std::wcout << op->affectedNode()->name().c_str() << " ";
         }
         std::cout << std::endl;
 

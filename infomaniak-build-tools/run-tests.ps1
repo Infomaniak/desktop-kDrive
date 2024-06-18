@@ -20,6 +20,8 @@ $testers = Get-ChildItem build-windows -Recurse -Name -Filter 'kDrive_test_*.exe
 $errors = 0
 $failures = @()
 
+$env:KDRIVE_TEST_CI_API_TOKEN = $env:KDRIVE_TOKEN
+
 pushd build-windows\install\bin
 
 foreach ($file in $testers)
