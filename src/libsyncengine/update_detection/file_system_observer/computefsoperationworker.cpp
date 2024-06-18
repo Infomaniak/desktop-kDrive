@@ -323,7 +323,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     }
 
                     // Delete operation
-                    FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete, nodeId, dbNode.type(),
+                    FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
                                                                  dbNode.created().has_value() ? dbNode.created().value() : 0,
                                                                  dbLastModified, dbNode.size(), dbPath);
                     opSet->insertOp(fsOp);
@@ -374,7 +374,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
                 if (snapshotLastModified != dbLastModified && dbNode.type() == NodeType::File) {
                     // Edit operation
-                    FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeEdit, nodeId, NodeType::File,
+                    FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File,
                                                                  snapshot->createdAt(nodeId), snapshotLastModified,
                                                                  snapshot->size(nodeId), snapPath);
                     opSet->insertOp(fsOp);
@@ -386,7 +386,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     FSOpPtr fsOp = nullptr;
                     if (isInUnsyncedList(snapshot, nodeId, side)) {
                         // Delete operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete, nodeId, dbNode.type(),
+                        fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
                                                              snapshot->createdAt(nodeId), snapshotLastModified,
                                                              snapshot->size(nodeId),
                                                              remoteDbPath  // We use the remotePath anyway here to display
@@ -395,7 +395,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                                              snapPath);
                     } else {
                         // Move operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeMove, nodeId, dbNode.type(),
+                        fsOp = std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(),
                                                              snapshot->createdAt(nodeId), snapshotLastModified,
                                                              snapshot->size(nodeId),
                                                              remoteDbPath  // We use the remotePath anyway here to display
@@ -535,7 +535,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
 
             // Create operation
             FSOpPtr fsOp =
-                std::make_shared<FSOperation>(OperationType::OperationTypeCreate, nodeId, type, snapshot->createdAt(nodeId),
+                std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
                                               snapshot->lastModified(nodeId), snapshotSize, snapPath);
             opSet->insertOp(fsOp);
             logOperationGeneration(snapshot->side(), fsOp);
@@ -553,7 +553,7 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
         return;
     }
 
-    if (fsOp->operationType() == OperationTypeMove) {
+    if (fsOp->operationType() == OperationType::Move) {
         LOGW_SYNCPAL_DEBUG(
             _logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
                                   << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str()) << L" FS operation from "
@@ -898,7 +898,7 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<Sn
         if (remoteSnapshot->type(childId) == NodeType::Directory) {
             deleteChildOpRecursively(remoteSnapshot, childId, tmpTooBigList);
         }
-        _syncPal->_remoteOperationSet->removeOp(remoteNodeId, OperationTypeCreate);
+        _syncPal->_remoteOperationSet->removeOp(remoteNodeId, OperationType::Create);
         tmpTooBigList.erase(childId);
     }
 }

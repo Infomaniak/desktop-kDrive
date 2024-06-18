@@ -87,16 +87,6 @@ using OStringStream = std::ostringstream;
 #define Str2Path(s) std::filesystem::path(KDC::Utility::s2ws(s))
 #endif
 
-template <class C>
-requires(std::is_enum_v<C> &&std::is_convertible_v<std::underlying_type_t<C>, int>) inline int enumClassToInt(C e) {
-    return static_cast<int>(e);
-}
-
-template <class C>
-requires(std::is_enum_v<C> &&std::is_convertible_v<int, std::underlying_type_t<C>>) inline C intToEnumClass(int e) {
-    return static_cast<C>(e);
-}
-
 using ExecuteCommand = std::function<void(const char *)>;
 enum class ReplicaSide { Unknown, Local, Remote };
 
@@ -111,13 +101,13 @@ enum class NodeType {
     Directory,
 };
 
-using OperationType = enum {  // Can't be easily converted to enum class because of the numerous bitwise operations
-    OperationTypeNone = 0x00,
-    OperationTypeCreate = 0x01,
-    OperationTypeMove = 0x02,
-    OperationTypeEdit = 0x04,
-    OperationTypeDelete = 0x08,
-    OperationTypeRights = 0x10
+enum class OperationType {  // Can't be easily converted to enum class because of the numerous bitwise operations
+    None = 0x00,
+    Create = 0x01,
+    Move = 0x02,
+    Edit = 0x04,
+    Delete = 0x08,
+    Rights = 0x10
 };
 
 enum class ExitCode {
@@ -212,12 +202,10 @@ enum class InconsistencyType {
     ReservedName = 0x04,
     NameLength = 0x08,
     PathLength = 0x10,
-    NotYetSupportedChar =
-        0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-    DuplicateNames =
-        0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+    NotYetSupportedChar = 0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+    DuplicateNames = 0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
 };
-
+/*
 inline InconsistencyType operator|(const InconsistencyType a, const InconsistencyType b) {
     return static_cast<InconsistencyType>(static_cast<int>(a) | static_cast<int>(b));
 }
@@ -230,7 +218,7 @@ inline InconsistencyType operator&(const InconsistencyType a, const Inconsistenc
 inline InconsistencyType operator&=(InconsistencyType &a, const InconsistencyType b) {
     return a = a & b;
 }
-
+*/
 enum class CancelType {
     None,
     Create,
@@ -364,4 +352,57 @@ enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelR
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
 
+
+/*
+ * Define operator and converter for enum class
+ */
+
+// Concepts
+template <class C>  // Any enum class that can be converted to (and from) int
+concept IntableEnum = std::is_enum_v<C> && std::is_convertible_v<std::underlying_type_t<C>, int>;
+
+template <class C>  // Any enum class we want to allow bitwise operations (OperationType & InconsistencyType)
+concept AllowBitWiseOpEnum = IntableEnum<C> && (std::is_same_v<C, OperationType> || std::is_same_v<C, InconsistencyType>);
+
+// Converters
+template <IntableEnum C>
+inline int enumClassToInt(C e) {
+    return static_cast<int>(e);
+}
+
+template <IntableEnum C>
+inline C intToEnumClass(int e) {
+    return static_cast<C>(e);
+}
+
+// Operators
+template <AllowBitWiseOpEnum C>
+inline C operator|=(C &a, const C b) {
+    return a = intToEnumClass<C>(enumClassToInt(a) | enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator&=(C &a, const C b) {
+    return a = intToEnumClass<C>(enumClassToInt(a) & enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator^=(C &a, const C b) {
+    return a = intToEnumClass<C>(enumClassToInt(a) ^ enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator|(const C a, const C b) {
+    return intToEnumClass<C>(enumClassToInt(a) | enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator&(const C a, const C b) {
+    return intToEnumClass<C>(enumClassToInt(a) & enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator^(const C a, const C b) {
+    return intToEnumClass<C>(enumClassToInt(a) ^ enumClassToInt(b));
+}
 }  // namespace KDC

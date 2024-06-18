@@ -78,8 +78,8 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
             case ConflictType::MoveDelete:
             case ConflictType::EditDelete:
                 // Path of deleted node
-                path1 = pathOfEvent(c1, OperationType::OperationTypeDelete);
-                path2 = pathOfEvent(c2, OperationType::OperationTypeDelete);
+                path1 = pathOfEvent(c1, OperationType::Delete);
+                path2 = pathOfEvent(c2, OperationType::Delete);
                 break;
             case ConflictType::MoveMoveSource:
                 // Move origin path of the local node
@@ -108,8 +108,8 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
                 break;
             case ConflictType::MoveCreate:
                 // Path of the created node
-                path1 = pathOfEvent(c1, OperationType::OperationTypeCreate);
-                path2 = pathOfEvent(c2, OperationType::OperationTypeCreate);
+                path1 = pathOfEvent(c1, OperationType::Create);
+                path2 = pathOfEvent(c2, OperationType::Create);
                 break;
             default:
                 break;

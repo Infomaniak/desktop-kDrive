@@ -53,11 +53,11 @@ void PlatformInconsistencyCheckerWorker::execute() {
 }
 
 ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath) {
-    if (remoteNode->hasChangeEvent(OperationTypeDelete)) {
+    if (remoteNode->hasChangeEvent(OperationType::Delete)) {
         return ExitCode::Ok;
     }
 
-    if (remoteNode->hasChangeEvent(OperationTypeCreate) || remoteNode->hasChangeEvent(OperationTypeMove)) {
+    if (remoteNode->hasChangeEvent(OperationType::Create) || remoteNode->hasChangeEvent(OperationType::Move)) {
         if (!checkPathAndName(remoteNode)) {
             // Item has been blacklisted
             return ExitCode::Ok;
@@ -82,7 +82,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
 
         std::shared_ptr<Node> currentChildNode = it->second;
 
-        if (currentChildNode->hasChangeEvent(OperationTypeCreate) || currentChildNode->hasChangeEvent(OperationTypeMove)) {
+        if (currentChildNode->hasChangeEvent(OperationType::Create) || currentChildNode->hasChangeEvent(OperationType::Move)) {
             checkAgainstSiblings = true;
         }
 
@@ -194,8 +194,8 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(std::shar
             // and renaming a temporary file that contains the latest version (Delete-Move) In those cases, we should not check
             // for name clash, it is ok to have 2 children with the same name
             const auto oneNodeIsDeleted = [](const std::shared_ptr<Node> &node, const std::shared_ptr<Node> &prevNode) -> bool {
-                return node->hasChangeEvent(OperationTypeMove | OperationTypeCreate) &&
-                       prevNode->hasChangeEvent(OperationTypeDelete);
+                return node->hasChangeEvent(OperationType::Move | OperationType::Create) &&
+                       prevNode->hasChangeEvent(OperationType::Delete);
             };
 
             if (oneNodeIsDeleted(currentChildNode, prevChildNode) || oneNodeIsDeleted(prevChildNode, currentChildNode)) {

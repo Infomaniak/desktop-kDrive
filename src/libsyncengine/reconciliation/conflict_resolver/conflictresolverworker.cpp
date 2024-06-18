@@ -70,7 +70,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         case ConflictType::MoveMoveDest: {
             // Rename the file on the local replica and remove it from DB
             SyncOpPtr op = std::make_shared<SyncOperation>();
-            op->setType(OperationTypeMove);
+            op->setType(OperationType::Move);
             op->setAffectedNode(conflict.remoteNode());
             op->setCorrespondingNode(conflict.localNode());
             op->setTargetSide(ReplicaSide::Local);
@@ -96,12 +96,12 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         case ConflictType::EditDelete: {
             // Edit operation win
             auto deleteNode =
-                conflict.node()->hasChangeEvent(OperationTypeDelete) ? conflict.node() : conflict.correspondingNode();
-            auto editNode = conflict.node()->hasChangeEvent(OperationTypeEdit) ? conflict.node() : conflict.correspondingNode();
-            if (deleteNode->parentNode()->hasChangeEvent(OperationTypeDelete)) {
+                conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
+            auto editNode = conflict.node()->hasChangeEvent(OperationType::Edit) ? conflict.node() : conflict.correspondingNode();
+            if (deleteNode->parentNode()->hasChangeEvent(OperationType::Delete)) {
                 // Move the deleted node to root with a new name
                 SyncOpPtr moveOp = std::make_shared<SyncOperation>();
-                moveOp->setType(OperationTypeMove);
+                moveOp->setType(OperationType::Move);
                 moveOp->setAffectedNode(deleteNode);
                 moveOp->setCorrespondingNode(editNode);
                 moveOp->setTargetSide(editNode->side());
@@ -126,7 +126,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 findAllChildNodes(deleteNode, allDeletedNodes);
 
                 SyncOpPtr deleteOp = std::make_shared<SyncOperation>();
-                deleteOp->setType(OperationTypeDelete);
+                deleteOp->setType(OperationType::Delete);
                 deleteOp->setAffectedNode(deleteNode);
                 deleteOp->setCorrespondingNode(editNode);
                 deleteOp->setTargetSide(editNode->side());
@@ -148,7 +148,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 findAllChildNodes(editNode, allDeletedNodes);
 
                 SyncOpPtr deleteOp = std::make_shared<SyncOperation>();
-                deleteOp->setType(OperationTypeDelete);
+                deleteOp->setType(OperationType::Delete);
                 deleteOp->setAffectedNode(editNode);
                 deleteOp->setCorrespondingNode(deleteNode);
                 deleteOp->setTargetSide(deleteNode->side());
@@ -168,10 +168,10 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         case ConflictType::MoveDelete: {
             // Move operation win
             auto deleteNode =
-                conflict.node()->hasChangeEvent(OperationTypeDelete) ? conflict.node() : conflict.correspondingNode();
-            auto moveNode = conflict.node()->hasChangeEvent(OperationTypeMove) ? conflict.node() : conflict.correspondingNode();
+                conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
+            auto moveNode = conflict.node()->hasChangeEvent(OperationType::Move) ? conflict.node() : conflict.correspondingNode();
             auto correspondingMoveNodeParent = correspondingNodeDirect(moveNode->parentNode());
-            if (correspondingMoveNodeParent && correspondingMoveNodeParent->hasChangeEvent(OperationTypeDelete) &&
+            if (correspondingMoveNodeParent && correspondingMoveNodeParent->hasChangeEvent(OperationType::Delete) &&
                 _syncPal->_conflictQueue->hasConflict(ConflictType::MoveParentDelete)) {
                 // If the move operation happen within a directory that was deleted on the other replica,
                 // therefor, we ignore the Move-Delete conflict
@@ -224,7 +224,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                         // Move operation in db (temporarily, orphan nodes will be then handled in "Move-Move (Source)" conflict
                         // in next sync iterations)
                         SyncOpPtr op = std::make_shared<SyncOperation>();
-                        op->setType(OperationTypeMove);
+                        op->setType(OperationType::Move);
                         op->setAffectedNode(orphanNode);
                         orphanNode->setMoveOrigin(orphanNode->getPath());
                         op->setCorrespondingNode(correspondingOrphanNode);
@@ -252,7 +252,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             // Generate a delete operation to remove entry from the DB only (not from the FS!)
             // The deleted file will be restored on next sync iteration
             SyncOpPtr op = std::make_shared<SyncOperation>();
-            op->setType(OperationTypeDelete);
+            op->setType(OperationType::Delete);
             op->setAffectedNode(deleteNode);
             op->setCorrespondingNode(moveNode);
             op->setTargetSide(moveNode->side());
@@ -269,7 +269,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         }
         case ConflictType::MoveParentDelete: {
             // Undo move, the delete operation will be executed on a next sync iteration
-            auto moveNode = conflict.node()->hasChangeEvent(OperationTypeMove) ? conflict.node() : conflict.correspondingNode();
+            auto moveNode = conflict.node()->hasChangeEvent(OperationType::Move) ? conflict.node() : conflict.correspondingNode();
             SyncOpPtr moveOp = std::make_shared<SyncOperation>();
             ExitCode res = undoMove(moveNode, moveOp);
             if (res != ExitCode::Ok) {
@@ -289,9 +289,9 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         case ConflictType::CreateParentDelete: {
             // Delete operation always win
             auto deleteNode =
-                conflict.node()->hasChangeEvent(OperationTypeDelete) ? conflict.node() : conflict.correspondingNode();
+                conflict.node()->hasChangeEvent(OperationType::Delete) ? conflict.node() : conflict.correspondingNode();
             SyncOpPtr op = std::make_shared<SyncOperation>();
-            op->setType(OperationTypeDelete);
+            op->setType(OperationType::Delete);
             op->setAffectedNode(deleteNode);
             auto correspondingNode = correspondingNodeInOtherTree(deleteNode);
             op->setCorrespondingNode(correspondingNode);  // create node is both affected and corresponding node since it does not
@@ -444,12 +444,12 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
         return ExitCode::DataError;
     }
 
-    if (isABelowB(originParentNode, moveNode) || originParentNode->hasChangeEvent(OperationTypeDelete)) {
+    if (isABelowB(originParentNode, moveNode) || originParentNode->hasChangeEvent(OperationType::Delete)) {
         undoPossible = false;
     } else {
-        auto potentialOriginNode = originParentNode->getChildExcept(originPath->filename().native(), OperationTypeDelete);
-        if (potentialOriginNode && (potentialOriginNode->hasChangeEvent(OperationTypeCreate) ||
-                                    potentialOriginNode->hasChangeEvent(OperationTypeMove))) {
+        auto potentialOriginNode = originParentNode->getChildExcept(originPath->filename().native(), OperationType::Delete);
+        if (potentialOriginNode && (potentialOriginNode->hasChangeEvent(OperationType::Create) ||
+                                    potentialOriginNode->hasChangeEvent(OperationType::Move))) {
             undoPossible = false;
         }
     }
@@ -464,7 +464,7 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
         moveOp->setNewName(newName);
     }
 
-    moveOp->setType(OperationTypeMove);
+    moveOp->setType(OperationType::Move);
     auto correspondingNode = correspondingNodeInOtherTree(moveNode);
     moveOp->setAffectedNode(correspondingNode);
     moveOp->setCorrespondingNode(moveNode);

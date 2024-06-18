@@ -50,7 +50,7 @@ struct FSOperation {
 
     private:
         UniqueId _id = 0;
-        OperationType _operationType = OperationTypeNone;
+        OperationType _operationType = OperationType::None;
         NodeId _nodeId;
         NodeType _objectType = NodeType::Unknown;
         SyncTime _createdAt = 0;

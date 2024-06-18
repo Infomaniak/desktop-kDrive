@@ -437,15 +437,15 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
 
 std::string Utility::opType2Str(OperationType opType) {
     switch (opType) {
-        case OperationTypeCreate:
+        case OperationType::Create:
             return "CREATE";
-        case OperationTypeDelete:
+        case OperationType::Delete:
             return "DELETE";
-        case OperationTypeEdit:
+        case OperationType::Edit:
             return "EDIT";
-        case OperationTypeMove:
+        case OperationType::Move:
             return "MOVE";
-        case OperationTypeRights:
+        case OperationType::Rights:
             return "RIGHTS";
         default:
             return "UNKNOWN";

@@ -127,19 +127,19 @@ void ExecutorWorker::execute() {
 
             std::shared_ptr<AbstractJob> job = nullptr;
             switch (syncOp->type()) {
-                case OperationTypeCreate: {
+                case OperationType::Create: {
                     handleCreateOp(syncOp, job, hasError);
                     break;
                 }
-                case OperationTypeEdit: {
+                case OperationType::Edit: {
                     handleEditOp(syncOp, job, hasError);
                     break;
                 }
-                case OperationTypeMove: {
+                case OperationType::Move: {
                     handleMoveOp(syncOp, hasError);
                     break;
                 }
-                case OperationTypeDelete: {
+                case OperationType::Delete: {
                     handleDeleteOp(syncOp, hasError);
                     break;
                 }
@@ -236,16 +236,16 @@ bool ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
     syncItem.setModTime(syncOp->affectedNode()->lastmodified().has_value() ? syncOp->affectedNode()->lastmodified().value() : 0);
     syncItem.setCreationTime(syncOp->affectedNode()->createdAt().has_value() ? syncOp->affectedNode()->createdAt().value() : 0);
 
-    if (syncOp->type() & OperationTypeMove) {
+    if (enumClassToInt(syncOp->type() & OperationType::Move)) {
         syncItem.setInstruction(SyncFileInstruction::Move);
         syncItem.setPath(syncOp->affectedNode()->moveOrigin().has_value() ? *syncOp->affectedNode()->moveOrigin() : SyncPath());
         syncItem.setNewPath(syncOp->affectedNode()->getPath(true));
     } else {
         syncItem.setPath(syncOp->affectedNode()->getPath(true));
 
-        if (syncOp->type() & OperationTypeEdit) {
+        if (enumClassToInt(syncOp->type() & OperationType::Edit)) {
             syncItem.setInstruction(SyncFileInstruction::Update);
-        } else if (syncOp->type() & OperationTypeDelete) {
+        } else if (enumClassToInt(syncOp->type() & OperationType::Delete)) {
             syncItem.setInstruction(SyncFileInstruction::Remove);
         }
     }
@@ -254,14 +254,14 @@ bool ExecutorWorker::initSyncFileItem(SyncOpPtr syncOp, SyncFileItem &syncItem) 
         syncItem.setLocalNodeId(syncOp->correspondingNode() ? syncOp->correspondingNode()->id() : std::nullopt);
         syncItem.setRemoteNodeId(syncOp->affectedNode()->id());
         syncItem.setDirection(SyncDirection::Down);
-        if (syncOp->type() & OperationTypeCreate) {
+        if (enumClassToInt(syncOp->type() & OperationType::Create)) {
             syncItem.setInstruction(SyncFileInstruction::Get);
         }
     } else {
         syncItem.setLocalNodeId(syncOp->affectedNode()->id());
         syncItem.setRemoteNodeId(syncOp->correspondingNode() ? syncOp->correspondingNode()->id() : std::nullopt);
         syncItem.setDirection(SyncDirection::Up);
-        if (syncOp->type() & OperationTypeCreate) {
+        if (enumClassToInt(syncOp->type() & OperationType::Create)) {
             syncItem.setInstruction(SyncFileInstruction::Put);
         }
     }
@@ -1400,8 +1400,8 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
     }
 
     // If affected node has both create and delete events (node deleted and re-created with same name), then do not check
-    job->setBypassCheck((syncOp->affectedNode()->hasChangeEvent(OperationTypeCreate) &&
-                         syncOp->affectedNode()->hasChangeEvent(OperationTypeDelete)) ||
+    job->setBypassCheck((syncOp->affectedNode()->hasChangeEvent(OperationType::Create) &&
+                         syncOp->affectedNode()->hasChangeEvent(OperationType::Delete)) ||
                         syncOp->affectedNode()->isSharedFolder());
 
     job->setAffectedFilePath(relativeLocalFilePath);
@@ -1415,7 +1415,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
 
     // Check if file exists
     SyncPath relativeLocalFilePath =
-        (syncOp->type() == OperationTypeCreate ? syncOp->affectedNode()->getPath(true) : correspondingNode->getPath(true));
+        (syncOp->type() == OperationType::Create ? syncOp->affectedNode()->getPath(true) : correspondingNode->getPath(true));
     SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
 
     bool readPermission = false;
@@ -1430,7 +1430,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
 
     if (syncOp->targetSide() == ReplicaSide::Local) {
         switch (syncOp->type()) {
-            case OperationTypeCreate: {
+            case OperationType::Create: {
                 if (exists && !writePermission) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                           << L" already exists but doesn't have write permissions!");
@@ -1441,9 +1441,9 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                 }
                 break;
             }
-            case OperationTypeEdit:
-            case OperationTypeMove:
-            case OperationTypeDelete: {
+            case OperationType::Edit:
+            case OperationType::Move:
+            case OperationType::Delete: {
                 if (!exists) {
                     LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                          << L" doesn't exist anymore!");
@@ -1460,14 +1460,14 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
                 }
                 break;
             }
-            case OperationTypeNone:
+            case OperationType::None:
             default: {
                 break;
             }
         }
     } else if (syncOp->targetSide() == ReplicaSide::Remote) {
         switch (syncOp->type()) {
-            case OperationTypeCreate: {
+            case OperationType::Create: {
                 if (!exists) {
                     LOGW_SYNCPAL_WARN(
                         _logger, L"File/directory " << Path2WStr(absoluteLocalFilePath).c_str() << L" doesn't exist anymore!");
@@ -1502,7 +1502,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
 
                 return _syncPal->_remoteSnapshot->canWrite(*newCorrespondingParentNode->id());
             }
-            case OperationTypeEdit: {
+            case OperationType::Edit: {
                 if (!exists) {
                     LOGW_SYNCPAL_WARN(_logger, L"Item: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str()
                                                          << L" doesn't exist anymore!");
@@ -1515,11 +1515,11 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
 
                 return _syncPal->_remoteSnapshot->canWrite(*correspondingNode->id());
             }
-            case OperationTypeMove:
-            case OperationTypeDelete: {
+            case OperationType::Move:
+            case OperationType::Delete: {
                 break;
             }
-            case OperationTypeNone:
+            case OperationType::None:
             default: {
                 break;
             }
@@ -1539,7 +1539,7 @@ bool ExecutorWorker::enoughLocalSpace(SyncOpPtr syncOp) {
     }
 
     int64_t newSize = syncOp->affectedNode()->size();
-    if (syncOp->type() == OperationTypeEdit) {
+    if (syncOp->type() == OperationType::Edit) {
         // Keep only the difference between remote size and local size
         newSize -= syncOp->correspondingNode()->size();
     }
@@ -1783,9 +1783,9 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             }
         }
 
-        const bool bypassProgressComplete = syncOp->affectedNode()->hasChangeEvent(OperationTypeCreate) &&
+        const bool bypassProgressComplete = syncOp->affectedNode()->hasChangeEvent(OperationType::Create) &&
                                             syncOp->affectedNode()->hasChangeEvent(
-                                                OperationTypeDelete);  // TODO : If node has both create and delete events, bypass
+                                                OperationType::Delete);  // TODO : If node has both create and delete events, bypass
                                                                        // progress complete. But this should be refactored
                                                                        // alongside UpdateTreeWorker::getOrCreateNodeFromPath
 
@@ -1804,7 +1804,7 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
     SyncFileStatus status = SyncFileStatus::Success;
     CancelType cancelType = CancelType::None;
     switch (syncOp->type()) {
-        case OperationTypeCreate: {
+        case OperationType::Create: {
             cancelType = CancelType::Create;
             status = SyncFileStatus::Ignored;
             removeFromDb = false;
@@ -1812,7 +1812,7 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
                                                                  PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
             break;
         }
-        case OperationTypeMove: {
+        case OperationType::Move: {
             // Delete the item from local replica
             NodeId remoteNodeId = syncOp->correspondingNode()->id().has_value() ? syncOp->correspondingNode()->id().value() : "";
             if (!remoteNodeId.empty()) {
@@ -1825,7 +1825,7 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
             cancelType = CancelType::Move;
             break;
         }
-        case OperationTypeEdit: {
+        case OperationType::Edit: {
             // Rename the file so as not to lose any information
             SyncPath newSyncPath;
             PlatformInconsistencyCheckerUtility::renameLocalFile(
@@ -1840,7 +1840,7 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
             cancelType = CancelType::Edit;
             break;
         }
-        case OperationTypeDelete: {
+        case OperationType::Delete: {
             cancelType = CancelType::Delete;
             break;
         }
@@ -1921,7 +1921,7 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
         }
         case ConflictType::EditDelete:  // Delete conflict pattern
         {
-            if (syncOp->type() == OperationTypeDelete) {
+            if (syncOp->type() == OperationType::Delete) {
                 // Just apply normal behavior for delete operations
                 break;
             }
@@ -1962,8 +1962,8 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
     }
 
     switch (syncOp->type()) {
-        case OperationTypeCreate:
-        case OperationTypeEdit: {
+        case OperationType::Create:
+        case OperationType::Edit: {
             NodeId nodeId;
             SyncTime modtime = 0;
             if (syncOp->targetSide() == ReplicaSide::Local) {
@@ -1994,16 +1994,16 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
                 }
             }
 
-            if (syncOp->type() == OperationTypeCreate) {
+            if (syncOp->type() == OperationType::Create) {
                 return propagateCreateToDbAndTree(syncOp, nodeId, modtime, node);
             } else {
                 return propagateEditToDbAndTree(syncOp, nodeId, modtime, node);
             }
         }
-        case OperationTypeMove: {
+        case OperationType::Move: {
             return propagateMoveToDbAndTree(syncOp);
         }
-        case OperationTypeDelete: {
+        case OperationType::Delete: {
             return propagateDeleteToDbAndTree(syncOp);
         }
         default: {
@@ -2138,7 +2138,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
         // insert new node
         node = std::shared_ptr<Node>(
             new Node(newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote, remoteName,
-                     syncOp->affectedNode()->type(), OperationTypeNone, newNodeId, newLastModTime, newLastModTime,
+                     syncOp->affectedNode()->type(), OperationType::None, newNodeId, newLastModTime, newLastModTime,
                      syncOp->affectedNode()->size(), newCorrespondingParentNode));
         if (node == nullptr) {
             _executorExitCode = ExitCode::SystemError;

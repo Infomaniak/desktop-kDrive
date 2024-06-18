@@ -52,16 +52,16 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
     for (int i = 0; i < static_cast<int>(numEvents); ++i) {
         OperationType opType;
         if (eventFlags[i] & kFSEventStreamEventFlagItemRemoved) {
-            opType = OperationTypeDelete;
+            opType = OperationType::Delete;
         } else if (eventFlags[i] & kFSEventStreamEventFlagItemCreated) {
-            opType = OperationTypeCreate;
+            opType = OperationType::Create;
         } else if (eventFlags[i] & kFSEventStreamEventFlagItemModified ||
                    eventFlags[i] & kFSEventStreamEventFlagItemInodeMetaMod) {
-            opType = OperationTypeEdit;
+            opType = OperationType::Edit;
         } else if (eventFlags[i] & kFSEventStreamEventFlagItemRenamed) {
-            opType = OperationTypeMove;
+            opType = OperationType::Move;
         } else if (eventFlags[i] & kFSEventStreamEventFlagItemChangeOwner) {
-            opType = OperationTypeRights;
+            opType = OperationType::Rights;
         }
 
         CFStringRef pathRef = reinterpret_cast<CFStringRef>(CFArrayGetValueAtIndex(eventPaths, i));

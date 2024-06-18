@@ -87,7 +87,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
 
         // Check if exists with same nodeId
-        if (opTypeFromOS == OperationTypeDelete) {
+        if (opTypeFromOS == OperationType::Delete) {
             NodeId prevNodeId = _snapshot->itemId(relativePath);
             bool exists = false;
             IoError ioError = IoError::Success;
@@ -224,7 +224,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             IoHelper::getNodeId(parentPath, parentNodeId);
         }
 
-        if (opTypeFromOS == OperationTypeEdit) {
+        if (opTypeFromOS == OperationType::Edit) {
             // Filter out hydration/dehydration
             bool changed = false;
             IoError ioError = IoError::Success;
@@ -284,7 +284,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
                 continue;
             }
-        } else if (opTypeFromOS == OperationTypeRights) {
+        } else if (opTypeFromOS == OperationType::Rights) {
             if (!writePermission) {
                 LOGW_SYNCPAL_DEBUG(
                     _logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str() << L" doesn't have write permissions!");
@@ -294,7 +294,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
         bool itemExistsInSnapshot = _snapshot->exists(nodeId);
         if (!itemExistsInSnapshot) {
-            if (opTypeFromOS == OperationTypeDelete) {
+            if (opTypeFromOS == OperationType::Delete) {
                 // This is a delete operation but a file with the same name has been recreated immediately
                 NodeId itemId = _snapshot->itemId(relativePath);
                 if (_snapshot->removeItem(itemId)) {

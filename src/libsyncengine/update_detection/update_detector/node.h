@@ -37,10 +37,10 @@ class Node {
              const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
              int64_t size);
 
-        Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type, int changeEvents,
-             const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
-             int64_t size, std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin = std::nullopt,
-             std::optional<DbNodeId> moveOriginParentDbId = std::nullopt);
+        Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
+             OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
+             std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
+             std::optional<SyncPath> moveOrigin = std::nullopt, std::optional<DbNodeId> moveOriginParentDbId = std::nullopt);
 
         /**
          * @brief Node
@@ -64,10 +64,14 @@ class Node {
         inline ReplicaSide side() const { return _side; }
         inline SyncName name() const { return _name; }
         inline NodeType type() const { return _type; }
-        inline SyncName validLocalName() const { return _validLocalName; }      // TODO : to be removed, local and remote names are always the same
-        inline SyncName finalLocalName() const { return _validLocalName.empty() ? _name : _validLocalName; }          // TODO : to be removed, local and remote names are always the same
+        inline SyncName validLocalName() const {
+            return _validLocalName;
+        }  // TODO : to be removed, local and remote names are always the same
+        inline SyncName finalLocalName() const {
+            return _validLocalName.empty() ? _name : _validLocalName;
+        }  // TODO : to be removed, local and remote names are always the same
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
-        inline int changeEvents() const { return _changeEvents; }
+        inline OperationType changeEvents() const { return _changeEvents; }
         inline std::optional<SyncTime> createdAt() const { return _createdAt; }
         inline std::optional<SyncTime> lastmodified() const { return _lastModified; }
         inline int64_t size() { return _size; }
@@ -109,12 +113,12 @@ class Node {
         size_t deleteChildren(const NodeId &childId);
         std::shared_ptr<Node> getChildExcept(SyncName name, OperationType except);
 
-        inline void setChangeEvents(const int ops) { _changeEvents = ops; }
+        inline void setChangeEvents(const OperationType ops) { _changeEvents = ops; }
         inline void insertChangeEvent(const OperationType &op) { _changeEvents |= op; }
         inline void deleteChangeEvent(const OperationType &op) { _changeEvents ^= op; }
-        inline void clearChangeEvents() { _changeEvents = OperationTypeNone; }
-        inline bool hasChangeEvent() { return _changeEvents != OperationTypeNone; }
-        inline bool hasChangeEvent(const int op) { return _changeEvents & op; }
+        inline void clearChangeEvents() { _changeEvents = OperationType::None; }
+        inline bool hasChangeEvent() { return _changeEvents != OperationType::None; }
+        inline bool hasChangeEvent(const OperationType op) { return (_changeEvents & op) == op; }
 
         inline void insertConflictAlreadyConsidered(const ConflictType &conf) { _conflictsAlreadyConsidered.push_back(conf); }
         inline void clearConflictAlreadyConsidered() { _conflictsAlreadyConsidered.clear(); }
@@ -137,7 +141,7 @@ class Node {
         SyncName _validLocalName;
         InconsistencyType _inconsistencyType = InconsistencyType::None;
         NodeType _type = NodeType::Unknown;
-        int _changeEvents = OperationTypeNone;
+        OperationType _changeEvents = OperationType::None;
         std::optional<NodeId> _id = std::nullopt;
         std::optional<NodeId> _previousId = std::nullopt;
         std::optional<SyncTime> _createdAt = std::nullopt;

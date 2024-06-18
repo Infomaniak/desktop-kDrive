@@ -44,7 +44,8 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
       _moveOriginParentDbId(std::nullopt),
       _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
 
-Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type, int changeEvents,
+Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
+           OperationType changeEvents,
            const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size,
            std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId)
     : _idb(idb),
@@ -144,7 +145,7 @@ size_t Node::deleteChildren(const NodeId &childId) {
 }
 
 bool Node::isEditFromDeleteCreate() {
-    if (hasChangeEvent(OperationTypeEdit) && _previousId.has_value()) {
+    if (hasChangeEvent(OperationType::Edit) && _previousId.has_value()) {
         return true;
     }
     return false;

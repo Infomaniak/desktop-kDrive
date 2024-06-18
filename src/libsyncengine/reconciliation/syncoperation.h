@@ -58,7 +58,7 @@ class SyncOperation {
         inline bool hasParentOp() const { return _parentId > -1; }
 
     private:
-        OperationType _type = OperationTypeNone;
+        OperationType _type = OperationType::None;
         std::shared_ptr<Node> _affectedNode = nullptr;
         std::shared_ptr<Node> _correspondingNode = nullptr;  // The node on which we will apply the operation
         ReplicaSide _targetSide = ReplicaSide::Unknown;        // The side on which we will apply the operation
@@ -102,7 +102,7 @@ class SyncOperationList : public SharedObject {
         void clear();
         void operator=(SyncOperationList const &other);
 
-        void getMapIndexToOp(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationTypeNone);
+        void getMapIndexToOp(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
 
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;

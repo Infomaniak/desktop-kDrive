@@ -111,7 +111,7 @@ ExitCode UpdateTreeWorker::step2MoveFile() {
 
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
     std::unordered_set<UniqueId> deleteOpsIds;
-    _operationSet->getOpsByType(OperationTypeDelete, deleteOpsIds);
+    _operationSet->getOpsByType(OperationType::Delete, deleteOpsIds);
     for (const auto &deleteOpId : deleteOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -136,7 +136,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
         auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
         if (currentNodeIt != _updateTree->nodes().end()) {
             // Node exists
-            currentNodeIt->second->insertChangeEvent(OperationTypeDelete);
+            currentNodeIt->second->insertChangeEvent(OperationType::Delete);
             currentNodeIt->second->setCreatedAt(deleteOp->createdAt());
             currentNodeIt->second->setLastModified(deleteOp->lastModified());
             currentNodeIt->second->setSize(deleteOp->size());
@@ -202,7 +202,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                 newNode->setCreatedAt(deleteOp->createdAt());
                 newNode->setLastModified(deleteOp->lastModified());
                 newNode->setSize(deleteOp->size());
-                newNode->insertChangeEvent(OperationTypeDelete);
+                newNode->insertChangeEvent(OperationType::Delete);
                 newNode->setIsTmp(false);
                 _updateTree->nodes()[deleteOp->nodeId()] = newNode;
                 if (ParametersCache::isExtendedLogEnabled()) {
@@ -216,7 +216,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             } else {
                 // create node
                 newNode = std::shared_ptr<Node>(new Node(idb, _side, deleteOp->path().filename().native(), deleteOp->objectType(),
-                                                         OperationTypeDelete, deleteOp->nodeId(), deleteOp->createdAt(),
+                                                         OperationType::Delete, deleteOp->nodeId(), deleteOp->createdAt(),
                                                          deleteOp->lastModified(), deleteOp->size(), parentNode));
                 if (newNode == nullptr) {
                     std::cout << "Failed to allocate memory" << std::endl;
@@ -246,7 +246,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
     _createFileOperationSet.clear();
     FSOpPtrMap createDirectoryOperationSet;
     std::unordered_set<UniqueId> createOpsIds;
-    _operationSet->getOpsByType(OperationTypeCreate, createOpsIds);
+    _operationSet->getOpsByType(OperationType::Create, createOpsIds);
 
     bool isSnapshotRebuildRequired = false;
 
@@ -349,7 +349,7 @@ void UpdateTreeWorker::updateTmpNode(std::shared_ptr<Node> newNode, const FSOpPt
     newNode->insertChangeEvent(opType);
     newNode->setIsTmp(false);
 
-    if (opType == OperationTypeEdit) {
+    if (opType == OperationType::Edit) {
         newNode->setPreviousId(deleteOp->nodeId());
         _updateTree->previousIdSet()[deleteOp->nodeId()] = op->nodeId();
     }
@@ -363,7 +363,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
     if (exitCode != ExitCode::Ok) return exitCode;  // Rebuild the snapshot.
 
     std::unordered_set<UniqueId> deleteOpsIds;
-    _operationSet->getOpsByType(OperationTypeDelete, deleteOpsIds);
+    _operationSet->getOpsByType(OperationType::Delete, deleteOpsIds);
     for (const auto &deleteOpId : deleteOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -402,7 +402,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             }
         }
 
-        const OperationType opType = op->operationType() == OperationTypeCreate ? OperationTypeEdit : OperationTypeDelete;
+        const OperationType opType = op->operationType() == OperationType::Create ? OperationType::Edit : OperationType::Delete;
 
         auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
         if (currentNodeIt != _updateTree->nodes().end()) {
@@ -415,10 +415,10 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             currentNode->insertChangeEvent(opType);
             currentNode->setIsTmp(false);
 
-            // TODO: refactor other OperationTypeEdit conditions
+            // TODO: refactor other OperationType::Edit conditions
 
             // If it's an edit (Delete-Create) we change it's id
-            if (opType == OperationTypeEdit) {
+            if (opType == OperationType::Edit) {
                 currentNode->setPreviousId(deleteOp->nodeId());
                 _updateTree->previousIdSet()[deleteOp->nodeId()] = op->nodeId();
 
@@ -481,7 +481,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 }
 
                 // store old NodeId to retrieve node in Db
-                if (opType == OperationTypeEdit) {
+                if (opType == OperationType::Edit) {
                     newNode->setPreviousId(deleteOp->nodeId());
                     _updateTree->previousIdSet()[deleteOp->nodeId()] = op->nodeId();
                 }
@@ -498,7 +498,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
 ExitCode UpdateTreeWorker::step5CreateDirectory() {
     std::unordered_set<UniqueId> createOpsIds;
-    _operationSet->getOpsByType(OperationTypeCreate, createOpsIds);
+    _operationSet->getOpsByType(OperationType::Create, createOpsIds);
     for (const auto &createOpId : createOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -521,7 +521,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
 
         // find node by path because it may have been created before
         std::shared_ptr<Node> currentNode = getOrCreateNodeFromPath(createOp->path());
-        if (currentNode->hasChangeEvent(OperationTypeDelete)) {
+        if (currentNode->hasChangeEvent(OperationType::Delete)) {
             // A directory has been deleted and another one has been created with the same name
             currentNode->setPreviousId(currentNode->id());
         }
@@ -619,7 +619,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 
 ExitCode UpdateTreeWorker::step7EditFile() {
     std::unordered_set<UniqueId> editOpsIds;
-    _operationSet->getOpsByType(OperationTypeEdit, editOpsIds);
+    _operationSet->getOpsByType(OperationType::Edit, editOpsIds);
     for (const auto &editOpId : editOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -824,7 +824,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
 
 ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
     std::unordered_set<UniqueId> moveOpsIds;
-    _operationSet->getOpsByType(OperationTypeMove, moveOpsIds);
+    _operationSet->getOpsByType(OperationType::Move, moveOpsIds);
     for (const auto &moveOpId : moveOpsIds) {
         if (stopAsked()) {
             return ExitCode::Ok;
@@ -858,7 +858,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             // create node if not exist
             std::shared_ptr<Node> parentNode = getOrCreateNodeFromPath(moveOp->destinationPath().parent_path());
 
-            currentNode->insertChangeEvent(OperationTypeMove);
+            currentNode->insertChangeEvent(OperationType::Move);
             currentNode->setCreatedAt(moveOp->createdAt());
             currentNode->setLastModified(moveOp->lastModified());
             currentNode->setSize(moveOp->size());
@@ -921,7 +921,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
 
             std::shared_ptr<Node> n =
                 std::shared_ptr<Node>(new Node(idb, _side, moveOp->destinationPath().filename().native(), moveOp->objectType(),
-                                               OperationTypeMove, moveOp->nodeId(), moveOp->createdAt(), moveOp->lastModified(),
+                                               OperationType::Move, moveOp->nodeId(), moveOp->createdAt(), moveOp->lastModified(),
                                                moveOp->size(), parentNode, moveOp->path(), std::nullopt));
             if (n == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
@@ -1082,7 +1082,9 @@ void UpdateTreeWorker::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncN
     treeStr += Str("[");
     treeStr += Str2SyncName(*node->id());
     treeStr += Str(" / ");
-    treeStr += node->changeEvents() > 0 ? Str2SyncName(Utility::opType2Str((OperationType)node->changeEvents())) : Str("-");
+    treeStr += node->changeEvents() != OperationType::None
+                   ? Str2SyncName(Utility::opType2Str((OperationType)node->changeEvents()))
+                   : Str("-");
     treeStr += Str("]");
     treeStr += Str("\n");
 
@@ -1120,7 +1122,7 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
 
     for (std::vector<std::pair<SyncName, NodeId>>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         FSOpPtr op = nullptr;
-        if (_operationSet->findOp(nameIt->second, OperationTypeMove, op)) {
+        if (_operationSet->findOp(nameIt->second, OperationType::Move, op)) {
             newPath = op->destinationPath();
         } else {
             newPath.append(nameIt->first);
@@ -1153,7 +1155,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
 
         // update myself
         // if it's a create we don't have node's database data
-        if (node->hasChangeEvent(OperationTypeCreate)) {
+        if (node->hasChangeEvent(OperationType::Create)) {
             continue;
         }
 
@@ -1188,7 +1190,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
         }
 
         // if it's a Move event
-        if (node->hasChangeEvent(OperationTypeMove)) {
+        if (node->hasChangeEvent(OperationType::Move)) {
             // update parentDbId
             node->setMoveOriginParentDbId(dbNode.parentNodeId());
 
@@ -1203,8 +1205,8 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 return ExitCode::DataError;
             }
             node->setMoveOrigin(_side == ReplicaSide::Local ? localPath
-                                                          : remotePath);  // TODO : no need to keep both remote and local paths
-                                                                          // since we do not rename the file locally anymore.
+                                                            : remotePath);  // TODO : no need to keep both remote and local paths
+                                                                            // since we do not rename the file locally anymore.
         } else {
             if (dbNode.nameLocal() != dbNode.nameRemote()) {
                 node->setName(dbNode.nameRemote());
@@ -1378,7 +1380,7 @@ ExitCode UpdateTreeWorker::updateNameFromDbForMoveOp(const std::shared_ptr<Node>
         return ExitCode::Ok;
     }
 
-    if (moveOp->operationType() != OperationTypeMove) {
+    if (moveOp->operationType() != OperationType::Move) {
         return ExitCode::Ok;
     }
 

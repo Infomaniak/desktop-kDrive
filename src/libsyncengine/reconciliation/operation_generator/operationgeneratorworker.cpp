@@ -82,29 +82,29 @@ void OperationGeneratorWorker::execute() {
         }
 
         std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(currentNode);
-        if (!correspondingNode && !currentNode->hasChangeEvent(OperationTypeCreate) &&
-            (currentNode->hasChangeEvent(OperationTypeDelete) || currentNode->hasChangeEvent(OperationTypeEdit) ||
-             currentNode->hasChangeEvent(OperationTypeMove))) {
+        if (!correspondingNode && !currentNode->hasChangeEvent(OperationType::Create) &&
+            (currentNode->hasChangeEvent(OperationType::Delete) || currentNode->hasChangeEvent(OperationType::Edit) ||
+             currentNode->hasChangeEvent(OperationType::Move))) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << SyncName2WStr(currentNode->name()).c_str());
             exitCode = ExitCode::DataError;
             break;
         }
 
-        if (currentNode->hasChangeEvent(OperationTypeCreate)) {
+        if (currentNode->hasChangeEvent(OperationType::Create)) {
             if (!(currentNode->side() == ReplicaSide::Local && currentNode->isSharedFolder())) {
                 generateCreateOperation(currentNode, correspondingNode);
             }
         }
 
-        if (currentNode->hasChangeEvent(OperationTypeDelete)) {
+        if (currentNode->hasChangeEvent(OperationType::Delete)) {
             generateDeleteOperation(currentNode, correspondingNode);
         }
 
-        if (currentNode->hasChangeEvent(OperationTypeEdit)) {
+        if (currentNode->hasChangeEvent(OperationType::Edit)) {
             generateEditOperation(currentNode, correspondingNode);
         }
 
-        if (currentNode->hasChangeEvent(OperationTypeMove)) {
+        if (currentNode->hasChangeEvent(OperationType::Move)) {
             generateMoveOperation(currentNode, correspondingNode);
         }
     }
@@ -143,7 +143,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
         correspondingNode->setStatus(NodeStatus::Processed);
     }
 
-    op->setType(OperationTypeCreate);
+    op->setType(OperationType::Create);
     op->setAffectedNode(currentNode);
     ReplicaSide targetSide = otherSide(currentNode->side());
     op->setTargetSide(targetSide);
@@ -187,11 +187,11 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
         correspondingNode->setStatus(NodeStatus::Processed);
     }
 
-    op->setType(OperationTypeEdit);
+    op->setType(OperationType::Edit);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
-    if (currentNode->hasChangeEvent(OperationTypeMove) && currentNode->status() == NodeStatus::Unprocessed) {
+    if (currentNode->hasChangeEvent(OperationType::Move) && currentNode->status() == NodeStatus::Unprocessed) {
         currentNode->setStatus(NodeStatus::PartiallyProcessed);
     } else {
         currentNode->setStatus(NodeStatus::Processed);
@@ -248,13 +248,13 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
         op->setOmit(true);
     }
 
-    op->setType(OperationTypeMove);
+    op->setType(OperationType::Move);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
     op->setNewName(op->targetSide() == ReplicaSide::Local ? currentNode->finalLocalName()
                                                         : currentNode->name());  // Use validName only on local replica
-    if (currentNode->hasChangeEvent(OperationTypeEdit) && currentNode->status() == NodeStatus::Unprocessed) {
+    if (currentNode->hasChangeEvent(OperationType::Edit) && currentNode->status() == NodeStatus::Unprocessed) {
         currentNode->setStatus(NodeStatus::PartiallyProcessed);
     } else {
         currentNode->setStatus(NodeStatus::Processed);
@@ -292,11 +292,11 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     }
 
     // Check if corresponding node has been also deleted
-    if (correspondingNode->hasChangeEvent(OperationTypeDelete)) {
+    if (correspondingNode->hasChangeEvent(OperationType::Delete)) {
         op->setOmit(true);
     }
 
-    op->setType(OperationTypeDelete);
+    op->setType(OperationType::Delete);
     findAndMarkAllChildNodes(currentNode);
     currentNode->setStatus(NodeStatus::Processed);
     op->setAffectedNode(currentNode);

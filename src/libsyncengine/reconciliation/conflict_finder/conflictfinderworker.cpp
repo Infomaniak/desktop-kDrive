@@ -91,7 +91,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
         // get next node
         node = queue.front();
 
-        if (node->type() == NodeType::Directory && node->hasChangeEvent(OperationType::OperationTypeMove)) {
+        if (node->type() == NodeType::Directory && node->hasChangeEvent(OperationType::Move)) {
             if (node->side() == ReplicaSide::Local) {
                 localMoveDirNodes.push_back(node);
             } else {
@@ -99,7 +99,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             }
         }
         // Create - Create_Create conflict
-        if (node->hasChangeEvent(OperationType::OperationTypeCreate) &&
+        if (node->hasChangeEvent(OperationType::Create) &&
             !node->hasConflictAlreadyConsidered(ConflictType::CreateCreate)) {
             std::optional<Conflict> createCreateConf = checkCreateCreateConflict(node);
             if (createCreateConf) {
@@ -114,7 +114,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             }
         }
         // Edit - Edit_Edit conflict
-        if (node->hasChangeEvent(OperationType::OperationTypeEdit) &&
+        if (node->hasChangeEvent(OperationType::Edit) &&
             !node->hasConflictAlreadyConsidered(ConflictType::EditEdit)) {
             std::optional<Conflict> editEditConf = checkEditEditConflict(node);
             if (editEditConf) {
@@ -128,7 +128,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             }
         }
         // Delete
-        if (node->hasChangeEvent(OperationType::OperationTypeDelete)) {
+        if (node->hasChangeEvent(OperationType::Delete)) {
             if (node->type() == NodeType::Directory) {
                 std::optional<std::vector<Conflict>> moveParentDeleteConf = checkMoveParentDeleteConflicts(node);
                 std::optional<std::vector<Conflict>> createParentDeleteConf = checkCreateParentDeleteConflicts(node);
@@ -180,7 +180,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
         }
 
         // Move
-        if (node->hasChangeEvent(OperationType::OperationTypeMove)) {
+        if (node->hasChangeEvent(OperationType::Move)) {
             std::optional<Conflict> moveCreateConf = checkMoveCreateConflict(node);
             if (moveCreateConf) {
                 _syncPal->_conflictQueue->push(*moveCreateConf);
@@ -246,9 +246,9 @@ std::optional<Conflict> ConflictFinderWorker::checkCreateCreateConflict(std::sha
     }
     std::optional<Conflict> conflict = std::nullopt;
     std::shared_ptr<Node> correspondingCreateNode =
-        correspondingParentNode->getChildExcept(createNode->name(), OperationTypeDelete);
+        correspondingParentNode->getChildExcept(createNode->name(), OperationType::Delete);
 
-    if (correspondingCreateNode != nullptr && correspondingCreateNode->hasChangeEvent(OperationTypeCreate)) {
+    if (correspondingCreateNode != nullptr && correspondingCreateNode->hasChangeEvent(OperationType::Create)) {
         if (!isPseudoConflict(createNode, correspondingCreateNode)) {
             conflict = Conflict(createNode, correspondingCreateNode, ConflictType::CreateCreate);
             correspondingCreateNode->insertConflictAlreadyConsidered(ConflictType::CreateCreate);
@@ -260,7 +260,7 @@ std::optional<Conflict> ConflictFinderWorker::checkCreateCreateConflict(std::sha
 std::optional<Conflict> ConflictFinderWorker::checkEditEditConflict(std::shared_ptr<Node> editNode) {
     std::optional<Conflict> conflict = std::nullopt;
     std::shared_ptr<Node> correspondingNode = correspondingNodeDirect(editNode);
-    if (correspondingNode != nullptr && correspondingNode->hasChangeEvent(OperationType::OperationTypeEdit)) {
+    if (correspondingNode != nullptr && correspondingNode->hasChangeEvent(OperationType::Edit)) {
         if (!isPseudoConflict(editNode, correspondingNode)) {
             conflict = Conflict(editNode, correspondingNode, ConflictType::EditEdit);
             correspondingNode->insertConflictAlreadyConsidered(ConflictType::EditEdit);
@@ -275,8 +275,8 @@ std::optional<Conflict> ConflictFinderWorker::checkMoveCreateConflict(std::share
     std::shared_ptr<Node> correspondingParentNode = correspondingNodeDirect(moveParentNode);
     if (correspondingParentNode != nullptr) {
         std::shared_ptr<Node> potentialCreateChildNode =
-            correspondingParentNode->getChildExcept(moveNode->name(), OperationTypeDelete);
-        if (potentialCreateChildNode != nullptr && potentialCreateChildNode->hasChangeEvent(OperationTypeCreate)) {
+            correspondingParentNode->getChildExcept(moveNode->name(), OperationType::Delete);
+        if (potentialCreateChildNode != nullptr && potentialCreateChildNode->hasChangeEvent(OperationType::Create)) {
             conflict = Conflict(moveNode, potentialCreateChildNode, ConflictType::MoveCreate);
         }
     }
@@ -290,7 +290,7 @@ std::optional<Conflict> ConflictFinderWorker::checkEditDeleteConflict(std::share
 
     std::optional<Conflict> conflict = std::nullopt;
     std::shared_ptr<Node> correspondingEditNode = correspondingNodeDirect(deleteNode);
-    if (correspondingEditNode != nullptr && correspondingEditNode->hasChangeEvent(OperationTypeEdit)) {
+    if (correspondingEditNode != nullptr && correspondingEditNode->hasChangeEvent(OperationType::Edit)) {
         conflict = Conflict(deleteNode, correspondingEditNode, ConflictType::EditDelete);
     }
     return conflict;
@@ -298,7 +298,7 @@ std::optional<Conflict> ConflictFinderWorker::checkEditDeleteConflict(std::share
 
 std::optional<Conflict> ConflictFinderWorker::checkMoveDeleteConflict(std::shared_ptr<Node> deleteNode) {
     std::shared_ptr<Node> correspondingMoveNode = correspondingNodeDirect(deleteNode);
-    if (correspondingMoveNode == nullptr || !correspondingMoveNode->hasChangeEvent(OperationType::OperationTypeMove)) {
+    if (correspondingMoveNode == nullptr || !correspondingMoveNode->hasChangeEvent(OperationType::Move)) {
         return std::nullopt;
     }
 
@@ -310,12 +310,12 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::checkMoveParentDelete
 
     std::optional<std::vector<Conflict>> moveNodes = std::vector<Conflict>();
     if (correspondingDirNode != nullptr) {
-        if (correspondingDirNode->hasChangeEvent(OperationTypeDelete)) {
+        if (correspondingDirNode->hasChangeEvent(OperationType::Delete)) {
             return std::nullopt;
         }
 
         std::optional<std::vector<std::shared_ptr<Node>>> subMoveNodes =
-            findChangeEventInSubNodes(OperationTypeMove, correspondingDirNode);
+            findChangeEventInSubNodes(OperationType::Move, correspondingDirNode);
         if (subMoveNodes) {
             for (std::shared_ptr<Node> node : *subMoveNodes) {
                 moveNodes->push_back(Conflict(deleteNode, node, ConflictType::MoveParentDelete));
@@ -330,12 +330,12 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::checkCreateParentDele
 
     std::optional<std::vector<Conflict>> createNodes = std::vector<Conflict>();
     if (correspondingDirNode != nullptr) {
-        if (correspondingDirNode->hasChangeEvent(OperationTypeDelete)) {
+        if (correspondingDirNode->hasChangeEvent(OperationType::Delete)) {
             return std::nullopt;
         }
 
         std::optional<std::vector<std::shared_ptr<Node>>> subMoveNodes =
-            findChangeEventInSubNodes(OperationTypeCreate, correspondingDirNode);
+            findChangeEventInSubNodes(OperationType::Create, correspondingDirNode);
         if (subMoveNodes) {
             for (std::shared_ptr<Node> node : *subMoveNodes) {
                 createNodes->push_back(Conflict(deleteNode, node, ConflictType::CreateParentDelete));
@@ -348,7 +348,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::checkCreateParentDele
 std::optional<Conflict> ConflictFinderWorker::checkMoveMoveSourceConflict(std::shared_ptr<Node> moveNode) {
     std::shared_ptr<Node> correspondingMoveNode = correspondingNodeDirect(moveNode);
     if (correspondingMoveNode != nullptr) {
-        if (!correspondingMoveNode->hasChangeEvent(OperationTypeMove)) {
+        if (!correspondingMoveNode->hasChangeEvent(OperationType::Move)) {
             return std::nullopt;
         }
 
@@ -367,8 +367,8 @@ std::optional<Conflict> ConflictFinderWorker::checkMoveMoveDestConflict(std::sha
     std::shared_ptr<Node> nodeParentInOtherTree = correspondingNodeDirect(moveNode->parentNode());
     std::optional<Conflict> conflict = std::nullopt;
     if (nodeParentInOtherTree != nullptr) {
-        std::shared_ptr<Node> potentialMoveChild = nodeParentInOtherTree->getChildExcept(moveNode->name(), OperationTypeDelete);
-        if (potentialMoveChild != nullptr && potentialMoveChild->hasChangeEvent(OperationTypeMove) &&
+        std::shared_ptr<Node> potentialMoveChild = nodeParentInOtherTree->getChildExcept(moveNode->name(), OperationType::Delete);
+        if (potentialMoveChild != nullptr && potentialMoveChild->hasChangeEvent(OperationType::Move) &&
             potentialMoveChild->idb() != moveNode->idb()) {
             conflict = Conflict(moveNode, potentialMoveChild, ConflictType::MoveMoveDest);
             potentialMoveChild->insertConflictAlreadyConsidered(ConflictType::MoveMoveDest);

@@ -396,10 +396,10 @@ SyncStep SyncPalWorker::nextStep() const {
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->ops().size()
                                                << " " << Utility::side2Str(side).c_str()
                                                << " operations detected (# CREATE: "
-                                               << opsSet->nbOpsByType(OperationTypeCreate)
-                                               << ", # EDIT: " << opsSet->nbOpsByType(OperationTypeEdit)
-                                               << ", # MOVE: " << opsSet->nbOpsByType(OperationTypeMove)
-                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete)
+                                               << opsSet->nbOpsByType(OperationType::Create)
+                                               << ", # EDIT: " << opsSet->nbOpsByType(OperationType::Edit)
+                                               << ", # MOVE: " << opsSet->nbOpsByType(OperationType::Move)
+                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationType::Delete)
                                                << ")");
             };
             logNbOps(ReplicaSide::Local);

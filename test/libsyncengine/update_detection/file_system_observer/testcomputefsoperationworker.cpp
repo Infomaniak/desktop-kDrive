@@ -217,18 +217,18 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     _syncPal->_computeFSOperationsWorker->execute();
 
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lad", OperationTypeCreate, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("laa", OperationTypeEdit, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lab", OperationTypeMove, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lba", OperationTypeMove, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lbb", OperationTypeDelete, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lae", OperationTypeCreate, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lad", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("laa", OperationType::Edit, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lab", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lba", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lbb", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lae", OperationType::Create, tmpOp));
 
     // On remote replica
     // Create operation but folder too big (should be ignored on local replica)
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("raf", OperationTypeCreate, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rafa", OperationTypeCreate, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rac", OperationTypeMove, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("raf", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rafa", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rac", OperationType::Move, tmpOp));
 }
 
 void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
