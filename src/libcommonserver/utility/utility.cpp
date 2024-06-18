@@ -562,7 +562,7 @@ std::wstring Utility::logLevel2WStr(LogLevel level) {
     return s2ws(logLevel2Str(level));
 }
 
-std::string Utility::SyncFileInstruction2Str(SyncFileStatus status) {
+std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
     switch (status) {
         case SyncFileStatus::Unknown: {
             return "Unknown";
@@ -590,8 +590,8 @@ std::string Utility::SyncFileInstruction2Str(SyncFileStatus status) {
     return "";
 }
 
-std::wstring Utility::SyncFileInstruction2WStr(SyncFileStatus status) {
-    return s2ws(SyncFileInstruction2Str(status));
+std::wstring Utility::syncFileStatus2WStr(SyncFileStatus status) {
+    return s2ws(syncFileStatus2Str(status));
 }
 
 std::string Utility::list2str(std::unordered_set<std::string> inList) {
