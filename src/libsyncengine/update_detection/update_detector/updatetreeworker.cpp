@@ -996,8 +996,8 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
     for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
         for (auto &[_, childNode] : tmpNode->children()) {
-            if (childNode->type() == NodeTypeDirectory && *nameIt == childNode->name()) {
-                if (!isDeleted && childNode->hasChangeEvent(OperationTypeDelete)) {
+            if (childNode->type() == NodeType::Directory && *nameIt == childNode->name()) {
+                if (!isDeleted && childNode->hasChangeEvent(OperationType::Delete)) {
                     // An item on a deleted branch can only have a DELETE change event. If it has any other
                     // change event, it means its parent is on a different branch.
                     continue;
@@ -1009,7 +1009,7 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
 
         if (tmpChildNode == nullptr) {
             // create tmp Node
-            tmpChildNode = std::make_shared<Node>(_side, *nameIt, NodeTypeDirectory, tmpNode);
+            tmpChildNode = std::make_shared<Node>(_side, *nameIt, NodeType::Directory, tmpNode);
 
             if (tmpChildNode == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
@@ -1166,7 +1166,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
 
         // if node is temporary node
         if (node->isTmp()) {
-            if (ExitCode exitCode = updateTmpNode(node); exitCode != ExitCodeOk) {
+            if (ExitCode exitCode = updateTmpNode(node); exitCode != ExitCode::Ok) {
                 return exitCode;
             }
         }
