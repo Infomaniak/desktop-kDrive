@@ -504,7 +504,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 // Check if a local file is hidden, hence excluded.
                 bool isExcluded = false;
                 IoError ioError = IoErrorSuccess;
-                const bool success = ExclusionTemplateCache::instance()->checkIfIsAnExcludedHiddenFile(
+                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(
                     _syncPal->_localPath, snapPath, isExcluded, ioError);
                 if (!success || ioError != IoErrorSuccess || isExcluded) {
                     if (_testing && ioError == IoErrorNoSuchFileOrDirectory) {
