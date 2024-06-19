@@ -38,7 +38,7 @@ ConflictingFilesCorrector::ConflictingFilesCorrector(std::shared_ptr<SyncPal> sy
 void ConflictingFilesCorrector::runJob() {
     for (auto &error : _errors) {
         bool exists = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(error.destinationPath(), exists, ioError)) {
             LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::checkIfPathExists: "
                                                         << Utility::formatIoError(error.destinationPath(), ioError).c_str());
@@ -67,7 +67,7 @@ void ConflictingFilesCorrector::runJob() {
         }
     }
 
-    _exitCode = ExitCodeOk;
+    _exitCode = ExitCode::Ok;
 }
 
 bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
@@ -75,14 +75,14 @@ bool ConflictingFilesCorrector::keepLocalVersion(const Error &error) {
     SyncPath originalAbsolutePath = error.destinationPath().parent_path() / error.path().filename();
     LocalDeleteJob deleteJob(originalAbsolutePath);
     deleteJob.runSynchronously();
-    if (deleteJob.exitCode() != ExitCodeOk) {
+    if (deleteJob.exitCode() != ExitCode::Ok) {
         return false;
     }
 
     // Rename the local version
     LocalMoveJob renameJob(error.destinationPath(), originalAbsolutePath);
     renameJob.runSynchronously();
-    if (renameJob.exitCode() != ExitCodeOk) {
+    if (renameJob.exitCode() != ExitCode::Ok) {
         return false;
     }
 
@@ -97,7 +97,7 @@ bool ConflictingFilesCorrector::keepRemoteVersion(const Error &error) {
     // Delete local version
     LocalDeleteJob deleteJob(error.destinationPath());
     deleteJob.runSynchronously();
-    if (deleteJob.exitCode() != ExitCodeOk) {
+    if (deleteJob.exitCode() != ExitCode::Ok) {
         return false;
     }
 

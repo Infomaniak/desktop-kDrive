@@ -172,14 +172,14 @@ void LiteSyncDialog::updateUI() {
 #ifdef Q_OS_MAC
     ExitCode exitCode;
     exitCode = GuiRequests::getExclusionAppList(true, _defaultAppList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcLiteSyncDialog()) << "Error in Requests::getExclusionAppList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcLiteSyncDialog()) << "Error in Requests::getExclusionAppList : " << enumClassToInt(exitCode);
         return;
     }
 
     exitCode = GuiRequests::getExclusionAppList(false, _userAppList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcLiteSyncDialog()) << "Error in Requests::getExclusionAppList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcLiteSyncDialog()) << "Error in Requests::getExclusionAppList : " << enumClassToInt(exitCode);
         return;
     }
 #endif
@@ -363,8 +363,8 @@ void LiteSyncDialog::onSaveButtonTriggered(bool checked) {
 #ifdef Q_OS_MAC
     ExitCode exitCode;
     exitCode = GuiRequests::setExclusionAppList(false, _userAppList);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcLiteSyncDialog()) << "Error in Requests::setExclusionAppList : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcLiteSyncDialog()) << "Error in Requests::setExclusionAppList : " << enumClassToInt(exitCode);
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Cannot save changes!"), QMessageBox::Ok, this);
         msgBox.exec();
         return;

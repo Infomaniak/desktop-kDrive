@@ -40,7 +40,7 @@ class FileItemWidget : public AbstractFileItemWidget {
 
     private:
         QString _fullFilePath;
-        NodeType _nodeType = NodeTypeUnknown;
+        NodeType _nodeType = NodeType::Unknown;
 };
 
 }  // namespace KDC

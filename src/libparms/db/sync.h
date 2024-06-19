@@ -31,7 +31,7 @@ class PARMS_EXPORT Sync {
         Sync();
         Sync(int dbId, int driveDbId, const std::filesystem::path &localPath, const std::filesystem::path &targetPath,
              const NodeId &targetNodeId = NodeId(), bool paused = false, bool supportVfs = false,
-             VirtualFileMode virtualFileMode = VirtualFileModeOff, bool notificationsDisabled = false,
+             VirtualFileMode virtualFileMode = VirtualFileMode::Off, bool notificationsDisabled = false,
              const std::filesystem::path &dbPath = std::filesystem::path(), bool hasFullyCompleted = false,
              const std::string &navigationPaneClsid = std::string(), const std::string &listingCursor = std::string(),
              int64_t listingCursorTimestamp = 0);

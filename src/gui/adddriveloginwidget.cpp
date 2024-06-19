@@ -81,8 +81,8 @@ void AddDriveLoginWidget::onAuthorizationCodeReceived(const QString code, const 
     QString error;
     QString errorDescr;
     ExitCode exitCode = GuiRequests::requestToken(code, _codeVerifier, _userDbId, error, errorDescr);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcAddDriveLoginWidget()) << "Error in Requests::requestToken : " << enumClassToInt(exitCode);
 
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Token request failed: %1 - %2").arg(error, errorDescr), QMessageBox::Ok,
                                 this);

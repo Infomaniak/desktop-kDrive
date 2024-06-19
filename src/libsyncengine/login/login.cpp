@@ -50,8 +50,8 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
 
     GetTokenJob job(authorizationCode, codeVerifier);
     ExitCode exitCode = job.runSynchronously();
-    if (exitCode != ExitCodeOk) {
-        LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << exitCode);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << enumClassToInt(exitCode));
         _error = std::string();
         _errorDescr = std::string();
         return exitCode;
@@ -65,7 +65,7 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
                                << KDC::Utility::s2ws(errorCode).c_str() << L" - " << KDC::Utility::s2ws(errorDescr).c_str());
         _error = errorCode;
         _errorDescr = errorDescr;
-        return ExitCodeBackError;
+        return ExitCode::BackError;
     }
 
     LOG_DEBUG(_logger, "job.hasErrorApi done");
@@ -76,11 +76,11 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
         LOG_WARN(_logger, "Failed to write authentification token into keychain");
         _error = std::string("Failed to write authentification token into keychain");
         _errorDescr = std::string();
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     }
     LOG_DEBUG(_logger, "KeyChainManager.writeToken done");
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 ExitCode Login::refreshToken() {
@@ -108,22 +108,22 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
 
     if (_info[apiToken.userId()]._lastTokenUpdateTime > tokenLastUpdate) {
         LOG_INFO(Log::instance()->getLogger(), "Token already refreshed in another thread");
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     LOG_DEBUG(Log::instance()->getLogger(), "Start token refresh request");
 
     if (!KeyChainManager::instance()->writeDummyTest()) {
         error = "Test writting into the keychain failed. Token not refreshed.";
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     }
 
     LOG_DEBUG(Log::instance()->getLogger(), "Dummy test passed");
 
     RefreshTokenJob job(apiToken);
     ExitCode exitCode = job.runSynchronously();
-    if (exitCode != ExitCodeOk) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::runSynchronously : " << exitCode);
+    if (exitCode != ExitCode::Ok) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in RefreshTokenJob::runSynchronously : " << enumClassToInt(exitCode));
         job.hasErrorApi(&error, &errorDescr);
         return exitCode;
     }
@@ -131,7 +131,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
     if (job.hasErrorApi(&error, &errorDescr)) {
         LOG_WARN(Log::instance()->getLogger(),
                  "Failed to retrieve authentification token. Error : " << error.c_str() << " - " << errorDescr.c_str());
-        return ExitCodeNetworkError;
+        return ExitCode::NetworkError;
     }
 
     apiToken = job.apiToken();
@@ -142,7 +142,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
         LOG_WARN(Log::instance()->getLogger(), "Failed to write authentification token into keychain");
         error = std::string("Failed to write authentification token into keychain");
         errorDescr = std::string();
-        return ExitCodeSystemError;
+        return ExitCode::SystemError;
     }
 
     LOG_DEBUG(Log::instance()->getLogger(), "Token successfully written in keychain");
@@ -153,7 +153,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
 
     _info[apiToken.userId()]._lastTokenUpdateTime = std::chrono::steady_clock::now();
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 Login::LoginInfo &Login::LoginInfo::operator=(const LoginInfo &info) {

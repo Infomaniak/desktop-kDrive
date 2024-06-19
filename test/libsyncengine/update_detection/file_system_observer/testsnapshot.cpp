@@ -99,31 +99,31 @@ void TestSnapshot::testSnapshot() {
     //    CPPUNIT_ASSERT(_syncPal->_localSnapshot->rootFolderId() == SyncDb::driveRootNode().nodeIdLocal());
 
     SnapshotItem itemA("a", SyncDb::driveRootNode().nodeIdLocal().value(), Str("A"), 1640995201, 1640995201,
-                       NodeType::NodeTypeDirectory, 123);
+                       NodeType::Directory, 123);
     _syncPal->_localSnapshot->updateItem(itemA);
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists("a"));
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->name("a") == Str("A"));
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->type("a") == NodeType::NodeTypeDirectory);
+    CPPUNIT_ASSERT(_syncPal->_localSnapshot->type("a") == NodeType::Directory);
     auto itItem = _syncPal->_localSnapshot->_items.find(SyncDb::driveRootNode().nodeIdLocal().value());
     CPPUNIT_ASSERT(itItem->second.childrenIds().find("a") != itItem->second.childrenIds().end());
 
     _syncPal->_localSnapshot->updateItem(SnapshotItem("a", SyncDb::driveRootNode().nodeIdLocal().value(), Str("A*"), 1640995202,
-                                                      1640995202, NodeType::NodeTypeDirectory, 123));
+                                                      1640995202, NodeType::Directory, 123));
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->name("a") == Str("A*"));
 
     SnapshotItem itemB("b", SyncDb::driveRootNode().nodeIdLocal().value(), Str("B"), 1640995203, 1640995203,
-                       NodeType::NodeTypeDirectory, 123);
+                       NodeType::Directory, 123);
     _syncPal->_localSnapshot->updateItem(itemB);
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists("b"));
     itItem = _syncPal->_localSnapshot->_items.find(SyncDb::driveRootNode().nodeIdLocal().value());
     CPPUNIT_ASSERT(itItem->second.childrenIds().find("b") != itItem->second.childrenIds().end());
 
-    SnapshotItem itemAA("aa", "a", Str("AA"), 1640995204, 1640995204, NodeType::NodeTypeDirectory, 123);
+    SnapshotItem itemAA("aa", "a", Str("AA"), 1640995204, 1640995204, NodeType::Directory, 123);
     _syncPal->_localSnapshot->updateItem(itemAA);
     itItem = _syncPal->_localSnapshot->_items.find("a");
     CPPUNIT_ASSERT(itItem->second.childrenIds().find("aa") != itItem->second.childrenIds().end());
 
-    SnapshotItem itemAAA("aaa", "aa", Str("AAA"), 1640995205, 1640995205, NodeType::NodeTypeFile, 123);
+    SnapshotItem itemAAA("aaa", "aa", Str("AAA"), 1640995205, 1640995205, NodeType::File, 123);
     _syncPal->_localSnapshot->updateItem(itemAAA);
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists("aaa"));
     itItem = _syncPal->_localSnapshot->_items.find("aa");
@@ -134,12 +134,12 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT(path == std::filesystem::path("A*/AA/AAA"));
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->name("aaa") == Str("AAA"));
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->lastModified("aaa") == 1640995205);
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->type("aaa") == NodeType::NodeTypeFile);
+    CPPUNIT_ASSERT(_syncPal->_localSnapshot->type("aaa") == NodeType::File);
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->contentChecksum("aaa") == "");  // Checksum never computed for now
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->itemId(std::filesystem::path("A*/AA/AAA")) == "aaa");
 
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("aa", "b", Str("AA"), 1640995204, 1640995204, NodeType::NodeTypeDirectory, 123));
+        SnapshotItem("aa", "b", Str("AA"), 1640995204, 1640995204, NodeType::Directory, 123));
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->parentId("aa") == "b");
     itItem = _syncPal->_localSnapshot->_items.find("b");
     CPPUNIT_ASSERT(itItem->second.childrenIds().find("aa") != itItem->second.childrenIds().end());

@@ -39,28 +39,28 @@ void PlatformInconsistencyCheckerWorker::execute() {
     ExitCode exitCode = checkTree(_syncPal->_remoteUpdateTree->rootNode(), _syncPal->_remoteUpdateTree->rootNode()->name());
 
     for (const auto &idItem : _idsToBeRemoved) {
-        _syncPal->updateTree(ReplicaSideRemote)->deleteNode(idItem.remoteId);
-        _syncPal->updateTree(ReplicaSideLocal)->deleteNode(idItem.localId);
+        _syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId);
+        _syncPal->updateTree(ReplicaSide::Local)->deleteNode(idItem.localId);
     }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     LOG_SYNCPAL_DEBUG(_logger, "Platform Inconsistency checked tree in: " << elapsed_seconds.count() << "s");
 
-    _syncPal->updateTree(ReplicaSideRemote)->setInconsistencyCheckDone();
+    _syncPal->updateTree(ReplicaSide::Remote)->setInconsistencyCheckDone();
 
     setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
 }
 
 ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> remoteNode, const SyncPath &parentPath) {
-    if (remoteNode->hasChangeEvent(OperationTypeDelete)) {
-        return ExitCodeOk;
+    if (remoteNode->hasChangeEvent(OperationType::Delete)) {
+        return ExitCode::Ok;
     }
 
-    if (remoteNode->hasChangeEvent(OperationTypeCreate) || remoteNode->hasChangeEvent(OperationTypeMove)) {
+    if (remoteNode->hasChangeEvent(OperationType::Create) || remoteNode->hasChangeEvent(OperationType::Move)) {
         if (!checkPathAndName(remoteNode)) {
             // Item has been blacklisted
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
     }
 
@@ -69,7 +69,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
     auto it = remoteNode->children().begin();
     for (; it != remoteNode->children().end(); it++) {
         if (stopAsked()) {
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
 
         while (pauseAsked() || isPaused()) {
@@ -82,12 +82,12 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
 
         std::shared_ptr<Node> currentChildNode = it->second;
 
-        if (currentChildNode->hasChangeEvent(OperationTypeCreate) || currentChildNode->hasChangeEvent(OperationTypeMove)) {
+        if (currentChildNode->hasChangeEvent(OperationType::Create) || currentChildNode->hasChangeEvent(OperationType::Move)) {
             checkAgainstSiblings = true;
         }
 
         ExitCode exitCode = checkTree(currentChildNode, parentPath / remoteNode->finalLocalName());
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             return exitCode;
         }
     }
@@ -96,7 +96,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
         checkNameClashAgainstSiblings(remoteNode);
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Node> remoteNode, const SyncPath &relativePath,
@@ -115,22 +115,23 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     }
 
     _syncPal->blacklistTemporarily(remoteNode->id().value(), relativePath, remoteNode->side());
-    Error error(_syncPal->syncDbId(), "", remoteNode->id().value(), remoteNode->type(), relativePath, ConflictTypeNone,
+    Error error(_syncPal->syncDbId(), "", remoteNode->id().value(), remoteNode->type(), relativePath, ConflictType::None,
                 inconsistencyType);
     _syncPal->addError(error);
 
     std::wstring causeStr;
     switch (inconsistencyType) {
-        case InconsistencyTypeCase:
+        using enum KDC::InconsistencyType;
+        case Case:
             causeStr = L"of a name clash";
             break;
-        case InconsistencyTypeForbiddenChar:
+        case ForbiddenChar:
             causeStr = L"of a forbidden character";
             break;
-        case InconsistencyTypeReservedName:
+        case ReservedName:
             causeStr = L"the name is reserved on this OS";
             break;
-        case InconsistencyTypeNameLength:
+        case NameLength:
             causeStr = L"the name is too long";
             break;
         default:
@@ -145,17 +146,17 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
 bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> remoteNode) {
     const SyncPath relativePath = remoteNode->getPath();
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(remoteNode->name())) {
-        blacklistNode(remoteNode, relativePath, InconsistencyTypeForbiddenChar);
+        blacklistNode(remoteNode, relativePath, InconsistencyType::ForbiddenChar);
         return false;
     }
 
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(remoteNode->name())) {
-        blacklistNode(remoteNode, relativePath, InconsistencyTypeReservedName);
+        blacklistNode(remoteNode, relativePath, InconsistencyType::ReservedName);
         return false;
     }
 
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameSize(remoteNode->name())) {
-        blacklistNode(remoteNode, relativePath, InconsistencyTypeNameLength);
+        blacklistNode(remoteNode, relativePath, InconsistencyType::NameLength);
         return false;
     }
 
@@ -194,8 +195,8 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(std::shar
             // and renaming a temporary file that contains the latest version (Delete-Move) In those cases, we should not check
             // for name clash, it is ok to have 2 children with the same name
             const auto oneNodeIsDeleted = [](const std::shared_ptr<Node> &node, const std::shared_ptr<Node> &prevNode) -> bool {
-                return node->hasChangeEvent(OperationTypeMove | OperationTypeCreate) &&
-                       prevNode->hasChangeEvent(OperationTypeDelete);
+                return node->hasChangeEvent(OperationType::Move | OperationType::Create) &&
+                       prevNode->hasChangeEvent(OperationType::Delete);
             };
 
             if (oneNodeIsDeleted(currentChildNode, prevChildNode) || oneNodeIsDeleted(prevChildNode, currentChildNode)) {
@@ -204,11 +205,11 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(std::shar
 
             if (currentChildNode->hasChangeEvent() && !isSpecialFolder) {
                 // Blacklist the new one
-                blacklistNode(currentChildNode, currentChildNode->getPath(), InconsistencyTypeCase);
+                blacklistNode(currentChildNode, currentChildNode->getPath(), InconsistencyType::Case);
                 continue;
             } else {
                 // Blacklist the previously discovered child
-                blacklistNode(prevChildNode, prevChildNode->getPath(), InconsistencyTypeCase);
+                blacklistNode(prevChildNode, prevChildNode->getPath(), InconsistencyType::Case);
                 continue;
             }
         }

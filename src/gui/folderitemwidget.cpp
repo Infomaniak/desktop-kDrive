@@ -323,7 +323,7 @@ void FolderItemWidget::onMenuButtonClicked() {
     _menu.reset(new MenuWidget(MenuWidget::Menu, this));
 
     if (syncInfoClient->supportVfs()) {
-        if (syncInfoClient->virtualFileMode() == VirtualFileModeOff) {
+        if (syncInfoClient->virtualFileMode() == VirtualFileMode::Off) {
             QWidgetAction *activateLitesyncAction = new QWidgetAction(this);
             MenuItemWidget *activateLitesyncMenuItemWidget = new MenuItemWidget(
 #ifdef Q_OS_WIN

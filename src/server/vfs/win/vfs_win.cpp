@@ -115,7 +115,7 @@ void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
 }
 
 VirtualFileMode VfsWin::mode() const {
-    return VirtualFileModeWin;
+    return VirtualFileMode::Win;
 }
 
 bool VfsWin::startImpl(bool &, bool &, bool &) {
@@ -219,7 +219,7 @@ bool VfsWin::updateMetadata(const QString &filePath, time_t creationTime, time_t
 
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(filePath));
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -261,7 +261,7 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
 
     SyncPath fullPath(_vfsSetupParams._localPath / relativeLocalPath);
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -279,7 +279,7 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
     OldUtility::UnixTimeToFiletime(item.creationTime(), &findData.ftCreationTime);
     OldUtility::UnixTimeToFiletime(item.modTime(), &findData.ftLastWriteTime);
     findData.ftLastAccessTime = findData.ftLastWriteTime;
-    findData.dwFileAttributes = (item.type() == NodeTypeDirectory ? FILE_ATTRIBUTE_DIRECTORY : 0);
+    findData.dwFileAttributes = (item.type() == NodeType::Directory ? FILE_ATTRIBUTE_DIRECTORY : 0);
 
     if (vfsCreatePlaceHolder(Utility::s2ws(item.remoteNodeId().value()).c_str(),
                              relativeLocalPath.lexically_normal().native().c_str(),
@@ -307,7 +307,7 @@ bool VfsWin::dehydratePlaceholder(const QString &path) {
 
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -397,7 +397,7 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
 
         SyncPath fullPath(QStr2Path(tmpPath));
         bool exists = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
             return;
@@ -418,16 +418,16 @@ void VfsWin::convertDirContentToPlaceholder(const QString &filePath, bool isHydr
 
         if (!isPlaceholder) {
             FileStat fileStat;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!IoHelper::getFileStat(fullPath, &fileStat, ioError)) {
                 LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(fullPath, ioError).c_str());
                 break;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(logger(), L"Directory entry does not exist anymore: " << Utility::formatSyncPath(fullPath).c_str());
                 continue;
-            } else if (ioError == IoErrorAccessDenied) {
+            } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(logger(),
                           L"Item: " << Utility::formatSyncPath(fullPath).c_str() << L" rejected because access is denied");
                 continue;
@@ -468,7 +468,7 @@ bool VfsWin::updateFetchStatus(const QString &tmpPath, const QString &path, qint
     SyncPath fullPath(QStr2Path(path));
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -508,7 +508,7 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
     SyncPath stdPath = QStr2Path(absolutePath);
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError).c_str());
         return false;
@@ -542,16 +542,16 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
     // placeholder
     if (!isPlaceholder) {
         FileStat filestat;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::getFileStat(stdPath, &filestat, ioError)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(stdPath, ioError).c_str());
             return false;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(logger(), L"Item does not exist anymore: " << Utility::formatSyncPath(stdPath).c_str());
             return true;
-        } else if (ioError == IoErrorAccessDenied) {
+        } else if (ioError == IoError::AccessDenied) {
             LOGW_WARN(logger(), L"Item: " << Utility::formatSyncPath(stdPath).c_str() << L" rejected because access is denied");
             return true;
         }
@@ -597,16 +597,17 @@ bool VfsWin::setPinState(const QString &relativePath, PinState state) {
 
     VfsPinState vfsState;
     switch (state) {
-        case PinStateInherited:
+        using enum KDC::PinState;
+        case Inherited:
             vfsState = VFS_PIN_STATE_INHERIT;
             break;
-        case PinStateAlwaysLocal:
+        case AlwaysLocal:
             vfsState = VFS_PIN_STATE_PINNED;
             break;
-        case PinStateOnlineOnly:
+        case OnlineOnly:
             vfsState = VFS_PIN_STATE_UNPINNED;
             break;
-        case PinStateUnspecified:
+        case Unspecified:
             vfsState = VFS_PIN_STATE_UNSPECIFIED;
             break;
     }
@@ -620,7 +621,9 @@ bool VfsWin::setPinState(const QString &relativePath, PinState state) {
 }
 
 PinState VfsWin::pinState(const QString &relativePath) {
+    //TODO: Use vfsGetPinState instead of reading attributes (GetFileAttributesW). In this case return unspecified in case of VFS_PIN_STATE_INHERIT.
     // Read pin state from file attributes
+    using enum KDC::PinState;
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
 
@@ -628,13 +631,13 @@ PinState VfsWin::pinState(const QString &relativePath) {
         LOGW_WARN(logger(), L"Invalid attributes for item: " << Utility::formatSyncPath(fullPath).c_str());
     } else {
         if (dwAttrs & FILE_ATTRIBUTE_PINNED) {
-            return PinStateAlwaysLocal;
+            return AlwaysLocal;
         } else if (dwAttrs & FILE_ATTRIBUTE_UNPINNED) {
-            return PinStateOnlineOnly;
+            return OnlineOnly;
         }
     }
 
-    return PinStateUnspecified;
+    return Unspecified;
 }
 
 bool VfsWin::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &) {
@@ -658,7 +661,7 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
 
     SyncPath fullPath(QStr2Path(path));
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -669,11 +672,11 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
         return true;
     }
 
-    if (status == SyncFileStatusConflict || status == SyncFileStatusIgnored) {
+    if (status == SyncFileStatus::Conflict || status == SyncFileStatus::Ignored) {
         exclude(path);
-    } else if (status == SyncFileStatusSuccess) {
+    } else if (status == SyncFileStatus::Success) {
         bool isDirectory = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
             LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
             return false;
@@ -685,9 +688,9 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
             bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
             forceStatus(path, false, 100, !isDehydrated);
         }
-    } else if (status == SyncFileStatusSyncing) {
+    } else if (status == SyncFileStatus::Syncing) {
         bool isDirectory = false;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::checkIfIsDirectory(fullPath, isDirectory, ioError)) {
             LOGW_WARN(logger(), L"Failed to check if path is a directory: " << Utility::formatIoError(fullPath, ioError).c_str());
             return false;
@@ -696,15 +699,15 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
             // File
             QString fileRelativePath = QStringView{path}.mid(_vfsSetupParams._localPath.native().size() + 1).toUtf8();
             auto localPinState = pinState(fileRelativePath);
-            if (localPinState == PinStateOnlineOnly || localPinState == PinStateAlwaysLocal) {
+            if (localPinState == PinState::OnlineOnly || localPinState == PinState::AlwaysLocal) {
                 bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
-                if (localPinState == PinStateOnlineOnly && !isDehydrated) {
+                if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                     // Add file path to dehydration queue
                     _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
                     _workerInfo[WORKER_DEHYDRATION]._queue.push_front(path);
                     _workerInfo[WORKER_DEHYDRATION]._mutex.unlock();
                     _workerInfo[WORKER_DEHYDRATION]._queueWC.wakeOne();
-                } else if (localPinState == PinStateAlwaysLocal && isDehydrated) {
+                } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
                     bool syncing;
                     _syncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), syncing);
                     if (!syncing) {
@@ -720,7 +723,7 @@ bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
                 }
             }
         }
-    } else if (status == SyncFileStatusError) {
+    } else if (status == SyncFileStatus::Error) {
         // Nothing to do
     }
 

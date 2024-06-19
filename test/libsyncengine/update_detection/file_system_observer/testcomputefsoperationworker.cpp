@@ -88,13 +88,13 @@ void TestComputeFSOperationWorker::setUp() {
     _syncPal->_syncDb->setAutoDelete(true);
 
     /// Insert node "AC" in blacklist
-    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeBlackList, {"lac"});
+    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {"lac"});
 
     /// Insert nodes in DB
     DbNode nodeDirA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", defaultTime, defaultTime,
-                    defaultTime, NodeType::NodeTypeDirectory, 0, std::nullopt);
+                    defaultTime, NodeType::Directory, 0, std::nullopt);
     DbNode nodeDirB(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", defaultTime, defaultTime,
-                    defaultTime, NodeType::NodeTypeDirectory, 0, std::nullopt);
+                    defaultTime, NodeType::Directory, 0, std::nullopt);
     DbNodeId dbNodeIdDirA;
     DbNodeId dbNodeIdDirB;
     bool constraintError = false;
@@ -102,12 +102,12 @@ void TestComputeFSOperationWorker::setUp() {
     _syncPal->_syncDb->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
 
     DbNode nodeFileAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", defaultTime, defaultTime, defaultTime,
-                      NodeType::NodeTypeFile, 0, "cs_aa");
+                      NodeType::File, 0, "cs_aa");
     DbNodeId dbNodeIdFileAA;
     _syncPal->_syncDb->insertNode(nodeFileAA, dbNodeIdFileAA, constraintError);
 
     DbNode nodeFileAB(0, dbNodeIdDirA, Str("AB"), Str("AB"), "lab", "rab", defaultTime, defaultTime, defaultTime,
-                      NodeType::NodeTypeFile, 0, "cs_ab");
+                      NodeType::File, 0, "cs_ab");
 
     DbNodeId dbNodeIdFileAB;
     _syncPal->_syncDb->insertNode(nodeFileAB, dbNodeIdFileAB, constraintError);
@@ -115,12 +115,12 @@ void TestComputeFSOperationWorker::setUp() {
     // AC not in db since it should be excluded from sync
 
     DbNode nodeFileBA(0, dbNodeIdDirB, Str("BA"), Str("BA"), "lba", "rba", defaultTime, defaultTime, defaultTime,
-                      NodeType::NodeTypeFile, 0, "cs_ba");
+                      NodeType::File, 0, "cs_ba");
     DbNodeId dbNodeIdFileBA;
     _syncPal->_syncDb->insertNode(nodeFileBA, dbNodeIdFileBA, constraintError);
 
     DbNode nodeFileBB(0, dbNodeIdDirB, Str("BB"), Str("BB"), "lbb", "rbb", defaultTime, defaultTime, defaultTime,
-                      NodeType::NodeTypeFile, 0, "cs_bb");
+                      NodeType::File, 0, "cs_bb");
     DbNodeId dbNodeIdFileBB;
     _syncPal->_syncDb->insertNode(nodeFileBB, dbNodeIdFileBB, constraintError);
 
@@ -167,7 +167,7 @@ void TestComputeFSOperationWorker::setUp() {
                                                        nodeFileBB.nameRemote(), nodeFileBB.created().value(),
                                                        nodeFileBB.lastModifiedRemote().value(), nodeFileBB.type(), 123));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rac", nodeDirA.nodeIdRemote().value(), Str("AC"), defaultTime,
-                                                       defaultTime, NodeType::NodeTypeDirectory, 123));
+                                                       defaultTime, NodeType::Directory, 123));
 
     // Insert items to excluded templates in DB
     std::vector<ExclusionTemplate> templateVec = {ExclusionTemplate("*.lnk", true)};
@@ -195,7 +195,7 @@ void TestComputeFSOperationWorker::testNoOps() {
 void TestComputeFSOperationWorker::testMultipleOps() {
     // On local replica
     // Create operation
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), defaultTime, defaultTime, NodeTypeFile, 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), defaultTime, defaultTime, NodeType::File, 123));
     // Edit operation
     _syncPal->_localSnapshot->setLastModified("laa", defaultTime + 60);
     // Move operation
@@ -207,9 +207,9 @@ void TestComputeFSOperationWorker::testMultipleOps() {
 
     // Create operation on a too big directory
     _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("raf", "ra", Str("AF_too_big"), defaultTime, defaultTime, NodeTypeDirectory, 0));
+        SnapshotItem("raf", "ra", Str("AF_too_big"), defaultTime, defaultTime, NodeType::Directory, 0));
     _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("rafa", "raf", Str("AFA"), defaultTime, defaultTime, NodeTypeFile, 550 * 1024 * 1024));  // File size: 550MB
+        SnapshotItem("rafa", "raf", Str("AFA"), defaultTime, defaultTime, NodeType::File, 550 * 1024 * 1024));  // File size: 550MB
     // Rename operation on a blacklisted directory
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-renamed"));
 
@@ -217,24 +217,24 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     _syncPal->_computeFSOperationsWorker->execute();
 
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lad", OperationTypeCreate, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("laa", OperationTypeEdit, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lab", OperationTypeMove, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lba", OperationTypeMove, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lbb", OperationTypeDelete, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lae", OperationTypeCreate, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lad", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("laa", OperationType::Edit, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lab", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lba", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lbb", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lae", OperationType::Create, tmpOp));
 
     // On remote replica
     // Create operation but folder too big (should be ignored on local replica)
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("raf", OperationTypeCreate, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rafa", OperationTypeCreate, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rac", OperationTypeMove, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("raf", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rafa", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rac", OperationType::Move, tmpOp));
 }
 
 void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     // Add file in DB
     DbNode nodeTest(0, _syncPal->_syncDb->rootNode().nodeId(), Str("test.lnk"), Str("test.lnk"), "ltest", "rtest", defaultTime,
-                    defaultTime, defaultTime, NodeType::NodeTypeFile, 0, std::nullopt);
+                    defaultTime, defaultTime, NodeType::File, 0, std::nullopt);
     DbNodeId dbNodeIdTest;
     bool constraintError = false;
     _syncPal->_syncDb->insertNode(nodeTest, dbNodeIdTest, constraintError);

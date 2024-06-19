@@ -57,26 +57,26 @@ bool LocalDeleteJob::canRun() {
 
     // The item must exist locally for the job to run
     bool exists;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart: "
                                 << Utility::formatSyncPath(_absolutePath).c_str());
-        _exitCode = ExitCodeNeedRestart;
-        _exitCause = ExitCauseUnexpectedFileSystemEvent;
+        _exitCode = ExitCode::NeedRestart;
+        _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
 
     if (_remoteNodeId.empty()) {
         LOG_WARN(_logger, "Remote node ID is empty");
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
@@ -101,8 +101,8 @@ bool LocalDeleteJob::canRun() {
             // Item is found at the same path on remote
             LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
-            _exitCode = ExitCodeDataError;  // We need to rebuild the remote snapshot from scratch
-            _exitCause = ExitCauseInvalidSnapshot;
+            _exitCode = ExitCode::DataError;  // We need to rebuild the remote snapshot from scratch
+            _exitCause = ExitCause::InvalidSnapshot;
             return false;
         }
     }
@@ -117,11 +117,11 @@ void LocalDeleteJob::runJob() {
 
     if ((ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash) {
         bool success = Utility::moveItemToTrash(_absolutePath);
-        _exitCode = ExitCodeOk;
+        _exitCode = ExitCode::Ok;
         if (!success) {
             LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" to trash");
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseMoveToTrashFailed;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::MoveToTrashFailed;
             return;
         }
         if (ParametersCache::isExtendedLogEnabled()) {
@@ -133,13 +133,13 @@ void LocalDeleteJob::runJob() {
         std::filesystem::remove_all(_absolutePath, ec);
         if (ec.value() != 0) {
             LOGW_WARN(_logger, L"Failed to delete: " << Utility::formatStdError(_absolutePath, ec).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseFileAccessError;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
             return;
         }
 
         LOGW_INFO(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" deleted");
-        _exitCode = ExitCodeOk;
+        _exitCode = ExitCode::Ok;
     }
 }
 

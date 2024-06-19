@@ -45,7 +45,7 @@ class Conflict {
     private:
         std::shared_ptr<Node> _node = nullptr;
         std::shared_ptr<Node> _correspondingNode = nullptr;
-        ConflictType _type = ConflictTypeNone;
+        ConflictType _type = ConflictType::None;
 };
 
 class ConflictCmp {

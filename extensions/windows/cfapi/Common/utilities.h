@@ -31,6 +31,8 @@
 #include <searchapi.h>
 #include <minwinbase.h>
 #include <cfapi.h>
+#include <source_location>
+
 
 #define MAX_URI 255
 #define MAX_FULL_PATH 32000
@@ -39,12 +41,13 @@
 #define MSG_ARG_SEPARATOR L'\x1e'
 #define MSG_END L"\\/\n"
 
-#define TRACE(TRACE_LEVEL, MESSAGE, ...)                        \
-    {                                                           \
-        const int sz = 255;                                     \
-        wchar_t msg[sz];                                        \
-        swprintf(msg, sz, MESSAGE, __VA_ARGS__);                \
-        Utilities::trace(TRACE_LEVEL, __FILE__, __LINE__, msg); \
+#define TRACE(TRACE_LEVEL, MESSAGE, ...)                                           \
+    {                                                                              \
+        const auto location = std::source_location::current();                     \
+        const int sz = 255;                                                        \
+        wchar_t msg[sz];                                                           \
+        swprintf(msg, sz, MESSAGE, __VA_ARGS__);                                   \
+        Utilities::trace(TRACE_LEVEL, location.file_name(), location.line(), msg); \
     }
 #define TRACE_INFO(MESSAGE, ...) TRACE(TRACE_LEVEL_INFO, MESSAGE, __VA_ARGS__)
 #define TRACE_DEBUG(MESSAGE, ...) TRACE(TRACE_LEVEL_DEBUG, MESSAGE, __VA_ARGS__)

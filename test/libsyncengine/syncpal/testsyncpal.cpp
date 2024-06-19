@@ -137,77 +137,77 @@ void TestSyncPal::testAll() {
 
 void TestSyncPal::testConflictQueue() {
     std::shared_ptr<Node> localrootNode =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str(""), NodeTypeDirectory,
-                                       OperationTypeNone, std::nullopt, 1234567890, 1234567890, 12345, nullptr));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str(""), NodeType::Directory,
+                                       OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, nullptr));
     std::shared_ptr<Node> remoterootNode =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str(""), NodeTypeDirectory,
-                                       OperationTypeNone, std::nullopt, 1234567890, 1234567890, 12345, nullptr));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str(""), NodeType::Directory,
+                                       OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, nullptr));
 
     // Move_Move_Source & Move_ParentDelete
     std::shared_ptr<Node> localDirA =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("A"), NodeTypeDirectory,
-                                       OperationTypeNone, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("A"), NodeType::Directory,
+                                       OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
     std::shared_ptr<Node> localDirB =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("B"), NodeTypeDirectory,
-                                       OperationTypeNone, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("B"), NodeType::Directory,
+                                       OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
     std::shared_ptr<Node> localFileC1 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c1"), NodeTypeFile,
-                                       OperationTypeMove, std::nullopt, 1234567890, 1234567890, 12345, localDirB, "A/c1"));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c1"), NodeType::File,
+                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirB, "A/c1"));
     std::shared_ptr<Node> localFileC2 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c2"), NodeTypeFile,
-                                       OperationTypeMove, std::nullopt, 1234567890, 1234567890, 12345, localDirB, "A/c2"));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c2"), NodeType::File,
+                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirB, "A/c2"));
 
     std::shared_ptr<Node> remoteDirA =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("A"), NodeTypeDirectory,
-                                       OperationTypeNone, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("A"), NodeType::Directory,
+                                       OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
     std::shared_ptr<Node> remoteDirB =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("B"), NodeTypeDirectory,
-                                       OperationTypeDelete, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("B"), NodeType::Directory,
+                                       OperationType::Delete, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
     std::shared_ptr<Node> remoteFileC1 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c1"), NodeTypeFile,
-                                       OperationTypeMove, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode, "A/c1"));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c1"), NodeType::File,
+                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode, "A/c1"));
     std::shared_ptr<Node> remoteFileC2 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c2"), NodeTypeFile,
-                                       OperationTypeMove, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode, "A/c2"));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c2"), NodeType::File,
+                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode, "A/c2"));
 
     // Move_Create & Move_Delete
     std::shared_ptr<Node> localFileC4 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c4"), NodeTypeFile,
-                                       OperationTypeMove, std::nullopt, 1234567890, 1234567890, 12345, localrootNode, "c3"));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c4"), NodeType::File,
+                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localrootNode, "c3"));
 
     std::shared_ptr<Node> remoteFileC3 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c4"), NodeTypeFile,
-                                       OperationTypeCreate, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c4"), NodeType::File,
+                                       OperationType::Create, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
     std::shared_ptr<Node> remoteFileC4 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c3"), NodeTypeFile,
-                                       OperationTypeDelete, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c3"), NodeType::File,
+                                       OperationType::Delete, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
 
     // Move_Move_Cycle
     std::shared_ptr<Node> localDirC1 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c2"), NodeTypeDirectory,
-                                       OperationTypeNone, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c2"), NodeType::Directory,
+                                       OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
     std::shared_ptr<Node> localDirC2 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c2"), NodeTypeDirectory,
-                                       OperationTypeNone, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("c2"), NodeType::Directory,
+                                       OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
     std::shared_ptr<Node> localDirD1 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("D1"), NodeTypeDirectory,
-                                       OperationTypeMove, std::nullopt, 1234567890, 1234567890, 12345, localDirC1, "D1"));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("D1"), NodeType::Directory,
+                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirC1, "D1"));
     std::shared_ptr<Node> localDirD2 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("D2"), NodeTypeDirectory,
-                                       OperationTypeMove, std::nullopt, 1234567890, 1234567890, 12345, localDirC2, "D2"));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("D2"), NodeType::Directory,
+                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirC2, "D2"));
 
     std::shared_ptr<Node> remoteDirD1 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("D1"), NodeTypeDirectory,
-                                       OperationTypeNone, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("D1"), NodeType::Directory,
+                                       OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
     std::shared_ptr<Node> remoteDirD2 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("D2"), NodeTypeDirectory,
-                                       OperationTypeNone, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("D2"), NodeType::Directory,
+                                       OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
     std::shared_ptr<Node> remoteDirC1 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c2"), NodeTypeDirectory,
-                                       OperationTypeMove, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD1, "C1"));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c2"), NodeType::Directory,
+                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD1, "C1"));
     std::shared_ptr<Node> remoteDirC2 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c2"), NodeTypeDirectory,
-                                       OperationTypeMove, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD2, "C2"));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("c2"), NodeType::Directory,
+                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD2, "C2"));
 
 
     _syncPal->_localUpdateTree->insertNode(localrootNode);
@@ -234,14 +234,14 @@ void TestSyncPal::testConflictQueue() {
     _syncPal->_localUpdateTree->insertNode(remoteDirD1);
     _syncPal->_localUpdateTree->insertNode(remoteDirD2);
 
-    Conflict conflict1(localFileC1, remoteFileC1, ConflictTypeMoveMoveSource);
-    Conflict conflict2(localFileC2, remoteFileC2, ConflictTypeMoveMoveSource);
-    Conflict conflict3(localFileC1, remoteDirB, ConflictTypeMoveParentDelete);
-    Conflict conflict4(localFileC2, remoteDirB, ConflictTypeMoveParentDelete);
-    Conflict conflict5(localFileC4, remoteFileC3, ConflictTypeMoveCreate);
-    Conflict conflict6(localFileC4, remoteFileC4, ConflictTypeMoveDelete);
-    Conflict conflict7(localDirD1, remoteDirC1, ConflictTypeMoveMoveCycle);
-    Conflict conflict8(localDirD2, remoteDirC2, ConflictTypeMoveMoveCycle);
+    Conflict conflict1(localFileC1, remoteFileC1, ConflictType::MoveMoveSource);
+    Conflict conflict2(localFileC2, remoteFileC2, ConflictType::MoveMoveSource);
+    Conflict conflict3(localFileC1, remoteDirB, ConflictType::MoveParentDelete);
+    Conflict conflict4(localFileC2, remoteDirB, ConflictType::MoveParentDelete);
+    Conflict conflict5(localFileC4, remoteFileC3, ConflictType::MoveCreate);
+    Conflict conflict6(localFileC4, remoteFileC4, ConflictType::MoveDelete);
+    Conflict conflict7(localDirD1, remoteDirC1, ConflictType::MoveMoveCycle);
+    Conflict conflict8(localDirD2, remoteDirC2, ConflictType::MoveMoveCycle);
 
     // Insert conflicts in queue
     _syncPal->_conflictQueue->push(conflict7);
@@ -254,25 +254,25 @@ void TestSyncPal::testConflictQueue() {
     _syncPal->_conflictQueue->push(conflict6);
 
     // Check order
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveParentDelete);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveParentDelete);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveParentDelete);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveParentDelete);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveDelete);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveDelete);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localFileC4);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveMoveSource);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveSource);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localFileC1);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveMoveSource);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveSource);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localFileC2);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveCreate);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveCreate);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveMoveCycle);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveCycle);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localDirD1);
     _syncPal->_conflictQueue->pop();
-    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictTypeMoveMoveCycle);
+    CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().type() == ConflictType::MoveMoveCycle);
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->top().node() == localDirD2);
 }
 
@@ -294,13 +294,13 @@ bool TestSyncPal::exec_case_6_4() {
     bool found;
 
     std::optional<NodeId> driveIdN;
-    _syncPal->_syncDb->id(ReplicaSide::ReplicaSideRemote, remoteCasePath / "n", driveIdN, found);
+    _syncPal->_syncDb->id(ReplicaSide::Remote, remoteCasePath / "n", driveIdN, found);
     if (!found || !driveIdN.has_value()) {
         return false;
     }
 
     std::optional<NodeId> driveIdT;
-    _syncPal->_syncDb->id(ReplicaSide::ReplicaSideRemote, remoteCasePath / "t", driveIdT, found);
+    _syncPal->_syncDb->id(ReplicaSide::Remote, remoteCasePath / "t", driveIdT, found);
     if (!found || !driveIdT.has_value()) {
         return false;
     }
@@ -326,7 +326,7 @@ bool TestSyncPal::check_case_6_4() {
     bool found;
 
     std::optional<NodeId> driveIdQ;
-    _syncPal->_syncDb->id(ReplicaSide::ReplicaSideRemote, remoteCasePath / "n/g/w/q", driveIdQ, found);
+    _syncPal->_syncDb->id(ReplicaSide::Remote, remoteCasePath / "n/g/w/q", driveIdQ, found);
     if (!found || !driveIdQ.has_value()) {
         return false;
     }

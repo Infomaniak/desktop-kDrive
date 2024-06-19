@@ -437,15 +437,16 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
 
 std::string Utility::opType2Str(OperationType opType) {
     switch (opType) {
-        case OperationTypeCreate:
+        using enum KDC::OperationType;
+        case Create:
             return "CREATE";
-        case OperationTypeDelete:
+        case Delete:
             return "DELETE";
-        case OperationTypeEdit:
+        case Edit:
             return "EDIT";
-        case OperationTypeMove:
+        case Move:
             return "MOVE";
-        case OperationTypeRights:
+        case Rights:
             return "RIGHTS";
         default:
             return "UNKNOWN";
@@ -458,34 +459,35 @@ std::wstring Utility::opType2WStr(OperationType opType) {
 
 std::string Utility::conflictType2Str(ConflictType conflictType) {
     switch (conflictType) {
-        case ConflictTypeMoveParentDelete: {
+        using enum KDC::ConflictType;
+        case MoveParentDelete: {
             return "Move-ParentDelete";
         }
-        case ConflictTypeMoveDelete: {
+        case MoveDelete: {
             return "Move-Delete";
         }
-        case ConflictTypeCreateParentDelete: {
+        case CreateParentDelete: {
             return "Create-ParentDelete";
         }
-        case ConflictTypeMoveMoveSource: {
+        case MoveMoveSource: {
             return "Move-Move(Source)";
         }
-        case ConflictTypeMoveMoveDest: {
+        case MoveMoveDest: {
             return "Move-Move(Dest)";
         }
-        case ConflictTypeMoveCreate: {
+        case MoveCreate: {
             return "Move-Create";
         }
-        case ConflictTypeEditDelete: {
+        case EditDelete: {
             return "Edit-Delete";
         }
-        case ConflictTypeCreateCreate: {
+        case CreateCreate: {
             return "Create-Create";
         }
-        case ConflictTypeEditEdit: {
+        case EditEdit: {
             return "Edit-Edit";
         }
-        case ConflictTypeMoveMoveCycle: {
+        case MoveMoveCycle: {
             return "Move-Move(Cycle)";
         }
         default: {
@@ -500,10 +502,10 @@ std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
 
 std::string Utility::side2Str(ReplicaSide side) {
     switch (side) {
-        case ReplicaSideLocal: {
+        case ReplicaSide::Local: {
             return "Local";
         }
-        case ReplicaSideRemote: {
+        case ReplicaSide::Remote: {
             return "Remote";
         }
         default: {
@@ -518,10 +520,10 @@ std::wstring Utility::side2WStr(ReplicaSide side) {
 
 std::string Utility::nodeType2Str(NodeType type) {
     switch (type) {
-        case NodeTypeDirectory: {
+        case NodeType::Directory: {
             return "Directory";
         }
-        case NodeTypeFile: {
+        case NodeType::File: {
             return "File";
         }
         default: {
@@ -536,19 +538,20 @@ std::wstring Utility::nodeType2WStr(NodeType type) {
 
 std::string Utility::logLevel2Str(LogLevel level) {
     switch (level) {
-        case LogLevelDebug: {
+        using enum KDC::LogLevel;
+        case Debug: {
             return "debug";
         }
-        case LogLevelInfo: {
+        case Info: {
             return "info";
         }
-        case LogLevelWarning: {
+        case Warning: {
             return "warning";
         }
-        case LogLevelError: {
+        case Error: {
             return "error";
         }
-        case LogLevelFatal: {
+        case Fatal: {
             return "fatal";
         }
         default:
@@ -564,25 +567,25 @@ std::wstring Utility::logLevel2WStr(LogLevel level) {
 
 std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
     switch (status) {
-        case SyncFileStatusUnknown: {
+        case SyncFileStatus::Unknown: {
             return "Unknown";
         }
-        case SyncFileStatusError: {
+        case SyncFileStatus::Error: {
             return "Error";
         }
-        case SyncFileStatusSuccess: {
+        case SyncFileStatus::Success: {
             return "Success";
         }
-        case SyncFileStatusConflict: {
+        case SyncFileStatus::Conflict: {
             return "Conflict";
         }
-        case SyncFileStatusInconsistency: {
+        case SyncFileStatus::Inconsistency: {
             return "Inconsistency";
         }
-        case SyncFileStatusIgnored: {
+        case SyncFileStatus::Ignored: {
             return "Ignored";
         }
-        case SyncFileStatusSyncing: {
+        case SyncFileStatus::Syncing: {
             return "Syncing";
         }
     }
@@ -710,9 +713,13 @@ std::string Utility::toUpper(const std::string &str) {
     return upperStr;
 }
 
-std::string Utility::errId(const char *file, int line) {
-    std::string err =
-        Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
+#ifndef __APPLE__
+std::string Utility::errId(std::source_location location) {
+#else
+std::string Utility::_errId(std::source_location location) {
+#endif
+    std::string err = Utility::toUpper(std::filesystem::path(location.file_name()).filename().stem().string().substr(0, 3)) +
+                      ":" + std::to_string(location.line());
     return err;
 }
 
@@ -813,7 +820,7 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
                                        IoError &ioError) {
     isManaged = true;
     isLink = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     ItemType itemType;
     bool result = IoHelper::getItemType(dirIt->path(), itemType);
@@ -823,12 +830,12 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
         return false;
     }
 
-    if (itemType.ioError == IoErrorNoSuchFileOrDirectory || itemType.ioError == IoErrorAccessDenied) {
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
         LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirIt->path(), ioError).c_str());
         return true;
     }
 
-    isLink = itemType.linkType != LinkTypeNone;
+    isLink = itemType.linkType != LinkType::None;
     if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
         LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
                                        << L" because it's not a directory, a regular file or a symlink");

@@ -91,8 +91,8 @@ class AbstractJob : public Poco::Runnable {
         virtual bool canRun() { return true; }
 
         log4cplus::Logger _logger;
-        ExitCode _exitCode = ExitCodeUnknown;
-        ExitCause _exitCause = ExitCauseUnknown;
+        ExitCode _exitCode = ExitCode::Unknown;
+        ExitCause _exitCause = ExitCause::Unknown;
 
         int64_t _progress = -1;      // Progress is -1 when it is not relevant for the current job
         int64_t _lastProgress = -1;  // Progress last time it was checked using progressChanged()

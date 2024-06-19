@@ -261,7 +261,7 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
         log4cplus::tstring ztarget = target + LOG4CPLUS_TEXT(".gz");
 
         bool exists;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         const bool success = IoHelper::checkIfPathExists(ztarget, exists, ioError);
         if (!success) {
             loglog.debug(filename + LOG4CPLUS_TEXT(" failed to check if path exists"));
@@ -291,7 +291,7 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         _lastExpireCheck = std::chrono::system_clock::now();
         QDateTime now = QDateTime::currentDateTime();
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         SyncPath logDirPath;
         if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
             throw std::runtime_error("Error in CustomRollingFileAppender: failed to get the log directory path.");

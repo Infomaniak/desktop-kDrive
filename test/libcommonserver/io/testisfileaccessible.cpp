@@ -46,7 +46,7 @@ void TestIo::testIsFileAccessible() {
 
     Utility::msleep(10);
 
-    IoError ioError = IoErrorUnknown;
+    IoError ioError = IoError::Unknown;
     bool res = IoHelper::isFileAccessible(destPath, ioError);
     // IoHelper::isFileAccessible returns instantly `true` on MacOSX and Linux.
 #ifdef _WIN32

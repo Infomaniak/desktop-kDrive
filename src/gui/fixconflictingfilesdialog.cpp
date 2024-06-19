@@ -46,8 +46,9 @@ FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *par
     : CustomDialog(true, parent), _driveDbId(driveDbId) {
     setModal(true);
     setResizable(true);
+    using enum KDC::ConflictType;
     GuiRequests::getConflictList(
-        _driveDbId, {ConflictTypeCreateCreate, ConflictTypeEditEdit, ConflictTypeMoveCreate, ConflictTypeMoveMoveDest},
+        _driveDbId, {CreateCreate, EditEdit, MoveCreate, MoveMoveDest},
         _conflictList);
     initUi();
 }

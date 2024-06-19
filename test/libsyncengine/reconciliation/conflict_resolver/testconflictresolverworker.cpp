@@ -59,15 +59,15 @@ void TestConflictResolverWorker::setUp() {
 
     bool constraintError = false;
     DbNode dbNodeA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", tLoc, tLoc, tRemote,
-                   NodeType::NodeTypeDirectory, 0, std::nullopt);
+                   NodeType::Directory, 0, std::nullopt);
     _syncPal->_syncDb->insertNode(dbNodeA, dbNodeIdA, constraintError);
-    DbNode dbNodeAA(0, dbNodeIdA, Str("AA"), Str("AA"), "lAA", "rAA", tLoc, tLoc, tRemote, NodeType::NodeTypeDirectory, 0,
+    DbNode dbNodeAA(0, dbNodeIdA, Str("AA"), Str("AA"), "lAA", "rAA", tLoc, tLoc, tRemote, NodeType::Directory, 0,
                     std::nullopt);
     _syncPal->_syncDb->insertNode(dbNodeAA, dbNodeIdAA, constraintError);
-    DbNode dbNodeAB(0, dbNodeIdA, Str("AB"), Str("AB"), "lAB", "rAB", tLoc, tLoc, tRemote, NodeType::NodeTypeDirectory, 0,
+    DbNode dbNodeAB(0, dbNodeIdA, Str("AB"), Str("AB"), "lAB", "rAB", tLoc, tLoc, tRemote, NodeType::Directory, 0,
                     std::nullopt);
     _syncPal->_syncDb->insertNode(dbNodeAB, dbNodeIdAB, constraintError);
-    DbNode dbNodeAAA(0, dbNodeIdAA, Str("AAA"), Str("AAA"), "lAAA", "rAAA", tLoc, tLoc, tRemote, NodeType::NodeTypeFile, 0,
+    DbNode dbNodeAAA(0, dbNodeIdAA, Str("AAA"), Str("AAA"), "lAAA", "rAAA", tLoc, tLoc, tRemote, NodeType::File, 0,
                      std::nullopt);
     _syncPal->_syncDb->insertNode(dbNodeAAA, dbNodeIdAAA, constraintError);
 
@@ -76,44 +76,44 @@ void TestConflictResolverWorker::setUp() {
     SyncTime lastmodified = 1654788079;
     int64_t size = 1654788079;
     std::shared_ptr<Node> lNodeA = std::shared_ptr<Node>(new Node(dbNodeIdA, _syncPal->_localUpdateTree->side(), Str("A"),
-                                                                  NodeTypeDirectory, OperationTypeNone, "lA", createdAt,
+                                                                  NodeType::Directory, OperationType::None, "lA", createdAt,
                                                                   lastmodified, size, _syncPal->_localUpdateTree->rootNode()));
     _syncPal->_localUpdateTree->rootNode()->insertChildren(lNodeA);
     _syncPal->_localUpdateTree->insertNode(lNodeA);
     std::shared_ptr<Node> lNodeAA =
-        std::shared_ptr<Node>(new Node(dbNodeIdAA, _syncPal->_localUpdateTree->side(), Str("AA"), NodeTypeDirectory,
-                                       OperationTypeNone, "lAA", createdAt, lastmodified, size, lNodeA));
+        std::shared_ptr<Node>(new Node(dbNodeIdAA, _syncPal->_localUpdateTree->side(), Str("AA"), NodeType::Directory,
+                                       OperationType::None, "lAA", createdAt, lastmodified, size, lNodeA));
     lNodeA->insertChildren(lNodeAA);
     _syncPal->_localUpdateTree->insertNode(lNodeAA);
     std::shared_ptr<Node> lNodeAB =
-        std::shared_ptr<Node>(new Node(dbNodeIdAB, _syncPal->_localUpdateTree->side(), Str("AB"), NodeTypeDirectory,
-                                       OperationTypeNone, "lAB", createdAt, lastmodified, size, lNodeA));
+        std::shared_ptr<Node>(new Node(dbNodeIdAB, _syncPal->_localUpdateTree->side(), Str("AB"), NodeType::Directory,
+                                       OperationType::None, "lAB", createdAt, lastmodified, size, lNodeA));
     lNodeA->insertChildren(lNodeAB);
     _syncPal->_localUpdateTree->insertNode(lNodeAB);
     std::shared_ptr<Node> lNodeAAA =
-        std::shared_ptr<Node>(new Node(dbNodeIdAAA, _syncPal->_localUpdateTree->side(), Str("AAA"), NodeTypeFile,
-                                       OperationTypeNone, "lAAA", createdAt, lastmodified, size, lNodeAA));
+        std::shared_ptr<Node>(new Node(dbNodeIdAAA, _syncPal->_localUpdateTree->side(), Str("AAA"), NodeType::File,
+                                       OperationType::None, "lAAA", createdAt, lastmodified, size, lNodeAA));
     lNodeAA->insertChildren(lNodeAAA);
     _syncPal->_localUpdateTree->insertNode(lNodeAAA);
 
     std::shared_ptr<Node> rNodeA = std::shared_ptr<Node>(new Node(dbNodeIdA, _syncPal->_remoteUpdateTree->side(), Str("A"),
-                                                                  NodeTypeDirectory, OperationTypeNone, "rA", createdAt,
+                                                                  NodeType::Directory, OperationType::None, "rA", createdAt,
                                                                   lastmodified, size, _syncPal->_remoteUpdateTree->rootNode()));
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(rNodeA);
     _syncPal->_remoteUpdateTree->insertNode(rNodeA);
     std::shared_ptr<Node> rNodeAA =
-        std::shared_ptr<Node>(new Node(dbNodeIdAA, _syncPal->_remoteUpdateTree->side(), Str("AA"), NodeTypeDirectory,
-                                       OperationTypeNone, "rAA", createdAt, lastmodified, size, rNodeA));
+        std::shared_ptr<Node>(new Node(dbNodeIdAA, _syncPal->_remoteUpdateTree->side(), Str("AA"), NodeType::Directory,
+                                       OperationType::None, "rAA", createdAt, lastmodified, size, rNodeA));
     rNodeA->insertChildren(rNodeAA);
     _syncPal->_remoteUpdateTree->insertNode(rNodeAA);
     std::shared_ptr<Node> rNodeAB =
-        std::shared_ptr<Node>(new Node(dbNodeIdAB, _syncPal->_remoteUpdateTree->side(), Str("AB"), NodeTypeDirectory,
-                                       OperationTypeNone, "rAB", createdAt, lastmodified, size, rNodeA));
+        std::shared_ptr<Node>(new Node(dbNodeIdAB, _syncPal->_remoteUpdateTree->side(), Str("AB"), NodeType::Directory,
+                                       OperationType::None, "rAB", createdAt, lastmodified, size, rNodeA));
     rNodeA->insertChildren(rNodeAB);
     _syncPal->_remoteUpdateTree->insertNode(rNodeAB);
     std::shared_ptr<Node> rNodeAAA =
-        std::shared_ptr<Node>(new Node(dbNodeIdAAA, _syncPal->_remoteUpdateTree->side(), Str("AAA"), NodeTypeFile,
-                                       OperationTypeNone, "rAAA", createdAt, lastmodified, size, rNodeAA));
+        std::shared_ptr<Node>(new Node(dbNodeIdAAA, _syncPal->_remoteUpdateTree->side(), Str("AAA"), NodeType::File,
+                                       OperationType::None, "rAAA", createdAt, lastmodified, size, rNodeAA));
     rNodeAA->insertChildren(rNodeAAA);
     _syncPal->_remoteUpdateTree->insertNode(rNodeAAA);
 }
@@ -131,23 +131,23 @@ void TestConflictResolverWorker::testCreateCreate() {
 
     std::shared_ptr<Node> lNodeAA = _syncPal->_localUpdateTree->getNodeById("lAA");
     std::shared_ptr<Node> lNodeAAB =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("AAB.txt"), NodeTypeFile,
-                                       OperationTypeCreate, "lAAB", createdAt, lastmodified, size, lNodeAA));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("AAB.txt"), NodeType::File,
+                                       OperationType::Create, "lAAB", createdAt, lastmodified, size, lNodeAA));
     lNodeAA->insertChildren(lNodeAAB);
     _syncPal->_localUpdateTree->insertNode(lNodeAAB);
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("lAAB", "lAA", Str("AAB.txt"), 1654788079, 1654788079, NodeTypeFile, 123, "lcs1"));
+        SnapshotItem("lAAB", "lAA", Str("AAB.txt"), 1654788079, 1654788079, NodeType::File, 123, "lcs1"));
 
     std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAAB =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("AAB.txt"), NodeTypeFile,
-                                       OperationTypeCreate, "rAAB", createdAt, lastmodified, size, rNodeAA));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("AAB.txt"), NodeType::File,
+                                       OperationType::Create, "rAAB", createdAt, lastmodified, size, rNodeAA));
     rNodeAA->insertChildren(rNodeAAB);
     _syncPal->_remoteUpdateTree->insertNode(rNodeAAB);
     _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("rAAB", "rAA", Str("AAB.txt"), 1654788079, 1654788079, NodeTypeFile, 123, "rcs1"));
+        SnapshotItem("rAAB", "rAA", Str("AAB.txt"), 1654788079, 1654788079, NodeType::File, 123, "rcs1"));
 
-    Conflict conflict(lNodeAAB, rNodeAA, ConflictTypeCreateCreate);
+    Conflict conflict(lNodeAAB, rNodeAA, ConflictType::CreateCreate);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -156,17 +156,17 @@ void TestConflictResolverWorker::testCreateCreate() {
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(op->targetSide() == ReplicaSide::Local);
+    CPPUNIT_ASSERT(op->type() == OperationType::Move);
 }
 
 void TestConflictResolverWorker::testEditEdit() {
     // Simulate edit conflict of file AAA on both replica
     std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
-    lNodeAAA->setChangeEvents(OperationTypeEdit);
+    lNodeAAA->setChangeEvents(OperationType::Edit);
     std::shared_ptr<Node> rNodeAAA = _syncPal->_remoteUpdateTree->getNodeById("rAAA");
-    rNodeAAA->setChangeEvents(OperationTypeEdit);
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeEditEdit);
+    rNodeAAA->setChangeEvents(OperationType::Edit);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditEdit);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -175,8 +175,8 @@ void TestConflictResolverWorker::testEditEdit() {
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(op->targetSide() == ReplicaSide::Local);
+    CPPUNIT_ASSERT(op->type() == OperationType::Move);
 }
 
 void TestConflictResolverWorker::testMoveCreate() {
@@ -187,8 +187,8 @@ void TestConflictResolverWorker::testMoveCreate() {
     // Simulate create file ABA in AB on local replica
     std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
     std::shared_ptr<Node> lNodeABA =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("ABA"), NodeTypeFile,
-                                       OperationTypeCreate, "lABA", createdAt, lastmodified, size, lNodeAB));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("ABA"), NodeType::File,
+                                       OperationType::Create, "lABA", createdAt, lastmodified, size, lNodeAB));
     lNodeAB->insertChildren(lNodeABA);
     _syncPal->_localUpdateTree->insertNode(lNodeABA);
 
@@ -199,10 +199,10 @@ void TestConflictResolverWorker::testMoveCreate() {
     std::shared_ptr<Node> rNodeABA = rNodeAAA;
     rNodeABA->setName(Str("ABA"));
     rNodeABA->setParentNode(rNodeAB);
-    rNodeABA->setChangeEvents(OperationTypeMove);
+    rNodeABA->setChangeEvents(OperationType::Move);
     rNodeABA->setMoveOriginParentDbId(rNodeAA->idb());
 
-    Conflict conflict(lNodeABA, rNodeABA, ConflictTypeMoveCreate);
+    Conflict conflict(lNodeABA, rNodeABA, ConflictType::MoveCreate);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -211,23 +211,23 @@ void TestConflictResolverWorker::testMoveCreate() {
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(op->targetSide() == ReplicaSide::Local);
+    CPPUNIT_ASSERT(op->type() == OperationType::Move);
 }
 
 void TestConflictResolverWorker::testEditDelete1() {
     // Simulate edit of file AAA on local replica
     std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
-    lNodeAAA->setChangeEvents(OperationTypeEdit);
+    lNodeAAA->setChangeEvents(OperationType::Edit);
 
     // and delete of file AAA on remote replica
     std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAAA = _syncPal->_remoteUpdateTree->getNodeById("rAAA");
-    rNodeAAA->setChangeEvents(OperationTypeDelete);
+    rNodeAAA->setChangeEvents(OperationType::Delete);
     rNodeAA->deleteChildren(rNodeAAA);
     _syncPal->_remoteUpdateTree->insertNode(rNodeAAA);
 
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeEditDelete);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -237,24 +237,24 @@ void TestConflictResolverWorker::testEditDelete1() {
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(op->newName().empty());
     CPPUNIT_ASSERT(op->omit());
-    CPPUNIT_ASSERT(op->type() == OperationTypeDelete);
+    CPPUNIT_ASSERT(op->type() == OperationType::Delete);
 }
 
 void TestConflictResolverWorker::testEditDelete2() {
     // Simulate edit of file AAA on local replica
     std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
-    lNodeAAA->setChangeEvents(OperationTypeEdit);
+    lNodeAAA->setChangeEvents(OperationType::Edit);
 
     // and delete of dir AA (and all children) on remote replica
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
     std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAAA = _syncPal->_remoteUpdateTree->getNodeById("rAAA");
-    rNodeAA->setChangeEvents(OperationTypeDelete);
-    rNodeAAA->setChangeEvents(OperationTypeDelete);
+    rNodeAA->setChangeEvents(OperationType::Delete);
+    rNodeAAA->setChangeEvents(OperationType::Delete);
     rNodeA->deleteChildren(rNodeAA);
     rNodeAA->deleteChildren(rNodeAAA);
 
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeEditDelete);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::EditDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -262,12 +262,12 @@ void TestConflictResolverWorker::testEditDelete2() {
     CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 2);
     for (const auto &opId : _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-        if (op->type() == OperationTypeMove) {
+        if (op->type() == OperationType::Move) {
             CPPUNIT_ASSERT(!op->newName().empty());
             CPPUNIT_ASSERT(op->newParentNode() == _syncPal->_remoteUpdateTree->rootNode());
             CPPUNIT_ASSERT(op->omit() == false);
             CPPUNIT_ASSERT(op->affectedNode() == rNodeAAA);
-        } else if (op->type() == OperationTypeDelete) {
+        } else if (op->type() == OperationType::Delete) {
             CPPUNIT_ASSERT(op->omit() == true);
             CPPUNIT_ASSERT(op->affectedNode() == rNodeAAA);
         } else {
@@ -280,19 +280,19 @@ void TestConflictResolverWorker::testMoveDelete1() {
     // Simulate rename of node A to B on local replica
     std::shared_ptr<Node> lNodeA = _syncPal->_localUpdateTree->getNodeById("lA");
     lNodeA->setName(Str("B"));
-    lNodeA->setChangeEvents(OperationTypeMove);
+    lNodeA->setChangeEvents(OperationType::Move);
 
     // Simulate a delete of node AB on local replica
     std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
-    lNodeAB->setChangeEvents(OperationTypeDelete);
+    lNodeAB->setChangeEvents(OperationType::Delete);
     lNodeA->deleteChildren(lNodeA);
 
     // Simulate a delete of node A on remote replica
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
-    rNodeA->setChangeEvents(OperationTypeDelete);
+    rNodeA->setChangeEvents(OperationType::Delete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -316,18 +316,18 @@ void TestConflictResolverWorker::testMoveDelete1() {
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
     CPPUNIT_ASSERT(op->omit() == true);
-    CPPUNIT_ASSERT(op->type() == OperationTypeDelete);
+    CPPUNIT_ASSERT(op->type() == OperationType::Delete);
 }
 
 void TestConflictResolverWorker::testMoveDelete2() {
     // Simulate rename of node A to B on local replica
     std::shared_ptr<Node> lNodeA = _syncPal->_localUpdateTree->getNodeById("lA");
     lNodeA->setName(Str("B"));
-    lNodeA->setChangeEvents(OperationTypeMove);
+    lNodeA->setChangeEvents(OperationType::Move);
 
     // Simulate edit of node AAA on local replica
     std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
-    lNodeAAA->setChangeEvents(OperationTypeEdit);
+    lNodeAAA->setChangeEvents(OperationType::Edit);
 
     // Simulate create of node ABA on local replica
     SyncTime createdAt = 1654788079;
@@ -335,17 +335,17 @@ void TestConflictResolverWorker::testMoveDelete2() {
     int64_t size = 1654788079;
     std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
     std::shared_ptr<Node> lNodeABA =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("ABA"), NodeTypeFile,
-                                       OperationTypeCreate, "lABA", createdAt, lastmodified, size, lNodeAB));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("ABA"), NodeType::File,
+                                       OperationType::Create, "lABA", createdAt, lastmodified, size, lNodeAB));
     lNodeAB->insertChildren(lNodeABA);
     _syncPal->_localUpdateTree->insertNode(lNodeABA);
 
     // Simulate a delete of node A on remote replica
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
-    rNodeA->setChangeEvents(OperationTypeDelete);
+    rNodeA->setChangeEvents(OperationType::Delete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -370,28 +370,28 @@ void TestConflictResolverWorker::testMoveDelete2() {
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
     CPPUNIT_ASSERT(op->omit() == true);
-    CPPUNIT_ASSERT(op->type() == OperationTypeDelete);
+    CPPUNIT_ASSERT(op->type() == OperationType::Delete);
 }
 
 void TestConflictResolverWorker::testMoveDelete3() {
     // Simulate rename of node A to B on local replica
     std::shared_ptr<Node> lNodeA = _syncPal->_localUpdateTree->getNodeById("lA");
     lNodeA->setName(Str("B"));
-    lNodeA->setChangeEvents(OperationTypeMove);
+    lNodeA->setChangeEvents(OperationType::Move);
 
     // Simulate move of node AB under root on local replica
     std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
-    lNodeAB->setChangeEvents(OperationTypeMove);
+    lNodeAB->setChangeEvents(OperationType::Move);
     lNodeAB->setParentNode(_syncPal->_localUpdateTree->rootNode());
     lNodeA->deleteChildren(lNodeAB);
     _syncPal->_localUpdateTree->rootNode()->insertChildren(lNodeAB);
 
     // Simulate a delete of node A on remote replica
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
-    rNodeA->setChangeEvents(OperationTypeDelete);
+    rNodeA->setChangeEvents(OperationType::Delete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -416,28 +416,28 @@ void TestConflictResolverWorker::testMoveDelete3() {
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
     CPPUNIT_ASSERT(op->omit() == true);
-    CPPUNIT_ASSERT(op->type() == OperationTypeDelete);
+    CPPUNIT_ASSERT(op->type() == OperationType::Delete);
 }
 
 void TestConflictResolverWorker::testMoveDelete4() {
     // Simulate rename of node A to B on local replica
     std::shared_ptr<Node> lNodeA = _syncPal->_localUpdateTree->getNodeById("lA");
     lNodeA->setName(Str("B"));
-    lNodeA->setChangeEvents(OperationTypeMove);
+    lNodeA->setChangeEvents(OperationType::Move);
 
     // Simulate move of node AB under root on remote replica
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
     std::shared_ptr<Node> rNodeAB = _syncPal->_remoteUpdateTree->getNodeById("rAB");
-    rNodeAB->setChangeEvents(OperationTypeMove);
+    rNodeAB->setChangeEvents(OperationType::Move);
     rNodeAB->setParentNode(_syncPal->_remoteUpdateTree->rootNode());
     rNodeA->deleteChildren(rNodeAB);
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(rNodeAB);
 
     // Simulate a delete of node A on remote replica
-    rNodeA->setChangeEvents(OperationTypeDelete);
+    rNodeA->setChangeEvents(OperationType::Delete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict(lNodeA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -464,11 +464,11 @@ void TestConflictResolverWorker::testMoveDelete4() {
         SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
         CPPUNIT_ASSERT(op->omit() == true);
 
-        if (op->type() == OperationTypeMove) {
+        if (op->type() == OperationType::Move) {
             CPPUNIT_ASSERT(!op->newName().empty());
             CPPUNIT_ASSERT(op->newParentNode() == _syncPal->_remoteUpdateTree->rootNode());
             CPPUNIT_ASSERT(op->affectedNode() == rNodeAB);
-        } else if (op->type() == OperationTypeDelete) {
+        } else if (op->type() == OperationType::Delete) {
             CPPUNIT_ASSERT(op->affectedNode() == rNodeA);
         } else {
             CPPUNIT_ASSERT(false);  // Should not happen
@@ -480,14 +480,14 @@ void TestConflictResolverWorker::testMoveDelete5() {
     // Simulate move of node AA to AA' on local replica
     std::shared_ptr<Node> lNodeAA = _syncPal->_localUpdateTree->getNodeById("lAA");
     lNodeAA->setName(Str("A"));
-    lNodeAA->setChangeEvents(OperationTypeMove);
+    lNodeAA->setChangeEvents(OperationType::Move);
 
     // Simulate a delete of node A on remote replica
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
-    rNodeA->setChangeEvents(OperationTypeDelete);
+    rNodeA->setChangeEvents(OperationType::Delete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict1(lNodeAA, rNodeA, ConflictTypeMoveDelete);
+    Conflict conflict1(lNodeAA, rNodeA, ConflictType::MoveDelete);
     _syncPal->_conflictQueue->push(conflict1);
 
     // This should be treated as a Move-ParentDelete conflict, the Move-Delete conflict must be ignored
@@ -503,17 +503,17 @@ void TestConflictResolverWorker::testMoveParentDelete() {
     std::shared_ptr<Node> lNodeAA = _syncPal->_localUpdateTree->getNodeById("lAA");
     std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
     std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
-    lNodeAAA->setChangeEvents(OperationTypeMove);
+    lNodeAAA->setChangeEvents(OperationType::Move);
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     lNodeAA->deleteChildren(lNodeAAA);
     lNodeAB->insertChildren(lNodeAAA);
 
     // Simulate a delete of node A on remote replica
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
-    rNodeA->setChangeEvents(OperationTypeDelete);
+    rNodeA->setChangeEvents(OperationType::Delete);
     _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeA);
 
-    Conflict conflict(lNodeAAA, rNodeA, ConflictTypeMoveParentDelete);
+    Conflict conflict(lNodeAAA, rNodeA, ConflictType::MoveParentDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -523,8 +523,8 @@ void TestConflictResolverWorker::testMoveParentDelete() {
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(op->omit() == false);
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(op->targetSide() == ReplicaSide::Local);
+    CPPUNIT_ASSERT(op->type() == OperationType::Move);
 }
 
 void TestConflictResolverWorker::testCreateParentDelete() {
@@ -535,20 +535,20 @@ void TestConflictResolverWorker::testCreateParentDelete() {
 
     std::shared_ptr<Node> lNodeAA = _syncPal->_localUpdateTree->getNodeById("lAA");
     std::shared_ptr<Node> lNodeAAB =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("AAB.txt"), NodeTypeFile,
-                                       OperationTypeCreate, "lAAB", createdAt, lastmodified, size, lNodeAA));
+        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("AAB.txt"), NodeType::File,
+                                       OperationType::Create, "lAAB", createdAt, lastmodified, size, lNodeAA));
     lNodeAA->insertChildren(lNodeAAB);
     _syncPal->_localUpdateTree->insertNode(lNodeAAB);
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("lAAB", "lAA", Str("AAB.txt"), 1654788079, 1654788079, NodeTypeFile, 123, "lcs1"));
+        SnapshotItem("lAAB", "lAA", Str("AAB.txt"), 1654788079, 1654788079, NodeType::File, 123, "lcs1"));
 
     // Simulate a delete of node AA on remote replica
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
     std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
-    rNodeAA->setChangeEvents(OperationTypeDelete);
+    rNodeAA->setChangeEvents(OperationType::Delete);
     rNodeA->deleteChildren(rNodeAA);
 
-    Conflict conflict(lNodeAAB, rNodeAA, ConflictTypeCreateParentDelete);
+    Conflict conflict(lNodeAAB, rNodeAA, ConflictType::CreateParentDelete);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -557,8 +557,8 @@ void TestConflictResolverWorker::testCreateParentDelete() {
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(op->targetSide() == ReplicaSide::Local);
+    CPPUNIT_ASSERT(op->type() == OperationType::Move);
 }
 
 void TestConflictResolverWorker::testMoveMoveSource1() {
@@ -566,7 +566,7 @@ void TestConflictResolverWorker::testMoveMoveSource1() {
     std::shared_ptr<Node> lNodeAA = _syncPal->_localUpdateTree->getNodeById("lAA");
     std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
     std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
-    lNodeAAA->setChangeEvents(OperationTypeMove);
+    lNodeAAA->setChangeEvents(OperationType::Move);
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     lNodeAAA->setMoveOrigin("A/AA/AAA");
     lNodeAA->deleteChildren(lNodeAAA);
@@ -576,13 +576,13 @@ void TestConflictResolverWorker::testMoveMoveSource1() {
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
     std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAAA = _syncPal->_remoteUpdateTree->getNodeById("rAAA");
-    rNodeAAA->setChangeEvents(OperationTypeMove);
+    rNodeAAA->setChangeEvents(OperationType::Move);
     rNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     rNodeAAA->setMoveOrigin("A/AA/AAA");
     rNodeAA->deleteChildren(lNodeAAA);
     rNodeA->insertChildren(lNodeAAA);
 
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeMoveMoveSource);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -591,8 +591,8 @@ void TestConflictResolverWorker::testMoveMoveSource1() {
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(op->targetSide() == ReplicaSide::Local);
+    CPPUNIT_ASSERT(op->type() == OperationType::Move);
 }
 
 void TestConflictResolverWorker::testMoveMoveSource2() {
@@ -600,7 +600,7 @@ void TestConflictResolverWorker::testMoveMoveSource2() {
     std::shared_ptr<Node> lNodeAA = _syncPal->_localUpdateTree->getNodeById("lAA");
     std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
     std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
-    lNodeAAA->setChangeEvents(OperationTypeMove);
+    lNodeAAA->setChangeEvents(OperationType::Move);
     lNodeAAA->setParentNode(lNodeAB);
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     lNodeAAA->setMoveOrigin("A/AA/AAA");
@@ -611,17 +611,17 @@ void TestConflictResolverWorker::testMoveMoveSource2() {
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
     std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAAA = _syncPal->_remoteUpdateTree->getNodeById("rAAA");
-    rNodeAAA->setChangeEvents(OperationTypeMove);
+    rNodeAAA->setChangeEvents(OperationType::Move);
     lNodeAAA->setParentNode(rNodeA);
     rNodeAAA->setMoveOriginParentDbId(rNodeAA->idb());
     rNodeAAA->setMoveOrigin("A/AA/AAA");
     rNodeAA->deleteChildren(lNodeAAA);
     rNodeA->insertChildren(lNodeAAA);
 
-    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeMoveMoveSource);
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictType::MoveMoveSource);
     _syncPal->_conflictQueue->push(conflict);
 
-    _syncPal->_conflictResolverWorker->_registeredOrphans.insert({*rNodeAAA->idb(), ReplicaSideRemote});
+    _syncPal->_conflictResolverWorker->_registeredOrphans.insert({*rNodeAAA->idb(), ReplicaSide::Remote});
 
     _syncPal->_conflictResolverWorker->execute();
 
@@ -629,8 +629,8 @@ void TestConflictResolverWorker::testMoveMoveSource2() {
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(op->newName() == Str("AAA"));
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(op->targetSide() == ReplicaSide::Local);
+    CPPUNIT_ASSERT(op->type() == OperationType::Move);
 }
 
 void TestConflictResolverWorker::testMoveMoveDest() {
@@ -638,7 +638,7 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     std::shared_ptr<Node> lNodeAA = _syncPal->_localUpdateTree->getNodeById("lAA");
     std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
     std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
-    lNodeAAA->setChangeEvents(OperationTypeMove);
+    lNodeAAA->setChangeEvents(OperationType::Move);
     lNodeAAA->setParentNode(lNodeAB);
     lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
     lNodeAAA->setMoveOrigin("A/AA/AAA");
@@ -649,7 +649,7 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
     std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAB = _syncPal->_remoteUpdateTree->getNodeById("rAB");
-    rNodeAA->setChangeEvents(OperationTypeMove);
+    rNodeAA->setChangeEvents(OperationType::Move);
     rNodeAA->setParentNode(rNodeAB);
     rNodeAA->setName(Str("AAA"));
     rNodeAA->setMoveOriginParentDbId(rNodeA->idb());
@@ -657,7 +657,7 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     rNodeA->deleteChildren(rNodeAA);
     rNodeAB->insertChildren(rNodeAA);
 
-    Conflict conflict(lNodeAAA, rNodeAA, ConflictTypeMoveMoveDest);
+    Conflict conflict(lNodeAAA, rNodeAA, ConflictType::MoveMoveDest);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -666,8 +666,8 @@ void TestConflictResolverWorker::testMoveMoveDest() {
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(op->targetSide() == ReplicaSide::Local);
+    CPPUNIT_ASSERT(op->type() == OperationType::Move);
 }
 
 void TestConflictResolverWorker::testMoveMoveCycle() {
@@ -675,7 +675,7 @@ void TestConflictResolverWorker::testMoveMoveCycle() {
     std::shared_ptr<Node> lNodeA = _syncPal->_localUpdateTree->getNodeById("lA");
     std::shared_ptr<Node> lNodeAA = _syncPal->_localUpdateTree->getNodeById("lAA");
     std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
-    lNodeAA->setChangeEvents(OperationTypeMove);
+    lNodeAA->setChangeEvents(OperationType::Move);
     lNodeAA->setParentNode(lNodeAB);
     lNodeAA->setMoveOriginParentDbId(lNodeA->idb());
     lNodeAA->setMoveOrigin("A/AA");
@@ -686,14 +686,14 @@ void TestConflictResolverWorker::testMoveMoveCycle() {
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
     std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAB = _syncPal->_remoteUpdateTree->getNodeById("rAB");
-    rNodeAB->setChangeEvents(OperationTypeMove);
+    rNodeAB->setChangeEvents(OperationType::Move);
     rNodeAB->setParentNode(rNodeAA);
     rNodeAB->setMoveOriginParentDbId(rNodeA->idb());
     rNodeAB->setMoveOrigin("A/AB");
     rNodeA->deleteChildren(rNodeAB);
     rNodeAA->insertChildren(rNodeAB);
 
-    Conflict conflict(lNodeAA, rNodeAA, ConflictTypeMoveMoveCycle);
+    Conflict conflict(lNodeAA, rNodeAA, ConflictType::MoveMoveCycle);
     _syncPal->_conflictQueue->push(conflict);
 
     _syncPal->_conflictResolverWorker->execute();
@@ -702,8 +702,8 @@ void TestConflictResolverWorker::testMoveMoveCycle() {
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(op->newParentNode() == lNodeA);
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(op->targetSide() == ReplicaSide::Local);
+    CPPUNIT_ASSERT(op->type() == OperationType::Move);
 }
 
 }  // namespace KDC

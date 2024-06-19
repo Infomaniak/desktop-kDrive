@@ -72,20 +72,20 @@ static const int defaultLogoIconSize = 50;
 static const int maxSynchronizedItems = 50;
 
 const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsDisabledMap = {
-    {NotificationsDisabledNever, QString(tr("Never"))},
-    {NotificationsDisabledOneHour, QString(tr("During 1 hour"))},
-    {NotificationsDisabledUntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-    {NotificationsDisabledTreeDays, QString(tr("During 3 days"))},
-    {NotificationsDisabledOneWeek, QString(tr("During 1 week"))},
-    {NotificationsDisabledAlways, QString(tr("Always"))}};
+    {NotificationsDisabled::Never, QString(tr("Never"))},
+    {NotificationsDisabled::OneHour, QString(tr("During 1 hour"))},
+    {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
+    {NotificationsDisabled::TreeDays, QString(tr("During 3 days"))},
+    {NotificationsDisabled::OneWeek, QString(tr("During 1 week"))},
+    {NotificationsDisabled::Always, QString(tr("Always"))}};
 
 const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsDisabledForPeriodMap = {
-    {NotificationsDisabledNever, QString(tr("Never"))},
-    {NotificationsDisabledOneHour, QString(tr("For 1 more hour"))},
-    {NotificationsDisabledUntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
-    {NotificationsDisabledTreeDays, QString(tr("For 3 more days"))},
-    {NotificationsDisabledOneWeek, QString(tr("For 1 more week"))},
-    {NotificationsDisabledAlways, QString(tr("Always"))}};
+    {NotificationsDisabled::Never, QString(tr("Never"))},
+    {NotificationsDisabled::OneHour, QString(tr("For 1 more hour"))},
+    {NotificationsDisabled::UntilTomorrow, QString(tr("Until tomorrow 8:00AM"))},
+    {NotificationsDisabled::TreeDays, QString(tr("For 3 more days"))},
+    {NotificationsDisabled::OneWeek, QString(tr("For 1 more week"))},
+    {NotificationsDisabled::Always, QString(tr("Always"))}};
 
 Q_LOGGING_CATEGORY(lcSynthesisPopover, "gui.synthesispopover", QtInfoMsg)
 
@@ -548,11 +548,12 @@ void SynthesisPopover::getFirstSyncWithStatus(SyncStatus status, int driveDbId, 
 }
 
 void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool &found) {
+    using enum KDC::SyncStatus;
     static QVector<SyncStatus> statusPriority = QVector<SyncStatus>()
-                                                << SyncStatus::SyncStatusStarting << SyncStatus::SyncStatusRunning
-                                                << SyncStatus::SyncStatusPauseAsked << SyncStatus::SyncStatusPaused
-                                                << SyncStatus::SyncStatusStopAsked << SyncStatus::SyncStatusStoped
-                                                << SyncStatus::SyncStatusError << SyncStatus::SyncStatusIdle;
+                                                << Starting << Running
+                                                << PauseAsked << Paused
+                                                << StopAsked << Stopped
+                                                << Error << Idle;
 
     found = false;
     for (SyncStatus status : qAsConst(statusPriority)) {
@@ -571,13 +572,13 @@ void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool
 
 void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
     static QVector<SyncStatus> statusPriority =
-        QVector<SyncStatus>() << SyncStatusError << SyncStatusRunning << SyncStatusPauseAsked << SyncStatusPaused
-                              << SyncStatusStopAsked << SyncStatusStoped << SyncStatusStarting << SyncStatusIdle;
+        QVector<SyncStatus>() << SyncStatus::Error << SyncStatus::Running << SyncStatus::PauseAsked << SyncStatus::Paused
+                              << SyncStatus::StopAsked << SyncStatus::Stopped << SyncStatus::Starting << SyncStatus::Idle;
 
-    static QVector<SyncStep> syncStepPriority =
-        QVector<SyncStep>() << SyncStepPropagation2 << SyncStepPropagation1 << SyncStepReconciliation4 << SyncStepReconciliation3
-                            << SyncStepReconciliation2 << SyncStepReconciliation1 << SyncStepUpdateDetection2
-                            << SyncStepUpdateDetection1 << SyncStepIdle << SyncStepDone << SyncStepNone;
+    static QVector<SyncStep> SyncStepPriority =
+        QVector<SyncStep>() << SyncStep::Propagation2 << SyncStep::Propagation1 << SyncStep::Reconciliation4 << SyncStep::Reconciliation3
+                            << SyncStep::Reconciliation2 << SyncStep::Reconciliation1 << SyncStep::UpdateDetection2
+                            << SyncStep::UpdateDetection1 << SyncStep::Idle << SyncStep::Done << SyncStep::None;
 
     const auto &accountInfoMapIt = _gui->accountInfoMap().find(driveInfo.accountDbId());
     if (accountInfoMapIt == _gui->accountInfoMap().end()) {
@@ -593,7 +594,7 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
 
     KDC::GuiUtility::StatusInfo statusInfo;
     if (userInfoMapIt->second.connected()) {
-        statusInfo._status = SyncStatusIdle;
+        statusInfo._status = SyncStatus::Idle;
         int syncsInPropagationStep = 0;
         for (const auto &sync : _gui->syncInfoMap()) {
             const auto &syncInfo = sync.second;
@@ -610,13 +611,13 @@ void SynthesisPopover::refreshStatusBar(const DriveInfoClient &driveInfo) {
             if (statusPriority.indexOf(statusInfo._status) > statusPriority.indexOf(syncInfo.status())) {
                 statusInfo._status = syncInfo.status();
             }
-            if (syncStepPriority.indexOf(statusInfo._syncStep) > syncStepPriority.indexOf(syncInfo.step())) {
+            if (SyncStepPriority.indexOf(statusInfo._syncStep) > SyncStepPriority.indexOf(syncInfo.step())) {
                 statusInfo._syncStep = syncInfo.step();
             }
-            if (syncInfo.step() != SyncStepPropagation2) {
+            if (syncInfo.step() != SyncStep::Propagation2) {
                 syncsInPropagationStep++;
             }
-            if (syncInfo.virtualFileMode() != VirtualFileModeOff) {
+            if (syncInfo.virtualFileMode() != VirtualFileMode::Off) {
                 statusInfo._liteSyncActivated = true;
             }
         }
@@ -824,8 +825,8 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
         return;
     }
 
-    if (itemInfo.status() == SyncFileStatusUnknown || itemInfo.status() == SyncFileStatusError ||
-        itemInfo.status() == SyncFileStatusIgnored) {
+    if (itemInfo.status() == SyncFileStatus::Unknown || itemInfo.status() == SyncFileStatus::Error ||
+        itemInfo.status() == SyncFileStatus::Ignored) {
         return;
     }
 
@@ -980,7 +981,7 @@ void SynthesisPopover::onRefreshErrorList(int /*driveDbId*/) {
 void SynthesisPopover::onOpenFolder(bool checked) {
     Q_UNUSED(checked)
 
-    int syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
+    int syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
     openUrl(syncDbId);
 }
 
@@ -1026,7 +1027,7 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
 
         if (syncInfoMap.size() == 1) {
             auto const &syncInfoMapElt = syncInfoMap.begin();
-            foldersMenuAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt->first);
+            foldersMenuAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), syncInfoMapElt->first);
             connect(foldersMenuAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenFolder);
         } else if (syncInfoMap.size() > 1) {
             foldersMenuItemWidget->setHasSubmenu(true);
@@ -1040,7 +1041,7 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
             QWidgetAction *openFolderAction;
             for (auto const &syncInfoMapElt : syncInfoMap) {
                 openFolderAction = new QWidgetAction(this);
-                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt.first);
+                openFolderAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), syncInfoMapElt.first);
                 MenuItemWidget *openFolderMenuItemWidget = new MenuItemWidget(syncInfoMapElt.second.name());
                 openFolderMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
                 openFolderAction->setDefaultWidget(openFolderMenuItemWidget);
@@ -1077,7 +1078,7 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     // Disable Notifications
     QWidgetAction *notificationsMenuAction = new QWidgetAction(this);
     bool notificationAlreadyDisabledForPeriod =
-        _notificationsDisabled != NotificationsDisabledNever && _notificationsDisabled != NotificationsDisabledAlways;
+        _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
     MenuItemWidget *notificationsMenuItemWidget =
         new MenuItemWidget(notificationAlreadyDisabledForPeriod
                                ? tr("Notifications disabled until %1").arg(_notificationsDisabledUntilDateTime.toString())
@@ -1094,14 +1095,14 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     notificationActionGroup->setExclusive(true);
 
     const std::map<NotificationsDisabled, QString> &notificationMap =
-        _notificationsDisabled == NotificationsDisabledNever || _notificationsDisabled == NotificationsDisabledAlways
+        _notificationsDisabled == NotificationsDisabled::Never || _notificationsDisabled == NotificationsDisabled::Always
             ? _notificationsDisabledMap
             : _notificationsDisabledForPeriodMap;
 
     QWidgetAction *notificationAction;
     for (auto const &notificationMapElt : notificationMap) {
         notificationAction = new QWidgetAction(this);
-        notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), notificationMapElt.first);
+        notificationAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), enumClassToInt(notificationMapElt.first));
         QString text = QCoreApplication::translate("KDC::SynthesisPopover", notificationMapElt.second.toStdString().c_str());
         MenuItemWidget *notificationMenuItemWidget = new MenuItemWidget(text);
         notificationMenuItemWidget->setChecked(notificationMapElt.first == _notificationsDisabled);
@@ -1201,35 +1202,36 @@ void SynthesisPopover::onCrashFatal(bool checked) {
 }
 
 void SynthesisPopover::onNotificationActionTriggered(bool checked) {
+    using enum KDC::NotificationsDisabled;
     Q_UNUSED(checked)
 
     bool notificationAlreadyDisabledForPeriod =
-        _notificationsDisabled != NotificationsDisabledNever && _notificationsDisabled != NotificationsDisabledAlways;
+        _notificationsDisabled != Never && _notificationsDisabled != Always;
 
-    _notificationsDisabled = qvariant_cast<NotificationsDisabled>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
+    _notificationsDisabled = qvariant_cast<NotificationsDisabled>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
     switch (_notificationsDisabled) {
-        case NotificationsDisabledNever:
+        case Never:
             _notificationsDisabledUntilDateTime = QDateTime();
             break;
-        case NotificationsDisabledOneHour:
+        case OneHour:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                       ? _notificationsDisabledUntilDateTime.addSecs(60 * 60)
                                                       : QDateTime::currentDateTime().addSecs(60 * 60);
             break;
-        case NotificationsDisabledUntilTomorrow:
+        case UntilTomorrow:
             _notificationsDisabledUntilDateTime = QDateTime(QDateTime::currentDateTime().addDays(1).date(), QTime(8, 0));
             break;
-        case NotificationsDisabledTreeDays:
+        case TreeDays:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                       ? _notificationsDisabledUntilDateTime.addDays(3)
                                                       : QDateTime::currentDateTime().addDays(3);
             break;
-        case NotificationsDisabledOneWeek:
+        case OneWeek:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                       ? _notificationsDisabledUntilDateTime.addDays(7)
                                                       : QDateTime::currentDateTime().addDays(7);
             break;
-        case NotificationsDisabledAlways:
+        case Always:
             _notificationsDisabledUntilDateTime = QDateTime();
             break;
     }
@@ -1271,16 +1273,16 @@ void SynthesisPopover::onAddDrive() {
 }
 
 void SynthesisPopover::onPauseSync(ActionTarget target, int syncDbId) {
-    emit executeSyncAction(ActionTypeStop, target,
-                           (target == ActionTargetSync    ? syncDbId
-                            : target == ActionTargetDrive ? _gui->currentDriveDbId()
+    emit executeSyncAction(ActionType::Stop, target,
+                           (target == ActionTarget::Sync    ? syncDbId
+                            : target == ActionTarget::Drive ? _gui->currentDriveDbId()
                                                           : 0));
 }
 
 void SynthesisPopover::onResumeSync(ActionTarget target, int syncDbId) {
-    emit executeSyncAction(ActionTypeStart, target,
-                           (target == ActionTargetSync    ? syncDbId
-                            : target == ActionTargetDrive ? _gui->currentDriveDbId()
+    emit executeSyncAction(ActionType::Start, target,
+                           (target == ActionTarget::Sync    ? syncDbId
+                            : target == ActionTarget::Drive ? _gui->currentDriveDbId()
                                                           : 0));
 }
 

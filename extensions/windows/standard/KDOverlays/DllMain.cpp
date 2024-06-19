@@ -21,7 +21,7 @@
 #include "KDOverlayRegistrationHandler.h"
 #include "KDOverlayFactory.h"
 
-HINSTANCE instanceHandle = NULL;
+HINSTANCE instanceHandle = nullptr;
 
 long dllReferenceCount = 0;
 

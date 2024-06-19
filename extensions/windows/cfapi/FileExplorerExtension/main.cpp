@@ -27,8 +27,8 @@
 
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow) {
     // Create stop event
-    HANDLE stopEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-    if (stopEvent == NULL) {
+    HANDLE stopEvent = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+    if (stopEvent == nullptr) {
         TRACE_ERROR(L"Error in CreateEvent!");
         return -1;
     } else if (GetLastError() == ERROR_ALREADY_EXISTS) {

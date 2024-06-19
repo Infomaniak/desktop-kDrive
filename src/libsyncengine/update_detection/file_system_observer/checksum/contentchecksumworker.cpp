@@ -55,7 +55,7 @@ void ContentChecksumWorker::callback(UniqueId jobId) {
 }
 
 void ContentChecksumWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
@@ -76,7 +76,7 @@ void ContentChecksumWorker::execute() {
 
             _runningJobs.clear();
 
-            exitCode = ExitCodeOk;
+            exitCode = ExitCode::Ok;
             break;
         }
         // We never pause this thread

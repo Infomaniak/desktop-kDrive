@@ -66,7 +66,7 @@ IFACEMETHODIMP KDContextMenuFactory::CreateInstance(IUnknown *pUnkOuter, REFIID 
     HRESULT hr = CLASS_E_NOAGGREGATION;
 
     // pUnkOuter is used for aggregation. We do not support it in the sample.
-    if (pUnkOuter == NULL) {
+    if (pUnkOuter == nullptr) {
         hr = E_OUTOFMEMORY;
 
         // Create the COM component.

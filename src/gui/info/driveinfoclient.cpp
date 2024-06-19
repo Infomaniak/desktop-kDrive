@@ -25,16 +25,17 @@ DriveInfoClient::DriveInfoClient() : DriveInfo() {}
 DriveInfoClient::DriveInfoClient(const DriveInfo &driveInfo) : DriveInfo(driveInfo) {}
 
 void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
-    _status = SyncStatusUndefined;
+    using enum KDC::SyncStatus;
+    _status = Undefined;
     _unresolvedConflicts = false;
 
     std::size_t cnt = syncInfoMap.size();
 
     if (cnt == 1) {
-        SyncInfoClient &syncInfo = syncInfoMap.begin()->second;
+        const SyncInfoClient &syncInfo = syncInfoMap.begin()->second;
         switch (syncInfo.status()) {
-            case SyncStatusUndefined:
-                _status = SyncStatusError;
+            case Undefined:
+                _status = Error;
                 break;
             default:
                 _status = syncInfo.status();
@@ -48,27 +49,27 @@ void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
         int runSeen = 0;
 
         for (auto &syncInfoMapElt : syncInfoMap) {
-            SyncInfoClient &syncInfo = syncInfoMapElt.second;
+            const SyncInfoClient &syncInfo = syncInfoMapElt.second;
             if (syncInfo.paused()) {
                 abortOrPausedSeen++;
             } else {
                 switch (syncInfo.status()) {
-                    case SyncStatusUndefined:
+                    case Undefined:
                         break;
-                    case SyncStatusStarting:
-                    case SyncStatusRunning:
+                    case Starting:
+                    case Running:
                         runSeen++;
                         break;
-                    case SyncStatusIdle:
+                    case Idle:
                         goodSeen++;
                         break;
-                    case SyncStatusError:
+                    case Error:
                         errorsSeen++;
                         break;
-                    case SyncStatusStopAsked:
-                    case SyncStatusStoped:
-                    case SyncStatusPauseAsked:
-                    case SyncStatusPaused:
+                    case StopAsked:
+                    case Stopped:
+                    case PauseAsked:
+                    case Paused:
                         abortOrPausedSeen++;
                 }
             }
@@ -78,13 +79,13 @@ void DriveInfoClient::updateStatus(std::map<int, SyncInfoClient> &syncInfoMap) {
         }
 
         if (errorsSeen > 0) {
-            _status = SyncStatusError;
+            _status = Error;
         } else if (runSeen > 0) {
-            _status = SyncStatusRunning;
+            _status = Running;
         } else if (abortOrPausedSeen > 0) {
-            _status = SyncStatusPaused;
+            _status = Paused;
         } else if (goodSeen > 0) {
-            _status = SyncStatusIdle;
+            _status = Idle;
         }
     }
 }
