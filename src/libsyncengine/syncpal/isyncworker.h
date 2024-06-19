@@ -20,9 +20,7 @@
 
 #include "syncpal.h"
 #include "libcommon/utility/types.h"
-#include "libcommonserver/log/log.h"
 
-#include <mutex>
 #include <thread>
 
 #define LOOP_PAUSE_SLEEP_PERIOD 200  // 0.2 sec

@@ -58,7 +58,6 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
     protected:
         void setUpDbTree();
         void setUpUpdateTree();
-        void clearTreeAndDb();
 
         void testUtilsFunctions();
 
@@ -97,7 +96,5 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
 
         DbNodeId _dbnodeIdDir41;
         DbNodeId _dbnodeIdDir411;
-
-        log4cplus::Logger _logger;
 };
 }  // namespace KDC

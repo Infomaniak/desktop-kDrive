@@ -25,10 +25,6 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestUpdateTreeWorker::setUp() {
-    _logger = Log::instance()->getLogger();
-
-    LOGW_DEBUG(_logger, L"$$$$$ Set Up");
-
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -36,14 +32,12 @@ void TestUpdateTreeWorker::setUp() {
     ParmsDb::instance()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
-    std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists, true);
-
     // Create DB
-    _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), "3.4.0"));
+    std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists, true);
+    _syncDb = std::shared_ptr<SyncDb>(new SyncDb(syncDbPath.string(), "3.6.1"));
     _syncDb->setAutoDelete(true);
     _operationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
     _updateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::Local, SyncDb::driveRootNode()));
-
     _updateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
         new UpdateTreeWorker(_syncDb, _operationSet, _updateTree, "Test Tree Updater", "LTRU", ReplicaSide::Local));
 
@@ -52,7 +46,9 @@ void TestUpdateTreeWorker::setUp() {
 }
 
 void TestUpdateTreeWorker::tearDown() {
-    LOGW_DEBUG(_logger, L"$$$$$ Tears down");
+    // The singleton ParmsDb calls KDC::Log()->instance() in its destructor.
+    // As the two singletons are instantiated in different translation units, the order of their destructions is unknown.
+    ParmsDb::reset();
 }
 
 void TestUpdateTreeWorker::setUpDbTree() {
@@ -232,6 +228,7 @@ void TestUpdateTreeWorker::setUpUpdateTree() {
     _updateTree->rootNode()->insertChildren(node4);
     _updateTree->rootNode()->insertChildren(node6);
     _updateTree->rootNode()->insertChildren(node6a);
+
     node1->insertChildren(node11);
     node11->insertChildren(node111);
     node111->insertChildren(node1111);
@@ -255,17 +252,8 @@ void TestUpdateTreeWorker::setUpUpdateTree() {
     _updateTree->insertNode(node6a);
 }
 
-void TestUpdateTreeWorker::clearTreeAndDb() {
-    _updateTree->clear();
-    _syncDb->clearNodes();
-}
-
 void TestUpdateTreeWorker::testUtilsFunctions() {
-    LOGW_DEBUG(_logger, L"$$$$$ testUtilsFunctions");
-
     setUpUpdateTree();
-
-    SyncPath newPath;
     // test _updateTree->getNodeByPath
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("")->id() == _syncDb->rootNode().nodeIdLocal());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.1/Dir 1.1.1")->id() == "id111");
@@ -274,6 +262,8 @@ void TestUpdateTreeWorker::testUtilsFunctions() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id3", NodeType::Directory, 1654788256, 1654788256,
                                                           12345, "Dir 3", "Dir 3bis"));
     _updateTree->getNodeByPath("Dir 3")->setName(Str("Dir 3bis"));
+
+    SyncPath newPath;
     CPPUNIT_ASSERT(_updateTreeWorker->getNewPathAfterMove("Dir 3/Dir 3.1", newPath) == ExitCode::Ok);
     CPPUNIT_ASSERT(newPath == "Dir 3bis/Dir 3.1");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath(newPath)->id() == "id31");
@@ -287,8 +277,6 @@ void TestUpdateTreeWorker::testUtilsFunctions() {
 }
 
 void TestUpdateTreeWorker::testStep1() {
-    LOGW_DEBUG(_logger, L"$$$$$ testStep1");
-
     setUpUpdateTree();
 
     // Step 1 : move into non-existing & existing folder
@@ -308,8 +296,6 @@ void TestUpdateTreeWorker::testStep1() {
 }
 
 void TestUpdateTreeWorker::testStep2() {
-    LOGW_DEBUG(_logger, L"$$$$$ testStep2");
-
     setUpUpdateTree();
 
     // Step 2 :Move files
@@ -326,8 +312,6 @@ void TestUpdateTreeWorker::testStep2() {
 }
 
 void TestUpdateTreeWorker::testStep3() {
-    LOGW_DEBUG(_logger, L"$$$$$ testStep3");
-
     setUpUpdateTree();
 
     // Step 3 : special delete case with move parent & delete child
@@ -352,8 +336,6 @@ void TestUpdateTreeWorker::testStep3() {
 }
 
 void TestUpdateTreeWorker::testStep4() {
-    LOGW_DEBUG(_logger, L"$$$$$ testStep4");
-
     setUpUpdateTree();
 
     // Step 4 :
@@ -375,8 +357,6 @@ void TestUpdateTreeWorker::testStep4() {
 }
 
 void TestUpdateTreeWorker::testStep5() {
-    LOGW_DEBUG(_logger, L"$$$$$ testStep5");
-
     setUpUpdateTree();
 
     // Step 5 :create for Dir
@@ -401,8 +381,6 @@ void TestUpdateTreeWorker::testStep5() {
 }
 
 void TestUpdateTreeWorker::testStep6() {
-    LOGW_DEBUG(_logger, L"$$$$$ testStep6");
-
     setUpUpdateTree();
 
     // Step 4 : delete files
@@ -429,8 +407,6 @@ void TestUpdateTreeWorker::testStep6() {
 }
 
 void TestUpdateTreeWorker::testStep7() {
-    LOGW_DEBUG(_logger, L"$$$$$ testStep7");
-
     setUpUpdateTree();
 
     // Step 7 : Edit
@@ -443,8 +419,6 @@ void TestUpdateTreeWorker::testStep7() {
 }
 
 void TestUpdateTreeWorker::testStep8() {
-    LOGW_DEBUG(_logger, L"$$$$$ testStep8");
-
     setUpUpdateTree();
 
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->step8CompleteUpdateTree());
@@ -455,8 +429,6 @@ void TestUpdateTreeWorker::testStep8() {
 }
 
 void TestUpdateTreeWorker::testClearTreeStep1() {
-    LOGW_DEBUG(_logger, L"$$$$$ testClearTreeStep1");
-
     // Step 1 : move into non-existing & existing folder
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id111", NodeType::Directory, 1654788110, 1654788110,
                                                           12345, "Dir 1/Dir 1.1/Dir 1.1.1", "Dir 1/Dir 1.2/Dir 1.2.1/Dir 1.1.1"));
@@ -474,8 +446,6 @@ void TestUpdateTreeWorker::testClearTreeStep1() {
 }
 
 void TestUpdateTreeWorker::testClearTreeStep2() {
-    LOGW_DEBUG(_logger, L"$$$$$ testClearTreeStep2");
-
     // Step 2 :Move files
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id1111", NodeType::File, 1654788256, 1654788256,
                                                           12345, "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1", "Dir 1/File 1.1"));
@@ -492,8 +462,6 @@ void TestUpdateTreeWorker::testClearTreeStep2() {
 }
 
 void TestUpdateTreeWorker::testClearTreeStep3() {
-    LOGW_DEBUG(_logger, L"$$$$$ testClearTreeStep3");
-
     // Step 3 : special delete case with move parent & delete child
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id3", NodeType::Directory, 1654788256, 1654788256,
                                                           12345, "Dir 3", "Dir 1/Dir 1.2/Dir 3"));
@@ -515,8 +483,6 @@ void TestUpdateTreeWorker::testClearTreeStep3() {
 }
 
 void TestUpdateTreeWorker::testClearTreeStep4() {
-    LOGW_DEBUG(_logger, L"$$$$$ testClearTreeStep4");
-
     // Step 4 :
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id4111", NodeType::File, 1654798667, 1654798667,
                                                           12345, "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
@@ -536,8 +502,6 @@ void TestUpdateTreeWorker::testClearTreeStep4() {
 }
 
 void TestUpdateTreeWorker::testClearTreeStep5() {
-    LOGW_DEBUG(_logger, L"$$$$$ testClearTreeStep5");
-
     // Step 5 :create for Dir
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id121", NodeType::Directory, 1654725635, 1654725635,
                                                           12345, "Dir 1/Dir 1.2/Dir 1.2.1"));
@@ -559,8 +523,6 @@ void TestUpdateTreeWorker::testClearTreeStep5() {
 }
 
 void TestUpdateTreeWorker::testClearTreeStep6() {
-    LOGW_DEBUG(_logger, L"$$$$$ testClearTreeStep6");
-
     // Step 4 : delete files
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id4111", NodeType::File, 1654798667, 1654798667,
                                                           12345, "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
@@ -586,8 +548,6 @@ void TestUpdateTreeWorker::testClearTreeStep6() {
 }
 
 void TestUpdateTreeWorker::testClearTreeStep7() {
-    LOGW_DEBUG(_logger, L"$$$$$ testClearTreeStep7");
-
     // Step 7 :
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Edit, "id4112", NodeType::File, 1654999667, 1654999667,
                                                           12345, "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.2"));
@@ -600,15 +560,11 @@ void TestUpdateTreeWorker::testClearTreeStep7() {
 }
 
 void TestUpdateTreeWorker::testClearTreeStep8() {
-    LOGW_DEBUG(_logger, L"$$$$$ testClearTreeStep8");
-
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->step8CompleteUpdateTree());
     CPPUNIT_ASSERT(_updateTreeWorker->_updateTree->nodes().size() == 18);
 }
 
 void TestUpdateTreeWorker::testGetOriginPath() {
-    LOGW_DEBUG(_logger, L"$$$$$ testGetOriginPath");
-
     setUpUpdateTree();
 
     // Test without move operation
@@ -630,8 +586,6 @@ void TestUpdateTreeWorker::testGetOriginPath() {
 }
 
 void TestUpdateTreeWorker::testGetOriginPath2() {
-    LOGW_DEBUG(_logger, L"$$$$$ testGetOriginPath2");
-
     setUpUpdateTree();
 
     // Test with move operation on some parents
@@ -654,8 +608,6 @@ void TestUpdateTreeWorker::testGetOriginPath2() {
 }
 
 void TestUpdateTreeWorker::testGetOriginPath3() {
-    LOGW_DEBUG(_logger, L"$$$$$ testGetOriginPath3");
-
     setUpUpdateTree();
 
     // Test with move operation on parent AND child (rename children THEN move parent)
@@ -678,8 +630,6 @@ void TestUpdateTreeWorker::testGetOriginPath3() {
 }
 
 void TestUpdateTreeWorker::testGetOriginPath4() {
-    LOGW_DEBUG(_logger, L"$$$$$ testGetOriginPath4");
-
     setUpUpdateTree();
 
     // Test with move operation on parent AND child (move parent THEN rename children)
@@ -702,8 +652,6 @@ void TestUpdateTreeWorker::testGetOriginPath4() {
 }
 
 void TestUpdateTreeWorker::testDeleteMove() {
-    LOGW_DEBUG(_logger, L"$$$$$ testDeleteMove");
-
     setUpUpdateTree();
 
     /**
