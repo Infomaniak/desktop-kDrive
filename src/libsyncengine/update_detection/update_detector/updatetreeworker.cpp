@@ -179,7 +179,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                     }
                 }
                 // get parentNode
-                parentNode = getOrCreateNodeFromPath(newPath.parent_path());
+                parentNode = getOrCreateNodeFromDeletedPath(newPath.parent_path());
             }
 
             // Find dbNodeId
@@ -450,7 +450,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 
             if (!ok) {
                 // find parentNode
-                parentNode = getOrCreateNodeFromPath(op->path().parent_path());
+                parentNode = getOrCreateNodeFromDeletedPath(op->path().parent_path());
             }
 
             // find child node
@@ -520,7 +520,7 @@ ExitCode UpdateTreeWorker::step5CreateDirectory() {
         }
 
         // find node by path because it may have been created before
-        std::shared_ptr<Node> currentNode = getOrCreateNodeFromPath(createOp->path());
+        std::shared_ptr<Node> currentNode = getOrCreateNodeFromExistingPath(createOp->path());
         if (currentNode->hasChangeEvent(OperationTypeDelete)) {
             // A directory has been deleted and another one has been created with the same name
             currentNode->setPreviousId(currentNode->id());
@@ -562,7 +562,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
         FSOpPtr operation = op.second;
 
         // find parentNode by path
-        std::shared_ptr<Node> parentNode = getOrCreateNodeFromPath(operation->path().parent_path());
+        std::shared_ptr<Node> parentNode = getOrCreateNodeFromExistingPath(operation->path().parent_path());
         std::shared_ptr<Node> newNode = parentNode->findChildrenById(operation->nodeId());
         if (newNode != nullptr) {
             // Node already exists, update it
@@ -640,7 +640,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
             continue;
         }
         // find parentNode by path because should have been created
-        std::shared_ptr<Node> parentNode = getOrCreateNodeFromPath(editOp->path().parent_path());
+        std::shared_ptr<Node> parentNode = getOrCreateNodeFromExistingPath(editOp->path().parent_path());
         std::shared_ptr<Node> newNode = parentNode->findChildrenById(editOp->nodeId());
         if (newNode != nullptr) {
             // Node already exists, update it
@@ -856,7 +856,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             }
 
             // create node if not exist
-            std::shared_ptr<Node> parentNode = getOrCreateNodeFromPath(moveOp->destinationPath().parent_path());
+            std::shared_ptr<Node> parentNode = getOrCreateNodeFromExistingPath(moveOp->destinationPath().parent_path());
 
             currentNode->insertChangeEvent(OperationTypeMove);
             currentNode->setCreatedAt(moveOp->createdAt());
@@ -905,7 +905,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             }
         } else {
             // get parentNode
-            std::shared_ptr<Node> parentNode = getOrCreateNodeFromPath(moveOp->destinationPath().parent_path());
+            std::shared_ptr<Node> parentNode = getOrCreateNodeFromExistingPath(moveOp->destinationPath().parent_path());
 
             // create node
             DbNodeId idb;
@@ -977,7 +977,7 @@ void UpdateTreeWorker::updateNodeId(std::shared_ptr<Node> node, const NodeId &ne
     }
 }
 
-std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path) {
+std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &path, bool isDeleted) {
     if (path.empty()) {
         return _updateTree->rootNode();
     }
@@ -993,18 +993,23 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
 
     // create intermediate nodes if needed
     std::shared_ptr<Node> tmpNode = _updateTree->rootNode();
-    for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
-        for (auto &childNode : tmpNode->children()) {
-            if (childNode.second->type() == NodeTypeDirectory && *nameIt == childNode.second->name()) {
-                tmpChildNode = childNode.second;
+        for (auto &[_, childNode] : tmpNode->children()) {
+            if (childNode->type() == NodeTypeDirectory && *nameIt == childNode->name()) {
+                if (!isDeleted && childNode->hasChangeEvent(OperationTypeDelete)) {
+                    // An item on a deleted branch can only have a DELETE change event. If it has any other
+                    // change event, it means its parent is on a different branch.
+                    continue;
+                }
+                tmpChildNode = childNode;
                 break;
             }
         }
 
         if (tmpChildNode == nullptr) {
             // create tmp Node
-            tmpChildNode = std::shared_ptr<Node>(new Node(_side, *nameIt, NodeTypeDirectory, tmpNode));
+            tmpChildNode = std::make_shared<Node>(_side, *nameIt, NodeTypeDirectory, tmpNode);
 
             if (tmpChildNode == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
@@ -1159,7 +1164,9 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
 
         // if node is temporary node
         if (node->isTmp()) {
-            updateTmpNode(node);
+            if (ExitCode exitCode = updateTmpNode(node); exitCode != ExitCodeOk) {
+                return exitCode;
+            }
         }
 
         // use previous nodeId if it's an Edit from Delete-Create
