@@ -279,6 +279,39 @@ C:\Program Files (x86)\cppunit\bin
 C:\Program Files\OpenSSL\bin
 ```
 
+## Prerequisites
+Add all the necessary libraries to your path environment variable:
+```bash
+C:\Program Files (x86)\Poco\bin;
+C:\Program Files (x86)\libzip\bin;
+C:\Program Files (x86)\zlib-1.2.11\bin;
+C:\Program Files (x86)\xxHash\bin;
+C:\Program Files (x86)\Sentry-Native\bin;
+C:\Program Files (x86)\log4cplus\bin;
+C:\Program Files (x86)\cppunit\bin;
+C:\Program Files\OpenSSL\bin;
+```
+
+## Using CLion
+
+### CMake Parameters
+
+Copy the following list of `CMake` variables in the CMake options field:
+```bash
+-DCMAKE_BUILD_TYPE:STRING=Debug
+-DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
+-DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak
+-DCMAKE_INSTALL_PREFIX=F:/Projects/cmake-build-release_CLion
+-DBUILD_UNIT_TESTS:BOOL=ON
+-DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.2.3/msvc2019_64
+-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
+-DZLIB_INCLUDE_DIR:PATH=F:/Projects/zlib-1.2.11/include
+-DZLIB_LIBRARY_RELEASE:FILEPATH=F:/Projects/zlib-1.2.11/lib/zlib.lib
+-DVFS_STATIC_LIBRARY:FILEPATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Debug/Vfs.lib
+-DVFS_DIRECTORY:PATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Release
+```
+![alt text](CLion_cmake_options-1.png)
+
 ## Using Qt Creator
 
 You can disable QML debugger from the settings to avoid some error pop-ups.
