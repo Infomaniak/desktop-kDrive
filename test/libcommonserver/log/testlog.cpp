@@ -58,7 +58,7 @@ void TestLog::testLargeLogRolling(void) {
     customRollingFileAppender->setMaxFileSize(maxSize);
 
     // Generate a log larger than the max log file size. (log header is 50bytes)
-    const std::string testLog = std::string(maxSize, 'a');
+    const auto testLog = std::string(maxSize, 'a');
     LOG_DEBUG(_logger, testLog.c_str());
 
     customRollingFileAppender->setMaxFileSize(previousMaxSize);
