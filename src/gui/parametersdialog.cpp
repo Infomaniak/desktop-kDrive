@@ -365,15 +365,9 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                 .arg(err);
             break;
         case DbError:
-            if (exitCause == ExitCause::DbAccessError) {
-                return tr("A technical error has occurred (error %1).<br>"
-                          "Please empty the history and if the error persists, contact our support team.")
-                    .arg(err);
-            } else {
-                return tr("A technical error has occurred (error %1).<br>"
-                          "Please empty the history and if the error persists, contact our support team.")
-                    .arg(err);
-            }
+            return tr("A technical error has occurred (error %1).<br>"
+                      "Please empty the history and if the error persists, contact our support team.")
+                .arg(err);
             break;
         case BackError:
             return tr("A technical error has occurred (error %1).<br>"
@@ -970,8 +964,7 @@ void ParametersDialog::onRefreshStatusNeeded() {
 
 void ParametersDialog::onItemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo) {
     using enum KDC::SyncFileStatus;
-    if (itemInfo.status() != Error && itemInfo.status() != Conflict &&
-        itemInfo.status() != Inconsistency) {
+    if (itemInfo.status() != Error && itemInfo.status() != Conflict && itemInfo.status() != Inconsistency) {
         return;
     }
 
