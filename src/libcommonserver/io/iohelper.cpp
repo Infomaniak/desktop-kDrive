@@ -86,59 +86,61 @@ IoError IoHelper::stdError2ioError(const std::error_code &ec) noexcept {
 
 IoError IoHelper::posixError2ioError(int error) noexcept {
     switch (error) {
+        using enum KDC::IoError;
         case 0:
-            return IoError::Success;
+            return Success;
         case EACCES:
-            return IoError::AccessDenied;
+            return AccessDenied;
         case EEXIST:
-            return IoError::FileExists;
+            return FileExists;
         case EISDIR:
-            return IoError::IsADirectory;
+            return IsADirectory;
         case EINVAL:
-            return IoError::InvalidArgument;
+            return InvalidArgument;
         case ENAMETOOLONG:
-            return IoError::FileNameTooLong;
+            return FileNameTooLong;
 #ifdef _WIN32
         case ESRCH:
 #endif
         case ENOENT:
-            return IoError::NoSuchFileOrDirectory;
+            return NoSuchFileOrDirectory;
 #ifdef __APPLE__
         case ENOATTR:
             return IoError::AttrNotFound;
 #endif
         case ENOSPC:
-            return IoError::DiskFull;
+            return DiskFull;
         case ERANGE:
-            return IoError::ResultOutOfRange;
+            return ResultOutOfRange;
         default:
-            return IoError::Unknown;
+            return Unknown;
     }
 }
 
 std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
     switch (ioError) {
-        case IoError::AccessDenied:
+        using enum KDC::IoError;
+        case AccessDenied:
             return "Access denied";
-        case IoError::AttrNotFound:
+        case AttrNotFound:
             return "Attribute not found";
-        case IoError::DiskFull:
+        case DiskFull:
             return "Disk full";
-        case IoError::FileExists:
+        case FileExists:
             return "File exists";
-        case IoError::FileNameTooLong:
+        case FileNameTooLong:
             return "File name too long";
-        case IoError::InvalidArgument:
+        case InvalidArgument:
             return "Invalid argument";
-        case IoError::IsADirectory:
+        case IsADirectory:
             return "Is a directory";
-        case IoError::NoSuchFileOrDirectory:
+        case NoSuchFileOrDirectory:
             return "No such file or directory";
-        case IoError::ResultOutOfRange:
+        case ResultOutOfRange:
             return "Result out of range";
-        case IoError::Success:
+        case Success:
             return "Success";
-        case IoError::InvalidDirectoryIterator:
+        case InvalidDirectoryIterator:
             return "Invalid directory iterator";
         default:
             return "Unknown error";

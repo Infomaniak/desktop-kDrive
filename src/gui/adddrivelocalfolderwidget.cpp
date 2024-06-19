@@ -268,22 +268,21 @@ void AddDriveLocalFolderWidget::updateUI() {
 
     if (_liteSync) {
         VirtualFileMode virtualFileMode;
-        const ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-        if (exitCode != ExitCode::Ok) {
+        if (const ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode); exitCode != ExitCode::Ok) {
             qCWarning(lcAddDriveLocalFolderWidget) << "Error in Requests::bestAvailableVfsMode";
             return;
         }
-
-        if (virtualFileMode == VirtualFileMode::Win || virtualFileMode == VirtualFileMode::Mac) {
+        using enum VirtualFileMode;
+        if (virtualFileMode == Win || virtualFileMode == Mac) {
             // Check file system
-            const QString fsName(KDC::CommonUtility::fileSystemName(_localFolderPath));
-            _folderCompatibleWithLiteSync = (virtualFileMode == VirtualFileMode::Win && fsName == "NTFS") ||
-                                            (virtualFileMode == VirtualFileMode::Mac && fsName == "apfs");
+            const QString fsName(CommonUtility::fileSystemName(_localFolderPath));
+            _folderCompatibleWithLiteSync = (virtualFileMode == Win && fsName == "NTFS") ||
+                                            (virtualFileMode == Mac && fsName == "apfs");
             if (!_folderCompatibleWithLiteSync) {
                 _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync."
                                           " Please select another folder or if you continue Lite Sync will be disabled."
                                           " <a style="%1" href="%2">Learn more</a>)")
-                                           .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
+                                           .arg(CommonUtility::linkStyle, GuiUtility::learnMoreLink));
                 _warningWidget->setVisible(true);
             } else {
                 _warningWidget->setVisible(false);

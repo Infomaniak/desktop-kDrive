@@ -548,11 +548,12 @@ void SynthesisPopover::getFirstSyncWithStatus(SyncStatus status, int driveDbId, 
 }
 
 void SynthesisPopover::getFirstSyncByPriority(int driveDbId, int &syncDbId, bool &found) {
+    using enum KDC::SyncStatus;
     static QVector<SyncStatus> statusPriority = QVector<SyncStatus>()
-                                                << SyncStatus::Starting << SyncStatus::Running
-                                                << SyncStatus::PauseAsked << SyncStatus::Paused
-                                                << SyncStatus::StopAsked << SyncStatus::Stopped
-                                                << SyncStatus::Error << SyncStatus::Idle;
+                                                << Starting << Running
+                                                << PauseAsked << Paused
+                                                << StopAsked << Stopped
+                                                << Error << Idle;
 
     found = false;
     for (SyncStatus status : qAsConst(statusPriority)) {
@@ -1201,35 +1202,36 @@ void SynthesisPopover::onCrashFatal(bool checked) {
 }
 
 void SynthesisPopover::onNotificationActionTriggered(bool checked) {
+    using enum KDC::NotificationsDisabled;
     Q_UNUSED(checked)
 
     bool notificationAlreadyDisabledForPeriod =
-        _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
+        _notificationsDisabled != Never && _notificationsDisabled != Always;
 
     _notificationsDisabled = qvariant_cast<NotificationsDisabled>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
     switch (_notificationsDisabled) {
-        case NotificationsDisabled::Never:
+        case Never:
             _notificationsDisabledUntilDateTime = QDateTime();
             break;
-        case NotificationsDisabled::OneHour:
+        case OneHour:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                       ? _notificationsDisabledUntilDateTime.addSecs(60 * 60)
                                                       : QDateTime::currentDateTime().addSecs(60 * 60);
             break;
-        case NotificationsDisabled::UntilTomorrow:
+        case UntilTomorrow:
             _notificationsDisabledUntilDateTime = QDateTime(QDateTime::currentDateTime().addDays(1).date(), QTime(8, 0));
             break;
-        case NotificationsDisabled::TreeDays:
+        case TreeDays:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                       ? _notificationsDisabledUntilDateTime.addDays(3)
                                                       : QDateTime::currentDateTime().addDays(3);
             break;
-        case NotificationsDisabled::OneWeek:
+        case OneWeek:
             _notificationsDisabledUntilDateTime = notificationAlreadyDisabledForPeriod
                                                       ? _notificationsDisabledUntilDateTime.addDays(7)
                                                       : QDateTime::currentDateTime().addDays(7);
             break;
-        case NotificationsDisabled::Always:
+        case Always:
             _notificationsDisabledUntilDateTime = QDateTime();
             break;
     }

@@ -597,19 +597,20 @@ bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
 
 PinState VfsMac::pinState(const QString &relativePath) {
     // Read pin state from file attributes
+    using enum PinState;
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     QString pinState;
     if (!_connector->vfsGetPinState(Path2QStr(fullPath), pinState)) {
-        return PinState::Unspecified;
+        return Unspecified;
     }
 
     if (pinState == VFS_PIN_STATE_PINNED) {
-        return PinState::AlwaysLocal;
+        return AlwaysLocal;
     } else if (pinState == VFS_PIN_STATE_UNPINNED) {
-        return PinState::OnlineOnly;
+        return OnlineOnly;
     }
 
-    return PinState::Unspecified;
+    return Unspecified;
 }
 
 bool VfsMac::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {

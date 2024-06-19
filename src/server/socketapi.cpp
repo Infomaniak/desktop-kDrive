@@ -652,25 +652,26 @@ QString SocketApi::socketAPIString(KDC::SyncFileStatus status, bool isPlaceholde
     QString statusString;
 
     switch (status) {
-        case KDC::SyncFileStatus::Unknown:
+        using enum SyncFileStatus;
+        case Unknown:
             statusString = QLatin1String("NOP");
             break;
-        case KDC::SyncFileStatus::Syncing:
+        case Syncing:
             statusString = QLatin1String("SYNC_%1").arg(QString::number(progress));
             break;
-        case KDC::SyncFileStatus::Conflict:
-        case KDC::SyncFileStatus::Ignored:
+        case Conflict:
+        case Ignored:
             statusString = QLatin1String("IGNORE");
             break;
-        case KDC::SyncFileStatus::Success:
-        case KDC::SyncFileStatus::Inconsistency:
+        case Success:
+        case Inconsistency:
             if ((isPlaceholder && isHydrated) || !isPlaceholder) {
                 statusString = QLatin1String("OK");
             } else {
                 statusString = QLatin1String("ONLINE");
             }
             break;
-        case KDC::SyncFileStatus::Error:
+        case Error:
             statusString = QLatin1String("ERROR");
             break;
     }

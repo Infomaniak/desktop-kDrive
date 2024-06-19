@@ -447,9 +447,10 @@ ExitCode ConflictResolverWorker::undoMove(const std::shared_ptr<Node> moveNode, 
     if (isABelowB(originParentNode, moveNode) || originParentNode->hasChangeEvent(OperationType::Delete)) {
         undoPossible = false;
     } else {
-        auto potentialOriginNode = originParentNode->getChildExcept(originPath->filename().native(), OperationType::Delete);
-        if (potentialOriginNode && (potentialOriginNode->hasChangeEvent(OperationType::Create) ||
-                                    potentialOriginNode->hasChangeEvent(OperationType::Move))) {
+        using enum KDC::OperationType;
+        auto potentialOriginNode = originParentNode->getChildExcept(originPath->filename().native(), Delete);
+        if (potentialOriginNode && (potentialOriginNode->hasChangeEvent(Create) ||
+                                    potentialOriginNode->hasChangeEvent(Move))) {
             undoPossible = false;
         }
     }

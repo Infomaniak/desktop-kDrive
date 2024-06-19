@@ -533,61 +533,62 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
 }
 
 ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo) {
+    using enum KDC::ExitCode;
     std::string tmpStr;
     if (!JsonParserUtility::extractValue(actionObj, actionKey, tmpStr)) {
-        return ExitCode::BackError;
+        return BackError;
     }
     actionInfo.actionCode = getActionCode(tmpStr);
 
     int64_t tmpInt = 0;
     if (!JsonParserUtility::extractValue(actionObj, fileIdKey, tmpInt)) {
-        return ExitCode::BackError;
+        return BackError;
     }
     actionInfo.nodeId = std::to_string(tmpInt);
 
     if (!JsonParserUtility::extractValue(actionObj, parentIdKey, tmpInt)) {
-        return ExitCode::BackError;
+        return BackError;
     }
     actionInfo.parentNodeId = std::to_string(tmpInt);
 
     if (!JsonParserUtility::extractValue(actionObj, pathKey, actionInfo.path)) {
-        return ExitCode::BackError;
+        return BackError;
     }
     actionInfo.name = actionInfo.path.substr(actionInfo.path.find_last_of('/') + 1);  // +1 to ignore the last "/"
 
     SyncName tmpSyncName;
     if (!JsonParserUtility::extractValue(actionObj, destinationKey, tmpSyncName, false)) {
-        return ExitCode::BackError;
+        return BackError;
     }
     actionInfo.destName = tmpSyncName.substr(tmpSyncName.find_last_of('/') + 1);  // +1 to ignore the last "/"
 
     if (!JsonParserUtility::extractValue(actionObj, createdAtKey, actionInfo.createdAt, false)) {
-        return ExitCode::BackError;
+        return BackError;
     }
 
     if (!JsonParserUtility::extractValue(actionObj, lastModifiedAtKey, actionInfo.modtime, false)) {
-        return ExitCode::BackError;
+        return BackError;
     }
 
     if (!JsonParserUtility::extractValue(actionObj, fileTypeKey, tmpStr)) {
-        return ExitCode::BackError;
+        return BackError;
     }
     actionInfo.type = tmpStr == fileKey ? NodeType::File : NodeType::Directory;
 
     if (actionInfo.type == NodeType::File) {
         if (!JsonParserUtility::extractValue(actionObj, sizeKey, actionInfo.size, false)) {
-            return ExitCode::BackError;
+            return BackError;
         }
     }
 
     Poco::JSON::Object::Ptr capabilitiesObj = actionObj->getObject(capabilitiesKey);
     if (capabilitiesObj) {
         if (!JsonParserUtility::extractValue(capabilitiesObj, canWriteKey, actionInfo.canWrite)) {
-            return ExitCode::BackError;
+            return BackError;
         }
     }
 
-    return ExitCode::Ok;
+    return Ok;
 }
 
 ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName, const ActionInfo &actionInfo,

@@ -121,16 +121,17 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
 
     std::wstring causeStr;
     switch (inconsistencyType) {
-        case InconsistencyType::Case:
+        using enum KDC::InconsistencyType;
+        case Case:
             causeStr = L"of a name clash";
             break;
-        case InconsistencyType::ForbiddenChar:
+        case ForbiddenChar:
             causeStr = L"of a forbidden character";
             break;
-        case InconsistencyType::ReservedName:
+        case ReservedName:
             causeStr = L"the name is reserved on this OS";
             break;
-        case InconsistencyType::NameLength:
+        case NameLength:
             causeStr = L"the name is too long";
             break;
         default:

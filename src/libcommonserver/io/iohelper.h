@@ -364,9 +364,10 @@ struct IoHelper {
         static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
         static inline bool isLink(LinkType linkType) {
-            return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
-                   (linkType == LinkType::FinderAlias && OldUtility::isMac()) ||
-                   (linkType == LinkType::Junction && OldUtility::isWindows());
+            using enum KDC::LinkType;
+            return linkType == Symlink || linkType == Hardlink ||
+                   (linkType == FinderAlias && OldUtility::isMac()) ||
+                   (linkType == Junction && OldUtility::isWindows());
         }
 
     protected:

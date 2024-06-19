@@ -89,15 +89,16 @@ AbstractNetworkJob::~AbstractNetworkJob() {
 }
 
 bool AbstractNetworkJob::isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept {
-    static const std::set<ExitCause> managedExitCauses = {ExitCause::InvalidName,   ExitCause::ApiErr,
-                                                          ExitCause::FileTooBig,    ExitCause::NotFound,
-                                                          ExitCause::QuotaExceeded, ExitCause::FileAlreadyExist};
+    using enum KDC::ExitCause;
+    static const std::set<ExitCause> managedExitCauses = {InvalidName,   ApiErr,
+                                                          FileTooBig,    NotFound,
+                                                          QuotaExceeded, FileAlreadyExist};
 
     switch (exitCode) {
         case ExitCode::BackError:
             return managedExitCauses.find(exitCause) != managedExitCauses.cend();
         case ExitCode::NetworkError:
-            return exitCause == ExitCause::NetworkTimeout;
+            return exitCause == NetworkTimeout;
         default:
             return false;
     }
@@ -458,8 +459,9 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 }
 
                 if (!ok) {
-                    if (_exitCode != ExitCode::Ok && _exitCode != ExitCode::DataError && _exitCode != ExitCode::InvalidToken &&
-                        (_exitCode != ExitCode::BackError || _exitCause != ExitCause::NotFound)) {
+                    using enum KDC::ExitCode;
+                    if (_exitCode != Ok && _exitCode != DataError && _exitCode != InvalidToken &&
+                        (_exitCode != BackError || _exitCause != ExitCause::NotFound)) {
                         LOG_WARN(_logger, "Error handling failed");
                     }
                     res = false;

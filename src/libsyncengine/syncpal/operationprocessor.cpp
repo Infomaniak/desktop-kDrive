@@ -26,6 +26,7 @@ OperationProcessor::OperationProcessor(std::shared_ptr<SyncPal> syncPal, const s
     : ISyncWorker(syncPal, name, shortName) {}
 
 bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode) {
+    using enum KDC::OperationType;
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
         // We can have a conflict only if the node on both replica has change events
         return false;
@@ -35,13 +36,13 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
     std::shared_ptr<Snapshot> otherSnapshot = _syncPal->snapshot(correspondingNode->side(), true);
 
     // Create-Create pseudo-conflict
-    if (node->hasChangeEvent(OperationType::Create) && correspondingNode->hasChangeEvent(OperationType::Create) &&
+    if (node->hasChangeEvent(Create) && correspondingNode->hasChangeEvent(Create) &&
         node->type() == NodeType::Directory && correspondingNode->type() == NodeType::Directory) {
         return true;
     }
 
     // Move-Move (Source) pseudo-conflict
-    if (node->hasChangeEvent(OperationType::Move) && correspondingNode->hasChangeEvent(OperationType::Move) &&
+    if (node->hasChangeEvent(Move) && correspondingNode->hasChangeEvent(Move) &&
         node->parentNode()->idb() == correspondingNode->parentNode()->idb() && node->name() == correspondingNode->name()) {
         return true;
     }
@@ -54,11 +55,12 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     bool useContentChecksum =
         !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
-    bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
-                           snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
-    if (node->type() == NodeType::File && correspondingNode->type() == node->type() &&
-        node->hasChangeEvent((OperationType::Create | OperationType::Edit)) &&
-        correspondingNode->hasChangeEvent(OperationType::Create | OperationType::Edit) &&
+
+    if (bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
+                               snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
+        node->type() == NodeType::File && correspondingNode->type() == node->type() &&
+        node->hasChangeEvent(Create | Edit) &&
+        correspondingNode->hasChangeEvent(Create | Edit) &&
         (useContentChecksum ? snapshot->contentChecksum(*node->id()) == otherSnapshot->contentChecksum(*correspondingNode->id())
                             : sameSizeAndDate)) {
         return true;

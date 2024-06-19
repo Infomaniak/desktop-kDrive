@@ -1692,9 +1692,10 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
 
 namespace details {
 bool isManagedBackError(ExitCause exitCause) {
-    static const std::set<ExitCause> managedExitCauses= {ExitCause::InvalidName,   ExitCause::ApiErr,
-                                                          ExitCause::FileTooBig,    ExitCause::NotFound,
-                                                          ExitCause::QuotaExceeded, ExitCause::UploadNotTerminated};
+    using enum KDC::ExitCause;
+    static const std::set<ExitCause> managedExitCauses= {InvalidName,   ApiErr,
+                                                          FileTooBig,    NotFound,
+                                                          QuotaExceeded, UploadNotTerminated};
 
     return managedExitCauses.find(exitCause) != managedExitCauses.cend();
 }
@@ -1888,13 +1889,14 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
     propagateChange = true;
 
     switch (syncOp->conflict().type()) {
-        case ConflictType::EditEdit:        // Edit conflict pattern
-        case ConflictType::CreateCreate:    // Name clash conflict pattern
-        case ConflictType::MoveCreate:      // Name clash conflict pattern
-        case ConflictType::MoveMoveDest:    // Name clash conflict pattern
-        case ConflictType::MoveMoveSource:  // Name clash conflict pattern
+        using enum KDC::ConflictType;
+        case EditEdit:        // Edit conflict pattern
+        case CreateCreate:    // Name clash conflict pattern
+        case MoveCreate:      // Name clash conflict pattern
+        case MoveMoveDest:    // Name clash conflict pattern
+        case MoveMoveSource:  // Name clash conflict pattern
         {
-            if (syncOp->conflict().type() != ConflictType::MoveMoveSource) {
+            if (syncOp->conflict().type() != MoveMoveSource) {
                 DbNodeId dbId = -1;
                 bool localNodeFoundInDb = false;
                 // when it's an Edit-Edit we want to delete the node
@@ -1919,7 +1921,7 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
             propagateChange = false;
             break;
         }
-        case ConflictType::EditDelete:  // Delete conflict pattern
+        case EditDelete:  // Delete conflict pattern
         {
             if (syncOp->type() == OperationType::Delete) {
                 // Just apply normal behavior for delete operations
@@ -1930,7 +1932,7 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
             propagateChange = false;
             break;
         }
-        case ConflictType::CreateParentDelete:  // Indirect conflict pattern
+        case CreateParentDelete:  // Indirect conflict pattern
         {
             // Remove node from update tree
             std::shared_ptr<UpdateTree> updateTree = affectedUpdateTree(syncOp);
@@ -1941,10 +1943,10 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
             propagateChange = false;
             break;
         }
-        case ConflictType::MoveDelete:        // Delete conflict pattern
-        case ConflictType::MoveParentDelete:  // Indirect conflict pattern
-        case ConflictType::MoveMoveCycle:     // Name clash conflict pattern
-        case ConflictType::None:
+        case MoveDelete:        // Delete conflict pattern
+        case MoveParentDelete:  // Indirect conflict pattern
+        case MoveMoveCycle:     // Name clash conflict pattern
+        case None:
         default:
             // Just apply normal behavior
             break;

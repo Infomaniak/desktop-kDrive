@@ -267,14 +267,15 @@ QIcon SynchronizedItemWidget::getIconWithStatus(const QString &filePath, NodeTyp
 void SynchronizedItemWidget::setDirectionIcon() {
     if (_fileDirectionLabel && _directionIconSize != QSize() && _directionIconColor != QColor()) {
         switch (_item.direction()) {
-            case SyncDirection::Unknown:
+            using enum KDC::SyncDirection;
+            case Unknown:
                 break;
-            case SyncDirection::Up:
+            case Up:
                 _fileDirectionLabel->setPixmap(
                     KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/upload.svg", _directionIconColor)
                         .pixmap(_directionIconSize));
                 break;
-            case SyncDirection::Down:
+            case Down:
                 _fileDirectionLabel->setPixmap(
                     KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/download.svg", _directionIconColor)
                         .pixmap(_directionIconSize));

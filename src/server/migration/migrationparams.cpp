@@ -99,60 +99,64 @@ static const QString excludedAppsFileName("litesync-exclude.lst");
 MigrationParams::MigrationParams() : _logger(Log::instance()->getLogger()), _proxyNotSupported(false) {}
 
 Language MigrationParams::strToLanguage(QString lang) {
+    using enum KDC::Language;
     if (lang == "en") {
-        return Language::English;
+        return English;
     } else if (lang == "fr") {
-        return Language::French;
+        return French;
     } else if (lang == "de") {
-        return Language::German;
+        return German;
     } else if (lang == "es") {
-        return Language::Spanish;
+        return Spanish;
     } else if (lang == "it") {
-        return Language::Italian;
+        return Italian;
     } else {
-        return Language::Default;
+        return Default;
     }
 }
 
 LogLevel MigrationParams::intToLogLevel(int log) {
     switch (log) {
+        using enum KDC::LogLevel;
         case 0:
-            return LogLevel::Debug;
+            return Debug;
         case 1:
-            return LogLevel::Info;
+            return Info;
         case 2:
-            return LogLevel::Warning;
+            return Warning;
         case 3:
-            return LogLevel::Error;
+            return Error;
         case 4:
-            return LogLevel::Fatal;
+            return Fatal;
         default:
-            return LogLevel::Info;
+            return Info;
     }
 }
 
 VirtualFileMode MigrationParams::modeFromString(const QString &str) {
+    using enum KDC::VirtualFileMode;
     if (str == "suffix") {
-        return VirtualFileMode::Suffix;
+        return Suffix;
     } else if (str == "wincfapi") {
-        return VirtualFileMode::Win;
+        return Win;
     } else if (str == "mac") {
-        return VirtualFileMode::Mac;
+        return Mac;
     } else {
-        return VirtualFileMode::Off;
+        return Off;
     }
 }
 
 ProxyType intToProxyType(int pTypeInt) {
     switch (pTypeInt) {
+        using enum KDC::ProxyType;
         case 0:
-            return ProxyType::System;
+            return System;
         case 1:
-            return ProxyType::Socks5;
+            return Socks5;
         case 3:
-            return ProxyType::HTTP;
+            return HTTP;
         default:
-            return ProxyType::None;
+            return None;
     }
 }
 
@@ -266,6 +270,7 @@ ExitCode MigrationParams::migrateAccountsParams() {
 }
 
 ExitCode MigrationParams::loadAccount(QSettings &settings) {
+    using enum ExitCode;
     bool found;
     User user;
     int userId = settings.value(QString(userIdC)).toInt();
@@ -273,14 +278,14 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     // User
     if (!ParmsDb::instance()->selectUserByUserId(userId, user, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectUserByUserId");
-        return ExitCode::DbError;
+        return DbError;
     }
 
     if (!found) {
         int userDbId;
         if (!ParmsDb::instance()->getNewUserDbId(userDbId)) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewUserDbId");
-            return ExitCode::DbError;
+            return DbError;
         }
         user.setUserId(userId);
         user.setDbId(userDbId);
@@ -290,7 +295,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
         user.setToMigrate(true);
         if (!ParmsDb::instance()->insertUser(user)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertUser");
-            return ExitCode::DbError;
+            return DbError;
         }
     }
 
@@ -304,40 +309,40 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
     int driveId = extractDriveIdFromUrl(strDriveUrl.toStdString());
     if (!ParmsDb::instance()->selectDriveByDriveId(driveId, drive, found)) {
         LOG_WARN(_logger, "Error in ParmsDb::selectDriveByDriveId");
-        return ExitCode::DbError;
+        return DbError;
     }
 
     if (!found) {
         // create account
         if (!ParmsDb::instance()->getNewAccountDbId(accountDbId)) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewAccountDbId");
-            return ExitCode::DbError;
+            return DbError;
         }
         account = Account(accountDbId, 0, user.dbId());
         if (!ParmsDb::instance()->insertAccount(account)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
-            return ExitCode::DbError;
+            return DbError;
         }
 
         if (!ParmsDb::instance()->getNewDriveDbId(driveDbId)) {
             LOG_WARN(_logger, "Error in ParmsDb::getNewDriveDbId");
-            return ExitCode::DbError;
+            return DbError;
         }
         std::string driveTmpName = "<" + std::to_string(driveId) + ">";
         drive = Drive(driveDbId, driveId, accountDbId, driveTmpName);
         if (!ParmsDb::instance()->insertDrive(drive)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertDrive");
-            return ExitCode::DbError;
+            return DbError;
         }
     } else {
         // get existing accound
         if (!ParmsDb::instance()->selectAccount(drive.accountDbId(), account, found)) {
             LOG_WARN(_logger, "Error in ParmsDb::insertAccount");
-            return ExitCode::DbError;
+            return DbError;
         }
         if (!found) {
             LOG_WARN(_logger, "Account not found with accountId=" << drive.accountDbId());
-            return ExitCode::DataError;
+            return DataError;
         }
 
         driveDbId = drive.dbId();
@@ -365,13 +370,13 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
         found = false;
         std::string appPassword;
         bool appPasswordReadError = false;
-        if (getOldAppPwd(keychainKeyAppPassword, appPassword, found) != ExitCode::Ok) {
+        if (getOldAppPwd(keychainKeyAppPassword, appPassword, found) != Ok) {
 #ifdef Q_OS_WIN
             appPasswordReadError = true;
 #else
             // Retry without :index
             keychainKeyAppPassword = user.email() + app_password + oldKeychainKeySeparator + urlKey;
-            if (getOldAppPwd(keychainKeyAppPassword, appPassword, found) != ExitCode::Ok) {
+            if (getOldAppPwd(keychainKeyAppPassword, appPassword, found) != Ok) {
                 appPasswordReadError = true;
             }
 #endif
@@ -381,7 +386,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             LOG_WARN(_logger, "Error when trying to access keychain, user will be asked to connect again");
         } else {
             LOG_DEBUG(_logger, "Old app password has been read");
-            if (found && setToken(user, appPassword) == ExitCode::Ok) {
+            if (found && setToken(user, appPassword) == Ok) {
                 LOG_DEBUG(_logger, "New token set");
             } else {
                 LOG_DEBUG(_logger, "Error when trying to set token, user will be asked to connect again");
@@ -405,7 +410,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
             int syncDbId;
             if (!ParmsDb::instance()->getNewSyncDbId(syncDbId)) {
                 LOG_WARN(_logger, "Error in ParmsDb::getNewSyncDbId");
-                return ExitCode::DbError;
+                return DbError;
             }
             Sync sync;
             sync.setDbId(syncDbId);
@@ -442,7 +447,7 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
 
             if (!ParmsDb::instance()->insertSync(sync)) {
                 LOG_WARN(_logger, "Error in ParmsDb::insertSync");
-                return ExitCode::DbError;
+                return DbError;
             }
 
             bool isMaster = (targetPath == targetPath.root_path());
@@ -467,18 +472,18 @@ ExitCode MigrationParams::loadAccount(QSettings &settings) {
                     bool found;
                     if (!ParmsDb::instance()->updateSync(syncCheckPair.second, found)) {
                         LOG_WARN(_logger, "Error in ParmsDb::updateSync");
-                        return ExitCode::DbError;
+                        return DbError;
                     }
                     if (!found) {
                         LOG_WARN(_logger, "Sync not found in ParmsDb :" << syncCheckPair.second.dbId());
-                        return ExitCode::DataError;
+                        return DataError;
                     }
                 }
             }
         }
     }
 
-    return ExitCode::Ok;
+    return Ok;
 }
 
 ExitCode MigrationParams::migrateTemplateExclusion() {

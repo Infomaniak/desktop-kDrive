@@ -132,14 +132,15 @@ std::string Error::errorString() const {
 
 bool Error::isSimilarTo(const Error &other) const {
     switch (_level) {
-        case ErrorLevel::Server: {
+        using enum ErrorLevel;
+        case Server: {
             return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) &&
                    (_functionName == other.functionName());
         }
-        case ErrorLevel::SyncPal: {
+        case SyncPal: {
             return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) && (_workerName == other.workerName());
         }
-        case ErrorLevel::Node: {
+        case Node: {
             return (_conflictType == other.conflictType()) && (_inconsistencyType == other.inconsistencyType()) &&
                    (_cancelType == other.cancelType()) && (_path == other.path() && _destinationPath == other.destinationPath());
         }
