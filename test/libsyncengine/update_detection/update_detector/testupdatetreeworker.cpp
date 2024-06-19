@@ -278,6 +278,80 @@ void TestUpdateTreeWorker::testUtilsFunctions() {
     CPPUNIT_ASSERT(_updateTree->getNodeByPath(newPath)->id() == "id4111");
 }
 
+void TestUpdateTreeWorker::testUpdateTmpFileNode() {
+    auto deleteOp =
+        std::make_shared<FSOperation>(OperationTypeDelete, "id51", NodeTypeFile, 1654788552, 1654788552, 12345, "Dir 5/File 5.1");
+    auto createOp = std::make_shared<FSOperation>(OperationTypeCreate, "id511", NodeTypeFile, 1654798336, 1654798336, 12345,
+                                                  "Dir 5/File 5.1");
+
+    {
+        auto newNode = _updateTreeWorker->getOrCreateNodeFromPath("Dir 5/File 5.1");
+        CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
+        CPPUNIT_ASSERT(newNode->isTmp());
+
+        _updateTreeWorker->updateTmpFileNode(newNode, createOp, deleteOp, OperationTypeEdit);
+        CPPUNIT_ASSERT_EQUAL(NodeId("id511"), *newNode->id());
+        CPPUNIT_ASSERT_EQUAL(*newNode->createdAt(), createOp->createdAt());
+        CPPUNIT_ASSERT_EQUAL(*newNode->lastmodified(), createOp->lastModified());
+        CPPUNIT_ASSERT_EQUAL(newNode->size(), createOp->size());
+        CPPUNIT_ASSERT(newNode->hasChangeEvent(OperationTypeEdit));
+        CPPUNIT_ASSERT_EQUAL(deleteOp->nodeId(), *newNode->previousId());
+        CPPUNIT_ASSERT(!newNode->isTmp());
+        CPPUNIT_ASSERT(_updateTree->nodes()[createOp->nodeId()] == newNode);
+    }
+
+    _updateTree->deleteNode(NodeId("id511"));
+
+    {
+        auto newNode = _updateTreeWorker->getOrCreateNodeFromPath("Dir 5/File 5.1");
+        CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
+        CPPUNIT_ASSERT(newNode->isTmp());
+
+        _updateTreeWorker->updateTmpFileNode(newNode, deleteOp, deleteOp, OperationTypeDelete);
+        CPPUNIT_ASSERT_EQUAL(NodeId("id51"), *newNode->id());
+        CPPUNIT_ASSERT_EQUAL(*newNode->createdAt(), deleteOp->createdAt());
+        CPPUNIT_ASSERT_EQUAL(*newNode->lastmodified(), deleteOp->lastModified());
+        CPPUNIT_ASSERT_EQUAL(newNode->size(), createOp->size());
+        CPPUNIT_ASSERT(newNode->hasChangeEvent(OperationTypeDelete));
+        CPPUNIT_ASSERT(!newNode->isTmp());
+        CPPUNIT_ASSERT(_updateTree->nodes()[deleteOp->nodeId()] == newNode);
+    }
+}
+
+void TestUpdateTreeWorker::testHandleCreateOperationsWithSamePath() {
+    setUpUpdateTree();
+
+    // Regular case: success
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeDelete, "id4111", NodeTypeFile, 1654798667, 1654798667,
+                                                          12345, "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeDelete, "id51", NodeTypeFile, 1654788552, 1654788552,
+                                                          12345, "Dir 5/File 5.1"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id511", NodeTypeFile, 1654798336, 1654798336,
+                                                          12345, "Dir 5/File 5.1"));
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->handleCreateOperationsWithSamePath());
+
+
+    // Duplicate paths imply failure
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id511bis", NodeTypeFile, 1654798336, 1654798336,
+                                                          12345, "Dir 5/File 5.1"));
+    CPPUNIT_ASSERT_EQUAL(ExitCodeDataError, _updateTreeWorker->handleCreateOperationsWithSamePath());
+}
+
+
+void TestUpdateTreeWorker::testSearchForParentNode() {
+    setUpUpdateTree();
+    std::shared_ptr<Node> parentNode;
+
+    // A parent is found.
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->searchForParentNode("Dir 4/Dir 4.1/Dir 4.1.1", parentNode));
+    CPPUNIT_ASSERT(parentNode);
+    CPPUNIT_ASSERT_EQUAL(NodeId("id41"), *parentNode->id());
+
+    // No such parent exists.
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->searchForParentNode("Dir 4/Dir 5.1/Dir 4.1.1", parentNode));
+    CPPUNIT_ASSERT(!parentNode);
+}
+
 void TestUpdateTreeWorker::testStep1() {
     setUpUpdateTree();
 
