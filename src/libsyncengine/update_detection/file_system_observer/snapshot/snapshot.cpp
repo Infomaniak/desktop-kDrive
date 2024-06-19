@@ -148,7 +148,7 @@ bool Snapshot::removeItem(const NodeId &id) {
     _items.erase(id);
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Item " << id.c_str() << "removed from remote snapshot.");
+        LOG_DEBUG(Log::instance()->getLogger(), "Item " << id.c_str() << " removed from remote snapshot.");
     }
 
     return true;
