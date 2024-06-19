@@ -9,7 +9,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  KDRIVE_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
+  KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
   KDRIVE_TEST_CI_ACCOUNT_ID: ${{ vars.KDRIVE_TEST_CI_ACCOUNT_ID }}
   KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
   KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
