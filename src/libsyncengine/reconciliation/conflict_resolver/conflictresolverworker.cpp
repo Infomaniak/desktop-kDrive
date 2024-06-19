@@ -56,7 +56,7 @@ void ConflictResolverWorker::execute() {
 }
 
 ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bool &continueSolving) {
-    LOGW_SYNCPAL_INFO(_logger, L"Solving " << Utility::s2ws(Utility::ConflictType2Str(conflict.type())).c_str()
+    LOGW_SYNCPAL_INFO(_logger, L"Solving " << Utility::s2ws(Utility::conflictType2Str(conflict.type())).c_str()
                                            << L" conflict for items " << SyncName2WStr(conflict.node()->name()).c_str() << L" ("
                                            << Utility::s2ws(*conflict.node()->id()).c_str() << L") and "
                                            << SyncName2WStr(conflict.correspondingNode()->name()).c_str() << L" ("

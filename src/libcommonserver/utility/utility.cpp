@@ -457,7 +457,7 @@ std::wstring Utility::opType2WStr(OperationType opType) {
     return s2ws(opType2Str(opType));
 }
 
-std::string Utility::ConflictType2Str(ConflictType conflictType) {
+std::string Utility::conflictType2Str(ConflictType conflictType) {
     switch (conflictType) {
         using enum KDC::ConflictType;
         case MoveParentDelete: {
@@ -496,8 +496,8 @@ std::string Utility::ConflictType2Str(ConflictType conflictType) {
     }
 }
 
-std::wstring Utility::ConflictType2WStr(ConflictType conflictType) {
-    return s2ws(ConflictType2Str(conflictType));
+std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
+    return s2ws(conflictType2Str(conflictType));
 }
 
 std::string Utility::side2Str(ReplicaSide side) {

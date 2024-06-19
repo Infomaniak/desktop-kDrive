@@ -51,7 +51,7 @@ void ConflictFinderWorker::findConflicts() {
     if (moveMoveCycleList) {
         for (const Conflict &c : *moveMoveCycleList) {
             _syncPal->_conflictQueue->push(c);
-            LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(c.type())).c_str()
+            LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(c.type())).c_str()
                                            << L" conflict found between local node "
                                            << SyncName2WStr(c.localNode()->name()).c_str() << L" ("
                                            << Utility::s2ws(*c.localNode()->id()).c_str() << L") and remote node "
@@ -104,7 +104,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             std::optional<Conflict> createCreateConf = checkCreateCreateConflict(node);
             if (createCreateConf) {
                 _syncPal->_conflictQueue->push(*createCreateConf);
-                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(createCreateConf->type())).c_str()
+                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(createCreateConf->type())).c_str()
                                                << L" conflict found between local node "
                                                << SyncName2WStr(createCreateConf->localNode()->name()).c_str() << L" ("
                                                << Utility::s2ws(*createCreateConf->localNode()->id()).c_str()
@@ -119,7 +119,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             std::optional<Conflict> editEditConf = checkEditEditConflict(node);
             if (editEditConf) {
                 _syncPal->_conflictQueue->push(*editEditConf);
-                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(editEditConf->type())).c_str()
+                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(editEditConf->type())).c_str()
                                                << L" conflict found between local node "
                                                << SyncName2WStr(editEditConf->localNode()->name()).c_str() << L" ("
                                                << Utility::s2ws(*editEditConf->localNode()->id()).c_str() << L") and remote node "
@@ -135,7 +135,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
                 if (moveParentDeleteConf) {
                     for (Conflict c : *moveParentDeleteConf) {
                         _syncPal->_conflictQueue->push(c);
-                        LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(c.type())).c_str()
+                        LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(c.type())).c_str()
                                                        << L" conflict found between local node "
                                                        << SyncName2WStr(c.localNode()->name()).c_str() << L" ("
                                                        << Utility::s2ws(*c.localNode()->id()).c_str() << L") and remote node "
@@ -146,7 +146,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
                 if (createParentDeleteConf) {
                     for (Conflict c : *createParentDeleteConf) {
                         _syncPal->_conflictQueue->push(c);
-                        LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(c.type())).c_str()
+                        LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(c.type())).c_str()
                                                        << L" conflict found between local node "
                                                        << SyncName2WStr(c.localNode()->name()).c_str() << L" ("
                                                        << Utility::s2ws(*c.localNode()->id()).c_str() << L") and remote node "
@@ -159,7 +159,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             std::optional<Conflict> editDeleteConf = checkEditDeleteConflict(node);
             if (moveDeleteConf) {
                 _syncPal->_conflictQueue->push(*moveDeleteConf);
-                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(moveDeleteConf->type())).c_str()
+                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(moveDeleteConf->type())).c_str()
                                                << L" conflict found between local node "
                                                << SyncName2WStr(moveDeleteConf->localNode()->name()).c_str() << L" ("
                                                << Utility::s2ws(*moveDeleteConf->localNode()->id()).c_str()
@@ -169,7 +169,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             }
             if (editDeleteConf) {
                 _syncPal->_conflictQueue->push(*editDeleteConf);
-                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(editDeleteConf->type())).c_str()
+                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(editDeleteConf->type())).c_str()
                                                << L" conflict found between local node "
                                                << SyncName2WStr(editDeleteConf->localNode()->name()).c_str() << L" ("
                                                << Utility::s2ws(*editDeleteConf->localNode()->id()).c_str()
@@ -184,7 +184,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             std::optional<Conflict> moveCreateConf = checkMoveCreateConflict(node);
             if (moveCreateConf) {
                 _syncPal->_conflictQueue->push(*moveCreateConf);
-                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(moveCreateConf->type())).c_str()
+                LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(moveCreateConf->type())).c_str()
                                                << L" conflict found between local node "
                                                << SyncName2WStr(moveCreateConf->localNode()->name()).c_str() << L" ("
                                                << Utility::s2ws(*moveCreateConf->localNode()->id()).c_str()
@@ -196,7 +196,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
                 std::optional<Conflict> moveMoveDestConf = checkMoveMoveDestConflict(node);
                 if (moveMoveDestConf) {
                     _syncPal->_conflictQueue->push(*moveMoveDestConf);
-                    LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(moveMoveDestConf->type())).c_str()
+                    LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(moveMoveDestConf->type())).c_str()
                                                    << L" conflict found between local node "
                                                    << SyncName2WStr(moveMoveDestConf->localNode()->name()).c_str() << L" ("
                                                    << Utility::s2ws(*moveMoveDestConf->localNode()->id()).c_str()
@@ -209,7 +209,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
                 std::optional<Conflict> moveMoveSrcConf = checkMoveMoveSourceConflict(node);
                 if (moveMoveSrcConf) {
                     _syncPal->_conflictQueue->push(*moveMoveSrcConf);
-                    LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::ConflictType2Str(moveMoveSrcConf->type())).c_str()
+                    LOGW_SYNCPAL_INFO(_logger, Utility::s2ws(Utility::conflictType2Str(moveMoveSrcConf->type())).c_str()
                                                    << L" conflict found between local node "
                                                    << SyncName2WStr(moveMoveSrcConf->localNode()->name()).c_str() << L" ("
                                                    << Utility::s2ws(*moveMoveSrcConf->localNode()->id()).c_str()
