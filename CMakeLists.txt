@@ -33,7 +33,7 @@ function(INSTALL_SHARED_LIBS TARGET_DIR)
 
     # PocoJSON
     find_library(POCOJSON_SHARED_LIBRARY NAMES PocoJSON.95 NO_CACHE)
-    message(STATUS "PocoJSON dll found in ${POCOJSON_SHARED_LIBRARY}")
+    message(STATUS "PocoJSON: ${POCOJSON_SHARED_LIBRARY}")
     install(FILES ${POCOJSON_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
 
     # PocoNetSSL
@@ -57,14 +57,9 @@ function(INSTALL_SHARED_LIBS TARGET_DIR)
     install(FILES ${LOG4CPLUS_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
 
     # libzip
-    #find_library(ZIP_SHARED_LIBRARY NAMES zip.5.5 NO_CACHE)
-    #message(STATUS "libzip: ${ZIP_SHARED_LIBRARY}")
-    #install(FILES ${ZIP_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # libzstd
-    #find_library(ZSTD_SHARED_LIBRARY NAMES zstd.1.5.6 NO_CACHE)
-    #message(STATUS "libzstd: ${ZSTD_SHARED_LIBRARY}")
-    #install(FILES ${ZSTD_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
+    find_library(ZIP_SHARED_LIBRARY NAMES zip.5.5 NO_CACHE)
+    message(STATUS "libzip: ${ZIP_SHARED_LIBRARY}")
+    install(FILES ${ZIP_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
 
     message(STATUS "Shared libraries installed.")
 
