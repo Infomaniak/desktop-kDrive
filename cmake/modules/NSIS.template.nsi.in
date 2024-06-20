@@ -215,23 +215,16 @@ FunctionEnd
 !macroend
 
 !macro EndProcess processName
-   ; Try to close the process gracefully
-   DetailPrint $ConfirmEndProcess_KILLING_PROCESSES_TEXT
-   ${nsProcess::CloseProcess} ${processName} $R0
-   Sleep 2000
-   StrCmp $R0 "1" process_${processName}_ended
-   
-   ; If the process is still running, kill it
-   ${nsProcess::KillProcess} ${processName} $R1 ; kill the process
-   Sleep 1500
-   !insertmacro CheckForProcess ${processName} process_${processName}_restated process_${processName}_ended
-   
-   ; If the process is still running, Kill it again (Self restart)
+   ; Kill the process in loop until it is not found (max 5 times). This is to ensure that the app does not self-restart.
+   $counter = 0
    process_${processName}_restated:
+   IntOp $counter $counter + 1
+   StrCmp $counter 5 process_${processName}_failed_to_end
    ${nsProcess::KillProcess} ${processName} $R1 ; kill the process
    Sleep 1500
    !insertmacro CheckForProcess ${processName} process_${processName}_restated process_${processName}_ended
 
+   process_${processName}_failed_to_end:
    DetailPrint $ConfirmEndProcess_KILL_NOT_FOUND_TEXT
    
    process_${processName}_ended:
