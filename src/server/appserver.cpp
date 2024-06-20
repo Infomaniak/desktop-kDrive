@@ -335,9 +335,10 @@ AppServer::AppServer(int &argc, char **argv)
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
     }
-    LogUploadState logUploadState = std::get<LogUploadState>(appStateValue);
 
-    if (logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
+
+    if (auto logUploadState = std::get<LogUploadState>(appStateValue);
+        logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
         LOG_ERROR(_logger, "App was closed during log upload, resetting upload status.");
         if (bool found = false;
             !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
@@ -355,8 +356,8 @@ AppServer::AppServer(int &argc, char **argv)
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
     }
-    
-    if (const std::string logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
+
+    if (const auto logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
         UploadSessionCancelJob cancelJob(UploadSessionType::LogUpload, logUploadToken);
         if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCodeOk) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
@@ -2068,7 +2069,8 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
      */
     LogUploadState previousStatus = LogUploadState::None;
     int previousProgress = 0;
-    std::function<bool(LogUploadState, int)> progressFunc = [this, &previousStatus, &previousProgress](LogUploadState status, int progress) {
+    std::function<bool(LogUploadState, int)> progressFunc = [this, &previousStatus, &previousProgress](LogUploadState status,
+                                                                                                       int progress) {
         AppStateValue appStateValue = LogUploadState::None;
         if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) ||
                                 !found) {  // Check if the user canceled the upload
