@@ -270,9 +270,8 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
         case ConflictTypeMoveParentDelete: {
             // Undo move, the delete operation will be executed on a next sync iteration
             auto moveNode = conflict.node()->hasChangeEvent(OperationTypeMove) ? conflict.node() : conflict.correspondingNode();
-            SyncOpPtr moveOp = std::make_shared<SyncOperation>();
-            ExitCode res = undoMove(moveNode, moveOp);
-            if (res != ExitCodeOk) {
+            auto moveOp = std::make_shared<SyncOperation>();
+            if (ExitCode res = undoMove(moveNode, moveOp); res != ExitCodeOk) {
                 return res;
             }
             moveOp->setConflict(conflict);
@@ -290,12 +289,12 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             // Delete operation always win
             auto deleteNode =
                 conflict.node()->hasChangeEvent(OperationTypeDelete) ? conflict.node() : conflict.correspondingNode();
-            SyncOpPtr op = std::make_shared<SyncOperation>();
+            auto op = std::make_shared<SyncOperation>();
             op->setType(OperationTypeDelete);
             op->setAffectedNode(deleteNode);
             auto correspondingNode = correspondingNodeInOtherTree(deleteNode);
-            op->setCorrespondingNode(correspondingNode);  // create node is both affected and corresponding node since it does not
-                                                          // exit yet on other replice but we move it anyway
+            op->setCorrespondingNode(correspondingNode);
+
             op->setTargetSide(correspondingNode->side());
             op->setConflict(conflict);
             LOGW_SYNCPAL_INFO(_logger, L"Operation "
@@ -317,9 +316,8 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             }
 
             // Undo move on the loser replica
-            SyncOpPtr moveOp = std::make_shared<SyncOperation>();
-            ExitCode res = undoMove(loserNode, moveOp);
-            if (res != ExitCodeOk) {
+            auto moveOp = std::make_shared<SyncOperation>();
+            if (ExitCode res = undoMove(loserNode, moveOp); res != ExitCodeOk) {
                 return res;
             }
             moveOp->setConflict(conflict);
