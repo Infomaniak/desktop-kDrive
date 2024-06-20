@@ -219,7 +219,7 @@ FunctionEnd
    $counter = 0
    process_${processName}_restated:
    IntOp $counter $counter + 1
-   StrCmp $counter 5 process_${processName}_failed_to_end
+   IntCmp $counter 5 process_${processName}_failed_to_end
    ${nsProcess::KillProcess} ${processName} $R1 ; kill the process
    Sleep 1500
    !insertmacro CheckForProcess ${processName} process_${processName}_restated process_${processName}_ended
