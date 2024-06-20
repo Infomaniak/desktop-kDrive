@@ -375,7 +375,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
             continue;
         }
         const std::string entryPathStr = entry.path().string();
-        QString destPath = QString::fromStdString(entryPathStr + ".gz");
+        std::string destPath = entryPathStr + ".gz";
         bool canceled = false;
         uint64_t fileSize = 0;
         if (!IoHelper::getFileSize(entry.path(), fileSize, ioError) || ioError != IoErrorSuccess) {
@@ -387,7 +387,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
             auto parametersCacheInstance = ParametersCache::instance();
             if (parametersCacheInstance && parametersCacheInstance->parameters().extendedLog()) {
                 LOG_DEBUG(Log::instance()->getLogger(),
-                          "File compression: -path: " << destPath.toStdString().c_str() << " - sub percent: " << progressPercent
+                          "File compression: -path: " << destPath.c_str() << " - sub percent: " << progressPercent
                                                       << " - total compression step percent: "
                                                       << (compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
             }
@@ -395,9 +395,9 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
             return !canceled;
         };
 
-        if (!CommonUtility::compressFile(QString::fromStdString(entryPathStr), destPath, compressProgressCallback)) {
+        if (!CommonUtility::compressFile(entryPathStr, destPath, compressProgressCallback)) {
             LOG_WARN(Log::instance()->getLogger(),
-                     "Error in compressFile for " << entryPathStr.c_str() << " to " << destPath.toStdString().c_str());
+                     "Error in compressFile for " << entryPathStr.c_str() << " to " << destPath.c_str());
             return ExitCodeSystemError;
         }
 

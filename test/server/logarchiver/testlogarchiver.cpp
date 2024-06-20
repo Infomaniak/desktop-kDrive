@@ -38,21 +38,6 @@ void TestLogArchiver::setUp() {
     Db::makeDbName(alreadyExist);
 }
 
-void TestLogArchiver::tearDown() {}
-
-void TestLogArchiver::testLog() {
-    LOG4CPLUS_TRACE(_logger, "Test trace log");
-    LOG4CPLUS_DEBUG(_logger, "Test debug log");
-    LOG4CPLUS_INFO(_logger, "Test info log");
-    LOG4CPLUS_WARN(_logger, "Test warn log");
-    LOG4CPLUS_ERROR(_logger, "Test error log");
-    LOG4CPLUS_FATAL(_logger, "Test fatal log");
-
-    LOG4CPLUS_DEBUG(_logger, L"家屋香袈睷晦");
-
-    CPPUNIT_ASSERT(true);
-}
-
 void TestLogArchiver::testGetLogEstimatedSize(void) {
     IoError err = IoErrorSuccess;
     uint64_t size = 0;
