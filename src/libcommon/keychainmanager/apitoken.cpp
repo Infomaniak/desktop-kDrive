@@ -75,5 +75,10 @@ std::string ApiToken::reconstructJsonString() {
     obj.stringify(out);
     return out.str();
 }
+bool ApiToken::operator==(const ApiToken &other) const {
+    return this->_accessToken == other._accessToken && this->_refreshToken == other._refreshToken &&
+           this->_tokenType == other._tokenType && this->_expiresIn == other._expiresIn && this->_userId == other._userId &&
+           this->_scope == other._scope;
+}
 
 }  // namespace KDC

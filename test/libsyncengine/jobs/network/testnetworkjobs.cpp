@@ -39,9 +39,8 @@
 #include "jobs/network/uploadjob.h"
 #include "jobs/jobmanager.h"
 #include "network/proxy.h"
-#include "libcommon/utility/utility.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommonserver/utility/utility.h"
+
 #include "libparms/db/parmsdb.h"
 #include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
@@ -61,14 +60,6 @@ static const std::string desktopTeamTestDriveName = "Test Desktop App";
 static const std::string bigFileDirName = "big_file_dir";
 static const std::string bigFileName = "big_text_file.txt";
 
-std::string loadEnvVariable(const std::string &key) {
-    const std::string val = CommonUtility::envVarValue(key);
-    if (val.empty()) {
-        throw std::runtime_error("Environment variables " + key + " is missing!");
-    }
-    return val;
-}
-
 void TestNetworkJobs::setUp() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Set Up");
 
@@ -77,7 +68,7 @@ void TestNetworkJobs::setUp() {
     const std::string driveIdStr = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
     const std::string remoteDirIdStr = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID");
     const std::string apiTokenStr = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
-    
+
     // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);

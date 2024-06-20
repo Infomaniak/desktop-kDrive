@@ -51,6 +51,8 @@ class ApiToken {
          */
         std::string reconstructJsonString();
 
+        bool operator==(const ApiToken &other) const;
+
     private:
         std::string _rawData;
 

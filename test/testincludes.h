@@ -36,7 +36,16 @@
 #include "config.h"
 #include "utility/types.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommon/utility/utility.h"
 
 static const KDC::SyncPath localTestDirPath(KDC::Utility::s2ws(TEST_DIR) + L"/test_ci");
+
+static std::string loadEnvVariable(const std::string &key) {
+    const std::string val = KDC::CommonUtility::envVarValue(key);
+    if (val.empty()) {
+        throw std::runtime_error("Environment variables " + key + " is missing!");
+    }
+    return val;
+}
 
 int runTestSuite(const std::string &logFileName);

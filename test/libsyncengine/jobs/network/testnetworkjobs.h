@@ -32,7 +32,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCopyToDir);
         CPPUNIT_TEST(testDelete);
         CPPUNIT_TEST(testDownload);
-        //        CPPUNIT_TEST(testDownloadAborted);
+        CPPUNIT_TEST(testDownloadAborted);
         CPPUNIT_TEST(testGetAvatar);
         CPPUNIT_TEST(testGetDriveList);
         CPPUNIT_TEST(testGetFileInfo);
@@ -56,7 +56,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testUploadSessionAsynchronous2);
         CPPUNIT_TEST(testUploadSessionAsynchronous5);
         CPPUNIT_TEST(testUploadSessionSynchronousAborted);
-        //        CPPUNIT_TEST(testUploadSessionAsynchronous5Aborted);
+        CPPUNIT_TEST(testUploadSessionAsynchronous5Aborted);
         CPPUNIT_TEST_SUITE_END();
 
     public:
