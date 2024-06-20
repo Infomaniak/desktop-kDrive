@@ -200,7 +200,7 @@ cd ~/Projects
 curl -o zstd-1.5.6.tar.gz -L https://github.com/facebook/zstd/archive/v1.5.6.tar.gz
 tar xzf zstd-1.5.6.tar.gz
 mkdir -p zstd-1.5.6/build/cmake/build && cd zstd-1.5.6/build/cmake/build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" ..
 cmake --build . --config Release
 sudo cmake --build . --config Release --target install
 ```
@@ -212,7 +212,7 @@ git clone https://github.com/nih-at/libzip.git
 cd libzip
 git checkout tags/v1.10.1
 mkdir build && cd build
-cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -Dzstd_SHARED_LIBRARY="/usr/local/lib/libzstd.1.5.6.dylib" -Dzstd_INCLUDE_DIR="/usr/local/include" ..
+cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -Dzstd_SHARED_LIBRARY="/usr/local/lib/libzstd.1.5.6.dylib" -Dzstd_INCLUDE_DIR="/usr/local/include" ..
 make
 sudo make install
 ```

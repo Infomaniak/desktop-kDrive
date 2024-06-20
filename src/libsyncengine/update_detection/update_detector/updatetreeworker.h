@@ -134,7 +134,11 @@ class UpdateTreeWorker : public ISyncWorker {
          */
         ExitCode handleCreateOperationsWithSamePath();
 
-        std::shared_ptr<Node> getOrCreateNodeFromPath(const SyncPath &path);
+        std::shared_ptr<Node> getOrCreateNodeFromPath(const SyncPath &path, bool isDeleted);
+        std::shared_ptr<Node> getOrCreateNodeFromExistingPath(const SyncPath &path) {
+            return getOrCreateNodeFromPath(path, false);
+        }
+        std::shared_ptr<Node> getOrCreateNodeFromDeletedPath(const SyncPath &path) { return getOrCreateNodeFromPath(path, true); }
         void mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
 
         /**
