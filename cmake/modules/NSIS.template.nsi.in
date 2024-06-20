@@ -216,7 +216,7 @@ FunctionEnd
 
 !macro EndProcess processName
    ; Kill the process in loop until it is not found (max 5 times). This is to ensure that the app does not self-restart.
-   $counter = 0
+   StrCpy $counter "0"
    process_${processName}_restated:
    IntOp $counter $counter + 1
    IntCmp $counter 5 process_${processName}_failed_to_end
