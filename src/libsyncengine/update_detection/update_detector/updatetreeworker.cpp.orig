@@ -172,16 +172,15 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
             }
         } else {
             std::shared_ptr<Node> parentNode;
-            if (const auto searchExitCode = searchForParentNode(deleteOp->path(), parentNode); searchExitCode != ExitCodeOk) {
-                return searchExitCode;
+            if (const auto exitCode = searchForParentNode(deleteOp->path(), parentNode); exitCode != ExitCodeOk) {
+                return exitCode;
             };
 
             if (!parentNode) {
                 SyncPath newPath;
-                if (const auto newPathExitCode = getNewPathAfterMove(deleteOp->path(), newPath);
-                    newPathExitCode == ExitCodeDbError) {
+                if (const auto exitCode = getNewPathAfterMove(deleteOp->path(), newPath); exitCode == ExitCodeDbError) {
                     LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getNewPathAfterMove");
-                    return newPathExitCode;
+                    return exitCode;
                 }
                 // get parentNode
                 parentNode = getOrCreateNodeFromDeletedPath(newPath.parent_path());
@@ -441,8 +440,14 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 return exitCode;
             };
 
-            if (!parentNode) {
+<<<<<<< HEAD
+            if (!ok) {
+                // find parentNode
                 parentNode = getOrCreateNodeFromDeletedPath(op->path().parent_path());
+=======
+            if (!parentNode) {
+                parentNode = getOrCreateNodeFromPath(op->path().parent_path());
+>>>>>>> d5dc2944 ([KDESKTOP-969] Unit tests to prevent regressions in the UpdateTreeWorker)
             }
 
             // find child node

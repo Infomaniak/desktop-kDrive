@@ -285,7 +285,7 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
                                                   "Dir 5/File 5.1");
 
     {
-        auto newNode = _updateTreeWorker->getOrCreateNodeFromPath("Dir 5/File 5.1");
+        auto newNode = _updateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1");
         CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
         CPPUNIT_ASSERT(newNode->isTmp());
 
@@ -303,7 +303,7 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
     _updateTree->deleteNode(NodeId("id511"));
 
     {
-        auto newNode = _updateTreeWorker->getOrCreateNodeFromPath("Dir 5/File 5.1");
+        auto newNode = _updateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1");
         CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
         CPPUNIT_ASSERT(newNode->isTmp());
 
