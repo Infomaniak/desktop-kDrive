@@ -222,15 +222,15 @@ FunctionEnd
    StrCmp $R0 "1" process_${processName}_ended
    
    ; If the process is still running, kill it
-   ${nsProcess::KillProcess } ${processName} $R1 ; kill the process
+   ${nsProcess::KillProcess} ${processName} $R1 ; kill the process
    Sleep 1500
-   !insertmacro CheckForProcess ${process1} process_${processName}_restated process_${processName}_ended
+   !insertmacro CheckForProcess ${processName} process_${processName}_restated process_${processName}_ended
    
    ; If the process is still running, Kill it again (Self restart)
    process_${processName}_restated:
-   ${nsProcess::KillProcess } ${processName} $R1 ; kill the process
+   ${nsProcess::KillProcess} ${processName} $R1 ; kill the process
    Sleep 1500
-   !insertmacro CheckForProcess ${process1} process_${processName}_restated process_${processName}_ended
+   !insertmacro CheckForProcess ${processName} process_${processName}_restated process_${processName}_ended
 
    DetailPrint $ConfirmEndProcess_KILL_NOT_FOUND_TEXT
    
