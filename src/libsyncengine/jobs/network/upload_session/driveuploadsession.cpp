@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "uploadsessiondrive.h"
+#include "driveuploadsession.h"
 #include "utility/utility.h"
 
 namespace KDC {
 
-UploadSessionDrive::UploadSessionDrive(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
+DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
                                        const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
                                        bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/)
     : AbstractUploadSession(filepath, filename, nbParalleleThread),
@@ -33,41 +33,41 @@ UploadSessionDrive::UploadSessionDrive(int driveDbId, std::shared_ptr<SyncDb> sy
     _uploadSessionType = UploadSessionType::Standard;
 }
 
-UploadSessionDrive::~UploadSessionDrive() {
+DriveUploadSession::~DriveUploadSession() {
     if (_vfsForceStatus && !_vfsForceStatus(getFilePath(), false, 100, true)) {
         LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
     }
 }
 
-bool UploadSessionDrive::runJobInit() {
+bool DriveUploadSession::runJobInit() {
     if (_vfsForceStatus && !_vfsForceStatus(getFilePath(), true, 0, true)) {
         LOGW_WARN(getLogger(), L"Error in vfsForceStatus: " << Utility::formatSyncPath(getFilePath()).c_str());
     }
     return true;
 }
 
-std::shared_ptr<UploadSessionStartJob> UploadSessionDrive::createStartJob() {
+std::shared_ptr<UploadSessionStartJob> DriveUploadSession::createStartJob() {
     return std::make_shared<UploadSessionStartJob>(UploadSessionType::Standard, _driveDbId, getFileName(), getFileSize(),
                                                    _remoteParentDirId, getTotalChunks());
 }
 
-std::shared_ptr<UploadSessionChunkJob> UploadSessionDrive::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
+std::shared_ptr<UploadSessionChunkJob> DriveUploadSession::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
                                                                           std::streamsize actualChunkSize) {
     return std::make_shared<UploadSessionChunkJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken(),
                                                    chunckContent, chunkNb, actualChunkSize, jobId());
 }
 
-std::shared_ptr<UploadSessionFinishJob> UploadSessionDrive::createFinishJob() {
+std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
     return std::make_shared<UploadSessionFinishJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken(),
                                                     getTotalChunkHash(), getTotalChunks(), _modtimeIn);
 }
 
-std::shared_ptr<UploadSessionCancelJob> UploadSessionDrive::createCancelJob() {
+std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken());
 }
 
 // Set VFS callbacks
-bool UploadSessionDrive::prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) {
+bool DriveUploadSession::prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) {
     if (_liteSyncActivated) {
         chunkJob->setVfsUpdateFetchStatusCallback(_vfsUpdateFetchStatus);
         chunkJob->setVfsSetPinStateCallback(_vfsSetPinState);
@@ -76,7 +76,7 @@ bool UploadSessionDrive::prepareChunkJob(const std::shared_ptr<UploadSessionChun
     return true;
 }
 
-bool UploadSessionDrive::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
+bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
     if (_syncDb && !_syncDb->insertUploadSessionToken(UploadSessionToken(uploadToken), _uploadSessionTokenDbId)) {
         LOG_WARN(getLogger(), "Error in SyncDb::insertUploadSessionToken");
         _exitCode = ExitCodeDbError;
@@ -85,7 +85,7 @@ bool UploadSessionDrive::handleStartJobResult(const std::shared_ptr<UploadSessio
     return true;
 }
 
-bool UploadSessionDrive::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+bool DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
     _nodeId = finishJob->nodeId();
     _modtimeOut = finishJob->modtime();
 
@@ -99,7 +99,7 @@ bool UploadSessionDrive::handleFinishJobResult(const std::shared_ptr<UploadSessi
     return true;
 }
 
-bool UploadSessionDrive::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
     if (!AbstractUploadSession::handleCancelJobResult(cancelJob)) {
         return false;
     }

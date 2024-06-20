@@ -47,7 +47,7 @@
 #include "utility/jsonparserutility.h"
 #include "server/logarchiver.h"
 #include "libsyncengine/jobs/jobmanager.h"
-#include "libsyncengine/jobs/network/upload_session/uploadsessionlog.h"
+#include "libsyncengine/jobs/network/upload_session/loguploadsession.h"
 
 #include <QDir>
 #include <QUuid>
@@ -1055,7 +1055,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     // Upload archive
-    auto uploadSessionLog = std::make_shared<UploadSessionLog>(archivePath);
+    auto uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
 
     std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
         [&safeProgressCallback, &uploadSessionLog](UniqueId, int percent) {  // Progress callback

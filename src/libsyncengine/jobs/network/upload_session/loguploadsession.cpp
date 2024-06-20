@@ -16,31 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "uploadsessionlog.h"
+#include "loguploadsession.h"
 #include "libparms/db/parmsdb.h"
 
 namespace KDC {
 
-UploadSessionLog::UploadSessionLog(const SyncPath &filepath, uint64_t nbParalleleThread /*= 1*/)
+LogUploadSession::LogUploadSession(const SyncPath &filepath, uint64_t nbParalleleThread /*= 1*/)
     : AbstractUploadSession(filepath, filepath.filename(), nbParalleleThread) {
     _uploadSessionType = UploadSessionType::LogUpload;
 }
 
-bool UploadSessionLog::runJobInit() {
+bool LogUploadSession::runJobInit() {
     return true;
 }
 
-std::shared_ptr<UploadSessionStartJob> UploadSessionLog::createStartJob() {
+std::shared_ptr<UploadSessionStartJob> LogUploadSession::createStartJob() {
     return std::make_shared<UploadSessionStartJob>(UploadSessionType::LogUpload, getFileName(), getFileSize(), getTotalChunks());
 }
 
-std::shared_ptr<UploadSessionChunkJob> UploadSessionLog::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
+std::shared_ptr<UploadSessionChunkJob> LogUploadSession::createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
                                                                         std::streamsize actualChunkSize) {
     return std::make_shared<UploadSessionChunkJob>(UploadSessionType::LogUpload, getFilePath(), getSessionToken(), chunckContent,
                                                    chunkNb, actualChunkSize, jobId());
 }
 
-std::shared_ptr<UploadSessionFinishJob> UploadSessionLog::createFinishJob() {
+std::shared_ptr<UploadSessionFinishJob> LogUploadSession::createFinishJob() {
     SyncTime modtimeIn =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
 
@@ -48,15 +48,15 @@ std::shared_ptr<UploadSessionFinishJob> UploadSessionLog::createFinishJob() {
                                                     getTotalChunkHash(), getTotalChunks(), modtimeIn);
 }
 
-std::shared_ptr<UploadSessionCancelJob> UploadSessionLog::createCancelJob() {
+std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::LogUpload, getSessionToken());
 }
 
-bool UploadSessionLog::prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) {
+bool LogUploadSession::prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) {
     return true;
 }
 
-bool UploadSessionLog::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
+bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
     AppStateValue appStateValue = "";
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::selectAppState");
@@ -81,14 +81,14 @@ bool UploadSessionLog::handleStartJobResult(const std::shared_ptr<UploadSessionS
     return true;
 }
 
-bool UploadSessionLog::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+bool LogUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
     if (bool found = true; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
     }
     return true;
 }
 
-bool UploadSessionLog::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+bool LogUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
     if (!AbstractUploadSession::handleCancelJobResult(cancelJob)) {
         return false;
     }

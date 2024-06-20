@@ -20,49 +20,27 @@
 
 #include "abstractuploadsession.h"
 #include "utility/types.h"
-#include "db/syncdb.h"
 
 #include <log4cplus/logger.h>
 
 namespace KDC {
 
-class UploadSessionDrive : public AbstractUploadSession {
+class LogUploadSession : public AbstractUploadSession {
     public:
-        UploadSessionDrive(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath, const SyncName &filename,
-                           const NodeId &remoteParentDirId, SyncTime modtime, bool liteSyncActivated,
-                           uint64_t nbParalleleThread = 1);
-        ~UploadSessionDrive() override;
-
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline SyncTime modtime() const { return _modtimeOut; }
+        LogUploadSession(const SyncPath &filepath, uint64_t nbParalleleThread = 1);
 
     protected:
-
-        bool prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) override;
-        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) override;
-        bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
-        bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
         bool runJobInit() override;
-
         std::shared_ptr<UploadSessionStartJob> createStartJob() override;
         std::shared_ptr<UploadSessionChunkJob> createChunkJob(const std::string &chunckContent, uint64_t chunkNb,
                                                               std::streamsize actualChunkSize) override;
         std::shared_ptr<UploadSessionFinishJob> createFinishJob() override;
         std::shared_ptr<UploadSessionCancelJob> createCancelJob() override;
 
-    private:
-        int _driveDbId = 0;
-        std::shared_ptr<SyncDb> _syncDb;
-
-        NodeId _fileId;
-        SyncTime _modtimeIn = 0;
-
-        bool _liteSyncActivated = false;
-
-        int64_t _uploadSessionTokenDbId = 0;
-        NodeId _remoteParentDirId;
-
-        NodeId _nodeId;
-        SyncTime _modtimeOut = 0;
+        bool prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) override;
+        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) override;
+        bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
+        bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
 };
+
 }  // namespace KDC

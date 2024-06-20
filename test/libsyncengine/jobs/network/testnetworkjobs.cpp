@@ -35,7 +35,7 @@
 #include "jobs/network/jsonfullfilelistwithcursorjob.h"
 #include "jobs/network/movejob.h"
 #include "jobs/network/renamejob.h"
-#include "jobs/network/upload_session/uploadsessiondrive.h"
+#include "jobs/network/upload_session/driveuploadsession.h"
 #include "jobs/network/uploadjob.h"
 #include "jobs/jobmanager.h"
 #include "network/proxy.h"
@@ -604,11 +604,11 @@ void TestNetworkJobs::testUploadSessionDriveConstructorException() {
     CPPUNIT_ASSERT(createTestDir());
 
     SyncPath localFilePath =
-        localTestDirPath;  // The constructor of UploadSessionDrive will attempt to retrieve the file size of directory.
+        localTestDirPath;  // The constructor of DriveUploadSession will attempt to retrieve the file size of directory.
 
     CPPUNIT_ASSERT_THROW_MESSAGE(
-        "UploadSessionDrive() didn't throw as expected",
-        UploadSessionDrive(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false, 1),
+        "DriveUploadSession() didn't throw as expected",
+        DriveUploadSession(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false, 1),
         std::runtime_error);
 }
 
@@ -619,7 +619,7 @@ void TestNetworkJobs::testUploadSessionDriveSynchronous() {
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    UploadSessionDrive uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
+    DriveUploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
                                    1);
     ExitCode exitCode = uploadSessionJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
@@ -642,7 +642,7 @@ void TestNetworkJobs::testUploadSessionDriveAsynchronous2() {
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    UploadSessionDrive uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
+    DriveUploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
                                    2);
     ExitCode exitCode = uploadSessionJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
@@ -665,7 +665,7 @@ void TestNetworkJobs::testUploadSessionDriveAsynchronous5() {
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    UploadSessionDrive uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
+    DriveUploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false,
                                    5);
     ExitCode exitCode = uploadSessionJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
@@ -688,7 +688,7 @@ void TestNetworkJobs::testUploadSessionDriveSynchronousAborted() {
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    std::shared_ptr<UploadSessionDrive> uploadSessionJob = std::make_shared<UploadSessionDrive>(
+    std::shared_ptr<DriveUploadSession> uploadSessionJob = std::make_shared<DriveUploadSession>(
         _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false, 1);
     JobManager::instance()->queueAsyncJob(uploadSessionJob);
 
@@ -709,7 +709,7 @@ void TestNetworkJobs::testUploadSessionDriveAsynchronous5Aborted() {
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    std::shared_ptr<UploadSessionDrive> uploadSessionJob = std::make_shared<UploadSessionDrive>(
+    std::shared_ptr<DriveUploadSession> uploadSessionJob = std::make_shared<DriveUploadSession>(
         _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dirId, 12345, false, 5);
     JobManager::instance()->queueAsyncJob(uploadSessionJob);
 

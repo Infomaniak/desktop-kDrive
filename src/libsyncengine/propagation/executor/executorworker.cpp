@@ -26,7 +26,7 @@
 #include "jobs/network/movejob.h"
 #include "jobs/network/renamejob.h"
 #include "jobs/network/uploadjob.h"
-#include "jobs/network/upload_session/uploadsessiondrive.h"
+#include "jobs/network/upload_session/driveuploadsession.h"
 #include "jobs/network/getfileinfojob.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
@@ -714,7 +714,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             if (filesize > useUploadSessionThreshold) {
                 try {
                     int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
-                    job = std::make_shared<UploadSessionDrive>(
+                    job = std::make_shared<DriveUploadSession>(
                         _syncPal->_driveDbId, _syncPal->_syncDb, absoluteLocalFilePath, syncOp->affectedNode()->name(),
                         newCorrespondingParentNode->id().has_value() ? *newCorrespondingParentNode->id() : std::string(),
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
@@ -1009,7 +1009,7 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         if (filesize > useUploadSessionThreshold) {
             try {
                 int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
-                job = std::make_shared<UploadSessionDrive>(
+                job = std::make_shared<DriveUploadSession>(
                     _syncPal->_driveDbId, _syncPal->_syncDb, absoluteLocalFilePath, syncOp->affectedNode()->name(),
                     syncOp->correspondingNode()->parentNode()->id() ? *syncOp->correspondingNode()->parentNode()->id()
                                                                     : std::string(),
@@ -1978,7 +1978,7 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
                     modtime = uploadJob->modtime();
                     jobOk = true;
                 } else {
-                    auto uploadSessionJob(std::dynamic_pointer_cast<UploadSessionDrive>(job));
+                    auto uploadSessionJob(std::dynamic_pointer_cast<DriveUploadSession>(job));
                     if (uploadSessionJob) {
                         nodeId = uploadSessionJob->nodeId();
                         modtime = uploadSessionJob->modtime();
