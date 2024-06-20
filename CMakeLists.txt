@@ -3,74 +3,6 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(client)
 
-function(INSTALL_SHARED_LIBS TARGET_DIR)
-    message(STATUS "Installing shared libraries ...")
-
-    # Sentry
-    find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
-    message(STATUS "sentry: ${SENTRY_SHARED_LIBRARY}")
-    install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # xxHash
-    find_library(XXHASH_SHARED_LIBRARY NAMES xxHash.0.8.2 NO_CACHE)
-    message(STATUS "xxHash: ${XXHASH_SHARED_LIBRARY}")
-    install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoNet
-    find_library(POCONET_SHARED_LIBRARY NAMES PocoNet.95 NO_CACHE)
-    message(STATUS "PocoNet: ${POCONET_SHARED_LIBRARY}")
-    install(FILES ${POCONET_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoCrypto
-    find_library(POCOCRYPTO_SHARED_LIBRARY NAMES PocoCrypto.95 NO_CACHE)
-    message(STATUS "PocoCrypto: ${POCOCRYPTO_SHARED_LIBRARY}")
-    install(FILES ${POCOCRYPTO_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoFoundation
-    find_library(POCOFOUNDATION_SHARED_LIBRARY NAMES PocoFoundation.95 NO_CACHE)
-    message(STATUS "PocoFoundation: ${POCOFOUNDATION_SHARED_LIBRARY}")
-    install(FILES ${POCOFOUNDATION_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoJSON
-    find_library(POCOJSON_SHARED_LIBRARY NAMES PocoJSON.95 NO_CACHE)
-    message(STATUS "PocoJSON dll found in ${POCOJSON_SHARED_LIBRARY}")
-    install(FILES ${POCOJSON_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoNetSSL
-    find_library(POCONETSSL_SHARED_LIBRARY NAMES PocoNetSSL.95 NO_CACHE)
-    message(STATUS "PocoNetSSL: ${POCONETSSL_SHARED_LIBRARY}")
-    install(FILES ${POCONETSSL_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoUtil
-    find_library(POCOUTIL_SHARED_LIBRARY NAMES PocoUtil.95 NO_CACHE)
-    message(STATUS "PocoUtil: ${POCOUTIL_SHARED_LIBRARY}")
-    install(FILES ${POCOUTIL_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoXML
-    find_library(POCOXML_SHARED_LIBRARY NAMES PocoXML.95 NO_CACHE)
-    message(STATUS "PocoXML: ${POCOXML_SHARED_LIBRARY}")
-    install(FILES ${POCOXML_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # log4cplus
-    find_library(LOG4CPLUS_SHARED_LIBRARY NAMES log4cplusU.9 NO_CACHE)
-    message(STATUS "log4cplusU: ${LOG4CPLUS_SHARED_LIBRARY}")
-    install(FILES ${LOG4CPLUS_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # libzip
-    find_library(ZIP_SHARED_LIBRARY NAMES zip.5.5 NO_CACHE)
-    message(STATUS "libzip: ${ZIP_SHARED_LIBRARY}")
-    install(FILES ${ZIP_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # libzstd
-    find_library(ZSTD_SHARED_LIBRARY NAMES zstd.1.5.6 NO_CACHE)
-    message(STATUS "libzstd: ${ZSTD_SHARED_LIBRARY}")
-    install(FILES ${ZSTD_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    message(STATUS "Shared libraries installed.")
-
-endfunction()
-
-
 IF(APPLE)
     IF(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")
         SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
@@ -289,11 +221,6 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
     message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
-
-    # Shared libraries
-    if (CMAKE_BUILD_TYPE STREQUAL "Release")
-        install_shared_libs(${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
-    endif()
 elseif(BUILD_CLIENT)
     if (WIN32)
         # NSIS

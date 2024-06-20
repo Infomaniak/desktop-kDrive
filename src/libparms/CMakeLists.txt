@@ -1,7 +1,6 @@
 project(libparms)
 
 find_package(Poco 1.12.5 REQUIRED Foundation)
-find_package(log4cplus 2.1.0 REQUIRED)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -57,14 +56,3 @@ endif()
 target_link_libraries(${libparms_NAME}
     ${libcommonserver_NAME}
     Poco::Foundation)
-
-if (WIN32)
-    target_link_libraries(${libparms_NAME}
-        log4cplus::log4cplusU)
-elseif(APPLE)
-    target_link_libraries(${libparms_NAME}
-        "/usr/local/lib/liblog4cplusU.dylib")
-else()
-    target_link_libraries(${libparms_NAME}
-        "/usr/local/lib/liblog4cplusU.so")
-endif()

@@ -240,9 +240,8 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
 
     install(CODE "
         message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
-        execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -verbose=3 -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+        execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
         message(STATUS \"Fixing library paths for kDrive...\")
         execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path/. -add_rpath @executable_path/../Frameworks ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
-        execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
         " COMPONENT RUNTIME)
 endif()

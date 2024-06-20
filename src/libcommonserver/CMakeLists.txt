@@ -103,8 +103,8 @@ elseif(APPLE)
     find_library(APPKIT_LIBRARY NAMES AppKit)
 
     target_link_libraries(${libcommonserver_NAME}
-        "/usr/local/lib/liblog4cplusU.dylib"
-        "/usr/local/lib/libxxhash.0.dylib"
+        log4cplus::log4cplusU
+        xxHash::xxhash
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY}
@@ -115,4 +115,3 @@ else()
         "/usr/local/lib/libxxhash.so"
         utf8proc)
 endif()
-

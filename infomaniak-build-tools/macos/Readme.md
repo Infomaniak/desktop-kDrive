@@ -270,10 +270,6 @@ Build - Build Steps - Build :
 `cmake --build . --target all install`
 
 Build - Build Steps - Custom Process Step 1 :  
-`Command	: %{Qt:QT_INSTALL_BINS}/macdeployqt`  
-`Arguments	: %{buildDir}/bin/kDrive.app -no-strip -executable=%{buildDir}/bin/kDrive.app/Contents/MacOS/kDrive_client`
-
-Build - Build Steps - Custom Process Step 2 :  
 `Command	: /Users/<user name>/Projects/kdrive/admin/osx/sign_app_debug.sh`  
 `Arguments	: %{ActiveProject:RunConfig:Executable:FileName} %{buildDir}/bin/kDrive.app "Developer ID Application: Infomaniak Network SA (864VDCS2QY)" "864VDCS2QY" "com.infomaniak.drive.desktopclient" 2>&1 1>/dev/null`
 
