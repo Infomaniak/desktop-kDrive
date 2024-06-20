@@ -120,9 +120,9 @@ void AddDriveLiteSyncWidget::initUI() {
     auto *textLabel = new QLabel(this);
     textLabel->setObjectName("largeMediumTextLabel");
     textLabel->setContentsMargins(0, 0, 0, 0);
-    textLabel->setText(tr(R"(Lite Sync syncs all your files without using your computer space."
+    textLabel->setText(tr("Lite Sync syncs all your files without using your computer space."
                           " You can browse the files in your kDrive and download them locally whenever you want."
-                          " <a style="%1" href="%2">Learn more</a>)")
+                          R"( <a style="%1" href="%2">Learn more</a>)")
                            .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
     textLabel->setWordWrap(true);
     mainLayout->addWidget(textLabel);
