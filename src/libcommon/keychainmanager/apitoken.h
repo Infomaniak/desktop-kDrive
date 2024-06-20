@@ -49,7 +49,7 @@ class ApiToken {
          * Especially useful in tests where we only inject the access token, without all the unnecessary information.
          * @return JSON string containing all token information.
          */
-        std::string reconstructJsonString();
+        std::string reconstructJsonString() const;
 
         bool operator==(const ApiToken &other) const;
 

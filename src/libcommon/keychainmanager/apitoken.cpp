@@ -62,7 +62,7 @@ ApiToken::ApiToken(const std::string &data) : _rawData(data) {
     }
 }
 
-std::string ApiToken::reconstructJsonString() {
+std::string ApiToken::reconstructJsonString() const {
     Poco::JSON::Object obj;
     obj.set(accessTokenKey, _accessToken);
     obj.set(refreshTokenKey, _refreshToken);
