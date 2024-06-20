@@ -51,12 +51,12 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testRename);
         CPPUNIT_TEST(testUpload);
         CPPUNIT_TEST(testUploadAborted);
-        CPPUNIT_TEST(testUploadSessionConstructorException);
-        CPPUNIT_TEST(testUploadSessionSynchronous);
-        CPPUNIT_TEST(testUploadSessionAsynchronous2);
-        CPPUNIT_TEST(testUploadSessionAsynchronous5);
-        CPPUNIT_TEST(testUploadSessionSynchronousAborted);
-        CPPUNIT_TEST(testUploadSessionAsynchronous5Aborted);
+        CPPUNIT_TEST(testUploadSessionDriveConstructorException);
+        CPPUNIT_TEST(testUploadSessionDriveSynchronous);
+        CPPUNIT_TEST(testUploadSessionDriveAsynchronous2);
+        CPPUNIT_TEST(testUploadSessionDriveAsynchronous5);
+        CPPUNIT_TEST(testUploadSessionDriveSynchronousAborted);
+        CPPUNIT_TEST(testUploadSessionDriveAsynchronous5Aborted);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -87,12 +87,12 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testRename();
         void testUpload();
         void testUploadAborted();
-        void testUploadSessionConstructorException();
-        void testUploadSessionSynchronous();
-        void testUploadSessionAsynchronous2();
-        void testUploadSessionAsynchronous5();
-        void testUploadSessionSynchronousAborted();
-        void testUploadSessionAsynchronous5Aborted();
+        void testUploadSessionDriveConstructorException();
+        void testUploadSessionDriveSynchronous();
+        void testUploadSessionDriveAsynchronous2();
+        void testUploadSessionDriveAsynchronous5();
+        void testUploadSessionDriveSynchronousAborted();
+        void testUploadSessionDriveAsynchronous5Aborted();
 
     private:
         bool createTestDir();
