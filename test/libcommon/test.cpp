@@ -18,18 +18,12 @@
 
 #include "testincludes.h"
 
-#include "utility/testutility.h"
-#include "log/testlog.h"
-#include "db/testdb.h"
-#include "io/testio.h"
+#include "api_token/testapitoken.h"
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
 }  // namespace KDC
 
 int main(int, char **) {
-    return runTestSuite("_kDriveTestCommonServer.log");
+    return runTestSuite("_kDriveTestCommon.log");
 }
