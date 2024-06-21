@@ -49,7 +49,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 
         static const SyncPath _testFolderPath;
-        static const SyncName _testPicturesFolderName;
+        static const SyncPath _testPicturesFolderName;
         static const uint64_t _nbFileInTestDir;
 
         TemporaryDirectory _tempDir;

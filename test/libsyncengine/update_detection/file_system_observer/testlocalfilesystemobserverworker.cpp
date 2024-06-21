@@ -41,7 +41,7 @@ using namespace CppUnit;
 namespace KDC {
 
 const SyncPath TestLocalFileSystemObserverWorker::_testFolderPath = SyncPath(TEST_DIR) / "test_ci" / "test_local_FSO";
-const SyncName TestLocalFileSystemObserverWorker::_testPicturesFolderName = "test_pictures";
+const SyncPath TestLocalFileSystemObserverWorker::_testPicturesFolderName = SyncPath("test_pictures");
 const uint64_t TestLocalFileSystemObserverWorker::_nbFileInTestDir = 5;  // Test directory contains 5 files
 
 void TestLocalFileSystemObserverWorker::setUp() {
@@ -51,14 +51,14 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     _testRootFolderPath = _tempDir.path / "sync_folder";
 
-    Poco::File(_testRootFolderPath / "A" / "AA").createDirectories();
-    Poco::File(_testRootFolderPath / "A" / "AB").createDirectories();
-    Poco::File(_testRootFolderPath / "B" / "BA").createDirectories();
-    Poco::File(_testRootFolderPath / "B" / "BB").createDirectories();
+    Poco::File((_testRootFolderPath / "A" / "AA").c_str()).createDirectories();
+    Poco::File((_testRootFolderPath / "A" / "AB").c_str()).createDirectories();
+    Poco::File((_testRootFolderPath / "B" / "BA").c_str()).createDirectories();
+    Poco::File((_testRootFolderPath / "B" / "BB").c_str()).createDirectories();
 
-    Poco::File(_testFolderPath / "test_dir").copyTo(_testRootFolderPath / _testPicturesFolderName);
-    Poco::File(_testFolderPath / "test_a").copyTo(_testRootFolderPath / "test_a");
-    Poco::File(_testFolderPath / "test_b").copyTo(_testRootFolderPath / "test_b");
+    Poco::File((_testFolderPath / "test_dir").c_str()).copyTo((_testRootFolderPath / _testPicturesFolderName).c_str());
+    Poco::File((_testFolderPath / "test_a").c_str()).copyTo((_testRootFolderPath / "test_a").c_str());
+    Poco::File((_testFolderPath / "test_b").c_str()).copyTo((_testRootFolderPath / "test_b").c_str());
 
     // Create parmsDb
     bool alreadyExists = false;
@@ -367,7 +367,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
     {
         LOGW_DEBUG(_logger, L"***** move(x,y) + create(x) + edit(x,<newcontent>) + delete(x) *****");
         //// move
-        std::string testAbsolutePath = _testRootFolderPath / "test_b" / "b.jpg";
+        SyncPath testAbsolutePath = _testRootFolderPath / "test_b" / "b.jpg";
         FileStat fileStat;
         bool exists = false;
         IoHelper::getFileStat(testAbsolutePath.c_str(), &fileStat, exists);
@@ -385,19 +385,19 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 #ifdef _WIN32
         Poco::File(source.make_preferred().string()).copyTo(testAbsolutePath);
 #else
-        testCallStr = Str("cp -R ") + source.make_preferred().native() + Str(" ") + testAbsolutePath;
+        testCallStr = Str("cp -R ") + source.make_preferred().native() + Str(" ") + testAbsolutePath.make_preferred().native();
         std::system(testCallStr.c_str());
 #endif
         IoHelper::getFileStat(testAbsolutePath.c_str(), &fileStat, exists);
         NodeId newItemId = std::to_string(fileStat.inode);
         //// edit
-        testCallStr = R"(echo "This is an edit test" >>  )" + testAbsolutePath;
+        testCallStr = R"(echo "This is an edit test" >>  )" + testAbsolutePath.make_preferred().native();
         std::system(testCallStr.c_str());
         //// delete
 #ifdef _WIN32
         testCallStr = "del " + testAbsolutePath;
 #else
-        testCallStr = "rm -r " + testAbsolutePath;
+        testCallStr = "rm -r " + testAbsolutePath.make_preferred().native();
 #endif
         std::system(testCallStr.c_str());
 
