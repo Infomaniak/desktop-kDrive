@@ -1342,7 +1342,7 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
             path = localPath;
             break;
         } else {
-            names.push_back(_side == ReplicaSideRemote ? tmpNode->name() : tmpNode->name());
+            names.push_back(tmpNode->name());
             tmpNode = tmpNode->parentNode();
         }
     }
