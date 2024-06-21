@@ -801,10 +801,6 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
                 return ExitCodeSystemError;
             }
 
-            if (dbNode.nameLocal() != dbNode.nameRemote()) {
-                n->setValidLocalName(dbNode.nameLocal());
-            }
-
             parentNode->insertChildren(n);
             _updateTree->nodes()[newNodeId] = n;
             if (ParametersCache::isExtendedLogEnabled()) {
@@ -881,11 +877,6 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
 
             currentNode->setName(moveOp->destinationPath().filename().native());
 
-            if (_side == ReplicaSideRemote) {
-                currentNode->setValidLocalName(
-                    Str(""));  // Clear valid name. If remote name is not valid, it will be fixed by InconsistencyChecker later.
-            }
-
             // set new parent
             currentNode->setParentNode(parentNode);
             currentNode->setMoveOrigin(moveOp->path());
@@ -920,9 +911,9 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             }
 
             std::shared_ptr<Node> n =
-                std::shared_ptr<Node>(new Node(idb, _side, moveOp->destinationPath().filename().native(), moveOp->objectType(),
-                                               OperationTypeMove, moveOp->nodeId(), moveOp->createdAt(), moveOp->lastModified(),
-                                               moveOp->size(), parentNode, moveOp->path(), std::nullopt));
+                std::make_shared<Node>(idb, _side, moveOp->destinationPath().filename().native(), moveOp->objectType(),
+                                       OperationTypeMove, moveOp->nodeId(), moveOp->createdAt(), moveOp->lastModified(),
+                                       moveOp->size(), parentNode, moveOp->path(), std::nullopt);
             if (n == nullptr) {
                 std::cout << "Failed to allocate memory" << std::endl;
                 LOG_SYNCPAL_ERROR(_logger, "Failed to allocate memory");
@@ -1212,11 +1203,6 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
             node->setMoveOrigin(_side == ReplicaSideLocal ? localPath
                                                           : remotePath);  // TODO : no need to keep both remote and local paths
                                                                           // since we do not rename the file locally anymore.
-        } else {
-            if (dbNode.nameLocal() != dbNode.nameRemote()) {
-                node->setName(dbNode.nameRemote());
-                node->setValidLocalName(dbNode.nameLocal());
-            }
         }
 
         // if it's dbNodeId is null
@@ -1275,11 +1261,11 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
         return ExitCodeDbError;
     }
     if (!found) {
-        LOGW_SYNCPAL_WARN(_logger, L"Node not found for ID = "
-                                       << Utility::s2ws(*id).c_str() << L" (Node name: '"
-                                       << SyncName2WStr(tmpNode->name()).c_str() << L"', node valid name: '"
-                                       << SyncName2WStr(tmpNode->validLocalName()).c_str() << L"') on side"
-                                       << Utility::s2ws(Utility::side2Str(_side)).c_str());
+        LOGW_SYNCPAL_WARN(_logger, L"Node not found for ID = " << Utility::s2ws(*id).c_str() << L" (Node name: '"
+                                                               << SyncName2WStr(tmpNode->name()).c_str()
+                                                               << L"', node valid name: '"
+                                                               << SyncName2WStr(tmpNode->name()).c_str() << L"') on side"
+                                                               << Utility::s2ws(Utility::side2Str(_side)).c_str());
         return ExitCodeDataError;
     }
     tmpNode->setIdb(dbId);
@@ -1368,7 +1354,7 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
             path = localPath;
             break;
         } else {
-            names.push_back(_side == ReplicaSideRemote ? tmpNode->name() : tmpNode->finalLocalName());
+            names.push_back(_side == ReplicaSideRemote ? tmpNode->name() : tmpNode->name());
             tmpNode = tmpNode->parentNode();
         }
     }
@@ -1407,12 +1393,9 @@ ExitCode UpdateTreeWorker::updateNameFromDbForMoveOp(const std::shared_ptr<Node>
         if (moveOp->destinationPath().filename() != dbNode.nameLocal()) {
             // The file has been renamed locally, propagate the change on remote
             node->setName(moveOp->destinationPath().filename().native());
-            node->setValidLocalName(
-                Str(""));  // Clear valid name. Since the change come from the local replica, the name is valid.
         } else {
             // The file has been moved but not renamed, keep the names from DB
             node->setName(dbNode.nameRemote());
-            node->setValidLocalName(dbNode.nameLocal());
         }
     }
 

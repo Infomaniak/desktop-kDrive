@@ -71,11 +71,13 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
     std::shared_ptr<Node> node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name,
                                                                 NodeTypeFile, OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameSize(node->name())) {
-        // TODO : remove this, files are not renamed anymore
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with a name too long are not renamed anymore, they are blacklisted.
+        //        // TODO : remove this, files are not renamed anymore
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(node->name().size() == MAX_NAME_LENGTH_WIN_SHORT);
-    CPPUNIT_ASSERT(node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name().empty());
 
     name =
         Str("46fpmz5XC2fBH4Rgv8eqdEUMAKtgo5as2fe2pq8t7o8rxvJ2zeKpDuNoyVxN4mIdKx0SViroqO31oOwhz5ZGXimXJWGYVwefihprlPl6bKCcbEjuVv5L"
@@ -86,11 +88,13 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkNameSize(node->name())) {
-        // TODO : remove this, files are not renamed anymore
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with a name too long are not renamed anymore, they are blacklisted.
+        //        // TODO : remove this, files are not renamed anymore
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
     CPPUNIT_ASSERT(node->name().size() > MAX_NAME_LENGTH_WIN_SHORT);
-    CPPUNIT_ASSERT(node->validLocalName().size() == MAX_NAME_LENGTH_WIN_SHORT);
+    CPPUNIT_ASSERT(node->name().size() == MAX_NAME_LENGTH_WIN_SHORT);
 }
 
 void TestPlatformInconsistencyCheckerWorker::testFixNameForbiddenChars() {
@@ -99,52 +103,56 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameForbiddenChars() {
                                                                 NodeTypeFile, OperationTypeNone, "0", 0, 0, 12345, nullptr));
     SyncName newvalidLocalName;
     if (PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(node->name(), newvalidLocalName)) {
-        node->setValidLocalName(newvalidLocalName);
+        // TODO : to be re-written. Files with forbidden characters in their name are not renamed anymore, they are blacklisted.
+        //        node->setname(newvalidLocalName);
     }
-    CPPUNIT_ASSERT(node->validLocalName().find_first_of(Str2SyncName(FORBIDDEN_FILENAME_CHARS)) == std::string::npos);
+    CPPUNIT_ASSERT(node->name().find_first_of(Str2SyncName(FORBIDDEN_FILENAME_CHARS)) == std::string::npos);
 
 #if defined(WIN32) || defined(__APPLE__)
-    CPPUNIT_ASSERT(node->validLocalName() == Str("a%2fb%3ac%2fd%3ae%3a"));
+    CPPUNIT_ASSERT(node->name() == Str("a%2fb%3ac%2fd%3ae%3a"));
 #else
-    CPPUNIT_ASSERT(node->validLocalName() == Str("a%2fb:c%2fd:e:"));
+    CPPUNIT_ASSERT(node->name() == Str("a%2fb:c%2fd:e:"));
 #endif
 
     name = Str("bcd:ef:");
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(node->name(), newvalidLocalName)) {
-        node->setValidLocalName(newvalidLocalName);
+        // TODO : to be re-written. Files with forbidden characters in their name are not renamed anymore, they are blacklisted.
+        //        node->setname(newvalidLocalName);
     }
-    CPPUNIT_ASSERT(node->validLocalName().find_first_of(Str2SyncName(FORBIDDEN_FILENAME_CHARS)) == std::string::npos);
+    CPPUNIT_ASSERT(node->name().find_first_of(Str2SyncName(FORBIDDEN_FILENAME_CHARS)) == std::string::npos);
 
 #if defined(WIN32) || defined(__APPLE__)
-    CPPUNIT_ASSERT(node->validLocalName() == Str("bcd%3aef%3a"));
+    CPPUNIT_ASSERT(node->name() == Str("bcd%3aef%3a"));
 #else
-    CPPUNIT_ASSERT(node->validLocalName() == Str(""));
+    CPPUNIT_ASSERT(node->name() == Str(""));
 #endif
 
     name = Str("/b:/");
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(node->name(), newvalidLocalName)) {
-        node->setValidLocalName(newvalidLocalName);
+        // TODO : to be re-written. Files with forbidden characters in their name are not renamed anymore, they are blacklisted.
+        //        node->setname(newvalidLocalName);
     }
-    CPPUNIT_ASSERT(node->validLocalName().find_first_of(Str2SyncName(FORBIDDEN_FILENAME_CHARS)) == std::string::npos);
+    CPPUNIT_ASSERT(node->name().find_first_of(Str2SyncName(FORBIDDEN_FILENAME_CHARS)) == std::string::npos);
 
 #if defined(WIN32) || defined(__APPLE__)
-    CPPUNIT_ASSERT(node->validLocalName() == Str("%2fb%3a%2f"));
+    CPPUNIT_ASSERT(node->name() == Str("%2fb%3a%2f"));
 #else
-    CPPUNIT_ASSERT(node->validLocalName() == Str("%2fb:%2f"));
+    CPPUNIT_ASSERT(node->name() == Str("%2fb:%2f"));
 #endif
 
     name = Str("testKdrive");
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(node->name(), newvalidLocalName)) {
-        node->setValidLocalName(newvalidLocalName);
+        // TODO : to be re-written. Files with forbidden characters in their name are not renamed anymore, they are blacklisted.
+        //        node->setname(newvalidLocalName);
     }
-    CPPUNIT_ASSERT(node->validLocalName().find_first_of(Str2SyncName(FORBIDDEN_FILENAME_CHARS)) == std::string::npos);
-    CPPUNIT_ASSERT(node->validLocalName() == Str(""));
+    CPPUNIT_ASSERT(node->name().find_first_of(Str2SyncName(FORBIDDEN_FILENAME_CHARS)) == std::string::npos);
+    CPPUNIT_ASSERT(node->name() == Str(""));
 }
 
 void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
@@ -158,50 +166,62 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dots, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        // TODO : remove this, files are not renamed anymore
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        // TODO : remove this, files are not renamed anymore
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->name() == dots && node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name() == dots && node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dotsText, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        // TODO : remove this, files are not renamed anymore
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        // TODO : remove this, files are not renamed anymore
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->name() == dotsText && node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name() == dotsText && node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot2, NodeTypeDirectory,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        // TODO : remove this, files are not renamed anymore
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        // TODO : remove this, files are not renamed anymore
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->name() == dot2 && !node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name() == dot2 && !node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot1, NodeTypeDirectory,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        // TODO : remove this, files are not renamed anymore
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        // TODO : remove this, files are not renamed anymore
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->name() == dot1 && !node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name() == dot1 && !node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot2, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        // TODO : remove this, files are not renamed anymore
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        // TODO : remove this, files are not renamed anymore
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->name() == dot2 && !node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name() == dot2 && !node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), dot1, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 12345, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        // TODO : remove this, files are not renamed anymore
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        // TODO : remove this, files are not renamed anymore
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->name() == dot1 && !node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name() == dot1 && !node->name().empty());
 
 #if defined(WIN32)
     SyncName con = L"CON";
@@ -218,72 +238,92 @@ void TestPlatformInconsistencyCheckerWorker::testFixReservedNames() {
     node = std::shared_ptr<Node>(
         new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), con, NodeTypeFile, OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(!node->validLocalName().empty());
+    CPPUNIT_ASSERT(!node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), lpt11, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), com8, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(!node->validLocalName().empty());
+    CPPUNIT_ASSERT(!node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), lpt11ext, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), lpt6ext, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(!node->validLocalName().empty());
+    CPPUNIT_ASSERT(!node->name().empty());
 
     node = std::shared_ptr<Node>(
         new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), nul, NodeTypeFile, OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(!node->validLocalName().empty());
+    CPPUNIT_ASSERT(!node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), aux6, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->validLocalName().empty());
+    CPPUNIT_ASSERT(node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), com1dot, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(!node->validLocalName().empty());
+    CPPUNIT_ASSERT(!node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), prndot, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(!node->validLocalName().empty());
+    CPPUNIT_ASSERT(!node->name().empty());
 
     node = std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), com77dot, NodeTypeFile,
                                           OperationTypeNone, "0", 0, 0, 0, nullptr));
     if (PlatformInconsistencyCheckerUtility::instance()->checkReservedNames(node->name())) {
-        node->setValidLocalName(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
+        // TODO : to be re-written. Files with reserved names are not renamed anymore, they are blacklisted.
+        //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+        //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(!node->validLocalName().empty());
+    CPPUNIT_ASSERT(!node->name().empty());
 #endif
 }
 
@@ -292,11 +332,11 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash_noExtension() {
     SyncName name_A = Str("A");
 
     std::shared_ptr<Node> node_a =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeTypeFile,
-                                       OperationTypeCreate, "1", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
+        std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeTypeFile, OperationTypeCreate, "1",
+                               0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
     std::shared_ptr<Node> node_A =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeTypeFile,
-                                       OperationTypeCreate, "2", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
+        std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeTypeFile, OperationTypeCreate, "2",
+                               0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
 
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(node_a);
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(node_A);
@@ -306,7 +346,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash_noExtension() {
 
     _syncPal->_platformInconsistencyCheckerWorker->execute();
 
-    CPPUNIT_ASSERT(node_a->validLocalName().empty() != node_a->validLocalName().empty());
+    CPPUNIT_ASSERT(node_a->name().empty() != node_a->name().empty());
 }
 
 void TestPlatformInconsistencyCheckerWorker::testNameClash_withExtension() {
@@ -314,11 +354,11 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash_withExtension() {
     SyncName name_A = Str("A.jpg");
 
     std::shared_ptr<Node> node_a =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeTypeFile,
-                                       OperationTypeCreate, "1", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
+        std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_a, NodeTypeFile, OperationTypeCreate, "1",
+                               0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
     std::shared_ptr<Node> node_A =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeTypeFile,
-                                       OperationTypeCreate, "2", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode()));
+        std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), name_A, NodeTypeFile, OperationTypeCreate, "2",
+                               0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
 
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(node_a);
     _syncPal->_remoteUpdateTree->rootNode()->insertChildren(node_A);
@@ -328,7 +368,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash_withExtension() {
 
     _syncPal->_platformInconsistencyCheckerWorker->execute();
 
-    CPPUNIT_ASSERT(node_a->validLocalName().empty() != node_a->validLocalName().empty());
+    CPPUNIT_ASSERT(node_a->name().empty() != node_a->name().empty());
 }
 
 void TestPlatformInconsistencyCheckerWorker::testNameClash_extensionFinishWithDot() {
@@ -350,7 +390,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash_extensionFinishWithDo
 
     _syncPal->_platformInconsistencyCheckerWorker->execute();
 
-    CPPUNIT_ASSERT(node_a->validLocalName().empty() != node_a->validLocalName().empty());
+    CPPUNIT_ASSERT(node_a->name().empty() != node_a->name().empty());
 }
 
 void TestPlatformInconsistencyCheckerWorker::testExecute() {
@@ -431,31 +471,31 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
 
     // win & apple doesn't handle ":"
 #if defined(WIN32) || defined(__APPLE__)
-    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["41"]->validLocalName().empty());
+    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["41"]->name().empty());
 
     // Only one node should have been renamed between 411 and 411bis
-    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["411bis"]->validLocalName().empty());
-    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["411bis"]->validLocalName().empty());
+    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["411bis"]->name().empty());
+    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["411bis"]->name().empty());
 
-    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["1"]->validLocalName().empty());
-    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["1111"]->validLocalName().empty());
+    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["1"]->name().empty());
+    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["1111"]->name().empty());
 #else
     // special case because linux accept ':' in filesys names
     // Only one node should have been renamed between 411 and 411bis
-    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["411bis"]->validLocalName().empty());
-    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["411"]->validLocalName().empty());
+    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["411bis"]->name().empty());
+    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["411"]->name().empty());
 
-    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->nodes()["1111"]->validLocalName() == Str("File 1.1::%2f.1.1"));
-    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["41"]->validLocalName().empty());
+    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->nodes()["1111"]->name() == Str("File 1.1::%2f.1.1"));
+    CPPUNIT_ASSERT(!_syncPal->_remoteUpdateTree->nodes()["41"]->name().empty());
 #endif
-    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->nodes()["2"]->validLocalName() == Str("D%2fir 2%2f"));
+    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->nodes()["2"]->name() == Str("D%2fir 2%2f"));
 
     if (PlatformInconsistencyCheckerUtility::_maxPathLength > MAX_PATH_LENGTH_WIN_SHORT) {
         // child of node "41" haven't been treated because the path size was 261.
-        CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->nodes()["4111"]->validLocalName().size() == MAX_NAME_LENGTH_WIN_SHORT);
+        CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->nodes()["4111"]->name().size() == MAX_NAME_LENGTH_WIN_SHORT);
     }
 
-    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->nodes()["41"]->validLocalName().size() == MAX_NAME_LENGTH_WIN_SHORT);
+    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->nodes()["41"]->name().size() == MAX_NAME_LENGTH_WIN_SHORT);
 }
 
 }  // namespace KDC
