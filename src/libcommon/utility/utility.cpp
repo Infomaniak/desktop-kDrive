@@ -18,8 +18,6 @@
 
 #include "utility.h"
 #include "config.h"
-#include "common/utility.h"
-#include "libcommonserver/utility/utility.h"
 #include "version.h"
 
 #include <system_error>
@@ -37,6 +35,8 @@
 #ifdef _WIN32
 #include <Poco/Util/WinRegistryKey.h>
 #endif
+
+#include <sentry.h>
 
 #ifdef ZLIB_FOUND
 #include <zlib.h>
