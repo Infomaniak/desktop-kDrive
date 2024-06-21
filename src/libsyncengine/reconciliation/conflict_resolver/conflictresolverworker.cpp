@@ -221,8 +221,8 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                             return ExitCodeDataError;
                         }
 
-                        // Move operation in db (temporarily, orphan nodes will be then handled in "Move-Move (Source)" conflict
-                        // in next sync iterations)
+                        // Move operation in db. This is a temporary operation, orphan nodes will be then handled in "Move-Move
+                        // (Source)" conflict in next sync iterations.
                         auto op = std::make_shared<SyncOperation>();
                         op->setType(OperationTypeMove);
                         op->setAffectedNode(orphanNode);
@@ -244,6 +244,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
                         _syncPal->_syncOps->pushOp(op);
 
+                        // Register the orphan. Winner side is always the side with the DELETE operation.
                         _registeredOrphans.insert({dbId, deleteNode->side()});
                     }
                 }
@@ -357,7 +358,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 }
 
 bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> node, SyncName &newName,
-                                                    bool isOrphanNode /*= false*/) {
+                                                    bool isOrphanNode /*= false*/) const {
     SyncPath absoluteLocalFilePath = _syncPal->_localPath / node->getPath();
     newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
         absoluteLocalFilePath, isOrphanNode ? PlatformInconsistencyCheckerUtility::SuffixTypeOrphan

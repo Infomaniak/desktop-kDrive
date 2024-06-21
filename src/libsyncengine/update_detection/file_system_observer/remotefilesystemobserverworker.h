@@ -34,10 +34,10 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ~RemoteFileSystemObserverWorker();
 
     private:
-        virtual void execute() override;
-        virtual ExitCode generateInitialSnapshot() override;
-        virtual ExitCode processEvents() override;
-        virtual ReplicaSide getSnapshotType() const override { return ReplicaSide::ReplicaSideRemote; }
+        void execute() override;
+        ExitCode generateInitialSnapshot() override;
+        ExitCode processEvents() override;
+        [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::ReplicaSideRemote; }
 
         ExitCode initWithCursor();
         ExitCode exploreDirectory(const NodeId &nodeId);
@@ -46,17 +46,17 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitCode sendLongPoll(bool &changes);
 
         struct ActionInfo {
-            ActionCode actionCode {ActionCode::actionCodeUnknown};
-            NodeId nodeId;
-            NodeId parentNodeId;
-            SyncName name;
-            SyncName path;
-            SyncName destName;
-            SyncTime createdAt {0};
-            SyncTime modtime {0};
-            NodeType type {NodeTypeUnknown};
-            int64_t size {0};
-            bool canWrite {true};
+                ActionCode actionCode{ActionCode::actionCodeUnknown};
+                NodeId nodeId;
+                NodeId parentNodeId;
+                SyncName name;
+                SyncName path;
+                SyncName destName;
+                SyncTime createdAt{0};
+                SyncTime modtime{0};
+                NodeType type{NodeTypeUnknown};
+                int64_t size{0};
+                bool canWrite{true};
         };
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
         ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);

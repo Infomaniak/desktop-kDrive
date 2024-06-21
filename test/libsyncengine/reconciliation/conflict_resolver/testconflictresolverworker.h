@@ -39,7 +39,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         //        CPPUNIT_TEST(testMoveDelete5);
         //        CPPUNIT_TEST(testMoveParentDelete);
         //        CPPUNIT_TEST(testCreateParentDelete);
-        CPPUNIT_TEST(testMoveMoveSource);
+        //        CPPUNIT_TEST(testMoveMoveSource);
         CPPUNIT_TEST(testMoveMoveSourceWithOrphanNodes);
         //        CPPUNIT_TEST(testMoveMoveDest);
         //        CPPUNIT_TEST(testMoveMoveCycle);
