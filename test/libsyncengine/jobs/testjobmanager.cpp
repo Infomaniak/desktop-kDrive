@@ -54,9 +54,12 @@ void KDC::TestJobManager::setUp() {
     }
 
     // Insert api token into keystore
+    ApiToken apiToken;
+    apiToken.setAccessToken(apiTokenStr);
+
     std::string keychainKey("123");
     KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiTokenStr);
+    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists;
@@ -366,11 +369,9 @@ void sendTestRequest(Poco::Net::HTTPSClientSession &session, const bool resetSes
     std::cout << "*********************" << std::endl;
 }
 
-void TestJobManager::testReuseSocket()
-{
-    Poco::Net::Context::Ptr context = new Poco::Net::Context(
-        Poco::Net::Context::TLS_CLIENT_USE, "", "", "",
-        Poco::Net::Context::VERIFY_NONE);
+void TestJobManager::testReuseSocket() {
+    Poco::Net::Context::Ptr context =
+        new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
     context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
     context->enableSessionCache(true);
 
@@ -381,7 +382,7 @@ void TestJobManager::testReuseSocket()
     std::cout << "***** Test keep connection ***** " << std::endl;
     sendTestRequest(session, false);
     CPPUNIT_ASSERT(session.socket().impl()->initialized());
-    sendTestRequest(session, false);        // Doing twice, so we can see in console that the socket is still connected
+    sendTestRequest(session, false);  // Doing twice, so we can see in console that the socket is still connected
     CPPUNIT_ASSERT(session.socket().impl()->initialized());
 
     std::cout << "***** Test with new connection ***** " << std::endl;
@@ -392,7 +393,7 @@ void TestJobManager::testReuseSocket()
     std::cout << "***** Test reset connection ***** " << std::endl;
     sendTestRequest(session, true);
     CPPUNIT_ASSERT(!session.socket().impl()->initialized());
-    sendTestRequest(session, true);        // Doing twice, so we can see in console that the socket is not connected anymore
+    sendTestRequest(session, true);  // Doing twice, so we can see in console that the socket is not connected anymore
     CPPUNIT_ASSERT(!session.socket().impl()->initialized());
 }
 
