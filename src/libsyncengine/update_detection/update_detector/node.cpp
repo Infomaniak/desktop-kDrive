@@ -140,7 +140,7 @@ size_t Node::deleteChildren(const NodeId &childId) {
     return _childrenById.erase(childId);
 }
 
-bool Node::isEditFromDeleteCreate() {
+bool Node::isEditFromDeleteCreate() const {
     if (hasChangeEvent(OperationTypeEdit) && _previousId.has_value()) {
         return true;
     }

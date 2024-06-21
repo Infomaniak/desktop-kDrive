@@ -114,7 +114,7 @@ class Node {
         inline void insertConflictAlreadyConsidered(const ConflictType &conf) { _conflictsAlreadyConsidered.push_back(conf); }
         inline void clearConflictAlreadyConsidered() { _conflictsAlreadyConsidered.clear(); }
 
-        bool isEditFromDeleteCreate();
+        bool isEditFromDeleteCreate() const;
 
         [[nodiscard]] bool isRoot() const;
         [[nodiscard]] bool isCommonDocumentsFolder() const;
