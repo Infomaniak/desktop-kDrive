@@ -178,12 +178,10 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
 
             if (!parentNode) {
                 SyncPath newPath;
-                if (const auto newPathExitCode = getNewPathAfterMove(deleteOp->path(), newPath);
-                    newPathExitCode == ExitCodeDbError) {
+                if (const auto newPathExitCode = getNewPathAfterMove(deleteOp->path(), newPath); newPathExitCode != ExitCodeOk) {
                     LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getNewPathAfterMove");
                     return newPathExitCode;
                 }
-                // get parentNode
                 parentNode = getOrCreateNodeFromDeletedPath(newPath.parent_path());
             }
 
@@ -1100,14 +1098,14 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
     SyncPath tmpPath;
     for (std::vector<std::pair<SyncName, NodeId>>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         tmpPath.append(nameIt->first);
-        bool found;
-        std::optional<NodeId> tmpNodeId;
+        bool found = false;
+        std::optional<NodeId> tmpNodeId{};
         if (!_syncDb->id(_side, tmpPath, tmpNodeId, found)) {
             LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
             return ExitCodeDbError;
         }
         if (!found || !tmpNodeId.has_value()) {
-            LOGW_SYNCPAL_WARN(_logger, L"Node not found for path=" << Path2WStr(tmpPath).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Node not found for " << Utility::formatSyncPath(tmpPath).c_str());
             return ExitCodeDataError;
         }
         nameIt->second = *tmpNodeId;
