@@ -40,37 +40,34 @@ using namespace CppUnit;
 
 namespace KDC {
 
-const std::string testFolderPath(TEST_DIR "/test_ci/test_local_FSO");
-const std::string testRootFolderPath(TEST_DIR "/test_ci/test_local_FSO/sync_folder");
-const std::string testPicturesFolderPath("test_pictures");
-const uint64_t nbFileInTestDir = 5;  // Test directory contains 5 files
+const SyncPath TestLocalFileSystemObserverWorker::_testFolderPath = SyncPath(TEST_DIR) / "test_ci" / "test_local_FSO";
+const SyncName TestLocalFileSystemObserverWorker::_testPicturesFolderName = "test_pictures";
+const uint64_t TestLocalFileSystemObserverWorker::_nbFileInTestDir = 5;  // Test directory contains 5 files
 
 void TestLocalFileSystemObserverWorker::setUp() {
     _logger = Log::instance()->getLogger();
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
 
-    // Reset test directory
-    if (std::filesystem::exists(testRootFolderPath)) {
-        Poco::File(testRootFolderPath.c_str()).remove(true);  // Make sure the test directory has been deleted
-    }
+    _testRootFolderPath = _tempDir.path / "sync_folder";
 
-    Poco::File((testRootFolderPath + "/A/AA").c_str()).createDirectories();
-    Poco::File((testRootFolderPath + "/A/AB").c_str()).createDirectories();
-    Poco::File((testRootFolderPath + "/B/BA").c_str()).createDirectories();
-    Poco::File((testRootFolderPath + "/B/BB").c_str()).createDirectories();
+    Poco::File(_testRootFolderPath / "A" / "AA").createDirectories();
+    Poco::File(_testRootFolderPath / "A" / "AB").createDirectories();
+    Poco::File(_testRootFolderPath / "B" / "BA").createDirectories();
+    Poco::File(_testRootFolderPath / "B" / "BB").createDirectories();
 
-    Poco::File((testFolderPath + "/test_dir").c_str()).copyTo(testRootFolderPath + "/" + testPicturesFolderPath);
-    Poco::File((testFolderPath + "/test_a").c_str()).copyTo(testRootFolderPath + "/test_a");
-    Poco::File((testFolderPath + "/test_b").c_str()).copyTo(testRootFolderPath + "/test_b");
+    Poco::File(_testFolderPath / "test_dir").copyTo(_testRootFolderPath / _testPicturesFolderName);
+    Poco::File(_testFolderPath / "test_a").copyTo(_testRootFolderPath / "test_a");
+    Poco::File(_testFolderPath / "test_b").copyTo(_testRootFolderPath / "test_b");
 
     // Create parmsDb
-    bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
+    bool alreadyExists = false;
+    SyncPath parmsDbPath = Db::makeDbName(alreadyExists);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
     ParmsDb::instance()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
+    ParametersCache::instance()->parameters().setSyncHiddenFiles(true);
 
     bool constraintError;
     ParmsDb::instance()->insertExclusionTemplate(
@@ -82,7 +79,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     _syncPal = std::shared_ptr<SyncPal>(new SyncPal(syncDbPath, "3.4.0", true));
     _syncPal->_syncDb->setAutoDelete(true);
 
-    _syncPal->_localPath = testRootFolderPath;
+    _syncPal->_localPath = _testRootFolderPath;
 
 #if defined(_WIN32)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
@@ -100,8 +97,6 @@ void TestLocalFileSystemObserverWorker::tearDown() {
     LOGW_DEBUG(_logger, L"$$$$$ Tear Down $$$$$");
 
     _syncPal->_localFSObserverWorker->stop();
-
-    Poco::File(testRootFolderPath.c_str()).remove(true);
 
     ParmsDb::instance()->close();
 
@@ -123,21 +118,21 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
                 continue;  // Ignore ".DS_Store"
             }
 
-            NodeId parentId = _syncPal->_localSnapshot->parentId(id);
+            const NodeId parentId = _syncPal->_localSnapshot->parentId(id);
             SyncPath parentPath;
-            if (_syncPal->_localSnapshot->path(parentId, parentPath) && parentPath.filename() == testPicturesFolderPath) {
+            if (_syncPal->_localSnapshot->path(parentId, parentPath) && parentPath.filename() == _testPicturesFolderName) {
                 fileCounter++;
             }
         }
-        CPPUNIT_ASSERT(fileCounter == nbFileInTestDir);
+        CPPUNIT_ASSERT(fileCounter == _nbFileInTestDir);
     }
 
     // Test files
     {
         /// Create file
         LOGW_DEBUG(_logger, L"***** test create file *****");
-        std::filesystem::path testFileRelativePath = "A/test_file.txt";
-        std::filesystem::path testAbsolutePath = testRootFolderPath / testFileRelativePath;
+        SyncPath testFileRelativePath = "A/test_file.txt";
+        SyncPath testAbsolutePath = _testRootFolderPath / testFileRelativePath;
         std::string testCallStr = R"(echo "This is a create test" >> )" + testAbsolutePath.make_preferred().string();
         std::system(testCallStr.c_str());
 
@@ -163,9 +158,9 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 
         /// Move file
         LOGW_DEBUG(_logger, L"***** test move file *****");
-        std::filesystem::path source = testAbsolutePath;
+        SyncPath source = testAbsolutePath;
         testFileRelativePath = "B";
-        testAbsolutePath = testRootFolderPath / testFileRelativePath;
+        testAbsolutePath = _testRootFolderPath / testFileRelativePath;
 #ifdef _WIN32
         testCallStr = "move " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
 #else
@@ -180,9 +175,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 
         /// Rename file
         LOGW_DEBUG(_logger, L"***** test rename file *****");
-        source = testRootFolderPath + "/B/test_file.txt";
-        testFileRelativePath = Str("B/test_file_renamed.txt");
-        testAbsolutePath = testRootFolderPath / testFileRelativePath;
+        source = _testRootFolderPath / "B" / "test_file.txt";
+        testAbsolutePath = _testRootFolderPath / "B" / "test_file_renamed.txt";
 #ifdef _WIN32
         testCallStr = "ren " + source.make_preferred().string() + " " + testAbsolutePath.filename().string();
 #else
@@ -192,7 +186,6 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        SyncName tmp = _syncPal->_localSnapshot->name(itemId);
         CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(itemId) == Str("test_file_renamed.txt"));
 
         /// Delete file
@@ -213,8 +206,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
     {
         /// Create dir
         LOGW_DEBUG(_logger, L"***** test create dir *****");
-        std::filesystem::path testRelativePath = Str("A/AC");
-        std::filesystem::path testAbsolutePath = testRootFolderPath / testRelativePath;
+        SyncPath testRelativePath = Str("A/AC");
+        SyncPath testAbsolutePath = _testRootFolderPath / testRelativePath;
         std::string testCallStr = "mkdir " + testAbsolutePath.make_preferred().string();
         std::system(testCallStr.c_str());
 
@@ -231,9 +224,9 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 
         /// Move dir
         LOGW_DEBUG(_logger, L"***** test move dir *****");
-        std::filesystem::path source = testAbsolutePath;
+        SyncPath source = testAbsolutePath;
         testRelativePath = "B/AC";
-        testAbsolutePath = testRootFolderPath / testRelativePath;
+        testAbsolutePath = _testRootFolderPath / testRelativePath;
 #ifdef _WIN32
         testCallStr = "move " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
 #else
@@ -250,7 +243,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         LOGW_DEBUG(_logger, L"***** test rename dir *****");
         source = testAbsolutePath;
         testRelativePath = "B/ACc";
-        testAbsolutePath = testRootFolderPath / testRelativePath;
+        testAbsolutePath = _testRootFolderPath / testRelativePath;
 #ifdef _WIN32
         testCallStr = "ren " + source.make_preferred().string() + " " + testAbsolutePath.filename().string();
 #else
@@ -264,19 +257,19 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 
         /// Copy dir from outside sync dir
         LOGW_DEBUG(_logger, L"***** test copy dir from outside sync dir *****");
-        source = testFolderPath + "/test_dir";
-        testAbsolutePath = testRootFolderPath;
+        source = _testFolderPath / "test_dir";
+        testAbsolutePath = _testRootFolderPath;
 
 #ifdef _WIN32
         Poco::File(source.make_preferred().string()).copyTo(testAbsolutePath.make_preferred().string());
 #else
-        testCallStr = "cp -R " + source.make_preferred().string() + " " + testRootFolderPath;
+        testCallStr = "cp -R " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string();
         std::system(testCallStr.c_str());
 #endif
 
         Utility::msleep(1000);  // Wait 1sec
 
-        testAbsolutePath = testRootFolderPath + "/test_dir";
+        testAbsolutePath = _testRootFolderPath / "test_dir";
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
         CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
@@ -302,21 +295,20 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 
         /// Move dir from outside sync dir
         LOGW_DEBUG(_logger, L"***** test move dir from outside sync dir *****");
-        std::filesystem::copy((std::filesystem::path(testFolderPath) / Str("test_dir")).make_preferred().native(),
-                              (std::filesystem::path(testFolderPath) / Str("test_dir_copy")).make_preferred().native());
+        std::filesystem::copy((_testFolderPath / Str("test_dir")).make_preferred().native(),
+                              (_testFolderPath / Str("test_dir_copy")).make_preferred().native());
 
-        source = testFolderPath + "/test_dir_copy";
+        source = _testFolderPath / "test_dir_copy";
 #ifdef _WIN32
-        testCallStr = "move " + source.make_preferred().string() + " " +
-                      std::filesystem::path(testRootFolderPath).make_preferred().string();
+        testCallStr = "move " + source.make_preferred().string() + " " + SyncPath(testRootFolderPath).make_preferred().string();
 #else
-        testCallStr = "mv " + source.make_preferred().string() + " " + testRootFolderPath;
+        testCallStr = "mv " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string();
 #endif
         std::system(testCallStr.c_str());
 
         Utility::msleep(1000);  // Wait 1sec
 
-        testAbsolutePath = testRootFolderPath + "/test_dir_copy";
+        testAbsolutePath = _testRootFolderPath / "test_dir_copy";
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
         CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
@@ -331,7 +323,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
     {
         LOGW_DEBUG(_logger, L"***** delete(x) + create(x) + edit(x,<newcontent>) + move(x,y) *****");
         //// delete
-        SyncPath testAbsolutePath = testRootFolderPath + "/test_a/a.jpg";
+        SyncPath testAbsolutePath = _testRootFolderPath / "test_a" / "a.jpg";
         FileStat fileStat;
         bool exists = false;
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
@@ -344,7 +336,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 #endif
         std::system(testCallStr.c_str());
         //// create
-        SyncPath source = testFolderPath + "/test_a/a.jpg";
+        SyncPath source = _testFolderPath / "test_a" / "a.jpg";
 #ifdef _WIN32
         Poco::File(source.make_preferred().string().c_str()).copyTo(testAbsolutePath.make_preferred().string());
 #else
@@ -360,7 +352,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 #ifdef _WIN32
         testCallStr = "move " + testAbsolutePath.make_preferred().string() + " " + testRootFolderPath + "aa.jpg";
 #else
-        testCallStr = "mv " + testAbsolutePath.make_preferred().string() + " " + testRootFolderPath + "/aa.jpg";
+        testCallStr =
+            "mv " + testAbsolutePath.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string() + "/aa.jpg";
 #endif
         std::system(testCallStr.c_str());
 
@@ -374,19 +367,21 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
     {
         LOGW_DEBUG(_logger, L"***** move(x,y) + create(x) + edit(x,<newcontent>) + delete(x) *****");
         //// move
-        std::string testAbsolutePath = testRootFolderPath + "/test_b/b.jpg";
+        std::string testAbsolutePath = _testRootFolderPath / "test_b" / "b.jpg";
         FileStat fileStat;
         bool exists = false;
         IoHelper::getFileStat(testAbsolutePath.c_str(), &fileStat, exists);
         NodeId initItemId = std::to_string(fileStat.inode);
 #ifdef _WIN32
-        std::string testCallStr = "move " + testRootFolderPath + "/test_b/b.jpg" + " " + testRootFolderPath + "/bb.jpg";
+        std::string testCallStr = "move " + _testRootFolderPath..make_preferred().string() + "/test_b/b.jpg" + " " +
+                                  testRootFolderPath..make_preferred().string() + "/bb.jpg";
 #else
-        std::string testCallStr = "mv " + testRootFolderPath + "/test_b/b.jpg" + " " + testRootFolderPath + "/bb.jpg";
+        std::string testCallStr = "mv " + _testRootFolderPath.make_preferred().string() + "/test_b/b.jpg" + " " +
+                                  _testRootFolderPath.make_preferred().string() + "/bb.jpg";
 #endif
         std::system(testCallStr.c_str());
         //// create
-        std::filesystem::path source = testFolderPath + "/test_b/b.jpg";
+        SyncPath source = _testFolderPath / "test_b" / "b.jpg";
 #ifdef _WIN32
         Poco::File(source.make_preferred().string()).copyTo(testAbsolutePath);
 #else
