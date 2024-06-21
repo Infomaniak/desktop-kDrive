@@ -41,8 +41,6 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/Dynamic/Var.h>
 
-#include <queue>
-
 namespace KDC {
 
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
@@ -290,7 +288,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     if (saveCursor) {
-        std::string cursor = job->getCursor();
+        const std::string cursor = job->getCursor();
         if (cursor != _cursor) {
             _cursor = cursor;
             LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _cursor.c_str());
@@ -306,7 +304,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
 
     // Parse reply
     LOG_SYNCPAL_DEBUG(_logger, "Begin reply parsing");
-    auto start = std::chrono::steady_clock::now();
+    const auto start = std::chrono::steady_clock::now();
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
@@ -339,11 +337,10 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             continue;
         }
 
-        auto insertInfo = existingFiles.insert(Str2SyncName(item.parentId()) + item.name());
-        if (!insertInfo.second) {
-            // Item with exact same name already exist in parent folder
+        if (const auto insertInfo = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !insertInfo.second) {
+            // An item with the exact same name already exists in the parent folder.
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                               L"Item \"" << SyncName2WStr(item.name()).c_str() << L"\" already exist in directory \""
+                               L"Item \"" << SyncName2WStr(item.name()).c_str() << L"\" already exists in directory \""
                                           << SyncName2WStr(_snapshot->name(item.parentId())).c_str() << L"\"");
 
             SyncPath path;
