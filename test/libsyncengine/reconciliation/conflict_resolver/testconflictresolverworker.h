@@ -27,22 +27,22 @@ namespace KDC {
 class TestConflictResolverWorker : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestConflictResolverWorker);
-        //        CPPUNIT_TEST(testCreateCreate);
-        //        CPPUNIT_TEST(testEditEdit);
-        //        CPPUNIT_TEST(testMoveCreate);
-        //        CPPUNIT_TEST(testEditDelete1);
-        //        CPPUNIT_TEST(testEditDelete2);
-        //        CPPUNIT_TEST(testMoveDelete1);
-        //        CPPUNIT_TEST(testMoveDelete2);
-        //        CPPUNIT_TEST(testMoveDelete3);
-        //        CPPUNIT_TEST(testMoveDelete4);
-        //        CPPUNIT_TEST(testMoveDelete5);
-        //        CPPUNIT_TEST(testMoveParentDelete);
-        //        CPPUNIT_TEST(testCreateParentDelete);
-        //        CPPUNIT_TEST(testMoveMoveSource);
+        CPPUNIT_TEST(testCreateCreate);
+        CPPUNIT_TEST(testEditEdit);
+        CPPUNIT_TEST(testMoveCreate);
+        CPPUNIT_TEST(testEditDelete1);
+        CPPUNIT_TEST(testEditDelete2);
+        CPPUNIT_TEST(testMoveDelete1);
+        CPPUNIT_TEST(testMoveDelete2);
+        CPPUNIT_TEST(testMoveDelete3);
+        CPPUNIT_TEST(testMoveDelete4);
+        CPPUNIT_TEST(testMoveDelete5);
+        CPPUNIT_TEST(testMoveParentDelete);
+        CPPUNIT_TEST(testCreateParentDelete);
+        CPPUNIT_TEST(testMoveMoveSource);
         CPPUNIT_TEST(testMoveMoveSourceWithOrphanNodes);
-        //        CPPUNIT_TEST(testMoveMoveDest);
-        //        CPPUNIT_TEST(testMoveMoveCycle);
+        CPPUNIT_TEST(testMoveMoveDest);
+        CPPUNIT_TEST(testMoveMoveCycle);
         CPPUNIT_TEST_SUITE_END();
 
     public:
