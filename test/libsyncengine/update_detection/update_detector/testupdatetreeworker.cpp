@@ -604,7 +604,7 @@ void TestUpdateTreeWorker::testClearTreeStep6() {
     // special delete create file
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeDelete, "id51", NodeTypeFile, 1654788552, 1654788552,
                                                           12345, "Dir 5/File 5.1"));
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id51bi", NodeTypeFile, 1654798336, 1654798336,
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id51bis", NodeTypeFile, 1654798336, 1654798336,
                                                           12345, "Dir 5/File 5.1"));
 
     CPPUNIT_ASSERT(_updateTreeWorker->step4DeleteFile());
