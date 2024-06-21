@@ -67,6 +67,7 @@ if (WIN32)
         ${CMAKE_CURRENT_BINARY_DIR}
         "C:/Program Files (x86)/log4cplus/include"
         "C:/Program Files (x86)/libzip/include"
+        "C:/Program Files (x86)/xxHash/include"
     )
 else()
     target_include_directories(${libcommonserver_NAME} PUBLIC
