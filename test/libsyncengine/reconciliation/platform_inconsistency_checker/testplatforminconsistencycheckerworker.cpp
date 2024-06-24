@@ -93,7 +93,7 @@ void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
         //        node->setname(PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
         //            node->name(), PlatformInconsistencyCheckerUtility::SuffixTypeRename));
     }
-    CPPUNIT_ASSERT(node->name().size() > MAX_NAME_LENGTH_WIN_SHORT);
+    CPPUNIT_ASSERT_GREATER(MAX_NAME_LENGTH_WIN_SHORT, node->name().size());
     CPPUNIT_ASSERT(node->name().size() == MAX_NAME_LENGTH_WIN_SHORT);
 }
 
