@@ -654,7 +654,7 @@ void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
     CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT_EQUAL(Utility::ws2s(orphanName), Utility::ws2s(op->newName()));
+    CPPUNIT_ASSERT_EQUAL(SyncName2Str(orphanName), SyncName2Str(op->newName()));
     CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
     CPPUNIT_ASSERT_EQUAL(_syncPal->_localUpdateTree->rootNode(), op->newParentNode());
     CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
