@@ -682,7 +682,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 _executorExitCode = needRestart
                                         ? ExitCodeDataError
                                         : ExitCodeSystemError;  // TODO : data error here leads to a rebuild of the snapshots
-                                                                // while just running the sync again should be enough
+                // while just running the sync again should be enough
                 _executorExitCause = needRestart ? ExitCauseUnexpectedFileSystemEvent : ExitCauseUnknown;
                 return false;
             }
@@ -851,7 +851,8 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
 
     syncItem.setLocalNodeId(std::to_string(fileStat.inode));
 
-    if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem, needRestart)) {  // TODO : should not use SyncFileItem
+    if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem,
+                                           needRestart)) {  // TODO : should not use SyncFileItem
         return false;
     }
 
@@ -926,7 +927,7 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
             _syncPal->setProgressComplete(
                 relativeLocalFilePath,
                 SyncFileStatusIgnored);  // TODO: we do not want to propagate the changes, but they must be kept on local replica.
-                                         // Rename the file and exclude the renamed file
+            // Rename the file and exclude the renamed file
             return;
         }
 
@@ -1073,6 +1074,23 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
                                             << Utility::formatSyncPath(absolutePath).c_str() << L" (" << Utility::s2ws(id).c_str()
                                             << L")");
             ignoreItem = true;
+
+            // Update last modification date in order to avoid generating more EDIT operations.
+            bool found = false;
+            std::optional<SyncTime> modtime;
+            if (!_syncPal->_syncDb->lastModified(syncOp->affectedNode()->side(), *syncOp->affectedNode()->id(), modtime, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::lastModified");
+                _executorExitCode = ExitCodeDbError;
+                _executorExitCause = ExitCauseDbAccessError;
+                return false;
+            }
+            if (!found) {
+                LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->affectedNode()->idb());
+                _executorExitCode = ExitCodeDataError;
+                _executorExitCause = ExitCauseDbEntryNotFound;
+                return false;
+            }
+
             return true;
         }
     } else {
@@ -1344,7 +1362,8 @@ void ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &hasError) {
         bool exists = false;
         if (!hasRight(syncOp, exists)) {
             // Ignore operation
-            _syncPal->setProgressComplete(relativePath, SyncFileStatusIgnored);  // TODO : do not exclude item from sync, rollback
+            _syncPal->setProgressComplete(relativePath,
+                                          SyncFileStatusIgnored);  // TODO : do not exclude item from sync, rollback
             return;
         }
 
@@ -1705,7 +1724,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         cancelAllOngoingJobs();
         _syncPal->_restart = true;
         _syncPal->setProgressComplete(
-            relativeLocalPath, SyncFileStatusSuccess);  // Not really success but the file should not appear in error in Finder
+            relativeLocalPath,
+            SyncFileStatusSuccess);  // Not really success but the file should not appear in error in Finder
         _executorExitCode = ExitCodeOk;
 
         return false;
@@ -1786,8 +1806,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         const bool bypassProgressComplete = syncOp->affectedNode()->hasChangeEvent(OperationTypeCreate) &&
                                             syncOp->affectedNode()->hasChangeEvent(
                                                 OperationTypeDelete);  // TODO : If node has both create and delete events, bypass
-                                                                       // progress complete. But this should be refactored
-                                                                       // alongside UpdateTreeWorker::getOrCreateNodeFromPath
+        // progress complete. But this should be refactored
+        // alongside UpdateTreeWorker::getOrCreateNodeFromPath
 
         if (!bypassProgressComplete) {
             _syncPal->setProgressComplete(relativeLocalPath, status);
