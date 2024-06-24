@@ -1077,20 +1077,31 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
 
             // Update last modification date in order to avoid generating more EDIT operations.
             bool found = false;
-            std::optional<SyncTime> modtime;
-            if (!_syncPal->_syncDb->lastModified(syncOp->affectedNode()->side(), *syncOp->affectedNode()->id(), modtime, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::lastModified");
+            DbNode dbNode;
+            if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
+                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
                 _executorExitCode = ExitCodeDbError;
                 _executorExitCause = ExitCauseDbAccessError;
                 return false;
             }
             if (!found) {
-                LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->affectedNode()->idb());
+                LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->correspondingNode()->idb());
                 _executorExitCode = ExitCodeDataError;
                 _executorExitCause = ExitCauseDbEntryNotFound;
                 return false;
             }
 
+            bool exists = false;
+            if (!Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false, exists)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath).c_str());
+            }
+            if (exists) {
+                LOGW_SYNCPAL_INFO(
+                    _logger,
+                    L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
+                        << Utility::formatSyncPath(absolutePath).c_str());
+            }
+            // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
             return true;
         }
     } else {
