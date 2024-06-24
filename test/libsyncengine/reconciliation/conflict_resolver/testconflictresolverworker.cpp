@@ -462,7 +462,7 @@ void TestConflictResolverWorker::testMoveDelete4() {
     // Should have 1 move (orphan node) and 1 delete operation,
     // changes to be done in db only for both op
     // and on the remote replica only
-    CPPUNIT_ASSERT_EQUAL(2, _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT_EQUAL((size_t)2, _syncPal->_syncOps->size());
     CPPUNIT_ASSERT(!_syncPal->_conflictResolverWorker->registeredOrphans().empty());
     for (const auto &opId : _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
@@ -564,7 +564,7 @@ void TestConflictResolverWorker::testCreateParentDelete() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT_EQUAL(1, _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT_EQUAL((size_t)1, _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
@@ -607,7 +607,7 @@ void TestConflictResolverWorker::testMoveMoveSource() {
 
 void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
     // Initial state : Node AAA is orphan.
-    SyncName orphanName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
+    const SyncName orphanName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
         "AAA", PlatformInconsistencyCheckerUtility::SuffixTypeOrphan);
 
     std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
@@ -654,9 +654,9 @@ void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
     CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT_EQUAL(orphanName, op->newName());
+    CPPUNIT_ASSERT_EQUAL(Utility::ws2s(orphanName), Utility::ws2s(op->newName()));
     CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
-    CPPUNIT_ASSERT_EQUAL(_syncPal->_localUpdateTree->rootNode(), op->newParentNode() );
+    CPPUNIT_ASSERT_EQUAL(_syncPal->_localUpdateTree->rootNode(), op->newParentNode());
     CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
 }
 
