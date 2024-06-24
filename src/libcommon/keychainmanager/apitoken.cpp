@@ -62,4 +62,23 @@ ApiToken::ApiToken(const std::string &data) : _rawData(data) {
     }
 }
 
+std::string ApiToken::reconstructJsonString() const {
+    Poco::JSON::Object obj;
+    obj.set(accessTokenKey, _accessToken);
+    obj.set(refreshTokenKey, _refreshToken);
+    obj.set(tokenTypeKey, _tokenType);
+    obj.set(expiresInKey, _expiresIn);
+    obj.set(userIdKey, _userId);
+    obj.set(scopeKey, _scope);
+
+    std::ostringstream out;
+    obj.stringify(out);
+    return out.str();
+}
+bool ApiToken::operator==(const ApiToken &other) const {
+    return this->_accessToken == other._accessToken && this->_refreshToken == other._refreshToken &&
+           this->_tokenType == other._tokenType && this->_expiresIn == other._expiresIn && this->_userId == other._userId &&
+           this->_scope == other._scope;
+}
+
 }  // namespace KDC

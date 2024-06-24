@@ -37,8 +37,6 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static const SyncPath localTestDirPath(Utility::s2ws(TEST_DIR) + L"/test_ci");
-
 void KDC::TestLocalJobs::setUp() {
     // Setup parameter in test mode
     ParametersCache::instance(true);

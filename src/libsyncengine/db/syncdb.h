@@ -25,8 +25,6 @@
 
 #include <log4cplus/loggingmacros.h>
 
-#include <filesystem>
-#include <mutex>
 #include <unordered_set>
 
 namespace KDC {
