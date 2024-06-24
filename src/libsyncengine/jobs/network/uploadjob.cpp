@@ -38,7 +38,7 @@ UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &fi
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
-    _progress = 0;
+    setProgress(0);
 }
 
 UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const NodeId &fileId, SyncTime modtime)

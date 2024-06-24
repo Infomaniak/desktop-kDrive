@@ -30,6 +30,8 @@
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/drive.h"
 
+#include "requests/parameterscache.h"
+
 #include <fstream>
 
 #include <zip.h>
@@ -42,6 +44,8 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
         result = IoHelper::getDirectorySize(logPath, size, ioError);
         if (ioError == IoErrorSuccess) {
+            size *= 0.8;  // The compressed logs will be smaller than the original ones. We estimate at worst 80% of the
+                                  // original size.
             return true;
         }
     }
@@ -52,8 +56,10 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
 }
 
 ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputPath,
-                                                 std::function<bool(int)> progressCallback, SyncPath &archivePath,
+                                                 const std::function<bool(int)> &progressCallback, SyncPath &archivePath,
                                                  ExitCause &exitCause, bool test) {
+    const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
+
     // Get the log directory path
     const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
     const SyncPath tempLogArchiveDir =
@@ -146,7 +152,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     }
 
     // Generate user description file
-    exitCode = generateUserDescriptionFile(tempLogArchiveDir, exitCause);
+    exitCode = generateUserDescriptionFile(tempLogArchiveDir / "user_description.txt", exitCause);
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to generate user description file: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
@@ -154,8 +160,14 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     }
 
     // compress all the files in the folder
-    exitCode = compressLogFiles(tempLogArchiveDir, progressCallback, exitCause);
-    if (exitCode != ExitCodeOk) {
+    std::function<bool(int)> compressLogFilesProgressCallback = [&safeProgressCallback](int progressPercent) {
+        return safeProgressCallback((progressPercent * 95) / 100);  // The last 5% is for the archive generation
+    };
+    exitCode = compressLogFiles(tempLogArchiveDir, compressLogFilesProgressCallback, exitCause);
+    if (exitCause == ExitCauseOperationCanceled) {
+        IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
+        return ExitCodeOk;
+    } else if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Unable to compress logs: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
         return exitCode;
@@ -190,7 +202,6 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         if (source == nullptr) {
             LOG_WARN(Log::instance()->getLogger(), "Error in zip_source_file: " << zip_strerror(archive));
             IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
-
             exitCause = ExitCauseUnknown;
             return ExitCodeUnknown;
         }
@@ -199,7 +210,6 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         if (zip_file_add(archive, entryName.c_str(), source, ZIP_FL_OVERWRITE) < 0) {
             LOG_WARN(Log::instance()->getLogger(), "Error in zip_file_add: " << zip_strerror(archive));
             IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
-
             exitCause = ExitCauseUnknown;
             return ExitCodeUnknown;
         }
@@ -209,7 +219,6 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(tempLogArchiveDir, ioError).c_str());
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
-
         exitCause = ExitCauseUnknown;
         return ExitCodeUnknown;
     }
@@ -218,7 +227,6 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     if (zip_close(archive) < 0) {
         LOG_WARN(Log::instance()->getLogger(), "Error in zip_close: " << zip_strerror(archive));
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
-
         exitCause = ExitCauseUnknown;
         return ExitCodeUnknown;
     }
@@ -228,7 +236,7 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteDirectory: "
                                                     << Utility::formatIoError(tempLogArchiveDir.parent_path(), ioError).c_str());
     }
-
+    safeProgressCallback(100);
     exitCause = ExitCauseUnknown;
     return ExitCodeOk;
 }
@@ -307,41 +315,52 @@ ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitC
     return ExitCodeOk;
 }
 
-ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std::function<bool(int)> progressCallback,
+ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, const std::function<bool(int)> &progressCallback,
                                        ExitCause &exitCause) {
+    const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
     IoHelper::DirectoryIterator dir;
     IoError ioError = IoErrorUnknown;
     exitCause = ExitCauseUnknown;
-
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
         return ExitCodeSystemError;
     }
 
-    std::function<bool(int)> safeProgressCallback = progressCallback != nullptr ? progressCallback : [](int) { return true; };
-    int nbFiles = 0;
+    // Count the size of the files to compress
+    uint64_t totalSize = 1;  // Avoid division by zero
     DirectoryEntry entry;
-
-    if (!safeProgressCallback(0)) {
-        LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
-        return ExitCodeOperationCanceled;
-    }
-
     bool endOfDirectory = false;
-    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        nbFiles++;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {  // cannot use IoHelper::getDirectorySize because it
+                                                                           // will count the size of the already compressed files
+        if (entry.path().filename().extension() == Str(".gz")) {
+            continue;
+        }
+        ItemType itemType;
+        IoHelper::getItemType(entry.path(), itemType);
+        if (itemType.ioError == IoErrorSuccess && itemType.nodeType == NodeTypeFile) {
+            uint64_t fileSize = 0;
+            IoHelper::getFileSize(entry.path(), fileSize, ioError);
+            if (ioError != IoErrorSuccess) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                         L"Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
+                // Do not return, at worst the progress will be wrong
+            } else {
+                totalSize += fileSize;
+            }
+        }
     }
+
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
         return ExitCodeSystemError;
     }
 
-
-    int progress = 0;
+    // Compress the files
+    uint64_t compressedFilesSize = 0;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (entry.path().filename().extension() == Str(".gz")) {
+        if (entry.path().filename().extension() == Str(".gz") || !entry.is_regular_file()) {
             continue;
         }
 
@@ -357,10 +376,35 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
         }
         const std::string entryPathStr = entry.path().string();
         std::string destPath = entryPathStr + ".gz";
-        if (!CommonUtility::compressFile(entryPathStr, destPath)) {
+        bool canceled = false;
+        uint64_t fileSize = 0;
+        if (!IoHelper::getFileSize(entry.path(), fileSize, ioError) || ioError != IoErrorSuccess) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                     L"Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
+        }
+        std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
+                                                             &destPath, &totalSize, &fileSize](int progressPercent) {
+            auto parametersCacheInstance = ParametersCache::instance();
+            if (parametersCacheInstance && parametersCacheInstance->parameters().extendedLog()) {
+                LOG_DEBUG(Log::instance()->getLogger(),
+                          "File compression: -path: " << destPath.c_str() << " - sub percent: " << progressPercent
+                                                      << " - total compression step percent: "
+                                                      << (compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
+            }
+            canceled = !safeProgressCallback((compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
+            return !canceled;
+        };
+
+        if (!CommonUtility::compressFile(entryPathStr, destPath, compressProgressCallback)) {
             LOG_WARN(Log::instance()->getLogger(),
                      "Error in compressFile for " << entryPathStr.c_str() << " to " << destPath.c_str());
             return ExitCodeSystemError;
+        }
+
+        if (canceled) {
+            LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
+            exitCause = ExitCauseOperationCanceled;
+            return ExitCodeOk;
         }
 
         if (!IoHelper::deleteDirectory(entry.path(), ioError)) {  // Delete the original file
@@ -368,13 +412,7 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
                       L"Error in IoHelper::deleteDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
             return ExitCodeSystemError;
         }
-
-        progress++;
-        const int progressPercent = 100.0 * (double)progress / (double)nbFiles;
-        if (!safeProgressCallback(progressPercent)) {
-            LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
-            return ExitCodeOperationCanceled;
-        }
+        compressedFilesSize += fileSize;
     }
 
     if (!endOfDirectory) {

@@ -331,7 +331,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     }
 
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
-
+   
     // Set headers
     req.set("User-Agent", _userAgent);
     req.setContentType(contentType);
@@ -380,7 +380,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         }
 
         if (isProgressTracked()) {
-            _progress += itEnd - itBegin;
+            setProgress(getProgress() + itEnd - itBegin);
         }
 
         itBegin = itEnd;

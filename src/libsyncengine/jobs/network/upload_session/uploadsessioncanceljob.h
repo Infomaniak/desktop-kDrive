@@ -25,7 +25,9 @@ namespace KDC {
 
 class UploadSessionCancelJob : public AbstractUploadSessionJob {
     public:
-        UploadSessionCancelJob(int driveDbId, const SyncPath &filepath, const std::string &sessionToken);
+        UploadSessionCancelJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
+                               const std::string &sessionToken);
+        UploadSessionCancelJob(UploadSessionType uploadType, const std::string &sessionToken);
 
     private:
         virtual std::string getSpecificUrl() override;
