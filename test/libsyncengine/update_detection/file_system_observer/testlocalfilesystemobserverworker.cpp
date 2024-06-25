@@ -228,7 +228,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         testRelativePath = "B/AC";
         testAbsolutePath = _testRootFolderPath / testRelativePath;
 #ifdef _WIN32
-        testCallStr = "move " + source.make_preferred().string() + " " + _testAbsolutePath.make_preferred().string();
+        testCallStr = "move " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
 #else
         testCallStr = "mv " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
 #endif
@@ -245,7 +245,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         testRelativePath = "B/ACc";
         testAbsolutePath = _testRootFolderPath / testRelativePath;
 #ifdef _WIN32
-        testCallStr = "ren " + source.make_preferred().string() + " " + _testAbsolutePath.filename().string();
+        testCallStr = "ren " + source.make_preferred().string() + " " + testAbsolutePath.filename().string();
 #else
         testCallStr = "mv " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
 #endif
@@ -350,8 +350,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         std::system(testCallStr.c_str());
         //// move
 #ifdef _WIN32
-        testCallStr =
-            "move " + testAbsolutePath.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string() + "aa.jpg";
+        testCallStr = "move " + testAbsolutePath.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string() +
+                      "\\aa.jpg";
 #else
         testCallStr =
             "mv " + testAbsolutePath.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string() + "/aa.jpg";
@@ -374,8 +374,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         IoHelper::getFileStat(testAbsolutePath.c_str(), &fileStat, exists);
         NodeId initItemId = std::to_string(fileStat.inode);
 #ifdef _WIN32
-        std::string testCallStr = "move " + _testRootFolderPath.make_preferred().string() + "/test_b/b.jpg" + " " +
-                                  _testRootFolderPath.make_preferred().string() + "/bb.jpg";
+        std::string testCallStr = "move " + _testRootFolderPath.make_preferred().string() + "\\test_b\\b.jpg" + " " +
+                                  _testRootFolderPath.make_preferred().string() + "\\bb.jpg";
 #else
         std::string testCallStr = "mv " + _testRootFolderPath.make_preferred().string() + "/test_b/b.jpg" + " " +
                                   _testRootFolderPath.make_preferred().string() + "/bb.jpg";
@@ -392,7 +392,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         IoHelper::getFileStat(testAbsolutePath.c_str(), &fileStat, exists);
         NodeId newItemId = std::to_string(fileStat.inode);
         //// edit
-        testCallStr = R"(echo "This is an edit test" >>  )" + testAbsolutePath.make_preferred().native();
+        testCallStr = Str("(echo \"This is an edit test\" >>  )") + testAbsolutePath.make_preferred().native();
         std::system(testCallStr.c_str());
         //// delete
 #ifdef _WIN32
