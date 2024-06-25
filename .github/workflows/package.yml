@@ -75,8 +75,8 @@ jobs:
       - name: Package kDrive desktop and upload to kDrive
         run : ./infomaniak-build-tools/linux/package-ci-amd64.sh
 
-      - name: Clean-up generated code
-        run : rm -rf build-linux
+#      - name: Clean-up generated code
+#        run : rm -rf build-linux
 
   package-MacOS:
     runs-on: [ self-hosted, macOS, desktop-kdrive ]
