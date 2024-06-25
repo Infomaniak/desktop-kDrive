@@ -392,7 +392,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         IoHelper::getFileStat(testAbsolutePath.c_str(), &fileStat, exists);
         NodeId newItemId = std::to_string(fileStat.inode);
         //// edit
-        testCallStr = Str("(echo \"This is an edit test\" >>  )") + testAbsolutePath.make_preferred().native();
+        testCallStr = R"(echo "This is an edit test" >>  )" + testAbsolutePath.make_preferred().string();
         std::system(testCallStr.c_str());
         //// delete
 #ifdef _WIN32
