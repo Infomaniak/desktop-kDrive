@@ -396,7 +396,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         std::system(testCallStr.c_str());
         //// delete
 #ifdef _WIN32
-        testCallStr = "del " + testAbsolutePath;
+        testCallStr = "del " + testAbsolutePath.make_preferred().string();
 #else
         testCallStr = "rm -r " + testAbsolutePath.make_preferred().native();
 #endif
