@@ -98,6 +98,8 @@ bool AbstractNetworkJob::isManagedError(ExitCode exitCode, ExitCause exitCause) 
             return managedExitCauses.find(exitCause) != managedExitCauses.cend();
         case ExitCodeNetworkError:
             return exitCause == ExitCauseNetworkTimeout;
+        case ExitCodeUpdateRequired:
+            return true;
         default:
             return false;
     }
@@ -441,6 +443,10 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 }
                 return true;
             }
+            break;
+        }
+        case Poco::Net::HTTPResponse::HTTP_NOT_ACCEPTABLE: {
+            _exitCode = ExitCodeUpdateRequired;
             break;
         }
         case Poco::Net::HTTPResponse::HTTP_TOO_MANY_REQUESTS: {

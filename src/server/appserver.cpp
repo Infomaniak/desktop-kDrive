@@ -295,14 +295,11 @@ AppServer::AppServer(int &argc, char **argv)
     } else if (exitCode != ExitCodeOk) {
         LOG_WARN(_logger, "Error in updateAllUsersInfo : " << exitCode);
         addError(Error(ERRID, exitCode, ExitCauseUnknown));
-        if (exitCode != ExitCodeNetworkError) {
+        if (exitCode != ExitCodeNetworkError && exitCode != ExitCodeUpdateRequired) {
             throw std::runtime_error("Failed to load user data.");
             return;
         }
     }
-
-    // Start syncs
-    QTimer::singleShot(0, [=]() { startSyncPals(); });
 
     // Check last crash to avoid crash loop
     if (_crashRecovered) {
@@ -328,6 +325,10 @@ AppServer::AppServer(int &argc, char **argv)
             throw std::runtime_error("Failed to update last server self restart.");
         }
     }
+
+    // Start syncs
+    QTimer::singleShot(0, [=]() { startSyncPals(); });
+
 
     // Check if a log Upload has been interrupted
     AppStateValue appStateValue = LogUploadState::None;

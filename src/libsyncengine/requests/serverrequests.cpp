@@ -877,6 +877,8 @@ ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
 
 bool ServerRequests::isDisplayableError(const Error &error) {
     switch (error.exitCode()) {
+        case ExitCodeUpdateRequired:
+            return true;
         case ExitCodeNetworkError: {
             switch (error.exitCause()) {
                 case ExitCauseNetworkTimeout:

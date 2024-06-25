@@ -130,7 +130,8 @@ typedef enum {
     ExitCodeRateLimited,
     ExitCodeInvalidSync,  // The sync configuration is not valid
     ExitCodeOperationCanceled,
-    ExitCodeInvalidOperation
+    ExitCodeInvalidOperation,
+    ExitCodeUpdateRequired,
 } ExitCode;
 
 typedef enum {
