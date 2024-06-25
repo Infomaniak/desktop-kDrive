@@ -15,24 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "temporarydirectory.h"
 
+#include <string>
+#include <filesystem>
+#include <sstream>
 
 namespace KDC {
 
-TemporaryDirectory::TemporaryDirectory(const std::string &testType) {
-    const std::time_t now = std::time(nullptr);
-    const std::tm tm = *std::localtime(&now);
-    std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M");
-
-    path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
-    std::filesystem::create_directory(path);
-}
-
-TemporaryDirectory::~TemporaryDirectory() {
-    std::filesystem::remove_all(path);
-}
-
+struct LocalTemporaryDirectory {
+        std::filesystem::path path;
+        LocalTemporaryDirectory(const std::string& testType = "undef");
+        ~LocalTemporaryDirectory();
+};
 
 }  // namespace KDC

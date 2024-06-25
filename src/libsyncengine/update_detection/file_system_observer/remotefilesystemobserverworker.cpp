@@ -94,25 +94,7 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
     _snapshot->init();
     _updating = true;
-
-    {
-        auto listingFullTimerEnd = std::chrono::steady_clock::now();
-        std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
-        if (elapsedTime.count() > 3600) {  // 1h
-            _listingFullCounter = 0;
-            _listingFullTimer = listingFullTimerEnd;
-        } else if (_listingFullCounter > 60) {
-            // If there is more then 1 listing/full request per minute for an hour -> send a sentry
-#ifdef NDEBUG
-            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING,
-                                                                "RemoteFileSystemObserverWorker::generateInitialSnapshot",
-                                                                "Too many listing/full requests, sync is looping"));
-#endif
-            _listingFullCounter = 0;
-            _listingFullTimer = listingFullTimerEnd;
-        }
-    }
-    _listingFullCounter++;
+    countNbRequests();
 
     ExitCode exitCode = initWithCursor();
     ExitCause exitCause = ExitCause();
@@ -127,7 +109,7 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
         invalidateSnapshot();
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
 
-        if (exitCode == ExitCodeNetworkError && exitCause == ExitCauseNetworkTimeout) {
+        if (exitCode == ExitCodeNetworkError || exitCause == ExitCauseNetworkTimeout) {
             _syncPal->addError(Error(ERRID, exitCode, exitCause));
         }
     }
@@ -740,6 +722,28 @@ bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &na
     (void)type;
 #endif
     return false;
+}
+
+void RemoteFileSystemObserverWorker::countNbRequests() {
+    auto listingFullTimerEnd = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
+    bool resetTimer = elapsedTime.count() > 3600;  // 1h
+    if (_listingFullCounter > 60) {
+        // If there is more then 1 listing/full request per minute for an hour -> send a sentry
+#ifdef NDEBUG
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING,
+                                                            "RemoteFileSystemObserverWorker::generateInitialSnapshot",
+                                                            "Too many listing/full requests, sync is looping"));
+#endif
+        resetTimer = true;
+    }
+
+    if (resetTimer) {
+        _listingFullCounter = 0;
+        _listingFullTimer = listingFullTimerEnd;
+    }
+
+    _listingFullCounter++;
 }
 
 }  // namespace KDC

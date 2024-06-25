@@ -44,7 +44,8 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture {
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 
-        int _driveDbId;
+        int _driveDbId{0};
+        NodeId _testFolderId;
         NodeId _testFileId;
 };
 

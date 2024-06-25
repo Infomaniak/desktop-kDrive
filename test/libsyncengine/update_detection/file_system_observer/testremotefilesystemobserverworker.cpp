@@ -17,7 +17,8 @@
  */
 
 #include "testremotefilesystemobserverworker.h"
-#include "config.h"
+
+#include <memory>
 #include "jobs/network/deletejob.h"
 #include "jobs/network/movejob.h"
 #include "jobs/network/renamejob.h"
@@ -28,42 +29,30 @@
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
-
-static const std::string dataKey = "data";
-static const std::string nameKey = "name";
-static const std::string idKey = "id";
+#include "test_utility/localtemporarydirectory.h"
+#include "requests/syncnodecache.h"
 
 using namespace CppUnit;
+using namespace std::literals;
 
 namespace KDC {
 
 // Test in drive "kDrive Desktop Team"
-static const uint64_t nbFileInTestDir =
-    5;  // Test directory "Common documents/Test kDrive/test_ci/test_remote_FSO/" contains 5 files
-const std::string testDirPath = std::string(TEST_DIR) + "/test_ci/test_remote_FSO";
-const std::string testCiDirPath = std::string(TEST_DIR) + "/test_ci";
+static const uint64_t nbFileInTestDir = 5;     // "Common documents/Test kDrive/test_ci/test_remote_FSO/" contains 5 files
 const NodeId testRemoteFsoDirId = "59541";     // Common documents/Test kDrive/test_ci/test_remote_FSO/
-const NodeId testDirId = "56850";              // Common documents/Test kDrive/test_ci/
 const NodeId testBlackListedDirId = "56851";   // Common documents/Test kDrive/test_ci/test_pictures/
-const NodeId testBlackListedFileId = "56855";  // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
+const NodeId testBlackListedFileId = "97373";  // Common documents/Test kDrive/test_ci/test_pictures/picture-1.jpg
 
 void TestRemoteFileSystemObserverWorker::setUp() {
     _logger = Log::instance()->getLogger();
 
-    LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
+    LOG_DEBUG(_logger, "$$$$$ Set Up $$$$$");
 
-    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
-    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
-    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
-    const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-    const std::string remoteDirIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_DIR_ID");
-
-    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
-        apiTokenStr.empty() || remoteDirIdStr.empty()) {
-        throw std::runtime_error("Some environment variables are missing!");
-    }
+    const std::string userIdStr = loadEnvVariable("KDRIVE_TEST_CI_USER_ID");
+    const std::string accountIdStr = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID");
+    const std::string driveIdStr = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
+    const std::string apiTokenStr = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
+    _testFolderId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID");
 
     // Insert api token into keystore
     ApiToken apiToken;
@@ -74,38 +63,32 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    bool alreadyExists = false;
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 
     // Insert user, account, drive & sync
-    int userId(atoi(userIdStr.c_str()));
+    const int userId(atoi(userIdStr.c_str()));
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr.c_str()));
+    const int accountId(atoi(accountIdStr.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    int driveId = atoi(driveIdStr.c_str());
+    const int driveId(atoi(driveIdStr.c_str()));
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
+    Sync sync(1, drive.dbId(), "/", "/");
     ParmsDb::instance()->insertSync(sync);
 
-    // Setup proxy
-    Parameters parameters;
-    bool found;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
-        Proxy::instance(parameters.proxyConfig());
-    }
-
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
     _syncPal->_syncDb->setAutoDelete(true);
+
+    /// Insert node in blacklist
+    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeBlackList, {testBlackListedDirId});
 
     _syncPal->_remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
         new RemoteFileSystemObserverWorker(_syncPal, "Remote File System Observer", "RFSO"));
@@ -113,21 +96,17 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 }
 
 void TestRemoteFileSystemObserverWorker::tearDown() {
-    LOGW_DEBUG(_logger, L"$$$$$ Tear Down $$$$$");
+    LOG_DEBUG(_logger, "$$$$$ Tear Down $$$$$");
 
     // Delete file
     if (!_testFileId.empty()) {
-        DeleteJob job(_driveDbId, _testFileId, "",
-                      "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
+        DeleteJob job(_driveDbId, _testFileId, "", "");
+        job.setBypassCheck(true);
         job.runSynchronously();
     }
 
-    SyncPath relativePath = L"test_file.txt";
-    SyncPath localFilepath = testDirPath / relativePath;
-    std::string testCallStr = R"(echo "test" > )" + localFilepath.make_preferred().string();
-    std::system(testCallStr.c_str());
-
     ParmsDb::instance()->close();
+    ParmsDb::instance()->reset();
     if (_syncPal && _syncPal->_syncDb) {
         _syncPal->_syncDb->close();
     }
@@ -136,25 +115,31 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
     std::unordered_set<NodeId> ids;
     _syncPal->_remoteFSObserverWorker->_snapshot->ids(ids);
-    uint64_t fileCounter = 0;
-    for (const auto &id : ids) {
-        if (_syncPal->_remoteFSObserverWorker->_snapshot->isAncestor(id, testRemoteFsoDirId)) {
-            fileCounter++;
-        }
-    }
-    CPPUNIT_ASSERT(fileCounter == nbFileInTestDir);
+
+    std::unordered_set<NodeId> childrenIds;
+    CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->getChildrenIds(testRemoteFsoDirId, childrenIds));
+    CPPUNIT_ASSERT_EQUAL(nbFileInTestDir, childrenIds.size());
+
+    // Blacklisted folder should not appear in snapshot.
+    CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->_snapshot->exists(testBlackListedDirId));
+    CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->_snapshot->exists(testBlackListedFileId));
 }
 
 void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
-    SyncPath relativePath = L"test_file.txt";
-    SyncPath localFilepath = testDirPath / relativePath;
+    // Create test file locally
+    const LocalTemporaryDirectory temporaryDirectory("testRFSO");
+    const SyncName testFileName = Str("test_file_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
+    SyncPath testFilePath = temporaryDirectory.path / testFileName;
+    std::string testCallStr = R"(echo "File creation" > )" + testFilePath.make_preferred().string();
+    std::system(testCallStr.c_str());
 
     {
-        LOGW_DEBUG(_logger, L"***** test create file *****");
+        LOG_DEBUG(_logger, "***** test create file *****");
 
         // Upload in Common document sub directory
         {
-            UploadJob job(_driveDbId, localFilepath, localFilepath.filename().native(), testRemoteFsoDirId, 0);
+            const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            UploadJob job(_driveDbId, testFilePath, testFileName, testRemoteFsoDirId, time);
             job.runSynchronously();
 
             // Extract file ID
@@ -173,53 +158,58 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     }
 
     {
-        LOGW_DEBUG(_logger, L"***** test edit file *****");
+        LOG_DEBUG(_logger, "***** test edit file *****");
 
-        std::string testCallStr = R"(echo "This is an edit test" >> )" + localFilepath.make_preferred().string();
+        testCallStr = R"(echo "This is an edit test" >> )" + testFilePath.make_preferred().string();
         std::system(testCallStr.c_str());
 
         SyncTime prevModTime = _syncPal->_remoteFSObserverWorker->_snapshot->lastModified(_testFileId);
 
         Utility::msleep(1000);
 
-        UploadJob job(_driveDbId, localFilepath, localFilepath.filename().native(), testRemoteFsoDirId, 0);
+        const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        UploadJob job(_driveDbId, testFilePath, testFileName, testRemoteFsoDirId, time);
         job.runSynchronously();
 
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->lastModified(_testFileId) > prevModTime);
+        CPPUNIT_ASSERT_GREATER(prevModTime, _syncPal->_remoteFSObserverWorker->_snapshot->lastModified(_testFileId));
     }
 
     {
-        LOGW_DEBUG(_logger, L"***** test move file *****");
+        LOG_DEBUG(_logger, "***** test move file *****");
 
-        MoveJob job(_driveDbId, testCiDirPath, _testFileId, testDirId);
+        MoveJob job(_driveDbId, localTestDirPath, _testFileId, _testFolderId);
         job.runSynchronously();
 
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->parentId(_testFileId) == testDirId);
+        CPPUNIT_ASSERT_EQUAL(_testFolderId, _syncPal->_remoteFSObserverWorker->_snapshot->parentId(_testFileId));
     }
 
     {
-        LOGW_DEBUG(_logger, L"***** test rename file *****");
+        LOG_DEBUG(_logger, "***** test rename file *****");
 
-        RenameJob job(_driveDbId, _testFileId, Str("test_file_renamed.txt"));
+        const SyncName newFileName =
+            Str("test_file_renamed_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
+
+        RenameJob job(_driveDbId, _testFileId, newFileName);
         job.runSynchronously();
 
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->name(_testFileId) == Str("test_file_renamed.txt"));
+        CPPUNIT_ASSERT_EQUAL(SyncName2Str(newFileName),
+                             SyncName2Str(_syncPal->_remoteFSObserverWorker->_snapshot->name(_testFileId)));
     }
 
     {
-        LOGW_DEBUG(_logger, L"***** test delete file *****");
+        LOG_DEBUG(_logger, "***** test delete file *****");
 
-        DeleteJob job(_driveDbId, _testFileId, "",
-                      "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
+        DeleteJob job(_driveDbId, _testFileId, "", "");
+        job.setBypassCheck(true);
         job.runSynchronously();
 
         // Get activity from the server

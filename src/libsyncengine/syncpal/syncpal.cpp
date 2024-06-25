@@ -1445,23 +1445,23 @@ void SyncPal::fixNodeTableDeleteItemsWithNullParentNodeId() {
 }
 
 void SyncPal::increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side) {
-    _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side);
+    if (_tmpBlacklistManager) _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side);
 }
 
 int SyncPal::getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept {
-    return _tmpBlacklistManager->getErrorCount(nodeId, side);
+    return _tmpBlacklistManager ? _tmpBlacklistManager->getErrorCount(nodeId, side) : 0;
 }
 
 void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {
-    _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
+    if (_tmpBlacklistManager) _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
 }
 
 void SyncPal::refreshTmpBlacklist() {
-    _tmpBlacklistManager->refreshBlacklist();
+    if (_tmpBlacklistManager) _tmpBlacklistManager->refreshBlacklist();
 }
 
 void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
-    _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
+    if (_tmpBlacklistManager) _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
 }
 
 void SyncPal::copySnapshots() {
