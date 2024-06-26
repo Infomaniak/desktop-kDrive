@@ -145,7 +145,6 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
 #endif
 
         static void raiseDialog(QWidget *raiseWidget);
-        static void closeDialog(QWidget *closeWidget);
         void setupSynthesisPopover();
         void setupParametersDialog();
         void updateSystrayNeeded();

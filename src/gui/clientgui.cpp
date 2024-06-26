@@ -1434,12 +1434,6 @@ void ClientGui::raiseDialog(QWidget *raiseWidget) {
     }
 }
 
-void ClientGui::closeDialog(QWidget *closeWidget) {
-    if (closeWidget) {
-        closeWidget->close();
-    }
-}
-
 bool ClientGui::loadInfoMaps() {
     _userInfoMap.clear();
     _accountInfoMap.clear();
