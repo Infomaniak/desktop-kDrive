@@ -124,7 +124,6 @@ void AbstractNetworkJob::runJob() noexcept {
 
         try {
             if (!canRun()) {
-                clearSession();
                 return;
             }
         } catch (Poco::Exception const &e) {
@@ -226,10 +225,6 @@ void AbstractNetworkJob::runJob() noexcept {
             break;
         }
     }
-
-    if (!isAborted()) {
-        clearSession();
-    }
 }
 
 bool AbstractNetworkJob::hasHttpError() {
@@ -249,7 +244,6 @@ void AbstractNetworkJob::abort() {
     AbstractJob::abort();
 
     abortSession();
-    clearSession();
 }
 
 void AbstractNetworkJob::unzip(std::istream &is, std::stringstream &ss) {
@@ -292,6 +286,7 @@ void AbstractNetworkJob::clearSession() {
 
     if (_session) {
         if (_session->connected()) {
+            _session->flushRequest();
             _session->reset();
         }
     }
@@ -538,8 +533,6 @@ bool AbstractNetworkJob::processSocketError(const std::string &msg, const Unique
 }
 
 bool AbstractNetworkJob::processSocketError(const std::string &msg, const UniqueId jobId, int err, const std::string &errMsg) {
-    clearSession();
-
     if (isAborted()) {
         _exitCode = ExitCodeOk;
         return true;
