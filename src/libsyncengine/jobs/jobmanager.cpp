@@ -71,7 +71,7 @@ void JobManager::clear() {
         _instance->_thread = nullptr;
     }
 
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     _pendingJobs.clear();
     while (!_queuedJobs.empty()) {
         _queuedJobs.pop();
@@ -82,7 +82,7 @@ void JobManager::clear() {
 
 void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/,
                                std::function<void(UniqueId)> externalCallback /*= nullptr*/) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     _queuedJobs.push({job, priority});
 
     job->setMainCallback(defaultCallback);
@@ -98,21 +98,20 @@ void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::P
 }
 
 bool JobManager::isJobFinished(const UniqueId &jobId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     return _managedJobs.find(jobId) == _managedJobs.end();
 }
 
 std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId &jobId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
-    auto jobPtr = _managedJobs.find(jobId);
-    if (jobPtr != _managedJobs.end()) {
+    const std::scoped_lock lock(_mutex);
+    if (auto jobPtr = _managedJobs.find(jobId); jobPtr != _managedJobs.end()) {
         return jobPtr->second;
     }
     return nullptr;
 }
 
 void JobManager::defaultCallback(UniqueId jobId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     auto node = _managedJobs.extract(jobId);
     _runningJobs.erase(jobId);
 }
@@ -142,7 +141,7 @@ void JobManager::run() {
         auto poolAvailable = [=]() {
             try {
                 return Poco::ThreadPool::defaultPool().available();
-            } catch (...) {
+            } catch (Poco::Exception &) {
                 return 0;
             }
         };
@@ -153,7 +152,7 @@ void JobManager::run() {
             }
 
             {
-                const std::lock_guard<std::recursive_mutex> lock(_mutex);
+                const std::scoped_lock lock(_mutex);
 
                 if (_queuedJobs.empty()) {
                     break;
@@ -261,7 +260,7 @@ void JobManager::adjustMaxNbThread() {
 }
 
 int JobManager::countUploadSession() {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     int uploadSessionCount = 0;
     for (UniqueId id : _runningJobs) {
         const auto &job = _managedJobs[id];
@@ -273,7 +272,7 @@ int JobManager::countUploadSession() {
 }
 
 void JobManager::managePendingJobs(int uploadSessionCount) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     // Check if parent jobs of the pending jobs has finished
     auto it = _pendingJobs.begin();
