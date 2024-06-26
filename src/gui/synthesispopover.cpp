@@ -548,12 +548,6 @@ void SynthesisPopover::initUI() {
     lockedAppUpdateButtonHBox->addWidget(_lockedAppUpdateButton);
     lockedAppVesrionVBox->addLayout(lockedAppUpdateButtonHBox);
 
-    // TODO remove this button
-    QPushButton *lockedAppCancelButton = new QPushButton();
-    lockedAppCancelButton->setText(tr("Cancel"));
-    lockedAppUpdateButtonHBox->addWidget(lockedAppCancelButton);
-    connect(lockedAppCancelButton, &QPushButton::clicked, this, [this]() { onAppVersionLocked(_mainWidget->isVisible()); });
-
     // Shadow
     QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
     effect->setBlurRadius(shadowBlurRadius);
@@ -578,6 +572,8 @@ void SynthesisPopover::initUI() {
     connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
     connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onUpdateApp, Qt::UniqueConnection);
     connect(_lockedAppUpdateButton, &QPushButton::clicked, qApp, &QApplication::quit, Qt::UniqueConnection);
+    connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &SynthesisPopover::onUpdateAvailabalityChange,
+            Qt::UniqueConnection);
 }
 
 QUrl SynthesisPopover::syncUrl(int syncDbId, const QString &filePath) {
