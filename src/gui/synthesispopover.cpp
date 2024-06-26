@@ -28,7 +28,6 @@
 #include "parameterscache.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
-
 #include "updater/updaterclient.h"
 
 #undef CONSOLE_DEBUG
