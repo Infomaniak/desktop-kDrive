@@ -290,7 +290,7 @@ void AbstractNetworkJob::clearSession() {
                 _session->flushRequest();
                 _session->reset();
             }
-        } catch (...) {
+        } catch (Poco::Exception &) {
             // Do nothing
         }
     }
@@ -302,7 +302,7 @@ void AbstractNetworkJob::abortSession() {
             if (_session->connected()) {
                 _session->abort();
             }
-        } catch (...) {
+        } catch (Poco::Exception &) {
             // Do nothing
         }
     }
