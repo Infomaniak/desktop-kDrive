@@ -332,21 +332,24 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
                               nodeType, fileStat.size, isLink);
 
-            if (_snapshot->updateItem(item) && ParametersCache::isExtendedLogEnabled()) {
+            if (!_snapshot->updateItem(item)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
+                                                                      << Utility::s2ws(nodeId).c_str() << L")");
+                invalidateSnapshot();
+                return;
+            }
+
+            if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: " << Utility::formatSyncPath(absolutePath).c_str()
                                                                                  << L" (" << Utility::s2ws(nodeId).c_str()
                                                                                  << L") at " << fileStat.modtime);
+
                 //                if (nodeType == NodeTypeFile) {
                 //                    if (canComputeChecksum(absolutePath)) {
                 //                        // Start asynchronous checkum generation
                 //                        _checksumWorker->computeChecksum(nodeId, absolutePath);
                 //                    }
                 //                }
-            } else {
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
-                                                                      << Utility::s2ws(nodeId).c_str() << L")");
-                invalidateSnapshot();
-                return;
             }
 
             // Manage directories moved from outside the synchronized directory
