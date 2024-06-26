@@ -139,7 +139,15 @@ void JobManager::run() {
         int uploadSessionCount = countUploadSession();
 
         // Count UploadSessionJobs running
-        while (Poco::ThreadPool::defaultPool().available()) {
+        auto poolAvailable = [=]() {
+            try {
+                return Poco::ThreadPool::defaultPool().available();
+            } catch (...) {
+                return 0;
+            }
+        };
+
+        while (poolAvailable()) {
             if (_stop) {
                 break;
             }

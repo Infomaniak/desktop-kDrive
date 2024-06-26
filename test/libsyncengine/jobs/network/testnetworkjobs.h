@@ -53,10 +53,9 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testUploadAborted);
         CPPUNIT_TEST(testUploadSessionConstructorException);
         CPPUNIT_TEST(testUploadSessionSynchronous);
-        CPPUNIT_TEST(testUploadSessionAsynchronous2);
-        CPPUNIT_TEST(testUploadSessionAsynchronous10);
+        CPPUNIT_TEST(testUploadSessionAsynchronous);
         CPPUNIT_TEST(testUploadSessionSynchronousAborted);
-        CPPUNIT_TEST(testUploadSessionAsynchronous10Aborted);
+        CPPUNIT_TEST(testUploadSessionAsynchronousAborted);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -89,10 +88,9 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testUploadAborted();
         void testUploadSessionConstructorException();
         void testUploadSessionSynchronous();
-        void testUploadSessionAsynchronous2();
-        void testUploadSessionAsynchronous10();
+        void testUploadSessionAsynchronous();
         void testUploadSessionSynchronousAborted();
-        void testUploadSessionAsynchronous10Aborted();
+        void testUploadSessionAsynchronousAborted();
 
     private:
         bool createTestDir();
@@ -113,6 +111,8 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         NodeId _dummyLocalFileId;
         NodeId _dummyRemoteFileId;
         bool _deleteDummyFile = false;
+
+        static int _nbParalleleThreads;
 };
 
 }  // namespace KDC

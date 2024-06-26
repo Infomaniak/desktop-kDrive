@@ -3800,7 +3800,7 @@ void AppServer::addError(const Error &error) {
         sendUserUpdated(userInfo);
     } else if (error.exitCode() == ExitCodeNetworkError && error.exitCause() == ExitCauseSocketsDefuncted) {
         // Manage sockets defuncted error
-        LOG_WARN(Log::instance()->getLogger(), "Sockets defuncted error");
+        LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
         Parameters &parameters = ParametersCache::instance()->parameters();
         if (const int uploadSessionParallelJobs = parameters.uploadSessionParallelJobs(); uploadSessionParallelJobs > 1) {

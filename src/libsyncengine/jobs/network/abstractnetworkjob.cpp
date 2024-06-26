@@ -294,26 +294,12 @@ void AbstractNetworkJob::clearSession() {
         if (_session->connected()) {
             _session->reset();
         }
-        _session = nullptr;
     }
 }
 
 void AbstractNetworkJob::abortSession() {
-    if (_session) {
+    if (_session && _session->connected()) {
         _session->abort();
-        _session = nullptr;
-        /*Poco::Net::SocketImpl *socketImpl = _session->socket().impl();
-        if (socketImpl) {
-            if (socketImpl->initialized()) {
-                try {
-                    socketImpl->close();
-                } catch (std::exception &e) {
-                    LOG_DEBUG(_logger, "Job " << jobId() << " abort error - err=" << e.what());
-                }
-            } else {
-                LOG_DEBUG(_logger, "Job " << jobId() << " already aborted");
-            }
-        }*/
     }
 }
 
@@ -565,11 +551,13 @@ bool AbstractNetworkJob::processSocketError(const std::string &msg, const Unique
         if (!errMsg.empty()) errMsgStream << " - err message=" << errMsg.c_str();
         LOG_WARN(_logger, errMsgStream.str().c_str());
 
+        _exitCode = ExitCodeNetworkError;
         if (err == EBADF) {
             // !!! macOS
             // When too many sockets are opened, the kernel kills all the process' sockets!
             // Console message generated: "mbuf_watchdog_defunct: defuncting all sockets from kDrive.<process id>"
             // macOS !!!
+            LOG_WARN(_logger, "Sockets defuncted by kernel");
             _exitCause = ExitCauseSocketsDefuncted;
         } else {
             _exitCause = ExitCauseUnknown;
