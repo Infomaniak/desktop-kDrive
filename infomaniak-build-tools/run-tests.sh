@@ -25,7 +25,6 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-
 testers=$(find . -type f -name "kDrive_test_*")
 errors=0
 failures=()

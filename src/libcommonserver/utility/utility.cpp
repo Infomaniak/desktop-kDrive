@@ -452,6 +452,10 @@ std::string Utility::opType2Str(OperationType opType) {
     }
 }
 
+std::wstring Utility::opType2WStr(OperationType opType) {
+    return s2ws(opType2Str(opType));
+}
+
 std::string Utility::conflictType2Str(ConflictType conflictType) {
     switch (conflictType) {
         case ConflictTypeMoveParentDelete: {
@@ -490,6 +494,10 @@ std::string Utility::conflictType2Str(ConflictType conflictType) {
     }
 }
 
+std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
+    return s2ws(conflictType2Str(conflictType));
+}
+
 std::string Utility::side2Str(ReplicaSide side) {
     switch (side) {
         case ReplicaSideLocal: {
@@ -504,6 +512,10 @@ std::string Utility::side2Str(ReplicaSide side) {
     }
 }
 
+std::wstring Utility::side2WStr(ReplicaSide side) {
+    return s2ws(side2Str(side));
+}
+
 std::string Utility::nodeType2Str(NodeType type) {
     switch (type) {
         case NodeTypeDirectory: {
@@ -516,6 +528,10 @@ std::string Utility::nodeType2Str(NodeType type) {
             return "Unknown";
         }
     }
+}
+
+std::wstring Utility::nodeType2WStr(NodeType type) {
+    return s2ws(nodeType2Str(type));
 }
 
 std::string Utility::logLevel2Str(LogLevel level) {
@@ -540,6 +556,10 @@ std::string Utility::logLevel2Str(LogLevel level) {
     }
 
     return std::string();
+}
+
+std::wstring Utility::logLevel2WStr(LogLevel level) {
+    return s2ws(logLevel2Str(level));
 }
 
 std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
@@ -568,6 +588,10 @@ std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
     }
 
     return "";
+}
+
+std::wstring Utility::syncFileStatus2WStr(SyncFileStatus status) {
+    return s2ws(syncFileStatus2Str(status));
 }
 
 std::string Utility::list2str(std::unordered_set<std::string> inList) {
@@ -682,15 +706,13 @@ SyncName Utility::logFileNameWithTime() {
 
 std::string Utility::toUpper(const std::string &str) {
     std::string upperStr(str);
-    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
-
+    std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
     return upperStr;
 }
 
 std::string Utility::errId(const char *file, int line) {
     std::string err =
         Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
-
     return err;
 }
 

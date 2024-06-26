@@ -28,6 +28,9 @@ namespace KDC {
 class TestUpdateTreeWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUpdateTreeWorker);
         CPPUNIT_TEST(testUtilsFunctions);
+        CPPUNIT_TEST(testUpdateTmpFileNode);
+        CPPUNIT_TEST(testHandleCreateOperationsWithSamePath);
+        CPPUNIT_TEST(testSearchForParentNode);
         CPPUNIT_TEST(testStep1);
         CPPUNIT_TEST(testStep2);
         CPPUNIT_TEST(testStep3);
@@ -49,6 +52,7 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testGetOriginPath3);
         CPPUNIT_TEST(testGetOriginPath4);
         CPPUNIT_TEST(testDeleteMove);
+        CPPUNIT_TEST(testDeleteRecreateBranch);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -58,9 +62,11 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
     protected:
         void setUpDbTree();
         void setUpUpdateTree();
-        void clearTreeAndDb();
 
         void testUtilsFunctions();
+        void testUpdateTmpFileNode();
+        void testHandleCreateOperationsWithSamePath();
+        void testSearchForParentNode();
 
         // Test with already existing UpdateTree
         void testStep1();
@@ -89,6 +95,13 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
 
         void testDeleteMove();
 
+        /**
+         * Specific test for https://github.com/Infomaniak/desktop-kDrive/pull/176.
+         * Let's imagine the following tree structure : A/AA/AAA. The test case is to delete this entire tree structure and
+         * re-create it immediately with different IDs but same names.
+         */
+        void testDeleteRecreateBranch();
+
     private:
         std::shared_ptr<UpdateTreeWorker> _updateTreeWorker;
         std::shared_ptr<SyncDb> _syncDb;
@@ -97,7 +110,5 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
 
         DbNodeId _dbnodeIdDir41;
         DbNodeId _dbnodeIdDir411;
-
-        log4cplus::Logger _logger;
 };
 }  // namespace KDC

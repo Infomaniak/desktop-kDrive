@@ -46,9 +46,12 @@ void TestSyncPal::setUp() {
     }
 
     // Insert api token into keystore
+    ApiToken apiToken;
+    apiToken.setAccessToken(apiTokenStr);
+
     std::string keychainKey("123");
     KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiTokenStr);
+    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
     bool alreadyExists;

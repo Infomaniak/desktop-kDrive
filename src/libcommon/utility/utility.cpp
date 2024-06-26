@@ -18,8 +18,6 @@
 
 #include "utility.h"
 #include "config.h"
-#include "common/utility.h"
-#include "libcommonserver/utility/utility.h"
 #include "version.h"
 
 #include <system_error>
@@ -37,6 +35,8 @@
 #ifdef _WIN32
 #include <Poco/Util/WinRegistryKey.h>
 #endif
+
+#include <sentry.h>
 
 #ifdef ZLIB_FOUND
 #include <zlib.h>
@@ -265,7 +265,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
         res = false;
     }
 
-    if (!res){
+    if (!res) {
         sentry_value_t event = sentry_value_new_event();
         std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
         sentry_value_t exc = sentry_value_new_exception("CommonUtility::stringToAppStateValue", message.c_str());
@@ -290,6 +290,14 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
         return false;
     }
     return true;
+}
+
+bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName) {
+    return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName));
+}
+
+bool CommonUtility::compressFile(const std::string &originalName, const std::string &targetName) {
+    return compressFile(QString::fromStdString(originalName), QString::fromStdString(targetName));
 }
 
 bool CommonUtility::compressFile(const QString &originalName, const QString &targetName) {

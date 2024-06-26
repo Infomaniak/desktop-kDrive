@@ -348,7 +348,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         }
 
         bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcludedTemplate(item.name(), isWarning)) {
+        if (ExclusionTemplateCache::instance()->isExcludedByTemplate(item.name(), isWarning)) {
             continue;
         }
 
@@ -482,7 +482,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr actionArray) {
     if (!actionArray) return ExitCodeOk;
 
-    std::set<NodeId, std::equal_to<>> movedItems;
+    std::set<NodeId, std::less<>> movedItems;
 
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
         if (stopAsked()) {
@@ -506,7 +506,7 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
         }
 
         bool isWarning = false;
-        if (ExclusionTemplateCache::instance()->isExcludedTemplate(usedName, isWarning)) {
+        if (ExclusionTemplateCache::instance()->isExcludedByTemplate(usedName, isWarning)) {
             if (isWarning) {
                 Error error(_syncPal->syncDbId(), "", actionInfo.nodeId, actionInfo.type, actionInfo.path, ConflictTypeNone,
                             InconsistencyTypeNone, CancelTypeExcludedByTemplate);
@@ -591,7 +591,7 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 }
 
 ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName, const ActionInfo &actionInfo,
-                                                       std::set<NodeId, std::equal_to<>> &movedItems) {
+                                                       std::set<NodeId, std::less<>> &movedItems) {
     SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime,
                       actionInfo.type, actionInfo.size, actionInfo.canWrite);
 
