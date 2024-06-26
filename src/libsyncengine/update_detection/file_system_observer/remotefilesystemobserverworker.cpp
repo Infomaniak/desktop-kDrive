@@ -109,7 +109,7 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
         invalidateSnapshot();
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
 
-        if (exitCode == ExitCodeNetworkError || exitCause == ExitCauseNetworkTimeout) {
+        if (exitCode == ExitCodeNetworkError) {
             _syncPal->addError(Error(ERRID, exitCode, exitCause));
         }
     }
