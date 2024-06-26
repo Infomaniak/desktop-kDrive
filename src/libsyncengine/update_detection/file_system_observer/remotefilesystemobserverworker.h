@@ -31,7 +31,7 @@ class CsvFullFileListWithCursorJob;
 class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
     public:
         RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
-        ~RemoteFileSystemObserverWorker();
+        ~RemoteFileSystemObserverWorker() override;
 
     private:
         void execute() override;
@@ -60,7 +60,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         };
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
         ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
-        ExitCode processAction(const SyncName &usedName, const ActionInfo &actionInfo, std::set<NodeId, std::equal_to<>> &movedItems);
+        ExitCode processAction(const SyncName &usedName, const ActionInfo &actionInfo, std::set<NodeId, std::less<>> &movedItems);
 
         ExitCode checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
 
