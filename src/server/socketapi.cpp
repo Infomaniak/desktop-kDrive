@@ -49,7 +49,9 @@
 #include <QStandardPaths>
 
 #ifdef Q_OS_MAC
+
 #include <CoreFoundation/CoreFoundation.h>
+
 #endif
 
 #include <log4cplus/loggingmacros.h>
@@ -83,7 +85,9 @@ namespace KDC {
 
 struct ListenerHasSocketPred {
         QIODevice *socket;
+
         ListenerHasSocketPred(QIODevice *socket) : socket(socket) {}
+
         bool operator()(const SocketListener &listener) const { return listener.socket == socket; }
 };
 
@@ -345,11 +349,9 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
         return;
     }
 
-    if (status != KDC::SyncFileStatusUnknown) {
-        QString message =
-            buildMessage(QString("STATUS"), fileData._localPath, socketAPIString(status, isPlaceholder, isHydrated, progress));
-        listener->sendMessage(message);
-    }
+    QString message =
+        buildMessage(QString("STATUS"), fileData._localPath, socketAPIString(status, isPlaceholder, isHydrated, progress));
+    listener->sendMessage(message);
 }
 
 void SocketApi::command_VERSION(const QString &, SocketListener *listener) {
@@ -790,9 +792,9 @@ void SocketApi::command_GET_STRINGS(const QString &argument, SocketListener *lis
         {"COPY_PRIVATE_LINK_MENU_TITLE", tr("Copy private share link")},
     }};
     listener->sendMessage(QString("GET_STRINGS%1BEGIN").arg(MSG_CDE_SEPARATOR));
-    for (auto key_value : strings) {
-        if (argument.isEmpty() || argument == QString(key_value.first)) {
-            listener->sendMessage(QString("STRING%1%2%1%3").arg(MSG_CDE_SEPARATOR).arg(key_value.first, key_value.second));
+    for (auto &keyValue : strings) {
+        if (argument.isEmpty() || argument == QString(keyValue.first)) {
+            listener->sendMessage(QString("STRING%1%2%1%3").arg(MSG_CDE_SEPARATOR).arg(keyValue.first, keyValue.second));
         }
     }
     listener->sendMessage(QString("GET_STRINGS%1END").arg(MSG_CDE_SEPARATOR));
@@ -884,6 +886,7 @@ void SocketApi::command_GET_THUMBNAIL(const QString &argument, SocketListener *l
 #endif
 
 #ifdef Q_OS_MAC
+
 void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
     if (filePath.isEmpty()) {
         // No thumbnail for root
@@ -898,7 +901,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
     FileData fileData = FileData::get(filePath);
     if (!fileData._syncDbId) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
-                  L"The file is not in a synchonized folder - path=" << QStr2WStr(filePath).c_str());
+                  L"The file is not in a synchronized folder - path=" << QStr2WStr(filePath).c_str());
         return;
     }
 
@@ -948,6 +951,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
         return;
     }
 }
+
 #endif
 
 void SocketApi::sendSharingContextMenuOptions(const FileData &fileData, SocketListener *listener) {
