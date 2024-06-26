@@ -285,16 +285,26 @@ void AbstractNetworkJob::clearSession() {
     const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
 
     if (_session) {
-        if (_session->connected()) {
-            _session->flushRequest();
-            _session->reset();
+        try {
+            if (_session->connected()) {
+                _session->flushRequest();
+                _session->reset();
+            }
+        } catch (...) {
+            // Do nothing
         }
     }
 }
 
 void AbstractNetworkJob::abortSession() {
-    if (_session && _session->connected()) {
-        _session->abort();
+    if (_session) {
+        try {
+            if (_session->connected()) {
+                _session->abort();
+            }
+        } catch (...) {
+            // Do nothing
+        }
     }
 }
 
