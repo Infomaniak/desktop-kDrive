@@ -145,7 +145,11 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash() {
 
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(parentNode);
 
+#if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+#else
+    CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+#endif
 }
 
 void TestPlatformInconsistencyCheckerWorker::testExecute() {
@@ -173,7 +177,12 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
         (!_syncPal->_remoteUpdateTree->exists(*node_A->id()) && _syncPal->_remoteUpdateTree->exists(*node_a->id()));
 
     CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->exists(*parentNode->id()));
+
+#if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(exactly1exist);
+#else
+    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->exists(*node_A->id()) && _syncPal->_remoteUpdateTree->exists(*node_a->id()));
+#endif
 }
 
 }  // namespace KDC
