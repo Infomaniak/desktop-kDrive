@@ -200,7 +200,7 @@ cd ~/Projects
 curl -o zstd-1.5.6.tar.gz -L https://github.com/facebook/zstd/archive/v1.5.6.tar.gz
 tar xzf zstd-1.5.6.tar.gz
 mkdir -p zstd-1.5.6/build/cmake/build && cd zstd-1.5.6/build/cmake/build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" ..
 cmake --build . --config Release
 sudo cmake --build . --config Release --target install
 ```
@@ -212,7 +212,7 @@ git clone https://github.com/nih-at/libzip.git
 cd libzip
 git checkout tags/v1.10.1
 mkdir build && cd build
-cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -Dzstd_SHARED_LIBRARY="/usr/local/lib/libzstd.1.5.6.dylib" -Dzstd_INCLUDE_DIR="/usr/local/include" ..
+cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -Dzstd_SHARED_LIBRARY="/usr/local/lib/libzstd.1.5.6.dylib" -Dzstd_INCLUDE_DIR="/usr/local/include" ..
 make
 sudo make install
 ```
@@ -237,6 +237,11 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 ```
 
 # Build in Debug
+
+## Linking dependencies
+
+In order for CMake to be able to find all dependencies, you might need to define `DYLD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
+Either add `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib` in your personal `.zshrc` file or add the environment variable in your IDE.
 
 ## Using Qt Creator
 
@@ -265,10 +270,6 @@ Build - Build Steps - Build :
 `cmake --build . --target all install`
 
 Build - Build Steps - Custom Process Step 1 :  
-`Command	: %{Qt:QT_INSTALL_BINS}/macdeployqt`  
-`Arguments	: %{buildDir}/bin/kDrive.app -no-strip -executable=%{buildDir}/bin/kDrive.app/Contents/MacOS/kDrive_client`
-
-Build - Build Steps - Custom Process Step 2 :  
 `Command	: /Users/<user name>/Projects/kdrive/admin/osx/sign_app_debug.sh`  
 `Arguments	: %{ActiveProject:RunConfig:Executable:FileName} %{buildDir}/bin/kDrive.app "Developer ID Application: Infomaniak Network SA (864VDCS2QY)" "864VDCS2QY" "com.infomaniak.drive.desktopclient" 2>&1 1>/dev/null`
 

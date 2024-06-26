@@ -16,39 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
+#pragma once
 
-#include <log4cplus/logger.h>
-
-using namespace CppUnit;
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 namespace KDC {
 
-class TestLogArchiver : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestLogArchiver);
-        CPPUNIT_TEST(testGetLogEstimatedSize);
-        CPPUNIT_TEST(testCopyLogsTo);
-        CPPUNIT_TEST(testCopyParmsDbTo);
-        CPPUNIT_TEST(testCompressLogs);
-        CPPUNIT_TEST(testGenerateUserDescriptionFile);
-        CPPUNIT_TEST(testGenerateLogsSupportArchive);
+class TestApiToken : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestApiToken);
+        CPPUNIT_TEST(testReconstructJson);
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void) final;
+        void setUp(void);
+        void tearDown(void);
 
     protected:
-        log4cplus::Logger _logger;
-
-        void testGetLogEstimatedSize(void);
-        void testCopyLogsTo(void);
-        void testCopyParmsDbTo(void);
-        void testCompressLogs(void);
-        void testGenerateUserDescriptionFile(void);
-        void testGenerateLogsSupportArchive(void);
-
-    private:
-        bool parmsDbFileExist();
+        void testReconstructJson();
 };
 
 }  // namespace KDC

@@ -34,13 +34,13 @@ class SnapshotItem {
                      NodeType type, int64_t size, bool isLink = false, bool canWrite = true, bool canShare = true);
         SnapshotItem(const SnapshotItem &other);
 
-        inline const NodeId & id() const { return _id; }
+        inline const NodeId &id() const { return _id; }
         inline void setId(const NodeId &id) { _id = id; }
-        inline const NodeId & parentId() const { return _parentId; }
+        inline const NodeId &parentId() const { return _parentId; }
         inline void setParentId(const NodeId &newParentId) { _parentId = newParentId; }
         inline const std::unordered_set<NodeId> &childrenIds() const { return _childrenIds; }
         inline void setChildrenIds(const std::unordered_set<NodeId> &newChildrenIds) { _childrenIds = newChildrenIds; }
-        inline const SyncName & name() const { return _name; }
+        inline const SyncName &name() const { return _name; }
         inline void setName(const SyncName &newName) { _name = newName; }
         inline SyncTime createdAt() const { return _createdAt; }
         inline void setCreatedAt(SyncTime newCreatedAt) { _createdAt = newCreatedAt; }
