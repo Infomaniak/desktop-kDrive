@@ -106,7 +106,8 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     forbiddenName = Str("test ");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
 #else
-    forbiddenName = Str("test\0");
+    forbiddenName = std::string("test");
+    forbiddenName.append(1, '\0');
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
 #endif
 }
