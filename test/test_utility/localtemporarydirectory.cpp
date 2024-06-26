@@ -17,6 +17,7 @@
  */
 #include "localtemporarydirectory.h"
 
+#include <sstream>
 
 namespace KDC {
 
