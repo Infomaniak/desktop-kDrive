@@ -1889,6 +1889,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << status;
             break;
         }
+        case REQUEST_NUM_UPDATER_STATUS: {
+            UpdateState status = UpdaterServer::instance()->updateState();
+            resultStream << status;
+            break;
+        }
         case REQUEST_NUM_UPDATER_DOWNLOADCOMPLETED: {
             bool ret = UpdaterServer::instance()->downloadCompleted();
 
@@ -1918,6 +1923,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 updater->slotStartInstaller();
                 QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             }
+            break;
+        }
+        case REQUEST_NUM_UPDATER_UNSKIPUPDATE: {
+            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
+            updater->slotUnsetSeenVersion();
             break;
         }
         case REQUEST_NUM_UTILITY_QUIT: {

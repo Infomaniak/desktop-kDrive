@@ -19,6 +19,8 @@
 #pragma once
 
 #include "updaterserver.h"
+#include "libcommon/utility/types.h"
+
 #include "config.h"
 
 #include <QObject>
@@ -40,7 +42,18 @@ class SparkleUpdater : public UpdaterServer {
         void checkForUpdate() Q_DECL_OVERRIDE;
         void backgroundCheckForUpdate() Q_DECL_OVERRIDE;
         bool handleStartup() Q_DECL_OVERRIDE { return false; }
-
+        UpdateState updateState() const override {
+            switch (state()) {
+                case Unknown:
+                    return UpdateState::Checking;
+                case FindValidUpdate:
+                    return UpdateState::Ready;
+                case DidNotFindUpdate:
+                    return UpdateState::None;
+                case AbortWithError:
+                    return UpdateState::Error;
+            }
+        }
         int state() const;
         QString version() const override;
         QString statusString() const

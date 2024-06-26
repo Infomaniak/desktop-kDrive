@@ -64,10 +64,15 @@ QString UpdateInfo::downloadUrl() const {
 }
 
 UpdateInfo UpdateInfo::parseString(const QString &xml, bool *ok) {
+    if (ok) {
+        *ok = true;
+    }
     Poco::XML::DOMParser parser;
     Poco::AutoPtr<Poco::XML::Document> doc = parser.parseString(xml.toStdString());
     if (!doc) {
-        if (ok) *ok = false;
+        if (ok) {
+            *ok = false;
+        }
         return UpdateInfo();
     }
 

@@ -501,7 +501,7 @@ KDC--CustomDialog QPushButton#nondefaultbutton
     font-size: 14px;
 }
 
-KDC--CustomDialog QPushButton#defaultbutton
+QDialog QPushButton#KDCdefaultbutton, KDC--CustomDialog QPushButton#defaultbutton
 {
     background-color: #0098FF;
     border: 0px;

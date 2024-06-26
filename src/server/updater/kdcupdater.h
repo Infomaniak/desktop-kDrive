@@ -88,6 +88,7 @@ class KDCUpdater : public UpdaterServer {
 
         void checkForUpdate() override;
         QString statusString() const override;
+        UpdateState updateState() const override;
 
         int downloadState() const;
         void setDownloadState(DownloadState state);
@@ -141,6 +142,7 @@ class NSISUpdater : public KDCUpdater {
 
     public slots:
         void slotSetSeenVersion();
+        void slotUnsetSeenVersion();
 
     private slots:
         void slotDownloadFinished();

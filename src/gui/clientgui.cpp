@@ -434,6 +434,7 @@ void ClientGui::setupSynthesisPopover() {
     connect(this, &ClientGui::itemCompleted, _synthesisPopover.get(), &SynthesisPopover::onItemCompleted);
     connect(this, &ClientGui::errorAdded, _synthesisPopover.get(), &SynthesisPopover::onRefreshErrorList);
     connect(this, &ClientGui::errorsCleared, _synthesisPopover.get(), &SynthesisPopover::onRefreshErrorList);
+    connect(this, &ClientGui::appVersionLocked, _synthesisPopover.get(), &SynthesisPopover::onAppVersionLocked);
     connect(this, &ClientGui::refreshStatusNeeded, _synthesisPopover.get(), &SynthesisPopover::onRefreshStatusNeeded);
 
     // This is an old compound flag that people might still depend on
@@ -902,6 +903,15 @@ void ClientGui::onRefreshErrorList() {
 
         _generalErrorsCounter = _errorInfoMap[0].count();
         emit errorAdded(0);
+        bool lockedVersion = false;
+        for (auto &errorInfo : _errorInfoMap[0]) {
+            if (errorInfo.exitCode() == ExitCodeUpdateRequired) {
+                lockedVersion = true;
+                break;
+            }
+        }
+        emit appVersionLocked(lockedVersion);
+
         _driveWithNewErrorSet.remove(0);
     }
 
@@ -939,6 +949,25 @@ void ClientGui::onRefreshErrorList() {
         it = _driveWithNewErrorSet.erase(it);
     }
 }
+
+void ClientGui::closeAllExcept(QWidget *exceptWidget) {
+    if (_synthesisPopover && exceptWidget != _synthesisPopover.get()) {
+        _synthesisPopover->hide();
+    }
+
+    if (_parametersDialog && exceptWidget != _parametersDialog.get()) {
+        _parametersDialog->hide();
+    }
+
+    if (_addDriveWizard && exceptWidget != _addDriveWizard.get()) {
+        _addDriveWizard->hide();
+    }
+
+    if (_loginDialog && exceptWidget != _loginDialog.get()) {
+        _loginDialog->hide();
+    }
+}
+
 
 void ClientGui::onUserAdded(const UserInfo &userInfo) {
     _userInfoMap.insert({userInfo.dbId(), UserInfoClient(userInfo)});
@@ -1402,6 +1431,12 @@ void ClientGui::raiseDialog(QWidget *raiseWidget) {
                    False,  // propagate
                    SubstructureRedirectMask | SubstructureNotifyMask, &e);
 #endif
+    }
+}
+
+void ClientGui::closeDialog(QWidget *closeWidget) {
+    if (closeWidget) {
+        closeWidget->close();
     }
 }
 

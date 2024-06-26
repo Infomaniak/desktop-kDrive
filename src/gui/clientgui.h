@@ -82,6 +82,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void errorInfoList(int driveDbId, QList<ErrorInfo> &errorInfoList);
         void resolveConflictErrors(int driveDbId, bool keepLocalVersion);
         void resolveUnsupportedCharErrors(int driveDbId);
+        void closeAllExcept(QWidget *exceptWidget);
 
     signals:
         void userListRefreshed();
@@ -95,6 +96,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void vfsConversionCompleted(int syncDbId);
         void newBigFolder(int syncDbId, const QString &path);
         void errorAdded(int syncDbId);
+        void appVersionLocked(bool currentVersionLocked);
         void errorsCleared(int syncDbId);
         void refreshStatusNeeded();
         void folderSizeCompleted(QString nodeId, qint64 size);
@@ -143,6 +145,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
 #endif
 
         static void raiseDialog(QWidget *raiseWidget);
+        static void closeDialog(QWidget *closeWidget);
         void setupSynthesisPopover();
         void setupParametersDialog();
         void updateSystrayNeeded();
@@ -172,6 +175,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onCopyUrlToClipboard(const QString &url);
         void onScreenUpdated(QScreen *screen);
         void onRefreshErrorList();
+
         // User slots
         void onUserAdded(const UserInfo &userInfo);
         void onUserUpdated(const UserInfo &userInfo);

@@ -29,6 +29,8 @@
 #include "config.h"
 #include "libcommon/utility/utility.h"
 
+#include "updater/updaterclient.h"
+
 #undef CONSOLE_DEBUG
 #ifdef CONSOLE_DEBUG
 #include <iostream>
@@ -50,12 +52,14 @@
 #include <QProcess>
 #include <QScreen>
 #include <QScrollBar>
+#include <QPushButton>
 
 #define UPDATE_PROGRESS_DELAY 500
 
 namespace KDC {
 
 static const QSize windowSize(440, 575);
+static const QSize lockedWindowSize(440, 400);
 static const int triangleHeight = 10;
 static const int triangleWidth = 20;
 static const int trianglePosition = 100;  // Position from side
@@ -402,12 +406,19 @@ void SynthesisPopover::initUI() {
      *          _synchronizedListWidget[]
      *      bottomWidget
      */
+    QVBoxLayout *appVBox = new QVBoxLayout();
+    setLayout(appVBox);
 
-    QVBoxLayout *mainVBox = new QVBoxLayout();
+    _mainWidget = new QWidget(this);
+    _lockedAppVesrionWidget = new QWidget(this);
+    _lockedAppVesrionWidget->hide();
+
+    appVBox->addWidget(_mainWidget);
+    appVBox->addWidget(_lockedAppVesrionWidget);
+
+    QVBoxLayout *mainVBox = new QVBoxLayout(_mainWidget);
     mainVBox->setContentsMargins(triangleHeight, triangleHeight, triangleHeight, triangleHeight);
     mainVBox->setSpacing(0);
-    setLayout(mainVBox);
-
     // Tool bar
     QHBoxLayout *hBoxToolBar = new QHBoxLayout();
     hBoxToolBar->setContentsMargins(toolBarHMargin, toolBarVMargin, toolBarHMargin, toolBarVMargin);
@@ -496,6 +507,53 @@ void SynthesisPopover::initUI() {
     BottomWidget *bottomWidget = new BottomWidget(this);
     mainVBox->addWidget(bottomWidget);
 
+    //// Locked app
+    QVBoxLayout *lockedAppVesrionVBox = new QVBoxLayout(_lockedAppVesrionWidget);
+    lockedAppVesrionVBox->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+
+    QLabel *updateIconLabel = new QLabel(this);
+    updateIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/kdrive-update.svg")
+                                   .pixmap(lockedWindowSize.height() / 3, lockedWindowSize.height() / 3));
+    updateIconLabel->setAlignment(Qt::AlignHCenter);
+    lockedAppVesrionVBox->addWidget(updateIconLabel);
+
+    lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
+
+    QLabel *lockedAppupdateAppLabel = new QLabel(tr("Update kDrive App"), this);
+    lockedAppupdateAppLabel->setObjectName("defaultTitleLabel");
+    lockedAppupdateAppLabel->setAlignment(Qt::AlignHCenter);
+    lockedAppVesrionVBox->addWidget(lockedAppupdateAppLabel);
+
+    lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
+
+    QLabel *lockedAppLabel = new QLabel(
+        tr("This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."),
+        this);
+    lockedAppLabel->setObjectName("defaultTextLabel");
+    lockedAppLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    lockedAppLabel->setAlignment(Qt::AlignHCenter);
+    lockedAppLabel->setWordWrap(true);
+    lockedAppVesrionVBox->addWidget(lockedAppLabel);
+
+    lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
+
+    QHBoxLayout *lockedAppUpdateButtonHBox = new QHBoxLayout();
+    lockedAppUpdateButtonHBox->setAlignment(Qt::AlignHCenter);
+
+    _lockedAppUpdateButton = new QPushButton();
+    _lockedAppUpdateButton->setObjectName("KDCdefaultbutton");
+    _lockedAppUpdateButton->setFlat(true);
+    _lockedAppUpdateButton->setText(tr("Update"));
+    _lockedAppUpdateButton->setEnabled(false);
+    lockedAppUpdateButtonHBox->addWidget(_lockedAppUpdateButton);
+    lockedAppVesrionVBox->addLayout(lockedAppUpdateButtonHBox);
+
+    // TODO remove this button
+    QPushButton *lockedAppCancelButton = new QPushButton();
+    lockedAppCancelButton->setText(tr("Cancel"));
+    lockedAppUpdateButtonHBox->addWidget(lockedAppCancelButton);
+    connect(lockedAppCancelButton, &QPushButton::clicked, this, [this]() { onAppVersionLocked(_mainWidget->isVisible()); });
+
     // Shadow
     QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
     effect->setBlurRadius(shadowBlurRadius);
@@ -518,6 +576,8 @@ void SynthesisPopover::initUI() {
     connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
     connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
     connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
+    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onUpdateApp, Qt::UniqueConnection);
+    connect(_lockedAppUpdateButton, &QPushButton::clicked, qApp, &QApplication::quit, Qt::UniqueConnection);
 }
 
 QUrl SynthesisPopover::syncUrl(int syncDbId, const QString &filePath) {
@@ -971,6 +1031,77 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
         addSynchronizedListWidgetItem(driveInfoIt->second, row);
         driveInfoIt->second.synchronizedItemList()[row].setDisplayed(true);
     }
+}
+
+void SynthesisPopover::onUpdateApp() {
+    try {
+        UpdaterClient::instance()->startInstaller();
+    } catch (std::exception const &) {
+        // Do nothing
+    }
+}
+
+void SynthesisPopover::onUpdateAvailabalityChange() {
+    if (!_lockedAppUpdateButton) return;
+
+    QString statusString;
+    UpdateState updateState = UpdateState::Error;
+    try {
+        statusString = UpdaterClient::instance()->statusString();
+        updateState = UpdaterClient::instance()->updateState();
+    } catch (std::exception const &) {
+        return;
+    }
+
+    _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready);
+    switch (updateState) {
+        case UpdateState::Error:
+            _lockedAppUpdateButton->setText(tr("Unavailable"));
+            break;
+        case UpdateState::Ready:
+            _lockedAppUpdateButton->setText(tr("Update"));
+            break;
+        case UpdateState::Downloading:
+            _lockedAppUpdateButton->setText(tr("Update download in progress"));
+            break;
+        case UpdateState::Skipped:
+            UpdaterClient::instance()->unskipUpdate();
+        case UpdateState::Checking:
+            _lockedAppUpdateButton->setText(tr("Looking for update..."));
+            break;
+        case UpdateState::ManualOnly:
+            _lockedAppUpdateButton->setText(tr("Manual update"));
+            break;
+        // Error & None (up to date), if the app is locked, we should have an update available.
+        default:
+            _lockedAppUpdateButton->setText(tr("Error"));
+            break;
+    }
+
+    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
+}
+
+void SynthesisPopover::onStartInstaller() {
+    try {
+        UpdaterClient::instance()->startInstaller();
+    } catch (std::exception const &) {
+        // Do nothing
+    }
+}
+
+void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
+    if (currentVersionLocked) {
+        _mainWidget->hide();
+        _lockedAppVesrionWidget->show();
+        setFixedSize(lockedWindowSize);
+        _gui->closeAllExcept(this);
+        onUpdateAvailabalityChange();
+    } else {
+        _lockedAppVesrionWidget->hide();
+        _mainWidget->show();
+        setFixedSize(windowSize);
+    }
+    setPosition(_sysTrayIconRect);
 }
 
 void SynthesisPopover::onRefreshErrorList(int /*driveDbId*/) {

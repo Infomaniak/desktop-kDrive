@@ -395,6 +395,11 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
+        case ExitCodeUpdateRequired:
+            return tr("A new version of the application is available.<br>"
+                      "Please update the application to continue using it.")
+                .arg(err);
+            break;
         case ExitCodeOk:
         case ExitCodeNeedRestart:
         case ExitCodeInconsistencyError:
