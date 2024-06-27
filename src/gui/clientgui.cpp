@@ -505,7 +505,7 @@ void ClientGui::updateSystrayNeeded() {
     return;
 }
 
-void ClientGui::resetSystray(bool lockedAppVersion) {
+void ClientGui::resetSystray(bool currentVersionLocked) {
     _tray.reset(new Systray());
     _tray->setParent(this);
 
@@ -519,7 +519,7 @@ void ClientGui::resetSystray(bool lockedAppVersion) {
         if (osRequiredMenuTray()) {
             _actionSynthesis =
                 _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
-            if (!lockedAppVersion) {
+            if (!currentVersionLocked) {
                 _actionPreferences =
                     _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
                 _tray->contextMenu()->addSeparator();
@@ -538,7 +538,7 @@ void ClientGui::resetSystray(bool lockedAppVersion) {
     else if (_actionSynthesis) {
         connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
         connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
-        if (!lockedAppVersion && _actionPreferences && _actionQuit) {
+        if (!currentVersionLocked && _actionPreferences && _actionQuit) {
             connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
             connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
         }
@@ -972,7 +972,7 @@ void ClientGui::closeAllExcept(QWidget *exceptWidget) {
 void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
 #ifdef Q_OS_LINUX
     if (osRequiredMenuTray()) {
-        resetSystray(true);
+        resetSystray(currentVersionLocked);
     }
 #endif
 }
