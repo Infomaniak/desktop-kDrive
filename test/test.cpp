@@ -32,7 +32,7 @@ int runTestSuite(const std::string &logFileName) {
     std::tm tm = *std::localtime(&now);
     std::ostringstream woss;
     woss << std::put_time(&tm, "%Y%m%d_%H%M");
-    const KDC::SyncPath logFilePath = std::filesystem::temp_directory_path() / "kDrive-logdir" / woss.str() / logFileName;
+    const KDC::SyncPath logFilePath = std::filesystem::temp_directory_path() / "kDrive-logdir" / (woss.str() + logFileName);
     KDC::Log::instance(Path2WStr(logFilePath));
 
     // Informs test-listener about testresults
