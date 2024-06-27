@@ -27,7 +27,7 @@ namespace KDC {
 void TestIo::testCreateJunction() {
     // A Windows junction on a regular target directory.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const SyncPath path = temporaryDirectory.path / "regular_dir_junction";
 
@@ -50,7 +50,7 @@ void TestIo::testCreateJunction() {
 
     // A Windows junction on a non-existing target directory: no error expected
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "non_existing_dir";  // It doesn't exist.
         const SyncPath path = temporaryDirectory.path / "dir_junction";
 
@@ -65,7 +65,7 @@ void TestIo::testCreateJunction() {
 
     // A Windows junction on a regular target file: no error expected
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path / "dir_junction";
 

@@ -66,6 +66,8 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         bool hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
 
+        void countNbRequests();
+
         int _driveDbId = -1;
         std::string _cursor;
 

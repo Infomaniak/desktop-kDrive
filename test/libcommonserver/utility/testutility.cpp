@@ -17,7 +17,7 @@
  */
 
 #include "testutility.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "config.h"
 
 #include "libcommon/utility/utility.h"  // CommonUtility::isSubDir
@@ -177,7 +177,7 @@ void TestUtility::testIsEqualInsensitive(void) {
 }
 
 void TestUtility::testMoveItemToTrash(void) {
-    TemporaryDirectory tempDir;
+    LocalTemporaryDirectory tempDir;
     SyncPath path = tempDir.path / "test.txt";
     std::ofstream file(path);
     file << "test";
@@ -310,7 +310,7 @@ void TestUtility::isSubDir() {
 }
 
 void TestUtility::testcheckIfDirEntryIsManaged(void) {
-    TemporaryDirectory tempDir;
+    LocalTemporaryDirectory tempDir;
     SyncPath path = tempDir.path / "test.txt";
     std::ofstream file(path);
     file << "test";

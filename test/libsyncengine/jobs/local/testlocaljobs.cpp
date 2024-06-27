@@ -29,7 +29,7 @@
 #include "keychainmanager/keychainmanager.h"
 #include "libcommonserver/network/proxy.h"
 #include "libcommon/utility/utility.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "jobs/local/localcopyjob.h"
 #include "requests/parameterscache.h"
 
@@ -43,7 +43,7 @@ void KDC::TestLocalJobs::setUp() {
 }
 
 void KDC::TestLocalJobs::testLocalJobs() {
-    const TemporaryDirectory temporaryDirectory("testLocalJobs");
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs");
     const SyncPath localDirPath = temporaryDirectory.path / "tmp_dir";
 
     // Create

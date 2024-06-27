@@ -121,6 +121,7 @@ void TestConflictResolverWorker::setUp() {
 
 void TestConflictResolverWorker::tearDown() {
     ParmsDb::instance()->close();
+    ParmsDb::reset();
     _syncPal->_syncDb->close();
 }
 

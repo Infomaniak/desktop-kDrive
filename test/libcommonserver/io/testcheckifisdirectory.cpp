@@ -50,7 +50,7 @@ void TestIo::testCheckIfIsDirectory() {
     // A regular symbolic link on a file
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -65,7 +65,7 @@ void TestIo::testCheckIfIsDirectory() {
     // A regular symbolic link on a symlink
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path_ = temporaryDirectory.path / "symbolic_link";
         std::filesystem::create_symlink(targetPath, path_);
         const SyncPath path = temporaryDirectory.path / "symbolic_link_link";
@@ -82,7 +82,7 @@ void TestIo::testCheckIfIsDirectory() {
     // A regular symbolic link on a folder
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -114,7 +114,7 @@ void TestIo::testCheckIfIsDirectory() {
 
     // A dangling symbolic link
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = temporaryDirectory.path / "non_existing_file.txt";  // This file does not exist.
         const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
@@ -129,7 +129,7 @@ void TestIo::testCheckIfIsDirectory() {
 
     // A regular directory missing all permissions: no error expected
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "permission_less_directory";
         std::filesystem::create_directory(path);
 
@@ -149,7 +149,8 @@ void TestIo::testCheckIfIsDirectory() {
     // - IoErrorNoSuchFileOrDirectory on Windows (expected error).
     // - IoErrorFileNameTooLong error for MacOSX and Linux (unexpected error).
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
+        const std::string veryLongfileName(1000,
+                                           'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
 
         IoError ioError = IoErrorSuccess;
@@ -168,7 +169,7 @@ void TestIo::testCheckIfIsDirectory() {
     // - No error on Windows.
     // - Access denied expected on MacOSX and Linux
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "subdir";
         std::filesystem::create_directory(path);
 
@@ -194,7 +195,7 @@ void TestIo::testCheckIfIsDirectory() {
 #if defined(__APPLE__)
     // A MacOSX Finder alias on a regular file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path / "regular_file_alias";
 
@@ -211,7 +212,7 @@ void TestIo::testCheckIfIsDirectory() {
 
     // A MacOSX Finder alias on a regular folder.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
 
@@ -228,7 +229,7 @@ void TestIo::testCheckIfIsDirectory() {
 
     // A dangling MacOSX Finder alias on a non-existing directory.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = temporaryDirectory.path / "directory_to_be_deleted";  // This directory will be deleted.
         std::filesystem::create_directory(targetPath);
 
@@ -251,7 +252,7 @@ void TestIo::testCheckIfIsDirectory() {
 void TestIo::testCreateDirectory() {
     // Creates successfully a directory
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_directory";
 
         IoError ioError = IoErrorUnknown;
@@ -268,7 +269,7 @@ void TestIo::testCreateDirectory() {
 
     // Fails to create a directory because the dir path indicates an existing directory
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path;
 
         IoError ioError = IoErrorSuccess;
@@ -278,7 +279,7 @@ void TestIo::testCreateDirectory() {
 
     // Fails to create a directory because the dir path indicates an existing file
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "file.txt";
         { std::ofstream ofs(path); }
 
@@ -291,7 +292,7 @@ void TestIo::testCreateDirectory() {
     // - No error on Windows.
     // - Access denied on MacOSX and Linux.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "subdir";
 
         std::filesystem::permissions(temporaryDirectory.path, std::filesystem::perms::owner_exec,
@@ -312,7 +313,8 @@ void TestIo::testCreateDirectory() {
 
     // Fails to create a directory with a very long name
     {
-        const std::string veryLongDirName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
+        const std::string veryLongDirName(1000,
+                                          'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongDirName;  // This directory doesn't exist.
 
         IoError ioError = IoErrorSuccess;

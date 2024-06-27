@@ -19,7 +19,7 @@
 #include "testlogarchiver.h"
 #include "server/logarchiver.h"
 #include "libcommonserver/log/log.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/db/db.h"
@@ -58,7 +58,7 @@ void TestLogArchiver::testGetLogEstimatedSize(void) {
 
 void TestLogArchiver::testCopyLogsTo(void) {
     {  // Test with archivedLogs
-        TemporaryDirectory tempDir;
+        LocalTemporaryDirectory tempDir;
         LOG_DEBUG(_logger, "Ensure that the log file is created (test)");
 
         IoError err = IoErrorSuccess;
@@ -80,7 +80,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
     }
 
     {  // Test without archivedLogs
-        TemporaryDirectory tempDir;
+        LocalTemporaryDirectory tempDir;
         SyncPath logDir = Log::instance()->getLogFilePath().parent_path();
 
         // create a fake log file
@@ -125,7 +125,7 @@ void TestLogArchiver::testCopyParmsDbTo(void) {
             return;
         }
 
-        TemporaryDirectory tempDir;
+        LocalTemporaryDirectory tempDir;
         const SyncPath parmsDbName = ".parms.db";
         const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
 
@@ -152,7 +152,7 @@ void TestLogArchiver::testCopyParmsDbTo(void) {
 
 void TestLogArchiver::testCompressLogs(void) {
     {
-        TemporaryDirectory tempDir;
+        LocalTemporaryDirectory tempDir;
 
         std::ofstream logFile(tempDir.path / "test.log");
         for (int i = 0; i < 10000; i++) {
@@ -198,7 +198,7 @@ void TestLogArchiver::testCompressLogs(void) {
     }
 
     {  // test the progress callback
-        TemporaryDirectory tempDir;
+        LocalTemporaryDirectory tempDir;
         for (int i = 0; i < 30; i++) {
             std::ofstream logFile(tempDir.path / ("test" + std::to_string(i) + ".log"));
             for (int j = 0; j < 10; j++) {
@@ -241,7 +241,7 @@ void TestLogArchiver::testCompressLogs(void) {
 
 void TestLogArchiver::testGenerateUserDescriptionFile(void) {
     {
-        TemporaryDirectory tempDir;
+        LocalTemporaryDirectory tempDir;
         const SyncPath userDescriptionFile = tempDir.path / "user_description.txt";
         ExitCause cause = ExitCauseUnknown;
         ExitCode code = LogArchiver::generateUserDescriptionFile(userDescriptionFile, cause);
@@ -273,8 +273,8 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
         return;
     }
 
-    { // Test the generation of the archive
-        TemporaryDirectory tempDir;
+    {  // Test the generation of the archive
+        LocalTemporaryDirectory tempDir;
         SyncPath archivePath;
         ExitCause cause = ExitCauseUnknown;
         int previousPercent = 0;
@@ -298,13 +298,11 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
         CPPUNIT_ASSERT(exists);
     }
 
-    { // Test with a cancel
-        TemporaryDirectory tempDir;
+    {  // Test with a cancel
+        LocalTemporaryDirectory tempDir;
         SyncPath archiveFile;
         ExitCause cause = ExitCauseUnknown;
-        std::function<bool(int)> progress = [](int) {
-            return false;
-        };
+        std::function<bool(int)> progress = [](int) { return false; };
 
         ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path, progress, archiveFile, cause, true);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);

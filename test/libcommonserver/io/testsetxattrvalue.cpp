@@ -32,7 +32,7 @@ void TestIo::testSetXAttrValue() {
 #ifdef __APPLE__
     // A regular file
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "file.txt";
         {
             std::ofstream ofs(path);
@@ -75,7 +75,7 @@ void TestIo::testSetXAttrValue() {
 
     // A regular file missing owner write permission: access denied expected
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "permission_less_file.txt";
         {
             std::ofstream ofs(path);
@@ -100,7 +100,7 @@ void TestIo::testSetXAttrValue() {
 #ifdef _WIN32
     // A regular file
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "file.txt";
         {
             std::ofstream ofs(path);

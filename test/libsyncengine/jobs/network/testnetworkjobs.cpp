@@ -44,7 +44,7 @@
 #include "libparms/db/parmsdb.h"
 #include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 
 using namespace CppUnit;
 
@@ -80,9 +80,7 @@ void TestNetworkJobs::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::reset();
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
@@ -113,13 +111,15 @@ void TestNetworkJobs::setUp() {
 void TestNetworkJobs::tearDown() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Tear Down");
 
-    ParmsDb::instance()->close();
     if (_deleteTestDir) {
-        DeleteJob job(_driveDbId, _dirId, "", "");  // TODO : this test needs to be fixed, local ID and path are now mandatory
+        DeleteJob job(_driveDbId, _dirId, "", "");
         job.setBypassCheck(true);
         ExitCode exitCode = job.runSynchronously();
         CPPUNIT_ASSERT(exitCode == ExitCodeOk);
     }
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
 }
 
 void TestNetworkJobs::testCreateDir() {
@@ -207,7 +207,7 @@ void TestNetworkJobs::testDelete() {
 }
 
 void TestNetworkJobs::testDownload() {
-    const TemporaryDirectory temporaryDirectory("testDownload");
+    const LocalTemporaryDirectory temporaryDirectory("testDownload");
     SyncPath localDestFilePath = temporaryDirectory.path / "test_file.txt";
     DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
     ExitCode exitCode = job.runSynchronously();
@@ -222,7 +222,7 @@ void TestNetworkJobs::testDownload() {
 }
 
 void TestNetworkJobs::testDownloadAborted() {
-    const TemporaryDirectory temporaryDirectory("testDownloadAborted");
+    const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
     SyncPath localDestFilePath = temporaryDirectory.path / bigFileName;
     std::shared_ptr<DownloadJob> job =
         std::make_shared<DownloadJob>(_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
@@ -725,7 +725,7 @@ void TestNetworkJobs::testUploadSessionAsynchronous5Aborted() {
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
     CPPUNIT_ASSERT(dataArray);
-    CPPUNIT_ASSERT(dataArray->size() == 0);
+    CPPUNIT_ASSERT(dataArray->empty());
 }
 
 bool TestNetworkJobs::createTestDir() {
