@@ -37,14 +37,14 @@ class ConflictResolverWorker : public OperationProcessor {
         virtual void execute() override;
 
     private:
-        std::unordered_map<DbNodeId, ReplicaSide> _registeredOrphans;
+        std::unordered_map<DbNodeId, ReplicaSide> _registeredOrphans;  // key: DB node ID, value : winner side
 
         ExitCode generateOperations(const Conflict &conflict, bool &continueSolving);
 
         /*
          * If return false, the file path is too long, the file needs to be moved to root directory
          */
-        bool generateConflictedName(const std::shared_ptr<Node> node, SyncName &newName, bool isOrphanNode = false);
+        bool generateConflictedName(const std::shared_ptr<Node> node, SyncName &newName, bool isOrphanNode = false) const;
         void findAllChildNodes(const std::shared_ptr<Node> parentNode, std::unordered_set<std::shared_ptr<Node>> &children);
         ExitCode findAllChildNodeIdsFromDb(const std::shared_ptr<Node> parentNode, std::unordered_set<DbNodeId> &childrenDbIds);
         ExitCode undoMove(const std::shared_ptr<Node> moveNode, SyncOpPtr moveOp);

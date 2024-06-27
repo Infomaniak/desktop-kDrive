@@ -410,7 +410,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 
             {
                 const std::lock_guard<std::mutex> lock(_mutex);
-                if (_updating) {  // We want to update snapshot immediatly, cancel LongPoll job and send a listing/continue
+                if (_updating) {  // We want to update snapshot immediately, cancel LongPoll job and send a listing/continue
                                   // request
                     notifyJob->abort();
                     changes = true;
