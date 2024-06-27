@@ -80,9 +80,7 @@ void TestNetworkJobs::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::reset();
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
@@ -113,13 +111,15 @@ void TestNetworkJobs::setUp() {
 void TestNetworkJobs::tearDown() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Tear Down");
 
-    ParmsDb::instance()->close();
     if (_deleteTestDir) {
         DeleteJob job(_driveDbId, _dirId, "", "");
         job.setBypassCheck(true);
         ExitCode exitCode = job.runSynchronously();
         CPPUNIT_ASSERT(exitCode == ExitCodeOk);
     }
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
 }
 
 void TestNetworkJobs::testCreateDir() {
