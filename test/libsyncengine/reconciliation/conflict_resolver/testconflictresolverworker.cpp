@@ -29,7 +29,7 @@ static const int64_t defaultSize = 1654788079;
 
 void TestConflictResolverWorker::setUp() {
     // Create SyncPal
-    bool alreadyExists;
+    bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
 
@@ -119,7 +119,7 @@ void TestConflictResolverWorker::setUp() {
 
 void TestConflictResolverWorker::tearDown() {
     ParmsDb::instance()->close();
-    ParmsDb::instance().reset();
+    ParmsDb::reset();
     if (_syncPal && _syncPal->_syncDb) {
         _syncPal->_syncDb->close();
     }

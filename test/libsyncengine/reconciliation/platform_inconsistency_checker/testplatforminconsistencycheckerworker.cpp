@@ -61,7 +61,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
 
 void TestPlatformInconsistencyCheckerWorker::tearDown() {
     ParmsDb::instance()->close();
-    ParmsDb::instance().reset();
+    ParmsDb::reset();
     if (_syncPal && _syncPal->_syncDb) {
         _syncPal->_syncDb->close();
     }
