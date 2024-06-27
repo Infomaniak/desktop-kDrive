@@ -38,8 +38,8 @@
 #include "requests/testexclusiontemplatecache.h"
 
 namespace KDC {
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestJobManager);
 //  CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
