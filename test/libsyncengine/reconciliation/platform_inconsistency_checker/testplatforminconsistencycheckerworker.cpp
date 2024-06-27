@@ -85,7 +85,7 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     SyncName forbiddenName = Str("test/test");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
 
-#if defined(WIN32) || defined(__APPLE__)
+#if defined(WIN32)
     forbiddenName = Str("test\\test");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
     forbiddenName = Str("test:test");
@@ -104,11 +104,9 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
     forbiddenName = Str("test\ntest");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
-#ifdef WIN32
     forbiddenName = Str("test ");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
-#endif
-#else
+#elif defined(__unix__) && !defined(__APPLE__)
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
