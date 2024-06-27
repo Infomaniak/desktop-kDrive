@@ -118,7 +118,7 @@ void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
 
     std::unordered_set<NodeId> childrenIds;
     CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->getChildrenIds(testRemoteFsoDirId, childrenIds));
-    CPPUNIT_ASSERT_EQUAL(nbFileInTestDir, childrenIds.size());
+    CPPUNIT_ASSERT_EQUAL(size_t(nbFileInTestDir), childrenIds.size());
 
     // Blacklisted folder should not appear in snapshot.
     CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->_snapshot->exists(testBlackListedDirId));
