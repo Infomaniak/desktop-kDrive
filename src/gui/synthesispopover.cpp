@@ -536,6 +536,14 @@ void SynthesisPopover::initUI() {
 
     lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
 
+    _lockedAppUpdateOptionalLabel = new QLabel();
+    _lockedAppUpdateOptionalLabel->setObjectName("defaultTextLabel");
+    _lockedAppUpdateOptionalLabel->setAlignment(Qt::AlignHCenter);
+    _lockedAppUpdateOptionalLabel->setWordWrap(true);
+    _lockedAppUpdateOptionalLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    _lockedAppUpdateOptionalLabel->setVisible(false);
+    lockedAppVesrionVBox->addWidget(_lockedAppUpdateOptionalLabel);
+
     QHBoxLayout *lockedAppUpdateButtonHBox = new QHBoxLayout();
     lockedAppUpdateButtonHBox->setAlignment(Qt::AlignHCenter);
 
@@ -1037,39 +1045,48 @@ void SynthesisPopover::onUpdateApp() {
 }
 
 void SynthesisPopover::onUpdateAvailabalityChange() {
-    if (!_lockedAppUpdateButton) return;
+    using enum UpdateState;
+    if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
 
     QString statusString;
-    UpdateState updateState = UpdateState::Error;
+    UpdateState updateState = Error;
     try {
-        statusString = UpdaterClient::instance()->statusString();
-        updateState = UpdaterClient::instance()->updateState();
+        if (!UpdaterClient::instance()->isSparkleUpdater()) {
+            statusString = UpdaterClient::instance()->statusString();
+            updateState = UpdaterClient::instance()->updateState();
+        } else {
+            updateState = Ready; // On macOS, we just start the installer (Sparkle does the rest) 
+        }
     } catch (std::exception const &) {
         return;
     }
 
-    _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready);
+    _lockedAppUpdateButton->setEnabled(updateState == Ready);
+    _lockedAppUpdateOptionalLabel->setVisible(updateState != Ready && updateState != Downloading);
     switch (updateState) {
-        case UpdateState::Error:
+        case Error:
             _lockedAppUpdateButton->setText(tr("Unavailable"));
+            _lockedAppUpdateOptionalLabel->setText(statusString);
             break;
-        case UpdateState::Ready:
+        case Ready:
             _lockedAppUpdateButton->setText(tr("Update"));
             break;
-        case UpdateState::Downloading:
+        case Downloading:
             _lockedAppUpdateButton->setText(tr("Update download in progress"));
             break;
-        case UpdateState::Skipped:
+        case Skipped:
             UpdaterClient::instance()->unskipUpdate();
-        case UpdateState::Checking:
+        case Checking:
             _lockedAppUpdateButton->setText(tr("Looking for update..."));
             break;
-        case UpdateState::ManualOnly:
+        case ManualOnly:
             _lockedAppUpdateButton->setText(tr("Manual update"));
+            _lockedAppUpdateOptionalLabel->setText(statusString);
             break;
         // Error & None (up to date), if the app is locked, we should have an update available.
         default:
             _lockedAppUpdateButton->setText(tr("Error"));
+            _lockedAppUpdateOptionalLabel->setText(statusString);
             break;
     }
 

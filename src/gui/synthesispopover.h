@@ -115,6 +115,7 @@ class SynthesisPopover : public QDialog {
         QUrl _remoteFolderUrl;
         qint64 _lastRefresh{0};
         QPushButton *_lockedAppUpdateButton{nullptr};
+        QLabel *_lockedAppUpdateOptionalLabel{nullptr};
         void changeEvent(QEvent *event) override;
         void paintEvent(QPaintEvent *event) override;
         bool event(QEvent *event) override;

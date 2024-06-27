@@ -44,14 +44,15 @@ class SparkleUpdater : public UpdaterServer {
         bool handleStartup() Q_DECL_OVERRIDE { return false; }
         UpdateState updateState() const override {
             switch (state()) {
-                case Unknown:
-                    return UpdateState::Checking;
+                using enum KDC::UpdateState;
                 case FindValidUpdate:
-                    return UpdateState::Ready;
+                    return Ready;
                 case DidNotFindUpdate:
-                    return UpdateState::None;
+                    return None;
                 case AbortWithError:
-                    return UpdateState::Error;
+                case Unknown:
+                default:
+                    return Error;
             }
         }
         int state() const;
@@ -68,8 +69,9 @@ class SparkleUpdater : public UpdaterServer {
                     return tr("%1 is up to date!").arg(APPLICATION_NAME);
                 case AbortWithError:
                     return tr("Check for update aborted.");
+                default:
+                    return QString();
             }
-            return QString();
         }
         bool updateFound() const override;
 
