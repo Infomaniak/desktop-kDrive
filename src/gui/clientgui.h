@@ -83,6 +83,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void resolveConflictErrors(int driveDbId, bool keepLocalVersion);
         void resolveUnsupportedCharErrors(int driveDbId);
         void closeAllExcept(QWidget *exceptWidget);
+        void onAppVersionLocked(bool currentVersionLocked);
 
     signals:
         void userListRefreshed();
@@ -143,12 +144,12 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QAction *_actionPreferences = nullptr;
         QAction *_actionQuit = nullptr;
 #endif
-
+        bool osRequiredMenuTray() const;
         static void raiseDialog(QWidget *raiseWidget);
         void setupSynthesisPopover();
         void setupParametersDialog();
         void updateSystrayNeeded();
-        void resetSystray();
+        void resetSystray(bool lockedAppVersion = false);
         static QString shortGuiLocalPath(const QString &path);
         void computeTrayOverallStatus(SyncStatus &status, bool &unresolvedConflicts);
         QString trayTooltipStatusString(SyncStatus status, bool unresolvedConflicts, bool paused);

@@ -505,7 +505,7 @@ void ClientGui::updateSystrayNeeded() {
     return;
 }
 
-void ClientGui::resetSystray() {
+void ClientGui::resetSystray(bool lockedAppVersion) {
     _tray.reset(new Systray());
     _tray->setParent(this);
 
@@ -516,12 +516,10 @@ void ClientGui::resetSystray() {
     if (_tray->geometry().width() == 0) {
         _tray->setContextMenu(new QMenu());
 #ifdef Q_OS_LINUX
-        QString type;
-        QString version;
-        if (KDC::GuiUtility::getLinuxDesktopType(type, version)) {
-            if (type.contains("GNOME") && version.toDouble() >= 40) {
-                _actionSynthesis =
-                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
+        if (osRequiredMenuTray()) {
+            _actionSynthesis =
+                _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
+            if (!lockedAppVersion) {
                 _actionPreferences =
                     _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
                 _tray->contextMenu()->addSeparator();
@@ -529,22 +527,25 @@ void ClientGui::resetSystray() {
                     _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
             }
         }
+    }
 #endif
-    }
+}
 
-    if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
-        connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
-    }
+if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
+    connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
+}
 #ifdef Q_OS_LINUX
-    else if (_actionSynthesis && _actionPreferences && _actionQuit) {
-        connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
-        connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
+else if (_actionSynthesis) {
+    connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
+    connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
+    if (!lockedAppVersion && _actionPreferences && _actionQuit) {
         connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
         connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
     }
+}
 #endif
 
-    _tray->show();
+_tray->show();
 }
 
 QString ClientGui::shortGuiLocalPath(const QString &path) {
@@ -968,6 +969,15 @@ void ClientGui::closeAllExcept(QWidget *exceptWidget) {
     }
 }
 
+void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
+#ifdef Q_OS_LINUX
+    if (osRequiredMenuTray()) {
+        resetSystray(true);
+    }
+}
+#endif
+}
+
 
 void ClientGui::onUserAdded(const UserInfo &userInfo) {
     _userInfoMap.insert({userInfo.dbId(), UserInfoClient(userInfo)});
@@ -1389,6 +1399,20 @@ void ClientGui::onShutdown() {
     // those do delete on close
     if (!_parametersDialog.isNull()) _parametersDialog->close();
 }
+
+bool ClientGui::osRequiredMenuTray() const {
+#ifdef Q_OS_LINUX
+    QString type;
+    QString version;
+    if (KDC::GuiUtility::getLinuxDesktopType(type, version)) {
+        if (type.contains("GNOME") && version.toDouble() >= 40) {
+            return true;
+        }
+    }
+#endif
+    return false;
+}
+
 
 void ClientGui::raiseDialog(QWidget *raiseWidget) {
     QWidget *activeWindow = QApplication::activeWindow();
