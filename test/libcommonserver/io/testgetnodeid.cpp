@@ -75,7 +75,8 @@ void TestIo::testGetNodeId() {
 
     // A non-existing file with a very long name
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
+        const std::string veryLongfileName(1000,
+                                           'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
         NodeId nodeId;
         CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
@@ -200,7 +201,7 @@ void TestIo::testGetNodeId() {
 
     // A dangling MacOSX Finder alias on a non-existing directory.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = temporaryDirectory.path / "directory_to_be_deleted";  // This directory will be deleted.
         std::filesystem::create_directory(targetPath);
 

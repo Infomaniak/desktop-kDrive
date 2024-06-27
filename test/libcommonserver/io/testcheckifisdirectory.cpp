@@ -149,7 +149,8 @@ void TestIo::testCheckIfIsDirectory() {
     // - IoErrorNoSuchFileOrDirectory on Windows (expected error).
     // - IoErrorFileNameTooLong error for MacOSX and Linux (unexpected error).
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
+        const std::string veryLongfileName(1000,
+                                           'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
 
         IoError ioError = IoErrorSuccess;
@@ -194,7 +195,7 @@ void TestIo::testCheckIfIsDirectory() {
 #if defined(__APPLE__)
     // A MacOSX Finder alias on a regular file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path / "regular_file_alias";
 
@@ -312,7 +313,8 @@ void TestIo::testCreateDirectory() {
 
     // Fails to create a directory with a very long name
     {
-        const std::string veryLongDirName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
+        const std::string veryLongDirName(1000,
+                                          'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongDirName;  // This directory doesn't exist.
 
         IoError ioError = IoErrorSuccess;
