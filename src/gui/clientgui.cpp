@@ -894,24 +894,23 @@ void ClientGui::onRefreshErrorList() {
     if (_driveWithNewErrorSet.count()) {
         emit refreshStatusNeeded();
     }
+    bool lockedVersion = false;
 
     // Server level errors.
     if (_driveWithNewErrorSet.contains(0)) {
         _errorInfoMap[0].clear();
-        if (ExitCodeOk != ClientGui::loadError(0, 0, ErrorLevelServer)) {
+        if (ExitCodeOk != loadError(0, 0, ErrorLevelServer)) {
             return;
         }
 
         _generalErrorsCounter = _errorInfoMap[0].count();
         emit errorAdded(0);
-        bool lockedVersion = false;
         for (auto &errorInfo : _errorInfoMap[0]) {
             if (errorInfo.exitCode() == ExitCodeUpdateRequired) {
                 lockedVersion = true;
                 break;
             }
         }
-        emit appVersionLocked(lockedVersion);
 
         _driveWithNewErrorSet.remove(0);
     }
@@ -924,13 +923,22 @@ void ClientGui::onRefreshErrorList() {
         const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
         if (driveInfoMapIt == _driveInfoMap.end()) {
             qCWarning(lcClientGui()) << "Drive not found in drive map for driveDbId=" << driveDbId;
+            emit appVersionLocked(lockedVersion);  // in case of error, we still need to emit this signal
             return;
         }
 
         for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
             if (syncInfo.driveDbId() != driveDbId) continue;
             for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
-                if (ExitCodeOk != loadError(driveDbId, syncDbId, level)) return;
+                ExitCode error = loadError(driveDbId, syncDbId, level);
+                if (error == ExitCodeUpdateRequired) {
+                    lockedVersion = true;
+                } 
+
+                if (ExitCodeOk != error) {
+                    emit appVersionLocked(lockedVersion);
+                    return;
+                }
             }
         }
 
@@ -949,6 +957,7 @@ void ClientGui::onRefreshErrorList() {
 
         it = _driveWithNewErrorSet.erase(it);
     }
+    emit appVersionLocked(lockedVersion);
 }
 
 void ClientGui::closeAllExcept(QWidget *exceptWidget) {
@@ -1410,7 +1419,6 @@ bool ClientGui::osRequiredMenuTray() const {
 #endif
     return false;
 }
-
 
 void ClientGui::raiseDialog(QWidget *raiseWidget) {
     QWidget *activeWindow = QApplication::activeWindow();
