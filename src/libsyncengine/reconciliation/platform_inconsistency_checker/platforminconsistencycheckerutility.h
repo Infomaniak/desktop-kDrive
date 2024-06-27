@@ -40,7 +40,7 @@ class PlatformInconsistencyCheckerUtility {
 #ifdef _WIN32
         bool fixNameWithBackslash(const SyncName &name, SyncName &newName);
 #endif
-        static bool checkNameSize(const SyncPath &name);
+        bool checkNameSize(const SyncPath &name);
         bool checkReservedNames(const SyncPath &name);
         bool checkPathLength(size_t pathSize, NodeType type);
 

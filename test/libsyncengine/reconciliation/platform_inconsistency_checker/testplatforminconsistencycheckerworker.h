@@ -46,7 +46,7 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
         void testExecute();
 
     private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<SyncPal> _syncPal{nullptr};
 };
 
 }  // namespace KDC

@@ -43,11 +43,10 @@ namespace KDC {
 
 void TestPlatformInconsistencyCheckerWorker::setUp() {
     // Create SyncPal
-    bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
+    bool alreadyExists = false;
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
@@ -63,7 +62,9 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
 void TestPlatformInconsistencyCheckerWorker::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::instance().reset();
-    _syncPal->_syncDb->close();
+    if (_syncPal && _syncPal->_syncDb) {
+        _syncPal->_syncDb->close();
+    }
 }
 
 void TestPlatformInconsistencyCheckerWorker::testFixNameSize() {
@@ -103,8 +104,10 @@ void TestPlatformInconsistencyCheckerWorker::testCheckNameForbiddenChars() {
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
     forbiddenName = Str("test\ntest");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+#ifdef WIN32
     forbiddenName = Str("test ");
     CPPUNIT_ASSERT(PlatformInconsistencyCheckerUtility::instance()->checkNameForbiddenChars(forbiddenName));
+#endif
 #else
     forbiddenName = std::string("test");
     forbiddenName.append(1, '\0');
