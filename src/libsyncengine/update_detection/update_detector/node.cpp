@@ -30,7 +30,6 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
     : _idb(idb),
       _side(side),
       _name(Utility::normalizedSyncName(name)),
-      _validLocalName(SyncName()),
       _inconsistencyType(InconsistencyTypeNone),
       _type(type),
       _id(id),
@@ -50,7 +49,6 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
     : _idb(idb),
       _side(side),
       _name(Utility::normalizedSyncName(name)),
-      _validLocalName(SyncName()),
       _inconsistencyType(InconsistencyTypeNone),
       _type(type),
       _changeEvents(changeEvents),
@@ -74,7 +72,6 @@ Node::Node()
     : _idb(std::nullopt),
       _side(ReplicaSide::ReplicaSideUnknown),
       _name(SyncName()),
-      _validLocalName(SyncName()),
       _inconsistencyType(InconsistencyTypeNone),
       _type(NodeTypeUnknown),
       _id(std::string()),
@@ -143,7 +140,7 @@ size_t Node::deleteChildren(const NodeId &childId) {
     return _childrenById.erase(childId);
 }
 
-bool Node::isEditFromDeleteCreate() {
+bool Node::isEditFromDeleteCreate() const {
     if (hasChangeEvent(OperationTypeEdit) && _previousId.has_value()) {
         return true;
     }
@@ -171,20 +168,19 @@ bool Node::isSharedFolder() const {
     return false;
 }
 
-SyncPath Node::getPath(bool localName /*= false*/) {
+SyncPath Node::getPath() const {
     std::vector<SyncName> names;
-    names.push_back(localName ? finalLocalName() : name());
+    names.push_back(name());
 
-    std::shared_ptr<Node> tmpNode = parentNode();
-    if (tmpNode) {
+    if (std::shared_ptr<Node> tmpNode = parentNode(); tmpNode) {
         while (tmpNode->parentNode() != nullptr) {
-            names.push_back(localName ? tmpNode->finalLocalName() : tmpNode->name());
+            names.push_back(tmpNode->name());
             tmpNode = tmpNode->parentNode();
         }
     }
 
     SyncPath path;
-    for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         path /= *nameIt;
     }
 
