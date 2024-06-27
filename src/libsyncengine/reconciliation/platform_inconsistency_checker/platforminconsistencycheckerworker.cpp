@@ -86,7 +86,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
             checkAgainstSiblings = true;
         }
 
-        ExitCode exitCode = checkTree(currentChildNode, parentPath / remoteNode->finalLocalName());
+        ExitCode exitCode = checkTree(currentChildNode, parentPath / remoteNode->name());
         if (exitCode != ExitCodeOk) {
             return exitCode;
         }
@@ -185,7 +185,7 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
         std::shared_ptr<Node> currentChildNode = it->second;
 
         // Check case conflicts
-        SyncName lowercaseName = Poco::toLower(it->second->finalLocalName());
+        SyncName lowercaseName = Poco::toLower(it->second->name());
         auto insertInfo = processedNodesByName.insert({lowercaseName, currentChildNode});
         if (!insertInfo.second) {
             // Check if this node is a special folder
