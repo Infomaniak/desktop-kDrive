@@ -146,11 +146,7 @@ void JobManager::run() {
             }
         };
 
-        while (poolAvailable()) {
-            if (_stop) {
-                break;
-            }
-
+        while (poolAvailable() && !_stop) {
             {
                 const std::scoped_lock lock(_mutex);
 

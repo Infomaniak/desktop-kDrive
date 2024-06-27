@@ -88,7 +88,7 @@ void UploadSession::runJob() {
 
     bool ok = true;
 
-    while (_state != StateFinished) {
+    while (_state != StateFinished && !isAborted()) {
         switch (_state) {
             case StateInitChunk: {
                 ok = initChunks();
@@ -114,13 +114,8 @@ void UploadSession::runJob() {
                 break;
         }
 
-        if (isAborted()) {
-            break;
-        }
-
         if (!ok) {
             abort();
-            break;
         }
     }
 
