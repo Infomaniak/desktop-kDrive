@@ -527,25 +527,25 @@ void ClientGui::resetSystray(bool lockedAppVersion) {
                     _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
             }
         }
-    }
-#endif
-}
 
-if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
-    connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
-}
+#endif
+    }
+
+    if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
+        connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
+    }
 #ifdef Q_OS_LINUX
-else if (_actionSynthesis) {
-    connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
-    connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
-    if (!lockedAppVersion && _actionPreferences && _actionQuit) {
-        connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
-        connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
+    else if (_actionSynthesis) {
+        connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
+        connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
+        if (!lockedAppVersion && _actionPreferences && _actionQuit) {
+            connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
+            connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
+        }
     }
-}
 #endif
 
-_tray->show();
+    _tray->show();
 }
 
 QString ClientGui::shortGuiLocalPath(const QString &path) {
@@ -976,7 +976,6 @@ void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
     }
 #endif
 }
-
 
 void ClientGui::onUserAdded(const UserInfo &userInfo) {
     _userInfoMap.insert({userInfo.dbId(), UserInfoClient(userInfo)});
