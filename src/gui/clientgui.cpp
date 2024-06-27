@@ -974,7 +974,6 @@ void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
     if (osRequiredMenuTray()) {
         resetSystray(true);
     }
-}
 #endif
 }
 
