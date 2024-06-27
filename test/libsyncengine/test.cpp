@@ -38,8 +38,8 @@
 #include "requests/testexclusiontemplatecache.h"
 
 namespace KDC {
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestJobManager);
 //  CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
@@ -48,9 +48,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
-//  CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
 //  CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
 //  CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);

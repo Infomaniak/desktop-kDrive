@@ -104,8 +104,8 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     // Local node needs to be excluded before call to blacklistTemporarily because
     // we need the DB entry to retrieve the corresponding node
     NodeIdPair nodeIDs;
-    const auto localNode = correspondingNodeDirect(remoteNode);
-    if (localNode) {
+
+    if (const auto localNode = correspondingNodeDirect(remoteNode); localNode) {
         // Also exclude local node by adding "conflict" suffix
         const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
         LOGW_SYNCPAL_INFO(_logger,
@@ -165,7 +165,7 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
     return true;
 }
 
-void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(std::shared_ptr<Node> remoteParentNode) {
+void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode) {
 #if defined(__APPLE__) || defined(_WIN32)
     std::unordered_map<SyncName, std::shared_ptr<Node>> processedNodesByName;  // key: lowercase name
     auto it = remoteParentNode->children().begin();

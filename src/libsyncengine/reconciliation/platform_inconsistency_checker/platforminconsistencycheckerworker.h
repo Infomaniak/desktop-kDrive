@@ -36,11 +36,11 @@ class PlatformInconsistencyCheckerWorker : public OperationProcessor {
         void blacklistNode(const std::shared_ptr<Node> remoteNode, const SyncPath &relativePath,
                            const InconsistencyType inconsistencyType);
         bool checkPathAndName(std::shared_ptr<Node> remoteNode);
-        void checkNameClashAgainstSiblings(std::shared_ptr<Node> remoteParentNode);
+        void checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode);
 
         struct NodeIdPair {
                 NodeId remoteId;
-                NodeId localId; // Optional, only required if the file is already synchronized.
+                NodeId localId;  // Optional, only required if the file is already synchronized.
         };
         std::list<NodeIdPair> _idsToBeRemoved;
 

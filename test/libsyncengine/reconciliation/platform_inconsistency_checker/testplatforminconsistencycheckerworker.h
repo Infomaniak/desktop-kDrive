@@ -27,13 +27,11 @@ namespace KDC {
 
 class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestPlatformInconsistencyCheckerWorker);
-        //    CPPUNIT_TEST(testFixNameSize);
-        //    CPPUNIT_TEST(testFixNameForbiddenChars);
-        //    CPPUNIT_TEST(testFixReservedNames);
-        //    CPPUNIT_TEST(testNameClash_noExtension);
-        //    CPPUNIT_TEST(testNameClash_withExtension);
-        CPPUNIT_TEST(testNameClash_extensionFinishWithDot);
-        //    CPPUNIT_TEST(testExecute);
+        CPPUNIT_TEST(testFixNameSize);
+        CPPUNIT_TEST(testCheckNameForbiddenChars);
+        CPPUNIT_TEST(testCheckReservedNames);
+        CPPUNIT_TEST(testNameClash);
+        CPPUNIT_TEST(testExecute);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -42,15 +40,13 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
 
     protected:
         void testFixNameSize();
-        void testFixNameForbiddenChars();
-        void testFixReservedNames();
-        void testNameClash_noExtension();
-        void testNameClash_withExtension();
-        void testNameClash_extensionFinishWithDot();
+        void testCheckNameForbiddenChars();
+        void testCheckReservedNames();
+        void testNameClash();
         void testExecute();
 
     private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<SyncPal> _syncPal{nullptr};
 };
 
 }  // namespace KDC

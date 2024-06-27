@@ -208,9 +208,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         inline bool syncHasFullyCompleted() const { return _syncHasFullyCompleted; }
 
-#ifdef __APPLE__
-        static void fixFileNamesWithColon(std::shared_ptr<SyncDb> syncDb, const SyncPath &localPath);
-#endif
         void fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const SyncPath &path);
 
         void fixNodeTableDeleteItemsWithNullParentNodeId();

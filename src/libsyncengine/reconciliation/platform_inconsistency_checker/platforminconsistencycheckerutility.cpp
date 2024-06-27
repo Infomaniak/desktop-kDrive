@@ -63,8 +63,7 @@ std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyChecke
     return _instance;
 }
 
-SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPath &name,
-                                                                   SuffixType suffixType) {
+SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPath &name, SuffixType suffixType) {
     SyncName suffix = generateSuffix(suffixType);
     SyncName sub = name.stem().native().substr(0, MAX_NAME_LENGTH - suffix.size() - name.extension().native().size());
 
@@ -79,9 +78,9 @@ SyncName PlatformInconsistencyCheckerUtility::generateNewValidName(const SyncPat
     return sub + suffix + name.extension().native();
 }
 
-ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr /*= nullptr*/) {
-    const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-        absoluteLocalPath, suffixType);
+ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType,
+                                                              SyncPath *newPathPtr /*= nullptr*/) {
+    const auto newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(absoluteLocalPath, suffixType);
     auto newFullPath = absoluteLocalPath.parent_path() / newName;
 
     LocalMoveJob moveJob(absoluteLocalPath, newFullPath);
@@ -94,23 +93,6 @@ ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
     return moveJob.exitCode();
 }
 
-bool PlatformInconsistencyCheckerUtility::fixNameForbiddenChars(const SyncPath &name, SyncName &newName) {
-    // Does the string contain one of the characters?
-    for (auto c : forbiddenFilenameChars) {
-        size_t pos = newName.empty() ? name.native().find(c) : newName.find(c);
-        if (newName.empty() && pos != std::string::npos) {
-            newName = name.native();  // Copy filename to newName only if necessary
-        }
-
-        while (pos != std::string::npos) {
-            newName.replace(pos, 1, charToHex(newName[pos]));
-            pos = newName.find(c, pos);
-        }
-    }
-
-    return newName != name && !newName.empty();
-}
-
 bool PlatformInconsistencyCheckerUtility::checkNameForbiddenChars(const SyncPath &name) {
     for (auto c : forbiddenFilenameChars) {
         if (name.native().find(c) != std::string::npos) {
@@ -120,8 +102,7 @@ bool PlatformInconsistencyCheckerUtility::checkNameForbiddenChars(const SyncPath
 
 #ifdef _WIN32
     // Can't finish with a space
-    SyncName nameStr(name.native());
-    if (nameStr[nameStr.size() - 1] == ' ') {
+    if (SyncName nameStr(name.native()); nameStr[nameStr.size() - 1] == ' ') {
         return true;
     }
 
@@ -175,8 +156,7 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncPath &nam
 
 #ifdef WIN32
     // Can't have only dots
-    size_t dotCount = std::count(nameStr.begin(), nameStr.end(), '.');
-    if (dotCount == nameStr.size()) {
+    if (std::ranges::count(nameStr, '.') == nameStr.size()) {
         return true;
     }
 
@@ -185,11 +165,9 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncPath &nam
         return true;
     }
 
-    for (const std::string &reserved : reservedWinNames) {
-        if (Utility::startsWithInsensitive(nameStr, Str2SyncName(reserved))) {
-            if (nameStr.size() == reserved.size()) {
-                return true;
-            }
+    for (const auto &reserved : reservedWinNames) {
+        if (Utility::startsWithInsensitive(nameStr, Str2SyncName(reserved)) && nameStr.size() == reserved.size()) {
+            return true;
         }
     }
 #endif
