@@ -137,7 +137,7 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     uri.addQueryParameter(lastModifiedAtKey, std::to_string(_modtimeIn));
 
     if (IoHelper::isLink(_linkType)) {
-        auto str2HtmlStr = [](const std::string str) { return str.empty() ? "%02%03" : str; };
+        auto str2HtmlStr = [](const std::string &str) { return str.empty() ? "%02%03" : str; };
         uri.addQueryParameter(symbolicLinkKey, str2HtmlStr(Path2Str(_linkTarget)));
     }
 

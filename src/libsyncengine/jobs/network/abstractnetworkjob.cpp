@@ -63,20 +63,19 @@ AbstractNetworkJob::AbstractNetworkJob() {
                 _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
             } catch (Poco::Exception const &e) {
                 if (trials < _trials) {
-                    LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << e.displayText().c_str() << " (" << e.code()
-                                                                                  << "), retrying...");
+                    LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e).c_str() << ", retrying...");
                     continue;
                 } else {
-                    LOG_INFO(_logger,
-                             "Error in Poco::Net::Context constructor: " << e.displayText().c_str() << " (" << e.code() << ")");
+                    LOG_INFO(_logger, "Error in Poco::Net::Context constructor: " << errorText(e).c_str());
                     throw std::runtime_error(ABSTRACTNETWORKJOB_NEW_ERROR_MSG);
                     break;
                 }
-            } catch (...) {
+            } catch (std::exception &e) {
                 if (trials < _trials) {
-                    LOG_INFO(_logger, "Unknown error in Poco::Net::Context constructor, retrying...");
+                    LOG_INFO(_logger,
+                             "Unknown error in Poco::Net::Context constructor: " << errorText(e).c_str() << ", retrying...");
                 } else {
-                    LOG_ERROR(_logger, "Unknown error in Poco::Net::Context constructor");
+                    LOG_ERROR(_logger, "Unknown error in Poco::Net::Context constructor: " << errorText(e).c_str());
                     throw std::runtime_error(ABSTRACTNETWORKJOB_NEW_ERROR_MSG);
                 }
             }
@@ -127,7 +126,7 @@ void AbstractNetworkJob::runJob() noexcept {
                 return;
             }
         } catch (Poco::Exception const &e) {
-            LOG_INFO(_logger, "Error with request " << jobId() << " " << uri.toString().c_str() << " " << errorText(e).c_str());
+            LOG_INFO(_logger, "Error with request " << jobId() << " " << uri.toString().c_str() << " : " << errorText(e).c_str());
             _exitCode = ExitCodeNetworkError;
             break;
         }
@@ -153,7 +152,7 @@ void AbstractNetworkJob::runJob() noexcept {
         try {
             ret = sendRequest(uri);
         } catch (std::exception &e) {
-            LOG_WARN(_logger, "Error in sendRequest " << jobId() << " err=" << e.what());
+            LOG_WARN(_logger, "Error in sendRequest " << jobId() << " : " << errorText(e).c_str());
             _exitCode = ExitCodeNetworkError;
             ret = false;
         }
@@ -182,7 +181,7 @@ void AbstractNetworkJob::runJob() noexcept {
         try {
             ret = receiveResponse(uri);
         } catch (std::exception &e) {
-            LOG_WARN(_logger, "Error in receiveResponse " << jobId() << " err=" << e.what());
+            LOG_WARN(_logger, "Error in receiveResponse " << jobId() << " : " << errorText(e).c_str());
             _exitCode = ExitCodeNetworkError;
             ret = false;
         }
@@ -290,8 +289,9 @@ void AbstractNetworkJob::clearSession() {
                 _session->flushRequest();
                 _session->reset();
             }
-        } catch (Poco::Exception &) {
-            // Do nothing
+        } catch (Poco::Exception &e) {
+            // Not an issue
+            LOG_DEBUG(_logger, "Error in clearSession " << jobId() << " : " << errorText(e).c_str());
         }
     }
 }
@@ -302,8 +302,9 @@ void AbstractNetworkJob::abortSession() {
             if (_session->connected()) {
                 _session->abort();
             }
-        } catch (Poco::Exception &) {
-            // Do nothing
+        } catch (Poco::Exception &e) {
+            // Not an issue
+            LOG_DEBUG(_logger, "Error in abortSession " << jobId() << " : " << errorText(e).c_str());
         }
     }
 }
@@ -352,8 +353,6 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         return processSocketError("sendRequest exception", jobId(), e);
     } catch (std::exception &e) {
         return processSocketError("sendRequest exception", jobId(), e);
-    } catch (...) {
-        return processSocketError("sendRequest exception", jobId());
     }
 
     // Send data
@@ -375,8 +374,6 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
             return processSocketError("send data exception", jobId(), e);
         } catch (std::exception &e) {
             return processSocketError("send data exception", jobId(), e);
-        } catch (...) {
-            return processSocketError("send data exception", jobId());
         }
 
         if (isProgressTracked()) {
@@ -421,10 +418,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 const std::scoped_lock<std::recursive_mutex> lock(_mutexSession);
                 ok = handleResponse(stream[0].get());
             } catch (std::exception &e) {
-                LOG_WARN(_logger, "handleResponse exception - err= " << e.what());
-                return false;
-            } catch (...) {
-                LOG_WARN(_logger, "handleResponse exception");
+                LOG_WARN(_logger, "handleResponse exception: " << errorText(e).c_str());
                 return false;
             }
 
@@ -457,7 +451,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
                 try {
                     ok = handleError(stream[0].get(), uri);
                 } catch (std::exception &e) {
-                    LOG_WARN(_logger, "handleError failed - err= " << e.what());
+                    LOG_WARN(_logger, "handleError failed: " << errorText(e).c_str());
                     return false;
                 }
 
@@ -483,8 +477,8 @@ bool AbstractNetworkJob::followRedirect(std::istream &inputStream) {
     Poco::AutoPtr<Poco::XML::Document> pDoc;
     try {
         pDoc = parser.parse(&inputSrc);
-    } catch (Poco::Exception &exc) {
-        LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+    } catch (Poco::Exception &e) {
+        LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << errorText(e).c_str());
         Utility::logGenericServerError(_logger, "Redirection error", inputStream, _resHttp);
 
         _exitCode = ExitCodeBackError;
@@ -549,9 +543,9 @@ bool AbstractNetworkJob::processSocketError(const std::string &msg, const Unique
     } else {
         std::stringstream errMsgStream;
         errMsgStream << msg.c_str();
-        if (jobId) errMsgStream << " - job ID=" << jobId;
-        if (err) errMsgStream << " - err=" << err;
-        if (!errMsg.empty()) errMsgStream << " - err message=" << errMsg.c_str();
+        if (jobId) errMsgStream << " - job " << jobId;
+        if (err) errMsgStream << " : (" << err << ")";
+        if (!errMsg.empty()) errMsgStream << " : " << errMsg.c_str();
         LOG_WARN(_logger, errMsgStream.str().c_str());
 
         _exitCode = ExitCodeNetworkError;
@@ -581,7 +575,13 @@ bool AbstractNetworkJob::ioOrLogicalErrorOccurred(std::ios &stream) {
 
 const std::string AbstractNetworkJob::errorText(const Poco::Exception &e) const {
     std::ostringstream error;
-    error << e.className() << " : " << e.code() << " : " << e.displayText().c_str();
+    error << e.className() << " : (" << e.code() << ") : " << e.displayText().c_str();
+    return error.str();
+}
+
+const std::string AbstractNetworkJob::errorText(const std::exception &e) const {
+    std::ostringstream error;
+    error << "(" << e.what() << ")";
     return error.str();
 }
 
