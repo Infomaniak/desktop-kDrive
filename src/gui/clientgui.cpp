@@ -894,10 +894,12 @@ void ClientGui::onRefreshErrorList() {
     if (_driveWithNewErrorSet.count()) {
         emit refreshStatusNeeded();
     }
+    bool errorFound = false;
     bool lockedVersion = false;
 
     // Server level errors.
     if (_driveWithNewErrorSet.contains(0)) {
+        errorFound = true;
         _errorInfoMap[0].clear();
         if (ExitCodeOk != loadError(0, 0, ErrorLevelServer)) {
             return;
@@ -917,6 +919,7 @@ void ClientGui::onRefreshErrorList() {
 
     // Drive level errors (SyncPal or Node).
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
+        errorFound = true;
         const int driveDbId = *it;
         _errorInfoMap[driveDbId].clear();
 
@@ -933,7 +936,7 @@ void ClientGui::onRefreshErrorList() {
                 ExitCode error = loadError(driveDbId, syncDbId, level);
                 if (error == ExitCodeUpdateRequired) {
                     lockedVersion = true;
-                } 
+                }
 
                 if (ExitCodeOk != error) {
                     emit appVersionLocked(lockedVersion);
@@ -957,8 +960,9 @@ void ClientGui::onRefreshErrorList() {
 
         it = _driveWithNewErrorSet.erase(it);
     }
-    emit appVersionLocked(lockedVersion);
-}
+    if (errorFound) {
+        emit appVersionLocked(lockedVersion);
+    }
 
 void ClientGui::closeAllExcept(QWidget *exceptWidget) {
     if (_synthesisPopover && exceptWidget != _synthesisPopover.get()) {

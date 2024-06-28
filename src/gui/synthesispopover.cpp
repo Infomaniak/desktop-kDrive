@@ -1102,13 +1102,13 @@ void SynthesisPopover::onStartInstaller() {
 }
 
 void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
-    if (currentVersionLocked) {
+    if (currentVersionLocked && _lockedAppVesrionWidget->isHidden()) {
         _mainWidget->hide();
         _lockedAppVesrionWidget->show();
         setFixedSize(lockedWindowSize);
         _gui->closeAllExcept(this);
         onUpdateAvailabalityChange();
-    } else {
+    } else if (!currentVersionLocked && _mainWidget->isHidden()) {
         _lockedAppVesrionWidget->hide();
         _mainWidget->show();
         setFixedSize(windowSize);
