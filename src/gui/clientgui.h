@@ -144,7 +144,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QAction *_actionPreferences = nullptr;
         QAction *_actionQuit = nullptr;
 #endif
-        bool osRequiredMenuTray() const;
+        bool osRequireMenuTray() const;
         static void raiseDialog(QWidget *raiseWidget);
         void setupSynthesisPopover();
         void setupParametersDialog();

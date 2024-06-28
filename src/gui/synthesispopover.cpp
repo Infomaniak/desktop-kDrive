@@ -384,7 +384,8 @@ bool SynthesisPopover::event(QEvent *event) {
 
 void SynthesisPopover::initUI() {
     /*
-     *  mainVBox
+     *  _mainWidget
+     *    mainVBox
      *      hBoxToolBar
      *          iconLabel
      *          _errorsButton
@@ -404,6 +405,14 @@ void SynthesisPopover::initUI() {
      *          notImplementedLabel2
      *          _synchronizedListWidget[]
      *      bottomWidget
+     *  _lockedAppVesrionWidget
+     *    lockedAppVesrionVBox
+     *      updateIconLabel
+     *      lockedAppupdateAppLabel
+     *      lockedAppLabel
+     *      _lockedAppUpdateOptionalLabel (not on Linux with menu tray)
+     *      lockedAppUpdateButton (not on Linux with menu tray)
+     *
      */
     QVBoxLayout *appVBox = new QVBoxLayout();
     setLayout(appVBox);
@@ -510,6 +519,7 @@ void SynthesisPopover::initUI() {
     QVBoxLayout *lockedAppVesrionVBox = new QVBoxLayout(_lockedAppVesrionWidget);
     lockedAppVesrionVBox->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
+    // Update icon
     QLabel *updateIconLabel = new QLabel(this);
     updateIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/kdrive-update.svg")
                                    .pixmap(lockedWindowSize.height() / 3, lockedWindowSize.height() / 3));
@@ -518,6 +528,7 @@ void SynthesisPopover::initUI() {
 
     lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
 
+    // Update app label
     QLabel *lockedAppupdateAppLabel = new QLabel(tr("Update kDrive App"), this);
     lockedAppupdateAppLabel->setObjectName("defaultTitleLabel");
     lockedAppupdateAppLabel->setAlignment(Qt::AlignHCenter);
@@ -525,6 +536,7 @@ void SynthesisPopover::initUI() {
 
     lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
 
+    // Locked app label
     QLabel *lockedAppLabel = new QLabel(
         tr("This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."),
         this);
@@ -536,6 +548,7 @@ void SynthesisPopover::initUI() {
 
     lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
 
+    // Optional label (status reported by tha app in case of Error)
     _lockedAppUpdateOptionalLabel = new QLabel();
     _lockedAppUpdateOptionalLabel->setObjectName("defaultTextLabel");
     _lockedAppUpdateOptionalLabel->setAlignment(Qt::AlignHCenter);
@@ -544,6 +557,7 @@ void SynthesisPopover::initUI() {
     _lockedAppUpdateOptionalLabel->setVisible(false);
     lockedAppVesrionVBox->addWidget(_lockedAppUpdateOptionalLabel);
 
+    // Update button
     QHBoxLayout *lockedAppUpdateButtonHBox = new QHBoxLayout();
     lockedAppUpdateButtonHBox->setAlignment(Qt::AlignHCenter);
 
@@ -554,6 +568,18 @@ void SynthesisPopover::initUI() {
     _lockedAppUpdateButton->setEnabled(false);
     lockedAppUpdateButtonHBox->addWidget(_lockedAppUpdateButton);
     lockedAppVesrionVBox->addLayout(lockedAppUpdateButtonHBox);
+
+#ifdef Q_OS_LINUX
+    // On Linux, the update button is not displayed, the update need to be done manually by the user (download on the website)
+    _lockedAppUpdateButton->hide();
+    _lockedAppUpdateOptionalLabel->hide(true);
+    QLabel *lockedAppUpdateManualLabel = new QLabel(tr("Please download the latest version on the website."), this);
+    lockedAppUpdateManualLabel->setObjectName("defaultTextLabel");
+    lockedAppUpdateManualLabel->setAlignment(Qt::AlignHCenter);
+    lockedAppUpdateManualLabel->setWordWrap(true);
+    lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    lockedAppVesrionVBox->addWidget(lockedAppUpdateManualLabel);
+#endif  //
 
     // Shadow
     QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
@@ -1055,7 +1081,7 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
             statusString = UpdaterClient::instance()->statusString();
             updateState = UpdaterClient::instance()->updateState();
         } else {
-            updateState = Ready; // On macOS, we just start the installer (Sparkle does the rest) 
+            updateState = Ready; // On macOS, we just start the installer (Sparkle does the rest)
         }
     } catch (std::exception const &) {
         return;

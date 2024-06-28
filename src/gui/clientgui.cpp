@@ -517,16 +517,15 @@ void ClientGui::resetSystray(bool currentVersionLocked) {
     if (_tray->geometry().width() == 0) {
         _tray->setContextMenu(new QMenu());
 #ifdef Q_OS_LINUX
-        if (osRequiredMenuTray()) {
+        if (osRequireMenuTray()) {
             _actionSynthesis =
                 _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
             if (!currentVersionLocked) {
                 _actionPreferences =
                     _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
-                _tray->contextMenu()->addSeparator();
-                _actionQuit =
-                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
             }
+            _tray->contextMenu()->addSeparator();
+            _actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
         }
 
 #endif
@@ -536,13 +535,13 @@ void ClientGui::resetSystray(bool currentVersionLocked) {
         connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
     }
 #ifdef Q_OS_LINUX
-    else if (_actionSynthesis) {
-        connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
-        connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
-        if (!currentVersionLocked && _actionPreferences && _actionQuit) {
-            connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
-            connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
+    else {
+        if (_actionSynthesis) {
+            connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
+            connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
         }
+        if (_actionQuit) connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
+        if (_actionPreferences && !currentVersionLocked) connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
     }
 #endif
 
@@ -1409,7 +1408,7 @@ void ClientGui::onShutdown() {
     if (!_parametersDialog.isNull()) _parametersDialog->close();
 }
 
-bool ClientGui::osRequiredMenuTray() const {
+bool ClientGui::osRequireMenuTray() const {
 #ifdef Q_OS_LINUX
     QString type;
     QString version;
