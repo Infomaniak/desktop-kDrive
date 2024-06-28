@@ -81,6 +81,7 @@ ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(_app, &AppClient::fixConflictingFilesCompleted, this, &ClientGui::onFixConflictingFilesCompleted);
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
+    connect(this, &ClientGui::appVersionLocked, this, &ClientGui::onAppVersionLocked);
 
     connect(&_refreshErrorListTimer, &QTimer::timeout, this, &ClientGui::onRefreshErrorList);
 
@@ -985,9 +986,7 @@ void ClientGui::closeAllExcept(QWidget *exceptWidget) {
 
 void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
 #ifdef Q_OS_LINUX
-    if (osRequiredMenuTray()) {
-        resetSystray(currentVersionLocked);
-    }
+    resetSystray(currentVersionLocked);
 #endif
 }
 
@@ -1368,11 +1367,9 @@ void ClientGui::onRefreshStatusNeeded() {
 
 void ClientGui::retranslateUi() {
 #ifdef Q_OS_LINUX
-    if (_actionSynthesis && _actionPreferences && _actionQuit) {
-        _actionSynthesis->setText(QString(tr("Synthesis")));
-        _actionPreferences->setText(QString(tr("Preferences")));
-        _actionQuit->setText(QString(tr("Quit")));
-    }
+    if (_actionSynthesis) _actionSynthesis->setText(QString(tr("Synthesis")));
+    if (_actionPreferences) _actionPreferences->setText(QString(tr("Preferences")));
+    if (_actionQuit) _actionQuit->setText(QString(tr("Quit")));
 #endif
 }
 
