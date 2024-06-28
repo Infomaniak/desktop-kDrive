@@ -963,6 +963,7 @@ void ClientGui::onRefreshErrorList() {
     if (errorFound) {
         emit appVersionLocked(lockedVersion);
     }
+}
 
 void ClientGui::closeAllExcept(QWidget *exceptWidget) {
     if (_synthesisPopover && exceptWidget != _synthesisPopover.get()) {
