@@ -126,7 +126,7 @@ void UploadSession::runJob() {
 }
 
 void UploadSession::uploadChunkCallback(UniqueId jobId) {
-    const std::lock_guard<std::recursive_mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     auto jobInfo = _ongoingChunkJobs.extract(jobId);
     if (jobInfo.mapped()) {
         if (jobInfo.mapped()->hasHttpError() || jobInfo.mapped()->exitCode() != ExitCodeOk) {
@@ -331,7 +331,7 @@ bool UploadSession::sendChunks() {
             std::function<void(UniqueId)> callback = std::bind(&UploadSession::uploadChunkCallback, this, std::placeholders::_1);
 
             {
-                const std::lock_guard<std::recursive_mutex> lock(_mutex);
+                const std::scoped_lock lock(_mutex);
                 _threadCounter++;
                 JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
                 _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
@@ -456,10 +456,13 @@ bool UploadSession::cancelSession() {
     }
 
     // Cancel all ongoing chunk jobs
-    for (auto &[jobId, job] : _ongoingChunkJobs) {
-        if (job.get() && job->sessionToken() == _sessionToken) {
-            LOG_INFO(_logger, "Aborting chunk job " << jobId);
-            job->abort();
+    {
+        const std::scoped_lock lock(_mutex);
+        for (auto &[jobId, job] : _ongoingChunkJobs) {
+            if (job.get() && job->sessionToken() == _sessionToken) {
+                LOG_INFO(_logger, "Aborting chunk job " << jobId);
+                job->abort();
+            }
         }
     }
 
