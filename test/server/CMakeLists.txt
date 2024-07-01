@@ -28,8 +28,24 @@ set(testserver_SRCS
 )
 
 if(APPLE)
-    list(APPEND testserver_SRCS  vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp ${server_srcs_path}/updater/sparkleupdater.h
- ${server_srcs_path}/updater/sparkleupdater_mac.mm)
+    list(APPEND testserver_SRCS  vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
+    list(APPEND server_SRCS socketapisocket_mac.mm)
+    set_property(SOURCE socketapisocket_mac.mm APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+    list(APPEND server_SRCS ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m)
+    set_property(SOURCE ../../extensions/MacOSX/kDriveFinderSync/kDrive/NSXPCConnection+LoginItem.m APPEND_STRING PROPERTY COMPILE_FLAGS "-fobjc-arc")
+
+    if(SPARKLE_FOUND)
+        # Define this, we need to check in updater.cpp
+        add_definitions(-DHAVE_SPARKLE)
+        list(APPEND testserver_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater_mac.mm)
+        list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
+
+        # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle
+        # as its logic is tightly tailored around Qt6 frameworks
+        install(DIRECTORY "${SPARKLE_LIBRARY}"
+                DESTINATION "${KDRIVE_OSX_BUNDLE}/Contents/Frameworks" USE_SOURCE_PERMISSIONS)
+   endif()
 endif()
 
 if (WIN32)
@@ -81,7 +97,7 @@ endif()
 # Loaded after liblog4cplus to avoid an initialization crash
 if(APPLE)
     target_link_libraries(${testserver_NAME}
-        "${libsyncengine_NAME}_vfs_mac")
+        "${libsyncengine_NAME}_vfs_mac" "${updater_DEPS}")
 else()
     target_link_libraries(${testserver_NAME}
         ${libsyncengine_NAME})
