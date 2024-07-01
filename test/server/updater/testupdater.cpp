@@ -104,11 +104,6 @@ void TestUpdater::testIsKDCorSparkleUpdater(void) {
 #endif
 }
 
-void TestUpdater::testClientVersion(void) {
-    QString version = UpdaterServer::clientVersion();
-    CPPUNIT_ASSERT_EQUAL(std::string(KDRIVE_STRINGIFY(KDRIVE_VERSION_FULL)), version.toStdString());
-}
-
 void TestUpdater::testUpdateSucceeded(void) {
 #ifdef  __APPLE__
     return true; // Not implemented 

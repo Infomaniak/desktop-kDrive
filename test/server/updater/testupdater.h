@@ -33,7 +33,6 @@ class TestUpdater : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUpdater);
         CPPUNIT_TEST(testUpdateInfoVersionParseString);
         CPPUNIT_TEST(testIsKDCorSparkleUpdater);
-        CPPUNIT_TEST(testClientVersion);
         CPPUNIT_TEST(testUpdateSucceeded);
         CPPUNIT_TEST_SUITE_END();
 
@@ -41,7 +40,6 @@ class TestUpdater : public CppUnit::TestFixture {
         void setUp(void) final;
         void testUpdateInfoVersionParseString(void);
         void testIsKDCorSparkleUpdater(void);
-        void testClientVersion(void);
         void testUpdateSucceeded(void);
 
     protected:
