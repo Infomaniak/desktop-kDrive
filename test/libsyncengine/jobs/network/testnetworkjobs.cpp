@@ -60,7 +60,7 @@ static const NodeId testBigFileRemoteId = "97601";      // test_ci/big_file_dir/
 static const NodeId testDummyDirRemoteId = "98648";     // test_ci/dummy_dir
 static const NodeId testDummyFileRemoteId = "98649";    // test_ci/dummy_dir/picture.jpg
 
-static const std::string desktopTeamTestDriveName = "Test Desktop App";
+static const std::string desktopTeamTestDriveName = "kDrive Desktop Team";
 static const std::string bigFileDirName = "big_file_dir";
 static const std::string bigFileName = "big_text_file.txt";
 static const std::string dummyDirName = "dummy_dir";
