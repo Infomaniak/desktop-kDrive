@@ -56,7 +56,7 @@ static const NodeId testFileRemoteId = "97370";        // test_ci/test_networkjo
 static const NodeId testFileRemoteRenameId = "97376";  // test_ci/test_networkjobs/test_rename*.txt
 static const NodeId testBigFileRemoteId = "97601";     // test_ci/big_file_dir/big_text_file.txt
 
-static const std::string desktopTeamTestDriveName = "Test Desktop App";
+static const std::string desktopTeamTestDriveName = "kDrive Desktop Team";
 static const std::string bigFileDirName = "big_file_dir";
 static const std::string bigFileName = "big_text_file.txt";
 
