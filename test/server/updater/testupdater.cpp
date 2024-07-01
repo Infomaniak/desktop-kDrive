@@ -105,15 +105,16 @@ void TestUpdater::testIsKDCorSparkleUpdater(void) {
 }
 
 void TestUpdater::testUpdateSucceeded(void) {
-#ifdef  __APPLE__
-    return true; // Not implemented 
-#endif  //  __APPLE__
+#ifdef __APPLE__
+    return;  // Not implemented
+#else
 
     ParametersCache::instance(true)->parameters().setUpdateTargetVersion("1");  // Target version is set to the current version
     CPPUNIT_ASSERT(_updater->updateSucceeded());
 
     ParametersCache::instance()->parameters().setUpdateTargetVersion("99.99.99");  // Target version is set to a newer version
     CPPUNIT_ASSERT(!_updater->updateSucceeded());
+#endif
 }
 
 }  // namespace KDC
