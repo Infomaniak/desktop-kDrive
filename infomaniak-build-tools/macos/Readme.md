@@ -109,7 +109,7 @@ brew install automake
 brew install libtool
 ```
 
-CPPUnit must be build in single architecture. Replace with `x86_64` or `arm64` in the followinf command:
+CPPUnit must be build in single architecture. Replace with `x86_64` or `arm64` in the following command:
 ```bash
 cd ~/Projects
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
