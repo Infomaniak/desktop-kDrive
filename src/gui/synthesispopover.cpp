@@ -604,8 +604,6 @@ void SynthesisPopover::initUI() {
     connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
     connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
     connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
-    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onUpdateApp, Qt::UniqueConnection);
-    connect(_lockedAppUpdateButton, &QPushButton::clicked, qApp, &QApplication::quit, Qt::UniqueConnection);
     connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &SynthesisPopover::onUpdateAvailabalityChange,
             Qt::UniqueConnection);
 }
@@ -1060,14 +1058,6 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
     for (int row = 0; row < driveInfoIt->second.synchronizedItemList().count(); row++) {
         addSynchronizedListWidgetItem(driveInfoIt->second, row);
         driveInfoIt->second.synchronizedItemList()[row].setDisplayed(true);
-    }
-}
-
-void SynthesisPopover::onUpdateApp() {
-    try {
-        UpdaterClient::instance()->startInstaller();
-    } catch (std::exception const &) {
-        // Do nothing
     }
 }
 
