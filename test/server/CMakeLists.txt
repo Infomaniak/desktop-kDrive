@@ -28,7 +28,8 @@ set(testserver_SRCS
 )
 
 if(APPLE)
-    list(APPEND testserver_SRCS  vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
+    list(APPEND testserver_SRCS  vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp ${server_srcs_path}/updater/sparkleupdater.h
+ ${server_srcs_path}/updater/sparkleupdater_mac.mm)
 endif()
 
 if (WIN32)

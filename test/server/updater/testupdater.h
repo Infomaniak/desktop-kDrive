@@ -21,7 +21,9 @@
 #include <log4cplus/logger.h>
 #include <QApplication>
 #include "server/updater/kdcupdater.h"
-// #include "server/_updater/sparkle_updater.h
+#ifdef __APPLE__
+#include "server/_updater/sparkle_updater.h
+#endif
 
 using namespace CppUnit;
 
