@@ -541,7 +541,8 @@ void ClientGui::resetSystray(bool currentVersionLocked) {
             connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
         }
         if (_actionQuit) connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
-        if (_actionPreferences && !currentVersionLocked) connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
+        if (_actionPreferences && !currentVersionLocked)
+            connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
     }
 #endif
 
@@ -898,24 +899,22 @@ void ClientGui::onRefreshErrorList() {
     bool lockedVersion = false;
 
     // Server level errors.
-    if (_driveWithNewErrorSet.contains(0)) {
-        errorFound = true;
-        _errorInfoMap[0].clear();
-        if (ExitCodeOk != loadError(0, 0, ErrorLevelServer)) {
-            return;
-        }
-
-        _generalErrorsCounter = _errorInfoMap[0].count();
-        emit errorAdded(0);
-        for (auto &errorInfo : _errorInfoMap[0]) {
-            if (errorInfo.exitCode() == ExitCodeUpdateRequired) {
-                lockedVersion = true;
-                break;
-            }
-        }
-
-        _driveWithNewErrorSet.remove(0);
+    _errorInfoMap[0].clear();
+    errorFound = _driveWithNewErrorSet.contains(0);
+    if (ExitCodeOk != loadError(0, 0, ErrorLevelServer)) {
+        return;
     }
+
+    _generalErrorsCounter = (int)_errorInfoMap[0].count();
+    for (const auto &errorInfo : _errorInfoMap[0]) {
+        lockedVersion = lockedVersion || errorInfo.exitCode() == ExitCodeUpdateRequired;
+    }
+
+    if (_errorInfoMap[0].count() > 0) {
+        emit errorAdded(0);
+    }
+
+    _driveWithNewErrorSet.remove(0);
 
     // Drive level errors (SyncPal or Node).
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
@@ -932,27 +931,21 @@ void ClientGui::onRefreshErrorList() {
 
         for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
             if (syncInfo.driveDbId() != driveDbId) continue;
-            for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
-                ExitCode error = loadError(driveDbId, syncDbId, level);
-                if (error == ExitCodeUpdateRequired) {
-                    lockedVersion = true;
-                }
 
-                if (ExitCodeOk != error) {
-                    emit appVersionLocked(lockedVersion);
-                    return;
-                }
+            ExitCode error = loadError(driveDbId, syncDbId, ErrorLevelSyncPal);
+            error = error == ExitCodeOk ? loadError(driveDbId, syncDbId, ErrorLevelNode) : error;
+            if (ExitCodeOk != error) {
+                emit appVersionLocked(lockedVersion); // in case of error, we still need to emit this signal
+                return;
             }
         }
 
         int unresolvedErrorsCount = 0;
         int autoresolvedErrorsCount = 0;
         for (const auto &errorInfo : _errorInfoMap[driveDbId]) {
-            if (errorInfo.autoResolved()) {
-                ++autoresolvedErrorsCount;
-            } else {
-                ++unresolvedErrorsCount;
-            }
+            bool autoResolved = errorInfo.autoResolved();
+            autoresolvedErrorsCount += (int)autoResolved;
+            unresolvedErrorsCount += (int)!autoResolved;
         }
         driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
         driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
@@ -965,7 +958,7 @@ void ClientGui::onRefreshErrorList() {
     }
 }
 
-void ClientGui::closeAllExcept(QWidget *exceptWidget) {
+void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
     if (_synthesisPopover && exceptWidget != _synthesisPopover.get()) {
         _synthesisPopover->hide();
     }
@@ -1411,8 +1404,7 @@ void ClientGui::onShutdown() {
 bool ClientGui::osRequireMenuTray() const {
 #ifdef Q_OS_LINUX
     QString type;
-    QString version;
-    if (KDC::GuiUtility::getLinuxDesktopType(type, version)) {
+    if (QString version; KDC::GuiUtility::getLinuxDesktopType(type, version)) {
         if (type.contains("GNOME") && version.toDouble() >= 40) {
             return true;
         }

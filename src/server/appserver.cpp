@@ -1921,7 +1921,6 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 updater->slotSetSeenVersion();
             } else {
                 updater->slotStartInstaller();
-                //QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             }
             break;
         }

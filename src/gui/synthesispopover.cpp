@@ -414,7 +414,7 @@ void SynthesisPopover::initUI() {
      *      lockedAppUpdateButton (not on Linux with menu tray)
      *
      */
-    QVBoxLayout *appVBox = new QVBoxLayout();
+    auto *appVBox = new QVBoxLayout();
     setLayout(appVBox);
 
     _mainWidget = new QWidget(this);
@@ -424,16 +424,16 @@ void SynthesisPopover::initUI() {
     appVBox->addWidget(_mainWidget);
     appVBox->addWidget(_lockedAppVesrionWidget);
 
-    QVBoxLayout *mainVBox = new QVBoxLayout(_mainWidget);
+    auto *mainVBox = new QVBoxLayout(_mainWidget);
     mainVBox->setContentsMargins(triangleHeight, triangleHeight, triangleHeight, triangleHeight);
     mainVBox->setSpacing(0);
     // Tool bar
-    QHBoxLayout *hBoxToolBar = new QHBoxLayout();
+    auto *hBoxToolBar = new QHBoxLayout();
     hBoxToolBar->setContentsMargins(toolBarHMargin, toolBarVMargin, toolBarHMargin, toolBarVMargin);
     hBoxToolBar->setSpacing(toolBarSpacing);
     mainVBox->addLayout(hBoxToolBar);
 
-    QLabel *iconLabel = new QLabel(this);
+    auto *iconLabel = new QLabel(this);
     iconLabel->setPixmap(
         KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg").pixmap(logoIconSize, logoIconSize));
     hBoxToolBar->addWidget(iconLabel);
@@ -459,7 +459,7 @@ void SynthesisPopover::initUI() {
     hBoxToolBar->addWidget(_menuButton);
 
     // Drive selection
-    QHBoxLayout *hBoxDriveBar = new QHBoxLayout();
+    auto *hBoxDriveBar = new QHBoxLayout();
     hBoxDriveBar->setContentsMargins(driveBoxHMargin, driveBoxVMargin, driveBoxHMargin, driveBoxVMargin);
 
     _driveSelectionWidget = new DriveSelectionWidget(_gui);
@@ -481,15 +481,15 @@ void SynthesisPopover::initUI() {
     _buttonsBarWidget->hide();
     mainVBox->addWidget(_buttonsBarWidget);
 
-    CustomTogglePushButton *synchronizedButton = new CustomTogglePushButton(tr("Synchronized"), _buttonsBarWidget);
+    auto *synchronizedButton = new CustomTogglePushButton(tr("Synchronized"), _buttonsBarWidget);
     synchronizedButton->setIconPath(":/client/resources/icons/actions/sync.svg");
     _buttonsBarWidget->insertButton(DriveInfoClient::SynthesisStackedWidgetSynchronized, synchronizedButton);
 
-    CustomTogglePushButton *favoritesButton = new CustomTogglePushButton(tr("Favorites"), _buttonsBarWidget);
+    auto *favoritesButton = new CustomTogglePushButton(tr("Favorites"), _buttonsBarWidget);
     favoritesButton->setIconPath(":/client/resources/icons/actions/favorite.svg");
     _buttonsBarWidget->insertButton(DriveInfoClient::SynthesisStackedWidgetFavorites, favoritesButton);
 
-    CustomTogglePushButton *activityButton = new CustomTogglePushButton(tr("Activity"), _buttonsBarWidget);
+    auto *activityButton = new CustomTogglePushButton(tr("Activity"), _buttonsBarWidget);
     activityButton->setIconPath(":/client/resources/icons/actions/notifications.svg");
     _buttonsBarWidget->insertButton(DriveInfoClient::SynthesisStackedWidgetActivity, activityButton);
 
@@ -512,15 +512,15 @@ void SynthesisPopover::initUI() {
     _stackedWidget->insertWidget(DriveInfoClient::SynthesisStackedWidgetActivity, _notImplementedLabel2);
 
     // Bottom
-    BottomWidget *bottomWidget = new BottomWidget(this);
+    auto *bottomWidget = new BottomWidget(this);
     mainVBox->addWidget(bottomWidget);
 
     //// Locked app
-    QVBoxLayout *lockedAppVesrionVBox = new QVBoxLayout(_lockedAppVesrionWidget);
+    auto *lockedAppVesrionVBox = new QVBoxLayout(_lockedAppVesrionWidget);
     lockedAppVesrionVBox->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
     // Update icon
-    QLabel *updateIconLabel = new QLabel(this);
+    auto *updateIconLabel = new QLabel(this);
     updateIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/kdrive-update.svg")
                                    .pixmap(lockedWindowSize.height() / 3, lockedWindowSize.height() / 3));
     updateIconLabel->setAlignment(Qt::AlignHCenter);
@@ -529,7 +529,7 @@ void SynthesisPopover::initUI() {
     lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
 
     // Update app label
-    QLabel *lockedAppupdateAppLabel = new QLabel(tr("Update kDrive App"), this);
+    auto *lockedAppupdateAppLabel = new QLabel(tr("Update kDrive App"), this);
     lockedAppupdateAppLabel->setObjectName("defaultTitleLabel");
     lockedAppupdateAppLabel->setAlignment(Qt::AlignHCenter);
     lockedAppVesrionVBox->addWidget(lockedAppupdateAppLabel);
@@ -537,7 +537,7 @@ void SynthesisPopover::initUI() {
     lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
 
     // Locked app label
-    QLabel *lockedAppLabel = new QLabel(
+    auto *lockedAppLabel = new QLabel(
         tr("This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."),
         this);
     lockedAppLabel->setObjectName("defaultTextLabel");
@@ -560,7 +560,7 @@ void SynthesisPopover::initUI() {
 #endif
 
     // Update button
-    QHBoxLayout *lockedAppUpdateButtonHBox = new QHBoxLayout();
+    auto *lockedAppUpdateButtonHBox = new QHBoxLayout();
     lockedAppUpdateButtonHBox->setAlignment(Qt::AlignHCenter);
 
     _lockedAppUpdateButton = new QPushButton();
@@ -574,7 +574,7 @@ void SynthesisPopover::initUI() {
 #ifdef Q_OS_LINUX
     // On Linux, the update button is not displayed, the update need to be done manually by the user (download on the website)
     _lockedAppUpdateButton->hide();
-    QLabel *lockedAppUpdateManualLabel = new QLabel(tr("Please download the latest version on the website."), this);
+    auto *lockedAppUpdateManualLabel = new QLabel(tr("Please download the latest version on the website."), this);
     lockedAppUpdateManualLabel->setObjectName("defaultTextLabel");
     lockedAppUpdateManualLabel->setAlignment(Qt::AlignHCenter);
     lockedAppUpdateManualLabel->setWordWrap(true);
@@ -583,7 +583,7 @@ void SynthesisPopover::initUI() {
 #endif  //
 
     // Shadow
-    QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
+    auto *effect = new QGraphicsDropShadowEffect(this);
     effect->setBlurRadius(shadowBlurRadius);
     effect->setOffset(0);
     effect->setColor(KDC::GuiUtility::getShadowColor(true));
@@ -591,7 +591,7 @@ void SynthesisPopover::initUI() {
 
     // Init labels and setup connection for on the fly translation
     retranslateUi();
-    LanguageChangeFilter *languageFilter = new LanguageChangeFilter(this);
+    auto *languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
     connect(languageFilter, &LanguageChangeFilter::retranslate, this, &SynthesisPopover::retranslateUi);
 

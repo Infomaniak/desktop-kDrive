@@ -82,7 +82,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void errorInfoList(int driveDbId, QList<ErrorInfo> &errorInfoList);
         void resolveConflictErrors(int driveDbId, bool keepLocalVersion);
         void resolveUnsupportedCharErrors(int driveDbId);
-        void closeAllExcept(QWidget *exceptWidget);
+        void closeAllExcept(const QWidget *exceptWidget);
         void onAppVersionLocked(bool currentVersionLocked);
 
     signals:
