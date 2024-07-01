@@ -514,7 +514,7 @@ QDialog QPushButton#KDCdefaultbutton, KDC--CustomDialog QPushButton#defaultbutto
     font-size: 14px;
 }
 
-KDC--CustomDialog QPushButton#defaultbutton:disabled
+QDialog QPushButton#KDCdefaultbutton:disabled, KDC--CustomDialog QPushButton#defaultbutton:disabled
 {
     background-color: rgba(0, 152, 255, 122); /* #0098FF with alpha 50% */
 }
