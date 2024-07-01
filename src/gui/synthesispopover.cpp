@@ -555,7 +555,9 @@ void SynthesisPopover::initUI() {
     _lockedAppUpdateOptionalLabel->setWordWrap(true);
     _lockedAppUpdateOptionalLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     _lockedAppUpdateOptionalLabel->setVisible(false);
+#ifndef Q_OS_LINUX
     lockedAppVesrionVBox->addWidget(_lockedAppUpdateOptionalLabel);
+#endif
 
     // Update button
     QHBoxLayout *lockedAppUpdateButtonHBox = new QHBoxLayout();
@@ -572,7 +574,6 @@ void SynthesisPopover::initUI() {
 #ifdef Q_OS_LINUX
     // On Linux, the update button is not displayed, the update need to be done manually by the user (download on the website)
     _lockedAppUpdateButton->hide();
-    _lockedAppUpdateOptionalLabel->hide();
     QLabel *lockedAppUpdateManualLabel = new QLabel(tr("Please download the latest version on the website."), this);
     lockedAppUpdateManualLabel->setObjectName("defaultTextLabel");
     lockedAppUpdateManualLabel->setAlignment(Qt::AlignHCenter);
@@ -1081,7 +1082,7 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
             statusString = UpdaterClient::instance()->statusString();
             updateState = UpdaterClient::instance()->updateState();
         } else {
-            updateState = Ready; // On macOS, we just start the installer (Sparkle does the rest)
+            updateState = Ready;  // On macOS, we just start the installer (Sparkle does the rest)
         }
     } catch (std::exception const &) {
         return;
