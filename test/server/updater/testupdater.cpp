@@ -48,13 +48,13 @@ void TestUpdater::testUpdateInfoVersionParseString(void) {
         "</kdriveclient>";
 
 
-    _updater->_updateInfo = UpdateInfo::parseString(xml, &ok);
+    UpdateInfo updateInfo = UpdateInfo::parseString(xml, &ok);
     CPPUNIT_ASSERT(ok);
-    CPPUNIT_ASSERT_EQUAL(std::string("1.2.3.4"), _updater->_updateInfo.version().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string("1.2.3.4 Version test"), _updater->_updateInfo.versionString().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string("test web"), _updater->_updateInfo.web().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("1.2.3.4"), updateInfo.version().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("1.2.3.4 Version test"), updateInfo.versionString().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string("test web"), updateInfo.web().toStdString());
     CPPUNIT_ASSERT_EQUAL(std::string("https://download.storage.infomaniak.com/drive/desktopclient/kDrive-1.2.3.4.exe"),
-                         _updater->_updateInfo.downloadUrl().toStdString());
+                         updateInfo.downloadUrl().toStdString());
 
     xml =  // Well-formed XML with empty values
         "<kdriveclient>"
@@ -64,34 +64,34 @@ void TestUpdater::testUpdateInfoVersionParseString(void) {
         "<downloadurl></downloadurl>"
         "</kdriveclient>";
 
-    _updater->_updateInfo = UpdateInfo::parseString(xml, &ok);
+    updateInfo = UpdateInfo::parseString(xml, &ok);
     CPPUNIT_ASSERT(ok);
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.version().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.versionString().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.web().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.downloadUrl().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.version().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.versionString().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.web().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.downloadUrl().toStdString());
 
     xml =  // Well-formed XML with missing values
         "<kdriveclient>"
         "</kdriveclient>";
-    _updater->_updateInfo = UpdateInfo::parseString(xml, &ok);
+    updateInfo = UpdateInfo::parseString(xml, &ok);
     CPPUNIT_ASSERT(ok);
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.version().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.versionString().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.web().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.downloadUrl().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.version().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.versionString().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.web().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.downloadUrl().toStdString());
 
     xml =  // Malformed XML
         "<kdriveclient>"
         "<version>"
         "<versionstring>"
         "</kdriveclient>";
-    _updater->_updateInfo = UpdateInfo::parseString(xml, &ok);
+    updateInfo = UpdateInfo::parseString(xml, &ok);
     CPPUNIT_ASSERT(!ok);
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.version().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.versionString().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.web().toStdString());
-    CPPUNIT_ASSERT_EQUAL(std::string(""), _updater->_updateInfo.downloadUrl().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.version().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.versionString().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.web().toStdString());
+    CPPUNIT_ASSERT_EQUAL(std::string(""), updateInfo.downloadUrl().toStdString());
 }
 
 void TestUpdater::testIsKDCorSparkleUpdater(void) {

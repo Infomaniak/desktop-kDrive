@@ -22,7 +22,7 @@
 #include <QApplication>
 #include "server/updater/kdcupdater.h"
 #ifdef __APPLE__
-#include "server/updater/sparkleupdater.h
+#include "server/updater/sparkleupdater.h"
 #endif
 
 using namespace CppUnit;
