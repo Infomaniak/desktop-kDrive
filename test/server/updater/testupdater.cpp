@@ -116,5 +116,4 @@ void TestUpdater::testUpdateSucceeded(void) {
     CPPUNIT_ASSERT(!_updater->updateSucceeded());
 #endif
 }
-
 }  // namespace KDC

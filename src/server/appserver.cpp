@@ -329,7 +329,6 @@ AppServer::AppServer(int &argc, char **argv)
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
 
-
     // Check if a log Upload has been interrupted
     AppStateValue appStateValue = LogUploadState::None;
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {

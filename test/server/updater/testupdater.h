@@ -28,7 +28,6 @@
 using namespace CppUnit;
 
 namespace KDC {
-
 class TestUpdater : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUpdater);
         CPPUNIT_TEST(testUpdateInfoVersionParseString);

@@ -64,6 +64,7 @@ void UpdateInfo::setDownloadUrl(const QString &v) {
 QString UpdateInfo::downloadUrl() const {
     return mDownloadUrl;
 }
+
 UpdateInfo UpdateInfo::parseString(const QString &xml, bool *ok) {
     if (ok) {
         *ok = true;
