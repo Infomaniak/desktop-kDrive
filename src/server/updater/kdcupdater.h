@@ -88,6 +88,7 @@ class KDCUpdater : public UpdaterServer {
 
         void checkForUpdate() override;
         QString statusString() const override;
+        UpdateState updateState() const override;
 
         int downloadState() const;
         void setDownloadState(DownloadState state);
@@ -118,8 +119,9 @@ class KDCUpdater : public UpdaterServer {
         UpdateInfo updateInfo() const { return _updateInfo; }
 
     private:
+        friend class TestUpdater;
         QUrl _updateUrl;
-        int _state;
+        int _state = Unknown;
         QNetworkAccessManager *_accessManager;
         QTimer *_timeoutWatchdog; /** Timer to guard the timeout of an individual network request */
         UpdateInfo _updateInfo;
@@ -141,6 +143,7 @@ class NSISUpdater : public KDCUpdater {
 
     public slots:
         void slotSetSeenVersion();
+        void slotUnsetSeenVersion();
 
     private slots:
         void slotDownloadFinished();

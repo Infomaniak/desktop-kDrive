@@ -680,7 +680,7 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
         }
     }
 
-    return true;
+    return false;
 }
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();

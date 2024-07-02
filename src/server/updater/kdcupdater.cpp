@@ -1,3 +1,4 @@
+#include "kdcupdater.h"
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -72,7 +73,6 @@ void UpdaterScheduler::slotTimerFired() {
 KDCUpdater::KDCUpdater(const QUrl &url)
     : UpdaterServer(),
       _updateUrl(url),
-      _state(Unknown),
       _accessManager(new QNetworkAccessManager(this)),
       _timeoutWatchdog(new QTimer(this)) {}
 
@@ -146,6 +146,25 @@ QString KDCUpdater::statusString() const {
     }
 }
 
+UpdateState KDCUpdater::updateState() const {
+    switch (downloadState()) {
+        case Downloading:
+            return UpdateState::Downloading;
+        case DownloadComplete:
+            return UpdateState::Ready;
+        case LastVersionSkipped:
+            return UpdateState::Skipped;
+        case UpdateOnlyAvailableThroughSystem:
+            return UpdateState::ManualOnly;
+        case CheckingServer:
+            return UpdateState::Checking;
+        case UpToDate:
+            return UpdateState::None;
+        default:
+            return UpdateState::Error;
+    }
+}
+
 int KDCUpdater::downloadState() const {
     return _state;
 }
@@ -202,6 +221,8 @@ void KDCUpdater::slotStartInstaller() {
                                    preparePathForPowershell(QCoreApplication::applicationFilePath()));
 
         QProcess::startDetached("powershell.exe", QStringList{"-Command", command});
+    } else {
+        LOG_WARN(Log::instance()->getLogger(), "Unknown update file type or no update file availble.");
     }
 }
 
@@ -238,7 +259,7 @@ void KDCUpdater::slotVersionInfoArrived() {
 
     QString xml = QString::fromUtf8(reply->readAll());
 
-    bool ok;
+    bool ok = false;
     _updateInfo = UpdateInfo::parseString(xml, &ok);
     if (ok) {
         versionInfoArrived(_updateInfo);
@@ -471,6 +492,7 @@ bool NSISUpdater::handleStartup() {
 
 void NSISUpdater::slotSetSeenVersion() {
     ParametersCache::instance()->parameters().setSeenVersion(updateInfo().version().toStdString());
+    setDownloadState(LastVersionSkipped);
     ExitCode exitCode = ParametersCache::instance()->save();
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
@@ -478,6 +500,19 @@ void NSISUpdater::slotSetSeenVersion() {
     }
 }
 
+
+void NSISUpdater::slotUnsetSeenVersion() {
+    if (ParametersCache::instance()->parameters().seenVersion().empty()) {
+        return;
+    }
+    ParametersCache::instance()->parameters().setSeenVersion(std::string());
+    ExitCode exitCode = ParametersCache::instance()->save();
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
+        return;
+    }
+    checkForUpdate();
+}
 ////////////////////////////////////////////////////////////////////////
 
 PassiveUpdateNotifier::PassiveUpdateNotifier(const QUrl &url) : KDCUpdater(url) {}

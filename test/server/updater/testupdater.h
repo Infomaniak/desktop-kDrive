@@ -18,20 +18,36 @@
 
 #include "testincludes.h"
 
-
+#include <log4cplus/logger.h>
+#include <QApplication>
+#include "server/updater/kdcupdater.h"
 #ifdef __APPLE__
-#include "vfs/mac/testlitesyncextconnector.h"
+#include "server/updater/sparkleupdater.h"
 #endif
-#include "logarchiver/testlogarchiver.h"
-#include "updater/testupdater.h"
+
+using namespace CppUnit;
+
 namespace KDC {
-#ifdef __APPLE__
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
-#endif
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdater);
-}  // namespace KDC
+class TestUpdater : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestUpdater);
+        CPPUNIT_TEST(testUpdateInfoVersionParseString);
+        CPPUNIT_TEST(testIsKDCorSparkleUpdater);
+        CPPUNIT_TEST(testUpdateSucceeded);
+        CPPUNIT_TEST_SUITE_END();
 
-int main(int, char **) {
-    return runTestSuite("_kDriveTestServer.log");
-}
+    public:
+        void setUp(void) final;
+        void testUpdateInfoVersionParseString(void);
+        void testIsKDCorSparkleUpdater(void);
+        void testUpdateSucceeded(void);
+
+    protected:
+        log4cplus::Logger _logger;
+#ifdef __APPLE__
+        SparkleUpdater* _updater;
+#else
+        KDCUpdater* _updater;
+#endif
+};
+
+}  // namespace KDC

@@ -295,14 +295,11 @@ AppServer::AppServer(int &argc, char **argv)
     } else if (exitCode != ExitCodeOk) {
         LOG_WARN(_logger, "Error in updateAllUsersInfo : " << exitCode);
         addError(Error(ERRID, exitCode, ExitCauseUnknown));
-        if (exitCode != ExitCodeNetworkError) {
+        if (exitCode != ExitCodeNetworkError && exitCode != ExitCodeUpdateRequired) {
             throw std::runtime_error("Failed to load user data.");
             return;
         }
     }
-
-    // Start syncs
-    QTimer::singleShot(0, [=]() { startSyncPals(); });
 
     // Check last crash to avoid crash loop
     if (_crashRecovered) {
@@ -328,6 +325,9 @@ AppServer::AppServer(int &argc, char **argv)
             throw std::runtime_error("Failed to update last server self restart.");
         }
     }
+
+    // Start syncs
+    QTimer::singleShot(0, [=]() { startSyncPals(); });
 
     // Check if a log Upload has been interrupted
     AppStateValue appStateValue = LogUploadState::None;
@@ -1888,6 +1888,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << status;
             break;
         }
+        case REQUEST_NUM_UPDATER_STATUS: {
+            UpdateState status = UpdaterServer::instance()->updateState();
+            resultStream << status;
+            break;
+        }
         case REQUEST_NUM_UPDATER_DOWNLOADCOMPLETED: {
             bool ret = UpdaterServer::instance()->downloadCompleted();
 
@@ -1915,8 +1920,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 updater->slotSetSeenVersion();
             } else {
                 updater->slotStartInstaller();
-                QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             }
+            break;
+        }
+        case REQUEST_NUM_UPDATER_UNSKIPUPDATE: {
+            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
+            updater->slotUnsetSeenVersion();
             break;
         }
         case REQUEST_NUM_UTILITY_QUIT: {

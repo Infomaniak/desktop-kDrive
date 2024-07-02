@@ -20,7 +20,7 @@
 
 #include "common/utility.h"
 #include "libcommon/utility/utility.h"
-#include "updater/sparkleupdater.h"
+#include "sparkleupdater.h"
 #include "libcommonserver/log/log.h"
 
 #include <log4cplus/loggingmacros.h>

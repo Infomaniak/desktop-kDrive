@@ -39,6 +39,8 @@ class UpdaterClient : public Updater {
         bool downloadCompleted() const override;
         bool updateFound() const override;
         void startInstaller() const override;
+        UpdateState updateState() const override;
+        void unskipUpdate() const;
 
         void showWindowsUpdaterDialog(const QString &targetVersion, const QString &targetVersionString,
                                       const QString &clientVersion);

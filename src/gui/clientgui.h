@@ -82,6 +82,8 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void errorInfoList(int driveDbId, QList<ErrorInfo> &errorInfoList);
         void resolveConflictErrors(int driveDbId, bool keepLocalVersion);
         void resolveUnsupportedCharErrors(int driveDbId);
+        void closeAllExcept(const QWidget *exceptWidget);
+        void onAppVersionLocked(bool currentVersionLocked);
 
     signals:
         void userListRefreshed();
@@ -95,6 +97,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void vfsConversionCompleted(int syncDbId);
         void newBigFolder(int syncDbId, const QString &path);
         void errorAdded(int syncDbId);
+        void appVersionLocked(bool currentVersionLocked);
         void errorsCleared(int syncDbId);
         void refreshStatusNeeded();
         void folderSizeCompleted(QString nodeId, qint64 size);
@@ -141,18 +144,19 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QAction *_actionPreferences = nullptr;
         QAction *_actionQuit = nullptr;
 #endif
-
+        bool osRequireMenuTray() const;
         static void raiseDialog(QWidget *raiseWidget);
         void setupSynthesisPopover();
         void setupParametersDialog();
         void updateSystrayNeeded();
-        void resetSystray();
+        void resetSystray(bool lockedAppVersion = false);
         static QString shortGuiLocalPath(const QString &path);
         void computeTrayOverallStatus(SyncStatus &status, bool &unresolvedConflicts);
         QString trayTooltipStatusString(SyncStatus status, bool unresolvedConflicts, bool paused);
         void executeSyncAction(ActionType type, int syncDbId);
         void refreshErrorList(int driveDbId);
         ExitCode loadError(int driveDbId, int syncDbId, ErrorLevel level);
+        ExitCode handleErrors(int driveDbId, int syncDbId, ErrorLevel level);
 
 
     private slots:
@@ -172,6 +176,7 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void onCopyUrlToClipboard(const QString &url);
         void onScreenUpdated(QScreen *screen);
         void onRefreshErrorList();
+
         // User slots
         void onUserAdded(const UserInfo &userInfo);
         void onUserUpdated(const UserInfo &userInfo);
