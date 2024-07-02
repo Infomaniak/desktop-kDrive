@@ -536,10 +536,9 @@ void ClientGui::resetSystray(bool currentVersionLocked) {
     }
 #ifdef Q_OS_LINUX
     else {
-        if (_actionSynthesis) {
-            connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
-            connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
-        }
+        connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
+
+        if (_actionSynthesis) connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
         if (_actionQuit) connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
         if (_actionPreferences && !currentVersionLocked)
             connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
@@ -935,7 +934,7 @@ void ClientGui::onRefreshErrorList() {
             ExitCode error = loadError(driveDbId, syncDbId, ErrorLevelSyncPal);
             error = error == ExitCodeOk ? loadError(driveDbId, syncDbId, ErrorLevelNode) : error;
             if (ExitCodeOk != error) {
-                emit appVersionLocked(lockedVersion); // in case of error, we still need to emit this signal
+                emit appVersionLocked(lockedVersion);  // in case of error, we still need to emit this signal
                 return;
             }
         }
