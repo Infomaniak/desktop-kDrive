@@ -408,7 +408,7 @@ void SynthesisPopover::initUI() {
      *  _lockedAppVesrionWidget
      *    lockedAppVesrionVBox
      *      updateIconLabel
-     *      lockedAppupdateAppLabel
+     *      lockedAppUpdateAppLabel
      *      lockedAppLabel
      *      _lockedAppUpdateOptionalLabel (not on Linux with menu tray)
      *      lockedAppUpdateButton (not on Linux with menu tray)
@@ -1104,7 +1104,6 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
                 "AppLocked", (std::string("406 Error received but unable to fetch an update: ") + statusString.toStdString()).c_str()));
             break;
     }
-
     connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
 }
 

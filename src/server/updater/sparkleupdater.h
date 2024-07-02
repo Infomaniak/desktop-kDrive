@@ -20,7 +20,6 @@
 
 #include "updaterserver.h"
 #include "libcommon/utility/types.h"
-
 #include "config.h"
 
 #include <QObject>

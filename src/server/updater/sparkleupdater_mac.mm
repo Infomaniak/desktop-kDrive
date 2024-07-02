@@ -20,7 +20,7 @@
 
 #include "common/utility.h"
 #include "libcommon/utility/utility.h"
-#include "sparkleupdater.h"
+#include "updater/sparkleupdater.h"
 #include "libcommonserver/log/log.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -30,7 +30,6 @@
 @protected
     KDC::DownloadState _state;
     NSString *_availableVersion;
-
 }
 - (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)bundle;
 - (KDC::DownloadState)downloadState;
