@@ -16,20 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
+#pragma once
 
-#include "utility/testutility.h"
-#include "log/testlog.h"
-#include "db/testdb.h"
-#include "io/testio.h"
+#include <cppunit/TestFixture.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLog);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestDb);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestIo);
-}  // namespace KDC
 
-int main(int, char **) {
-    return runTestSuite("_kDriveTestCommonServer.log");
-}
+class TestApiToken : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestApiToken);
+        CPPUNIT_TEST(testReconstructJson);
+        CPPUNIT_TEST_SUITE_END();
+
+    public:
+        void setUp(void);
+        void tearDown(void);
+
+    protected:
+        void testReconstructJson();
+};
+
+}  // namespace KDC

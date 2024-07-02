@@ -124,6 +124,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     targetPath = SyncPath{};
     ioError = IoErrorSuccess;
 
+    // Read data
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
     CFRelease(aliasPathStr);
@@ -153,13 +154,13 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
     data = std::string(reinterpret_cast<char const *>(buffer), size);
     delete[] buffer;
 
+    // Read target
     Boolean isStale;
     CFURLRef targetUrl =
         CFURLCreateByResolvingBookmarkData(nil, bookmarkRef, kCFBookmarkResolutionWithoutUIMask, nil, nil, &isStale, &error);
     CFRelease(bookmarkRef);
     if (targetUrl == nil) {
         if (error) {
-            ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
         }
         return true;

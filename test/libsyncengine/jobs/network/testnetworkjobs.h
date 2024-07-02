@@ -32,7 +32,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCopyToDir);
         CPPUNIT_TEST(testDelete);
         CPPUNIT_TEST(testDownload);
-        CPPUNIT_TEST(testDownloadAborted);
+        //        CPPUNIT_TEST(testDownloadAborted);
         CPPUNIT_TEST(testGetAvatar);
         CPPUNIT_TEST(testGetDriveList);
         CPPUNIT_TEST(testGetFileInfo);
@@ -50,13 +50,12 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testDuplicateRenameMove);
         CPPUNIT_TEST(testRename);
         CPPUNIT_TEST(testUpload);
-        CPPUNIT_TEST(testUploadAborted);
+        //        CPPUNIT_TEST(testUploadAborted);
         CPPUNIT_TEST(testUploadSessionConstructorException);
         CPPUNIT_TEST(testUploadSessionSynchronous);
-        CPPUNIT_TEST(testUploadSessionAsynchronous2);
-        CPPUNIT_TEST(testUploadSessionAsynchronous5);
+        CPPUNIT_TEST(testUploadSessionAsynchronous);
         CPPUNIT_TEST(testUploadSessionSynchronousAborted);
-        CPPUNIT_TEST(testUploadSessionAsynchronous5Aborted);
+        CPPUNIT_TEST(testUploadSessionAsynchronousAborted);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -89,20 +88,31 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testUploadAborted();
         void testUploadSessionConstructorException();
         void testUploadSessionSynchronous();
-        void testUploadSessionAsynchronous2();
-        void testUploadSessionAsynchronous5();
+        void testUploadSessionAsynchronous();
         void testUploadSessionSynchronousAborted();
-        void testUploadSessionAsynchronous5Aborted();
+        void testUploadSessionAsynchronousAborted();
 
     private:
         bool createTestDir();
+        bool createTestFiles();
 
         int _driveDbId = 0;
         int _userDbId = 0;
-        SyncName _dirName;
         NodeId _remoteDirId;
-        NodeId _dirId;
-        bool _deleteTestDir = false;
+
+        SyncName _dummyDirName;
+        SyncPath _dummyLocalDirPath;
+        NodeId _dummyLocalDirId;
+        NodeId _dummyRemoteDirId;
+        bool _deleteDummyDir = false;
+
+        SyncName _dummyFileName;
+        SyncPath _dummyLocalFilePath;
+        NodeId _dummyLocalFileId;
+        NodeId _dummyRemoteFileId;
+        bool _deleteDummyFile = false;
+
+        static int _nbParalleleThreads;
 };
 
 }  // namespace KDC

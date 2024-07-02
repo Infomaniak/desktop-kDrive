@@ -266,7 +266,7 @@ void TestUpdateTreeWorker::testUtilsFunctions() {
     _updateTree->getNodeByPath("Dir 3")->setName(Str("Dir 3bis"));
 
     SyncPath newPath;
-    CPPUNIT_ASSERT(_updateTreeWorker->getNewPathAfterMove("Dir 3/Dir 3.1", newPath) == ExitCodeOk);
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->getNewPathAfterMove("Dir 3/Dir 3.1", newPath));
     CPPUNIT_ASSERT(newPath == "Dir 3bis/Dir 3.1");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath(newPath)->id() == "id31");
 
@@ -276,6 +276,75 @@ void TestUpdateTreeWorker::testUtilsFunctions() {
     CPPUNIT_ASSERT(_updateTreeWorker->getNewPathAfterMove("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1", newPath) == ExitCodeOk);
     CPPUNIT_ASSERT(newPath == "Dir 4/Dir 4.2/Dir 4.1.1/File 4.1.1.1");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath(newPath)->id() == "id4111");
+}
+
+void TestUpdateTreeWorker::testUpdateTmpFileNode() {
+    const auto createOp =
+        std::make_shared<FSOperation>(OperationTypeCreate, "id51", NodeTypeFile, 1654798336, 1654798336, 12345, "Dir 5/File 5.1");
+    const auto deleteOp = std::make_shared<FSOperation>(OperationTypeDelete, "id51bis", NodeTypeFile, 1654788552, 1654788552,
+                                                        12345, "Dir 5/File 5.1");
+    {
+        auto newNode = _updateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1");
+        CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
+        CPPUNIT_ASSERT(newNode->isTmp());
+
+        _updateTreeWorker->updateTmpFileNode(newNode, createOp, deleteOp, OperationTypeEdit);
+        CPPUNIT_ASSERT_EQUAL(NodeId("id51"), *newNode->id());
+        CPPUNIT_ASSERT_EQUAL(*newNode->createdAt(), createOp->createdAt());
+        CPPUNIT_ASSERT_EQUAL(*newNode->lastmodified(), createOp->lastModified());
+        CPPUNIT_ASSERT_EQUAL(newNode->size(), createOp->size());
+        CPPUNIT_ASSERT(newNode->hasChangeEvent(OperationTypeEdit));
+        CPPUNIT_ASSERT_EQUAL(deleteOp->nodeId(), *newNode->previousId());
+        CPPUNIT_ASSERT(!newNode->isTmp());
+        CPPUNIT_ASSERT(_updateTree->nodes()[createOp->nodeId()] == newNode);
+    }
+
+    _updateTree->deleteNode(NodeId("id51"));
+
+    {
+        auto newNode = _updateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1");
+        CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
+        CPPUNIT_ASSERT(newNode->isTmp());
+
+        _updateTreeWorker->updateTmpFileNode(newNode, deleteOp, deleteOp, OperationTypeDelete);
+        CPPUNIT_ASSERT_EQUAL(NodeId("id51bis"), *newNode->id());
+        CPPUNIT_ASSERT_EQUAL(*newNode->createdAt(), deleteOp->createdAt());
+        CPPUNIT_ASSERT_EQUAL(*newNode->lastmodified(), deleteOp->lastModified());
+        CPPUNIT_ASSERT_EQUAL(newNode->size(), createOp->size());
+        CPPUNIT_ASSERT(newNode->hasChangeEvent(OperationTypeDelete));
+        CPPUNIT_ASSERT(!newNode->isTmp());
+        CPPUNIT_ASSERT(_updateTree->nodes()[deleteOp->nodeId()] == newNode);
+    }
+}
+
+void TestUpdateTreeWorker::testHandleCreateOperationsWithSamePath() {
+    setUpUpdateTree();
+
+    // Regular case: success
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id51", NodeTypeFile, 1654798336, 1654798336,
+                                                          12345, "Dir 5/File 5.1"));
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->handleCreateOperationsWithSamePath());
+
+
+    // Duplicate paths imply failure
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id51bis", NodeTypeFile, 1654798336, 1654798336,
+                                                          12345, "Dir 5/File 5.1"));
+    CPPUNIT_ASSERT_EQUAL(ExitCodeDataError, _updateTreeWorker->handleCreateOperationsWithSamePath());
+}
+
+
+void TestUpdateTreeWorker::testSearchForParentNode() {
+    setUpUpdateTree();
+    std::shared_ptr<Node> parentNode;
+
+    // A parent is found.
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->searchForParentNode("Dir 4/Dir 4.1/Dir 4.1.1", parentNode));
+    CPPUNIT_ASSERT(parentNode);
+    CPPUNIT_ASSERT_EQUAL(NodeId("id41"), *parentNode->id());
+
+    // No such parent exists.
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->searchForParentNode("Dir 4/Dir 5.1/Dir 4.1.1", parentNode));
+    CPPUNIT_ASSERT(!parentNode);
 }
 
 void TestUpdateTreeWorker::testStep1() {
@@ -290,7 +359,7 @@ void TestUpdateTreeWorker::testStep1() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeMove, "id11", NodeTypeDirectory, 1654788252, 1654788252,
                                                           12345, "Dir 1/Dir 1.1", "Dir 1/Dir 1.2"));
 
-    CPPUNIT_ASSERT(_updateTreeWorker->step1MoveDirectory());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step1MoveDirectory());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 1.2.1/Dir 1.1.1")->id() == "id111");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->id() == "id3");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2")->id() == "id11");
@@ -304,7 +373,7 @@ void TestUpdateTreeWorker::testStep2() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeMove, "id1111", NodeTypeFile, 1654788256, 1654788256,
                                                           12345, "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1", "Dir 1/File 1.1"));
 
-    CPPUNIT_ASSERT(_updateTreeWorker->step2MoveFile());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step2MoveFile());
     std::shared_ptr<Node> node = _updateTree->getNodeByPath("Dir 1/File 1.1");
     CPPUNIT_ASSERT(node);
     CPPUNIT_ASSERT(node->hasChangeEvent(OperationTypeMove));
@@ -326,8 +395,8 @@ void TestUpdateTreeWorker::testStep3() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeDelete, "id2", NodeTypeDirectory, 1654788256, 1654788256,
                                                           12345, "Dir 2"));  // existing node
     // make move dir to test special case
-    CPPUNIT_ASSERT(_updateTreeWorker->step1MoveDirectory());
-    CPPUNIT_ASSERT(_updateTreeWorker->step3DeleteDirectory());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step1MoveDirectory());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step3DeleteDirectory());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->hasChangeEvent(OperationTypeMove));
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->hasChangeEvent(OperationTypeDelete));
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->id() == "id3");
@@ -343,12 +412,12 @@ void TestUpdateTreeWorker::testStep4() {
     // Step 4 :
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeDelete, "id4111", NodeTypeFile, 1654798667, 1654798667,
                                                           12345, "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1"));
-    // special delete create file
+    // Special delete create file
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeDelete, "id51", NodeTypeFile, 1654788552, 1654788552,
                                                           12345, "Dir 5/File 5.1"));
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id511", NodeTypeFile, 1654798336, 1654798336,
                                                           12345, "Dir 5/File 5.1"));
-    CPPUNIT_ASSERT(_updateTreeWorker->step4DeleteFile());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step4DeleteFile());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1")->hasChangeEvent(OperationTypeDelete));
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1")->id() == "id4111");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1")->parentNode()->id() == "id411");
@@ -371,7 +440,7 @@ void TestUpdateTreeWorker::testStep5() {
     _operationSet->insertOp(
         std::make_shared<FSOperation>(OperationTypeCreate, "id5", NodeTypeDirectory, 1654725632, 1654725632, 12345, "Dir 5"));
     // test step5CreateDirectory
-    CPPUNIT_ASSERT(_updateTreeWorker->step5CreateDirectory());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step5CreateDirectory());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 1.2.1")->id() == "id121");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 1.2.1")->hasChangeEvent(OperationTypeCreate));
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir x")->id() == "idX");
@@ -395,11 +464,11 @@ void TestUpdateTreeWorker::testStep6() {
     // special delete create file
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeDelete, "id51", NodeTypeFile, 1654788552, 1654788552,
                                                           12345, "Dir 5/File 5.1"));
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id511", NodeTypeFile, 1654798336, 1654798336,
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id51bis", NodeTypeFile, 1654798336, 1654798336,
                                                           12345, "Dir 5/File 5.1"));
-    CPPUNIT_ASSERT(_updateTreeWorker->step4DeleteFile());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step4DeleteFile());
     // Step 6 : create files
-    CPPUNIT_ASSERT(_updateTreeWorker->step6CreateFile());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step6CreateFile());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5/File 5.2")->id() == "id52");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5/File 5.2")->parentNode()->isTmp());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5/File 5.2")->hasChangeEvent(OperationTypeCreate));
@@ -414,7 +483,7 @@ void TestUpdateTreeWorker::testStep7() {
     // Step 7 : Edit
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeEdit, "id4112", NodeTypeFile, 1654999667, 1654999667,
                                                           12345, "Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.2"));
-    CPPUNIT_ASSERT(_updateTreeWorker->step7EditFile());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step7EditFile());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.2")->id() == "id4112");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.2")->parentNode()->id() == "id411");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.2")->hasChangeEvent(OperationTypeEdit));
@@ -423,7 +492,7 @@ void TestUpdateTreeWorker::testStep7() {
 void TestUpdateTreeWorker::testStep8() {
     setUpUpdateTree();
 
-    CPPUNIT_ASSERT(_updateTreeWorker->step8CompleteUpdateTree());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step8CompleteUpdateTree());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5")->id() == "id5");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5/File 5.1")->id() == "id51");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.1/File 1.1.2")->id() == "id112");
@@ -440,7 +509,7 @@ void TestUpdateTreeWorker::testClearTreeStep1() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeMove, "id11", NodeTypeDirectory, 1654788252, 1654788252,
                                                           12345, "Dir 1/Dir 1.1", "Dir 1/Dir 1.2"));
 
-    CPPUNIT_ASSERT(_updateTreeWorker->step1MoveDirectory());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step1MoveDirectory());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 1.2.1/Dir 1.1.1")->id() == "id111");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 3")->id() == "id3");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2")->id() == "id11");
@@ -452,7 +521,7 @@ void TestUpdateTreeWorker::testClearTreeStep2() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeMove, "id1111", NodeTypeFile, 1654788256, 1654788256,
                                                           12345, "Dir 1/Dir 1.1/Dir 1.1.1/File 1.1.1.1", "Dir 1/File 1.1"));
 
-    CPPUNIT_ASSERT(_updateTreeWorker->step2MoveFile());
+    CPPUNIT_ASSERT_EQUAL(ExitCodeOk, _updateTreeWorker->step2MoveFile());
     std::shared_ptr<Node> node = _updateTree->getNodeByPath("Dir 1/File 1.1");
     CPPUNIT_ASSERT(node);
     CPPUNIT_ASSERT(node->hasChangeEvent(OperationTypeMove));
@@ -491,7 +560,7 @@ void TestUpdateTreeWorker::testClearTreeStep4() {
     // special delete create file
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeDelete, "id51", NodeTypeFile, 1654788552, 1654788552,
                                                           12345, "Dir 5/File 5.1"));
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id511", NodeTypeFile, 1654798336, 1654798336,
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id51bis", NodeTypeFile, 1654798336, 1654798336,
                                                           12345, "Dir 5/File 5.1"));
     CPPUNIT_ASSERT(_updateTreeWorker->step4DeleteFile());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1")->hasChangeEvent(OperationTypeDelete));
@@ -499,7 +568,7 @@ void TestUpdateTreeWorker::testClearTreeStep4() {
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1")->parentNode()->isTmp());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1")->lastmodified() == 1654798667);
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5/File 5.1")->hasChangeEvent(OperationTypeEdit));
-    CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5/File 5.1")->id() == "id511");
+    CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5/File 5.1")->id() == "id51bis");
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 5/File 5.1")->parentNode()->isTmp());
 }
 
@@ -535,7 +604,7 @@ void TestUpdateTreeWorker::testClearTreeStep6() {
     // special delete create file
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeDelete, "id51", NodeTypeFile, 1654788552, 1654788552,
                                                           12345, "Dir 5/File 5.1"));
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id511", NodeTypeFile, 1654798336, 1654798336,
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationTypeCreate, "id51bis", NodeTypeFile, 1654798336, 1654798336,
                                                           12345, "Dir 5/File 5.1"));
 
     CPPUNIT_ASSERT(_updateTreeWorker->step4DeleteFile());
