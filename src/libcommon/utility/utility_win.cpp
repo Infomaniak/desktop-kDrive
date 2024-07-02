@@ -33,6 +33,7 @@
 #include <QSettings>
 #include <QVariant>
 #include <QCoreApplication>
+#include <sentry.h>
 
 static const char systemRunPathC[] = "HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 static const char runPathC[] = "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -47,7 +48,10 @@ static KDC::SyncPath getAppSupportDir_private() {
         CoTaskMemFree(path);
         return appDataPath;
     }
-    return SyncPath();
+#ifdef NDEBUG
+    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility_win::getAppSupportDir_private", "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method"));
+#endif
+    return std::filesystem::temp_directory_path().parent_path().parent_path().native();
 }
 
 static KDC::SyncPath getAppDir_private() {
