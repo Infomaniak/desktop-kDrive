@@ -34,7 +34,7 @@
 #ifdef CONSOLE_DEBUG
 #include <iostream>
 #endif
-
+#include <sentry.h>
 #include <QActionGroup>
 #include <QApplication>
 #include <QBoxLayout>
@@ -1081,10 +1081,6 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
     _lockedAppUpdateButton->setEnabled(updateState == Ready);
     _lockedAppUpdateOptionalLabel->setVisible(updateState != Ready && updateState != Downloading);
     switch (updateState) {
-        case Error:
-            _lockedAppUpdateButton->setText(tr("Unavailable"));
-            _lockedAppUpdateOptionalLabel->setText(statusString);
-            break;
         case Ready:
             _lockedAppUpdateButton->setText(tr("Update"));
             break;
@@ -1100,10 +1096,12 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
             _lockedAppUpdateButton->setText(tr("Manual update"));
             _lockedAppUpdateOptionalLabel->setText(statusString);
             break;
-        // Error & None (up to date), if the app is locked, we should have an update available.
         default:
-            _lockedAppUpdateButton->setText(tr("Error"));
+            _lockedAppUpdateButton->setText(tr("Unavailable"));
             _lockedAppUpdateOptionalLabel->setText(statusString);
+            sentry_capture_event(sentry_value_new_message_event(
+                SENTRY_LEVEL_FATAL, // FATAL as the app is not usable
+                "AppLocked", (std::string("406 Error received but unable to fetch an update: ") + statusString.toStdString()).c_str()));
             break;
     }
 

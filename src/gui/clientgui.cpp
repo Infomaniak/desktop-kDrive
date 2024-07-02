@@ -894,57 +894,52 @@ void ClientGui::onRefreshErrorList() {
     if (_driveWithNewErrorSet.count()) {
         emit refreshStatusNeeded();
     }
-    bool errorFound = false;
-    bool lockedVersion = false;
 
+    bool versionLocked = false;
     // Server level errors.
-    _errorInfoMap[0].clear();
-    errorFound = _driveWithNewErrorSet.contains(0);
-    if (ExitCodeOk != loadError(0, 0, ErrorLevelServer)) {
-        return;
-    }
+    if (_driveWithNewErrorSet.contains(0)) {
+        _errorInfoMap[0].clear();
+        if (ExitCodeOk != ClientGui::loadError(0, 0, ErrorLevelServer)) {
+            return;
+        }
 
-    _generalErrorsCounter = (int)_errorInfoMap[0].count();
-    for (const auto &errorInfo : _errorInfoMap[0]) {
-        lockedVersion = lockedVersion || errorInfo.exitCode() == ExitCodeUpdateRequired;
-    }
-
-    if (_errorInfoMap[0].count() > 0) {
+        _generalErrorsCounter = (int)_errorInfoMap[0].count();
         emit errorAdded(0);
-    }
+        for (const auto &errorInfo : _errorInfoMap[0]) {
+            versionLocked = versionLocked || errorInfo.exitCode() == ExitCodeUpdateRequired;
+        }
 
-    _driveWithNewErrorSet.remove(0);
+        _driveWithNewErrorSet.remove(0);
+    }
 
     // Drive level errors (SyncPal or Node).
     for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
-        errorFound = true;
         const int driveDbId = *it;
         _errorInfoMap[driveDbId].clear();
 
         const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
         if (driveInfoMapIt == _driveInfoMap.end()) {
             qCWarning(lcClientGui()) << "Drive not found in drive map for driveDbId=" << driveDbId;
-            emit appVersionLocked(lockedVersion);  // in case of error, we still need to emit this signal
             return;
         }
 
         for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
             if (syncInfo.driveDbId() != driveDbId) continue;
-
-            ExitCode error = loadError(driveDbId, syncDbId, ErrorLevelSyncPal);
-            error = error == ExitCodeOk ? loadError(driveDbId, syncDbId, ErrorLevelNode) : error;
-            if (ExitCodeOk != error) {
-                emit appVersionLocked(lockedVersion);  // in case of error, we still need to emit this signal
-                return;
+            for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
+                if (ExitCodeOk != loadError(driveDbId, syncDbId, level)) return;
             }
         }
 
         int unresolvedErrorsCount = 0;
         int autoresolvedErrorsCount = 0;
         for (const auto &errorInfo : _errorInfoMap[driveDbId]) {
-            bool autoResolved = errorInfo.autoResolved();
-            autoresolvedErrorsCount += (int)autoResolved;
-            unresolvedErrorsCount += (int)!autoResolved;
+            versionLocked = versionLocked || errorInfo.exitCode() == ExitCodeUpdateRequired;
+
+            if (errorInfo.autoResolved()) {
+                ++autoresolvedErrorsCount;
+            } else {
+                ++unresolvedErrorsCount;
+            }
         }
         driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
         driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
@@ -952,9 +947,8 @@ void ClientGui::onRefreshErrorList() {
 
         it = _driveWithNewErrorSet.erase(it);
     }
-    if (errorFound) {
-        emit appVersionLocked(lockedVersion);
-    }
+
+    if(versionLocked) emit appVersionLocked(versionLocked);
 }
 
 void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
