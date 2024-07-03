@@ -22,6 +22,10 @@
 #include "libcommonserver/utility/utility.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
+#ifdef _WIN32
+#include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#endif
+
 #include <Poco/JSON/Parser.h>
 
 #define API_TIMEOUT 900
