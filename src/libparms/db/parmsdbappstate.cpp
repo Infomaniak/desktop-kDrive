@@ -34,10 +34,12 @@ constexpr char SELECT_APP_STATE_REQUEST[] = "SELECT value FROM app_state WHERE k
 constexpr char UPDATE_APP_STATE_REQUEST_ID[] = "update_value_with_key";
 constexpr char UPDATE_APP_STATE_REQUEST[] = "UPDATE app_state SET value=?2 WHERE key=?1;";
 
+// Default values for AppState (Empty string is not allowed, use APP_STATE_KEY_DEFAULT_IS_EMPTY instead)
+constexpr char APP_STATE_KEY_DEFAULT_IS_EMPTY[] = "__DEFAULT_IS_EMPTY__";
 constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadDate[] = "0";
-constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath[] = "";
+const constexpr char* APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath = APP_STATE_KEY_DEFAULT_IS_EMPTY;
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; //KDC::LogUploadState::None
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 
@@ -124,6 +126,14 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
     int errId = 0;
     std::string error;
     bool found = false;
+    std::string valueStr = value;
+    if (valueStr == "") {
+        LOG_WARN(_logger, "Value is empty for AppStateKey: " << static_cast<int>(key));
+        return false;
+    }
+    if (valueStr == APP_STATE_KEY_DEFAULT_IS_EMPTY) {
+        valueStr = "";
+    }
 
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID));
     ASSERT(queryBindValue(SELECT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
@@ -136,7 +146,7 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
     if (!found) {
         ASSERT(queryResetAndClearBindings(INSERT_APP_STATE_REQUEST_ID));
         ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)));
-        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 2, value));
+        ASSERT(queryBindValue(INSERT_APP_STATE_REQUEST_ID, 2, valueStr));
         if (!queryExec(INSERT_APP_STATE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << INSERT_APP_STATE_REQUEST_ID);
             return false;
