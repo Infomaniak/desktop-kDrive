@@ -235,6 +235,7 @@ QString CommonUtility::escape(const QString &in) {
 }
 
 bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStateValue &appStateValueTo) {
+    
     bool res = true;
     std::string appStateValueType = "Unknown";
     if (std::holds_alternative<std::string>(appStateValueTo)) {
@@ -274,7 +275,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
         sentry_capture_event(event);
     }
 
-    return true;
+    return res;
 }
 
 bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {

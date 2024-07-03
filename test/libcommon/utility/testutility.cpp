@@ -61,4 +61,40 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.7"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.9"));
 }
+void TestUtility::testStringToAppStateValue() {
+    //Normal conditions
+    AppStateValue value = std::string();
+    CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("test", value));
+    CPPUNIT_ASSERT(std::holds_alternative<std::string>(value));
+    CPPUNIT_ASSERT_EQUAL(std::string("test"), std::get<std::string>(value));
+
+    value = int(0);
+    CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("50", value));
+    CPPUNIT_ASSERT(std::holds_alternative<int>(value));
+    CPPUNIT_ASSERT_EQUAL(50, std ::get<int>(value));
+
+    value = LogUploadState::None;
+    CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("1", value));
+    CPPUNIT_ASSERT(std::holds_alternative<LogUploadState>(value));
+    CPPUNIT_ASSERT_EQUAL(LogUploadState::Archiving, std::get<LogUploadState>(value));
+
+    value = int64_t(0);
+    CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("50", value));
+    CPPUNIT_ASSERT(std::holds_alternative<int64_t>(value));
+    CPPUNIT_ASSERT_EQUAL(int64_t(50), std::get<int64_t>(value));
+
+    //Invalid input
+    value = int(0);
+    CPPUNIT_ASSERT(!CommonUtility::stringToAppStateValue("test", value));
+
+    value = LogUploadState::None;
+    CPPUNIT_ASSERT(!CommonUtility::stringToAppStateValue("test", value));
+
+    value = int64_t(0);
+    CPPUNIT_ASSERT(!CommonUtility::stringToAppStateValue("test", value));
+
+    //Empty input
+    value = int(0);
+    CPPUNIT_ASSERT(!CommonUtility::stringToAppStateValue("", value));
+}
 }  // namespace KDC
