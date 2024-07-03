@@ -34,20 +34,20 @@ constexpr char SELECT_APP_STATE_REQUEST[] = "SELECT value FROM app_state WHERE k
 constexpr char UPDATE_APP_STATE_REQUEST_ID[] = "update_value_with_key";
 constexpr char UPDATE_APP_STATE_REQUEST[] = "UPDATE app_state SET value=?2 WHERE key=?1;";
 
-// Default values for AppState (Empty string is not allowed, use APP_STATE_KEY_DEFAULT_IS_EMPTY instead)
-constexpr char APP_STATE_KEY_DEFAULT_IS_EMPTY[] = "__DEFAULT_IS_EMPTY__";
+// Default values for AppState (Empty string is not allowed, use APP_STATE_DEFAULT_IS_EMPTY instead)
+constexpr char APP_STATE_DEFAULT_IS_EMPTY[] = "__DEFAULT_IS_EMPTY__";
 
 constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadDate[] = "0";
-constexpr const char *APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath = APP_STATE_KEY_DEFAULT_IS_EMPTY;
+constexpr const char *APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath = APP_STATE_DEFAULT_IS_EMPTY;
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; //KDC::LogUploadState::None
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 
 
 namespace KDC {
 
-bool ParmsDb::createAppState() {
+    bool ParmsDb::createAppState() {
     int errId = 0;
     std::string error;
 
@@ -132,7 +132,7 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
         LOG_WARN(_logger, "Value is empty for AppStateKey: " << static_cast<int>(key));
         return false;
     }
-    if (valueStr == APP_STATE_KEY_DEFAULT_IS_EMPTY) {
+    if (valueStr == APP_STATE_DEFAULT_IS_EMPTY) {
         valueStr = "";
     }
 
