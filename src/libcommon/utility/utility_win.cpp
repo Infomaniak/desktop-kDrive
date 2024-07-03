@@ -42,7 +42,7 @@ static const char lightThemeKeyC[] = "SystemUsesLightTheme";
 
 namespace KDC {
 
-static KDC::SyncPath getAppSupportDir_private() {
+static SyncPath getAppSupportDir_private() {
     if (PWSTR path = nullptr; SUCCEEDED(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_NO_ALIAS, nullptr, &path))) {
         SyncPath appDataPath = path;
         CoTaskMemFree(path);
