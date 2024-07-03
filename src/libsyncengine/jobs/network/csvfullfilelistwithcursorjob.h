@@ -21,7 +21,7 @@
 #include "abstracttokennetworkjob.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
-#include <sys/types.h>
+#include <cstdint>
 
 namespace KDC {
 
