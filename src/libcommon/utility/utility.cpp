@@ -487,7 +487,7 @@ QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
     return QString();
 }
 
-const SyncPath CommonUtility::getAppDir() {
+SyncPath CommonUtility::getAppDir() {
     const KDC::SyncPath dirPath(KDC::getAppDir_private());
     return dirPath;
 }
@@ -496,8 +496,8 @@ bool CommonUtility::hasDarkSystray() {
     return KDC::hasDarkSystray_private();
 }
 
-const SyncPath CommonUtility::getAppSupportDir() {
-    SyncPath dirPath(KDC::getAppSupportDir_private());
+SyncPath CommonUtility::getAppSupportDir() {
+    SyncPath dirPath(getAppSupportDir_private());
 
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
@@ -680,7 +680,7 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
         }
     }
 
-    return true;
+    return false;
 }
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
