@@ -94,10 +94,9 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
     _snapshot->init();
     _updating = true;
-    countNbRequests();
+    countListingRequests();
 
     ExitCode exitCode = initWithCursor();
-    ExitCause exitCause = ExitCause();
 
     auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsedSeconds = end - start;
@@ -110,7 +109,7 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
 
         if (exitCode == ExitCodeNetworkError) {
-            _syncPal->addError(Error(ERRID, exitCode, exitCause));
+            _syncPal->addError(Error(ERRID, exitCode, ExitCause()));
         }
     }
     _updating = false;
@@ -127,6 +126,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
     ExitCode exitCode = _syncPal->listingCursor(_cursor, timestamp);
     if (exitCode != ExitCodeOk) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::listingCursor");
+
         setExitCause(ExitCauseDbAccessError);
         return exitCode;
     }
@@ -724,9 +724,9 @@ bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &na
     return false;
 }
 
-void RemoteFileSystemObserverWorker::countNbRequests() {
-    auto listingFullTimerEnd = std::chrono::steady_clock::now();
-    std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
+void RemoteFileSystemObserverWorker::countListingRequests() {
+    const auto listingFullTimerEnd = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
     bool resetTimer = elapsedTime.count() > 3600;  // 1h
     if (_listingFullCounter > 60) {
         // If there is more then 1 listing/full request per minute for an hour -> send a sentry
