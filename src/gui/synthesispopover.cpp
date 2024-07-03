@@ -405,8 +405,8 @@ void SynthesisPopover::initUI() {
      *          notImplementedLabel2
      *          _synchronizedListWidget[]
      *      bottomWidget
-     *  _lockedAppVesrionWidget
-     *    lockedAppVesrionVBox
+     *  _lockedAppVersionWidget
+     *    lockedAppVersionVBox
      *      updateIconLabel
      *      lockedAppUpdateAppLabel
      *      lockedAppLabel
@@ -418,11 +418,11 @@ void SynthesisPopover::initUI() {
     setLayout(appVBox);
 
     _mainWidget = new QWidget(this);
-    _lockedAppVesrionWidget = new QWidget(this);
-    _lockedAppVesrionWidget->hide();
+    _lockedAppVersionWidget = new QWidget(this);
+    _lockedAppVersionWidget->hide();
 
     appVBox->addWidget(_mainWidget);
-    appVBox->addWidget(_lockedAppVesrionWidget);
+    appVBox->addWidget(_lockedAppVersionWidget);
 
     auto *mainVBox = new QVBoxLayout(_mainWidget);
     mainVBox->setContentsMargins(triangleHeight, triangleHeight, triangleHeight, triangleHeight);
@@ -516,25 +516,25 @@ void SynthesisPopover::initUI() {
     mainVBox->addWidget(bottomWidget);
 
     //// Locked app
-    auto *lockedAppVesrionVBox = new QVBoxLayout(_lockedAppVesrionWidget);
-    lockedAppVesrionVBox->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    auto *lockedAppVersionVBox = new QVBoxLayout(_lockedAppVersionWidget);
+    lockedAppVersionVBox->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
 
     // Update icon
     auto *updateIconLabel = new QLabel(this);
     updateIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/kdrive-update.svg")
                                    .pixmap(lockedWindowSize.height() / 3, lockedWindowSize.height() / 3));
     updateIconLabel->setAlignment(Qt::AlignHCenter);
-    lockedAppVesrionVBox->addWidget(updateIconLabel);
+    lockedAppVersionVBox->addWidget(updateIconLabel);
 
-    lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
+    lockedAppVersionVBox->addSpacing(defaultPageSpacing);
 
     // Update app label
     auto *lockedAppupdateAppLabel = new QLabel(tr("Update kDrive App"), this);
     lockedAppupdateAppLabel->setObjectName("defaultTitleLabel");
     lockedAppupdateAppLabel->setAlignment(Qt::AlignHCenter);
-    lockedAppVesrionVBox->addWidget(lockedAppupdateAppLabel);
+    lockedAppVersionVBox->addWidget(lockedAppupdateAppLabel);
 
-    lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
+    lockedAppVersionVBox->addSpacing(defaultPageSpacing);
 
     // Locked app label
     auto *lockedAppLabel = new QLabel(
@@ -544,9 +544,9 @@ void SynthesisPopover::initUI() {
     lockedAppLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     lockedAppLabel->setAlignment(Qt::AlignHCenter);
     lockedAppLabel->setWordWrap(true);
-    lockedAppVesrionVBox->addWidget(lockedAppLabel);
+    lockedAppVersionVBox->addWidget(lockedAppLabel);
 
-    lockedAppVesrionVBox->addSpacing(defaultPageSpacing);
+    lockedAppVersionVBox->addSpacing(defaultPageSpacing);
 
     // Optional label (status reported by tha app in case of Error)
     _lockedAppUpdateOptionalLabel = new QLabel();
@@ -556,7 +556,7 @@ void SynthesisPopover::initUI() {
     _lockedAppUpdateOptionalLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
     _lockedAppUpdateOptionalLabel->setVisible(false);
 #ifndef Q_OS_LINUX
-    lockedAppVesrionVBox->addWidget(_lockedAppUpdateOptionalLabel);
+    lockedAppVersionVBox->addWidget(_lockedAppUpdateOptionalLabel);
 #endif
 
     // Update button
@@ -569,7 +569,7 @@ void SynthesisPopover::initUI() {
     _lockedAppUpdateButton->setText(tr("Update"));
     _lockedAppUpdateButton->setEnabled(false);
     lockedAppUpdateButtonHBox->addWidget(_lockedAppUpdateButton);
-    lockedAppVesrionVBox->addLayout(lockedAppUpdateButtonHBox);
+    lockedAppVersionVBox->addLayout(lockedAppUpdateButtonHBox);
 
 #ifdef Q_OS_LINUX
     // On Linux, the update button is not displayed, the update need to be done manually by the user (download on the website)
@@ -579,7 +579,7 @@ void SynthesisPopover::initUI() {
     lockedAppUpdateManualLabel->setAlignment(Qt::AlignHCenter);
     lockedAppUpdateManualLabel->setWordWrap(true);
     lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    lockedAppVesrionVBox->addWidget(lockedAppUpdateManualLabel);
+    lockedAppVersionVBox->addWidget(lockedAppUpdateManualLabel);
 #endif  //
 
     // Shadow
@@ -1116,14 +1116,14 @@ void SynthesisPopover::onStartInstaller() {
 }
 
 void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
-    if (currentVersionLocked && _lockedAppVesrionWidget->isHidden()) {
+    if (currentVersionLocked && _lockedAppVersionWidget->isHidden()) {
         _mainWidget->hide();
-        _lockedAppVesrionWidget->show();
+        _lockedAppVersionWidget->show();
         setFixedSize(lockedWindowSize);
         _gui->closeAllExcept(this);
         onUpdateAvailabalityChange();
     } else if (!currentVersionLocked && _mainWidget->isHidden()) {
-        _lockedAppVesrionWidget->hide();
+        _lockedAppVersionWidget->hide();
         _mainWidget->show();
         setFixedSize(windowSize);
     }

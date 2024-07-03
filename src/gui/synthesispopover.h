@@ -103,7 +103,7 @@ class SynthesisPopover : public QDialog {
         QStackedWidget *_stackedWidget{nullptr};
         QWidget *_defaultSynchronizedPageWidget{nullptr};
         QWidget *_mainWidget{nullptr};
-        QWidget *_lockedAppVesrionWidget{nullptr};
+        QWidget *_lockedAppVersionWidget{nullptr};
         NotificationsDisabled _notificationsDisabled{NotificationsDisabledNever};
         QDateTime _notificationsDisabledUntilDateTime;
         QLabel *_notImplementedLabel{nullptr};
