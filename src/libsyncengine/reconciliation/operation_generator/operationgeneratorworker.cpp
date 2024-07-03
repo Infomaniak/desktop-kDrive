@@ -147,10 +147,9 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
     op->setAffectedNode(currentNode);
     ReplicaSide targetSide = otherSide(currentNode->side());
     op->setTargetSide(targetSide);
-    // We do not set parent node here since it might has been just created as well. In that case, parent node does not exist yet
+    // We do not set parent node here since it might have been just created as well. In that case, parent node does not exist yet
     // in update tree.
-    op->setNewName(targetSide == ReplicaSideLocal ? currentNode->finalLocalName()
-                                                  : currentNode->name());  // Use validName only on local replica
+    op->setNewName(currentNode->name());
     currentNode->setStatus(NodeStatusProcessed);
     _syncPal->_syncOps->pushOp(op);
 
@@ -237,13 +236,13 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
 
     /*
      * Special case:
-     * 1 - The file name contained à special character, for exemple: "test:1.png" and was rename locally "test%3a1.png".
-     * 2 - The file is rename "test%3a2.png" on local side. Since the "%3a" was not removed, the name is uploaded as it is on
+     * 1 - The file name contained à special character, for example: "test:1.png" and was renamed locally "test%3a1.png".
+     * 2 - The file is renamed "test%3a2.png" on local side. Since the "%3a" was not removed, the name is uploaded as it is on
      * local replica and appears now "test%3a2.png" on remote. 3 - The file is renamed "test:2.png" on remote replica. We then try
      * to rename the local file "test%3a2.png" but fail since it already exist
      */
-    if (currentNode->side() == ReplicaSideRemote && correspondingNode->validLocalName().empty() &&
-        currentNode->validLocalName() == correspondingNode->name()) {
+    if (currentNode->side() == ReplicaSideRemote && correspondingNode->name().empty() &&
+        currentNode->name() == correspondingNode->name()) {
         // Only update DB and tree
         op->setOmit(true);
     }
@@ -252,8 +251,7 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
-    op->setNewName(op->targetSide() == ReplicaSideLocal ? currentNode->finalLocalName()
-                                                        : currentNode->name());  // Use validName only on local replica
+    op->setNewName(currentNode->name());
     if (currentNode->hasChangeEvent(OperationTypeEdit) && currentNode->status() == NodeStatusUnprocessed) {
         currentNode->setStatus(NodeStatusPartiallyProcessed);
     } else {
@@ -282,12 +280,12 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
 
 void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> currentNode,
                                                        std::shared_ptr<Node> correspondingNode) {
-    SyncOpPtr op = std::make_shared<SyncOperation>();
+    auto op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode);  // Node must exists on both replica (except for create operations)
+    assert(correspondingNode);  // Node must exist on both replica (except for create operations)
 
     // Do not generate delete operation if parent already deleted
-    if (_deletedNodes.find(*currentNode->parentNode()->id()) != _deletedNodes.end()) {
+    if (_deletedNodes.contains(*currentNode->parentNode()->id())) {
         return;
     }
 
@@ -317,7 +315,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                             << SyncName2WStr(currentNode->name()).c_str());
         }
         _syncPal->_restart =
-            true;  // In certains cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
+            true;  // In certain cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
                    // of next sync because nothing has changed but create events are not propagated
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {

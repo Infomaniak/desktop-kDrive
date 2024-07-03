@@ -507,7 +507,7 @@ void TestIntegration::testInconsistency() {
     CPPUNIT_ASSERT(found);
     std::shared_ptr<Node> node = _syncPal->_localUpdateTree->getNodeById(_newTestFileLocalId);
     CPPUNIT_ASSERT(node);
-    CPPUNIT_ASSERT(node->finalLocalName().size() < 255);
+    CPPUNIT_ASSERT(node->name().size() < 255);
 
     // Check forbidden characters
     CPPUNIT_ASSERT(
@@ -515,7 +515,7 @@ void TestIntegration::testInconsistency() {
     CPPUNIT_ASSERT(found);
     std::shared_ptr<Node> node2 = _syncPal->_localUpdateTree->getNodeById(_newTestFileLocalId);
     CPPUNIT_ASSERT(node2);
-    CPPUNIT_ASSERT(node2->finalLocalName() == Str("test_%3ainco%3ansiste%3a%3ancy.txt"));
+    CPPUNIT_ASSERT(node2->name() == Str("test_%3ainco%3ansiste%3a%3ancy.txt"));
 
     // Check name clash
     CPPUNIT_ASSERT(
@@ -529,14 +529,14 @@ void TestIntegration::testInconsistency() {
     CPPUNIT_ASSERT(found);
     std::shared_ptr<Node> node4 = _syncPal->_localUpdateTree->getNodeById(_newTestFileLocalId);
     CPPUNIT_ASSERT(node4);
-    CPPUNIT_ASSERT(node4->finalLocalName() != node3->finalLocalName());
+    CPPUNIT_ASSERT(node4->name() != node3->name());
 
     CPPUNIT_ASSERT(
         _syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, testCaseSensitiveRemoteId3, _newTestFileLocalId, found));
     CPPUNIT_ASSERT(found);
     std::shared_ptr<Node> node5 = _syncPal->_localUpdateTree->getNodeById(_newTestFileLocalId);
     CPPUNIT_ASSERT(node5);
-    CPPUNIT_ASSERT(node5->finalLocalName() != node4->finalLocalName());
+    CPPUNIT_ASSERT(node5->name() != node4->name());
 
     CPPUNIT_ASSERT(
         _syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, testLongFilePathRemoteId, _newTestFileLocalId, found));

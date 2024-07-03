@@ -99,7 +99,7 @@ class JobManager {
         static std::unordered_set<UniqueId> _runningJobs;  // jobs currently running in a dedicated thread
         static std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
             _pendingJobs;  // jobs waiting for their parent job to be completed
-        static std::mutex _mutex;
+        static std::recursive_mutex _mutex;
 
         friend class TestJobManager;
 };

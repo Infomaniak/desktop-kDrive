@@ -1887,17 +1887,17 @@ KDC--ConfirmSynchronizationDialog QLabel#foldername
 }
 
 /********************************/
-/* KDC--AddDriveSmartSyncWidget */
+/* KDC--AddDriveLiteSyncWidget */
 /********************************/
 
-KDC--AddDriveSmartSyncWidget
+KDC--AddDriveLiteSyncWidget
 {
     qproperty-info_icon_color: #9F9F9F;
     qproperty-info_icon_size: 20px;
     qproperty-logo_color: #000000;
 }
 
-KDC--AddDriveSmartSyncWidget QProgressBar
+KDC--AddDriveLiteSyncWidget QProgressBar
 {
     background-color: #E0E0E0;
     min-height: 5px;
@@ -1907,7 +1907,7 @@ KDC--AddDriveSmartSyncWidget QProgressBar
     padding: 0px;
 }
 
-KDC--AddDriveSmartSyncWidget QProgressBar::chunk
+KDC--AddDriveLiteSyncWidget QProgressBar::chunk
 {
     background-color: #0098FF;
     border: 0px;
