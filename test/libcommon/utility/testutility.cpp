@@ -24,17 +24,18 @@ namespace KDC {
 
 void TestUtility::testGetAppSupportDir() {
     SyncPath appSupportDir = CommonUtility::getAppSupportDir();
-    CPPUNIT_ASSERT(!appSupportDir.empty());
+    std::string faillureMessage = "Path: " + appSupportDir.string();
+    CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), !appSupportDir.empty());
 #ifdef _WIN32
-    CPPUNIT_ASSERT(appSupportDir.string().find("AppData") != std::string::npos);
-    CPPUNIT_ASSERT(appSupportDir.string().find("Local") != std::string::npos);
+    CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("AppData") != std::string::npos);
+    CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("Local") != std::string::npos);
 #elif defined(__APPLE__)
-    CPPUNIT_ASSERT(appSupportDir.string().find(".config") != std::string::npos);
+    CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find(".config") != std::string::npos);
 #else
-    CPPUNIT_ASSERT(appSupportDir.string().find("Library") != std::string::npos);
-    CPPUNIT_ASSERT(appSupportDir.string().find("Application") != std::string::npos);
+    CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("Library") != std::string::npos);
+    CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find("Application") != std::string::npos);
 #endif
-    CPPUNIT_ASSERT(appSupportDir.string().find(APPLICATION_NAME) != std::wstring::npos);
+    CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find(APPLICATION_NAME) != std::wstring::npos);
 }
 void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "3.5.8"));
