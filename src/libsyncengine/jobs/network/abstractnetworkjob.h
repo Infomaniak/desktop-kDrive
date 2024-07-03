@@ -65,6 +65,7 @@ class AbstractNetworkJob : public AbstractJob {
         void getStringFromStream(std::istream &inputStream, std::string &res);
 
         const std::string errorText(Poco::Exception const &e) const;
+        const std::string errorText(std::exception const &e) const;
 
         inline void noRetry() { _trials = 0; }
 
