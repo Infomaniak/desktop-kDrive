@@ -48,7 +48,7 @@ class SnapshotItemHandler {
                 bool prevCharDoubleQuotes{false};
                 bool readNextLine{true};
                 std::string tmp;
-                uint doubleQuoteCount = 0;
+                uint doubleQuoteCount{0u};
         };
 
         bool updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item);
