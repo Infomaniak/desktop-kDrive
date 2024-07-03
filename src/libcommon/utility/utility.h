@@ -79,8 +79,8 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath relativePath(const SyncPath &rootPath, const SyncPath &path);
 
-        static const SyncPath getAppDir();
-        static const SyncPath getAppSupportDir();
+        static SyncPath getAppDir();
+        static SyncPath getAppSupportDir();
         static SyncPath getAppWorkingDir();
 
         static QString getFileIconPathFromFileName(const QString &fileName, NodeType type);
