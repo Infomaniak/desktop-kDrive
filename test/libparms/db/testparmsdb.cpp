@@ -300,8 +300,8 @@ void TestParmsDb::testExclusionTemplate() {
 
 void TestParmsDb::testAppState(void) {
     bool found = true;
-    //Empty string value are not allowed (must use APP_STATE_DEFAULT_IS_EMPTY)
-    CPPUNIT_ASSERT(!ParmsDb::instance()->insertAppState(AppStateKey::LogUploadState, std::string("")));
+    // Empty string values are not allowed (must use APP_STATE_DEFAULT_IS_EMPTY)
+    CPPUNIT_ASSERT(!ParmsDb::instance()->insertAppState(AppStateKey::LogUploadState, std::string{}));
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAppState(AppStateKey::LogUploadState, "__DEFAULT_IS_EMPTY__"));
 
     CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(AppStateKey::Unknown, std::string("value"),

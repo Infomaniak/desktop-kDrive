@@ -62,7 +62,7 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.9"));
 }
 void TestUtility::testStringToAppStateValue() {
-    //Normal conditions
+    // Normal conditions
     AppStateValue value = std::string();
     CPPUNIT_ASSERT(CommonUtility::stringToAppStateValue("test", value));
     CPPUNIT_ASSERT(std::holds_alternative<std::string>(value));
@@ -83,7 +83,7 @@ void TestUtility::testStringToAppStateValue() {
     CPPUNIT_ASSERT(std::holds_alternative<int64_t>(value));
     CPPUNIT_ASSERT_EQUAL(int64_t(50), std::get<int64_t>(value));
 
-    //Invalid input
+    // Invalid input
     value = int(0);
     CPPUNIT_ASSERT(!CommonUtility::stringToAppStateValue("test", value));
 
@@ -93,7 +93,7 @@ void TestUtility::testStringToAppStateValue() {
     value = int64_t(0);
     CPPUNIT_ASSERT(!CommonUtility::stringToAppStateValue("test", value));
 
-    //Empty input
+    // Empty input
     value = int(0);
     CPPUNIT_ASSERT(!CommonUtility::stringToAppStateValue("", value));
 }
