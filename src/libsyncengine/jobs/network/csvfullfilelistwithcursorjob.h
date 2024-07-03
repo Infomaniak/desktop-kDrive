@@ -25,7 +25,7 @@ namespace KDC {
 
 class SnapshotItemHandler {
     public:
-        SnapshotItemHandler(log4cplus::Logger logger);
+        explicit SnapshotItemHandler(log4cplus::Logger logger);
         enum CsvIndex {
             CsvIndexId = 0,
             CsvIndexParentId,
@@ -39,6 +39,18 @@ class SnapshotItemHandler {
             CsvIndexEnd
         };
 
+        inline static void incrementCsvIndex(CsvIndex &index) { index = static_cast<CsvIndex>(static_cast<int>(index) + 1); };
+
+        struct ParsingState {
+                CsvIndex index{CsvIndexId};  // The index of the column that is currently read.
+                bool readingDoubleQuotedValue{
+                    false};  // True if an opening double quote with no closing counter-part at this stage.
+                bool prevCharDoubleQuotes{false};
+                bool readNextLine{true};
+                std::string tmp;
+                uint doubleQuoteCount = 0;
+        };
+
         bool updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item);
         bool getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore);
         void logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
@@ -47,6 +59,7 @@ class SnapshotItemHandler {
     private:
         bool _ignoreFirstLine = true;
         log4cplus::Logger _logger;
+        void readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state);
 };
 
 

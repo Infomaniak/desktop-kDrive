@@ -144,6 +144,37 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
     return true;
 }
 
+void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state) {
+    for (char c : line) {
+        if (c == ',' && (!state.readingDoubleQuotedValue || state.prevCharDoubleQuotes)) {
+            state.readingDoubleQuotedValue = false;
+            state.prevCharDoubleQuotes = false;
+            if (!updateSnapshotItem(state.tmp, state.index, item)) {
+                LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line).c_str());
+                error = true;
+                return;
+            }
+            state.tmp.clear();
+            incrementCsvIndex(state.index);
+        } else if (c == '"') {
+            ++state.doubleQuoteCount;
+            if (!state.readingDoubleQuotedValue) {
+                state.readingDoubleQuotedValue = true;
+            } else {
+                if (state.prevCharDoubleQuotes) {
+                    // Replace 2 successive double quotes by one
+                    state.prevCharDoubleQuotes = false;
+                    state.tmp.push_back('"');
+                } else {
+                    state.prevCharDoubleQuotes = true;
+                }
+            }
+        } else {
+            state.tmp.push_back(c);
+        }
+    }
+}
+
 bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore) {
     error = false;
     ignore = false;
@@ -165,54 +196,24 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
         }
     }
 
-    CsvIndex index = CsvIndexId;
-    bool readingDoubleQuotedValue = false;
-    bool prevCharDoubleQuotes = false;
-    bool readNextLine = true;
-    std::string tmp;
-    uint doubleQuoteCount = 0;
-    while (readNextLine) {
-        readNextLine = false;
+    ParsingState state;
 
-        for (char &c : line) {
-            if (c == ',' && (!readingDoubleQuotedValue || prevCharDoubleQuotes)) {
-                readingDoubleQuotedValue = false;
-                prevCharDoubleQuotes = false;
-                if (!updateSnapshotItem(tmp, index, item)) {
-                    LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line).c_str());
-                    error = true;
-                    return true;
-                }
-                tmp.clear();
-                index = static_cast<CsvIndex>(static_cast<int>(index) + 1);
-            } else if (c == '"') {
-                doubleQuoteCount++;
-                if (!readingDoubleQuotedValue) {
-                    readingDoubleQuotedValue = true;
-                } else {
-                    if (prevCharDoubleQuotes) {
-                        // Replace 2 successive double quotes by one
-                        prevCharDoubleQuotes = false;
-                        tmp.push_back('"');
-                    } else {
-                        prevCharDoubleQuotes = true;
-                    }
-                }
-            } else {
-                tmp.push_back(c);
-            }
-        }
+    while (state.readNextLine) {
+        state.readNextLine = false;
 
-        if (doubleQuoteCount > 2) {
+        readSnapshotItemFields(item, line, error, state);
+        if (error) return true;
+
+        if (state.doubleQuoteCount > 2) {
             LOGW_WARN(_logger, L"Item name contains double quote, ignoring it.");
             ignore = true;
             return true;
         }
 
         // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
-        if (readingDoubleQuotedValue) {
-            tmp.push_back('\n');
-            readNextLine = true;
+        if (state.readingDoubleQuotedValue) {
+            state.tmp.push_back('\n');
+            state.readNextLine = true;
             std::getline(ss, line);
             if (line.empty()) {
                 LOGW_WARN(_logger, L"Invalid line");
@@ -222,14 +223,14 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
         }
     }
 
-    if (index < CsvIndexEnd - 1) {
+    if (state.index < CsvIndexEnd - 1) {
         LOGW_WARN(_logger, L"Invalid item");
         ignore = true;
         return true;
     }
 
     // Update last value
-    if (!updateSnapshotItem(tmp, index, item)) {
+    if (!updateSnapshotItem(state.tmp, state.index, item)) {
         LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line).c_str());
         error = true;
         return true;

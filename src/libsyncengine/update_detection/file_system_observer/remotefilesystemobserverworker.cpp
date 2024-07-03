@@ -337,7 +337,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             continue;
         }
 
-        if (const auto insertInfo = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !insertInfo.second) {
+        if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
             // An item with the exact same name already exists in the parent folder.
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
                                L"Item \"" << SyncName2WStr(item.name()).c_str() << L"\" already exists in directory \""
