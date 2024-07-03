@@ -49,9 +49,9 @@ bool GetAvatarJob::handleError(std::istream &is, const Poco::URI &uri) {
     Poco::XML::Node *pNode = pDoc->getNodeByPath(errorCodePathKey);
     if (pNode != nullptr) {
         _errorCode = pNode->innerText();
-        LOG_WARN(_logger, "Error in request : " << uri.toString().c_str() << ". Error code: " << _errorCode.c_str());
+        LOG_WARN(_logger, "Error in request: " << uri.toString().c_str() << ". Error code: " << _errorCode.c_str());
     } else {
-        LOG_WARN(_logger, "Unknown error in request : " << uri.toString().c_str());
+        LOG_WARN(_logger, "Unknown error in request: " << uri.toString().c_str());
     }
 
     _exitCause = ExitCauseApiErr;

@@ -151,12 +151,14 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
     }
 
     if (_ignoreFirstLine) {
+        // The first line of the CSV full listing consists of the column names:
+        // "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link"
+        _ignoreFirstLine = false;
         line.clear();
         std::getline(ss, line);
         if (line.empty()) {
             return false;
         }
-        _ignoreFirstLine = false;
     }
 
     CsvIndex index = CsvIndexId;
