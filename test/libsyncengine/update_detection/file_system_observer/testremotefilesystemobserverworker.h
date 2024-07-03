@@ -20,7 +20,7 @@
 
 #include "testincludes.h"
 
-#include "syncpal/syncpal.h"
+#include "test_classes/syncpaltest.h"
 
 using namespace CppUnit;
 
@@ -42,7 +42,7 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture {
 
     private:
         log4cplus::Logger _logger;
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<SyncPalTest> _syncPal;
 
         int _driveDbId{0};
         NodeId _testFolderId;

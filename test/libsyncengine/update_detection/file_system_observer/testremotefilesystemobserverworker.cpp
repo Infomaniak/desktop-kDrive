@@ -84,7 +84,7 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     Sync sync(1, drive.dbId(), "/", "/");
     ParmsDb::instance()->insertSync(sync);
 
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal = std::make_shared<SyncPalTest>(sync.dbId(), "3.4.0");
     _syncPal->_syncDb->setAutoDelete(true);
 
     /// Insert node in blacklist
