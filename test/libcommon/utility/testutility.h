@@ -26,10 +26,12 @@ namespace KDC {
 class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testGetAppSupportDir);
+        CPPUNIT_TEST(testIsVersionLower);
         CPPUNIT_TEST_SUITE_END();
 
     protected:
         void testGetAppSupportDir();
+        void testIsVersionLower();
 };
 
 }  // namespace KDC
