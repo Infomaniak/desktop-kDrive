@@ -36,10 +36,11 @@ constexpr char UPDATE_APP_STATE_REQUEST[] = "UPDATE app_state SET value=?2 WHERE
 
 // Default values for AppState (Empty string is not allowed, use APP_STATE_KEY_DEFAULT_IS_EMPTY instead)
 constexpr char APP_STATE_KEY_DEFAULT_IS_EMPTY[] = "__DEFAULT_IS_EMPTY__";
+
 constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadDate[] = "0";
-const constexpr char* APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath = APP_STATE_KEY_DEFAULT_IS_EMPTY;
+constexpr const char *APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath = APP_STATE_KEY_DEFAULT_IS_EMPTY;
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; //KDC::LogUploadState::None
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 
