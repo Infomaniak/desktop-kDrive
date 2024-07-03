@@ -235,7 +235,6 @@ QString CommonUtility::escape(const QString &in) {
 }
 
 bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStateValue &appStateValueTo) {
-    
     bool res = true;
     std::string appStateValueType = "Unknown";
     if (std::holds_alternative<std::string>(appStateValueTo)) {
@@ -291,6 +290,28 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
         return false;
     }
     return true;
+}
+
+std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) {
+    using enum AppStateKey;
+    switch (appStateValue) {
+        case LastServerSelfRestartDate:
+            return "LastServerSelfRestartDate";
+        case LastClientSelfRestartDate:
+            return "LastClientSelfRestartDate";
+        case LastSuccessfulLogUploadDate:
+            return "LastSuccessfulLogUploadDate";
+        case LastLogUploadArchivePath:
+            return "LastLogUploadArchivePath";
+        case LogUploadState:
+            return "LogUploadState";
+        case LogUploadPercent:
+            return "LogUploadPercent";
+        case Unknown:
+            return "Unknown";
+        default:
+            return "AppStateKey not found (" + std::to_string(static_cast<int>(appStateValue)) + ")";
+    }
 }
 
 bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName) {

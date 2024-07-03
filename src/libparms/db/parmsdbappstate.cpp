@@ -129,7 +129,7 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
     bool found = false;
     std::string valueStr = value;
     if (valueStr == "") {
-        LOG_WARN(_logger, "Value is empty for AppStateKey: " << static_cast<int>(key));
+        LOG_WARN(_logger, "Value is empty for AppStateKey: " << CommonUtility::appStateKeyToString(key).c_str());
         return false;
     }
     if (valueStr == APP_STATE_DEFAULT_IS_EMPTY) {
@@ -192,7 +192,7 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
     }
 
     if (!found) {
-        LOG_WARN(_logger, "AppStateKey not found: " << static_cast<int>(key));
+        LOG_WARN(_logger, "AppStateKey not found: " << CommonUtility::appStateKeyToString(key).c_str());
         return true;
     }
 
