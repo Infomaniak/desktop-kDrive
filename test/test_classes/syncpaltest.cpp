@@ -1,5 +1,5 @@
 /*
- * Infomaniak kDrive - Desktop
+* Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,25 +15,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "temporarydirectory.h"
 
-#include <sstream>
+#include "syncpaltest.h"
 
 namespace KDC {
-
-TemporaryDirectory::TemporaryDirectory(const std::string &testType) {
-    const std::time_t now = std::time(nullptr);
-    const std::tm tm = *std::localtime(&now);
-    std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M");
-
-    path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
-    std::filesystem::create_directory(path);
-}
-
-TemporaryDirectory::~TemporaryDirectory() {
-    std::filesystem::remove_all(path);
-}
-
-
-}  // namespace KDC
+} // KDC
