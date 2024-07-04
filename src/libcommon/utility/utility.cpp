@@ -292,7 +292,7 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     return true;
 }
 
-std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) {
+std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) noexcept {
     using enum AppStateKey;
     switch (appStateValue) {
         case LastServerSelfRestartDate:
