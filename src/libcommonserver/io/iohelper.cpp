@@ -589,7 +589,7 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
     if (exists) {
         // Check nodeId
         if (!getNodeId(path, otherNodeId)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for path=" << Path2WStr(path).c_str());
+            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(path).c_str());
         }
 
         existsWithSameId = (nodeId == otherNodeId);
