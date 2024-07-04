@@ -19,7 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 
 using namespace CppUnit;
