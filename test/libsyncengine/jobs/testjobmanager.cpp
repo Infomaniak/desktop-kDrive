@@ -31,7 +31,7 @@
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include <unordered_set>
 
@@ -195,12 +195,12 @@ void TestJobManager::testWithCallback() {
 }
 
 void TestJobManager::testWithCallbackMediumFiles() {
-    const TemporaryDirectory temporaryDirectory("testJobManager");
+    const LocalTemporaryDirectory temporaryDirectory("testJobManager");
     testWithCallbackBigFiles(temporaryDirectory.path, 50, 15);  // 15 files of 50 MB
 }
 
 void TestJobManager::testWithCallbackBigFiles() {
-    const TemporaryDirectory temporaryDirectory("testJobManager");
+    const LocalTemporaryDirectory temporaryDirectory("testJobManager");
     testWithCallbackBigFiles(temporaryDirectory.path, 200, 10);  // 10 files of 200 MB
 }
 
