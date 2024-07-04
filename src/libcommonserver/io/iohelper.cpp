@@ -591,6 +591,15 @@ bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeI
             LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for path=" << Path2WStr(path).c_str());
         }
         exists = (nodeId == tmpNodeId);
+
+#ifdef NDEBUG
+        if (!exists) {
+            std::stringstream ss;
+            ss << "File exists with another ID (" << nodeId << "/" << tmpNodeId << ")";
+            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "IoHelper::checkIfPathExistsWithSameNodeId",
+                                                                ss.str().c_str()));
+        }
+#endif
     }
 
     return true;
