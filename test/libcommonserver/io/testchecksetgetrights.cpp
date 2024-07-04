@@ -36,7 +36,7 @@ struct RightsSet {
 void TestIo::testCheckSetAndGetRights() {
     // Test if the rights are correctly set and get on a directory
     {
-        const TemporaryDirectory temporaryDirectory("io_rights");
+        const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath path = temporaryDirectory.path / "changePerm";
 
         IoError ioError = IoErrorUnknown;
@@ -144,7 +144,7 @@ void TestIo::testCheckSetAndGetRights() {
 
     // Test if the rights are correctly set and if they can be successfully retrieved from a file
     {
-        const TemporaryDirectory temporaryDirectory("io_rights");
+        const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath filepath = temporaryDirectory.path / "changePerm.txt";
 
         IoError ioError = IoErrorUnknown;
@@ -255,7 +255,7 @@ void TestIo::testCheckSetAndGetRights() {
 
     // Check permissions are not set recursively on a folder
     {
-        const TemporaryDirectory temporaryDirectory("io_rights");
+        const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath path = temporaryDirectory.path / "testCheckSetAndGetRights";
         const SyncPath subFolderPath = path / "subFolder";
         const SyncPath subFilePath = path / "subFile.txt";
@@ -314,7 +314,7 @@ void TestIo::testCheckSetAndGetRights() {
     // Test with inherited permissions on a directory
     {
 #ifdef _WIN32
-        const TemporaryDirectory temporaryDirectory("io_rights");
+        const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath path = temporaryDirectory.path / "testCheckSetAndGetRights";
         const SyncPath subFolderPath = path / "subFolder";
 
@@ -409,7 +409,7 @@ void TestIo::testCheckSetAndGetRights() {
     // Test with inherited permissions on a file
     {
 #ifdef _WIN32
-        const TemporaryDirectory temporaryDirectory("io_rights");
+        const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath path = temporaryDirectory.path / "testCheckSetAndGetRights";
         const SyncPath filePath = path / "file.txt";
 
@@ -504,7 +504,7 @@ void TestIo::testCheckSetAndGetRights() {
 
     // Test on a non existing file
     {
-        const TemporaryDirectory temporaryDirectory("io_rights");
+        const LocalTemporaryDirectory temporaryDirectory("io_rights");
         const SyncPath path = temporaryDirectory.path / "testCheckSetAndGetRights/nonExistingFile.txt";
         bool isReadable = false;
         bool isWritable = false;
