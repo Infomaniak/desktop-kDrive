@@ -144,6 +144,9 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         QAction *_actionPreferences = nullptr;
         QAction *_actionQuit = nullptr;
 #endif
+        /* On some Linux distributions, the tray icon cannot open the synthesis dialog,
+         * it is necessary to use a menu to open the synthesis dialog.
+         */
         bool osRequireMenuTray() const;
         static void raiseDialog(QWidget *raiseWidget);
         void setupSynthesisPopover();
