@@ -443,7 +443,7 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
             }
             break;
         }
-        case Poco::Net::HTTPResponse::HTTP_NOT_ACCEPTABLE: {
+        case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {
             _exitCode = ExitCodeUpdateRequired;
             break;
         }
