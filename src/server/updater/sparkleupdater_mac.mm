@@ -22,7 +22,6 @@
 #include "libcommon/utility/utility.h"
 #include "sparkleupdater.h"
 #include "libcommonserver/log/log.h"
-#include "libparms/db/parmsdb.h"
 #include "appserver.h"
 #include <log4cplus/loggingmacros.h>
 
