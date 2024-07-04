@@ -46,7 +46,7 @@
 #include "libparms/db/parmsdb.h"
 #include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 
 using namespace CppUnit;
 
@@ -269,7 +269,7 @@ void TestNetworkJobs::testDelete() {
 }
 
 void TestNetworkJobs::testDownload() {
-    const TemporaryDirectory temporaryDirectory("testDownload");
+    const LocalTemporaryDirectory temporaryDirectory("testDownload");
     SyncPath localDestFilePath = temporaryDirectory.path / "test_file.txt";
     DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
     ExitCode exitCode = job.runSynchronously();
@@ -284,7 +284,7 @@ void TestNetworkJobs::testDownload() {
 }
 
 void TestNetworkJobs::testDownloadAborted() {
-    const TemporaryDirectory temporaryDirectory("testDownloadAborted");
+    const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
     SyncPath localDestFilePath = temporaryDirectory.path / bigFileName;
     std::shared_ptr<DownloadJob> job =
         std::make_shared<DownloadJob>(_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
@@ -785,7 +785,7 @@ void TestNetworkJobs::testUploadSessionAsynchronousAborted() {
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
     CPPUNIT_ASSERT(dataArray);
-    CPPUNIT_ASSERT(dataArray->size() == 0);
+    CPPUNIT_ASSERT(dataArray->empty());
 }
 
 bool TestNetworkJobs::createTestDir() {

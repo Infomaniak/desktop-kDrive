@@ -68,7 +68,6 @@ void TestComputeFSOperationWorker::setUp() {
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 
     /// Insert user, account, drive & sync
     int userId = atoi(userIdStr.c_str());
