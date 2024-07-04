@@ -69,7 +69,7 @@ void TestSnapshotItemHandler::testUpdateItem() {
         CPPUNIT_ASSERT_EQUAL(NodeId("1"), item.parentId());
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("kDrive2", SnapshotItemHandler::CsvIndexName, item));
-        CPPUNIT_ASSERT_EQUAL(SyncName("kDrive2"), item.name());
+        CPPUNIT_ASSERT_EQUAL(Str2SyncName(std::string("kDrive2")), item.name());
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("file", SnapshotItemHandler::CsvIndexType, item));
         CPPUNIT_ASSERT_EQUAL(NodeTypeFile, item.type());
@@ -178,8 +178,8 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
-        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), SyncName("kDrive2"), SyncTime(123), SyncTime(124),
-                                        NodeTypeDirectory, int64_t(1000), true, false);
+        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive2")), SyncTime(123),
+                                        SyncTime(124), NodeTypeDirectory, int64_t(1000), true, false);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -198,8 +198,8 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
-        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), SyncName("kDrive2"), SyncTime(123), SyncTime(124),
-                                        NodeTypeDirectory, int64_t(1000), true, false);
+        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive2")), SyncTime(123),
+                                        SyncTime(124), NodeTypeDirectory, int64_t(1000), true, false);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
@@ -233,8 +233,8 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
-        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), SyncName("kDrive\n2"), SyncTime(123), SyncTime(124),
-                                        NodeTypeDirectory, int64_t(1000), false, true);
+        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive\n2")), SyncTime(123),
+                                        SyncTime(124), NodeTypeDirectory, int64_t(1000), false, true);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);

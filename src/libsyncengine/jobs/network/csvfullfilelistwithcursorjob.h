@@ -21,8 +21,6 @@
 #include "abstracttokennetworkjob.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
-#include <cstdint>
-
 namespace KDC {
 
 class SnapshotItemHandler {
@@ -45,7 +43,8 @@ class SnapshotItemHandler {
 
         struct ParsingState {
                 CsvIndex index{CsvIndexId};  // The index of the column that is currently read.
-                bool readingDoubleQuotedValue{false};
+                bool readingDoubleQuotedValue{
+                    false};  // True if an opening double quote is encountered with no closing counter-part at this stage.
                 bool prevCharDoubleQuotes{false};
                 bool readNextLine{true};  // If true, read the next line, stop item parsing otherwise.
                 std::string tmp;
