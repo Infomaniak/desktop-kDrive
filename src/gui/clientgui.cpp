@@ -303,6 +303,7 @@ void ClientGui::showSynthesisDialog() {
             _synthesisPopover->setPosition(trayIconRect);
             raiseDialog(_synthesisPopover.get());
         }
+        _synthesisPopover->onUpdateAvailabalityChange();
     }
 }
 

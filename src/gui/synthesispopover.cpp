@@ -519,7 +519,7 @@ void SynthesisPopover::initUI() {
     //// Locked app
     auto *lockedAppVersionVBox = new QVBoxLayout(_lockedAppVersionWidget);
     lockedAppVersionVBox->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-
+    lockedAppVersionVBox->setContentsMargins(40, 40, 40, 40);
     // Update icon
     auto *updateIconLabel = new QLabel(this);
     updateIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/kdrive-update.svg")
