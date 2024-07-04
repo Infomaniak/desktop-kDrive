@@ -168,7 +168,7 @@ class SynthesisPopover : public QDialog {
         void onSelectionChanged(bool isSelected);
         void onLinkActivated(const QString &link);
         void onUpdateSynchronizedListWidget();
-        void onStartInstaller();
+        void onStartInstaller() noexcept;
         void retranslateUi();
 };
 

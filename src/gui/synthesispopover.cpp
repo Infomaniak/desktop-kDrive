@@ -1108,7 +1108,7 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
     connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
 }
 
-void SynthesisPopover::onStartInstaller() {
+void SynthesisPopover::onStartInstaller() noexcept{
     try {
         UpdaterClient::instance()->startInstaller();
     } catch (std::exception const &) {
