@@ -302,29 +302,13 @@ AppServer::AppServer(int &argc, char **argv)
     }
 
     // Check last crash to avoid crash loop
-    if (_crashRecovered) {
-        bool found = false;
-        LOG_WARN(_logger, "Server auto restart after a crash.");
-        if (serverCrashedRecently()) {
-            LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
-            QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
-            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, std::string("0"), found) ||
-                !found) {
-                LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
-                throw std::runtime_error("Failed to update last server self restart.");
-            }
-            QTimer::singleShot(0, this, quit);
-            return;
-        }
-        long timestamp =
-            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
-        std::string timestampStr = std::to_string(timestamp);
-        KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
-        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
-            LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
-            throw std::runtime_error("Failed to update last server self restart.");
-        }
+    bool shouldQuit = false;
+    handleCrashRecovery(shouldQuit);
+    if (shouldQuit) {
+        QTimer::singleShot(0, this, &AppServer::quit);
+        return;
     }
+
 
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
@@ -2982,6 +2966,51 @@ void AppServer::initLogging() {
 
 void AppServer::setupProxy() {
     Proxy::instance(ParametersCache::instance()->parameters().proxyConfig());
+}
+
+void AppServer::handleCrashRecovery(bool &shouldQuit) {
+    bool found = false;
+    if (AppStateValue lastServerRestartDate = int64_t(0);
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, lastServerRestartDate, found) ||
+        !found) {
+        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
+        shouldQuit = false;
+    } else if (std::get<int64_t>(lastServerRestartDate) == SelfRestarterDoNotRestart) {
+        LOG_INFO(_logger, "Last session requested to not restart the server.");
+        shouldQuit = _crashRecovered;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
+            LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+        }
+        return;
+    }
+    
+    std::string timestampStr;
+    if (_crashRecovered) {
+        LOG_WARN(_logger, "Server auto restart after a crash.");
+
+        if (serverCrashedRecently()) {
+            LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
+            QMessageBox::warning(nullptr, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
+            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
+                LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+            }
+            shouldQuit = true;
+        } else {
+            LOG_INFO(_logger, "Server crashed once, restarting");
+            shouldQuit = false;
+        }
+
+        long long timestamp =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        timestampStr = std::to_string(timestamp);
+    } else {
+        timestampStr = std::to_string(SelfRestarterNoCrashDetected);
+    }
+
+    KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
+    if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
+        LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+    }
 }
 
 bool AppServer::serverCrashedRecently(int seconds) {
