@@ -126,8 +126,10 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found);  // update or insert
 
     private:
-        static std::shared_ptr<ParmsDb> _instance;
+        friend class TestParmsDb;
         bool _test;
+
+        static std::shared_ptr<ParmsDb> _instance;
 
         ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test);
 

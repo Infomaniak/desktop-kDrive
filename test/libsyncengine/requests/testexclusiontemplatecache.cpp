@@ -109,16 +109,15 @@ static const std::vector<std::string> acceptedFiles = {"~test",
 
 void TestExclusionTemplateCache::setUp() {
     // Create parmsDb
-    bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    bool alreadyExists = false;
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 
     ExclusionTemplateCache::instance()->update(true, excludedTemplates);
 }
 
 void TestExclusionTemplateCache::tearDown() {
+    ParmsDb::instance()->close();
     ParmsDb::reset();
 }
 

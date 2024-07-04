@@ -7,7 +7,7 @@ set(testcommonserver_NAME ${APPLICATION_NAME}_test_common_server)
 
 set(testcommonserver_SRCS
         ../test.cpp
-        ../test_utility/temporarydirectory.cpp
+        ../test_utility/localtemporarydirectory.cpp
 
         test.cpp
         # Utility

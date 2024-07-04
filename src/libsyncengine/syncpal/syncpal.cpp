@@ -165,9 +165,6 @@ SyncPal::SyncPal(int syncDbId, const std::string &version) : _logger(Log::instan
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
 
-#ifdef __APPLE__
-    fixFileNamesWithColon(_syncDb, _localPath);
-#endif
     fixInconsistentFileNames(_syncDb, _localPath);
     fixNodeTableDeleteItemsWithNullParentNodeId();
 
@@ -1313,79 +1310,6 @@ bool SyncPal::isDownloadOngoing(const SyncPath &localPath) {
 
     return false;
 }
-
-#ifdef __APPLE__
-void SyncPal::fixFileNamesWithColon(std::shared_ptr<SyncDb> syncDb, const SyncPath &localPath) {
-    if (syncDb->fromVersion().empty()) {
-        // New DB
-        return;
-    }
-
-    // Fix file names with ':' character
-    std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(syncDb->fromVersion());
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.2")) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Fix file names with colon");
-
-        std::vector<DbNode> dbNodeList;
-        if (!syncDb->selectAllRenamedNodes(dbNodeList, true)) {
-            LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::selectAllRenamedNodes");
-            return;
-        }
-
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Rename " << dbNodeList.size() << " files");
-        for (DbNode &dbNode : dbNodeList) {
-            // Get old local path
-            SyncPath oldLocalPath;
-            SyncPath remotePath;
-            bool found;
-            if (!syncDb->path(dbNode.nodeId(), oldLocalPath, remotePath, found)) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::path");
-                continue;
-            }
-            if (!found) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
-                continue;
-            }
-
-            // Get new local name
-            SyncName newLocalName;
-            if (!PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(dbNode.nameRemote(), newLocalName)) {
-                // No fix done
-                newLocalName = dbNode.nameRemote();
-            }
-
-            // Update local name in DB
-            dbNode.setNameLocal(newLocalName);
-            if (!syncDb->updateNode(dbNode, found)) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::updateNode");
-                continue;
-            }
-            if (!found) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
-                continue;
-            }
-
-            // Get new local path
-            SyncPath newLocalPath;
-            if (!syncDb->path(dbNode.nodeId(), newLocalPath, remotePath, found)) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::path");
-                continue;
-            }
-            if (!found) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
-                continue;
-            }
-
-            // Rename file
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Rename " << Utility::formatSyncPath(localPath / oldLocalPath).c_str() << L" to "
-                                  << Utility::formatSyncPath(localPath / newLocalPath).c_str());
-            LocalMoveJob moveJob(localPath / oldLocalPath, localPath / newLocalPath);
-            moveJob.runSynchronously();
-        }
-    }
-}
-#endif
 
 void SyncPal::fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const SyncPath &path) {
     if (syncDb->fromVersion().empty()) {

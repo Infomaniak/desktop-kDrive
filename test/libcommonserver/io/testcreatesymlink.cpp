@@ -27,7 +27,7 @@ namespace KDC {
 void TestIo::testCreateSymlink() {
     // Successfully creates a symlink on a regular file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures" / "picture-1.jpg";
         const SyncPath path = temporaryDirectory.path / "regular_file_alias";
 
@@ -46,7 +46,7 @@ void TestIo::testCreateSymlink() {
 
     // Successfully creates a symlink on a regular directory.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
 
@@ -65,7 +65,7 @@ void TestIo::testCreateSymlink() {
 
     // Successfully creates a symlink whose target path indicates a non-existing item.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "non-existing.jpg";
         const SyncPath path = temporaryDirectory.path / "file_symlink";
 
@@ -89,7 +89,7 @@ void TestIo::testCreateSymlink() {
     // Fails to create a symlink whose path indicates an existing file: no overwriting
     // Warning: this doesn't match IoHelper::createAliasFromPath behaviour.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path / "file.txt";
         { std::ofstream ofs(path); }
@@ -102,7 +102,7 @@ void TestIo::testCreateSymlink() {
 
     // Fails to create a symlink whose path is the path of an existing directory
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path;
 
@@ -121,7 +121,7 @@ void TestIo::testCreateSymlink() {
 
     // Fails to create a symlink whose path is the target path (of an existing file)
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "file.txt";
         { std::ofstream ofs(path); }
         const SyncPath targetPath = path;
@@ -157,7 +157,7 @@ void TestIo::testCreateSymlink() {
 
     // Successfully creates a symlink whose file name contains emojis
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
