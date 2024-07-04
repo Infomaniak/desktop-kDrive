@@ -452,6 +452,10 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit logUploadStatusUpdated(status, progress);
             break;
         }
+        case SIGNAL_NUM_UTILITY_DISABLE_SELF_RESTATER: {
+            _selfRestarterEnable = false;
+            break;
+        }
         default: {
             qCDebug(lcAppClient) << "Signal not implemented!";
             break;
@@ -479,11 +483,11 @@ void AppClient::onQuit() {
 
 void AppClient::onServerDisconnected() {
 #if NDEBUG
-    if (!_quitInProcess) {
+    if (!_quitInProcess && _selfRestarterEnable) {
         startServerAndDie(true);
         qCCritical(lcAppClient) << "The server was unexpectedly disconnected. The application will be restarted.";
     } else {
-        qCInfo(lcAppClient) << "Server disconnected while the client is closing: this is expected.";
+        qCInfo(lcAppClient) << "Server disconnected while the client is closing (or updating): this is expected.";
     }
 #else
     const auto msg = QStringLiteral("The server got disconnected. As the app is in debug mode, it will not be restarted.");
