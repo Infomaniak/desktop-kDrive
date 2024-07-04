@@ -227,26 +227,28 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     // A regular file
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A regular directory
     {
         const SyncPath path = _localTestDirPath / "test_pictures";
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -257,13 +259,14 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -274,26 +277,28 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A non-existing file
     {
         const SyncPath path = _localTestDirPath / "non_existing.jpg";
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorSuccess;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
     }
 
@@ -304,25 +309,27 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A regular file but the function is given a wrong node identifier
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId = "wrong_node_id";
 
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -336,13 +343,14 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         NodeId nodeId;
         IoError ioError = IoErrorUnknown;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -359,13 +367,14 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         std::filesystem::remove(targetPath);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         NodeId nodeId;
         IoError ioError = IoErrorUnknown;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 #endif
@@ -384,13 +393,14 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
             return false;
         });
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorSuccess;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(!_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(!_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorUnknown);
 
         _testObj->resetFunctions();
@@ -412,19 +422,20 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
             return std::filesystem::read_symlink(path, ec);
         });
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(existsWithSameId);
 #else
-        CPPUNIT_ASSERT(!exists);  // getLocalNodeId returns an empty string because of the denied access.
+        CPPUNIT_ASSERT(!existsWithSameId);  // getLocalNodeId returns an empty string because of the denied access.
         CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
 #endif
 
@@ -443,13 +454,14 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
             return std::filesystem::read_symlink(path, ec);
         });
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorSuccess;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
 
         _testObj->resetFunctions();

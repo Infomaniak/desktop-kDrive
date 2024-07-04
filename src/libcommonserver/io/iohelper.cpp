@@ -575,31 +575,24 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     return true;
 }
 
-bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &exists,
-                                               IoError &ioError) noexcept {
-    exists = false;
+bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
+                                               NodeId &otherNodeId, IoError &ioError) noexcept {
+    existsWithSameId = false;
+    otherNodeId.clear();
     ioError = IoErrorSuccess;
 
+    bool exists = false;
     if (!checkIfPathExists(path, exists, ioError)) {
         return false;
     }
 
     if (exists) {
         // Check nodeId
-        NodeId tmpNodeId;
-        if (!getNodeId(path, tmpNodeId)) {
+        if (!getNodeId(path, otherNodeId)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for path=" << Path2WStr(path).c_str());
         }
-        exists = (nodeId == tmpNodeId);
 
-#ifdef NDEBUG
-        if (!exists) {
-            std::stringstream ss;
-            ss << "File exists with another ID (" << nodeId << "/" << tmpNodeId << ")";
-            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "IoHelper::checkIfPathExistsWithSameNodeId",
-                                                                ss.str().c_str()));
-        }
-#endif
+        existsWithSameId = (nodeId == otherNodeId);
     }
 
     return true;
