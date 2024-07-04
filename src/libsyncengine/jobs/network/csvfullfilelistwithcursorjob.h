@@ -53,12 +53,12 @@ class SnapshotItemHandler {
 
         bool updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item);
         bool getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore);
-        void logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
-                      const std::exception &exc);
 
     private:
         bool _ignoreFirstLine = true;
         log4cplus::Logger _logger;
+        void logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
+                      const std::exception &exc);
         void readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state);
 };
 
