@@ -38,11 +38,7 @@ Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept {
     try {
         CPPUNIT_ASSERT_EQUAL(lhs.id(), rhs.id());
         CPPUNIT_ASSERT_EQUAL(lhs.parentId(), rhs.parentId());
-#ifdef _WIN32
-        CPPUNIT_ASSERT(lhs.name() == rhs.name());
-#else
-        CPPUNIT_ASSERT_EQUAL(lhs.name(), rhs.name());
-#endif
+        CPPUNIT_ASSERT_EQUAL(SyncName2Str(lhs.name()), SyncName2Str(rhs.name()));
         CPPUNIT_ASSERT_EQUAL(lhs.type(), rhs.type());
         CPPUNIT_ASSERT_EQUAL(lhs.size(), rhs.size());
         CPPUNIT_ASSERT_EQUAL(lhs.createdAt(), rhs.createdAt());
@@ -73,7 +69,7 @@ void TestSnapshotItemHandler::testUpdateItem() {
         CPPUNIT_ASSERT_EQUAL(NodeId("1"), item.parentId());
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("kDrive2", SnapshotItemHandler::CsvIndexName, item));
-        CPPUNIT_ASSERT_EQUAL(Str2SyncName(std::string("kDrive2")), item.name());
+        CPPUNIT_ASSERT_EQUAL(std::string("kDrive2"), SyncName2Str(item.name()));
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("file", SnapshotItemHandler::CsvIndexType, item));
         CPPUNIT_ASSERT_EQUAL(NodeTypeFile, item.type());
