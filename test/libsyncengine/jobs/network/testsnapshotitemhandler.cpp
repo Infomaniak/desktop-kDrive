@@ -38,7 +38,11 @@ Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept {
     try {
         CPPUNIT_ASSERT_EQUAL(lhs.id(), rhs.id());
         CPPUNIT_ASSERT_EQUAL(lhs.parentId(), rhs.parentId());
+#ifdef _WIN32
+        CPPUNIT_ASSERT(lhs.name() == rhs.name());
+#else
         CPPUNIT_ASSERT_EQUAL(lhs.name(), rhs.name());
+#endif
         CPPUNIT_ASSERT_EQUAL(lhs.type(), rhs.type());
         CPPUNIT_ASSERT_EQUAL(lhs.size(), rhs.size());
         CPPUNIT_ASSERT_EQUAL(lhs.createdAt(), rhs.createdAt());
