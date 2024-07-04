@@ -150,7 +150,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;
             if (!updateSnapshotItem(state.tmp, state.index, item)) {
-                LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line).c_str());
+                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << Utility::s2ws(line).c_str() << "L'.");
                 error = true;
                 return;
             }
@@ -214,9 +214,12 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
         if (state.readingDoubleQuotedValue) {
             state.tmp.push_back('\n');
             state.readNextLine = true;
+            const std::string lastParsedLine = line;
             std::getline(ss, line);
             if (line.empty()) {
-                LOGW_WARN(_logger, L"Invalid line");
+                LOGW_WARN(_logger, L"CSV full listing parsing error. Invalid line='"
+                                       << Utility::s2ws(lastParsedLine).c_str()
+                                       << L"'. Check double quote balance and line return characters.");
                 error = true;
                 return true;
             }
