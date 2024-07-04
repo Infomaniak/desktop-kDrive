@@ -120,6 +120,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         bool _vfsConnectionDone{false};
         bool _crashRecovered{false};
         static bool _selfRestarterEnable;
+
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
