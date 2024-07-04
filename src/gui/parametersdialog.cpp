@@ -397,7 +397,7 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
             break;
         case ExitCodeOk:
         case ExitCodeNeedRestart:
-        case ExitCodeInconsistencyError:
+        case ExitCodeLogicError:
         case ExitCodeNoWritePermission:
         case ExitCodeTokenRefreshed:
         case ExitCodeRateLimited:
@@ -576,9 +576,18 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             break;
         case ExitCodeOk:
         case ExitCodeNeedRestart:
-        case ExitCodeInconsistencyError:
+        case ExitCodeLogicError:
+            if (exitCause == ExitCauseFullListParsingError) {
+                return tr("The parsing of the CSV full listing of the remote drive items failed (error %1).<br>"
+                          "Special characters such as double quotes, backslashes or line returns can cause kDrive parser "
+                          "failures.")
+                    .arg(err);
+            }
+            break;
         case ExitCodeTokenRefreshed:
         case ExitCodeRateLimited:
+        case ExitCodeOperationCanceled:
+        case ExitCodeInvalidOperation:
             break;
     }
 

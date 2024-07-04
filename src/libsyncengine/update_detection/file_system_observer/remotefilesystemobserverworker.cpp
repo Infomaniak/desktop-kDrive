@@ -106,8 +106,13 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
         invalidateSnapshot();
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
 
-        if (exitCode == ExitCodeNetworkError) {
-            _syncPal->addError(Error(ERRID, exitCode, ExitCause()));
+        switch (exitCode) {
+            case ExitCodeNetworkError:
+            case ExitCodeLogicError:
+                _syncPal->addError(Error(ERRID, exitCode, exitCause()));
+                break;
+            default:
+                break;
         }
     }
     _updating = false;
@@ -303,7 +308,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     // Parse reply
-    LOG_SYNCPAL_DEBUG(_logger, "Begin reply parsing");
+    LOG_SYNCPAL_DEBUG(_logger, "Begin parsing of the CSV reply");
     const auto start = std::chrono::steady_clock::now();
     SnapshotItem item;
     bool error = false;
@@ -318,9 +323,9 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         itemCount++;
 
         if (error) {
-            LOG_SYNCPAL_WARN(_logger, "Failed to parse CSV reply");
-            setExitCause(ExitCauseUnknown);
-            return ExitCodeDataError;
+            LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");
+            setExitCause(ExitCauseFullListParsingError);
+            return ExitCodeLogicError;
         }
 
         if (stopAsked()) {
@@ -598,11 +603,19 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             _snapshot->updateItem(item);
             if (actionInfo.type == NodeTypeDirectory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
                 // Retrieve all children
-                ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
-                ExitCause exitCause = this->exitCause();
+                const ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
 
-                if (exitCode == ExitCodeNetworkError && exitCause == ExitCauseNetworkTimeout) {
-                    _syncPal->addError(Error(ERRID, exitCode, exitCause));
+                switch (exitCode) {
+                    case ExitCodeNetworkError:
+                        if (exitCause() == ExitCauseNetworkTimeout) {
+                            _syncPal->addError(Error(ERRID, exitCode, exitCause()));
+                        }
+                        break;
+                    case ExitCodeLogicError:
+                        _syncPal->addError(Error(ERRID, exitCode, exitCause()));
+                        break;
+                    default:
+                        break;
                 }
 
                 if (exitCode != ExitCodeOk) return exitCode;
