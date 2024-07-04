@@ -99,7 +99,7 @@ bool DeleteJob::canRun() {
         return false;
     } else if (_localItemId != otherNodeId) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
-                                      << L" exist on local replica with another ID (" << Utility::s2ws(_localItemId).c_str()
+                                      << L" exists on local replica with another ID (" << Utility::s2ws(_localItemId).c_str()
                                       << L"/" << Utility::s2ws(otherNodeId).c_str() << L")");
 
 #ifdef NDEBUG
