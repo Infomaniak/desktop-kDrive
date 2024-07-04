@@ -382,6 +382,7 @@ enum class AppStateKey {
     LogUploadPercent,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
+constexpr int64_t SelfRestarterDoNotRestart = -1;
 constexpr int64_t SelfRestarterNoCrashDetected = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };

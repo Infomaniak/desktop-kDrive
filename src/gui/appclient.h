@@ -126,7 +126,6 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool _debugMode = false;
         QScopedPointer<UpdaterClient> _updaterClient;
         bool _quitInProcess = false;
-        bool _selfRestarterEnable = true;
 
     private slots:
         void onUseMonoIconsChanged(bool);

@@ -164,7 +164,6 @@ typedef enum {
     SIGNAL_NUM_UTILITY_SHOW_SETTINGS,
     SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS,
     SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED,
-    SIGNAL_NUM_UTILITY_DISABLE_SELF_RESTATER // Only applied for this session of the app.
 } SignalNum;
 
 struct ArgsReader {

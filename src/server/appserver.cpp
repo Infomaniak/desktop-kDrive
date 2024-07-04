@@ -82,7 +82,6 @@ std::unordered_map<int, std::shared_ptr<SyncPal>> AppServer::_syncPalMap;
 std::unordered_map<int, std::shared_ptr<KDC::Vfs>> AppServer::_vfsMap;
 std::vector<AppServer::Notification> AppServer::_notifications;
 std::chrono::time_point<std::chrono::steady_clock> AppServer::_lastSyncPalStart = std::chrono::steady_clock::now();
-bool AppServer::_selfRestarterEnable = true;
 
 namespace {
 
@@ -2125,12 +2124,6 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
 }
 
 void AppServer::onRestartClientReceived() {
-    if (!_selfRestarterEnable){
-        LOG_WARN(_logger, "Self restarter is disabled");
-        QTimer::singleShot(0, this, &AppServer::quit);
-        return;
-    }
-
     // Check last start time
     if (clientCrashedRecently()) {
         LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
@@ -2976,7 +2969,21 @@ void AppServer::setupProxy() {
 }
 
 void AppServer::handleCrashRecovery(bool &shouldQuit) {
-    bool found = false;   
+    bool found = false;
+    if (AppStateValue lastServerRestartDate = int64_t(0);
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, lastServerRestartDate, found) ||
+        !found) {
+        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
+        shouldQuit = false;
+    } else if (std::get<int64_t>(lastServerRestartDate) == SelfRestarterDoNotRestart) {
+        LOG_INFO(_logger, "Last session requested to not restart the server.");
+        shouldQuit = _crashRecovered;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
+            LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+        }
+        return;
+    }
+    
     std::string timestampStr;
     if (_crashRecovered) {
         LOG_WARN(_logger, "Server auto restart after a crash.");
@@ -3049,12 +3056,6 @@ bool AppServer::clientCrashedRecently(int seconds) {
         LOG_WARN(_logger, "Client crashed recently: " << diff << " seconds ago");
         return true;
     }
-}
-
-void AppServer::disableSelfRestarterAtNextCrash() {
-    int id = 0;
-    _selfRestarterEnable = false;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_DISABLE_SELF_RESTATER, QByteArray(), id);
 }
 
 void AppServer::parseOptions(const QStringList &options) {
