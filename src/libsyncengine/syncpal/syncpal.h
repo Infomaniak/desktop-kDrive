@@ -79,7 +79,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
         SyncPal(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted);
         SyncPal(int syncDbId, const std::string &version);
-        ~SyncPal();
+        virtual ~SyncPal();
 
         ExitCode setTargetNodeId(const std::string &targetNodeId);
 
@@ -215,11 +215,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         void fixNodeTableDeleteItemsWithNullParentNodeId();
 
-        void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
-        int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
-        void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
-        void refreshTmpBlacklist();
-        void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
+        virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
+        virtual int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
+        virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
+        virtual void refreshTmpBlacklist();
+        virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
 
         std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) {
             return side == ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree;

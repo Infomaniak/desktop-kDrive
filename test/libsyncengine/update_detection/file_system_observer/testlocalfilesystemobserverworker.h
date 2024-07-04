@@ -19,7 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include "db/parmsdb.h"
 #include "syncpal/syncpal.h"
@@ -52,7 +52,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         static const SyncPath _testPicturesFolderName;
         static const uint64_t _nbFileInTestDir;
 
-        TemporaryDirectory _tempDir;
+        LocalTemporaryDirectory _tempDir;
         SyncPath _testRootFolderPath;
 };
 
