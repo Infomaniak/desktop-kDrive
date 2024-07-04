@@ -26,12 +26,12 @@
 #include "jobs/network/getfilelistjob.h"
 #include "jobs/network/uploadjob.h"
 #include "jobs/network/upload_session/uploadsession.h"
-
 #include "network/proxy.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
+#include "test_utility/temporarydirectory.h"
 
 #include <unordered_set>
 
@@ -41,8 +41,6 @@ namespace KDC {
 
 static const SyncPath localTestDirPath(std::wstring(L"" TEST_DIR) + L"/test_ci");
 static const SyncPath localTestDirPath_manyFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/many_files_dir");
-static const SyncPath localTestDirPath_manyMediumFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/many_medium_files_dir");
-static const SyncPath localTestDirPath_manyBigFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/many_big_files_dir");
 static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/test_ci/test_pictures");
 static const SyncPath localTestDirPath_bigFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/big_file_dir");
 
@@ -68,7 +66,9 @@ void KDC::TestJobManager::setUp() {
     // Create parmsDb
     bool alreadyExists;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    ParmsDb::reset();
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParmsDb::instance()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
@@ -195,11 +195,13 @@ void TestJobManager::testWithCallback() {
 }
 
 void TestJobManager::testWithCallbackMediumFiles() {
-    testWithCallbackBigFiles(localTestDirPath_manyMediumFiles, 50, 15);  // 15 files of 50 MB
+    const TemporaryDirectory temporaryDirectory("testJobManager");
+    testWithCallbackBigFiles(temporaryDirectory.path, 50, 15);  // 15 files of 50 MB
 }
 
 void TestJobManager::testWithCallbackBigFiles() {
-    testWithCallbackBigFiles(localTestDirPath_manyBigFiles, 200, 10);  // 10 files of 200 MB
+    const TemporaryDirectory temporaryDirectory("testJobManager");
+    testWithCallbackBigFiles(temporaryDirectory.path, 200, 10);  // 10 files of 200 MB
 }
 
 void TestJobManager::testCancelJobs() {
