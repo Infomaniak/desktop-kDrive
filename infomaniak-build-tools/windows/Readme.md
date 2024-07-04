@@ -138,12 +138,10 @@ cd F:\Projects
 git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.12.5-release
-mkdir cmake-build
-cd cmake-build
+mkdir build
+cd build
 cmake -G "Visual Studio 16 2019" .. -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" -DOPENSSL_INCLUDE_DIR="C:\Program Files\OpenSSL\include" -DOPENSSL_CRYPTO_LIBRARY=libcrypto.lib -DOPENSSL_SSL_LIBRARY=libssl.lib
 ```
-
-Note: As far as we know, with version higher to 1.12.5 up to 1.13.2, there is a crash in the XML parser in debug mode. For this reason, we choose to remain in version 1.12.5 on Windows for now.
 
 Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\OpenSSL-Win64\lib` to the `Additional Library Directories` for the following projects:
 - Crypto

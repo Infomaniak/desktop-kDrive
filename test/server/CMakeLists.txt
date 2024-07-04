@@ -2,7 +2,7 @@ project(testserver)
 
 find_package(Qt6 REQUIRED Core Gui)
 find_package(log4cplus 2.1.0 REQUIRED)
-find_package(Poco 1.12.5 REQUIRED XML Net)
+find_package(Poco 1.13.3 REQUIRED XML Net)
 
 set(testserver_NAME ${APPLICATION_NAME}_test_server)
 
