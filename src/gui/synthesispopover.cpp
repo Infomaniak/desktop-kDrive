@@ -415,6 +415,7 @@ void SynthesisPopover::initUI() {
      *
      */
     auto *appVBox = new QVBoxLayout();
+    appVBox->setContentsMargins(0, 0, 0, 0);
     setLayout(appVBox);
 
     _mainWidget = new QWidget(this);
