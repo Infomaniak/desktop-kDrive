@@ -79,7 +79,7 @@
 - (void)updater:(SPUUpdater *)updater willInstallUpdate:(SUAppcastItem *)update {
     Q_UNUSED(updater)
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Install update");
-    if (bool found = false; !KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, SelfRestarterDoNotRestart, found) || !found) { //Desactivate the selfRestarter
+    if (bool found = false; !KDC::ParmsDb::instance()->updateAppState(KDC::AppStateKey::LastServerSelfRestartDate, KDC::SelfRestarterDoNotRestart, found) || !found) { //Desactivate the selfRestarter
         LOG_ERROR(KDC::Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
 }
