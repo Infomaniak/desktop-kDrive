@@ -9,7 +9,8 @@ set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 set(testsyncengine_SRCS
         ../test.cpp
         test.cpp
-        ../test_utility/temporarydirectory.cpp
+        ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
+        ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
         olddb/testoldsyncdb.h olddb/testoldsyncdb.cpp
@@ -42,6 +43,8 @@ set(testsyncengine_SRCS
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
+        ../test_classes/syncpaltest.cpp
+        ../test_classes/syncpaltest.h
 )
 
 if (USE_OUR_OWN_SQLITE3)

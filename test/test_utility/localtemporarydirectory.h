@@ -16,37 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include "testincludes.h"
-
-#include "test_classes/syncpaltest.h"
-
-using namespace CppUnit;
+#include <string>
+#include <filesystem>
+#include <sstream>
 
 namespace KDC {
 
-class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestRemoteFileSystemObserverWorker);
-        CPPUNIT_TEST(testGenerateRemoteInitialSnapshot);
-        CPPUNIT_TEST(testUpdateSnapshot);
-        CPPUNIT_TEST_SUITE_END();
-
-    public:
-        void setUp() override;
-        void tearDown() override;
-
-    protected:
-        void testGenerateRemoteInitialSnapshot();
-        void testUpdateSnapshot();
-
-    private:
-        log4cplus::Logger _logger;
-        std::shared_ptr<SyncPalTest> _syncPal;
-
-        int _driveDbId{0};
-        NodeId _testFolderId;
-        NodeId _testFileId;
+struct LocalTemporaryDirectory {
+        std::filesystem::path path;
+        LocalTemporaryDirectory(const std::string& testType = "undef");
+        ~LocalTemporaryDirectory();
 };
 
 }  // namespace KDC
