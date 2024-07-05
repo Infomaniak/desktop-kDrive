@@ -36,7 +36,6 @@ class PlatformInconsistencyCheckerUtility {
         SyncName generateNewValidName(const SyncPath &name, SuffixType suffixType);
         static ExitCode renameLocalFile(const SyncPath &absoluteLocalPath, SuffixType suffixType, SyncPath *newPathPtr = nullptr);
 
-        bool fixNameForbiddenChars(const SyncPath &name, SyncName &newName);
         bool checkNameForbiddenChars(const SyncPath &name);
 #ifdef _WIN32
         bool fixNameWithBackslash(const SyncName &name, SyncName &newName);
