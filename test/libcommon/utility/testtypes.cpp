@@ -16,18 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
-
-#include "api_token/testapitoken.h"
-#include "utility/testutility.h"
-#include "utility/testtypes.h"
+#include "config.h"
+#include "testutility.h"
+#include "libcommon/utility/utility.h"
+#include "testtypes.h"
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestTypes);
-}  // namespace KDC
 
-int main(int, char **) {
-    return runTestSuite("_kDriveTestCommon.log");
+void KDC::TestTypes::testOtherSide() {
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, otherSide(ReplicaSideRemote));
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, otherSide(ReplicaSideLocal));
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideUnknown, otherSide(ReplicaSideUnknown));
 }
+
+}  // namespace KDC
