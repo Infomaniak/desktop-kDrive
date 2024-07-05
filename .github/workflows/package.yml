@@ -100,5 +100,5 @@ jobs:
       - name: Upload to kDrive
         run : ./infomaniak-build-tools/macos/upload-ci.sh
 
-      #- name: Clean-up generated code
-      #  run : rm -rf build-macos
+      - name: Clean-up generated code
+        run : rm -rf build-macos
