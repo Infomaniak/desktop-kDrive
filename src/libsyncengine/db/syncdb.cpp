@@ -1558,7 +1558,7 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
     }
 
     // Fill names' vector
-    std::vector<std::string> names;
+    std::vector<SyncName> names;
 
     bool parentNodeDbIdIsNull;
     DbNodeId parentNodeDbId;
@@ -1566,8 +1566,8 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
     if (!parentNodeDbIdIsNull) {
         ASSERT(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_PARENTID, parentNodeDbId));
 
-        std::string name;
-        ASSERT(queryStringValue(
+        SyncName name;
+        ASSERT(querySyncNameValue(
             id, snapshot == ReplicaSideLocal ? SELECT_NODE_BY_REPLICAID_NAMELOCAL : SELECT_NODE_BY_REPLICAID_NAMEDRIVE, name));
         names.push_back(name);
 
@@ -1592,7 +1592,7 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
                 ASSERT(queryInt64Value(SELECT_NODE_BY_NODEID_LITE_ID, 0, parentNodeDbId));
 
                 ASSERT(
-                    queryStringValue(SELECT_NODE_BY_NODEID_LITE_ID, (snapshot == ReplicaSide::ReplicaSideLocal ? 1 : 2), name));
+                    querySyncNameValue(SELECT_NODE_BY_NODEID_LITE_ID, (snapshot == ReplicaSide::ReplicaSideLocal ? 1 : 2), name));
                 names.push_back(name);
             }
 
@@ -1604,7 +1604,7 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
 
     // Construct path from names' vector
     path.clear();
-    for (std::vector<std::string>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         path.append(*nameIt);
     }
 
