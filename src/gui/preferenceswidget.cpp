@@ -733,8 +733,7 @@ void PreferencesWidget::onUpdateInfo() {
 
 void PreferencesWidget::onStartInstaller() {
     try {
-        UpdateState state = UpdaterClient::instance()->updateState();
-        switch (state) {
+        switch (UpdaterClient::instance()->updateState()) {
             case UpdateState::Ready:
                 UpdaterClient::instance()->startInstaller();
                 break;

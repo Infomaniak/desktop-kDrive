@@ -303,6 +303,7 @@ void ClientGui::showSynthesisDialog() {
             _synthesisPopover->setPosition(trayIconRect);
             raiseDialog(_synthesisPopover.get());
         }
+        _synthesisPopover->onUpdateAvailabalityChange();
     }
 }
 
@@ -948,24 +949,20 @@ void ClientGui::onRefreshErrorList() {
         it = _driveWithNewErrorSet.erase(it);
     }
 
-    if(versionLocked) emit appVersionLocked(versionLocked);
+    if (versionLocked) emit appVersionLocked(versionLocked);
 }
 
 void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
-    if (_synthesisPopover && exceptWidget != _synthesisPopover.get()) {
-        _synthesisPopover->hide();
-    }
+    std::vector<QDialog *> dialogs;
+    dialogs.push_back(_synthesisPopover.get());
+    dialogs.push_back(_parametersDialog.get());
+    dialogs.push_back(_addDriveWizard.get());
+    dialogs.push_back(_loginDialog.get());
 
-    if (_parametersDialog && exceptWidget != _parametersDialog.get()) {
-        _parametersDialog->hide();
-    }
-
-    if (_addDriveWizard && exceptWidget != _addDriveWizard.get()) {
-        _addDriveWizard->hide();
-    }
-
-    if (_loginDialog && exceptWidget != _loginDialog.get()) {
-        _loginDialog->hide();
+    for (auto &dialog : dialogs) {
+        if (dialog && exceptWidget != dialog) {
+            dialog->hide();
+        }
     }
 }
 

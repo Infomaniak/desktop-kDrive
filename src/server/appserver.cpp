@@ -2975,7 +2975,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
         !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
         shouldQuit = false;
-    } else if (std::get<int64_t>(lastServerRestartDate) == SelfRestarterDoNotRestart) {
+    } else if (std::get<int64_t>(lastServerRestartDate) == SELF_RESTARTE_DISABLE_VALUE) {
         LOG_INFO(_logger, "Last session requested to not restart the server.");
         shouldQuit = _crashRecovered;
         if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
@@ -3004,7 +3004,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
         timestampStr = std::to_string(timestamp);
     } else {
-        timestampStr = std::to_string(SelfRestarterNoCrashDetected);
+        timestampStr = std::to_string(SELF_RESTARTER_NO_CRASH_DETECTED);
     }
 
     KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
@@ -3132,13 +3132,7 @@ void AppServer::clearSyncNodes() {
     // Clear node tables
     for (const Sync &sync : syncList) {
         SyncPath dbPath = sync.dbPath();
-        std::shared_ptr<SyncDb> syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
-
-#ifdef __APPLE__
-        // Fix the names on local replica if necessary
-        SyncPal::fixFileNamesWithColon(syncDbPtr, sync.localPath());
-#endif
-
+        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
         syncDbPtr->clearNodes();
     }
 }
