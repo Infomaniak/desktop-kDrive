@@ -795,13 +795,13 @@ SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
     if (segmentIt == path.end()) return {};
 
     auto segment = *segmentIt;
-    if (segmentIt->native() != Str("/")) segment = normalizedSyncName(segment);
+    if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) segment = normalizedSyncName(segment);
 
     SyncPath result{segment};
     ++segmentIt;
 
     for (; segmentIt != path.end(); ++segmentIt) {
-        if (segmentIt->native() != Str("/")) {
+        if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
             result /= normalizedSyncName(*segmentIt);
         }
     }

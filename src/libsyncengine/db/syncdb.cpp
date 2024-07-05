@@ -1326,7 +1326,7 @@ bool SyncDb::id(ReplicaSide snapshot, const SyncPath &path, std::optional<NodeId
     std::vector<SyncName> names;
     SyncPath pathTmp(path);
     while (pathTmp != pathTmp.root_path()) {
-        names.push_back(pathTmp.filename().native());
+        names.push_back(pathTmp.filename());
         pathTmp = pathTmp.parent_path();
     }
 

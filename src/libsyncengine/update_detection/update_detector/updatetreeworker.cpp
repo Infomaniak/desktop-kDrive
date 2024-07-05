@@ -1081,7 +1081,7 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
     std::vector<std::pair<SyncName, NodeId>> names;
     SyncPath pathTmp(path);
     while (pathTmp != pathTmp.root_path()) {
-        names.push_back({pathTmp.filename().native(), "0"});
+        names.push_back({pathTmp.filename(), "0"});
         pathTmp = pathTmp.parent_path();
     }
 
