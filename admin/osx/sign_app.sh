@@ -26,7 +26,7 @@ team_identifier="$3"
 app_domain="$4"
 
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Installer.xpc"
-codesign -s "$identity" --force --verbose=4 --options=runtime --entitlements "$HOME/Sparkle/Entitlements/Downloader.entitlements" "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc"
+codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/XPCServices/Downloader.xpc"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework/Versions/B/Updater.app"
 codesign -s "$identity" --force --verbose=4 --options=runtime "$src_app/Contents/Frameworks/Sparkle.framework"

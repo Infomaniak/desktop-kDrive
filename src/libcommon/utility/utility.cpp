@@ -274,7 +274,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
         sentry_capture_event(event);
     }
 
-    return true;
+    return res;
 }
 
 bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {
@@ -290,6 +290,28 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
         return false;
     }
     return true;
+}
+
+std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) noexcept {
+    using enum AppStateKey;
+    switch (appStateValue) {
+        case LastServerSelfRestartDate:
+            return "LastServerSelfRestartDate";
+        case LastClientSelfRestartDate:
+            return "LastClientSelfRestartDate";
+        case LastSuccessfulLogUploadDate:
+            return "LastSuccessfulLogUploadDate";
+        case LastLogUploadArchivePath:
+            return "LastLogUploadArchivePath";
+        case LogUploadState:
+            return "LogUploadState";
+        case LogUploadPercent:
+            return "LogUploadPercent";
+        case Unknown:
+            return "Unknown";
+        default:
+            return "AppStateKey not found (" + std::to_string(static_cast<int>(appStateValue)) + ")";
+    }
 }
 
 bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName) {
