@@ -820,9 +820,10 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     }
 
     const SyncPath absolutePath = _syncPal->_localPath / relativePath;
-    bool exists = false;
+    bool existsWithSameId = false;
+    NodeId otherNodeId;
     IoError ioError = IoErrorSuccess;
-    if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, exists, ioError)) {
+    if (!IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, nodeId, existsWithSameId, otherNodeId, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExistsWithSameNodeId: "
                                << Utility::formatIoError(absolutePath, ioError).c_str());
 
@@ -835,7 +836,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
         return ExitCodeSystemError;
     }
 
-    if (!exists) return ExitCodeOk;
+    if (!existsWithSameId) return ExitCodeOk;
 
     bool readPermission = false;
     bool writePermission = false;
