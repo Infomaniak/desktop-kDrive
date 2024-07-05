@@ -150,12 +150,12 @@ void TestConflictResolverWorker::testCreateCreate() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
 }
 
 void TestConflictResolverWorker::testEditEdit() {
@@ -169,12 +169,12 @@ void TestConflictResolverWorker::testEditEdit() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
 }
 
 void TestConflictResolverWorker::testMoveCreate() {
@@ -203,12 +203,12 @@ void TestConflictResolverWorker::testMoveCreate() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
 }
 
 void TestConflictResolverWorker::testEditDelete1() {
@@ -228,12 +228,12 @@ void TestConflictResolverWorker::testEditDelete1() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(op->newName().empty());
     CPPUNIT_ASSERT(op->omit());
-    CPPUNIT_ASSERT(op->type() == OperationTypeDelete);
+    CPPUNIT_ASSERT_EQUAL(OperationTypeDelete, op->type());
 }
 
 void TestConflictResolverWorker::testEditDelete2() {
@@ -255,17 +255,17 @@ void TestConflictResolverWorker::testEditDelete2() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 2);
+    CPPUNIT_ASSERT_EQUAL(size_t(2), _syncPal->_syncOps->size());
     for (const auto &opId : _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
         if (op->type() == OperationTypeMove) {
             CPPUNIT_ASSERT(!op->newName().empty());
-            CPPUNIT_ASSERT(op->newParentNode() == _syncPal->_remoteUpdateTree->rootNode());
-            CPPUNIT_ASSERT(op->omit() == false);
-            CPPUNIT_ASSERT(op->affectedNode() == rNodeAAA);
+            CPPUNIT_ASSERT_EQUAL(_syncPal->_remoteUpdateTree->rootNode(), op->newParentNode());
+            CPPUNIT_ASSERT_EQUAL(false, op->omit());
+            CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->affectedNode());
         } else if (op->type() == OperationTypeDelete) {
-            CPPUNIT_ASSERT(op->omit() == true);
-            CPPUNIT_ASSERT(op->affectedNode() == rNodeAAA);
+            CPPUNIT_ASSERT_EQUAL(true, op->omit());
+            CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->affectedNode());
         } else {
             CPPUNIT_ASSERT(false);  // Should not happen
         }
@@ -312,9 +312,9 @@ void TestConflictResolverWorker::testMoveDelete1() {
     // and on the remote replica only
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
-    CPPUNIT_ASSERT(op->omit() == true);
-    CPPUNIT_ASSERT(op->type() == OperationTypeDelete);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT_EQUAL(true, op->omit());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeDelete, op->type());
 }
 
 void TestConflictResolverWorker::testMoveDelete2() {
@@ -365,9 +365,9 @@ void TestConflictResolverWorker::testMoveDelete2() {
     // and on the remote replica only
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
-    CPPUNIT_ASSERT(op->omit() == true);
-    CPPUNIT_ASSERT(op->type() == OperationTypeDelete);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT(op->omit());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeDelete, op->type());
 }
 
 void TestConflictResolverWorker::testMoveDelete3() {
@@ -415,9 +415,9 @@ void TestConflictResolverWorker::testMoveDelete3() {
     // and on the remote replica only
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
-    CPPUNIT_ASSERT(op->omit() == true);
-    CPPUNIT_ASSERT(op->type() == OperationTypeDelete);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
+    CPPUNIT_ASSERT(op->omit());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeDelete, op->type());
 }
 
 void TestConflictResolverWorker::testMoveDelete4() {
@@ -471,10 +471,10 @@ void TestConflictResolverWorker::testMoveDelete4() {
 
         if (op->type() == OperationTypeMove) {
             CPPUNIT_ASSERT(!op->newName().empty());
-            CPPUNIT_ASSERT(op->newParentNode() == _syncPal->_remoteUpdateTree->rootNode());
-            CPPUNIT_ASSERT(op->affectedNode() == rNodeAB);
+            CPPUNIT_ASSERT_EQUAL(_syncPal->_remoteUpdateTree->rootNode(), op->newParentNode());
+            CPPUNIT_ASSERT_EQUAL(rNodeAB, op->affectedNode());
         } else if (op->type() == OperationTypeDelete) {
-            CPPUNIT_ASSERT(op->affectedNode() == rNodeA);
+            CPPUNIT_ASSERT_EQUAL(rNodeA, op->affectedNode());
         } else {
             CPPUNIT_ASSERT(false);  // Should not happen
         }
@@ -507,10 +507,10 @@ void TestConflictResolverWorker::testMoveDelete5() {
     // In real situation, a Move-ParentDelete conflict should have been detected as well.
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->opSortedList().size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->opSortedList().size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     auto syncOp = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT(syncOp->conflict().type() == ConflictTypeMoveParentDelete);
+    CPPUNIT_ASSERT_EQUAL(ConflictTypeMoveParentDelete, syncOp->conflict().type());
 }
 
 void TestConflictResolverWorker::testMoveParentDelete() {
@@ -535,12 +535,12 @@ void TestConflictResolverWorker::testMoveParentDelete() {
     _syncPal->_conflictResolverWorker->execute();
 
     // We should only undo the move operation on the move replica
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT(op->omit() == false);
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT(!op->omit());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
 }
 
 void TestConflictResolverWorker::testCreateParentDelete() {
@@ -598,12 +598,12 @@ void TestConflictResolverWorker::testMoveMoveSource() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
 }
 
 void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
@@ -652,7 +652,7 @@ void TestConflictResolverWorker::testMoveMoveSourceWithOrphanNodes() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT_EQUAL(SyncName2Str(orphanName), SyncName2Str(op->newName()));
@@ -690,12 +690,12 @@ void TestConflictResolverWorker::testMoveMoveDest() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
     CPPUNIT_ASSERT(!op->newName().empty());
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
 }
 
 void TestConflictResolverWorker::testMoveMoveCycle() {
@@ -726,12 +726,62 @@ void TestConflictResolverWorker::testMoveMoveCycle() {
 
     _syncPal->_conflictResolverWorker->execute();
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 1);
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
     UniqueId opId = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
-    CPPUNIT_ASSERT(op->newParentNode() == lNodeA);
-    CPPUNIT_ASSERT(op->targetSide() == ReplicaSideLocal);
-    CPPUNIT_ASSERT(op->type() == OperationTypeMove);
+    CPPUNIT_ASSERT_EQUAL(lNodeA, op->newParentNode());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
 }
 
+void TestConflictResolverWorker::testMoveMoveCycle2() {
+    /**
+     * Initial FS state:
+     *
+     *            root
+     *             |
+     *             A
+     *        _____|______
+     *       |           |
+     *      AA          AB
+     *      |
+     *     AAA
+     */
+
+    // Simulate move of node AAA to AB on local replica
+    std::shared_ptr<Node> lNodeA = _syncPal->_localUpdateTree->getNodeById("lA");
+    std::shared_ptr<Node> lNodeAA = _syncPal->_localUpdateTree->getNodeById("lAA");
+    std::shared_ptr<Node> lNodeAAA = _syncPal->_localUpdateTree->getNodeById("lAAA");
+    std::shared_ptr<Node> lNodeAB = _syncPal->_localUpdateTree->getNodeById("lAB");
+    lNodeAAA->setChangeEvents(OperationTypeMove);
+    lNodeAAA->setMoveOriginParentDbId(lNodeAA->idb());
+    lNodeAAA->setMoveOrigin("A/AA/AAA");
+    lNodeAAA->setParentNode(lNodeAB);
+    lNodeAA->deleteChildren(lNodeAAA);
+    lNodeAB->insertChildren(lNodeAAA);
+
+    // Simulate move of node AB to AA, on remote replica
+    std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
+    std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
+    std::shared_ptr<Node> rNodeAAA = _syncPal->_remoteUpdateTree->getNodeById("rAAA");
+    std::shared_ptr<Node> rNodeAB = _syncPal->_remoteUpdateTree->getNodeById("rAB");
+    rNodeAB->setChangeEvents(OperationTypeMove);
+    rNodeAB->setMoveOriginParentDbId(rNodeA->idb());
+    rNodeAB->setMoveOrigin("A/AB");
+    rNodeAB->setParentNode(rNodeAAA);
+    rNodeA->deleteChildren(rNodeAB);
+    rNodeAAA->insertChildren(rNodeAB);
+
+    Conflict conflict(lNodeAAA, rNodeAAA, ConflictTypeMoveMoveCycle);
+    _syncPal->_conflictQueue->push(conflict);
+
+    _syncPal->_conflictResolverWorker->execute();
+
+    CPPUNIT_ASSERT_EQUAL(size_t(1), _syncPal->_syncOps->size());
+    UniqueId opId = _syncPal->_syncOps->opSortedList().front();
+    SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
+    CPPUNIT_ASSERT_EQUAL(lNodeAA, op->newParentNode());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, op->targetSide());
+    CPPUNIT_ASSERT_EQUAL(OperationTypeMove, op->type());
+}
 }  // namespace KDC

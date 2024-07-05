@@ -43,6 +43,7 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testMoveMoveSourceWithOrphanNodes);
         CPPUNIT_TEST(testMoveMoveDest);
         CPPUNIT_TEST(testMoveMoveCycle);
+        CPPUNIT_TEST(testMoveMoveCycle2);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -67,6 +68,8 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         void testMoveMoveSourceWithOrphanNodes();
         void testMoveMoveDest();
         void testMoveMoveCycle();
+        void testMoveMoveCycle2();
+
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
