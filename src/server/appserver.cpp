@@ -3133,12 +3133,6 @@ void AppServer::clearSyncNodes() {
     for (const Sync &sync : syncList) {
         SyncPath dbPath = sync.dbPath();
         auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
-
-#ifdef __APPLE__
-        // Fix the names on local replica if necessary
-        SyncPal::fixFileNamesWithColon(syncDbPtr, sync.localPath());
-#endif
-
         syncDbPtr->clearNodes();
     }
 }
