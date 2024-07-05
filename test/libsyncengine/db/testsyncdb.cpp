@@ -187,17 +187,17 @@ void TestSyncDb::testNodes() {
     // path
     SyncPath pathFile3;
     CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideLocal, nodeFile3.nodeIdLocal().value(), pathFile3, found) && found);
-    CPPUNIT_ASSERT(pathFile3 == SyncPath("Dir loc 1/File loc 1.3"));
+    CPPUNIT_ASSERT(pathFile3 == SyncPath(Str("Dir loc 1/File loc 1.3")));
     CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideRemote, nodeFile3.nodeIdRemote().value(), pathFile3, found) && found);
-    CPPUNIT_ASSERT(pathFile3 == SyncPath("Dir drive 1/File drive 1.3"));
+    CPPUNIT_ASSERT(pathFile3 == SyncPath(Str("Dir drive 1/File drive 1.3")));
     SyncPath pathDir1;
     CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideLocal, nodeDir1.nodeIdLocal().value(), pathDir1, found) && found);
-    CPPUNIT_ASSERT(pathDir1 == SyncPath("Dir loc 1"));
+    CPPUNIT_ASSERT(pathDir1 == SyncPath(Str("Dir loc 1")));
     CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideRemote, nodeDir1.nodeIdRemote().value(), pathDir1, found) && found);
-    CPPUNIT_ASSERT(pathDir1 == SyncPath("Dir drive 1"));
+    CPPUNIT_ASSERT(pathDir1 == SyncPath(Str("Dir drive 1")));
     SyncPath pathDir3;
     CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideLocal, nodeDir3.nodeIdLocal().value(), pathDir3, found) && found);
-    CPPUNIT_ASSERT(pathDir3 == SyncPath("家屋香袈睷晦"));
+    CPPUNIT_ASSERT(pathDir3 == SyncPath(Str("家屋香袈睷晦")));
     SyncPath pathRoot;
     CPPUNIT_ASSERT(_testObj->path(ReplicaSide::ReplicaSideLocal, _testObj->rootNode().nodeIdLocal().value(), pathRoot, found) &&
                    found);
@@ -369,20 +369,22 @@ void TestSyncDb::testNodes() {
         SyncPath localPathFile3;
         SyncPath remotePathFile3;
         CPPUNIT_ASSERT(_testObj->path(dbNodeIdFile3, localPathFile3, remotePathFile3, found) && found);
-        CPPUNIT_ASSERT(localPathFile3 == SyncPath("Dir loc 1/File loc 1.3"));
-        CPPUNIT_ASSERT(remotePathFile3 == SyncPath("Dir drive 1/File drive 1.3"));
+        CPPUNIT_ASSERT(localPathFile3 == SyncPath(Str("Dir loc 1/File loc 1.3")));
+        CPPUNIT_ASSERT(remotePathFile3 == SyncPath(Str("Dir drive 1/File drive 1.3")));
 
         SyncPath localPathDir1;
         SyncPath remotePathDir1;
         CPPUNIT_ASSERT(_testObj->path(dbNodeIdDir1, localPathDir1, remotePathDir1, found) && found);
-        CPPUNIT_ASSERT(localPathDir1 == SyncPath("Dir loc 1"));
-        CPPUNIT_ASSERT(remotePathDir1 == SyncPath("Dir drive 1"));
+        CPPUNIT_ASSERT(localPathDir1 == SyncPath(Str("Dir loc 1")));
+        CPPUNIT_ASSERT(remotePathDir1 == SyncPath(Str("Dir drive 1")));
 
         SyncPath localPathDir3;
         SyncPath remotePathDir3;
+        SyncPath localPathRootExpected = SyncPath(Str("家屋香袈睷晦"));
+        SyncPath remotePathRootExpecte = SyncPath(Str("家屋香袈睷晦"));
         CPPUNIT_ASSERT(_testObj->path(dbNodeIdDir3, localPathDir3, remotePathDir3, found) && found);
-        CPPUNIT_ASSERT(localPathDir3 == SyncPath("家屋香袈睷晦"));
-        CPPUNIT_ASSERT(remotePathDir3 == SyncPath("家屋香袈睷晦"));
+        CPPUNIT_ASSERT(localPathDir3 == localPathRootExpected);
+        CPPUNIT_ASSERT(remotePathDir3 == remotePathRootExpecte);
 
         SyncPath localPathRoot;
         SyncPath remotePathRoot;
@@ -436,6 +438,11 @@ void TestSyncDb::testSyncNodes() {
     std::unordered_set<NodeId> nodeIdSet3;
     CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeTypeBlackList, nodeIdSet3));
     CPPUNIT_ASSERT(nodeIdSet3.size() == 5);
+    CPPUNIT_ASSERT(nodeIdSet3.contains("1"));
+    CPPUNIT_ASSERT(nodeIdSet3.contains("2"));
+    CPPUNIT_ASSERT(nodeIdSet3.contains("3"));
+    CPPUNIT_ASSERT(nodeIdSet3.contains("4"));
+    CPPUNIT_ASSERT(nodeIdSet3.contains("5"));
     nodeIdSet3.clear();
     CPPUNIT_ASSERT(_testObj->selectAllSyncNodes(SyncNodeTypeUndecidedList, nodeIdSet3));
     CPPUNIT_ASSERT(nodeIdSet3.size() == 3);
