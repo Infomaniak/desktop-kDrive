@@ -26,6 +26,7 @@ set(testsyncengine_SRCS
         update_detection/file_system_observer/testlocalfilesystemobserverworker.h update_detection/file_system_observer/testlocalfilesystemobserverworker.cpp
         update_detection/file_system_observer/testsnapshot.h update_detection/file_system_observer/testsnapshot.cpp
         update_detection/file_system_observer/testcomputefsoperationworker.h update_detection/file_system_observer/testcomputefsoperationworker.cpp
+        update_detection/file_system_observer/testfsoperationset.h update_detection/file_system_observer/testfsoperationset.cpp
         ## Update Detector
         update_detection/update_detector/testupdatetree.h update_detection/update_detector/testupdatetree.cpp
         update_detection/update_detector/testupdatetreeworker.h update_detection/update_detector/testupdatetreeworker.cpp

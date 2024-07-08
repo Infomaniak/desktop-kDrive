@@ -20,6 +20,7 @@
 #include "db/testsyncdb.h"
 #include "olddb/testoldsyncdb.h"
 #include "syncpal/testsyncpal.h"
+#include "update_detection/file_system_observer/testfsoperationset.h"
 #include "update_detection/file_system_observer/testremotefilesystemobserverworker.h"
 #include "update_detection/file_system_observer/testlocalfilesystemobserverworker.h"
 #include "update_detection/file_system_observer/testsnapshot.h"
@@ -45,6 +46,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestJobManager);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);
