@@ -31,6 +31,7 @@
 #include "reconciliation/operation_generator/testoperationgeneratorworker.h"
 #include "reconciliation/conflict_resolver/testconflictresolverworker.h"
 #include "propagation/operation_sorter/testoperationsorterworker.h"
+#include "propagation/executor/executorworker/testexecutorworker.h"
 #include "propagation/executor/testintegration.h"
 #include "jobs/network/testnetworkjobs.h"
 #include "jobs/local/testlocaljobs.h"
