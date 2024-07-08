@@ -19,7 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
-
+#include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
 
 namespace KDC {
@@ -54,7 +54,8 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         void testLnkFileAlreadySynchronized();
 
     private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        std::shared_ptr<SyncPal> _syncPal;
+        std::shared_ptr<LocalTemporaryDirectory> _localTempDir;
 };
 
 }  // namespace KDC
