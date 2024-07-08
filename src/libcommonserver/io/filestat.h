@@ -28,7 +28,9 @@ struct FileStat {
         int64_t size = 0;
         uint64_t inode = 0;
         bool isHidden = false;
+#if defined(__APPLE__) || defined(__unix__)
         bool isEmptyOnDisk{false};
+#endif
         // Type of the item or target item if symlink
         // Value for a dangling symlink: NodeTypeUnknown (macOS & Linux), NodeTypeFile/NodeTypeDirectory (Windows)
         NodeType nodeType = NodeTypeUnknown;
