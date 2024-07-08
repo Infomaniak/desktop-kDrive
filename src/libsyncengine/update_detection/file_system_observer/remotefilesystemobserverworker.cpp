@@ -273,7 +273,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         return ExitCodeDataError;
     }
 
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGHEST);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
     while (!JobManager::instance()->isJobFinished(job->jobId())) {
         if (stopAsked()) {
             return ExitCodeOk;
@@ -400,7 +400,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             return ExitCodeDataError;
         }
 
-        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_HIGHEST);
+        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
         while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");

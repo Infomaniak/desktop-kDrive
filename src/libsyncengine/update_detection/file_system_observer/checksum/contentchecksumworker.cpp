@@ -71,7 +71,7 @@ void ContentChecksumWorker::execute() {
 
             const std::lock_guard<std::mutex> lock(_checksumMutex);
             while (_runningJobs.begin() != _runningJobs.end()) {
-                _runningJobs.extract(_runningJobs.begin()).mapped();
+                _runningJobs.erase(_runningJobs.begin());
             }
 
             _runningJobs.clear();
