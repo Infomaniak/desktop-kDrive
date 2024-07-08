@@ -1801,7 +1801,13 @@ bool SyncDb::ancestor(ReplicaSide snapshot, const NodeId &nodeId1, const NodeId 
 
 // Returns database ID for the ID nodeId of snapshot
 bool SyncDb::dbId(ReplicaSide snapshot, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
+    found = false;
+    dbNodeId = 0;
+    if (snapshot == ReplicaSideUnknown) {
+        LOG_ERROR(_logger, "Call to SyncDb::dbId with snapshot=='ReplicaSideUnknown'");
+        return false;
+    }
 
     std::string id = (snapshot == ReplicaSide::ReplicaSideLocal ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));

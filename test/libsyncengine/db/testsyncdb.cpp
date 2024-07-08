@@ -454,4 +454,52 @@ void TestSyncDb::testSyncNodes() {
     CPPUNIT_ASSERT_EQUAL(size_t(0), nodeIdSet3.size());
 }
 
+void TestSyncDb::testCorrespondingNodeId() {
+    time_t tLoc = std::time(0);
+    time_t tDrive = std::time(0);
+    bool constraintError = false;
+
+
+    DbNode nodeDir(0, _testObj->rootNode().nodeId(), Str("Dir loc 1"), Str("Dir drive 1"), "id dir loc 1", "id dir drive 1", tLoc,
+                   tLoc, tDrive, NodeType::NodeTypeDirectory, 0, std::nullopt);
+    DbNodeId dbNodeIdDir;
+    CPPUNIT_ASSERT(_testObj->insertNode(nodeDir, dbNodeIdDir, constraintError));
+    CPPUNIT_ASSERT(!constraintError);
+
+    DbNodeId dbNodeIdFile;
+    DbNode nodeFile(0, _testObj->rootNode().nodeId(), Str("File loc 1"), Str("File drive 1"), "id file loc 1", "id file drive 1",
+                    tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0, std::nullopt);
+    CPPUNIT_ASSERT(_testObj->insertNode(nodeFile, dbNodeIdFile, constraintError));
+    CPPUNIT_ASSERT(!constraintError);
+
+    // Normal case
+    NodeId correspondingNodeId;
+    bool found = false;
+    CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSideLocal, "id dir loc 1", correspondingNodeId, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(std::string("id dir drive 1"), correspondingNodeId);
+
+    CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSideRemote, "id dir drive 1", correspondingNodeId, found));
+    CPPUNIT_ASSERT(found);
+    CPPUNIT_ASSERT_EQUAL(std::string("id dir loc 1"), correspondingNodeId);
+
+    //Wrong Side case
+    CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSideRemote, "id dir loc 1", correspondingNodeId, found));
+    CPPUNIT_ASSERT(!found);
+
+    CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSideLocal, "id dir drive 1", correspondingNodeId, found));
+    CPPUNIT_ASSERT(!found);
+
+    //Wrong id case
+    CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSideLocal, "id dir loc 2", correspondingNodeId, found));
+    CPPUNIT_ASSERT(!found);
+
+    CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSideRemote, "id dir drive 2", correspondingNodeId, found));
+    CPPUNIT_ASSERT(!found);
+
+    // Unknow side case
+    CPPUNIT_ASSERT(!_testObj->correspondingNodeId(ReplicaSideUnknown, "id dir loc 1", correspondingNodeId, found));
+    CPPUNIT_ASSERT(!found);
+
+}
 }  // namespace KDC
