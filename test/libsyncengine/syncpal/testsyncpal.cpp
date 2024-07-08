@@ -36,15 +36,15 @@ void TestSyncPal::setUp() {
     const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
     const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
     const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
     const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
     const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
 
-    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
+    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remotePathStr.empty() ||
         apiTokenStr.empty()) {
         throw std::runtime_error("Some environment variables are missing!");
     }
-
+    _localTempDir = std::make_shared<LocalTemporaryDirectory>("TestSyncPal");
+    const std::string localPathStr = _localTempDir->path.string();
     // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
@@ -95,6 +95,7 @@ void TestSyncPal::tearDown() {
         _syncPal->stop(false, true, true);
     }
     ParmsDb::reset();
+    _localTempDir.reset();
 }
 
 void TestSyncPal::testUpdateTree() {

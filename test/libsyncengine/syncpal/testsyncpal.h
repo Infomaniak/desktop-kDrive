@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#pragma once
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
 
 using namespace CppUnit;
@@ -38,7 +39,7 @@ class TestSyncPal : public CppUnit::TestFixture {
     private:
         std::shared_ptr<SyncPal> _syncPal;
         std::shared_ptr<ParmsDb> _parmsDb;
-
+        std::shared_ptr<LocalTemporaryDirectory> _localTempDir;
         int _driveDbId;
         SyncPath _localPath;
         SyncPath _remotePath;
