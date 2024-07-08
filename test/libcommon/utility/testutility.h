@@ -28,12 +28,14 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testGetAppSupportDir);
         CPPUNIT_TEST(testIsVersionLower);
         CPPUNIT_TEST(testStringToAppStateValue);
+        CPPUNIT_TEST(testArgsWriter);
         CPPUNIT_TEST_SUITE_END();
 
     protected:
         void testGetAppSupportDir();
         void testIsVersionLower();
         void testStringToAppStateValue();
+        void testArgsWriter();
 };
 
 }  // namespace KDC
