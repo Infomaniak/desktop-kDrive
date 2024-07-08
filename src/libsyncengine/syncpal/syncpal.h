@@ -218,10 +218,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual void refreshTmpBlacklist();
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
 
-        std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) {
-            return side == ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree;
-        }
-
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
