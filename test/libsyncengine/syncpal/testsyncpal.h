@@ -27,6 +27,7 @@ class TestSyncPal : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSyncPal);
         CPPUNIT_TEST(testUpdateTree);
         CPPUNIT_TEST(testSnapshot);
+        CPPUNIT_TEST(testCopySnapshots);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -43,6 +44,7 @@ class TestSyncPal : public CppUnit::TestFixture {
 
         void testUpdateTree();
         void testSnapshot();
+        void testCopySnapshots();
         void testAll();
         void testConflictQueue();
         bool exec_case_6_4();

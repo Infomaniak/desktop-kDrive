@@ -128,6 +128,26 @@ void TestSyncPal::testSnapshot() {
     CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
 }
 
+void TestSyncPal::testCopySnapshots() {
+    _syncPal->copySnapshots();
+
+    // Check that the copy is the same as the original
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSideLocal, true)->nbItems(),
+                         _syncPal->snapshot(ReplicaSideLocal, false)->nbItems());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSideLocal, true)->isValid(),
+                         _syncPal->snapshot(ReplicaSideLocal, false)->isValid());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSideLocal, true)->rootFolderId(),
+                         _syncPal->snapshot(ReplicaSideLocal, false)->rootFolderId());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSideLocal, true)->side(), _syncPal->snapshot(ReplicaSideLocal, false)->side());
+
+    // Check that the copy is different object
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal, true).get() != _syncPal->snapshot(ReplicaSideLocal, false).get());
+    _syncPal->snapshot(ReplicaSideLocal, false)->setValid(true);
+    _syncPal->snapshot(ReplicaSideLocal, true)->setValid(false);
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal, true)->isValid() !=
+                   _syncPal->snapshot(ReplicaSideLocal, false)->isValid());
+}
+
 void TestSyncPal::testAll() {
     // Start sync
     _syncPal->start();
