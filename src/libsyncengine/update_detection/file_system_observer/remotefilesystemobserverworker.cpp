@@ -94,10 +94,10 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     _updating = true;
     countListingRequests();
 
-    ExitCode exitCode = initWithCursor();
+    const ExitCode exitCode = initWithCursor();
 
-    auto end = std::chrono::steady_clock::now();
-    std::chrono::duration<double> elapsedSeconds = end - start;
+    const auto end = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> elapsedSeconds = end - start;
     if (exitCode == ExitCodeOk && !stopAsked()) {
         _snapshot->setValid(true);
         LOG_SYNCPAL_INFO(
@@ -108,8 +108,12 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
         switch (exitCode) {
             case ExitCodeNetworkError:
-            case ExitCodeLogicError:
                 _syncPal->addError(Error(ERRID, exitCode, exitCause()));
+                break;
+            case ExitCodeLogicError:
+                if (exitCause() == ExitCauseFullListParsingError) {
+                    _syncPal->addError(Error(_syncPal->syncDbId(), name(), exitCode, exitCause()));
+                }
                 break;
             default:
                 break;
@@ -612,7 +616,9 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
                         }
                         break;
                     case ExitCodeLogicError:
-                        _syncPal->addError(Error(ERRID, exitCode, exitCause()));
+                        if (exitCause() == ExitCauseFullListParsingError) {
+                            _syncPal->addError(Error(_syncPal->syncDbId(), name(), exitCode, exitCause()));
+                        }
                         break;
                     default:
                         break;

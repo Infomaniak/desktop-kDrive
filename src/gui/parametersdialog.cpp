@@ -402,6 +402,8 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
         case ExitCodeTokenRefreshed:
         case ExitCodeRateLimited:
         case ExitCodeInvalidSync:
+        case ExitCodeOperationCanceled:
+        case ExitCodeInvalidOperation:
             break;
     }
 
@@ -574,16 +576,16 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
                 "The app does not have write rights to the synchronization folder.<br>"
                 "The synchronization has been stopped.");
             break;
-        case ExitCodeOk:
-        case ExitCodeNeedRestart:
         case ExitCodeLogicError:
             if (exitCause == ExitCauseFullListParsingError) {
-                return tr("The parsing of the CSV full listing of the remote drive items failed (error %1).<br>"
-                          "Special characters such as double quotes, backslashes or line returns can cause kDrive parser "
+                return tr("File name parsing error (error %1).<br>"
+                          "Special characters such as double quotes, backslashes or line returns can cause parsing "
                           "failures.")
                     .arg(err);
             }
             break;
+        case ExitCodeOk:
+        case ExitCodeNeedRestart:
         case ExitCodeTokenRefreshed:
         case ExitCodeRateLimited:
         case ExitCodeOperationCanceled:
