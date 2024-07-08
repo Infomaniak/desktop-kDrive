@@ -37,7 +37,7 @@ class TestFsOperationSet : public CppUnit::TestFixture {
         CPPUNIT_TEST(testfindOp);
         CPPUNIT_TEST(testOperatorEqual);
         CPPUNIT_TEST(testMultithreadSupport);
-        //CPPUNIT_TEST(testCopyConstructor);
+        CPPUNIT_TEST(testCopyConstructor);
         CPPUNIT_TEST_SUITE_END();
 
     public:
