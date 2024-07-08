@@ -3094,13 +3094,7 @@ void AppServer::clearSyncNodes() {
     // Clear node tables
     for (const Sync &sync : syncList) {
         SyncPath dbPath = sync.dbPath();
-        std::shared_ptr<SyncDb> syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
-
-#ifdef __APPLE__
-        // Fix the names on local replica if necessary
-        SyncPal::fixFileNamesWithColon(syncDbPtr, sync.localPath());
-#endif
-
+        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
         syncDbPtr->clearNodes();
     }
 }
@@ -3802,19 +3796,16 @@ void AppServer::addError(const Error &error) {
         // Manage sockets defuncted error
         LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
-        Parameters &parameters = ParametersCache::instance()->parameters();
-        if (const int uploadSessionParallelJobs = parameters.uploadSessionParallelJobs(); uploadSessionParallelJobs > 1) {
-            const int newUploadSessionParallelJobs = std::floor(uploadSessionParallelJobs / 2.0);
-            parameters.setUploadSessionParallelJobs(newUploadSessionParallelJobs);
-            ParametersCache::instance()->save();
-            LOG_DEBUG(Log::instance()->getLogger(), "Update uploadSessionParallelJobs from "
-                                                        << uploadSessionParallelJobs << " to " << newUploadSessionParallelJobs);
-        }
-
 #ifdef NDEBUG
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", "Sockets defuncted error"));
 #endif
+
+        // Decrease upload session max parallel jobs
+        ParametersCache::instance()->decreaseUploadSessionParallelThreads();
+
+        // Decrease JobManager pool capacity
+        JobManager::instance()->decreasePoolCapacity();
     }
 
 #ifdef NDEBUG

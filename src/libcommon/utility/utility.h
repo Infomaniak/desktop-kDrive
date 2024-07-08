@@ -64,6 +64,7 @@ struct COMMON_EXPORT CommonUtility {
         static QString escape(const QString &in);
         static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
         static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);
+        static std::string appStateKeyToString(const AppStateKey &appStateValue) noexcept;
 
         static bool compressFile(const std::wstring &originalName, const std::wstring &targetName);
         static bool compressFile(const std::string &originalName, const std::string &targetName);
@@ -79,8 +80,8 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath relativePath(const SyncPath &rootPath, const SyncPath &path);
 
-        static const SyncPath getAppDir();
-        static const SyncPath getAppSupportDir();
+        static SyncPath getAppDir();
+        static SyncPath getAppSupportDir();
         static SyncPath getAppWorkingDir();
 
         static QString getFileIconPathFromFileName(const QString &fileName, NodeType type);

@@ -1,5 +1,5 @@
 /*
- * Infomaniak kDrive - Desktop
+* Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,16 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
-
-#include "api_token/testapitoken.h"
-#include "utility/testutility.h"
+#include "syncpaltest.h"
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
-}  // namespace KDC
-
-int main(int, char **) {
-    return runTestSuite("_kDriveTestCommon.log");
-}
+} // KDC

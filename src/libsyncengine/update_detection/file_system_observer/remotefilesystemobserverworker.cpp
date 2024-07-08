@@ -94,28 +94,9 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
     _snapshot->init();
     _updating = true;
-
-    {
-        auto listingFullTimerEnd = std::chrono::steady_clock::now();
-        std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
-        if (elapsedTime.count() > 3600) {  // 1h
-            _listingFullCounter = 0;
-            _listingFullTimer = listingFullTimerEnd;
-        } else if (_listingFullCounter > 60) {
-            // If there is more then 1 listing/full request per minute for an hour -> send a sentry
-#ifdef NDEBUG
-            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING,
-                                                                "RemoteFileSystemObserverWorker::generateInitialSnapshot",
-                                                                "Too many listing/full requests, sync is looping"));
-#endif
-            _listingFullCounter = 0;
-            _listingFullTimer = listingFullTimerEnd;
-        }
-    }
-    _listingFullCounter++;
+    countListingRequests();
 
     ExitCode exitCode = initWithCursor();
-    ExitCause exitCause = ExitCause();
 
     auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsedSeconds = end - start;
@@ -127,8 +108,8 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
         invalidateSnapshot();
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
 
-        if (exitCode == ExitCodeNetworkError && exitCause == ExitCauseNetworkTimeout) {
-            _syncPal->addError(Error(ERRID, exitCode, exitCause));
+        if (exitCode == ExitCodeNetworkError) {
+            _syncPal->addError(Error(ERRID, exitCode, ExitCause()));
         }
     }
     _updating = false;
@@ -145,6 +126,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
     ExitCode exitCode = _syncPal->listingCursor(_cursor, timestamp);
     if (exitCode != ExitCodeOk) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::listingCursor");
+
         setExitCause(ExitCauseDbAccessError);
         return exitCode;
     }
@@ -291,7 +273,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         return ExitCodeDataError;
     }
 
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGHEST);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
     while (!JobManager::instance()->isJobFinished(job->jobId())) {
         if (stopAsked()) {
             return ExitCodeOk;
@@ -418,7 +400,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             return ExitCodeDataError;
         }
 
-        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_HIGHEST);
+        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
         while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
@@ -740,6 +722,28 @@ bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &na
     (void)type;
 #endif
     return false;
+}
+
+void RemoteFileSystemObserverWorker::countListingRequests() {
+    const auto listingFullTimerEnd = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
+    bool resetTimer = elapsedTime.count() > 3600;  // 1h
+    if (_listingFullCounter > 60) {
+        // If there is more then 1 listing/full request per minute for an hour -> send a sentry
+#ifdef NDEBUG
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING,
+                                                            "RemoteFileSystemObserverWorker::generateInitialSnapshot",
+                                                            "Too many listing/full requests, sync is looping"));
+#endif
+        resetTimer = true;
+    }
+
+    if (resetTimer) {
+        _listingFullCounter = 0;
+        _listingFullTimer = listingFullTimerEnd;
+    }
+
+    _listingFullCounter++;
 }
 
 }  // namespace KDC
