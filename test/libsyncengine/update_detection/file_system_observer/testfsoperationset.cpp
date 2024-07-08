@@ -18,6 +18,7 @@
 
 #include "testfsoperationset.h"
 #include "update_detection/file_system_observer/fsoperationset.h"
+#include "thread"
 
 
 using namespace CppUnit;
@@ -254,11 +255,10 @@ void TestFsOperationSet::testMultithreadSupport() {
             fsOperationSet.getOp(1, opPtr);
             functionEnded = true;
         });
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
@@ -280,10 +280,10 @@ void TestFsOperationSet::testMultithreadSupport() {
             functionEnded = true;
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
@@ -305,10 +305,10 @@ void TestFsOperationSet::testMultithreadSupport() {
             functionEnded = true;
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
@@ -330,10 +330,10 @@ void TestFsOperationSet::testMultithreadSupport() {
             functionEnded = true;
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
@@ -354,10 +354,10 @@ void TestFsOperationSet::testMultithreadSupport() {
             functionEnded = true;
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
@@ -378,10 +378,10 @@ void TestFsOperationSet::testMultithreadSupport() {
             functionEnded = true;
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
@@ -402,10 +402,10 @@ void TestFsOperationSet::testMultithreadSupport() {
             functionEnded = true;
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
@@ -426,10 +426,10 @@ void TestFsOperationSet::testMultithreadSupport() {
             functionEnded = true;
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
@@ -451,10 +451,10 @@ void TestFsOperationSet::testMultithreadSupport() {
             functionEnded = true;
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
@@ -476,13 +476,13 @@ void TestFsOperationSet::testMultithreadSupport() {
             functionEnded = true;
         });
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         bool functionEndedBeforeUnlock = functionEnded;
         fsOperationSet1._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // Normal delay is < 1 microsecond
+        Utility::msleep(50);  // Normal delay is < 1 microsecond
         functionEndedBeforeUnlock = functionEndedBeforeUnlock || functionEnded;
         fsOperationSet2._mutex.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        Utility::msleep(50);
         bool functionEndedAfterUnlock = functionEnded;
         t1.join();
 
