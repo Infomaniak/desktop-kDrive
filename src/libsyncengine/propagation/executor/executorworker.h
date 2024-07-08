@@ -55,7 +55,8 @@ class ExecutorWorker : public OperationProcessor {
 
         void handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError);
         bool generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
-        bool checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolutePath, bool &ignoreItem,
+        bool fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath);
+        bool checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
                                       bool &isSyncing);  // TODO : is called "check..." but perform some actions. Wording not
                                                          // good, function probably does too much
 

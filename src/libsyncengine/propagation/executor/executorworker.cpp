@@ -1053,7 +1053,41 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
     return true;
 }
 
-bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolutePath, bool &ignoreItem, bool &isSyncing) {
+bool ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath) {
+    const auto id = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";
+    LOGW_SYNCPAL_DEBUG(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(absolutePath).c_str()
+                                                                           << L" (" << Utility::s2ws(id).c_str() << L")");
+
+    // Update last modification date in order to avoid generating more EDIT operations.
+    bool found = false;
+    DbNode dbNode;
+    if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
+        _executorExitCode = ExitCodeDbError;
+        _executorExitCause = ExitCauseDbAccessError;
+        return false;
+    }
+    if (!found) {
+        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->correspondingNode()->idb());
+        _executorExitCode = ExitCodeDataError;
+        _executorExitCause = ExitCauseDbEntryNotFound;
+        return false;
+    }
+
+    bool exists = false;
+    if (!Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false, exists)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath).c_str());
+    }
+    if (exists) {
+        LOGW_SYNCPAL_INFO(_logger,
+                          L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
+                              << Utility::formatSyncPath(absolutePath).c_str());
+    }
+    // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
+    return true;
+}
+
+bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem, bool &isSyncing) {
     ignoreItem = false;
 
     bool isPlaceholder = false;
@@ -1069,40 +1103,8 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
 
     if (syncOp->targetSide() == ReplicaSideRemote) {
         if (isPlaceholder && !isHydrated) {
-            std::string id = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";
-            LOGW_SYNCPAL_DEBUG(_logger, L"Do not upload dehydrated placeholders: "
-                                            << Utility::formatSyncPath(absolutePath).c_str() << L" (" << Utility::s2ws(id).c_str()
-                                            << L")");
             ignoreItem = true;
-
-            // Update last modification date in order to avoid generating more EDIT operations.
-            bool found = false;
-            DbNode dbNode;
-            if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
-                LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
-                _executorExitCode = ExitCodeDbError;
-                _executorExitCause = ExitCauseDbAccessError;
-                return false;
-            }
-            if (!found) {
-                LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->correspondingNode()->idb());
-                _executorExitCode = ExitCodeDataError;
-                _executorExitCause = ExitCauseDbEntryNotFound;
-                return false;
-            }
-
-            bool exists = false;
-            if (!Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false, exists)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath).c_str());
-            }
-            if (exists) {
-                LOGW_SYNCPAL_INFO(
-                    _logger,
-                    L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
-                        << Utility::formatSyncPath(absolutePath).c_str());
-            }
-            // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
-            return true;
+            return fixModificationDate(syncOp, absolutePath);
         }
     } else {
         if (isPlaceholder) {

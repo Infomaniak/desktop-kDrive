@@ -349,7 +349,7 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
         return;
     }
 
-    QString message =
+    const QString message =
         buildMessage(QString("STATUS"), fileData._localPath, socketAPIString(status, isPlaceholder, isHydrated, progress));
     listener->sendMessage(message);
 }
