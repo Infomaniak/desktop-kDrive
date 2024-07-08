@@ -931,8 +931,8 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshotCopy->exists(*nodeIdIt)
-                                                                      : _remoteSnapshotCopy->exists(*nodeIdIt);
+        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? snapshot(ReplicaSideLocal, true)->exists(*nodeIdIt)
+                                                                      : snapshot(ReplicaSideRemote, true)->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
@@ -1401,8 +1401,8 @@ void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side)
 }
 
 void SyncPal::copySnapshots() {
-    _localSnapshotCopy = _localSnapshot;
-    _remoteSnapshotCopy = _remoteSnapshot;
+    *_localSnapshotCopy = *_localSnapshot;
+    *_remoteSnapshotCopy = *_remoteSnapshot;
 }
 
 }  // namespace KDC

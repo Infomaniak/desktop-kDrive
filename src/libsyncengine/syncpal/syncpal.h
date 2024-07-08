@@ -226,6 +226,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void copySnapshots();
 
     private:
+        friend class TestSyncPal;
         log4cplus::Logger _logger;
         int _syncDbId{0};
         int _driveDbId{0};
