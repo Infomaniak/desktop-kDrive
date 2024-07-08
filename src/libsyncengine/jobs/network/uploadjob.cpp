@@ -87,11 +87,11 @@ bool UploadJob::canRun() {
 }
 
 void UploadJob::runJob() noexcept {
-    if (_vfsForceStatus) {
-        if (!_vfsForceStatus(_filePath, true, 0, true)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath).c_str());
-        }
-    }
+    // if (_vfsForceStatus) {
+    //     if (!_vfsForceStatus(_filePath, true, 0, true)) {
+    //         LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath).c_str());
+    //     }
+    // }
 
     AbstractTokenNetworkJob::runJob();
 }

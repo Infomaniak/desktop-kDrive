@@ -80,11 +80,11 @@ void UploadSession::runJob() {
     }
     auto start = std::chrono::steady_clock::now();
 
-    if (_vfsForceStatus) {
-        if (!_vfsForceStatus(_filePath, true, 0, true)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath).c_str());
-        }
-    }
+    // if (_vfsForceStatus) {
+    //     if (!_vfsForceStatus(_filePath, true, 0, true)) {
+    //         LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath).c_str());
+    //     }
+    // }
 
     bool ok = true;
 

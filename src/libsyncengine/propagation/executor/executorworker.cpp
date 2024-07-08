@@ -286,11 +286,14 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
         }
 
         if (isDehydratedPlaceholder) {
-            // Delete the file
-            LocalDeleteJob deleteJob(_syncPal->driveDbId(), _syncPal->_localPath, relativeLocalFilePath, true,
-                                     syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "");
-            deleteJob.setBypassCheck(true);
-            deleteJob.runSynchronously();
+            // // Delete the file
+            // LocalDeleteJob deleteJob(_syncPal->driveDbId(), _syncPal->_localPath, relativeLocalFilePath, true,
+            //                          syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "");
+            // deleteJob.setBypassCheck(true);
+            // deleteJob.runSynchronously();
+
+            // Blacklist dehydrated placeholder
+            blacklistLocalItem(absoluteLocalFilePath);
 
             // Remove from update tree
             std::shared_ptr<UpdateTree> sourceUpdateTree =
@@ -802,7 +805,7 @@ bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path
             return false;
         }
 
-        if (isPlaceholder && !isHydrated) {
+        if (isPlaceholder && !isHydrated && !isSyncing) {
             LOGW_SYNCPAL_INFO(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(path).c_str());
             isDehydratedPlaceholder = true;
         }
@@ -1398,10 +1401,8 @@ bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
     } else {
         try {
             job = std::make_shared<DeleteJob>(
-                _syncPal->_driveDbId
-                , syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string()
-                , syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string()
-                , absoluteLocalFilePath);
+                _syncPal->_driveDbId, syncOp->correspondingNode()->id() ? *syncOp->correspondingNode()->id() : std::string(),
+                syncOp->affectedNode()->id() ? *syncOp->affectedNode()->id() : std::string(), absoluteLocalFilePath);
         } catch (std::exception const &e) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in DeleteJob::DeleteJob for driveDbId=" << _syncPal->_driveDbId << L" : "
                                                                                        << Utility::s2ws(e.what()).c_str());
@@ -1654,11 +1655,8 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
 
 bool ExecutorWorker::isManagedBackError(const ExitCause exitCause, bool &isInconsistencyIssue) {
     isInconsistencyIssue = exitCause == ExitCauseInvalidName;
-    return exitCause == ExitCauseInvalidName
-           || exitCause == ExitCauseUploadNotTerminated
-           || exitCause == ExitCauseApiErr
-           || exitCause == ExitCauseFileTooBig
-           || exitCause == ExitCauseNotFound;
+    return exitCause == ExitCauseInvalidName || exitCause == ExitCauseUploadNotTerminated || exitCause == ExitCauseApiErr ||
+           exitCause == ExitCauseFileTooBig || exitCause == ExitCauseNotFound;
 }
 
 bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath) {
@@ -1670,8 +1668,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         _syncPal->setProgressComplete(
             relativeLocalPath, SyncFileStatusSuccess);  // Not really success but the file should not appear in error in Finder
         return false;
-    } else if (bool isInconsistencyIssue = false; job->exitCode() == ExitCodeBackError &&
-               isManagedBackError(job->exitCause(), isInconsistencyIssue)) {
+    } else if (bool isInconsistencyIssue = false;
+               job->exitCode() == ExitCodeBackError && isManagedBackError(job->exitCause(), isInconsistencyIssue)) {
         // The item should be temporarily blacklisted
         _executorExitCode = ExitCodeOk;
         _syncPal->blacklistTemporarily(
@@ -1681,11 +1679,15 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         NodeId locaNodeId;
         NodeId remoteNodeId;
         if (syncOp->targetSide() == ReplicaSideLocal) {
-            locaNodeId = syncOp->correspondingNode() && syncOp->correspondingNode()->id().has_value() ? syncOp->correspondingNode()->id().value() : std::string();
+            locaNodeId = syncOp->correspondingNode() && syncOp->correspondingNode()->id().has_value()
+                             ? syncOp->correspondingNode()->id().value()
+                             : std::string();
             remoteNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string();
         } else {
             locaNodeId = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : std::string();
-            remoteNodeId = syncOp->correspondingNode() && syncOp->correspondingNode()->id().has_value() ? syncOp->correspondingNode()->id().value() : std::string();
+            remoteNodeId = syncOp->correspondingNode() && syncOp->correspondingNode()->id().has_value()
+                               ? syncOp->correspondingNode()->id().value()
+                               : std::string();
         }
 
         affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
@@ -1694,26 +1696,13 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         }
 
         if (isInconsistencyIssue) {
-            Error error(_syncPal->syncDbId()
-                        , locaNodeId
-                        , remoteNodeId
-                        , syncOp->affectedNode()->type()
-                        , syncOp->affectedNode()->getPath()
-                        , ConflictTypeNone
-                        , InconsistencyTypeForbiddenChar);
+            Error error(_syncPal->syncDbId(), locaNodeId, remoteNodeId, syncOp->affectedNode()->type(),
+                        syncOp->affectedNode()->getPath(), ConflictTypeNone, InconsistencyTypeForbiddenChar);
             _syncPal->addError(error);
         } else {
-            Error error(_syncPal->syncDbId()
-                        , locaNodeId
-                        , remoteNodeId
-                        , syncOp->affectedNode()->type()
-                        , syncOp->affectedNode()->getPath()
-                        , ConflictTypeNone
-                        , InconsistencyTypeNone
-                        , CancelTypeNone
-                        , ""
-                        , ExitCodeBackError
-                        , job->exitCause());
+            Error error(_syncPal->syncDbId(), locaNodeId, remoteNodeId, syncOp->affectedNode()->type(),
+                        syncOp->affectedNode()->getPath(), ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone, "",
+                        ExitCodeBackError, job->exitCause());
             _syncPal->addError(error);
         }
         return true;
