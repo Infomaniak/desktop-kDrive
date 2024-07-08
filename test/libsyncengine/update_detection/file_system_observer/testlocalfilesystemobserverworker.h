@@ -54,6 +54,11 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
 
         LocalTemporaryDirectory _tempDir;
         SyncPath _testRootFolderPath;
+
+        void testFiles();
+        void testDirectories();
+        void testSpecialCases();
+        void testInitialSnapshot();
 };
 
 }  // namespace KDC
