@@ -42,7 +42,7 @@ class COMMONSERVER_EXPORT Db {
         void setAutoDelete(bool value);
         bool exists();
         std::filesystem::path dbPath() const;
-        virtual void close();
+        void close();
 
         bool queryCreate(const std::string &id);
         bool queryPrepare(const std::string &id, const std::string sql, bool allow_failure, int &errId, std::string &error);
