@@ -27,9 +27,10 @@
 
 namespace KDC {
 
-static const time_t defaultTime = std::time(0);
-
-/**
+static const SyncTime defaultTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now())
+                                        .time_since_epoch()
+                                        .count();
+ /**
  * init tree:
  *
  *      Root
@@ -86,7 +87,7 @@ void TestComputeFSOperationWorker::setUp() {
     Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
     ParmsDb::instance()->insertSync(sync);
 
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
     _syncPal->_syncDb->setAutoDelete(true);
 
     /// Insert node "AC" in blacklist
@@ -179,10 +180,11 @@ void TestComputeFSOperationWorker::setUp() {
     ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(true);
 
     _syncPal->_computeFSOperationsWorker =
-        std::shared_ptr<ComputeFSOperationWorker>(new ComputeFSOperationWorker(_syncPal, "Test Compute FS Operations", "TCOP"));
+        std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP");
     _syncPal->_computeFSOperationsWorker->setTesting(true);
-    _syncPal->copySnapshots();
     _syncPal->_localPath = localTestDirPath;
+    _syncPal->copySnapshots();
+    _syncPal->_computeFSOperationsWorker->execute();
 }
 
 void TestComputeFSOperationWorker::tearDown() {
@@ -190,8 +192,9 @@ void TestComputeFSOperationWorker::tearDown() {
 }
 
 void TestComputeFSOperationWorker::testNoOps() {
+    _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->ops().empty());
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSideLocal)->ops().empty());
 }
 
 void TestComputeFSOperationWorker::testMultipleOps() {
@@ -215,7 +218,7 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // Rename operation on a blacklisted directory
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-renamed"));
 
-
+    _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
 
     FSOpPtr tmpOp = nullptr;
@@ -242,6 +245,7 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     _syncPal->_syncDb->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
     // File is excluded by template, it does not appear in snapshot
+    _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
     CPPUNIT_ASSERT(_syncPal->_localOperationSet->ops().empty());
 }
