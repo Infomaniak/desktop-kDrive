@@ -106,7 +106,7 @@ void TestLocalFileSystemObserverWorker::tearDown() {
     }
 }
 
-void TestLocalFileSystemObserverWorker::testInitialSnapshot() {
+void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
     // Test initial snapshot
     {
         std::unordered_set<NodeId> ids;
@@ -129,7 +129,7 @@ void TestLocalFileSystemObserverWorker::testInitialSnapshot() {
     }
 }
 
-void TestLocalFileSystemObserverWorker::testFiles() {
+void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
     NodeId itemId;
     {
         /// Create file
@@ -217,7 +217,7 @@ void TestLocalFileSystemObserverWorker::testFiles() {
     }
 }
 
-void TestLocalFileSystemObserverWorker::testDirectories() {
+void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
     NodeId itemId;
     {
         /// Create dir
@@ -356,7 +356,7 @@ void TestLocalFileSystemObserverWorker::testDirectories() {
     }
 }
 
-void TestLocalFileSystemObserverWorker::testSpecialCases() {
+void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases() {
     // Test 4.3.3.2, p.62 - a) delete(“x”) + create(“x”) + edit(“x”,<newcontent>) + move(“x”,“y”)
     {
         LOGW_DEBUG(_logger, L"***** delete(x) + create(x) + edit(x,<newcontent>) + move(x,y) *****");
@@ -446,13 +446,6 @@ void TestLocalFileSystemObserverWorker::testSpecialCases() {
         CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(newItemId));
         CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(initItemId) == Str("bb.jpg"));
     }
-}
-
-void TestLocalFileSystemObserverWorker::testFolderWatcher() {
-    testInitialSnapshot();
-    testFiles();
-    testDirectories();
-    testSpecialCases();
 
     LOGW_DEBUG(_logger, L"***** Tests succesfully finished! *****");
 }
