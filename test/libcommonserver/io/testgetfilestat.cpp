@@ -39,6 +39,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(fileStat.creationTime > 0);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
         CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT(!fileStat.isEmptyOnDisk);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -484,6 +485,18 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
         CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
 #endif
+    }
+
+    // A dehydrated placeholder
+    {
+        const SyncPath path = _localTestDirPath / "dehydrated_placeholder";
+        FileStat fileStat;
+        IoError ioError = IoErrorUnknown;
+        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+        CPPUNIT_ASSERT(!fileStat.isHidden);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT(fileStat.isEmptyOnDisk);
+        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 }
 
