@@ -487,18 +487,30 @@ void TestIo::testGetFileStat() {
 #endif
     }
 
-    // A dehydrated placeholder
-    {
-        const SyncPath path = _localTestDirPath / "dehydrated_placeholder";
-        FileStat fileStat;
-        IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
-        CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(fileStat.isEmptyOnDisk);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
-    }
+    // TODO : git does not keep extended attributes. Therefor, those files are not placeholder anymore on first checkout.
+    // // A dehydrated placeholder
+    // {
+    //     const SyncPath path = _localTestDirPath / "hydrated_placeholder";
+    //     FileStat fileStat;
+    //     IoError ioError = IoErrorUnknown;
+    //     CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+    //     CPPUNIT_ASSERT(!fileStat.isHidden);
+    //     CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
+    //     CPPUNIT_ASSERT(!fileStat.isEmptyOnDisk);
+    //     CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    // }
+    //
+    // // A dehydrated placeholder
+    // {
+    //     const SyncPath path = _localTestDirPath / "dehydrated_placeholder";
+    //     FileStat fileStat;
+    //     IoError ioError = IoErrorUnknown;
+    //     CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
+    //     CPPUNIT_ASSERT(!fileStat.isHidden);
+    //     CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
+    //     CPPUNIT_ASSERT(fileStat.isEmptyOnDisk);
+    //     CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    // }
 }
-
 
 }  // namespace KDC
