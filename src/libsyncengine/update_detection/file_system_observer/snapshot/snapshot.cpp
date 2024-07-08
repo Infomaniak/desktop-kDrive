@@ -78,7 +78,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         return false;
     }
 
-    SnapshotItem &prevItem = _items[newItem.id()];
+    const SnapshotItem &prevItem = _items[newItem.id()];
 
     // Update parent's children lists
     bool parentChanged = false;

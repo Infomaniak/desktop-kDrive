@@ -113,7 +113,7 @@ bool FSOperationSet::removeOp(const NodeId &nodeId, const OperationType opType) 
 }
 
 bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     auto it = _opsByNodeId.find(nodeId);
     if (it != _opsByNodeId.end()) {
         for (auto id : it->second) {
