@@ -17,6 +17,7 @@
  */
 
 #include "fsoperationset.h"
+#include <cassert>
 
 namespace KDC {
 
@@ -24,48 +25,41 @@ FSOperationSet::~FSOperationSet() {
     clear();
 }
 
-bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr, bool lockMutex /*= true*/) {
-    if (lockMutex) {
-        _mutex.lock();
-    }
+bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) {
+    const std::scoped_lock lock(_mutex);
+    return getOpWithoutLock(id, opPtr);
+}
 
-    auto it = _ops.find(id);
-    if (it != _ops.end()) {
+bool FSOperationSet::getOpWithoutLock(UniqueId id, FSOpPtr &opPtr) {
+    assert(_mutex.try_lock() == false);
+    if (auto it = _ops.find(id); it != _ops.end()) {
         opPtr = it->second;
-        if (lockMutex) {
-            _mutex.unlock();
-        }
         return true;
-    }
-
-    if (lockMutex) {
-        _mutex.unlock();
     }
     return false;
 }
 
-bool FSOperationSet::getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-    auto it = _opsByType.find(type);
-    if (it != _opsByType.end()) {
+void FSOperationSet::getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops) {
+    const std::scoped_lock lock(_mutex);
+    if (auto it = _opsByType.find(type); it != _opsByType.end()) {
         ops = it->second;
-        return true;
+    } else {
+        ops.clear();
     }
-    return false;
 }
 
 bool FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-    auto it = _opsByNodeId.find(nodeId);
-    if (it != _opsByNodeId.end()) {
+    const std::scoped_lock lock(_mutex);
+    if (auto it = _opsByNodeId.find(nodeId); it != _opsByNodeId.end()) {
         ops = it->second;
         return true;
     }
+    ops.clear();
     return false;
 }
 
 uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     if (auto it = _opsByType.find(type); it != _opsByType.end()) {
         return it->second.size();
     }
@@ -73,6 +67,7 @@ uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
 }
 
 void FSOperationSet::clear() {
+    const std::scoped_lock lock(_mutex);
     std::unordered_map<UniqueId, FSOpPtr>::iterator it = _ops.begin();
     while (it != _ops.end()) {
         it->second.reset();
@@ -84,7 +79,7 @@ void FSOperationSet::clear() {
 }
 
 void FSOperationSet::insertOp(FSOpPtr opPtr) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     startUpdate();
     _ops.insert({opPtr->id(), opPtr});
     _opsByType[opPtr->operationType()].insert(opPtr->id());
@@ -92,7 +87,7 @@ void FSOperationSet::insertOp(FSOpPtr opPtr) {
 }
 
 bool FSOperationSet::removeOp(UniqueId id) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     startUpdate();
     auto it = _ops.find(id);
     if (it != _ops.end()) {
@@ -118,7 +113,7 @@ bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FS
     if (it != _opsByNodeId.end()) {
         for (auto id : it->second) {
             FSOpPtr opPtr = nullptr;
-            if (getOp(id, opPtr, false)) {
+            if (getOpWithoutLock(id, opPtr)) {
                 if (opPtr->operationType() == opType) {
                     res = opPtr;
                     return true;
@@ -129,7 +124,8 @@ bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FS
     return false;
 }
 
-FSOperationSet &FSOperationSet::operator=(const FSOperationSet &other) {
+FSOperationSet &FSOperationSet::operator=(FSOperationSet &other) {
+    const std::scoped_lock lock(_mutex, other._mutex);
     if (this != &other) {
         _ops = other._ops;
         _opsByType = other._opsByType;

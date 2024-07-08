@@ -37,11 +37,11 @@ class FSOperationSet : public SharedObject {
 
         FSOperationSet(const FSOperationSet &other)
             : _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId) {}
-        FSOperationSet &operator=(const FSOperationSet &other);
+        FSOperationSet &operator=(FSOperationSet &other);
 
         inline const std::unordered_map<UniqueId, FSOpPtr> &ops() const { return _ops; }
-        bool getOp(UniqueId id, FSOpPtr &opPtr, bool lockMutex = true);
-        bool getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops);
+        bool getOp(UniqueId id, FSOpPtr &opPtr);
+        void getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops);
         bool getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops);
 
         uint64_t nbOpsByType(const OperationType type);
@@ -54,11 +54,15 @@ class FSOperationSet : public SharedObject {
         bool findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res);
 
     private:
+        friend class TestFsOperationSet;
         std::unordered_map<UniqueId, FSOpPtr> _ops;
         std::unordered_map<OperationType, std::unordered_set<UniqueId>> _opsByType;
         std::unordered_map<NodeId, std::unordered_set<UniqueId>> _opsByNodeId;
 
         std::mutex _mutex;
+
+        bool getOpWithoutLock(UniqueId id, FSOpPtr &opPtr);
+
 };
 
 }  // namespace KDC
