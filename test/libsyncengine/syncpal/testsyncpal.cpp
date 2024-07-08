@@ -128,6 +128,17 @@ void TestSyncPal::testSnapshot() {
     CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
 }
 
+void TestSyncPal::testOperationSet() {
+    auto operationSet = _syncPal->operationSet(ReplicaSideLocal);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->_localOperationSet, operationSet);
+
+    operationSet = _syncPal->operationSet(ReplicaSideRemote);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->_remoteOperationSet, operationSet);
+
+    operationSet = _syncPal->operationSet(ReplicaSideUnknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<FSOperationSet>(nullptr), operationSet);
+}
+
 void TestSyncPal::testCopySnapshots() {
     _syncPal->copySnapshots();
 
