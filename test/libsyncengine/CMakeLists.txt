@@ -38,6 +38,7 @@ set(testsyncengine_SRCS
         reconciliation/operation_generator/testoperationgeneratorworker.h reconciliation/operation_generator/testoperationgeneratorworker.cpp
         # Propagation
         propagation/operation_sorter/testoperationsorterworker.h propagation/operation_sorter/testoperationsorterworker.cpp
+        propagation/executor/executorworker/testexecutorworker.h propagation/executor/executorworker/testexecutorworker.cpp
         propagation/executor/testintegration.h propagation/executor/testintegration.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp

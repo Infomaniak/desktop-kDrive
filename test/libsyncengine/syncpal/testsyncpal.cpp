@@ -94,8 +94,18 @@ void TestSyncPal::tearDown() {
     if (_syncPal) {
         _syncPal->stop(false, true, true);
     }
-
     ParmsDb::reset();
+}
+
+void TestSyncPal::testUpdateTree() {
+    auto updateTree  = _syncPal->updateTree(ReplicaSideLocal);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->_localUpdateTree, updateTree);
+
+    updateTree = _syncPal->updateTree(ReplicaSideRemote);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->_remoteUpdateTree, updateTree);
+
+    updateTree = _syncPal->updateTree(ReplicaSideUnknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), updateTree);
 }
 
 void TestSyncPal::testAll() {

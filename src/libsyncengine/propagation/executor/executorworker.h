@@ -40,7 +40,7 @@ class ExecutorWorker : public OperationProcessor {
         void executorCallback(UniqueId jobId);
 
     protected:
-        virtual void execute() override;
+        void execute() override;
 
     private:
         void initProgressManager();

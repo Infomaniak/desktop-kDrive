@@ -16,16 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
-#include "syncpal/syncpal.h"
+#pragma once
 
-using namespace CppUnit;
+#include "syncpal/syncpal.h"
+#include "propagation/executor/executorworker.h"
+#include "testincludes.h"
+
 
 namespace KDC {
 
-class TestSyncPal : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSyncPal);
-        CPPUNIT_TEST(testUpdateTree);
+class TestExecutorWorker;
+
+using testFctPtr = void (TestExecutorWorker::*)();
+class TestExecutorWorker : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestExecutorWorker);
+        CPPUNIT_TEST(testAffectedUpdateTree);
+        CPPUNIT_TEST(testTargetUpdateTree);
+        CPPUNIT_TEST(testAffectedUpdateTree);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -33,18 +40,12 @@ class TestSyncPal : public CppUnit::TestFixture {
         void tearDown() override;
 
     private:
-        std::shared_ptr<SyncPal> _syncPal;
-        std::shared_ptr<ParmsDb> _parmsDb;
+        void testAffectedUpdateTree();
+        void testTargetUpdateTree();
 
-        int _driveDbId;
-        SyncPath _localPath;
-        SyncPath _remotePath;
-
-        void testUpdateTree();
-        void testAll();
-        void testConflictQueue();
-        bool exec_case_6_4();
-        bool check_case_6_4();
+        log4cplus::Logger _logger;
+        std::shared_ptr <ExecutorWorker> _testObj;
+        std::shared_ptr<SyncPal> _syncPal = nullptr;
 };
 
 }  // namespace KDC

@@ -964,6 +964,10 @@ ExitCode SyncPal::updateSyncNode() {
 }
 
 std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
+    if (side == ReplicaSideUnknown) {
+        LOG_ERROR(_logger, "Call to SyncPal::snapshot with 'ReplicaSideUnknown').");
+        return nullptr;
+    }
     if (copy) {
         return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshotCopy : _remoteSnapshotCopy);
     } else {
@@ -972,10 +976,18 @@ std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
 }
 
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) {
+    if (side == ReplicaSideUnknown) {
+        LOG_ERROR(_logger, "Call to SyncPal::operationSet with 'ReplicaSideUnknown').");
+        return nullptr;
+    }
     return (side == ReplicaSide::ReplicaSideLocal ? _localOperationSet : _remoteOperationSet);
 }
 
 std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) {
+    if (side == ReplicaSideUnknown) {
+        LOG_ERROR(_logger, "Call to SyncPal::updateTree with 'ReplicaSideUnknown').");
+        return nullptr;
+    }
     return (side == ReplicaSide::ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree);
 }
 
