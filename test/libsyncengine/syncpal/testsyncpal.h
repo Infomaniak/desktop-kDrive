@@ -26,6 +26,7 @@ namespace KDC {
 class TestSyncPal : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSyncPal);
         CPPUNIT_TEST(testUpdateTree);
+        CPPUNIT_TEST(testSnapshot);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -41,6 +42,7 @@ class TestSyncPal : public CppUnit::TestFixture {
         SyncPath _remotePath;
 
         void testUpdateTree();
+        void testSnapshot();
         void testAll();
         void testConflictQueue();
         bool exec_case_6_4();

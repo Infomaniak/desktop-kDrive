@@ -98,7 +98,7 @@ void TestSyncPal::tearDown() {
 }
 
 void TestSyncPal::testUpdateTree() {
-    auto updateTree  = _syncPal->updateTree(ReplicaSideLocal);
+    auto updateTree = _syncPal->updateTree(ReplicaSideLocal);
     CPPUNIT_ASSERT_EQUAL(_syncPal->_localUpdateTree, updateTree);
 
     updateTree = _syncPal->updateTree(ReplicaSideRemote);
@@ -106,6 +106,26 @@ void TestSyncPal::testUpdateTree() {
 
     updateTree = _syncPal->updateTree(ReplicaSideUnknown);
     CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), updateTree);
+}
+
+void TestSyncPal::testSnapshot() {
+    auto snapshot = _syncPal->snapshot(ReplicaSideLocal);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->_localSnapshot, snapshot);
+
+    snapshot = _syncPal->snapshot(ReplicaSideRemote);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->_remoteSnapshot, snapshot);
+
+    snapshot = _syncPal->snapshot(ReplicaSideUnknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
+
+    snapshot = _syncPal->snapshot(ReplicaSideLocal, true);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->_localSnapshotCopy, snapshot);
+
+    snapshot = _syncPal->snapshot(ReplicaSideRemote, true);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->_remoteSnapshotCopy, snapshot);
+
+    snapshot = _syncPal->snapshot(ReplicaSideUnknown, true);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
 }
 
 void TestSyncPal::testAll() {
