@@ -100,7 +100,7 @@ cmake \
 	"$SRCDIR"
 
 # Install it
-make install
+make -j6 install
 popd
 
 SIGN_FILES=()

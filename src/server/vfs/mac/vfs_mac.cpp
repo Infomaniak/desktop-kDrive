@@ -18,6 +18,7 @@
 
 #include "vfs_mac.h"
 #include "version.h"
+#include "io/filestat.h"
 #include "libcommon/info/exclusionappinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -622,6 +623,18 @@ bool VfsMac::status(const QString &filePath, bool &isPlaceholder, bool &isHydrat
     if (!_connector->vfsGetStatus(Path2QStr(fullPath), isPlaceholder, isHydrated, isSyncing, progress)) {
         LOG_WARN(logger(), "Error in vfsGetStatus!");
         return false;
+    }
+
+    if (isPlaceholder && !isHydrated) {
+        // Verify hydration state
+        FileStat filestat;
+        IoError ioError = IoErrorSuccess;
+        if (!IoHelper::getFileStat(fullPath, &filestat, ioError)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(fullPath, ioError).c_str());
+            return false;
+        }
+
+        isHydrated = !filestat.isEmptyOnDisk;
     }
 
     return true;
