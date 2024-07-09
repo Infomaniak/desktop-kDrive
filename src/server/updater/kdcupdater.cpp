@@ -222,6 +222,7 @@ void KDCUpdater::slotStartInstaller() {
 
         QProcess::startDetached("powershell.exe", QStringList{"-Command", command});
     } else {
+        checkForUpdate();
         LOG_WARN(Log::instance()->getLogger(), "Unknown update file type or no update file availble.");
     }
 }
@@ -373,6 +374,10 @@ void NSISUpdater::versionInfoArrived(const UpdateInfo &info) {
             SyncPath targetPath(CommonUtility::getAppSupportDir());
             _targetFile = SyncName2QStr((targetPath / QStr2SyncName(url.mid(url.lastIndexOf('/') + 1))).native());
             if (QFile(_targetFile).exists()) {
+                ParametersCache::instance()->parameters().setUpdateTargetVersion(updateInfo().version().toStdString());
+                ParametersCache::instance()->parameters().setUpdateTargetVersionString(
+                    updateInfo().versionString().toStdString());
+                ParametersCache::instance()->parameters().setUpdateFileAvailable(_targetFile.toStdString());
                 setDownloadState(DownloadComplete);
             } else {
                 QNetworkReply *reply = qnam()->get(QNetworkRequest(QUrl(url)));
