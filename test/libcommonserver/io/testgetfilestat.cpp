@@ -20,7 +20,9 @@
 
 #include "libcommonserver/io/filestat.h"
 #include "utility/utility.h"
+#ifdef __APPLE__
 #include "server/vfs/mac/litesyncextconnector.h"
+#endif
 
 #include <filesystem>
 
@@ -41,7 +43,9 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(fileStat.creationTime > 0);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
         CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
+#ifdef __APPLE__
         CPPUNIT_ASSERT(!fileStat.isEmptyOnDisk);
+#endif
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -489,7 +493,7 @@ void TestIo::testGetFileStat() {
 #endif
     }
 
-#if defined(__APPLE__)
+#ifdef __APPLE__
     // A hydrated placeholder
     {
         // Create temp directory and file.

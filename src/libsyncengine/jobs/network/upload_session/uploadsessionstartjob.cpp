@@ -36,14 +36,6 @@ UploadSessionStartJob::UploadSessionStartJob(int driveDbId, const NodeId &fileId
     _fileId = fileId;
 }
 
-UploadSessionStartJob::~UploadSessionStartJob() {
-    // if (_vfsForceStatus) {
-    //     if (!_vfsForceStatus(_filePath, true, 0, true)) {
-    //         LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
-    //     }
-    // }
-}
-
 std::string UploadSessionStartJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/upload/session/start";

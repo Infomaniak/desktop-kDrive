@@ -31,7 +31,6 @@ class UploadSessionStartJob : public AbstractUploadSessionJob {
                               uint64_t totalChunks);
         // Using file ID, for edit only
         UploadSessionStartJob(int driveDbId, const NodeId &fileId, uint64_t size, uint64_t totalChunks);
-        ~UploadSessionStartJob();
 
     private:
         virtual std::string getSpecificUrl() override;

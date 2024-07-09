@@ -46,7 +46,6 @@ set_target_properties(${testcommon_NAME} PROPERTIES
 target_link_libraries(${testcommon_NAME}
         ${libcommonserver_NAME}
         ${libsyncengine_NAME}
-        "${libsyncengine_NAME}_vfs_mac"
         ${SQLITE3_LIBRARIES}
 )
 

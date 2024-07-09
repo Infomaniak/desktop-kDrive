@@ -286,12 +286,6 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
         }
 
         if (isDehydratedPlaceholder) {
-            // // Delete the file
-            // LocalDeleteJob deleteJob(_syncPal->driveDbId(), _syncPal->_localPath, relativeLocalFilePath, true,
-            //                          syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "");
-            // deleteJob.setBypassCheck(true);
-            // deleteJob.runSynchronously();
-
             // Blacklist dehydrated placeholder
             blacklistLocalItem(absoluteLocalFilePath);
 
@@ -867,12 +861,6 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
     if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem, needRestart)) {  // TODO : should not use SyncFileItem
         return false;
     }
-
-    // bool isSyncing = hydrated;
-    // if (!_syncPal->vfsForceStatus(absoluteLocalFilePath, isSyncing, 100, hydrated)) {
-    //     LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-    //     return false;
-    // }
 
     if (!_syncPal->vfsSetPinState(absoluteLocalFilePath, hydrated ? PinStateAlwaysLocal : PinStateOnlineOnly)) {
         LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());

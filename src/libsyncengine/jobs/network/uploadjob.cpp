@@ -86,16 +86,6 @@ bool UploadJob::canRun() {
     return true;
 }
 
-void UploadJob::runJob() noexcept {
-    // if (_vfsForceStatus) {
-    //     if (!_vfsForceStatus(_filePath, true, 0, true)) {
-    //         LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath).c_str());
-    //     }
-    // }
-
-    AbstractTokenNetworkJob::runJob();
-}
-
 bool UploadJob::handleResponse(std::istream &is) {
     if (!AbstractTokenNetworkJob::handleResponse(is)) {
         return false;
