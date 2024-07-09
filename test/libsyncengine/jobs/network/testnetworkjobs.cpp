@@ -714,8 +714,12 @@ void TestNetworkJobs::testUploadSessionAsynchronous() {
             break;
         } else if (exitCode == ExitCodeNetworkError && uploadSessionJob.exitCause() == ExitCauseSocketsDefuncted) {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronous - Sockets defuncted by kernel");
-            _nbParalleleThreads = std::floor(_nbParalleleThreads / 2.0);
-            continue;
+            // Decrease upload session max parallel jobs
+            if (_nbParalleleThreads > 1) {
+                _nbParalleleThreads = std::floor(_nbParalleleThreads / 2.0);
+            } else {
+                break;
+            }
         } else {
             break;
         }
