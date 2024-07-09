@@ -164,7 +164,9 @@ void SyncPalWorker::execute() {
             } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeDbError) ||
                        (stepWorkers[1] && workersExitCode[1] == ExitCodeDbError) ||
                        (stepWorkers[0] && workersExitCode[0] == ExitCodeSystemError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeSystemError)) {
+                       (stepWorkers[1] && workersExitCode[1] == ExitCodeSystemError) ||
+                       (stepWorkers[0] && workersExitCode[0] == ExitCodeUpdateRequired) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCodeUpdateRequired)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop all workers and exit
@@ -177,6 +179,9 @@ void SyncPalWorker::execute() {
                       stepWorkers[1]->exitCause() == ExitCauseFileAccessError))) {
                     // Exit without error
                     exitCode = ExitCodeOk;
+                } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeUpdateRequired) ||
+                           (stepWorkers[1] && workersExitCode[1] == ExitCodeUpdateRequired)) {
+                    exitCode = ExitCodeUpdateRequired;
                 } else {
                     exitCode = ExitCodeFatalError;
                     setExitCause(ExitCauseWorkerExited);
