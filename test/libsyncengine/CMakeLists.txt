@@ -8,6 +8,7 @@ set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 
 set(testsyncengine_SRCS
     test.cpp
+
     # Database
     db/testsyncdb.h db/testsyncdb.cpp
     olddb/testoldsyncdb.h olddb/testoldsyncdb.cpp
@@ -36,6 +37,7 @@ set(testsyncengine_SRCS
     # Propagation
     propagation/operation_sorter/testoperationsorterworker.h propagation/operation_sorter/testoperationsorterworker.cpp
     propagation/executor/testintegration.h propagation/executor/testintegration.cpp
+    propagation/executor/testexecutor.h propagation/executor/testexecutor.cpp
     # SyncPal
     syncpal/testsyncpal.h syncpal/testsyncpal.cpp
     # Requests
@@ -66,24 +68,23 @@ target_link_libraries(${testsyncengine_NAME}
 if (WIN32)
     target_link_libraries(${testsyncengine_NAME}
         log4cplus::log4cplusU)
+    target_link_libraries(${testsyncengine_NAME}
+            debug
+            "F:/Projects/cppunit/lib/cppunitd.lib"
+            optimized
+            "F:/Projects/cppunit/lib/cppunit.lib")
 elseif(APPLE)
     target_link_libraries(${testsyncengine_NAME}
         "/usr/local/lib/liblog4cplusU.dylib")
+    target_link_libraries(${testsyncengine_NAME}
+            "/usr/local/lib/libcppunit.dylib")
+    target_link_libraries(${testsyncengine_NAME}
+            "${libsyncengine_NAME}_vfs_mac")
+    target_link_libraries(${testsyncengine_NAME}
+            ${testcommon_NAME})
 else()
     target_link_libraries(${testsyncengine_NAME}
         "/usr/local/lib/liblog4cplusU.so")
-endif()
-
-if (WIN32)
     target_link_libraries(${testsyncengine_NAME}
-        debug
-        "F:/Projects/cppunit/lib/cppunitd.lib"
-        optimized
-        "F:/Projects/cppunit/lib/cppunit.lib")
-elseif(APPLE)
-    target_link_libraries(${testsyncengine_NAME}
-        "/usr/local/lib/libcppunit.dylib")
-else()
-    target_link_libraries(${testsyncengine_NAME}
-        "/usr/local/lib/libcppunit.so")
+            "/usr/local/lib/libcppunit.so")
 endif()

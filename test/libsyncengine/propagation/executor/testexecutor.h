@@ -1,26 +1,26 @@
 /*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
  *
- *  * Infomaniak kDrive - Desktop
- *  * Copyright (C) 2023-2024 Infomaniak Network SA
- *  *
- *  * This program is free software: you can redistribute it and/or modify
- *  * it under the terms of the GNU General Public License as published by
- *  * the Free Software Foundation, either version 3 of the License, or
- *  * (at your option) any later version.
- *  *
- *  * This program is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  * GNU General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU General Public License
- *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #pragma once
 
 #include "testincludes.h"
+#include "vfs.h"
+#include "propagation/executor/executorworker.h"
 
 namespace KDC {
 
@@ -36,7 +36,14 @@ class TestExecutor : public CppUnit::TestFixture {
     private:
         void testCheckLiteSyncInfoForCreate();
 
-        std::shared_ptr<Executor> _testObj{nullptr};
+        std::shared_ptr<SyncPal> _syncPal;
+        Sync _sync;
+
+#ifdef __APPLE__
+        static std::unique_ptr<Vfs> _vfs;
+        static bool vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
+                              int &progress);
+#endif
 };
 
 }  // namespace KDC

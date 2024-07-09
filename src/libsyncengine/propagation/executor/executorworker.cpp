@@ -780,7 +780,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
     return true;
 }
 
-bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path, bool &isDehydratedPlaceholder) {
+bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder) {
     isDehydratedPlaceholder = false;
 
     if (syncOp->targetSide() == ReplicaSideRemote) {

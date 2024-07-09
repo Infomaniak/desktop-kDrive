@@ -50,7 +50,7 @@ class ExecutorWorker : public OperationProcessor {
         void checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
         void blacklistLocalItem(const SyncPath &absolutePath);
         bool generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
-        bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path, bool &isDehydratedPlaceholder);
+        bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
         bool createPlaceholder(const SyncPath &relativeLocalPath);
         bool convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated, bool &needRestart);
 
