@@ -1,21 +1,19 @@
 /*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
  *
- *  * Infomaniak kDrive - Desktop
- *  * Copyright (C) 2023-2024 Infomaniak Network SA
- *  *
- *  * This program is free software: you can redistribute it and/or modify
- *  * it under the terms of the GNU General Public License as published by
- *  * the Free Software Foundation, either version 3 of the License, or
- *  * (at your option) any later version.
- *  *
- *  * This program is distributed in the hope that it will be useful,
- *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  * GNU General Public License for more details.
- *  *
- *  * You should have received a copy of the GNU General Public License
- *  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "testexecutor.h"
@@ -119,96 +117,77 @@ void TestExecutor::tearDown() {}
 
 void TestExecutor::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
-    VfsSetupParams vfsSetupParams;
-    vfsSetupParams._syncDbId = _sync.dbId();
-    vfsSetupParams._localPath = _sync.localPath();
-    vfsSetupParams._targetPath = _sync.targetPath();
-    vfsSetupParams._logger = Log::instance()->getLogger();
-    _vfs = std::make_unique<VfsMac>(vfsSetupParams);
+    // Setup dummy values. Test inputs are set in the callbacks defined below.
+    const auto opPtr = std::make_shared<SyncOperation>();
+    opPtr->setTargetSide(ReplicaSideRemote);
+    const auto node =
+        std::make_shared<Node>(1, ReplicaSideLocal, "test_file.txt", NodeTypeFile, "1234", defaultTime, defaultTime, 123);
+    opPtr->setAffectedNode(node);
 
-    _syncPal->setVfsStatusCallback(&TestExecutor::vfsStatus);
-
-    const SyncName filename = "test_file.txt";
-
-    // A hydrated placeholder
+    // A hydrated placeholder.
     {
-        // Create temp directory and file.
-        const TmpTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / filename;
-        {
-            std::ofstream ofs(path);
-            ofs << "abc";
-            ofs.close();
-        }
-        // Convert file to placeholder
-        const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
-        extConnector->vfsConvertToPlaceHolder(Path2QStr(path), true);
+        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
+                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
+            isPlaceholder = true;
+            isHydrated = true;
+            isSyncing = false;
+            progress = 0;
+            return true;
+        });
 
-        auto opPtr = std::make_shared<SyncOperation>();
-        opPtr->setTargetSide(ReplicaSideRemote);
-        const auto node =
-            std::make_shared<Node>(1, ReplicaSideLocal, filename, NodeTypeFile, "1234", defaultTime, defaultTime, 123);
-        opPtr->setAffectedNode(node);
         bool isDehydratedPlaceholder = false;
-        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, path, isDehydratedPlaceholder);
+        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
         CPPUNIT_ASSERT(!isDehydratedPlaceholder);
     }
 
-    // A dehydrated placeholder
+    // A dehydrated placeholder.
     {
-        // Create temp directory
-        const TmpTemporaryDirectory temporaryDirectory;
-        // Create placeholder
-        const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
-        struct stat fileInfo;
-        fileInfo.st_size = 10;
-        fileInfo.st_mtimespec = {defaultTime, 0};
-        fileInfo.st_atimespec = {defaultTime, 0};
-        fileInfo.st_birthtimespec = {defaultTime, 0};
-        fileInfo.st_mode = S_IFREG;
-        extConnector->vfsCreatePlaceHolder(SyncName2QStr(filename), Path2QStr(temporaryDirectory.path), &fileInfo);
+        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
+                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
+            isPlaceholder = true;
+            isHydrated = false;
+            isSyncing = false;
+            progress = 0;
+            return true;
+        });
 
-        auto opPtr = std::make_shared<SyncOperation>();
-        opPtr->setTargetSide(ReplicaSideRemote);
-        const auto node =
-            std::make_shared<Node>(1, ReplicaSideLocal, filename, NodeTypeFile, "1234", defaultTime, defaultTime, 123);
-        opPtr->setAffectedNode(node);
         bool isDehydratedPlaceholder = false;
-        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, temporaryDirectory.path / filename, isDehydratedPlaceholder);
+        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
         CPPUNIT_ASSERT(isDehydratedPlaceholder);
     }
 
-    // A partially hydrated placeholder (syncing item)
+    // A partially hydrated placeholder (syncing item).
     {
-        // Create temp directory
-        const TmpTemporaryDirectory temporaryDirectory;
-        // Create placeholder
-        const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
-        struct stat fileInfo;
-        fileInfo.st_size = 10;
-        fileInfo.st_mtimespec = {defaultTime, 0};
-        fileInfo.st_atimespec = {defaultTime, 0};
-        fileInfo.st_birthtimespec = {defaultTime, 0};
-        fileInfo.st_mode = S_IFREG;
-        extConnector->vfsCreatePlaceHolder(SyncName2QStr(filename), Path2QStr(temporaryDirectory.path), &fileInfo);
-        const SyncPath filePAth = temporaryDirectory.path / filename;
-        {
-            std::ofstream ofs(filePAth);
-            ofs << "abc";
-            ofs.close();
-        }
-        IoError ioError = IoErrorUnknown;
-        IoHelper::setXAttrValue(filePAth, "com.infomaniak.drive.desktopclient.litesync.status", "H30", ioError);
+        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
+                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
+            isPlaceholder = true;
+            isHydrated = true;
+            isSyncing = true;
+            progress = 30;
+            return true;
+        });
 
-        auto opPtr = std::make_shared<SyncOperation>();
-        opPtr->setTargetSide(ReplicaSideRemote);
-        const auto node =
-            std::make_shared<Node>(1, ReplicaSideLocal, filename, NodeTypeFile, "1234", defaultTime, defaultTime, 123);
-        opPtr->setAffectedNode(node);
         bool isDehydratedPlaceholder = false;
-        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, temporaryDirectory.path / filename, isDehydratedPlaceholder);
+        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
+
+        CPPUNIT_ASSERT(!isDehydratedPlaceholder);
+    }
+
+    // Not a placeholder.
+    {
+        _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
+                                          bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
+            isPlaceholder = false;
+            isHydrated = false;
+            isSyncing = false;
+            progress = 0;
+            return true;
+        });
+
+        bool isDehydratedPlaceholder = false;
+        _syncPal->_executorWorker->checkLiteSyncInfoForCreate(opPtr, "/", isDehydratedPlaceholder);
 
         CPPUNIT_ASSERT(!isDehydratedPlaceholder);
     }

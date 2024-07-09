@@ -17,6 +17,8 @@ set(testcommon_SRCS
         # io
         io/testio.h io/testio.cpp io/testgetitemtype.cpp io/testgetfilesize.cpp io/testcheckifpathexists.cpp io/testgetnodeid.cpp io/testgetfilestat.cpp io/testisfileaccessible.cpp io/testfilechanged.cpp
         io/testcheckifisdirectory.cpp io/testcreatesymlink.cpp io/testcheckifdehydrated.cpp
+        ../server/vfs/mac/testvfsmac.cpp
+        ../server/vfs/mac/testvfsmac.h
 )
 
 if (USE_OUR_OWN_SQLITE3)
