@@ -57,9 +57,9 @@ void TestExecutorWorker::setUp() {
     DbNodeId dbNodeIdAAA;
 
     bool constraintError = false;
-    DbNode dbNodeA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", defaultTime, defaultTime,
+    DbNode dbNodeA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", defaultTime, defaultTime,
                    defaultTime, NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeA, dbNodeIdA, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeA, dbNodeIdA, constraintError);
     DbNode dbNodeAA(0, dbNodeIdA, Str("AA"), Str("AA"), "lAA", "rAA", defaultTime, defaultTime, defaultTime,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
     _syncPal->_syncDb->insertNode(dbNodeAA, dbNodeIdAA, constraintError);

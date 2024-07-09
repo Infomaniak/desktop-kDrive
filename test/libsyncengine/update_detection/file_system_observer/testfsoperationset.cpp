@@ -80,10 +80,10 @@ void TestFsOperationSet::testGetOpsByNodeId() {
         opsIds.push_back(op->id());
     }
 
-    // Test with a not existing node
+    // Test with a non existing node
     std::unordered_set<UniqueId> ops;
     ops.insert(1);
-    CPPUNIT_ASSERT(!fsOperationSet.getOpsByNodeId("notExistingNodeId", ops));
+    CPPUNIT_ASSERT(!fsOperationSet.getOpsByNodeId("nonExistingNodeId", ops));
     CPPUNIT_ASSERT_EQUAL(size_t(0), ops.size());
 
     // Test with an existing node
@@ -193,11 +193,11 @@ void TestFsOperationSet::testfindOp() {
         CPPUNIT_ASSERT(res->operationType() == type);
     }
 
-    // Test findOp with a not existing operation
+    // Test findOp with a non existing operation.
     fsOperationSet.clear();
     FSOpPtr res;
     fsOperationSet.insertOp(std::make_shared<FSOperation>(OperationTypeCreate, nodeId));
-    CPPUNIT_ASSERT(!fsOperationSet.findOp("notExistingNodeId", OperationTypeCreate, res));
+    CPPUNIT_ASSERT(!fsOperationSet.findOp("nonExistingNodeId", OperationTypeCreate, res));
 
     fsOperationSet.insertOp(std::make_shared<FSOperation>(OperationTypeCreate, nodeId));
     CPPUNIT_ASSERT(!fsOperationSet.findOp(nodeId, OperationTypeMove, res));
@@ -207,7 +207,7 @@ void TestFsOperationSet::testOperatorEqual() {
     FSOperationSet fsOperationSet1;
     FSOperationSet fsOperationSet2;
 
-    // Test operator = with an empty set
+    // Test operator the assignment operator '=' with an empty set
     fsOperationSet1 = fsOperationSet2;
     CPPUNIT_ASSERT_EQUAL(size_t(0), fsOperationSet1._ops.size());
     CPPUNIT_ASSERT_EQUAL(size_t(0), fsOperationSet1._opsByType.size());

@@ -483,14 +483,14 @@ void TestSyncDb::testCorrespondingNodeId() {
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT_EQUAL(std::string("id dir loc 1"), correspondingNodeId);
 
-    //Wrong Side case
+    // Wrong Side case
     CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSideRemote, "id dir loc 1", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
 
     CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSideLocal, "id dir drive 1", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
 
-    //Wrong id case
+    // Wrong id case
     CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSideLocal, "id dir loc 2", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
 
