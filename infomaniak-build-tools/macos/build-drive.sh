@@ -129,7 +129,7 @@ if [ -n "$SIGN_FILES" ]; then
 
 	# Prepare for notarization
 	echo "Preparing for notarization"
-	/usr/bin/ditto -c -k --keepParent "$INSTALLDIR/natorization" "$INSTALLDIR/InfomaniakDrive.zip"
+	/usr/bin/ditto -c -k --keepParent "$INSTALLDIR/notarization" "$INSTALLDIR/InfomaniakDrive.zip"
 	# Send to notarization
 	echo "Sending notarization request"
 	xcrun notarytool submit --apple-id "$ALTOOL_USERNAME" --keychain-profile "notarytool" "$INSTALLDIR/InfomaniakDrive.zip" --progress --wait
