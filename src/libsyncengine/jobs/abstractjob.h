@@ -23,7 +23,6 @@
 #include <Poco/Runnable.h>
 
 #include <log4cplus/logger.h>
-#include "libcommonserver/log/log.h"
 
 namespace KDC {
 

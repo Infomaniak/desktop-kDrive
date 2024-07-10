@@ -17,6 +17,7 @@ set(testsyncengine_SRCS
         # Jobs
         jobs/testjobmanager.h jobs/testjobmanager.cpp
         ## Network jobs
+        jobs/network/testsnapshotitemhandler.h jobs/network/testsnapshotitemhandler.cpp
         jobs/network/testnetworkjobs.h jobs/network/testnetworkjobs.cpp
         ## Local jobs
         jobs/local/testlocaljobs.h jobs/local/testlocaljobs.cpp
