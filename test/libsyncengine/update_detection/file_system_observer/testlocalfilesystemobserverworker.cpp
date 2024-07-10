@@ -114,8 +114,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
 
         uint64_t fileCounter = 0;
         for (const auto &id : ids) {
-            if (_syncPal->_localSnapshot->name(id) == Str(".DS_Store") ||
-                _syncPal->_localSnapshot->name(id) == Str(".ds_store")) {
+            const auto name = _syncPal->_localSnapshot->name(id);
+            if (name == Str(".DS_Store") || name == Str(".ds_store")) {
                 continue;  // Ignore ".DS_Store"
             }
 
