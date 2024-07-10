@@ -126,6 +126,7 @@ void TestVfsMac::testStatus() {
             ofs << "abc";
             ofs.close();
         }
+        // Simulate a partially hydrated placeholder by setting the status to `H30` (i.g. 30% completed)
         IoError ioError = IoErrorUnknown;
         IoHelper::setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "H30", ioError);
 
@@ -145,14 +146,7 @@ void TestVfsMac::testStatus() {
     {
         // Create temp directory
         const TmpTemporaryDirectory temporaryDirectory;
-        // Create placeholder
-        const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
-        struct stat fileInfo;
-        fileInfo.st_size = 10;
-        fileInfo.st_mtimespec = {defaultTime, 0};
-        fileInfo.st_atimespec = {defaultTime, 0};
-        fileInfo.st_birthtimespec = {defaultTime, 0};
-        fileInfo.st_mode = S_IFREG;
+        // Create file
         const SyncPath path = temporaryDirectory.path / filename;
         {
             std::ofstream ofs(path);
