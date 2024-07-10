@@ -263,7 +263,6 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
 #endif
     buf->modtime = sb.st_mtime;
     buf->size = sb.st_size;
-    buf->isEmptyOnDisk = sb.st_blocks == 0;
     if (S_ISLNK(sb.st_mode)) {
         // Symlink
         struct stat sbTarget;

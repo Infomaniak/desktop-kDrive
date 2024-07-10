@@ -43,9 +43,6 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(fileStat.creationTime > 0);
         CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
         CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-#ifdef __APPLE__
-        CPPUNIT_ASSERT(!fileStat.isEmptyOnDisk);
-#endif
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
@@ -492,57 +489,6 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
 #endif
     }
-
-#ifdef __APPLE__
-    // A hydrated placeholder
-    {
-        // Create temp directory and file.
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "test_file.txt";
-        {
-            std::ofstream ofs(path);
-            ofs << "abc";
-            ofs.close();
-        }
-        // Convert file to placeholder
-        const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
-        extConnector->vfsConvertToPlaceHolder(Path2QStr(path), true);
-
-        FileStat fileStat;
-        IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
-        CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(!fileStat.isEmptyOnDisk);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
-    }
-
-    // A dehydrated placeholder
-    {
-        // Create temp directory and file.
-        const TemporaryDirectory temporaryDirectory;
-        // Create placeholder
-        const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
-        const auto timeNow =
-            std::chrono::duration_cast<std::chrono::hours>(std::chrono::system_clock::now().time_since_epoch()).count();
-        struct stat fileInfo;
-        fileInfo.st_size = 123;
-        fileInfo.st_mtimespec = {timeNow, 0};
-        fileInfo.st_atimespec = {timeNow, 0};
-        fileInfo.st_birthtimespec = {timeNow, 0};
-        fileInfo.st_mode = S_IFREG;
-        SyncName fileName = "test_file.txt";
-        extConnector->vfsCreatePlaceHolder(SyncName2QStr(fileName), Path2QStr(temporaryDirectory.path), &fileInfo);
-
-        FileStat fileStat;
-        IoError ioError = IoErrorUnknown;
-        CPPUNIT_ASSERT(_testObj->getFileStat(temporaryDirectory.path / fileName, &fileStat, ioError));
-        CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(fileStat.isEmptyOnDisk);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
-    }
-#endif
 }
 
 }  // namespace KDC

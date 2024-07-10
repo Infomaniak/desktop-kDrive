@@ -149,7 +149,7 @@ void TestExecutor::testCheckLiteSyncInfoForCreate() {
         _syncPal->setVfsStatusCallback([]([[maybe_unused]] int syncDbId, [[maybe_unused]] const SyncPath &itemPath,
                                           bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) -> bool {
             isPlaceholder = true;
-            isHydrated = true;
+            isHydrated = false;
             isSyncing = true;
             progress = 30;
             return true;

@@ -625,18 +625,6 @@ bool VfsMac::status(const QString &filePath, bool &isPlaceholder, bool &isHydrat
         return false;
     }
 
-    if (isPlaceholder && !isHydrated) {
-        // Verify hydration state
-        FileStat filestat;
-        IoError ioError = IoErrorSuccess;
-        if (!IoHelper::getFileStat(fullPath, &filestat, ioError)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getFileStat: " << Utility::formatIoError(fullPath, ioError).c_str());
-            return false;
-        }
-
-        isHydrated = !filestat.isEmptyOnDisk;
-    }
-
     return true;
 }
 

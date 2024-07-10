@@ -8,12 +8,12 @@ set(testserver_NAME ${APPLICATION_NAME}_test_server)
 
 set(testserver_SRCS
     test.cpp
-    vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp
-    vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp
 )
 
 if (APPLE)
-    list(APPEND testserver_SRCS vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp)
+    list(APPEND testserver_SRCS
+            vfs/mac/testlitesyncextconnector.h vfs/mac/testlitesyncextconnector.cpp
+            vfs/mac/testvfsmac.h vfs/mac/testvfsmac.cpp)
 endif ()
 
 if (WIN32)

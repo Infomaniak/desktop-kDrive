@@ -137,7 +137,7 @@ void TestVfsMac::testStatus() {
         _vfs->status(Path2QStr(path), isPlaceholder, isHydrated, isSyncing, progress);
 
         CPPUNIT_ASSERT(isPlaceholder);
-        CPPUNIT_ASSERT(isHydrated);
+        CPPUNIT_ASSERT(!isHydrated);
         CPPUNIT_ASSERT(isSyncing);
         CPPUNIT_ASSERT_EQUAL(30, progress);
     }
