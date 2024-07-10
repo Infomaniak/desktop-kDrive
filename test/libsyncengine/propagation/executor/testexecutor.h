@@ -31,19 +31,12 @@ class TestExecutor : public CppUnit::TestFixture {
 
     public:
         void setUp() override;
-        void tearDown() override;
 
     private:
         void testCheckLiteSyncInfoForCreate();
 
         std::shared_ptr<SyncPal> _syncPal;
         Sync _sync;
-
-#ifdef __APPLE__
-        static std::unique_ptr<Vfs> _vfs;
-        static bool vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                              int &progress);
-#endif
 };
 
 }  // namespace KDC

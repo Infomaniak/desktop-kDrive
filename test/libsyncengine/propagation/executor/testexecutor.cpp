@@ -50,18 +50,6 @@ struct TmpTemporaryDirectory {
 
 static const SyncTime defaultTime = std::time(nullptr);
 
-#ifdef __APPLE__
-std::unique_ptr<Vfs> TestExecutor::_vfs;
-bool TestExecutor::vfsStatus(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                             int &progress) {
-    if (!_vfs) {
-        return false;
-    }
-
-    return _vfs->status(SyncName2QStr(itemPath.native()), isPlaceholder, isHydrated, isSyncing, progress);
-}
-#endif
-
 void TestExecutor::setUp() {
     const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
     const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
@@ -112,8 +100,6 @@ void TestExecutor::setUp() {
     _syncPal = std::make_shared<SyncPal>(_sync.dbId(), "3.4.0");
     _syncPal->createWorkers();
 }
-
-void TestExecutor::tearDown() {}
 
 void TestExecutor::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
