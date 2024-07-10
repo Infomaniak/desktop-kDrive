@@ -120,7 +120,7 @@ else
 fi
 
 if [ -n "$SIGN_FILES" ]; then
-    rm -rf $INSTALLDIR/notorization $INSTALLDIR/notarization/
+	rm -rf $INSTALLDIR/notorization $INSTALLDIR/notarization/
 	mkdir -p $INSTALLDIR/notarization
 
 	for file in "${SIGN_FILES[@]}"; do
