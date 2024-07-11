@@ -18,6 +18,7 @@
 
 #include "vfs_mac.h"
 #include "version.h"
+#include "io/filestat.h"
 #include "libcommon/info/exclusionappinfo.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"

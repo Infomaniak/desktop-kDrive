@@ -34,6 +34,7 @@
 #include "reconciliation/conflict_resolver/testconflictresolverworker.h"
 #include "propagation/operation_sorter/testoperationsorterworker.h"
 #include "propagation/executor/testintegration.h"
+#include "propagation/executor/testexecutor.h"
 #include "jobs/network/testnetworkjobs.h"
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
@@ -58,7 +59,8 @@ namespace KDC {
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTree);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutor);
 
 /*
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);

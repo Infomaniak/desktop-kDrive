@@ -100,7 +100,7 @@ cmake \
 	"$SRCDIR"
 
 # Install it
-make install
+make -j6 install
 popd
 
 SIGN_FILES=()
@@ -120,17 +120,17 @@ else
 fi
 
 if [ -n "$SIGN_FILES" ]; then
-	mkdir -p $INSTALLDIR/notorization
-	rm -rf $INSTALLDIR/notorization/*
+	rm -rf $INSTALLDIR/notorization $INSTALLDIR/notarization/
+	mkdir -p $INSTALLDIR/notarization
 
 	for file in "${SIGN_FILES[@]}"; do
-		cp -a "$file" "$INSTALLDIR/notorization"
+		cp -a "$file" "$INSTALLDIR/notarization"
 	done
 
-	# Prepare for notorization
-	echo "Preparing for notorization"
-	/usr/bin/ditto -c -k --keepParent "$INSTALLDIR/notorization" "$INSTALLDIR/InfomaniakDrive.zip"
-	# Send to notorization
-	echo "Sending notorization request"
+	# Prepare for notarization
+	echo "Preparing for notarization"
+	/usr/bin/ditto -c -k --keepParent "$INSTALLDIR/notarization" "$INSTALLDIR/InfomaniakDrive.zip"
+	# Send to notarization
+	echo "Sending notarization request"
 	xcrun notarytool submit --apple-id "$ALTOOL_USERNAME" --keychain-profile "notarytool" "$INSTALLDIR/InfomaniakDrive.zip" --progress --wait
 fi
