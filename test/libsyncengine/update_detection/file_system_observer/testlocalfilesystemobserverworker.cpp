@@ -79,8 +79,8 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     // Create SyncPal
     _syncPal = std::shared_ptr<SyncPal>(new SyncPalTest(syncDbPath, "3.4.0", true));
-    _syncPal->_syncDb->setAutoDelete(true);
-    _syncPal->_localPath = _testRootFolderPath;
+    _syncPal->getSyncDb()->setAutoDelete(true);
+    _syncPal->setLocalPath(_testRootFolderPath);
 
 #if defined(_WIN32)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
@@ -101,8 +101,8 @@ void TestLocalFileSystemObserverWorker::tearDown() {
 
     ParmsDb::instance()->close();
 
-    if (_syncPal && _syncPal->_syncDb) {
-        _syncPal->_syncDb->close();
+    if (_syncPal && _syncPal->getSyncDb()) {
+        _syncPal->getSyncDb()->close();
     }
 }
 
@@ -110,18 +110,18 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
     // Test initial snapshot
     {
         std::unordered_set<NodeId> ids;
-        _syncPal->_localSnapshot->ids(ids);
+        _syncPal->getSnapshot(ReplicaSideLocal)->ids(ids);
 
         uint64_t fileCounter = 0;
         for (const auto &id : ids) {
-            const auto name = _syncPal->_localSnapshot->name(id);
+            const auto name = _syncPal->getSnapshot(ReplicaSideLocal)->name(id);
             if (name == Str(".DS_Store") || name == Str(".ds_store")) {
                 continue;  // Ignore ".DS_Store"
             }
 
-            const NodeId parentId = _syncPal->_localSnapshot->parentId(id);
+            const NodeId parentId = _syncPal->getSnapshot(ReplicaSideLocal)->parentId(id);
             SyncPath parentPath;
-            if (_syncPal->_localSnapshot->path(parentId, parentPath) && parentPath.filename() == _testPicturesFolderName) {
+            if (_syncPal->getSnapshot(ReplicaSideLocal)->path(parentId, parentPath) && parentPath.filename() == _testPicturesFolderName) {
                 fileCounter++;
             }
         }
@@ -146,15 +146,15 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         IoHelper::getFileStat(testAbsolutePath, &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(itemId));
         SyncPath testSyncPath;
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->path(itemId, testSyncPath) && testSyncPath == testFileRelativePath);
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->path(itemId, testSyncPath) && testSyncPath == testFileRelativePath);
     }
 
     {
         /// Edit file
         LOGW_DEBUG(_logger, L"***** test edit file *****");
-        const SyncTime prevModTime = _syncPal->_localSnapshot->lastModified(itemId);
+        const SyncTime prevModTime = _syncPal->getSnapshot(ReplicaSideLocal)->lastModified(itemId);
         const SyncPath testFileRelativePath = SyncPath("A") / "test_file.txt";
         SyncPath testAbsolutePath = _testRootFolderPath / testFileRelativePath;
         const std::string testCallStr = R"(echo "This is an edit test" >> )" + testAbsolutePath.make_preferred().string();
@@ -162,7 +162,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->lastModified(itemId) > prevModTime);
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->lastModified(itemId) > prevModTime);
     }
 
     {
@@ -179,8 +179,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        const NodeId parentId = _syncPal->_localSnapshot->parentId(itemId);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(parentId) == SyncPath("B"));
+        const NodeId parentId = _syncPal->getSnapshot(ReplicaSideLocal)->parentId(itemId);
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->name(parentId) == SyncPath("B"));
     }
 
     {
@@ -197,7 +197,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(itemId) == Str("test_file_renamed.txt"));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->name(itemId) == Str("test_file_renamed.txt"));
     }
 
     {
@@ -213,7 +213,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(itemId));
+        CPPUNIT_ASSERT(!_syncPal->getSnapshot(ReplicaSideLocal)->exists(itemId));
     }
 }
 
@@ -233,9 +233,9 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         bool exists = false;
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(itemId));
         SyncPath testSyncPath;
-        _syncPal->_localSnapshot->path(itemId, testSyncPath);
+        _syncPal->getSnapshot(ReplicaSideLocal)->path(itemId, testSyncPath);
         CPPUNIT_ASSERT(testSyncPath.string() == testRelativePath);
     }
 
@@ -255,7 +255,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         Utility::msleep(1000);  // Wait 1sec
 
         SyncPath testSyncPath;
-        _syncPal->_localSnapshot->path(itemId, testSyncPath);
+        _syncPal->getSnapshot(ReplicaSideLocal)->path(itemId, testSyncPath);
         CPPUNIT_ASSERT(testSyncPath == testRelativePath);
     }
 
@@ -274,7 +274,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(itemId) == Str("ACc"));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->name(itemId) == Str("ACc"));
     }
 
     NodeId pictureItemId;
@@ -300,12 +300,12 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         testAbsolutePath = _testRootFolderPath / "test_dir";
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(itemId));
 
         SyncPath testPicturePath = testAbsolutePath / Str("picture-1.jpg");
         IoHelper::getFileStat(testPicturePath.make_preferred().native().c_str(), &fileStat, exists);
         pictureItemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(pictureItemId));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(pictureItemId));
     }
 
     {
@@ -321,8 +321,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(itemId));
-        CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(pictureItemId));
+        CPPUNIT_ASSERT(!_syncPal->getSnapshot(ReplicaSideLocal)->exists(itemId));
+        CPPUNIT_ASSERT(!_syncPal->getSnapshot(ReplicaSideLocal)->exists(pictureItemId));
     }
     {
         /// Move dir from outside sync dir
@@ -347,12 +347,12 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         bool exists = false;
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(itemId));
 
         testAbsolutePath /= Str("picture-1.jpg");
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(itemId));
     }
 }
 
@@ -398,8 +398,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(newItemId));
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(newItemId) == Str("aa.jpg"));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(newItemId));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->name(newItemId) == Str("aa.jpg"));
     }
 
     // Test 4.3.3.2, p.62 - b) move(“x”,“y”) + create(“x”) + edit(“x”,<newcontent>) + delete(“x”)
@@ -442,9 +442,9 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(initItemId));
-        CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(newItemId));
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(initItemId) == Str("bb.jpg"));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(initItemId));
+        CPPUNIT_ASSERT(!_syncPal->getSnapshot(ReplicaSideLocal)->exists(newItemId));
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->name(initItemId) == Str("bb.jpg"));
     }
 
     LOGW_DEBUG(_logger, L"***** Tests succesfully finished! *****");
