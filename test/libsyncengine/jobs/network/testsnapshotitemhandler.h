@@ -18,24 +18,38 @@
 
 #pragma once
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
+#include "testincludes.h"
+#include "utility/types.h"
+
+using namespace CppUnit;
 
 namespace KDC {
+class SnapshotItem;
 
-class TestUtility : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestUtility);
-        CPPUNIT_TEST(testGetAppSupportDir);
-        CPPUNIT_TEST(testIsVersionLower);
-        CPPUNIT_TEST(testStringToAppStateValue);
-        CPPUNIT_TEST(testArgsWriter);
+class TestSnapshotItemHandler : public CppUnit::TestFixture {
+    public:
+        CPPUNIT_TEST_SUITE(TestSnapshotItemHandler);
+        CPPUNIT_TEST(testUpdateItem);
+        CPPUNIT_TEST(testGetItem);
         CPPUNIT_TEST_SUITE_END();
 
+    public:
+        void setUp() override;
+        void tearDown() override;
+
     protected:
-        void testGetAppSupportDir();
-        void testIsVersionLower();
-        void testStringToAppStateValue();
-        void testArgsWriter();
+        void testUpdateItem();
+        void testGetItem();
 };
+
+namespace snapshotitem_checker {
+struct Result {
+        bool success{true};
+        std::string message;
+};
+
+static std::string makeMessage(const CppUnit::Exception &e);
+static Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept;
+};  // namespace snapshotitem_checker
 
 }  // namespace KDC

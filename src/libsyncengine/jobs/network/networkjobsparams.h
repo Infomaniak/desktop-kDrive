@@ -22,7 +22,7 @@
 #include <cstdint>
 
 namespace KDC {
-static const int threadPoolMinCapacity = 10;
+static const int threadPoolMinCapacity = 3;
 static const uint64_t chunkMaxSize = 100 * 1024 * 1024;               // 100MB
 static const uint64_t chunkMinSize = 10 * 1024 * 1024;                // 10MB
 static const uint64_t useUploadSessionThreshold = 100 * 1024 * 1024;  // if file size > 100MB -> start upload session

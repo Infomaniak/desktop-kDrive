@@ -115,10 +115,9 @@ class ExecutorWorker : public OperationProcessor {
         std::queue<UniqueId> _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
         std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
-
         std::list<UniqueId> _opList;
+        std::recursive_mutex _mutex;
 
-        std::mutex _mutex;
         ExitCode _executorExitCode = ExitCodeUnknown;
         ExitCause _executorExitCause = ExitCauseUnknown;
 

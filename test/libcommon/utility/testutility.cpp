@@ -97,4 +97,117 @@ void TestUtility::testStringToAppStateValue() {
     value = int(0);
     CPPUNIT_ASSERT(!CommonUtility::stringToAppStateValue("", value));
 }
+
+void TestUtility::testArgsWriter() {
+    {
+        const int a = 1;
+        const auto byteArray = QByteArray(ArgsReader(a));
+
+        int b = -1;
+        ArgsWriter(byteArray).write(b);
+
+        CPPUNIT_ASSERT_EQUAL(1, b);
+    }
+
+    {
+        const char c = 'c';
+        const auto byteArray = QByteArray(ArgsReader(c));
+
+        char d = ' ';
+        ArgsWriter(byteArray).write(d);
+
+        CPPUNIT_ASSERT_EQUAL(c, d);
+    }
+
+    {
+        const double e = 1.5;
+        const float f = -2.0f;
+
+        const auto byteArray = QByteArray(ArgsReader(e, f));
+
+        double g = -1.0;
+        float h = -1.0f;
+        ArgsWriter(byteArray).write(g, h);
+
+        CPPUNIT_ASSERT_EQUAL(e, g);
+        CPPUNIT_ASSERT_EQUAL(f, h);
+    }
+
+    {
+        const char a = 'a';
+        const bool b = true;
+        const float c = 1.0f;
+
+        const auto byteArray = QByteArray(ArgsReader(a, b, c));
+
+        char d = 'd';
+        bool e = false;
+        float f = -1.0f;
+        ArgsWriter(byteArray).write(d, e, f);
+
+        CPPUNIT_ASSERT_EQUAL(a, d);
+        CPPUNIT_ASSERT_EQUAL(b, e);
+        CPPUNIT_ASSERT_EQUAL(c, f);
+    }
+
+    {
+        const qint8 a = 100;
+        const qint16 b = 200;
+        const qint32 c = 300;
+
+        const auto byteArray = QByteArray(ArgsReader(a, b, c));
+
+        qint8 d = -1;
+        qint16 e = 0;
+        qint32 f = -1;
+        ArgsWriter(byteArray).write(d, e, f);
+
+        CPPUNIT_ASSERT_EQUAL(a, d);
+        CPPUNIT_ASSERT_EQUAL(b, e);
+        CPPUNIT_ASSERT_EQUAL(c, f);
+    }
+
+    {
+        const qint32 a = 100;
+        const qint64 b = 200;
+        const char *c = "test";
+        const double d = 1.0;
+
+        const auto byteArray = QByteArray(ArgsReader(a, b, c, d));
+
+        qint32 e = -1;
+        qint64 f = 0;
+        char *g = nullptr;
+        double h = -1.0;
+        ArgsWriter(byteArray).write(e, f, g, h);
+
+        CPPUNIT_ASSERT_EQUAL(a, e);
+        CPPUNIT_ASSERT_EQUAL(b, f);
+        CPPUNIT_ASSERT_EQUAL(0, strcmp(c, g));
+        CPPUNIT_ASSERT_EQUAL(d, h);
+    }
+
+    {
+        const qint16 a = 100;
+        const qint32 b = 200;
+        const char *c = "test";
+        const double d = 1.0;
+        const float e = 2.0f;
+
+        const auto byteArray = QByteArray(ArgsReader(a, b, c, d, e));
+
+        qint16 f = -1;
+        qint32 g = 0;
+        char *h = nullptr;
+        double i = -1.0;
+        float j = -1.0f;
+        ArgsWriter(byteArray).write(f, g, h, i, j);
+
+        CPPUNIT_ASSERT_EQUAL(a, f);
+        CPPUNIT_ASSERT_EQUAL(b, g);
+        CPPUNIT_ASSERT_EQUAL(0, strcmp(c, h));
+        CPPUNIT_ASSERT_EQUAL(d, i);
+        CPPUNIT_ASSERT_EQUAL(e, j);
+    }
+}
 }  // namespace KDC
