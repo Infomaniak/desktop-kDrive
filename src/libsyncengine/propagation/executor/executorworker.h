@@ -57,11 +57,11 @@ class ExecutorWorker : public OperationProcessor {
         bool generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
     
         /**
-         * This method aims to fix the last modification date of a local file using the date stored in DB. This allow to fix wrong
-         * EDIT operations generated on dehydrated placeholder.
+         * This method aims to fix the last modification date of a local file using the date stored in DB. This allows us to fix wrong
+         * EDIT operations generated on dehydrated placeholders.
          * @param syncOp : the operation to propagate.
          * @param absolutePath : absolute local path of the affected file.
-         * @return `true`if succeed.
+         * @return `true` if the date is modified successfully.
          */
         bool fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath);
         bool checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem,
