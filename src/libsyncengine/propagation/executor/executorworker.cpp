@@ -1561,8 +1561,6 @@ bool ExecutorWorker::enoughLocalSpace(SyncOpPtr syncOp) {
 }
 
 void ExecutorWorker::waitForAllJobsToFinish(bool &hasError) {
-    const std::scoped_lock lock(_mutex);
-
     while (!_ongoingJobs.empty()) {
         if (stopAsked()) {
             cancelAllOngoingJobs();
