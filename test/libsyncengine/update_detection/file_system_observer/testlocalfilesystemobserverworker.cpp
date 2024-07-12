@@ -291,8 +291,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
 #else
         const std::string testCallStr =
             "cp -R " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string();
-#endif
         std::system(testCallStr.c_str());
+#endif
         Utility::msleep(1000);  // Wait 1sec
 
         FileStat fileStat;
