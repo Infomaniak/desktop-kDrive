@@ -59,7 +59,7 @@ void TestSnapshot::testSnapshot() {
                              NodeType::NodeTypeDirectory, 123);
     snapshot.updateItem(itemA);
     CPPUNIT_ASSERT(snapshot.exists("a"));
-    CPPUNIT_ASSERT_EQUAL(SyncName("A"), snapshot.name("a"));
+    CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(snapshot.name("a")));
     CPPUNIT_ASSERT_EQUAL(NodeType::NodeTypeDirectory, snapshot.type("a"));
     auto itItem = snapshot._items.find(SyncDb::driveRootNode().nodeIdLocal().value());
     CPPUNIT_ASSERT(itItem->second.childrenIds().contains("a"));
@@ -67,7 +67,7 @@ void TestSnapshot::testSnapshot() {
     // Update node A
     snapshot.updateItem(SnapshotItem("a", SyncDb::driveRootNode().nodeIdLocal().value(), Str("A*"), 1640995202, 1640995202,
                                      NodeType::NodeTypeDirectory, 123));
-    CPPUNIT_ASSERT_EQUAL(SyncName("A*"), snapshot.name("a"));
+    CPPUNIT_ASSERT_EQUAL(std::string("A*"), SyncName2Str(snapshot.name("a")));
 
     // Insert node B
     const SnapshotItem itemB("b", SyncDb::driveRootNode().nodeIdLocal().value(), Str("B"), 1640995203, 1640995203,
@@ -92,11 +92,11 @@ void TestSnapshot::testSnapshot() {
     SyncPath path;
     snapshot.path("aaa", path);
     CPPUNIT_ASSERT(path == std::filesystem::path("A*/AA/AAA"));
-    CPPUNIT_ASSERT_EQUAL(SyncName("AAA"), snapshot.name("aaa"));
+    CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(snapshot.name("aaa")));
     CPPUNIT_ASSERT_EQUAL(SyncTime(1640995205), snapshot.lastModified("aaa"));
     CPPUNIT_ASSERT_EQUAL(NodeType::NodeTypeFile, snapshot.type("aaa"));
     CPPUNIT_ASSERT(snapshot.contentChecksum("aaa").empty());  // Checksum never computed for now
-    CPPUNIT_ASSERT_EQUAL(SyncName("aaa"), snapshot.itemId(std::filesystem::path("A*/AA/AAA")));
+    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), snapshot.itemId(std::filesystem::path("A*/AA/AAA")));
 
     // Move node AA under B
     snapshot.updateItem(SnapshotItem("aa", "b", Str("AA"), 1640995204, 1640995204, NodeType::NodeTypeDirectory, 123));
