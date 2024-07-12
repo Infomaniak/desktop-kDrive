@@ -121,7 +121,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
 
             const NodeId parentId = _syncPal->getSnapshot(ReplicaSideLocal)->parentId(id);
             SyncPath parentPath;
-            if (_syncPal->getSnapshot(ReplicaSideLocal)->path(parentId, parentPath) && parentPath.filename() == _testPicturesFolderName) {
+            if (!parentId.empty() && _syncPal->getSnapshot(ReplicaSideLocal)->path(parentId, parentPath) &&
+                parentPath.filename() == _testPicturesFolderName) {
                 fileCounter++;
             }
         }
