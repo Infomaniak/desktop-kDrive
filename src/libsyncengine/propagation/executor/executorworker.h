@@ -33,6 +33,29 @@ class UpdateTree;
 class FSOperationSet;
 class SyncDb;
 
+/**
+ * A thread safe implementation a the terminated jobs queue.
+ * In the context of `ExecutorWorker`, the terminated jobs queue is the only container that can be accessed from multiple threads.
+ * Therefore, it is the only container that require to be thread safe.
+ */
+class TerminatedJobsQueue {
+    public:
+        void push(const UniqueId id) {
+            const std::scoped_lock lock(mutex);
+            terminatedJobs.push(id);
+        }
+        void pop() {
+            const std::scoped_lock lock(mutex);
+            terminatedJobs.pop();
+        }
+        [[nodiscard]] UniqueId front() const { return terminatedJobs.front(); }
+        [[nodiscard]] bool empty() const { return terminatedJobs.empty(); }
+
+    private:
+        std::queue<UniqueId> terminatedJobs;
+        std::mutex mutex;
+};
+
 class ExecutorWorker : public OperationProcessor {
     public:
         ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
@@ -40,7 +63,7 @@ class ExecutorWorker : public OperationProcessor {
         void executorCallback(UniqueId jobId);
 
     protected:
-        virtual void execute() override;
+        void execute() override;
 
     private:
         void initProgressManager();
@@ -103,11 +126,10 @@ class ExecutorWorker : public OperationProcessor {
         void increaseErrorCount(SyncOpPtr syncOp);
 
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
-        std::queue<UniqueId> _terminatedJobs;
+        TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
         std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
         std::list<UniqueId> _opList;
-        std::recursive_mutex _mutex;
 
         ExitCode _executorExitCode = ExitCodeUnknown;
         ExitCause _executorExitCause = ExitCauseUnknown;
