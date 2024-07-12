@@ -134,7 +134,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeSymlink, NodeTypeFile);
@@ -145,7 +145,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_directory_symlink(targetPath, path);
 
         const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeSymlink, NodeTypeDirectory);
@@ -202,7 +202,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     // An existing file with dots and colons in its name
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / ":.file.::.name.:";
+        const SyncPath path = temporaryDirectory.path() / ":.file.::.name.:";
         { std::ofstream ofs(path); }
 
 #ifdef _WIN32
@@ -223,7 +223,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     // An existing file with emojis in its name
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
+        const SyncPath path = temporaryDirectory.path() / makeFileNameWithEmojis();
         { std::ofstream ofs(path); }
 
         const auto result = checker.checkSuccessfulRetrieval(path, NodeTypeFile);
@@ -233,8 +233,8 @@ void TestIo::testGetItemTypeSimpleCases() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         // Assumptions made to implement getItemType.
@@ -258,7 +258,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError = IoErrorSuccess;
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
@@ -271,7 +271,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError = IoErrorSuccess;
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
@@ -283,8 +283,8 @@ void TestIo::testGetItemTypeSimpleCases() {
     // A dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "file_to_be_deleted.png";  // This file will be deleted.
-        const SyncPath path = temporaryDirectory.path / "dangling_file_alias";
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         { std::ofstream ofs(targetPath); }
 
         IoError aliasError;
@@ -299,10 +299,10 @@ void TestIo::testGetItemTypeSimpleCases() {
     // A dangling MacOSX Finder alias on a non-existing directory.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "directory_to_be_deleted";  // This directory will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted";  // This directory will be deleted.
         std::filesystem::create_directory(targetPath);
 
-        const SyncPath path = temporaryDirectory.path / "dangling_directory_alias";
+        const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
 
         IoError aliasError = IoErrorSuccess;
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
@@ -336,7 +336,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     // A regular file missing all permissions (no error expected)
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_file.txt";
+        const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
         { std::ofstream ofs(path); }
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
@@ -349,7 +349,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     // A regular directory missing all permissions (no error expected)
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_directory";
+        const SyncPath path = temporaryDirectory.path() / "permission_less_directory";
         std::filesystem::create_directory(path);
 
         const auto allPermissions =
@@ -364,7 +364,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     // A regular file within a subdirectory that misses owner read permission (no error expected)
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
+        const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
         const SyncPath path = subdir / "file.txt";
         { std::ofstream ofs(path); }
@@ -381,7 +381,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     // - no error on Windows
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
+        const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
         const SyncPath path = subdir / "file.txt";
         { std::ofstream ofs(path); }
@@ -409,7 +409,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     // - no error expected on Windows
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
+        const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
 
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
@@ -444,7 +444,7 @@ void TestIo::testGetItemTypeAllBranches() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setIsSymlinkFunction([](const SyncPath &, std::error_code &ec) -> bool {
@@ -467,7 +467,7 @@ void TestIo::testGetItemTypeAllBranches() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setReadSymlinkFunction([](const SyncPath &path, std::error_code &ec) -> SyncPath {
@@ -485,7 +485,7 @@ void TestIo::testGetItemTypeAllBranches() {
     // after `filesystem::is_simlink` was called.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
+        const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
 
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
@@ -519,7 +519,7 @@ void TestIo::testGetItemTypeAllBranches() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setReadSymlinkFunction([](const SyncPath &path, std::error_code &ec) -> SyncPath {
@@ -536,8 +536,8 @@ void TestIo::testGetItemTypeAllBranches() {
     // Checking the target type of a symlink after the target file has been removed
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "file.txt";
-        const SyncPath path = temporaryDirectory.path / "symlink_to_file.txt";
+        const SyncPath targetPath = temporaryDirectory.path() / "file.txt";
+        const SyncPath path = temporaryDirectory.path() / "symlink_to_file.txt";
         { std::ofstream ofs(targetPath); }
         std::filesystem::create_symlink(targetPath, path);
 
@@ -557,7 +557,7 @@ void TestIo::testGetItemTypeAllBranches() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "test_pictures_alias";
+        const SyncPath path = temporaryDirectory.path() / "test_pictures_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
@@ -583,7 +583,7 @@ void TestIo::testGetItemTypeAllBranches() {
     // A regular MacOSX Finder alias in a directory that misses search permission.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "directory_without_search_permission";
+        const SyncPath subdir = temporaryDirectory.path() / "directory_without_search_permission";
         std::filesystem::create_directory(subdir);
 
         const SyncPath targetPath = _localTestDirPath / "test_pictures" / "picture-1.jpg";
@@ -627,10 +627,10 @@ void TestIo::testGetItemTypeEdgeCases() {
     // It is unclear which of `fileURLWithPath` or `getResourceValue` is the culprit.
 
     const LocalTemporaryDirectory temporaryDirectory;
-    const int bound = (1020 - temporaryDirectory.path.string().size()) / 4;
+    const int bound = (1020 - temporaryDirectory.path().string().size()) / 4;
     std::string segment(bound, 'a');
 
-    SyncPath path = temporaryDirectory.path / segment / segment / segment / u8"놔";
+    SyncPath path = temporaryDirectory.path() / segment / segment / segment / u8"놔";
 
     std::error_code ec;
     CPPUNIT_ASSERT(std::filesystem::create_directories(path, ec));

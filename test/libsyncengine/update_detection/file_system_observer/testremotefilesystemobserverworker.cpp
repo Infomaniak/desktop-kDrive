@@ -129,7 +129,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     // Create test file locally
     const LocalTemporaryDirectory temporaryDirectory("testRFSO");
     const SyncName testFileName = Str("test_file_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
-    SyncPath testFilePath = temporaryDirectory.path / testFileName;
+    SyncPath testFilePath = temporaryDirectory.path() / testFileName;
     std::string testCallStr = R"(echo "File creation" > )" + testFilePath.make_preferred().string();
     std::system(testCallStr.c_str());
 

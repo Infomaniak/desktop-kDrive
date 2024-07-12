@@ -32,8 +32,11 @@ CreateDirJob::CreateDirJob(int driveDbId, const SyncPath &filepath, const NodeId
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
+CreateDirJob::CreateDirJob(int driveDbId, const NodeId &parentId, const SyncName &name)
+    : CreateDirJob(driveDbId, "", parentId, name) {}
+
 CreateDirJob::~CreateDirJob() {
-    if (_vfsSetPinState && _vfsForceStatus) {
+    if (_vfsSetPinState && _vfsForceStatus && !_filePath.empty()) {
         if (!_vfsSetPinState(_filePath, PinStateAlwaysLocal)) {
             LOGW_WARN(_logger, L"Error in CreateDirJob::vfsSetPinState for path=" << Path2WStr(_filePath).c_str());
         }
@@ -70,8 +73,7 @@ bool CreateDirJob::handleResponse(std::istream &is) {
     }
 
     if (jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = jsonRes()->getObject(dataKey);
-        if (dataObj) {
+        if (const auto dataObj = jsonRes()->getObject(dataKey); dataObj) {
             if (!JsonParserUtility::extractValue(dataObj, idKey, _nodeId)) {
                 return false;
             }
@@ -80,10 +82,8 @@ bool CreateDirJob::handleResponse(std::istream &is) {
             }
         }
 
-        if (_vfsForceStatus) {
-            if (!_vfsForceStatus(_filePath, false, 100, true)) {
-                LOGW_WARN(_logger, L"Error in CreateDirJob::_vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
-            }
+        if (!_filePath.empty() && _vfsForceStatus && !_vfsForceStatus(_filePath, false, 100, true)) {
+            LOGW_WARN(_logger, L"Error in CreateDirJob::_vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
         }
     }
 

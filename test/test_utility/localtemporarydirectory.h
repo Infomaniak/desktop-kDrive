@@ -16,15 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "utility/types.h"
+
 #include <string>
 #include <filesystem>
 
 namespace KDC {
 
-struct LocalTemporaryDirectory {
-        std::filesystem::path path;
-        LocalTemporaryDirectory(const std::string& testType = "undef");
+class LocalTemporaryDirectory {
+    public:
+        explicit LocalTemporaryDirectory(const std::string& testType = "undef");
         ~LocalTemporaryDirectory();
+
+        [[nodiscard]] const std::filesystem::path& path() const { return _path; }
+        [[nodiscard]] const NodeId& id() const { return _id; }
+
+    private:
+        std::filesystem::path _path;
+        NodeId _id;
 };
 
 }  // namespace KDC
