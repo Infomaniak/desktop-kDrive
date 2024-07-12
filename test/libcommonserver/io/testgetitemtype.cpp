@@ -319,7 +319,7 @@ void TestIo::testGetItemTypeSimpleCases() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const SyncPath path = temporaryDirectory.path / "regular_dir_junction";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_junction";
 
         IoError ioError = IoErrorSuccess;
         _testObj->createJunctionFromPath(targetPath, path, ioError);

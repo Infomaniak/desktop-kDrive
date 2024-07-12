@@ -101,7 +101,7 @@ void TestIo::testSetXAttrValue() {
     // A regular file
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         {
             std::ofstream ofs(path);
             ofs.close();

@@ -21,6 +21,7 @@
 #include "libsyncengine/jobs/network/createdirjob.h"
 #include "libsyncengine/jobs/network/deletejob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
+#include "libcommonserver/utility/utility.h"
 
 namespace KDC {
 RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId,
@@ -32,7 +33,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
     std::ostringstream woss;
     woss << std::put_time(&tm, "%Y%m%d_%H%M");
 
-    _dirName = "kdrive_" + testType + "_unit_tests_" + woss.str();
+    _dirName = Str("kdrive_") + Str2SyncName(testType) + Str("_unit_tests_") + Str2SyncName(woss.str());
 
     // Create remote test dir
     CreateDirJob job(_driveDbId, parentId, _dirName);

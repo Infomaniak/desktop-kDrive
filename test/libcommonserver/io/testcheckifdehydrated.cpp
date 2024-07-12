@@ -81,7 +81,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
     // A dehydrated file
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "dehydrated_file";
+        const SyncPath path = temporaryDirectory.path() / "dehydrated_file";
         { std::ofstream ofs(path); }
 
         IoError ioError = IoErrorSuccess;
@@ -94,7 +94,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
     // A hydrated file
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "hydrated_file";
+        const SyncPath path = temporaryDirectory.path() / "hydrated_file";
         { std::ofstream ofs(path); }
 
         IoError ioError = IoErrorSuccess;

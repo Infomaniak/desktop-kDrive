@@ -315,7 +315,7 @@ void TestIo::testCheckSetAndGetRights() {
     {
 #ifdef _WIN32
         const LocalTemporaryDirectory temporaryDirectory("io_rights");
-        const SyncPath path = temporaryDirectory.path / "testCheckSetAndGetRights";
+        const SyncPath path = temporaryDirectory.path() / "testCheckSetAndGetRights";
         const SyncPath subFolderPath = path / "subFolder";
 
         IoError ioError = IoErrorUnknown;
@@ -410,7 +410,7 @@ void TestIo::testCheckSetAndGetRights() {
     {
 #ifdef _WIN32
         const LocalTemporaryDirectory temporaryDirectory("io_rights");
-        const SyncPath path = temporaryDirectory.path / "testCheckSetAndGetRights";
+        const SyncPath path = temporaryDirectory.path() / "testCheckSetAndGetRights";
         const SyncPath filePath = path / "file.txt";
 
         IoError ioError = IoErrorUnknown;
