@@ -38,10 +38,10 @@ CreateDirJob::CreateDirJob(int driveDbId, const NodeId &parentId, const SyncName
 CreateDirJob::~CreateDirJob() {
     if (_vfsSetPinState && _vfsForceStatus && !_filePath.empty()) {
         if (!_vfsSetPinState(_filePath, PinStateAlwaysLocal)) {
-            LOGW_WARN(_logger, L"Error in CreateDirJob::vfsSetPinState for path=" << Path2WStr(_filePath).c_str());
+            LOGW_WARN(_logger, L"Error in CreateDirJob::vfsSetPinState for " << Utility::formatSyncPath(_filePath).c_str());
         }
         if (!_vfsForceStatus(_filePath, false, 0, true)) {
-            LOGW_WARN(_logger, L"Error in CreateDirJob::vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
+            LOGW_WARN(_logger, L"Error in CreateDirJob::vfsForceStatus for " << Utility::formatSyncPath(_filePath).c_str());
         }
     }
 }
@@ -83,7 +83,7 @@ bool CreateDirJob::handleResponse(std::istream &is) {
         }
 
         if (!_filePath.empty() && _vfsForceStatus && !_vfsForceStatus(_filePath, false, 100, true)) {
-            LOGW_WARN(_logger, L"Error in CreateDirJob::_vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
+            LOGW_WARN(_logger, L"Error in CreateDirJob::_vfsForceStatus for " << Utility::formatSyncPath(_filePath).c_str());
         }
     }
 
