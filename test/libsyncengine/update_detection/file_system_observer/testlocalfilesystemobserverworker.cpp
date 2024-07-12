@@ -149,7 +149,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
 
         CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(itemId));
         SyncPath testSyncPath;
-        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->path(itemId, testSyncPath) && testSyncPath == testFileRelativePath);
+        CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->path(itemId, testSyncPath) &&
+                       testSyncPath == testFileRelativePath);
     }
 
     {
@@ -284,21 +285,19 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         /// Copy dir from outside sync dir
         LOGW_DEBUG(_logger, L"***** test copy dir from outside sync dir *****");
         SyncPath source = _testFolderPath / "test_dir";
-        SyncPath testAbsolutePath = _testRootFolderPath;
 
 #ifdef _WIN32
-        Poco::File(source.make_preferred().string()).copyTo(testAbsolutePath.make_preferred().string());
+        Poco::File(source.make_preferred().string()).copyTo(_testRootFolderPath.make_preferred().string());
 #else
         const std::string testCallStr =
             "cp -R " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string();
-        std::system(testCallStr.c_str());
 #endif
-
+        std::system(testCallStr.c_str());
         Utility::msleep(1000);  // Wait 1sec
 
         FileStat fileStat;
         bool exists = false;
-        testAbsolutePath = _testRootFolderPath / "test_dir";
+        SyncPath testAbsolutePath = _testRootFolderPath / "test_dir";
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
         CPPUNIT_ASSERT(_syncPal->getSnapshot(ReplicaSideLocal)->exists(itemId));
