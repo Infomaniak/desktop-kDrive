@@ -32,11 +32,11 @@ typedef std::shared_ptr<FSOperation> FSOpPtr;
 
 class FSOperationSet : public SharedObject {
     public:
-        FSOperationSet() = default;
+        FSOperationSet(ReplicaSide side): _side(side) {}
         ~FSOperationSet();
 
         FSOperationSet(const FSOperationSet &other)
-            : _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId) {}
+            : _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId), _side(other._side) {}
         FSOperationSet &operator=(FSOperationSet &other);
 
         inline const std::unordered_map<UniqueId, FSOpPtr> &ops() const { return _ops; }
@@ -52,13 +52,13 @@ class FSOperationSet : public SharedObject {
         bool removeOp(const NodeId &nodeId, const OperationType opType);
 
         bool findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res);
-
+        ReplicaSide side() const { return _side; }
     private:
         friend class TestFsOperationSet;
         std::unordered_map<UniqueId, FSOpPtr> _ops;
         std::unordered_map<OperationType, std::unordered_set<UniqueId>> _opsByType;
         std::unordered_map<NodeId, std::unordered_set<UniqueId>> _opsByNodeId;
-
+        ReplicaSide _side = ReplicaSideUnknown;
         std::mutex _mutex;
 
         bool getOpWithoutLock(UniqueId id, FSOpPtr &opPtr);
