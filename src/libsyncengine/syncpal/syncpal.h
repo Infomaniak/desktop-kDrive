@@ -130,6 +130,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _vfsCancelHydrate = vfsCancelHydrate;
         }
 
+        inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
         inline int syncDbId() const { return _syncDbId; }
         inline int driveDbId() const { return _driveDbId; }
         inline int driveId() const { return _driveId; }

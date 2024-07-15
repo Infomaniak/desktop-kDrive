@@ -77,7 +77,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
     _syncPal = std::shared_ptr<SyncPal>(new SyncPal(syncDbPath, "3.4.0", true));
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
 
     _syncPal->_localPath = _testRootFolderPath;
 
@@ -100,8 +100,8 @@ void TestLocalFileSystemObserverWorker::tearDown() {
 
     ParmsDb::instance()->close();
 
-    if (_syncPal && _syncPal->_syncDb) {
-        _syncPal->_syncDb->close();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
     }
 }
 

@@ -35,7 +35,7 @@ void KDC::TestOperationGeneratorWorker::setUp() {
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
     _syncPal = std::shared_ptr<SyncPal>(new SyncPal(syncDbPath, "3.4.0", true));
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
 
     _syncPal->_operationsGeneratorWorker =
         std::shared_ptr<OperationGeneratorWorker>(new OperationGeneratorWorker(_syncPal, "Operation Generator", "OPGE"));
@@ -65,24 +65,24 @@ void KDC::TestOperationGeneratorWorker::setUp() {
     DbNodeId dbNodeIdAAA;
 
     bool constraintError = false;
-    DbNode dbNodeA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", tLoc, tLoc, tRemote,
+    DbNode dbNodeA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", tLoc, tLoc, tRemote,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeA, dbNodeIdA, constraintError);
-    DbNode dbNodeB(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "lB", "rB", tLoc, tLoc, tRemote,
+    _syncPal->syncDb()->insertNode(dbNodeA, dbNodeIdA, constraintError);
+    DbNode dbNodeB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lB", "rB", tLoc, tLoc, tRemote,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeB, dbNodeIdB, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeB, dbNodeIdB, constraintError);
     DbNode dbNodeAA(0, dbNodeIdA, Str("AA"), Str("AA"), "lAA", "rAA", tLoc, tLoc, tRemote, NodeType::NodeTypeDirectory, 0,
                     std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeAA, dbNodeIdAA, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeAA, dbNodeIdAA, constraintError);
     DbNode dbNodeAB(0, dbNodeIdA, Str("AB"), Str("AB"), "lAB", "rAB", tLoc, tLoc, tRemote, NodeType::NodeTypeDirectory, 0,
                     std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeAB, dbNodeIdAB, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeAB, dbNodeIdAB, constraintError);
     DbNode dbNodeBA(0, dbNodeIdB, Str("BA"), Str("BA"), "lBA", "rBA", tLoc, tLoc, tRemote, NodeType::NodeTypeDirectory, 0,
                     std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeBA, dbNodeIdBA, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeBA, dbNodeIdBA, constraintError);
     DbNode dbNodeAAA(0, dbNodeIdAA, Str("AAA"), Str("AAA"), "lAAA", "rAAA", tLoc, tLoc, tRemote, NodeType::NodeTypeFile, 0,
                      std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeAAA, dbNodeIdAAA, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeAAA, dbNodeIdAAA, constraintError);
 
     // Build update trees
     SyncTime createdAt = 1654788079;
@@ -154,7 +154,7 @@ void KDC::TestOperationGeneratorWorker::setUp() {
 void KDC::TestOperationGeneratorWorker::tearDown() {
     LOGW_DEBUG(_logger, L"$$$$$ Tear Down $$$$$");
     ParmsDb::instance()->close();
-    _syncPal->_syncDb->close();
+    _syncPal->syncDb()->close();
 }
 
 void TestOperationGeneratorWorker::testCreateOp() {

@@ -75,13 +75,13 @@ void TestSnapshot::setUp() {
     ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
 }
 
 void TestSnapshot::tearDown() {
     ParmsDb::instance()->close();
-    if (_syncPal && _syncPal->_syncDb) {
-        _syncPal->_syncDb->close();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
     }
 }
 

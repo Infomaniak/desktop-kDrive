@@ -36,7 +36,7 @@ void TestConflictResolverWorker::setUp() {
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
     _syncPal = std::make_shared<SyncPal>(syncDbPath, "3.4.0", true);
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
 
     _syncPal->_conflictResolverWorker = std::make_shared<ConflictResolverWorker>(_syncPal, "Conflict Resolver", "CORE");
 
@@ -60,18 +60,18 @@ void TestConflictResolverWorker::setUp() {
     DbNodeId dbNodeIdAAA;
 
     bool constraintError = false;
-    DbNode dbNodeA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", defaultTime, defaultTime,
+    DbNode dbNodeA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", defaultTime, defaultTime,
                    defaultTime, NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeA, dbNodeIdA, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeA, dbNodeIdA, constraintError);
     DbNode dbNodeAA(0, dbNodeIdA, Str("AA"), Str("AA"), "lAA", "rAA", defaultTime, defaultTime, defaultTime,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeAA, dbNodeIdAA, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeAA, dbNodeIdAA, constraintError);
     DbNode dbNodeAB(0, dbNodeIdA, Str("AB"), Str("AB"), "lAB", "rAB", defaultTime, defaultTime, defaultTime,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeAB, dbNodeIdAB, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeAB, dbNodeIdAB, constraintError);
     DbNode dbNodeAAA(0, dbNodeIdAA, Str("AAA"), Str("AAA"), "lAAA", "rAAA", defaultTime, defaultTime, defaultTime,
                      NodeType::NodeTypeFile, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeAAA, dbNodeIdAAA, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeAAA, dbNodeIdAAA, constraintError);
 
     // Build update trees
     std::shared_ptr<Node> lNodeA =
@@ -120,8 +120,8 @@ void TestConflictResolverWorker::setUp() {
 void TestConflictResolverWorker::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    if (_syncPal && _syncPal->_syncDb) {
-        _syncPal->_syncDb->close();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
     }
 }
 

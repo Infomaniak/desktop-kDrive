@@ -85,7 +85,7 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     ParmsDb::instance()->insertSync(sync);
 
     _syncPal = std::make_shared<SyncPalTest>(sync.dbId(), "3.4.0");
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
 
     /// Insert node in blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeBlackList, {testBlackListedDirId});
@@ -107,8 +107,8 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    if (_syncPal && _syncPal->_syncDb) {
-        _syncPal->_syncDb->close();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
     }
 }
 

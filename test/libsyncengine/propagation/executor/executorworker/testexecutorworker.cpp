@@ -35,7 +35,7 @@ void TestExecutorWorker::setUp() {
     _syncPal = std::make_shared<SyncPal>(syncDbPath, "3.4.0", true);
     _testObj = std::make_shared<ExecutorWorker>(_syncPal, "name", "short name");
 
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
 
     /**
      * Initial FS state:
@@ -62,13 +62,13 @@ void TestExecutorWorker::setUp() {
     _syncPal->syncDb()->insertNode(dbNodeA, dbNodeIdA, constraintError);
     DbNode dbNodeAA(0, dbNodeIdA, Str("AA"), Str("AA"), "lAA", "rAA", defaultTime, defaultTime, defaultTime,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeAA, dbNodeIdAA, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeAA, dbNodeIdAA, constraintError);
     DbNode dbNodeAB(0, dbNodeIdA, Str("AB"), Str("AB"), "lAB", "rAB", defaultTime, defaultTime, defaultTime,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeAB, dbNodeIdAB, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeAB, dbNodeIdAB, constraintError);
     DbNode dbNodeAAA(0, dbNodeIdAA, Str("AAA"), Str("AAA"), "lAAA", "rAAA", defaultTime, defaultTime, defaultTime,
                      NodeType::NodeTypeFile, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(dbNodeAAA, dbNodeIdAAA, constraintError);
+    _syncPal->syncDb()->insertNode(dbNodeAAA, dbNodeIdAAA, constraintError);
 
     // Build update trees
     std::shared_ptr<Node> lNodeA =
