@@ -35,6 +35,7 @@
 #include "propagation/executor/executorworker/testexecutorworker.h"
 //#include "propagation/executor/testintegration.h"
 #include "jobs/network/testnetworkjobs.h"
+#include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
 #include "requests/testexclusiontemplatecache.h"
@@ -43,6 +44,7 @@ namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestJobManager);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
