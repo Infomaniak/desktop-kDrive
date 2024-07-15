@@ -16,26 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "testincludes.h"
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
+#include <log4cplus/logger.h>
+#include <QApplication>
+#include "server/updater/kdcupdater.h"
+#ifdef __APPLE__
+#include "server/updater/sparkleupdater.h"
+#endif
+
+using namespace CppUnit;
 
 namespace KDC {
-
-class TestUtility : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestUtility);
-        CPPUNIT_TEST(testGetAppSupportDir);
-        CPPUNIT_TEST(testIsVersionLower);
-        CPPUNIT_TEST(testStringToAppStateValue);
-        CPPUNIT_TEST(testArgsWriter);
+class TestUpdater : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestUpdater);
+        CPPUNIT_TEST(testUpdateInfoVersionParseString);
+        CPPUNIT_TEST(testIsKDCorSparkleUpdater);
+        CPPUNIT_TEST(testUpdateSucceeded);
         CPPUNIT_TEST_SUITE_END();
 
+    public:
+        void setUp(void) final;
+        void testUpdateInfoVersionParseString(void);
+        void testIsKDCorSparkleUpdater(void);
+        void testUpdateSucceeded(void);
+
     protected:
-        void testGetAppSupportDir();
-        void testIsVersionLower();
-        void testStringToAppStateValue();
-        void testArgsWriter();
+        log4cplus::Logger _logger;
+#ifdef __APPLE__
+        SparkleUpdater* _updater;
+#else
+        KDCUpdater* _updater;
+#endif
 };
 
 }  // namespace KDC

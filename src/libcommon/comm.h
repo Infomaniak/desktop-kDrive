@@ -18,9 +18,6 @@
 
 #pragma once
 
-#include <QDataStream>
-#include <QIODevice>
-
 #define COMM_SHORT_TIMEOUT 1000
 #define COMM_AVERAGE_TIMEOUT 10000
 #define COMM_LONG_TIMEOUT 60000
@@ -118,10 +115,12 @@ typedef enum {
     REQUEST_NUM_UPDATER_ISKDCUPDATER,
     REQUEST_NUM_UPDATER_ISSPARKLEUPDATER,
     REQUEST_NUM_UPDATER_STATUSSTRING,
+    REQUEST_NUM_UPDATER_STATUS,
     REQUEST_NUM_UPDATER_DOWNLOADCOMPLETED,
     REQUEST_NUM_UPDATER_UPDATEFOUND,
     REQUEST_NUM_UPDATER_STARTINSTALLER,
     REQUEST_NUM_UPDATER_UPDATE_DIALOG_RESULT,
+    REQUEST_NUM_RECONSIDER_SKIPPED_UPDATE,
     REQUEST_NUM_UTILITY_QUIT,
 } RequestNum;
 
@@ -163,36 +162,3 @@ typedef enum {
     SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS,
     SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED,
 } SignalNum;
-
-struct ArgsReader {
-        template <class... Args>
-        explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
-            read(args...);
-        }
-        template <class T>
-        void read(const T p) {
-            stream << p;
-        }
-        template <class T, class... Args>
-        void read(const T p, Args... args) {
-            stream << p;
-            read(args...);
-        }
-        explicit operator QByteArray() const { return params; }
-        QByteArray params;
-        QDataStream stream;
-};
-
-struct ArgsWriter {
-        explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
-        template <class T>
-        void write(T &r) {
-            stream >> r;
-        }
-        template <class T, class... Args>
-        void write(T &r, Args... args) {
-            stream >> r;
-            write(args...);
-        }
-        QDataStream stream;
-};
