@@ -119,8 +119,14 @@ class UpdateTreeWorker : public ISyncWorker {
         // Log update information if extended logging is on.
         void logUpdate(const std::shared_ptr<Node> node, const OperationType opType,
                        const std::shared_ptr<Node> parentNode = nullptr);
-        void updateTmpNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp);
-
+        void updateTmpFileNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp, OperationType opType);
+        /**
+         * Search for the parent of the node with path `nodePath` in the update tree through its database ID.
+         \param nodePath: the path of the node whose parent is queried
+         \param parentNode: it is set with a pointer to the parent node if it exists, with `nullptr` otherwise.
+         \return : ExitCodeOk if no unexpected error occurred.
+         */
+        ExitCode searchForParentNode(const SyncPath &nodePath, std::shared_ptr<Node> &parentNode);
 
         /**
          * Detect and handle create operations on files or directories
@@ -134,7 +140,11 @@ class UpdateTreeWorker : public ISyncWorker {
          */
         ExitCode handleCreateOperationsWithSamePath();
 
-        std::shared_ptr<Node> getOrCreateNodeFromPath(const SyncPath &path);
+        std::shared_ptr<Node> getOrCreateNodeFromPath(const SyncPath &path, bool isDeleted);
+        std::shared_ptr<Node> getOrCreateNodeFromExistingPath(const SyncPath &path) {
+            return getOrCreateNodeFromPath(path, false);
+        }
+        std::shared_ptr<Node> getOrCreateNodeFromDeletedPath(const SyncPath &path) { return getOrCreateNodeFromPath(path, true); }
         void mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
 
         /**

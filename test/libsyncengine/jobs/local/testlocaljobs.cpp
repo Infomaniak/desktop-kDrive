@@ -29,7 +29,7 @@
 #include "keychainmanager/keychainmanager.h"
 #include "libcommonserver/network/proxy.h"
 #include "libcommon/utility/utility.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "jobs/local/localcopyjob.h"
 #include "requests/parameterscache.h"
 
@@ -37,15 +37,13 @@ using namespace CppUnit;
 
 namespace KDC {
 
-static const SyncPath localTestDirPath(Utility::s2ws(TEST_DIR) + L"/test_ci");
-
 void KDC::TestLocalJobs::setUp() {
     // Setup parameter in test mode
     ParametersCache::instance(true);
 }
 
 void KDC::TestLocalJobs::testLocalJobs() {
-    const TemporaryDirectory temporaryDirectory("testLocalJobs");
+    const LocalTemporaryDirectory temporaryDirectory("testLocalJobs");
     const SyncPath localDirPath = temporaryDirectory.path / "tmp_dir";
 
     // Create

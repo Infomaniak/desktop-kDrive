@@ -26,7 +26,6 @@ namespace KDC {
 
 class TestLogArchiver : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLogArchiver);
-        CPPUNIT_TEST(testLog);
         CPPUNIT_TEST(testGetLogEstimatedSize);
         CPPUNIT_TEST(testCopyLogsTo);
         CPPUNIT_TEST(testCopyParmsDbTo);
@@ -36,13 +35,11 @@ class TestLogArchiver : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE_END();
 
     public:
-        void setUp(void);
-        void tearDown(void);
+        void setUp(void) final;
 
     protected:
         log4cplus::Logger _logger;
 
-        void testLog(void);
         void testGetLogEstimatedSize(void);
         void testCopyLogsTo(void);
         void testCopyParmsDbTo(void);

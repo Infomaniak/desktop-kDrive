@@ -28,7 +28,7 @@ foreach ($file in $testers)
     $path="..\..\$file"
     & $path
     if ($LASTEXITCODE -ne 0) {
-        $errors += $LASTEXITCODE
+        $errors += 1
         $failures+=$file
         Write-Host "---------- Failure: $file ----------" -f Red
     }
@@ -43,7 +43,7 @@ if ($errors -eq 0) {
     Write-Host "Success: All Tests passed !" -f Green
 }
 else {
-    Write-Host "Failures: 
+    Write-Host "Failures ($errors): 
     " -f Red
     foreach ($failure in $failures)
     {

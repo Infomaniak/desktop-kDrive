@@ -44,9 +44,9 @@ class ExclusionTemplate {
 
     private:
         std::string _templ;
-        bool _warning {false};
-        bool _def {false};
-        bool _deleted {false};
+        bool _warning{false};
+        bool _def{false};
+        bool _deleted{false};
         ExclusionTemplateComplexity _complexity = ExclusionTemplateComplexityComplex;
 
         void evaluateComplexity();

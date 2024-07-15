@@ -295,39 +295,23 @@ AppServer::AppServer(int &argc, char **argv)
     } else if (exitCode != ExitCodeOk) {
         LOG_WARN(_logger, "Error in updateAllUsersInfo : " << exitCode);
         addError(Error(ERRID, exitCode, ExitCauseUnknown));
-        if (exitCode != ExitCodeNetworkError) {
+        if (exitCode != ExitCodeNetworkError && exitCode != ExitCodeUpdateRequired) {
             throw std::runtime_error("Failed to load user data.");
             return;
         }
     }
 
+    // Check last crash to avoid crash loop
+    bool shouldQuit = false;
+    handleCrashRecovery(shouldQuit);
+    if (shouldQuit) {
+        QTimer::singleShot(0, this, &AppServer::quit);
+        return;
+    }
+
+
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
-
-    // Check last crash to avoid crash loop
-    if (_crashRecovered) {
-        bool found = false;
-        LOG_WARN(_logger, "Server auto restart after a crash.");
-        if (serverCrashedRecently()) {
-            LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
-            QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
-            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, std::string("0"), found) ||
-                !found) {
-                LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
-                throw std::runtime_error("Failed to update last server self restart.");
-            }
-            QTimer::singleShot(0, this, quit);
-            return;
-        }
-        long timestamp =
-            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
-        std::string timestampStr = std::to_string(timestamp);
-        KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
-        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
-            LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
-            throw std::runtime_error("Failed to update last server self restart.");
-        }
-    }
 
     // Check if a log Upload has been interrupted
     AppStateValue appStateValue = LogUploadState::None;
@@ -1469,7 +1453,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             bool isWarning = false;
 
             resultStream << ExitCodeOk;
-            resultStream << ExclusionTemplateCache::instance()->isExcludedTemplate(name.toStdString(), isWarning);
+            resultStream << ExclusionTemplateCache::instance()->isExcludedByTemplate(name.toStdString(), isWarning);
             break;
         }
         case REQUEST_NUM_EXCLTEMPL_GETLIST: {
@@ -1888,6 +1872,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << status;
             break;
         }
+        case REQUEST_NUM_UPDATER_STATUS: {
+            UpdateState status = UpdaterServer::instance()->updateState();
+            resultStream << status;
+            break;
+        }
         case REQUEST_NUM_UPDATER_DOWNLOADCOMPLETED: {
             bool ret = UpdaterServer::instance()->downloadCompleted();
 
@@ -1915,8 +1904,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 updater->slotSetSeenVersion();
             } else {
                 updater->slotStartInstaller();
-                QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             }
+            break;
+        }
+        case REQUEST_NUM_RECONSIDER_SKIPPED_UPDATE: {
+            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
+            updater->slotUnsetSeenVersion();
             break;
         }
         case REQUEST_NUM_UTILITY_QUIT: {
@@ -2975,6 +2968,51 @@ void AppServer::setupProxy() {
     Proxy::instance(ParametersCache::instance()->parameters().proxyConfig());
 }
 
+void AppServer::handleCrashRecovery(bool &shouldQuit) {
+    bool found = false;
+    if (AppStateValue lastServerRestartDate = int64_t(0);
+        !KDC::ParmsDb::instance()->selectAppState(AppStateKey::LastServerSelfRestartDate, lastServerRestartDate, found) ||
+        !found) {
+        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
+        shouldQuit = false;
+    } else if (std::get<int64_t>(lastServerRestartDate) == SELF_RESTARTE_DISABLE_VALUE) {
+        LOG_INFO(_logger, "Last session requested to not restart the server.");
+        shouldQuit = _crashRecovered;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
+            LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+        }
+        return;
+    }
+    
+    std::string timestampStr;
+    if (_crashRecovered) {
+        LOG_WARN(_logger, "Server auto restart after a crash.");
+
+        if (serverCrashedRecently()) {
+            LOG_FATAL(_logger, "Server crashed twice in a short time, exiting");
+            QMessageBox::warning(nullptr, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
+            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
+                LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+            }
+            shouldQuit = true;
+        } else {
+            LOG_INFO(_logger, "Server crashed once, restarting");
+            shouldQuit = false;
+        }
+
+        long long timestamp =
+            std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        timestampStr = std::to_string(timestamp);
+    } else {
+        timestampStr = std::to_string(SELF_RESTARTER_NO_CRASH_DETECTED);
+    }
+
+    KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
+    if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found) || !found) {
+        LOG_ERROR(_logger, "Error in ParmsDb::updateAppState");
+    }
+}
+
 bool AppServer::serverCrashedRecently(int seconds) {
     const int64_t nowSeconds =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
@@ -3094,13 +3132,7 @@ void AppServer::clearSyncNodes() {
     // Clear node tables
     for (const Sync &sync : syncList) {
         SyncPath dbPath = sync.dbPath();
-        std::shared_ptr<SyncDb> syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
-
-#ifdef __APPLE__
-        // Fix the names on local replica if necessary
-        SyncPal::fixFileNamesWithColon(syncDbPtr, sync.localPath());
-#endif
-
+        auto syncDbPtr = std::make_shared<SyncDb>(dbPath.string(), _theme->version().toStdString());
         syncDbPtr->clearNodes();
     }
 }
@@ -3800,21 +3832,18 @@ void AppServer::addError(const Error &error) {
         sendUserUpdated(userInfo);
     } else if (error.exitCode() == ExitCodeNetworkError && error.exitCause() == ExitCauseSocketsDefuncted) {
         // Manage sockets defuncted error
-        LOG_WARN(Log::instance()->getLogger(), "Sockets defuncted error");
-
-        Parameters &parameters = ParametersCache::instance()->parameters();
-        if (const int uploadSessionParallelJobs = parameters.uploadSessionParallelJobs(); uploadSessionParallelJobs > 1) {
-            const int newUploadSessionParallelJobs = std::floor(uploadSessionParallelJobs / 2.0);
-            parameters.setUploadSessionParallelJobs(newUploadSessionParallelJobs);
-            ParametersCache::instance()->save();
-            LOG_DEBUG(Log::instance()->getLogger(), "Update uploadSessionParallelJobs from "
-                                                        << uploadSessionParallelJobs << " to " << newUploadSessionParallelJobs);
-        }
+        LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
 #ifdef NDEBUG
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", "Sockets defuncted error"));
 #endif
+
+        // Decrease upload session max parallel jobs
+        ParametersCache::instance()->decreaseUploadSessionParallelThreads();
+
+        // Decrease JobManager pool capacity
+        JobManager::instance()->decreasePoolCapacity();
     }
 
 #ifdef NDEBUG

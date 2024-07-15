@@ -356,10 +356,10 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
             continue;
         }
         const std::string entryPathStr = entry.path().string();
-        QString destPath = QString::fromStdString(entryPathStr + ".gz");
-        if (!CommonUtility::compressFile(QString::fromStdString(entryPathStr), destPath)) {
+        std::string destPath = entryPathStr + ".gz";
+        if (!CommonUtility::compressFile(entryPathStr, destPath)) {
             LOG_WARN(Log::instance()->getLogger(),
-                     "Error in compressFile for " << entryPathStr.c_str() << " to " << destPath.toStdString().c_str());
+                     "Error in compressFile for " << entryPathStr.c_str() << " to " << destPath.c_str());
             return ExitCodeSystemError;
         }
 

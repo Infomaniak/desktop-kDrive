@@ -21,7 +21,6 @@
 #include <string>
 #include <filesystem>
 #include <functional>
-#include <cctype>
 #include <optional>
 #include <unordered_set>
 #include <variant>
@@ -124,13 +123,15 @@ typedef enum {
     ExitCodeBackError,    // Error in an API call
     ExitCodeSystemError,  // IO error etc.
     ExitCodeFatalError,   // SyncPal fatal error
-    ExitCodeInconsistencyError,
+    ExitCodeLogicError,   // Consequence of faulty logic within the program such as violating logical preconditions or class
+                          // invariants and may be preventable
     ExitCodeTokenRefreshed,
     ExitCodeNoWritePermission,
     ExitCodeRateLimited,
     ExitCodeInvalidSync,  // The sync configuration is not valid
     ExitCodeOperationCanceled,
-    ExitCodeInvalidOperation
+    ExitCodeInvalidOperation,
+    ExitCodeUpdateRequired,
 } ExitCode;
 
 typedef enum {
@@ -170,7 +171,8 @@ typedef enum {
     ExitCauseSocketsDefuncted,  // macOS: sockets defuncted by kernel
     ExitCauseNoSearchPermission,
     ExitCauseNotFound,
-    ExitCauseQuotaExceeded
+    ExitCauseQuotaExceeded,
+    ExitCauseFullListParsingError
 } ExitCause;
 
 // Conflict types ordered by priority
@@ -381,8 +383,12 @@ enum class AppStateKey {
     LogUploadPercent,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
+constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;
+constexpr int64_t SELF_RESTARTER_NO_CRASH_DETECTED = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
+
+enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;

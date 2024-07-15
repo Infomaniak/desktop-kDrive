@@ -60,7 +60,7 @@ class JobManager {
          * to the job until it is finished. The caller should not keep a reference to this job.
          */
         void queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority = Poco::Thread::PRIO_NORMAL,
-                           std::function<void(UniqueId)> externalCallback = nullptr);
+                           std::function<void(UniqueId)> externalCallback = nullptr) noexcept;
 
         inline bool hasAvailableThread() { return Poco::ThreadPool::defaultPool().available() > 0; }
         bool isJobFinished(const UniqueId &jobId);
@@ -69,15 +69,19 @@ class JobManager {
         inline size_t countManagedJobs() { return _managedJobs.size(); }
         inline size_t maxNbThreads() { return _maxNbThread; }
 
+        void setPoolCapacity(int count);  // For testing purpose
+        void decreasePoolCapacity();
+
     private:
         JobManager();
 
         static void defaultCallback(UniqueId jobId);
 
-        static void run();
+        static void run() noexcept;
         static void startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> nextJob);
         static void adjustMaxNbThread();
         static int countUploadSession();
+        static bool canRun(const std::shared_ptr<AbstractJob> job, int uploadSessionCount);
         static void managePendingJobs(int uploadSessionCount);
 
         static bool isParentPendingOrRunning(UniqueId jobIb);
@@ -99,7 +103,7 @@ class JobManager {
         static std::unordered_set<UniqueId> _runningJobs;  // jobs currently running in a dedicated thread
         static std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
             _pendingJobs;  // jobs waiting for their parent job to be completed
-        static std::mutex _mutex;
+        static std::recursive_mutex _mutex;
 
         friend class TestJobManager;
 };

@@ -217,20 +217,10 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Default Lite Sync app exclude list
     install(FILES litesync-exclude.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
-    # Sentry
-    find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
-    message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
-    install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
-
     # Crashpad_handler
     find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
     message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
-
-    # xxHash
-    find_library(XXHASH_SHARED_LIBRARY NAMES xxHash.0.8.2 NO_CACHE)
-    message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
-    install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
 elseif(BUILD_CLIENT)
     if (WIN32)
         # NSIS
