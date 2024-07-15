@@ -69,11 +69,13 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     if (newItem.parentId().empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id().c_str());
         assert(false);
+        return false;
     }
 
     if (newItem.parentId() == newItem.id()) {
         LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << newItem.id().c_str());
         assert(false);
+        return false;
     }
 
     const SnapshotItem &prevItem = _items[newItem.id()];
@@ -122,6 +124,7 @@ bool Snapshot::removeItem(const NodeId &id) {
 
     if (id.empty()) {
         assert(false);
+        return false;
     }
 
     auto it = _items.find(id);
@@ -447,6 +450,7 @@ bool Snapshot::isOrphan(const NodeId &itemId) {
             // Should not happen
             LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << nextParentId.c_str());
             assert(false);
+            break;
         }
         nextParentId = tmpNextParentId;
     }

@@ -50,50 +50,51 @@ void TestSnapshot::tearDown() {}
  */
 
 void TestSnapshot::testSnapshot() {
+    const NodeId rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
+
     const DbNode dummyRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
                                NodeTypeDirectory, 0, std::nullopt);
     Snapshot snapshot(ReplicaSideLocal, dummyRootNode);
 
     // Insert node A
-    const SnapshotItem itemA("a", SyncDb::driveRootNode().nodeIdLocal().value(), Str("A"), 1640995201, 1640995201,
-                             NodeType::NodeTypeDirectory, 123);
+    const SnapshotItem itemA("a", rootNodeId, Str("A"), 1640995201, 1640995201, NodeType::NodeTypeDirectory, 123);
     snapshot.updateItem(itemA);
     CPPUNIT_ASSERT(snapshot.exists("a"));
     CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(snapshot.name("a")));
     CPPUNIT_ASSERT_EQUAL(NodeType::NodeTypeDirectory, snapshot.type("a"));
-    auto itItem = snapshot._items.find(SyncDb::driveRootNode().nodeIdLocal().value());
-    CPPUNIT_ASSERT(itItem->second.childrenIds().contains("a"));
+    std::unordered_set<NodeId> childrenIds;
+    snapshot.getChildrenIds(rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("a"));
 
     // Update node A
-    snapshot.updateItem(SnapshotItem("a", SyncDb::driveRootNode().nodeIdLocal().value(), Str("A*"), 1640995202, 1640995202,
-                                     NodeType::NodeTypeDirectory, 123));
+    snapshot.updateItem(SnapshotItem("a", rootNodeId, Str("A*"), 1640995202, 1640995202, NodeType::NodeTypeDirectory, 123));
     CPPUNIT_ASSERT_EQUAL(std::string("A*"), SyncName2Str(snapshot.name("a")));
 
     // Insert node B
-    const SnapshotItem itemB("b", SyncDb::driveRootNode().nodeIdLocal().value(), Str("B"), 1640995203, 1640995203,
-                             NodeType::NodeTypeDirectory, 123);
+    const SnapshotItem itemB("b", rootNodeId, Str("B"), 1640995203, 1640995203, NodeType::NodeTypeDirectory, 123);
     snapshot.updateItem(itemB);
     CPPUNIT_ASSERT(snapshot.exists("b"));
-    itItem = snapshot._items.find(SyncDb::driveRootNode().nodeIdLocal().value());
-    CPPUNIT_ASSERT(itItem->second.childrenIds().contains("b"));
+    snapshot.getChildrenIds(rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("b"));
 
     // Insert child nodes
     const SnapshotItem itemAA("aa", "a", Str("AA"), 1640995204, 1640995204, NodeType::NodeTypeDirectory, 123);
     snapshot.updateItem(itemAA);
-    itItem = snapshot._items.find("a");
-    CPPUNIT_ASSERT(itItem->second.childrenIds().contains("aa"));
+    CPPUNIT_ASSERT(snapshot.exists("aa"));
+    snapshot.getChildrenIds("a", childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("aa"));
 
     const SnapshotItem itemAAA("aaa", "aa", Str("AAA"), 1640995205, 1640995205, NodeType::NodeTypeFile, 123);
     snapshot.updateItem(itemAAA);
     CPPUNIT_ASSERT(snapshot.exists("aaa"));
-    itItem = snapshot._items.find("aa");
-    CPPUNIT_ASSERT(itItem->second.childrenIds().contains("aaa"));
+    snapshot.getChildrenIds("aa", childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("aaa"));
 
     SyncPath path;
     snapshot.path("aaa", path);
     CPPUNIT_ASSERT(path == std::filesystem::path("A*/AA/AAA"));
     CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(snapshot.name("aaa")));
-    CPPUNIT_ASSERT_EQUAL(SyncTime(1640995205), snapshot.lastModified("aaa"));
+    CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(1640995205), snapshot.lastModified("aaa"));
     CPPUNIT_ASSERT_EQUAL(NodeType::NodeTypeFile, snapshot.type("aaa"));
     CPPUNIT_ASSERT(snapshot.contentChecksum("aaa").empty());  // Checksum never computed for now
     CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), snapshot.itemId(std::filesystem::path("A*/AA/AAA")));
@@ -101,22 +102,22 @@ void TestSnapshot::testSnapshot() {
     // Move node AA under B
     snapshot.updateItem(SnapshotItem("aa", "b", Str("AA"), 1640995204, 1640995204, NodeType::NodeTypeDirectory, 123));
     CPPUNIT_ASSERT(snapshot.parentId("aa") == "b");
-    itItem = snapshot._items.find("b");
-    CPPUNIT_ASSERT(itItem->second.childrenIds().contains("aa"));
-    itItem = snapshot._items.find("a");
-    CPPUNIT_ASSERT(itItem->second.childrenIds().empty());
+    snapshot.getChildrenIds("b", childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("aa"));
+    snapshot.getChildrenIds("a", childrenIds);
+    CPPUNIT_ASSERT(childrenIds.empty());
 
     // Remove node B
     snapshot.removeItem("b");
+    snapshot.getChildrenIds(rootNodeId, childrenIds);
     CPPUNIT_ASSERT(!snapshot.exists("aaa"));
     CPPUNIT_ASSERT(!snapshot.exists("aa"));
     CPPUNIT_ASSERT(!snapshot.exists("b"));
-    itItem = snapshot._items.find(SyncDb::driveRootNode().nodeIdLocal().value());
-    CPPUNIT_ASSERT(!itItem->second.childrenIds().contains("b"));
+    CPPUNIT_ASSERT(!childrenIds.contains("b"));
 
     // Reset snapshot
     snapshot.init();
-    CPPUNIT_ASSERT_EQUAL(size_t(1), snapshot._items.size());
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), snapshot.nbItems());
 }
 
 }  // namespace KDC
