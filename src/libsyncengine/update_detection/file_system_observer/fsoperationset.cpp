@@ -58,7 +58,7 @@ void FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<Uni
 }
 
 uint64_t FSOperationSet::nbOps() const {
-    std::scoped_lock(_mutex);
+    const std::scoped_lock(_mutex);
     return _ops.size();
 }
 
@@ -117,22 +117,21 @@ bool FSOperationSet::removeOp(const NodeId &nodeId, const OperationType opType) 
 
 bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res) {
     const std::scoped_lock lock(_mutex);
-    if (auto it = _opsByNodeId.find(nodeId); it != _opsByNodeId.end()) {
-        for (auto id : it->second) {
-            FSOpPtr opPtr = nullptr;
-            if (getOp(id, opPtr)) {
-                if (opPtr->operationType() == opType) {
-                    res = opPtr;
-                    return true;
-                }
-            }
+    if (!_opsByNodeId.contains(nodeId)) {
+        return false;
+    }
+    for (auto it = _opsByNodeId.find(nodeId); auto id : it->second) {
+        FSOpPtr opPtr = nullptr;
+        if (getOp(id, opPtr) && opPtr->operationType() == opType) {
+            res = opPtr;
+            return true;
         }
     }
     return false;
 }
 
 ReplicaSide FSOperationSet::side() const {
-    std::scoped_lock(_mutex);
+    const std::scoped_lock(_mutex);
     return _side;
 }
 
