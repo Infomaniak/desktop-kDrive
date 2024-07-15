@@ -70,7 +70,6 @@ class TestConflictResolverWorker : public CppUnit::TestFixture {
         void testMoveMoveCycle();
         void testMoveMoveCycle2();
 
-
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 };

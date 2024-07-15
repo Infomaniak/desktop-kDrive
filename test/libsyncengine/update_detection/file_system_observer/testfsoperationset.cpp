@@ -37,7 +37,7 @@ void TestFsOperationSet::setUp() {
 void TestFsOperationSet::tearDown() {}
 
 void TestFsOperationSet::testGetOp() {
-    FSOperationSet fsOperationSet;
+    FSOperationSet fsOperationSet(ReplicaSideUnknown);
     FSOpPtr opPtr;
 
     // Test getOp with an empty set
@@ -52,7 +52,7 @@ void TestFsOperationSet::testGetOp() {
 }
 
 void TestFsOperationSet::testGetOpsByType() {
-    FSOperationSet fsOperationSet;
+    FSOperationSet fsOperationSet(ReplicaSideUnknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
 
@@ -71,7 +71,7 @@ void TestFsOperationSet::testGetOpsByType() {
 
 void TestFsOperationSet::testGetOpsByNodeId() {
     // Initialize the set
-    FSOperationSet fsOperationSet;
+    FSOperationSet fsOperationSet(ReplicaSideUnknown);
     NodeId nodeId = "nodeId";
     std::vector<UniqueId> opsIds;
     for (OperationType type : _operationTypes) {
@@ -99,7 +99,7 @@ void TestFsOperationSet::testGetOpsByNodeId() {
 }
 
 void TestFsOperationSet::testNbOpsByType() {
-    FSOperationSet fsOperationSet;
+    FSOperationSet fsOperationSet(ReplicaSideUnknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
 
@@ -118,7 +118,7 @@ void TestFsOperationSet::testNbOpsByType() {
 
 void TestFsOperationSet::testClear() {
     // Initialize the set
-    FSOperationSet fsOperationSet;
+    FSOperationSet fsOperationSet(ReplicaSideUnknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
 
@@ -138,7 +138,7 @@ void TestFsOperationSet::testClear() {
 }
 
 void TestFsOperationSet::testInsertOp() {
-    FSOperationSet fsOperationSet;
+    FSOperationSet fsOperationSet(ReplicaSideUnknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = 0;
 
@@ -155,7 +155,7 @@ void TestFsOperationSet::testInsertOp() {
 }
 
 void TestFsOperationSet::testRemoveOp() {
-    FSOperationSet fsOperationSet;
+    FSOperationSet fsOperationSet(ReplicaSideUnknown);
     NodeId nodeId = "nodeId";
     auto op1 = std::make_shared<FSOperation>(OperationTypeCreate, nodeId);
     fsOperationSet.insertOp(op1);
@@ -179,7 +179,7 @@ void TestFsOperationSet::testRemoveOp() {
 }
 
 void TestFsOperationSet::testfindOp() {
-    FSOperationSet fsOperationSet;
+    FSOperationSet fsOperationSet(ReplicaSideUnknown);
     NodeId nodeId = "nodeId";
 
     for (auto type : _operationTypes) {
@@ -204,8 +204,8 @@ void TestFsOperationSet::testfindOp() {
 }
 
 void TestFsOperationSet::testOperatorEqual() {
-    FSOperationSet fsOperationSet1;
-    FSOperationSet fsOperationSet2;
+    FSOperationSet fsOperationSet1(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet2(ReplicaSideUnknown);
 
     // Test operator the assignment operator '=' with an empty set
     fsOperationSet1 = fsOperationSet2;
@@ -245,7 +245,7 @@ void TestFsOperationSet::testOperatorEqual() {
 void TestFsOperationSet::testMultithreadSupport() {
     // getOp
     {
-        FSOperationSet fsOperationSet;
+        FSOperationSet fsOperationSet(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet._mutex.lock();
 
@@ -268,7 +268,7 @@ void TestFsOperationSet::testMultithreadSupport() {
 
     // getOpsByType
     {
-        FSOperationSet fsOperationSet;
+        FSOperationSet fsOperationSet(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet._mutex.lock();
 
@@ -293,7 +293,7 @@ void TestFsOperationSet::testMultithreadSupport() {
 
     // getOpsByNodeId
     {
-        FSOperationSet fsOperationSet;
+        FSOperationSet fsOperationSet(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet._mutex.lock();
 
@@ -318,7 +318,7 @@ void TestFsOperationSet::testMultithreadSupport() {
 
     // nbOpsByType
     {
-        FSOperationSet fsOperationSet;
+        FSOperationSet fsOperationSet(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet._mutex.lock();
 
@@ -343,7 +343,7 @@ void TestFsOperationSet::testMultithreadSupport() {
 
     // clear
     {
-        FSOperationSet fsOperationSet;
+        FSOperationSet fsOperationSet(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet._mutex.lock();
 
@@ -367,7 +367,7 @@ void TestFsOperationSet::testMultithreadSupport() {
 
     // insertOp
     {
-        FSOperationSet fsOperationSet;
+        FSOperationSet fsOperationSet(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet._mutex.lock();
 
@@ -391,7 +391,7 @@ void TestFsOperationSet::testMultithreadSupport() {
 
     // removeOp (uniqueId)
     {
-        FSOperationSet fsOperationSet;
+        FSOperationSet fsOperationSet(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet._mutex.lock();
 
@@ -415,7 +415,7 @@ void TestFsOperationSet::testMultithreadSupport() {
 
     // removeOp (nodeId + type)
     {
-        FSOperationSet fsOperationSet;
+        FSOperationSet fsOperationSet(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet._mutex.lock();
 
@@ -439,7 +439,7 @@ void TestFsOperationSet::testMultithreadSupport() {
 
     // findOp
     {
-        FSOperationSet fsOperationSet;
+        FSOperationSet fsOperationSet(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet._mutex.lock();
 
@@ -464,8 +464,8 @@ void TestFsOperationSet::testMultithreadSupport() {
 
     // operator =
     {
-        FSOperationSet fsOperationSet1;
-        FSOperationSet fsOperationSet2;
+        FSOperationSet fsOperationSet1(ReplicaSideUnknown);
+        FSOperationSet fsOperationSet2(ReplicaSideUnknown);
         bool functionEnded = false;
         fsOperationSet1._mutex.lock();
         fsOperationSet2._mutex.lock();
@@ -492,7 +492,7 @@ void TestFsOperationSet::testMultithreadSupport() {
 }
 
 void TestFsOperationSet::testCopyConstructor() {
-    FSOperationSet fsOperationSet;
+    FSOperationSet fsOperationSet(ReplicaSideUnknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = 0;
 
