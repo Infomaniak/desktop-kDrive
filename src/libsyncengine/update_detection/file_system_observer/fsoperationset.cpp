@@ -34,23 +34,32 @@ bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) {
     return false;
 }
 
+void FSOperationSet::getAllOps(std::unordered_map<UniqueId, FSOpPtr> &ops) {
+    const std::scoped_lock lock(_mutex);
+    ops = _ops;
+}
+
 void FSOperationSet::getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops) {
     const std::scoped_lock lock(_mutex);
     if (auto it = _opsByType.find(type); it != _opsByType.end()) {
         ops = it->second;
-    } else {
-        ops.clear();
+        return;
     }
+    ops.clear();
 }
 
-bool FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops) {
+void FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops) {
     const std::scoped_lock lock(_mutex);
     if (auto it = _opsByNodeId.find(nodeId); it != _opsByNodeId.end()) {
         ops = it->second;
-        return true;
+        return;
     }
     ops.clear();
-    return false;
+}
+
+uint64_t FSOperationSet::nbOps() const {
+    std::scoped_lock(_mutex);
+    return _ops.size();
 }
 
 uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
@@ -86,7 +95,13 @@ bool FSOperationSet::removeOp(UniqueId id) {
     startUpdate();
     if (auto it = _ops.find(id); it != _ops.end()) {
         _opsByType[it->second->operationType()].erase(id);
+        if (_opsByType.find(it->second->operationType())->second.empty()) {
+            _opsByType.erase(it->second->operationType());
+        }
         _opsByNodeId[it->second->nodeId()].erase(id);
+        if (_opsByNodeId.find(it->second->nodeId())->second.empty()) {
+            _opsByNodeId.erase(it->second->nodeId());
+        }
         _ops.erase(id);
         return true;
     }
@@ -114,6 +129,11 @@ bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FS
         }
     }
     return false;
+}
+
+ReplicaSide FSOperationSet::side() const {
+    std::scoped_lock(_mutex);
+    return _side;
 }
 
 FSOperationSet &FSOperationSet::operator=(FSOperationSet &other) {

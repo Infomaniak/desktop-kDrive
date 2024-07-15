@@ -28,22 +28,23 @@
 
 namespace KDC {
 
-typedef std::shared_ptr<FSOperation> FSOpPtr;
+using FSOpPtr = std::shared_ptr<FSOperation>;
 
 class FSOperationSet : public SharedObject {
     public:
-        FSOperationSet(ReplicaSide side): _side(side) {}
+        explicit FSOperationSet(ReplicaSide side) : _side(side) {}
         ~FSOperationSet();
 
         FSOperationSet(const FSOperationSet &other)
             : _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId), _side(other._side) {}
         FSOperationSet &operator=(FSOperationSet &other);
 
-        inline const std::unordered_map<UniqueId, FSOpPtr> &ops() const { return _ops; }
         bool getOp(UniqueId id, FSOpPtr &opPtr);
+        void getAllOps(std::unordered_map<UniqueId, FSOpPtr> &ops);
         void getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops);
-        bool getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops);
+        void getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops);
 
+        uint64_t nbOps() const;
         uint64_t nbOpsByType(const OperationType type);
 
         void clear();
@@ -52,7 +53,8 @@ class FSOperationSet : public SharedObject {
         bool removeOp(const NodeId &nodeId, const OperationType opType);
 
         bool findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res);
-        ReplicaSide side() const { return _side; }
+        ReplicaSide side() const;
+
     private:
         friend class TestFsOperationSet;
         std::unordered_map<UniqueId, FSOpPtr> _ops;

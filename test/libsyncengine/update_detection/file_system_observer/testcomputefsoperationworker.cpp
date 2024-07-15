@@ -194,7 +194,7 @@ void TestComputeFSOperationWorker::tearDown() {
 void TestComputeFSOperationWorker::testNoOps() {
     _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
-    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSideLocal)->ops().empty());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSideLocal)->nbOps());
 }
 
 void TestComputeFSOperationWorker::testMultipleOps() {
@@ -247,7 +247,7 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     // File is excluded by template, it does not appear in snapshot
     _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->ops().empty());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->_localOperationSet->nbOps());
 }
 
 }  // namespace KDC
