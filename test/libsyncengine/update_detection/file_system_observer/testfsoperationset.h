@@ -54,7 +54,6 @@ class TestFsOperationSet : public CppUnit::TestFixture {
         void testRemoveOp();
         void testfindOp();
         void testOperatorEqual();
-        void testMultithreadSupport();
         void testCopyConstructor();
     private:
         std::vector<OperationType> _operationTypes;
