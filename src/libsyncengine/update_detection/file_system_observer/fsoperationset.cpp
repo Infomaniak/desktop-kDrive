@@ -25,7 +25,7 @@ FSOperationSet::~FSOperationSet() {
     clear();
 }
 
-bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) {
+bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) const {
     const std::scoped_lock lock(_mutex);
     if (auto it = _ops.find(id); it != _ops.end()) {
         opPtr = it->second;
@@ -34,12 +34,12 @@ bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) {
     return false;
 }
 
-void FSOperationSet::getAllOps(std::unordered_map<UniqueId, FSOpPtr> &ops) {
+void FSOperationSet::getAllOps(std::unordered_map<UniqueId, FSOpPtr> &ops) const {
     const std::scoped_lock lock(_mutex);
     ops = _ops;
 }
 
-void FSOperationSet::getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops) {
+void FSOperationSet::getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops) const {
     const std::scoped_lock lock(_mutex);
     if (auto it = _opsByType.find(type); it != _opsByType.end()) {
         ops = it->second;
@@ -48,7 +48,7 @@ void FSOperationSet::getOpsByType(const OperationType type, std::unordered_set<U
     ops.clear();
 }
 
-void FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops) {
+void FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops) const {
     const std::scoped_lock lock(_mutex);
     if (auto it = _opsByNodeId.find(nodeId); it != _opsByNodeId.end()) {
         ops = it->second;
@@ -62,7 +62,7 @@ uint64_t FSOperationSet::nbOps() const {
     return _ops.size();
 }
 
-uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
+uint64_t FSOperationSet::nbOpsByType(const OperationType type) const {
     const std::scoped_lock lock(_mutex);
     if (auto it = _opsByType.find(type); it != _opsByType.end()) {
         return it->second.size();
@@ -115,7 +115,7 @@ bool FSOperationSet::removeOp(const NodeId &nodeId, const OperationType opType) 
     return false;
 }
 
-bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res) {
+bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res) const {
     const std::scoped_lock lock(_mutex);
     if (!_opsByNodeId.contains(nodeId)) {
         return false;

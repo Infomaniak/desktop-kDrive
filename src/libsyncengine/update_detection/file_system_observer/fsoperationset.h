@@ -39,20 +39,20 @@ class FSOperationSet : public SharedObject {
             : _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId), _side(other._side) {}
         FSOperationSet &operator=(FSOperationSet &other);
 
-        bool getOp(UniqueId id, FSOpPtr &opPtr);
-        void getAllOps(std::unordered_map<UniqueId, FSOpPtr> &ops);
-        void getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops);
-        void getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops);
+        bool getOp(UniqueId id, FSOpPtr &opPtr) const;
+        void getAllOps(std::unordered_map<UniqueId, FSOpPtr> &ops) const;
+        void getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops) const;
+        void getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops) const;
 
         uint64_t nbOps() const;
-        uint64_t nbOpsByType(const OperationType type);
+        uint64_t nbOpsByType(const OperationType type) const;
 
         void clear();
         void insertOp(FSOpPtr opPtr);
         bool removeOp(UniqueId id);
         bool removeOp(const NodeId &nodeId, const OperationType opType);
 
-        bool findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res);
+        bool findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res) const;
         ReplicaSide side() const;
 
     private:
@@ -61,7 +61,7 @@ class FSOperationSet : public SharedObject {
         std::unordered_map<OperationType, std::unordered_set<UniqueId>> _opsByType;
         std::unordered_map<NodeId, std::unordered_set<UniqueId>> _opsByNodeId;
         ReplicaSide _side = ReplicaSideUnknown;
-        std::recursive_mutex _mutex;
+        mutable std::recursive_mutex _mutex;
 };
 
 }  // namespace KDC
