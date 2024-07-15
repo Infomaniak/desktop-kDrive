@@ -35,21 +35,21 @@ class SyncDb;
 
 /**
  * A thread safe implementation of the terminated jobs queue.
- * In the context of `ExecutorWorker`, the terminated jobs queue is the only container that can be accessed from multiple threads, namely, the job threads.
- * Therefore, it is the only container that requires to be thread safe.
+ * In the context of `ExecutorWorker`, the terminated jobs queue is the only container that can be accessed from multiple threads,
+ * namely, the job threads. Therefore, it is the only container that requires to be thread safe.
  */
 class TerminatedJobsQueue {
     public:
         void push(const UniqueId id) {
-            const std::scoped_lock lock(mutex);
-            terminatedJobs.push(id);
+            const std::scoped_lock lock(_mutex);
+            _terminatedJobs.push(id);
         }
         void pop() {
-            const std::scoped_lock lock(mutex);
-            terminatedJobs.pop();
+            const std::scoped_lock lock(_mutex);
+            _terminatedJobs.pop();
         }
-        [[nodiscard]] UniqueId front() const { return terminatedJobs.front(); }
-        [[nodiscard]] bool empty() const { return terminatedJobs.empty(); }
+        [[nodiscard]] UniqueId front() const { return _terminatedJobs.front(); }
+        [[nodiscard]] bool empty() const { return _terminatedJobs.empty(); }
 
     private:
         std::queue<UniqueId> _terminatedJobs;
