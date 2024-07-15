@@ -28,6 +28,8 @@
 
 #include "libcommon/utility/types.h"
 #include "libcommonserver/utility/utility.h"
+#include <iostream>
+#include <fstream>
 
 namespace KDC {
 
@@ -64,10 +66,24 @@ QString UpdateInfo::downloadUrl() const {
 }
 
 UpdateInfo UpdateInfo::parseString(const QString &xml, bool *ok) {
-    Poco::XML::DOMParser parser;
-    Poco::AutoPtr<Poco::XML::Document> doc = parser.parseString(xml.toStdString());
+    if (ok) {
+        *ok = true;
+    }
+    Poco::AutoPtr<Poco::XML::Document> doc;
+    try {
+        Poco::XML::DOMParser parser;
+        doc = parser.parseString(xml.toStdString());
+    } catch (...) {
+        if (ok) {
+            *ok = false;
+        }
+        return UpdateInfo();
+    }
+
     if (!doc) {
-        if (ok) *ok = false;
+        if (ok) {
+            *ok = false;
+        }
         return UpdateInfo();
     }
 
