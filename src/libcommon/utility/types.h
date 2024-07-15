@@ -131,7 +131,8 @@ typedef enum {
     ExitCodeRateLimited,
     ExitCodeInvalidSync,  // The sync configuration is not valid
     ExitCodeOperationCanceled,
-    ExitCodeInvalidOperation
+    ExitCodeInvalidOperation,
+    ExitCodeUpdateRequired,
 } ExitCode;
 
 typedef enum {
@@ -383,8 +384,12 @@ enum class AppStateKey {
     LogUploadPercent,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
+constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;
+constexpr int64_t SELF_RESTARTER_NO_CRASH_DETECTED = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
+
+enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
