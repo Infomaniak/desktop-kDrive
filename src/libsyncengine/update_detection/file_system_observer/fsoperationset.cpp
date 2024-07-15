@@ -58,7 +58,7 @@ void FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<Uni
 }
 
 uint64_t FSOperationSet::nbOps() const {
-    const std::scoped_lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     return _ops.size();
 }
 
@@ -131,7 +131,7 @@ bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FS
 }
 
 ReplicaSide FSOperationSet::side() const {
-    const std::scoped_lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     return _side;
 }
 
