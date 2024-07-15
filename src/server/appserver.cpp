@@ -1907,7 +1907,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
             break;
         }
-        case REQUEST_NUM_UPDATER_UNSKIPUPDATE: {
+        case REQUEST_NUM_RECONSIDER_SKIPPED_UPDATE: {
             NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
             updater->slotUnsetSeenVersion();
             break;

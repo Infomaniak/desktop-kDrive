@@ -136,7 +136,7 @@ UpdateState UpdaterClient::updateState() const {
 
 void UpdaterClient::unskipUpdate() const {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_UNSKIPUPDATE, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(REQUEST_NUM_RECONSIDER_SKIPPED_UPDATE, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 }
