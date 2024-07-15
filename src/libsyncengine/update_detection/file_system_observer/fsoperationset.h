@@ -59,10 +59,7 @@ class FSOperationSet : public SharedObject {
         std::unordered_map<OperationType, std::unordered_set<UniqueId>> _opsByType;
         std::unordered_map<NodeId, std::unordered_set<UniqueId>> _opsByNodeId;
         ReplicaSide _side = ReplicaSideUnknown;
-        std::mutex _mutex;
-
-        bool getOpWithoutLock(UniqueId id, FSOpPtr &opPtr);
-
+        std::recursive_mutex _mutex;
 };
 
 }  // namespace KDC

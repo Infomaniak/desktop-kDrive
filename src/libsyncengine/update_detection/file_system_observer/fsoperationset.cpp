@@ -27,11 +27,6 @@ FSOperationSet::~FSOperationSet() {
 
 bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) {
     const std::scoped_lock lock(_mutex);
-    return getOpWithoutLock(id, opPtr);
-}
-
-bool FSOperationSet::getOpWithoutLock(UniqueId id, FSOpPtr &opPtr) {
-    assert(_mutex.try_lock() == false);
     if (auto it = _ops.find(id); it != _ops.end()) {
         opPtr = it->second;
         return true;
@@ -68,7 +63,7 @@ uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
 
 void FSOperationSet::clear() {
     const std::scoped_lock lock(_mutex);
-    std::unordered_map<UniqueId, FSOpPtr>::iterator it = _ops.begin();
+    auto it = _ops.begin();
     while (it != _ops.end()) {
         it->second.reset();
         it++;
@@ -81,7 +76,7 @@ void FSOperationSet::clear() {
 void FSOperationSet::insertOp(FSOpPtr opPtr) {
     const std::scoped_lock lock(_mutex);
     startUpdate();
-    _ops.insert({opPtr->id(), opPtr});
+    _ops.try_emplace(opPtr->id(), opPtr);
     _opsByType[opPtr->operationType()].insert(opPtr->id());
     _opsByNodeId[opPtr->nodeId()].insert(opPtr->id());
 }
@@ -89,8 +84,7 @@ void FSOperationSet::insertOp(FSOpPtr opPtr) {
 bool FSOperationSet::removeOp(UniqueId id) {
     const std::scoped_lock lock(_mutex);
     startUpdate();
-    auto it = _ops.find(id);
-    if (it != _ops.end()) {
+    if (auto it = _ops.find(id); it != _ops.end()) {
         _opsByType[it->second->operationType()].erase(id);
         _opsByNodeId[it->second->nodeId()].erase(id);
         _ops.erase(id);
@@ -100,8 +94,7 @@ bool FSOperationSet::removeOp(UniqueId id) {
 }
 
 bool FSOperationSet::removeOp(const NodeId &nodeId, const OperationType opType) {
-    FSOpPtr op = nullptr;
-    if (findOp(nodeId, opType, op)) {
+    if (FSOpPtr op = nullptr; findOp(nodeId, opType, op)) {
         return removeOp(op->id());
     }
     return false;
@@ -109,11 +102,10 @@ bool FSOperationSet::removeOp(const NodeId &nodeId, const OperationType opType) 
 
 bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res) {
     const std::scoped_lock lock(_mutex);
-    auto it = _opsByNodeId.find(nodeId);
-    if (it != _opsByNodeId.end()) {
+    if (auto it = _opsByNodeId.find(nodeId); it != _opsByNodeId.end()) {
         for (auto id : it->second) {
             FSOpPtr opPtr = nullptr;
-            if (getOpWithoutLock(id, opPtr)) {
+            if (getOp(id, opPtr)) {
                 if (opPtr->operationType() == opType) {
                     res = opPtr;
                     return true;
