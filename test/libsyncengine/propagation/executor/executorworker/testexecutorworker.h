@@ -32,7 +32,6 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
         CPPUNIT_TEST(testAffectedUpdateTree);
         CPPUNIT_TEST(testTargetUpdateTree);
-        CPPUNIT_TEST(testAffectedUpdateTree);
         CPPUNIT_TEST_SUITE_END();
 
     public:
