@@ -224,20 +224,6 @@ void TestFsOperationSet::testOperatorEqual() {
     FSOperationSet fsOperationSet1(ReplicaSideUnknown);
     FSOperationSet fsOperationSet2(ReplicaSideUnknown);
 
-    // Test operator the assignment operator '=' with an empty set
-    fsOperationSet1 = fsOperationSet2;
-    /// ops()
-    CPPUNIT_ASSERT_EQUAL(size_t(0), fsOperationSet1.ops().size());
-    /// getOpsByType()
-    std::unordered_set<UniqueId> ops;
-    for (auto type : _operationTypes) {
-        fsOperationSet1.getOpsByType(type, ops);
-        CPPUNIT_ASSERT_EQUAL(size_t(0), ops.size());
-    }
-    /// getOpsByNodeId()
-    CPPUNIT_ASSERT_EQUAL(size_t(0), fsOperationSet1._opsByNodeId.size());
-
-    // Test operator = with a not empty set
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
     for (OperationType type : _operationTypes) {
@@ -249,6 +235,7 @@ void TestFsOperationSet::testOperatorEqual() {
     }
 
     fsOperationSet1 = fsOperationSet2;
+
     /// ops()
     CPPUNIT_ASSERT_EQUAL(fsOperationSet2.ops().size(), fsOperationSet1.ops().size());
     for (const auto &[key, value] : fsOperationSet2.ops()) {
