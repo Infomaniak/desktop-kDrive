@@ -34,9 +34,9 @@ class FSOperationSet;
 class SyncDb;
 
 /**
- * A thread safe implementation a the terminated jobs queue.
- * In the context of `ExecutorWorker`, the terminated jobs queue is the only container that can be accessed from multiple threads.
- * Therefore, it is the only container that require to be thread safe.
+ * A thread safe implementation of the terminated jobs queue.
+ * In the context of `ExecutorWorker`, the terminated jobs queue is the only container that can be accessed from multiple threads, namely, the job threads.
+ * Therefore, it is the only container that requires to be thread safe.
  */
 class TerminatedJobsQueue {
     public:
@@ -52,8 +52,8 @@ class TerminatedJobsQueue {
         [[nodiscard]] bool empty() const { return terminatedJobs.empty(); }
 
     private:
-        std::queue<UniqueId> terminatedJobs;
-        std::mutex mutex;
+        std::queue<UniqueId> _terminatedJobs;
+        std::mutex _mutex;
 };
 
 class ExecutorWorker : public OperationProcessor {
