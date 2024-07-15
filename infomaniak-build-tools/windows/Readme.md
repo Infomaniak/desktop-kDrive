@@ -10,6 +10,7 @@
     - [log4cplus](#log4cplus)
     - [CPPUnit](#cppunit)
     - [Zlib](#zlib)
+    - [libzip](#libzip)
     - [C++ Redistributable](#redistributable)
     - [NSIS](#nsis)
     - [7za](#7za)
@@ -134,7 +135,7 @@ Clone and build `Poco`:
 
 ```bash
 cd F:\Projects
-git clone -b master https://github.com/pocoproject/poco.git
+git clone https://github.com/pocoproject/poco.git
 cd poco
 git checkout tags/poco-1.12.5-release
 mkdir cmake-build
@@ -177,7 +178,7 @@ cmake --build . --target install --config Release
 Clone `CPPUnit`:
 
 ```bash
-cd F:\Projects
+cd "C:\Program Files (x86)"
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 ```
 
@@ -187,6 +188,7 @@ Then open `src/CppUnitLibrariesXXXX.sln` workspace in Visual Studio to configure
 - In the `Build` menu, select `Batch Build...`.
 - Select all projects in `x64` version and click on `build`.
 
+Only the two directories `lib` and `include` are required, everything else can be removed after the build.
 
 ## Zlib
 
@@ -205,6 +207,23 @@ copy zlib.pdb lib\
 mkdir bin
 copy zlib1.dll bin\
 copy zlib1.pdb bin\
+```
+
+## libzip
+
+> :warning: **`libzip` requires [zlib](#zlib) to be installed.**
+
+Clone and install libzip
+
+```bash
+cd F:\Projects
+git clone https://github.com/nih-at/libzip.git
+cd libzip
+git checkout tags/v1.10.1
+mkdir build && cd build
+cmake .. -DZLIB_LIBRARY="C:\Program Files (x86)\zlib-1.2.11\lib\zlib.lib" -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include"
+cmake --build . --target install --config Debug
+cmake --build . --target install --config Release
 ```
 
 ## Redistributable
@@ -246,9 +265,24 @@ Once installed, open `F:\Projects\desktop-kDrive\extensions\windows\cfapi\kDrive
 
 # Build in Debug
 
-To build in `Debug` mode, you will need to build and deploy the Windows extension first.  
+To build in `Debug` mode, you will need to build and deploy the Windows extension first.
+
+## Linking dependencies
+
+In order for CMake to be able to find all dependencies, add all libraries installation folder in the `PATH` environment variable:
+```
+C:\Program Files (x86)\Poco\bin
+C:\Program Files (x86)\libzip\bin
+C:\Program Files (x86)\zlib-1.2.11\bin
+C:\Program Files (x86)\xxHash\bin
+C:\Program Files (x86)\Sentry-Native\bin
+C:\Program Files (x86)\log4cplus\bin
+C:\Program Files (x86)\cppunit\bin
+C:\Program Files\OpenSSL\bin
+```
 
 ## Using Qt Creator
+
 You can disable QML debugger from the settings to avoid some error pop-ups.
 
 ### Additionnal Requirements
@@ -274,13 +308,11 @@ Then copy the following list of `CMake` variables in "Initial CMake Parameters" 
 -DVFS_DIRECTORY:PATH=F:/Projects/desktop-kDrive/extensions/windows/cfapi/x64/Debug
 -DCMAKE_EXE_LINKER_FLAGS_DEBUG:STRING=/debug /INCREMENTAL
 -DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
--DCMAKE_INSTALL_PREFIX:PATH=%{ActiveProject:RunConfig:Executable:Path}
--DCRASHREPORTER_SUBMIT_URL:STRING=https://www.infomaniak.com/report/drive/crash
+-DCMAKE_INSTALL_PREFIX:PATH=%{ActiveProject:RunConfig:Executable:Path}/..
 -DKDRIVE_THEME_DIR:STRING=F:/projects/desktop-kDrive/infomaniak
 -DPLUGINDIR:STRING=C:/Program Files (x86)/kDrive/lib/kDrive/plugins
 -DZLIB_INCLUDE_DIR:PATH=C:/Program Files (x86)/zlib-1.2.11/include
 -DZLIB_LIBRARY_RELEASE:FILEPATH=C:/Program Files (x86)/zlib-1.2.11/lib/zlib.lib
--DWITH_CRASHREPORTER:BOOL=OFF
 -DBUILD_TESTING=OFF
 ```
 
@@ -318,7 +350,7 @@ Open `Visual Studio 2019` and select `Open local folder`. Then choose `F:\Projec
     ```bash
     -DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client 
     -DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak 
-    -DWITH_CRASHREPORTER=OFF -DBUILD_UNIT_TESTS:BOOL=ON 
+    -DBUILD_UNIT_TESTS:BOOL=ON 
     -DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.2.3/msvc2019_64 
     -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY 
     -DZLIB_INCLUDE_DIR:PATH="C:/Program Files (x86)/zlib-1.2.11/include" 

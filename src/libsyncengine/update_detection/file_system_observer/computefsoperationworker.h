@@ -27,6 +27,17 @@ namespace KDC {
 class ComputeFSOperationWorker : public ISyncWorker {
     public:
         ComputeFSOperationWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
+        /**
+         * Constructor used for testing only
+         * @param testSyncDb
+         * @param testLocalSnapshot
+         * @param testRemoteSnapshot
+         * @param name
+         * @param shortName
+         */
+        ComputeFSOperationWorker(const std::shared_ptr<SyncDb> testSyncDb, const std::shared_ptr<Snapshot> testLocalSnapshot,
+                                 const std::shared_ptr<Snapshot> testRemoteSnapshot, const std::string &name,
+                                 const std::string &shortName);
 
         const std::unordered_map<NodeId, SyncPath> getFileSizeMismatchMap() const { return _fileSizeMismatchMap; }
 
@@ -54,7 +65,11 @@ class ComputeFSOperationWorker : public ISyncWorker {
 
         void updateUnsyncedList();
 
-        const std::shared_ptr<SyncDb> _syncDb = nullptr;
+        void logOperationGeneration(const ReplicaSide side, const FSOpPtr fsOp);
+
+        const std::shared_ptr<SyncDb> _syncDb;
+        const std::shared_ptr<Snapshot> _localSnapshot;
+        const std::shared_ptr<Snapshot> _remoteSnapshot;
         Sync _sync;
 
         std::unordered_set<NodeId> _remoteUnsyncedList;

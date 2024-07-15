@@ -1129,7 +1129,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
 
                         if (![fileHandle writeData:buffer error:&error]) {
                             LOGW_ERROR(_logger, L"Error while writing to file - path=" << QStr2WStr(filePath).c_str()
-                                                                                       << L" error=" << error);
+                                                                                        << L" error=" << error);
                             break;
                         }
                     }

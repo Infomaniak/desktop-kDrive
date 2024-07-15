@@ -121,7 +121,7 @@ bool CommClient::sendRequest(int id, RequestNum num, const QByteArray &params) {
     try {
         qCDebug(lcCommClient()) << "Snd rqst" << id << num;
 
-        _tcpConnection->write(KDC::CommonUtility::IntToArray(request.count()));
+        _tcpConnection->write(KDC::CommonUtility::IntToArray(request.size()));
         _tcpConnection->write(request);
 #ifdef Q_OS_WIN
         _tcpConnection->flush();
@@ -145,16 +145,16 @@ void CommClient::onReadyRead() {
         // Read from socket
         _buffer.append(_tcpConnection->readAll());
 
-        while (_buffer.count()) {
+        while (_buffer.size()) {
             // Read size
-            if (_buffer.count() < (int)sizeof(qint32)) {
+            if (_buffer.size() < (int)sizeof(qint32)) {
                 break;
             }
 
             int size = CommonUtility::ArrayToInt(_buffer.mid(0, (qint32)sizeof(qint32)));
 
             // Read data
-            if (_buffer.count() < (int)sizeof(qint32) + size) {
+            if (_buffer.size() < (int)sizeof(qint32) + size) {
                 break;
             }
 
@@ -229,25 +229,9 @@ void CommClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArra
 }
 
 CommClient::~CommClient() {
-    _requestWorker->stop();
-
-    _requestWorkerThread->quit();
-    if (!_requestWorkerThread->wait(1000)) {
-        _requestWorkerThread->terminate();
-        _requestWorkerThread->wait();
+    if (isConnected()) {
+        stop();
     }
-
-    delete _requestWorkerThread;
-    delete _requestWorker;
-
-    if (_tcpConnection) {
-        if (_tcpConnection->isOpen()) {
-            _tcpConnection->close();
-        }
-        _tcpConnection->deleteLater();
-    }
-
-    _instance = nullptr;
 }
 
 bool CommClient::execute(RequestNum num, const QByteArray &params, QByteArray &results, int timeout /*= COMM_SHORT_TIMEOUT*/) {
@@ -293,6 +277,28 @@ bool CommClient::execute(RequestNum num, const QByteArray &params, QByteArray &r
     bool ret = waitLoop.exec(QEventLoop::ExcludeUserInputEvents);
 
     return ret;
+}
+
+void CommClient::stop() {
+    _requestWorker->stop();
+
+    _requestWorkerThread->quit();
+    if (!_requestWorkerThread->wait(1000)) {
+        _requestWorkerThread->terminate();
+        _requestWorkerThread->wait();
+    }
+
+    delete _requestWorkerThread;
+    delete _requestWorker;
+
+    if (_tcpConnection) {
+        if (_tcpConnection->isOpen()) {
+            _tcpConnection->close();
+        }
+        _tcpConnection->deleteLater();
+    }
+
+    _instance = nullptr;
 }
 
 Worker::Worker(QObject *parent) : QObject(parent), _requestId(0), _stop(false) {}

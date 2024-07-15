@@ -226,7 +226,7 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
 
             std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(moveNode);
             if (correspondingNode) {
-                if (correspondingNode->finalLocalName() == createOp->affectedNode()->finalLocalName()) {
+                if (correspondingNode->name() == createOp->affectedNode()->name()) {
                     moveFirstAfterSecond(createOp, moveOp);
                     continue;
                 }
@@ -405,7 +405,7 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
             if (createNode->parentNode() != nullptr) {
                 std::optional<NodeId> createParentId = createNode->parentNode()->id();
                 if (deleteParentId == createParentId) {
-                    if (createNode->finalLocalName() == deleteNode->finalLocalName()) {
+                    if (createNode->name() == deleteNode->name()) {
                         // move only if createOp is before op
                         moveFirstAfterSecond(createOp, deleteOp);
                     }
@@ -575,8 +575,6 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
         }
 
         std::shared_ptr<Node> xNode = xOp->affectedNode();
-        std::shared_ptr<UpdateTree> tree =
-            xNode->side() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
         SyncPath xDestPath = xNode->getPath();
         if (!xNode->moveOrigin().has_value()) {
             continue;
@@ -624,8 +622,6 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
 
     // computes paths
     // impossible move if dest = source + "/"
-    std::shared_ptr<UpdateTree> tree =
-        o1->affectedNode()->side() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
     SyncPath source = (o1->affectedNode()->moveOrigin().has_value() ? o1->affectedNode()->moveOrigin().value() : "");
     SyncPath dest = o1->affectedNode()->getPath();
     if (!Utility::startsWith(dest.native(), source.native() + Str("/"))) {
@@ -795,7 +791,7 @@ void OperationSorterWorker::moveFirstAfterSecond(SyncOpPtr opFirst, SyncOpPtr op
 
     if (firstFound) {
         // make sure opSecond is executed after opFirst
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Operation " << opFirst->id() << L" ("
                                                       << Utility::s2ws(Utility::opType2Str(opFirst->type())).c_str() << L" "
                                                       << SyncName2WStr(opFirst->affectedNode()->name()).c_str()

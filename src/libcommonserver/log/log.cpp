@@ -18,7 +18,6 @@
 
 #include "log.h"
 #include "customrollingfileappender.h"
-#include "utility/utility.h"
 #include "libcommon/utility/utility.h"
 
 #include <log4cplus/initializer.h>
@@ -32,7 +31,7 @@ namespace KDC {
 const std::wstring Log::instanceName = L"Main";
 const std::wstring Log::rfName = L"RollingFileAppender";
 const std::wstring Log::rfPattern = L"%D{%Y-%m-%d %H:%M:%S:%q} [%-0.-1p] (%t) %b:%L - %m%n";
-const int Log::rfMaxBackupIdx = 4;   // Max number of backup files
+const int Log::rfMaxBackupIdx = 4;  // Max number of backup files
 
 std::shared_ptr<Log> Log::_instance = nullptr;
 
@@ -79,12 +78,12 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
     // Set purge rate
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get())
-        ->setExpire(purgeOldLogs ? CommonUtility::logsPurgeRate * 24 : 0);
+        ->setExpire(purgeOldLogs ? CommonUtility::logsPurgeRate * 24 * 3600: 0);
 
     return true;
 }
 
-Log::Log(const log4cplus::tstring &filePath) {
+Log::Log(const log4cplus::tstring &filePath) : _filePath(filePath) {
     // Instantiate an appender object
     CustomRollingFileAppender *rfAppender =
         new CustomRollingFileAppender(filePath, CommonUtility::logMaxSize, Log::rfMaxBackupIdx, true, true);
@@ -109,4 +108,7 @@ Log::Log(const log4cplus::tstring &filePath) {
     LOG_INFO(_logger, "Logger initialization done");
 }
 
+SyncPath Log::getLogFilePath() const {
+    return _filePath;
+}
 }  // namespace KDC

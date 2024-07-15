@@ -18,6 +18,7 @@
 
 #include "snapshot.h"
 #include "libcommonserver/log/log.h"
+#include "requests/parameterscache.h"
 
 #include <filesystem>
 #include <queue>
@@ -32,6 +33,24 @@ Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode)
     : _side(side),
       _rootFolderId(side == ReplicaSide::ReplicaSideLocal ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
     _items.insert({_rootFolderId, SnapshotItem(_rootFolderId)});
+}
+
+Snapshot::~Snapshot() {
+    _items.clear();
+}
+
+Snapshot &Snapshot::operator=(Snapshot &other) {
+    if (this != &other) {
+        const std::scoped_lock lock(_mutex, other._mutex);
+
+        assert(_side == other._side);
+        assert(_rootFolderId == other._rootFolderId);
+
+        _items = other._items;
+        _isValid = other._isValid;
+    }
+
+    return *this;
 }
 
 void Snapshot::init() {
@@ -49,6 +68,13 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
 
     if (newItem.parentId().empty()) {
         LOG_WARN(Log::instance()->getLogger(), "Parent ID is empty for item " << newItem.id().c_str());
+        assert(false);
+        return false;
+    }
+
+    if (newItem.parentId() == newItem.id()) {
+        LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << newItem.id().c_str());
+        assert(false);
         return false;
     }
 
@@ -84,6 +110,12 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         startUpdate();
     }
 
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOGW_DEBUG(Log::instance()->getLogger(), L"Item: " << SyncName2WStr(newItem.name()).c_str() << L" ("
+                                                           << Utility::s2ws(newItem.id()).c_str() << L") updated at:"
+                                                           << newItem.lastModified());
+    }
+
     return true;
 }
 
@@ -91,6 +123,7 @@ bool Snapshot::removeItem(const NodeId &id) {
     const std::scoped_lock lock(_mutex);
 
     if (id.empty()) {
+        assert(false);
         return false;
     }
 
@@ -113,6 +146,11 @@ bool Snapshot::removeItem(const NodeId &id) {
     }
 
     _items.erase(id);
+
+    if (ParametersCache::isExtendedLogEnabled()) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Item " << id.c_str() << " removed from remote snapshot.");
+    }
+
     return true;
 }
 
@@ -129,7 +167,7 @@ NodeId Snapshot::itemId(const SyncPath &path) {
 
         bool idFound = false;
         for (const NodeId &childId : itemIt->second.childrenIds()) {
-            if (name(childId) == Utility::normalizedSyncName(*pathIt)) {
+            if (name(childId) == *pathIt) {
                 itemIt = _items.find(childId);
                 ret = childId;
                 idFound = true;
@@ -207,10 +245,11 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path) {
 SyncName Snapshot::name(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     SyncName ret;
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+
+    if (const auto it = _items.find(itemId); it != _items.cend()) {
         ret = it->second.name();
     }
+
     return ret;
 }
 
@@ -252,7 +291,7 @@ bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
     return false;
 }
 
-SyncTime Snapshot::lastModifed(const NodeId &itemId) {
+SyncTime Snapshot::lastModified(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     SyncTime ret = 0;
     auto it = _items.find(itemId);
@@ -262,7 +301,7 @@ SyncTime Snapshot::lastModifed(const NodeId &itemId) {
     return ret;
 }
 
-bool Snapshot::setLastModifed(const NodeId &itemId, SyncTime newTime) {
+bool Snapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
     const std::scoped_lock lock(_mutex);
     auto it = _items.find(itemId);
     if (it != _items.end()) {
@@ -419,10 +458,17 @@ bool Snapshot::isOrphan(const NodeId &itemId) {
 
     NodeId nextParentId = parentId(itemId);
     while (nextParentId != _rootFolderId) {
-        nextParentId = parentId(nextParentId);
-        if (nextParentId.empty()) {
+        const NodeId tmpNextParentId = parentId(nextParentId);
+        if (tmpNextParentId.empty()) {
             return true;
         }
+        if (tmpNextParentId == nextParentId) {
+            // Should not happen
+            LOG_WARN(Log::instance()->getLogger(), "Parent ID equals item ID " << nextParentId.c_str());
+            assert(false);
+            break;
+        }
+        nextParentId = tmpNextParentId;
     }
     return false;
 }

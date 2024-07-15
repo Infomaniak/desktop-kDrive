@@ -18,8 +18,6 @@
 
 #include "utility.h"
 #include "config.h"
-#include "common/utility.h"
-#include "libcommonserver/utility/utility.h"
 #include "version.h"
 
 #include <system_error>
@@ -37,6 +35,8 @@
 #ifdef _WIN32
 #include <Poco/Util/WinRegistryKey.h>
 #endif
+
+#include <sentry.h>
 
 #ifdef ZLIB_FOUND
 #include <zlib.h>
@@ -112,6 +112,10 @@ void CommonUtility::crash() {
 
 QString CommonUtility::platformName() {
     return QSysInfo::prettyProductName();
+}
+
+QString CommonUtility::platformArch() {
+    return QSysInfo::currentCpuArchitecture();
 }
 
 std::string CommonUtility::userAgentString() {
@@ -228,6 +232,94 @@ int CommonUtility::ArrayToInt(QByteArray source) {
 
 QString CommonUtility::escape(const QString &in) {
     return in.toHtmlEscaped();
+}
+
+bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStateValue &appStateValueTo) {
+    bool res = true;
+    std::string appStateValueType = "Unknown";
+    if (std::holds_alternative<std::string>(appStateValueTo)) {
+        appStateValueTo = stringFrom;
+        appStateValueType = "std::string";
+    } else if (std::holds_alternative<int>(appStateValueTo)) {
+        appStateValueType = "int";
+        try {
+            appStateValueTo = std::stoi(stringFrom);
+        } catch (const std::invalid_argument &) {
+            res = false;
+        }
+    } else if (std::holds_alternative<LogUploadState>(appStateValueTo)) {
+        appStateValueType = "LogUploadState";
+        try {
+            appStateValueTo = static_cast<LogUploadState>(std::stoi(stringFrom));
+        } catch (const std::invalid_argument &) {
+            res = false;
+        }
+    } else if (std::holds_alternative<int64_t>(appStateValueTo)) {
+        appStateValueType = "int64_t";
+        try {
+            std::get<int64_t>(appStateValueTo) = std::stoll(stringFrom);
+        } catch (const std::invalid_argument &) {
+            res = false;
+        }
+    } else {
+        res = false;
+    }
+
+    if (!res) {
+        sentry_value_t event = sentry_value_new_event();
+        std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
+        sentry_value_t exc = sentry_value_new_exception("CommonUtility::stringToAppStateValue", message.c_str());
+        sentry_value_set_stacktrace(exc, NULL, 0);
+        sentry_event_add_exception(event, exc);
+        sentry_capture_event(event);
+    }
+
+    return res;
+}
+
+bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {
+    if (std::holds_alternative<std::string>(appStateValueFrom)) {
+        stringTo = std::get<std::string>(appStateValueFrom);
+    } else if (std::holds_alternative<int>(appStateValueFrom)) {
+        stringTo = std::to_string(std::get<int>(appStateValueFrom));
+    } else if (std::holds_alternative<LogUploadState>(appStateValueFrom)) {
+        stringTo = std::to_string(static_cast<int>(std::get<LogUploadState>(appStateValueFrom)));
+    } else if (std::holds_alternative<int64_t>(appStateValueFrom)) {
+        stringTo = std::to_string(std::get<int64_t>(appStateValueFrom));
+    } else {
+        return false;
+    }
+    return true;
+}
+
+std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) noexcept {
+    using enum AppStateKey;
+    switch (appStateValue) {
+        case LastServerSelfRestartDate:
+            return "LastServerSelfRestartDate";
+        case LastClientSelfRestartDate:
+            return "LastClientSelfRestartDate";
+        case LastSuccessfulLogUploadDate:
+            return "LastSuccessfulLogUploadDate";
+        case LastLogUploadArchivePath:
+            return "LastLogUploadArchivePath";
+        case LogUploadState:
+            return "LogUploadState";
+        case LogUploadPercent:
+            return "LogUploadPercent";
+        case Unknown:
+            return "Unknown";
+        default:
+            return "AppStateKey not found (" + std::to_string(static_cast<int>(appStateValue)) + ")";
+    }
+}
+
+bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName) {
+    return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName));
+}
+
+bool CommonUtility::compressFile(const std::string &originalName, const std::string &targetName) {
+    return compressFile(QString::fromStdString(originalName), QString::fromStdString(targetName));
 }
 
 bool CommonUtility::compressFile(const QString &originalName, const QString &targetName) {
@@ -417,7 +509,7 @@ QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
     return QString();
 }
 
-const SyncPath CommonUtility::getAppDir() {
+SyncPath CommonUtility::getAppDir() {
     const KDC::SyncPath dirPath(KDC::getAppDir_private());
     return dirPath;
 }
@@ -426,8 +518,8 @@ bool CommonUtility::hasDarkSystray() {
     return KDC::hasDarkSystray_private();
 }
 
-const SyncPath CommonUtility::getAppSupportDir() {
-    SyncPath dirPath(KDC::getAppSupportDir_private());
+SyncPath CommonUtility::getAppSupportDir() {
+    SyncPath dirPath(getAppSupportDir_private());
 
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
@@ -605,10 +697,12 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
     for (size_t i = 0; i < targetTabVersion.size(); i++) {
         if (currTabVersion[i] > targetTabVersion[i]) {
             return false;
+        } else if (currTabVersion[i] < targetTabVersion[i]) {
+            return true;
         }
     }
 
-    return true;
+    return false;
 }
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();

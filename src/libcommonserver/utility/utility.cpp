@@ -17,6 +17,7 @@
  */
 
 #include "utility.h"
+#include "Poco/URI.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
@@ -97,19 +98,6 @@ struct VariantPrinter {
 };
 
 log4cplus::Logger Utility::_logger;
-
-#ifdef _WIN32
-PSID Utility::_psid = NULL;
-TRUSTEE Utility::_trustee = {0};
-#endif
-
-bool Utility::init() {
-    return init_private();
-}
-
-void Utility::free() {
-    free_private();
-}
 
 int64_t Utility::freeDiskSpace(const SyncPath &path) {
 #if defined(__APPLE__)
@@ -253,6 +241,13 @@ std::wstring Utility::formatIoError(const SyncPath &path, IoError ioError) {
     return ss.str();
 }
 
+std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description) {
+    std::stringstream ss;
+    ss << uri.toString().c_str() << " : " << code.c_str() << " - " << description.c_str();
+
+    return ss.str();
+}
+
 std::string Utility::formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse) {
     std::stringstream errorStream;
     errorStream << "Error in reply";
@@ -270,7 +265,7 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
         errorStream << ", encoding: " << encoding.c_str();
     }
 
-    return errorStream.str();   // str() return a copy of the underlying string
+    return errorStream.str();  // str() return a copy of the underlying string
 }
 
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
@@ -396,7 +391,7 @@ bool Utility::preventSleeping(bool enable) {
 }
 #endif
 
-void Utility::str2hexstr(const std::string str, std::string &hexstr, bool capital) {
+void Utility::str2hexstr(const std::string &str, std::string &hexstr, bool capital) {
     hexstr.resize(str.size() * 2);
     const char a = capital ? 'A' - 1 : 'a' - 1;
 
@@ -409,7 +404,7 @@ void Utility::str2hexstr(const std::string str, std::string &hexstr, bool capita
 }
 
 // Convert string of hex numbers to its equivalent char-stream
-void Utility::strhex2str(const std::string hexstr, std::string &str) {
+void Utility::strhex2str(const std::string &hexstr, std::string &str) {
     str.resize((hexstr.size() + 1) / 2);
 
     for (size_t i = 0, j = 0; i < str.size(); i++, j++) {
@@ -457,6 +452,10 @@ std::string Utility::opType2Str(OperationType opType) {
     }
 }
 
+std::wstring Utility::opType2WStr(OperationType opType) {
+    return s2ws(opType2Str(opType));
+}
+
 std::string Utility::conflictType2Str(ConflictType conflictType) {
     switch (conflictType) {
         case ConflictTypeMoveParentDelete: {
@@ -495,6 +494,10 @@ std::string Utility::conflictType2Str(ConflictType conflictType) {
     }
 }
 
+std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
+    return s2ws(conflictType2Str(conflictType));
+}
+
 std::string Utility::side2Str(ReplicaSide side) {
     switch (side) {
         case ReplicaSideLocal: {
@@ -509,6 +512,10 @@ std::string Utility::side2Str(ReplicaSide side) {
     }
 }
 
+std::wstring Utility::side2WStr(ReplicaSide side) {
+    return s2ws(side2Str(side));
+}
+
 std::string Utility::nodeType2Str(NodeType type) {
     switch (type) {
         case NodeTypeDirectory: {
@@ -521,6 +528,10 @@ std::string Utility::nodeType2Str(NodeType type) {
             return "Unknown";
         }
     }
+}
+
+std::wstring Utility::nodeType2WStr(NodeType type) {
+    return s2ws(nodeType2Str(type));
 }
 
 std::string Utility::logLevel2Str(LogLevel level) {
@@ -545,6 +556,10 @@ std::string Utility::logLevel2Str(LogLevel level) {
     }
 
     return std::string();
+}
+
+std::wstring Utility::logLevel2WStr(LogLevel level) {
+    return s2ws(logLevel2Str(level));
 }
 
 std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
@@ -573,6 +588,10 @@ std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
     }
 
     return "";
+}
+
+std::wstring Utility::syncFileStatus2WStr(SyncFileStatus status) {
+    return s2ws(syncFileStatus2Str(status));
 }
 
 std::string Utility::list2str(std::unordered_set<std::string> inList) {
@@ -650,13 +669,12 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 
 #if defined(__APPLE__)
 SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
-    return (test ? (testResourcesPath + excludedAppFileName)
-                 : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
+    return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
 }
 #endif
 
 SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
-    return (test ? testResourcesPath + excludedTemplateFileName
+    return (test ? excludedTemplateFileName
                  : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
 }
 
@@ -688,15 +706,13 @@ SyncName Utility::logFileNameWithTime() {
 
 std::string Utility::toUpper(const std::string &str) {
     std::string upperStr(str);
-    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
-
+    std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
     return upperStr;
 }
 
 std::string Utility::errId(const char *file, int line) {
     std::string err =
         Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
-
     return err;
 }
 
@@ -772,6 +788,25 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
     std::free((void *)str);
     return syncName;
 #endif
+}
+
+SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
+    auto segmentIt = path.begin();
+    if (segmentIt == path.end()) return {};
+
+    auto segment = *segmentIt;
+    if (segmentIt->native() != Str("/")) segment = normalizedSyncName(segment);
+
+    SyncPath result{segment};
+    ++segmentIt;
+
+    for (; segmentIt != path.end(); ++segmentIt) {
+        if (segmentIt->native() != Str("/")) {
+            result /= normalizedSyncName(*segmentIt);
+        }
+    }
+
+    return result;
 }
 
 bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,

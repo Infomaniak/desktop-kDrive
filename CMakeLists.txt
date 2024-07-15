@@ -1,13 +1,22 @@
 cmake_minimum_required(VERSION 3.1)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 project(client)
 
 IF(APPLE)
-    SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    IF(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")
+        SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    ELSE()
+        execute_process(COMMAND uname -m OUTPUT_VARIABLE OSX_ARCH)
+        string(REPLACE "\n" "" OSX_ARCH ${OSX_ARCH})
+        SET(CMAKE_OSX_ARCHITECTURES "${OSX_ARCH}" CACHE STRING "Build architectures for Mac OS X" FORCE)
+    ENDIF()
+    message(STATUS "CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
 ENDIF(APPLE)
 
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
 set(BIN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+set(INSTALL_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/install")
 set(BUILD_SHARED_LIBS FALSE)
 
 include("${CMAKE_CURRENT_LIST_DIR}/THEME.cmake")
@@ -25,6 +34,7 @@ ELSEIF(WIN32)
         "C:/Program Files (x86)/log4cplus"
         "C:/Program Files (x86)/Sentry-Native"
         "C:/Program Files (x86)/xxHash"
+        "C:/Program Files (x86)/libzip"
     )
 ENDIF()
 
@@ -47,15 +57,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/test
 )
 
-# disable the crashreporter if libcrashreporter-qt is not available or we're building for ARM
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm" OR NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/libcrashreporter-qt/CMakeLists.txt")
-    set( WITH_CRASHREPORTER OFF )
-endif()
-
-if(NOT WITH_CRASHREPORTER)
-    message(STATUS "Build of crashreporter disabled.")
-endif()
-
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
@@ -64,8 +65,6 @@ add_definitions(
     -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
     -DQT_DEPRECATED_WARNINGS
 )
-
-set(SYSCONFDIR ${SYSCONF_INSTALL_DIR})
 
 if (APPLE)
     set(DATADIR ${DATA_INSTALL_DIR})
@@ -159,8 +158,11 @@ if (WIN32)
     add_definitions(-DNTDDI_VERSION=0x0A000003)
 endif(WIN32)
 
-if (APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+if (UNIX)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
+    if (APPLE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+    endif()
 endif()
 
 # Handle Translations, pick all client_* files from trans directory.
@@ -215,28 +217,19 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     # Default Lite Sync app exclude list
     install(FILES litesync-exclude.lst DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Resources/)
 
-    # Sentry
-    find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
-    message(STATUS "sentry dll found in ${SENTRY_SHARED_LIBRARY}")
-    install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
-
     # Crashpad_handler
     find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
     message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
-
-    # xxHash
-    find_library(XXHASH_SHARED_LIBRARY NAMES xxHash.0.8.2 NO_CACHE)
-    message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
-    install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
 elseif(BUILD_CLIENT)
     if (WIN32)
         # NSIS
         configure_file(cmake/modules/NSIS.template.nsi.in ${CMAKE_CURRENT_BINARY_DIR}/NSIS.template.nsi @ONLY)
 
         # Default sync exclude list
-        message(STATUS "sync-exclude-win.lst installed in ${CMAKE_INSTALL_BINDIR}")
-        install(FILES sync-exclude-win.lst DESTINATION ${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
+        message(STATUS "sync-exclude-win.lst copied to ${CMAKE_BINARY_DIR}/bin")
+        file(COPY sync-exclude-win.lst DESTINATION ${CMAKE_BINARY_DIR}/bin)
+        file(RENAME ${CMAKE_BINARY_DIR}/bin/sync-exclude-win.lst ${CMAKE_BINARY_DIR}/bin/sync-exclude.lst)
 
         # Vfs
         set(CMAKE_FIND_LIBRARY_SUFFIXES .dll)
@@ -261,7 +254,7 @@ elseif(BUILD_CLIENT)
     else()
         # Default sync exclude list
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-            install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${CMAKE_INSTALL_BINDIR} RENAME sync-exclude.lst)
+            file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_INSTALL_PREFIX}/sync-exclude.lst)
         else()
             install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
         endif()

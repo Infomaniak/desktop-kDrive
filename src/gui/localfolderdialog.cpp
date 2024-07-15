@@ -45,25 +45,8 @@ static const int warningBoxSpacing = 10;
 
 Q_LOGGING_CATEGORY(lcLocalFolderDialog, "gui.localfolderdialog", QtInfoMsg)
 
-LocalFolderDialog::LocalFolderDialog(const QString &localFolderPath, QWidget *parent)
-    : CustomDialog(true, parent),
-      _localFolderPath(localFolderPath),
-      _continueButton(nullptr),
-      _folderSelectionWidget(nullptr),
-      _folderSelectedWidget(nullptr),
-      _folderIconLabel(nullptr),
-      _folderNameLabel(nullptr),
-      _folderPathLabel(nullptr),
-      _folderIconColor(QColor()),
-      _folderIconSize(QSize()),
-      _warningIconColor(QColor()),
-      _warningIconSize(QSize()),
-      _warningWidget(nullptr),
-      _warningIconLabel(nullptr),
-      _warningLabel(nullptr),
-      _okToContinue(false),
-      _smartSync(false),
-      _folderCompatibleWithSmartSync(false) {
+LocalFolderDialog::LocalFolderDialog(std::shared_ptr<ClientGui> gui, const QString &localFolderPath, QWidget *parent)
+    : CustomDialog(true, parent), _gui(gui), _localFolderPath(localFolderPath) {
     initUI();
     updateUI();
 }
@@ -208,7 +191,7 @@ void LocalFolderDialog::updateUI() {
     _folderSelectionWidget->setVisible(!ok);
     _folderSelectedWidget->setVisible(ok);
 
-    if (_smartSync) {
+    if (_liteSync) {
         VirtualFileMode virtualFileMode;
         ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
         if (exitCode != ExitCodeOk) {
@@ -219,9 +202,9 @@ void LocalFolderDialog::updateUI() {
         if (virtualFileMode == VirtualFileModeWin || virtualFileMode == VirtualFileModeMac) {
             // Check file system
             QString fsName(KDC::CommonUtility::fileSystemName(_localFolderPath));
-            _folderCompatibleWithSmartSync = ((virtualFileMode == VirtualFileModeWin && fsName == "NTFS") ||
-                                              (virtualFileMode == VirtualFileModeMac && fsName == "apfs"));
-            if (!_folderCompatibleWithSmartSync) {
+            _folderCompatibleWithLiteSync = ((virtualFileMode == VirtualFileModeWin && fsName == "NTFS") ||
+                                             (virtualFileMode == VirtualFileModeMac && fsName == "apfs"));
+            if (!_folderCompatibleWithLiteSync) {
                 _warningLabel->setText(tr("This folder is not compatible with Lite Sync."
                                           " Please select another folder or if you continue Lite Sync will be disabled."
                                           " <a style=\"%1\" href=\"%2\">Learn more</a>")
@@ -248,6 +231,10 @@ void LocalFolderDialog::selectFolder(const QString &startDirPath) {
     QString dirPath = QFileDialog::getExistingDirectory(this, tr("Select folder"), startDirPath,
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (!dirPath.isEmpty()) {
+        if (!GuiUtility::warnOnInvalidSyncFolder(dirPath, _gui->syncInfoMap(), this)) {
+            return;
+        }
+
         QDir dir(dirPath);
         _localFolderPath = dir.canonicalPath();
         updateUI();

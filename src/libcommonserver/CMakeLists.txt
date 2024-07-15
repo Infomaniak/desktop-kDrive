@@ -4,7 +4,8 @@ find_package(SQLite3 3.8.0 REQUIRED)
 find_package(Poco 1.12.5 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(log4cplus 2.1.0 REQUIRED)
-find_package(xxHash 0.8.1 REQUIRED)
+find_package(xxHash 0.8.2 REQUIRED)
+find_package(libzip 1.10.1 REQUIRED)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -64,7 +65,10 @@ if (WIN32)
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
-        "C:/Program Files (x86)/log4cplus/include")
+        "C:/Program Files (x86)/log4cplus/include"
+        "C:/Program Files (x86)/libzip/include"
+        "C:/Program Files (x86)/xxHash/include"
+    )
 else()
     target_include_directories(${libcommonserver_NAME} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
@@ -85,7 +89,8 @@ target_link_libraries(${libcommonserver_NAME}
     ${libcommon_NAME}
     ${SQLITE3_LIBRARIES}
     Poco::Foundation Poco::Net Poco::JSON Poco::Util
-    OpenSSL::SSL OpenSSL::Crypto)
+    OpenSSL::SSL OpenSSL::Crypto
+    libzip::zip)
 
 if (WIN32)
     target_link_libraries(${libcommonserver_NAME}
@@ -99,8 +104,8 @@ elseif(APPLE)
     find_library(APPKIT_LIBRARY NAMES AppKit)
 
     target_link_libraries(${libcommonserver_NAME}
-        "/usr/local/lib/liblog4cplusU.dylib"
-        "/usr/local/lib/libxxhash.0.dylib"
+        log4cplus::log4cplusU
+        xxHash::xxhash
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY}
@@ -111,4 +116,3 @@ else()
         "/usr/local/lib/libxxhash.so"
         utf8proc)
 endif()
-

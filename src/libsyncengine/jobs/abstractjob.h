@@ -23,14 +23,13 @@
 #include <Poco/Runnable.h>
 
 #include <log4cplus/logger.h>
-#include "libcommonserver/log/log.h"
 
 namespace KDC {
 
 class AbstractJob : public Poco::Runnable {
     public:
         AbstractJob();
-        ~AbstractJob();
+        ~AbstractJob() override;
 
         virtual void runJob() = 0;
         ExitCode runSynchronously();

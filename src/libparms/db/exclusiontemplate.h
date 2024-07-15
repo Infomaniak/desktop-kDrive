@@ -18,8 +18,7 @@
 
 #pragma once
 
-#include "parmslib.h"
-#include "utility/types.h"
+#include "libcommon/utility/types.h"
 
 #include <string>
 
@@ -45,9 +44,9 @@ class ExclusionTemplate {
 
     private:
         std::string _templ;
-        bool _warning;
-        bool _def;
-        bool _deleted;
+        bool _warning{false};
+        bool _def{false};
+        bool _deleted{false};
         ExclusionTemplateComplexity _complexity = ExclusionTemplateComplexityComplex;
 
         void evaluateComplexity();

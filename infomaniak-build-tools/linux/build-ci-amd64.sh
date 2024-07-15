@@ -1,21 +1,45 @@
-#! /bin/bash
+#!/usr/bin/env bash
 
-ulimit -n 4000000
+#
+# Infomaniak kDrive - Desktop
+# Copyright (C) 2023-2024 Infomaniak Network SA
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 
 set -xe
+
+BUILDTYPE="Debug"
+if [[ $1 == 'release' ]]; then
+    BUILDTYPE="Release";
+fi
 
 export QT_BASE_DIR="~/Qt/6.2.3"
 export QTDIR="$QT_BASE_DIR/gcc_64"
 export BASEPATH=$PWD
 export CONTENTDIR="$BASEPATH/build-linux"
-export INSTALLDIR="$CONTENTDIR/install"
 export BUILDDIR="$CONTENTDIR/build"
 export APPDIR="$CONTENTDIR/app"
 
+extract_debug () {
+    objcopy --only-keep-debug "$1/$2" $CONTENTDIR/$2-amd64.dbg
+    objcopy --strip-debug "$1/$2"
+    objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive-amd64.dbg "$1/$2"
+}
 
 mkdir -p $APPDIR
 mkdir -p $BUILDDIR
-mkdir -p $INSTALLDIR
 
 export QMAKE=$QTDIR/bin/qmake
 export PATH=$QTDIR/bin:$QTDIR/libexec:$PATH
@@ -28,31 +52,32 @@ export SUFFIX=""
 # Build client
 cd $BUILDDIR
 mkdir -p $BUILDDIR/client
-cd client
 
 CMAKE_PARAMS=()
 
 export KDRIVE_DEBUG=0
 
 cmake -B$BUILDDIR -H$BASEPATH \
-    -DQTDIR=$QTDIR \
     -DOPENSSL_ROOT_DIR=/usr/local \
     -DOPENSSL_INCLUDE_DIR=/usr/local/include \
     -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
     -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
     -DQT_FEATURE_neon=OFF \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILDTYPE=$BUILDTYPE \
     -DCMAKE_PREFIX_PATH=$BASEPATH \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DBIN_INSTALL_DIR=$BUILDDIR/client \
     -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
-    -DWITH_CRASHREPORTER=0 \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
-    -DBUILD_UNIT_TESTS=0 \
+    -DBUILD_UNIT_TESTS=1 \
     "${CMAKE_PARAMS[@]}" \
 
-cd $BUILDDIR
+make -j$(nproc)
 
-make -j4
+extract_debug ./bin kDrive
+extract_debug ./bin kDrive_client
+
 make DESTDIR=$APPDIR install
+
+cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst

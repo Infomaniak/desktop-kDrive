@@ -7,6 +7,7 @@ find_package(log4cplus 2.1.0 REQUIRED)
 set(testparms_NAME ${APPLICATION_NAME}_test_parms)
 
 set(testparms_SRCS
+    ../test.cpp
     test.cpp
     # Database
     db/testparmsdb.h db/testparmsdb.cpp
@@ -18,7 +19,7 @@ endif()
 
 if (WIN32)
     include_directories("F:/Projects/log4cplus/include")
-    include_directories("F:/Projects/cppunit/include")
+    include_directories("C:/Program Files (x86)/cppunit/include")
 else()
     include_directories("/usr/local/include")
 endif()
@@ -47,9 +48,9 @@ endif()
 if (WIN32)
     target_link_libraries(${testparms_NAME}
         debug
-        "F:/Projects/cppunit/lib/cppunitd.lib"
+        "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
         optimized
-        "F:/Projects/cppunit/lib/cppunit.lib")
+        "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
 elseif(APPLE)
     target_link_libraries(${testparms_NAME}
         "/usr/local/lib/libcppunit.dylib")
@@ -58,3 +59,15 @@ else()
         "/usr/local/lib/libcppunit.so")
 endif()
 
+if(APPLE)
+    # Default sync exclude list
+    install(FILES ${CMAKE_SOURCE_DIR}/sync-exclude-osx.lst DESTINATION ${BIN_OUTPUT_DIRECTORY} RENAME sync-exclude.lst)
+
+    # Default Lite Sync app exclude list
+    install(FILES ${CMAKE_SOURCE_DIR}/litesync-exclude.lst DESTINATION ${BIN_OUTPUT_DIRECTORY})
+
+    install(CODE "
+        message(STATUS \"Fixing library paths for ${testparms_NAME}...\")
+        execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib ${BIN_OUTPUT_DIRECTORY}/${testparms_NAME})
+        " COMPONENT RUNTIME)
+endif()

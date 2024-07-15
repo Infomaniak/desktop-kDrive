@@ -55,33 +55,7 @@ static const int progressBarMax = 5;
 Q_LOGGING_CATEGORY(lcAddDriveLocalFolderWidget, "gui.adddrivelocalfolderwidget", QtInfoMsg)
 
 AddDriveLocalFolderWidget::AddDriveLocalFolderWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : QWidget(parent),
-      _gui(gui),
-      _localFolderPath(QString()),
-      _defaultLocalFolderPath(QString()),
-      _logoTextIconLabel(nullptr),
-      _titleLabel(nullptr),
-      _folderIconLabel(nullptr),
-      _folderNameLabel(nullptr),
-      _folderPathLabel(nullptr),
-      _warningWidget(nullptr),
-      _warningIconLabel(nullptr),
-      _warningLabel(nullptr),
-      _infoWidget(nullptr),
-      _infoIconLabel(nullptr),
-      _infoLabel(nullptr),
-      _backButton(nullptr),
-      _endButton(nullptr),
-      _folderIconColor(QColor()),
-      _folderIconSize(QSize()),
-      _infoIconColor(QColor()),
-      _infoIconSize(QSize()),
-      _warningIconColor(QColor()),
-      _warningIconSize(QSize()),
-      _logoColor(QColor()),
-      _needToSave(false),
-      _smartSync(false),
-      _folderCompatibleWithSmartSync(false) {
+    : QWidget(parent), _gui(gui) {
     initUI();
     updateUI();
 }
@@ -279,44 +253,40 @@ void AddDriveLocalFolderWidget::initUI() {
 }
 
 void AddDriveLocalFolderWidget::updateUI() {
-    bool ok = !_localFolderPath.isEmpty();
-    if (ok) {
-        QDir dir(_localFolderPath);
-        _folderNameLabel->setText(dir.dirName());
-        _folderPathLabel->setText(
-            QString("<a style=\"%1\" href=\"ref\">%2</a>").arg(CommonUtility::linkStyle).arg(_localFolderPath));
+    if (const bool ok = !_localFolderPath.isEmpty(); !ok) return;
 
-        if (_localFolderPath != _defaultLocalFolderPath) {
-            _infoLabel->setText(
-                tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName()));
-            _infoWidget->setVisible(true);
-        } else {
-            _infoWidget->setVisible(false);
+    const QDir dir(_localFolderPath);
+    _folderNameLabel->setText(dir.dirName());
+    _folderPathLabel->setText(QString(R"(<a style="%1" href="ref">%2</a>)").arg(CommonUtility::linkStyle, _localFolderPath));
+
+    if (_localFolderPath != _defaultLocalFolderPath) {
+        _infoLabel->setText(tr("The contents of the <b>%1</b> folder will be synchronized in your kDrive").arg(dir.dirName()));
+        _infoWidget->setVisible(true);
+    } else {
+        _infoWidget->setVisible(false);
+    }
+
+    if (_liteSync) {
+        VirtualFileMode virtualFileMode;
+        const ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
+        if (exitCode != ExitCodeOk) {
+            qCWarning(lcAddDriveLocalFolderWidget) << "Error in Requests::bestAvailableVfsMode";
+            return;
         }
 
-        if (_smartSync) {
-            VirtualFileMode virtualFileMode;
-            ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcAddDriveLocalFolderWidget) << "Error in Requests::bestAvailableVfsMode";
-                return;
-            }
-
-            if (virtualFileMode == VirtualFileModeWin || virtualFileMode == VirtualFileModeMac) {
-                // Check file system
-                QString fsName(KDC::CommonUtility::fileSystemName(_localFolderPath));
-                _folderCompatibleWithSmartSync = (virtualFileMode == VirtualFileModeWin && fsName == "NTFS") ||
-                                                 (virtualFileMode == VirtualFileModeMac && fsName == "apfs");
-                if (!_folderCompatibleWithSmartSync) {
-                    _warningLabel->setText(tr("This folder is not compatible with Lite Sync."
-                                              " Please select another folder or if you continue Lite Sync will be disabled."
-                                              " <a style=\"%1\" href=\"%2\">Learn more</a>")
-                                               .arg(CommonUtility::linkStyle)
-                                               .arg(KDC::GuiUtility::learnMoreLink));
-                    _warningWidget->setVisible(true);
-                } else {
-                    _warningWidget->setVisible(false);
-                }
+        if (virtualFileMode == VirtualFileModeWin || virtualFileMode == VirtualFileModeMac) {
+            // Check file system
+            const QString fsName(KDC::CommonUtility::fileSystemName(_localFolderPath));
+            _folderCompatibleWithLiteSync = (virtualFileMode == VirtualFileModeWin && fsName == "NTFS") ||
+                                            (virtualFileMode == VirtualFileModeMac && fsName == "apfs");
+            if (!_folderCompatibleWithLiteSync) {
+                _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync."
+                                          " Please select another folder or if you continue Lite Sync will be disabled."
+                                          " <a style="%1" href="%2">Learn more</a>)")
+                                           .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
+                _warningWidget->setVisible(true);
+            } else {
+                _warningWidget->setVisible(false);
             }
         }
     }
@@ -326,37 +296,12 @@ void AddDriveLocalFolderWidget::selectFolder(const QString &startDirPath) {
     QString dirPath = QFileDialog::getExistingDirectory(this, tr("Select folder"), startDirPath,
                                                         QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     if (!dirPath.isEmpty()) {
-        QString selectedFolderName = CommonUtility::getRelativePathFromHome(dirPath);
-        SyncPath directoryPath = QStr2Path(dirPath);
-
-        for (auto &sync : _gui->syncInfoMap()) {
-            QString syncFolderName = sync.second.name();
-            SyncPath syncLocalPath = QStr2Path(sync.second.localPath());
-
-            bool warn = false;
-            QString warningMsg;
-            if (syncLocalPath == directoryPath) {
-                warn = true;
-                warningMsg = tr("Folder <b>%1</b> cannot be selected because another sync is using the same folder.")
-                                 .arg(selectedFolderName);
-            } else if (CommonUtility::isSubDir(directoryPath, syncLocalPath)) {
-                warn = true;
-                warningMsg = tr("Folder <b>%1</b> cannot be selected because it contains the synchronized folder <b>%2</b>.")
-                                 .arg(selectedFolderName, syncFolderName);
-            } else if (CommonUtility::isSubDir(syncLocalPath, directoryPath)) {
-                warn = true;
-                warningMsg =
-                    tr("Folder <b>%1</b> cannot be selected because it is contained in the synchronized folder <b>%2</b>.")
-                        .arg(selectedFolderName, syncFolderName);
-            }
-
-            if (warn) {
-                CustomMessageBox msgBox(QMessageBox::Warning, warningMsg, QMessageBox::Ok, this);
-                msgBox.execAndMoveToCenter(KDC::GuiUtility::getTopLevelWidget(this));
-                return;
-            }
+        if (!GuiUtility::warnOnInvalidSyncFolder(dirPath, _gui->syncInfoMap(), this)) {
+            return;
         }
-        _localFolderPath = SyncName2QStr(directoryPath);
+
+        QDir dir(dirPath);
+        _localFolderPath = dir.canonicalPath();
         updateUI();
     }
 }

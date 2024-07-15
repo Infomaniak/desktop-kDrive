@@ -150,8 +150,8 @@ void SyncPalWorker::execute() {
                        (stepWorkers[1] && workersExitCode[1] == ExitCodeDataError) ||
                        (stepWorkers[0] && workersExitCode[0] == ExitCodeBackError) ||
                        (stepWorkers[1] && workersExitCode[1] == ExitCodeBackError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeInconsistencyError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeInconsistencyError)) {
+                       (stepWorkers[0] && workersExitCode[0] == ExitCodeLogicError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCodeLogicError)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop the step workers and restart a full sync
@@ -277,15 +277,16 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
         case SyncStepUpdateDetection1:
             workers[0] = _syncPal->_computeFSOperationsWorker;
             workers[1] = nullptr;
-            inputSharedObject[0] = _syncPal->_localSnapshot;
-            inputSharedObject[1] = _syncPal->_remoteSnapshot;
+            _syncPal->copySnapshots();
+            inputSharedObject[0] = _syncPal->snapshot(ReplicaSideLocal, true);
+            inputSharedObject[1] = _syncPal->snapshot(ReplicaSideRemote, true);
             _syncPal->_restart = false;
             break;
         case SyncStepUpdateDetection2:
             workers[0] = _syncPal->_localUpdateTreeWorker;
             workers[1] = _syncPal->_remoteUpdateTreeWorker;
-            inputSharedObject[0] = _syncPal->_localOperationSet;
-            inputSharedObject[1] = _syncPal->_remoteOperationSet;
+            inputSharedObject[0] = _syncPal->operationSet(ReplicaSideLocal);
+            inputSharedObject[1] = _syncPal->operationSet(ReplicaSideRemote);
             break;
         case SyncStepReconciliation1:
             workers[0] = _syncPal->_platformInconsistencyCheckerWorker;
@@ -391,15 +392,13 @@ SyncStep SyncPalWorker::nextStep() const {
             break;
         case SyncStepUpdateDetection1: {
             auto logNbOps = [=](const ReplicaSide side) {
-                auto opsSet = side == ReplicaSideLocal ? _syncPal->_localOperationSet : _syncPal->_remoteOperationSet;
+                auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->ops().size()
                                                << " " << Utility::side2Str(side).c_str()
-                                               << " operations detected (# CREATE: "
-                                               << opsSet->nbOpsByType(OperationTypeCreate)
+                                               << " operations detected (# CREATE: " << opsSet->nbOpsByType(OperationTypeCreate)
                                                << ", # EDIT: " << opsSet->nbOpsByType(OperationTypeEdit)
                                                << ", # MOVE: " << opsSet->nbOpsByType(OperationTypeMove)
-                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete)
-                                               << ")");
+                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete) << ")");
             };
             logNbOps(ReplicaSideLocal);
             logNbOps(ReplicaSideRemote);
@@ -410,14 +409,15 @@ SyncStep SyncPalWorker::nextStep() const {
                 return SyncStepIdle;
             }
 
-            return (_syncPal->_localOperationSet->updated() || _syncPal->_remoteOperationSet->updated())
+            return (_syncPal->operationSet(ReplicaSideLocal)->updated() || _syncPal->operationSet(ReplicaSideRemote)->updated())
                        ? SyncStepUpdateDetection2
                        : SyncStepDone;
             break;
         }
         case SyncStepUpdateDetection2:
-            return (_syncPal->_localUpdateTree->updated() || _syncPal->_remoteUpdateTree->updated()) ? SyncStepReconciliation1
-                                                                                                     : SyncStepDone;
+            return (_syncPal->updateTree(ReplicaSideLocal)->updated() || _syncPal->updateTree(ReplicaSideRemote)->updated())
+                       ? SyncStepReconciliation1
+                       : SyncStepDone;
             break;
         case SyncStepReconciliation1:
             return SyncStepReconciliation2;
@@ -511,16 +511,15 @@ void SyncPalWorker::unpauseAllWorkers(std::shared_ptr<ISyncWorker> workers[2]) {
 
 bool SyncPalWorker::resetVfsFilesStatus() {
     bool ok = true;
-    std::error_code ec;
     try {
-        for (auto dirIt = std::filesystem::recursive_directory_iterator(
-                 _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
-             dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (ec) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in resetVfsFilesStatus " << ec.message().c_str());
-                continue;
-            }
-
+        std::error_code ec;
+        auto dirIt = std::filesystem::recursive_directory_iterator(
+            _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
+        if (ec) {
+            LOGW_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
+            return false;
+        }
+        for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
 #ifdef _WIN32
             // skip_permission_denied doesn't work on Windows
             try {
@@ -532,7 +531,7 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             }
 #endif
 
-            SyncPath absolutePath = dirIt->path();
+            const SyncPath absolutePath = dirIt->path();
 
             // Check if the directory entry is managed
             bool isManaged = true;
@@ -628,10 +627,10 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             }
         }
     } catch (std::filesystem::filesystem_error &e) {
-        LOG_SYNCPAL_WARN(_logger, "Error catched in SyncPalWorker::resetVfsFilesStatus: " << e.code() << " - " << e.what());
+        LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus: " << e.code() << " - " << e.what());
         ok = false;
     } catch (...) {
-        LOG_SYNCPAL_WARN(_logger, "Error catched in SyncPalWorker::resetVfsFilesStatus");
+        LOG_SYNCPAL_WARN(_logger, "Error caught in SyncPalWorker::resetVfsFilesStatus");
         ok = false;
     }
 

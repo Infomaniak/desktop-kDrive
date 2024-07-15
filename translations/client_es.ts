@@ -297,44 +297,44 @@
     </message>
 </context>
 <context>
-    <name>KDC::AddDriveSmartSyncWidget</name>
+    <name>KDC::AddDriveLiteSyncWidget</name>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="152"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="152"/>
         <source>Conserve your computer space</source>
         <translation>Ahorra espacio en el ordenador</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="172"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="172"/>
         <source>Decide which files should be available online or locally</source>
         <translation>Elige qué archivos deben estar disponibles en línea o localmente</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="192"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="192"/>
         <source>LATER</source>
         <translation>MÁS TARDE</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="198"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="198"/>
         <source>YES</source>
         <translation>SÍ</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="130"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="130"/>
         <source>Lite Sync syncs all your files without using your computer space. You can browse the files in your kDrive and download them locally whenever you want. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
         <translation>Lite Sync sincroniza todos los archivos sin usar espacio del ordenador. Puedes navegar por los archivos en kDrive y descargarlos localmente donde quieras. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Más información&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="212"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="212"/>
         <source>Unable to open link %1.</source>
         <translation>No se puede abrir el enlace %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="117"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="117"/>
         <source>Would you like to activate Lite Sync (Beta) ?</source>
         <translation>¿Deseas activar Lite Sync (Beta)?</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="119"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="119"/>
         <source>Would you like to activate Lite Sync ?</source>
         <translation>¿Deseas activar Lite Sync?</translation>
     </message>
@@ -458,57 +458,6 @@
 </source>
         <translation>Se ha añadido una nueva carpeta mayor a %1 MB en el drive %2, debes validar su sincronización: %3.
 </translation>
-    </message>
-</context>
-<context>
-    <name>KDC::BandwidthDialog</name>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="77"/>
-        <source>Bandwidth</source>
-        <translation>Ancho de banda</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="85"/>
-        <source>Download bandwidth</source>
-        <translation>Ancho de banda de descarga</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="98"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="146"/>
-        <source>No limit</source>
-        <translation>No limitar</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="111"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="159"/>
-        <source>Limit to</source>
-        <translation>Limitar a</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="133"/>
-        <source>Upload bandwidth</source>
-        <translation>Ancho de banda de subida</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="188"/>
-        <source>SAVE</source>
-        <translation>GUARDAR</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="195"/>
-        <source>CANCEL</source>
-        <translation>CANCELAR</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="255"/>
-        <source>Do you want to save your modifications?</source>
-        <translation>¿Deseas guardar tus cambios?</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="125"/>
-        <location filename="../src/gui/bandwidthdialog.cpp" line="173"/>
-        <source>KB/s</source>
-        <translation>KB/s</translation>
     </message>
 </context>
 <context>
@@ -2866,7 +2815,7 @@ Puedes agregar uno desde la configuración de kDrive.</translation>
         <source>Sync in progress (%1 of %2)
 %3 left...</source>
         <translation>Sincronización en curso (%1 de %2)
-%quedan 3...</translation>
+quedan %3...</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="336"/>

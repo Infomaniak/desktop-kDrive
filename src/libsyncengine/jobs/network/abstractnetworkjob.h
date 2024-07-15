@@ -39,10 +39,13 @@ class AbstractJob;
 class AbstractNetworkJob : public AbstractJob {
     public:
         AbstractNetworkJob();
+        ~AbstractNetworkJob() override;
 
         bool hasHttpError();
         inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         virtual void abort() override;
+
+        inline bool isDownloadImpossible() const { return _downloadImpossible; }
 
     protected:
         virtual void runJob() noexcept override;
@@ -62,6 +65,7 @@ class AbstractNetworkJob : public AbstractJob {
         void getStringFromStream(std::istream &inputStream, std::string &res);
 
         const std::string errorText(Poco::Exception const &e) const;
+        const std::string errorText(std::exception const &e) const;
 
         inline void noRetry() { _trials = 0; }
 
@@ -103,17 +107,25 @@ class AbstractNetworkJob : public AbstractJob {
 
         virtual std::string getContentType(bool &canceled) = 0;
 
-        Poco::Net::HTTPSClientSession *_session = nullptr;
-        std::mutex _mutexSession;
+        std::unique_ptr<Poco::Net::HTTPSClientSession> _session;
+        std::recursive_mutex _mutexSession;
 
-        Poco::Net::HTTPSClientSession createSession(const Poco::URI &uri);
-        bool sendRequest(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
-        bool receiveResponse(Poco::Net::HTTPSClientSession &session, const Poco::URI &uri);
+        void createSession(const Poco::URI &uri);
+        void clearSession();
+        void abortSession();
+        bool sendRequest(const Poco::URI &uri);
+        bool receiveResponse(const Poco::URI &uri);
         bool followRedirect(std::istream &inputStream);
-        bool processSocketError(Poco::Net::HTTPSClientSession &session, const std::string &msg, const UniqueId jobId, int err = 0, const std::string &errMsg = std::string());
+        bool processSocketError(const std::string &msg, const UniqueId jobId);
+        bool processSocketError(const std::string &msg, const UniqueId jobId, const std::exception &e);
+        bool processSocketError(const std::string &msg, const UniqueId jobId, const Poco::Exception &e);
+        bool processSocketError(const std::string &msg, const UniqueId jobId, int err, const std::string &errMsg);
         bool ioOrLogicalErrorOccurred(std::ios &stream);
+        static bool isManagedError(ExitCode exitCode, ExitCause exitCause) noexcept;
 
         std::unordered_map<std::string, std::string> _rawHeaders;
+
+        bool _downloadImpossible {false};
 };
 
 }  // namespace KDC

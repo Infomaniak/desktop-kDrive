@@ -129,4 +129,14 @@ bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FS
     return false;
 }
 
+FSOperationSet &FSOperationSet::operator=(const FSOperationSet &other) {
+    if (this != &other) {
+        _ops = other._ops;
+        _opsByType = other._opsByType;
+        _opsByNodeId = other._opsByNodeId;
+    }
+
+    return *this;
+}
+
 }  // namespace KDC

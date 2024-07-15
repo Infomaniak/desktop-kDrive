@@ -26,25 +26,37 @@ namespace KDC {
 class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUtility);
         CPPUNIT_TEST(testFreeDiskSpace);
+        CPPUNIT_TEST(testIsCreationDateValid);
         CPPUNIT_TEST(testS2ws);
         CPPUNIT_TEST(testWs2s);
         CPPUNIT_TEST(testLtrim);
         CPPUNIT_TEST(testRtrim);
         CPPUNIT_TEST(testTrim);
-        CPPUNIT_TEST(testUsleep);
-        CPPUNIT_TEST(testV2s);
+        CPPUNIT_TEST(testMsSleep);
+        CPPUNIT_TEST(testV2ws);
+        CPPUNIT_TEST(testFormatStdError);
+        CPPUNIT_TEST(testFormatIoError);
+        CPPUNIT_TEST(testFormatSyncPath);
+        CPPUNIT_TEST(testFormatRequest);
         CPPUNIT_TEST(testFileSystemName);
         CPPUNIT_TEST(testStartsWith);
         CPPUNIT_TEST(testStartsWithInsensitive);
         CPPUNIT_TEST(testEndsWith);
         CPPUNIT_TEST(testEndsWithInsensitive);
+        CPPUNIT_TEST(testIsEqualInsensitive);
+        CPPUNIT_TEST(testMoveItemToTrash);
         CPPUNIT_TEST(testStr2HexStr);
         CPPUNIT_TEST(testStrHex2Str);
         CPPUNIT_TEST(testSplitStr);
         CPPUNIT_TEST(testJoinStr);
+        CPPUNIT_TEST(testPathDepth);
+        CPPUNIT_TEST(testComputeMd5Hash);
         CPPUNIT_TEST(testXxHash);
+        CPPUNIT_TEST(testToUpper);
+        CPPUNIT_TEST(testErrId);
+        CPPUNIT_TEST(testcheckIfDirEntryIsManaged);
         CPPUNIT_TEST(isSubDir);
-        CPPUNIT_TEST(testFormatStdError);
+        CPPUNIT_TEST(testNormalizedSyncPath);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -53,29 +65,42 @@ class TestUtility : public CppUnit::TestFixture {
 
     protected:
         void testFreeDiskSpace(void);
+        void testIsCreationDateValid(void);
         void testS2ws(void);
         void testWs2s(void);
         void testLtrim(void);
         void testRtrim(void);
         void testTrim(void);
-        void testUsleep(void);
-        void testV2s(void);
+        void testMsSleep(void);
+        void testV2ws(void);
+        void testFormatStdError(void);
+        void testFormatIoError(void);
+        void testFormatSyncPath(void);
+        void testFormatRequest(void);
         void testFileSystemName(void);
         void testStartsWith(void);
         void testStartsWithInsensitive(void);
         void testEndsWith(void);
         void testEndsWithInsensitive(void);
+        void testIsEqualInsensitive(void);
+        void testMoveItemToTrash(void);
+        void testGetLinuxDesktopType(void);
         void testGetAppSupportDir(void);
         void testStr2HexStr(void);
         void testStrHex2Str(void);
         void testSplitStr(void);
         void testJoinStr(void);
+        void testPathDepth(void);
+        void testComputeMd5Hash(void);
         void testXxHash(void);
+        void testToUpper(void);
+        void testErrId(void);
         void isSubDir(void);
-        void testFormatStdError(void);
+        void testcheckIfDirEntryIsManaged(void);
+        void testNormalizedSyncPath(void);
 
     private:
-        Utility *_testObj;
+        std::unique_ptr<Utility> _testObj;
 };
 
 }  // namespace KDC

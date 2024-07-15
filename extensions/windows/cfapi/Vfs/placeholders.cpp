@@ -54,7 +54,7 @@ bool Placeholders::create(const PCWSTR fileId, const PCWSTR relativePath, const 
         TRACE_DEBUG(L"Creating placeholder : path = %ls", fullPath.native().c_str());
         winrt::check_hresult(CfCreatePlaceholders(dirPath.c_str(), &cloudEntry, 1, CF_CREATE_FLAG_NONE, nullptr));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 
@@ -90,7 +90,7 @@ bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
         winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), fileId, (USHORT)(wcslen(fileId) + 1) * sizeof(WCHAR),
                                                     CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, NULL));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 
@@ -125,7 +125,7 @@ bool Placeholders::revert(const PCWSTR filePath) {
         TRACE_DEBUG(L"Reverting placeholder : path = %ls", filePath);
         winrt::check_hresult(CfRevertPlaceholder(fileHandle.get(), CF_REVERT_FLAG_NONE, NULL));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 
@@ -165,7 +165,7 @@ bool Placeholders::update(const PCWSTR filePath, const WIN32_FIND_DATA *findData
             CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
     } catch (winrt::hresult_error const &ex) {
         if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
-            TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+            TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
             res = false;
         }
     }
@@ -183,7 +183,7 @@ bool Placeholders::update(const PCWSTR filePath, const WIN32_FIND_DATA *findData
         winrt::check_hresult(CfUpdatePlaceholder(fileHandle.get(), &fsMetadata, info.FileIdentity, info.FileIdentityLength,
                                                  nullptr, 0, CF_UPDATE_FLAG_VERIFY_IN_SYNC, nullptr, NULL));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         res = false;
     }
 
@@ -278,7 +278,7 @@ bool Placeholders::setStatus(const PCWSTR path, bool syncOngoing) {
                                               syncOngoing ? CF_IN_SYNC_STATE_NOT_IN_SYNC : CF_IN_SYNC_STATE_IN_SYNC,
                                               CF_SET_IN_SYNC_FLAG_NONE, nullptr));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 
@@ -317,7 +317,7 @@ bool Placeholders::getInfo(const PCWSTR path, CF_PLACEHOLDER_STANDARD_INFO &info
             CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
     } catch (winrt::hresult_error const &ex) {
         if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
-            TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+            TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
             return false;
         }
     }
@@ -353,7 +353,7 @@ bool Placeholders::setPinState(const PCWSTR path, CF_PIN_STATE state) {
         TRACE_DEBUG(L"Set pin state to placeholder : state = %ld, path = %ls", static_cast<int>(state), path);
         winrt::check_hresult(CfSetPinState(fileHandle.get(), state, CF_SET_PIN_FLAG_RECURSE, nullptr));
     } catch (winrt::hresult_error const &ex) {
-        TRACE_ERROR(L"WinRT error catched : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
+        TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }
 

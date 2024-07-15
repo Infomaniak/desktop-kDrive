@@ -88,7 +88,7 @@ void UploadSession::runJob() {
 
     bool ok = true;
 
-    while (_state != StateFinished) {
+    while (_state != StateFinished && !isAborted()) {
         switch (_state) {
             case StateInitChunk: {
                 ok = initChunks();
@@ -114,23 +114,22 @@ void UploadSession::runJob() {
                 break;
         }
 
-        if (!ok || isAborted()) {
+        if (!ok) {
             abort();
-            break;
         }
     }
 
     auto end = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
-    LOGW_DEBUG(_logger, L"Upload session " << jobId() << (isAborted() ? L" aborted after " : L" finished after ")
-                                           << elapsed_seconds.count() << L"s");
+    LOGW_DEBUG(_logger, L"Upload session job " << jobId() << (isAborted() ? L" aborted after " : L" finished after ")
+                                               << elapsed_seconds.count() << L"s");
 }
 
 void UploadSession::uploadChunkCallback(UniqueId jobId) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-    if (_ongoingChunkJobs.find(jobId) != _ongoingChunkJobs.end()) {
-        auto jobInfo = _ongoingChunkJobs.extract(jobId);
-        if (jobInfo.mapped() && (jobInfo.mapped()->hasHttpError() || jobInfo.mapped()->exitCode() != ExitCodeOk)) {
+    const std::scoped_lock lock(_mutex);
+    auto jobInfo = _ongoingChunkJobs.extract(jobId);
+    if (!jobInfo.empty() && jobInfo.mapped()) {
+        if (jobInfo.mapped()->hasHttpError() || jobInfo.mapped()->exitCode() != ExitCodeOk) {
             LOGW_WARN(_logger, L"Failed to upload chunk " << jobId << L" of file " << Path2WStr(_filePath.filename()).c_str());
             _exitCode = jobInfo.mapped()->exitCode();
             _exitCause = jobInfo.mapped()->exitCause();
@@ -145,8 +144,9 @@ void UploadSession::uploadChunkCallback(UniqueId jobId) {
 }
 
 void UploadSession::abort() {
+    LOG_DEBUG(_logger, "Aborting upload session job " << jobId());
+
     AbstractJob::abort();
-    cancelSession();
 }
 
 bool UploadSession::canRun() {
@@ -279,7 +279,7 @@ bool UploadSession::sendChunks() {
 
     for (uint64_t chunkNb = 1; chunkNb <= _totalChunks; chunkNb++) {
         if (isAborted() || _jobExecutionError) {
-            LOG_DEBUG(_logger, "Request " << jobId() << ": aborting upload job");
+            LOG_DEBUG(_logger, "Request " << jobId() << ": aborted");
             break;
         }
 
@@ -330,13 +330,14 @@ bool UploadSession::sendChunks() {
         if (_isAsynchrounous) {
             std::function<void(UniqueId)> callback = std::bind(&UploadSession::uploadChunkCallback, this, std::placeholders::_1);
 
-            _mutex.lock();
-            _threadCounter++;
-            JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
-            _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
-            _mutex.unlock();
-            LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
-                                         << _threadCounter << " jobs in queue");
+            {
+                const std::scoped_lock lock(_mutex);
+                _threadCounter++;
+                JobManager::instance()->queueAsyncJob(chunkJob, Poco::Thread::PRIO_NORMAL, callback);
+                _ongoingChunkJobs.insert({chunkJob->jobId(), chunkJob});
+                LOG_INFO(_logger, "Session " << _sessionToken.c_str() << ", job " << chunkJob->jobId() << " queued, "
+                                             << _threadCounter << " jobs in queue");
+            }
 
             waitForJobsToComplete(false);
         } else {
@@ -379,6 +380,8 @@ bool UploadSession::sendChunks() {
     }
 
     if (sendChunksCanceled) {
+        cancelSession();
+
         if (isAborted()) {
             // Upload aborted or canceled by the user
             _exitCode = ExitCodeOk;
@@ -442,9 +445,9 @@ bool UploadSession::cancelSession() {
     if (!_sessionStarted || _sessionCancelled) {
         return true;
     }
-    _sessionCancelled = true;
 
-    LOG_INFO(_logger, "Aborting upload session: " << _sessionToken.c_str());
+    LOG_DEBUG(_logger, "Cancelling upload session job " << jobId());
+    _sessionCancelled = true;
 
     if (_sessionToken.empty()) {
         LOG_WARN(_logger, "Impossible to cancel upload session without a valid session token");
@@ -453,16 +456,18 @@ bool UploadSession::cancelSession() {
     }
 
     // Cancel all ongoing chunk jobs
-    _mutex.lock();
-    std::unordered_map<UniqueId, std::shared_ptr<UploadSessionChunkJob>>::iterator it = _ongoingChunkJobs.begin();
-    for (; it != _ongoingChunkJobs.end(); it++) {
-        if (it->second->sessionToken() == _sessionToken) {
-            it->second->abort();
+    {
+        const std::scoped_lock lock(_mutex);
+        for (auto &[jobId, job] : _ongoingChunkJobs) {
+            if (job.get() && job->sessionToken() == _sessionToken) {
+                LOG_INFO(_logger, "Aborting chunk job " << jobId);
+                job->abort();
+            }
         }
     }
-    _mutex.unlock();
 
     try {
+        LOG_INFO(_logger, "Aborting upload session: " << _sessionToken.c_str());
         UploadSessionCancelJob cancelJob(_driveDbId, _filePath, _sessionToken);
 
         ExitCode exitCode = cancelJob.runSynchronously();
@@ -494,11 +499,21 @@ bool UploadSession::cancelSession() {
 }
 
 void UploadSession::waitForJobsToComplete(bool all) {
-    while (_threadCounter > (all ? 0 : _nbParalleleThread) && !isAborted() && !_jobExecutionError) {
+    while (_threadCounter > (all ? 0 : _nbParalleleThread - 1) && !isAborted() && !_jobExecutionError) {
         if (isExtendedLog()) {
             LOG_DEBUG(_logger, (all ? "Wait for all jobs to complete" : "Wait for some jobs to complete"));
         }
         Utility::msleep(200);  // Sleep for 0.2s
+    }
+
+    if (isAborted()) {
+        LOG_DEBUG(_logger, "Upload session job " << jobId() << " cancelation after abort");
+    } else if (_jobExecutionError) {
+        LOG_DEBUG(_logger, "Upload session job " << jobId() << " cancelation after an execution error of a chunk job");
+    } else {
+        if (isExtendedLog()) {
+            LOG_DEBUG(_logger, "Upload session job " << jobId() << " wait end");
+        }
     }
 }
 

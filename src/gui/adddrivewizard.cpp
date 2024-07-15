@@ -42,31 +42,16 @@ Q_LOGGING_CATEGORY(lcAddDriveWizard, "gui.adddrivewizard", QtInfoMsg)
 AddDriveWizard::AddDriveWizard(std::shared_ptr<ClientGui> gui, int userDbId, QWidget *parent)
     : CustomDialog(false, parent),
       _gui(gui),
-      _stepStackedWidget(nullptr),
-      _addDriveLoginWidget(nullptr),
-      _addDriveListWidget(nullptr),
-      _addDriveSmartSyncWidget(nullptr),
-      _addDriveServerFoldersWidget(nullptr),
-      _addDriveLocalFolderWidget(nullptr),
-      _addDriveExtensionSetupWidget(nullptr),
-      _addDriveConfirmationWidget(nullptr),
       _currentStep(userDbId ? Login : None),
-      _loginUrl(QString()),
-      _smartSync(false),
-      _serverFolderPath(QString()),
-      _selectionSize(0),
-      _blackList(QSet<QString>()),
-      _localFolderPath(QString()),
       _userDbId(userDbId),
-      _syncDbId(0),
       _action(KDC::GuiUtility::WizardAction::OpenFolder) {
     initUI();
     start();
 }
 
 void AddDriveWizard::setButtonIcon(const QColor &value) {
-    if (_addDriveSmartSyncWidget) {
-        _addDriveSmartSyncWidget->setButtonIcon(value);
+    if (_addDriveLiteSyncWidget) {
+        _addDriveLiteSyncWidget->setButtonIcon(value);
     }
     if (_addDriveServerFoldersWidget) {
         _addDriveServerFoldersWidget->setButtonIcon(value);
@@ -92,8 +77,8 @@ void AddDriveWizard::initUI() {
     _addDriveListWidget = new AddDriveListWidget(_gui, this);
     _stepStackedWidget->insertWidget(ListDrives, _addDriveListWidget);
 
-    _addDriveSmartSyncWidget = new AddDriveSmartSyncWidget(this);
-    _stepStackedWidget->insertWidget(RemoteFolders, _addDriveSmartSyncWidget);
+    _addDriveLiteSyncWidget = new AddDriveLiteSyncWidget(this);
+    _stepStackedWidget->insertWidget(RemoteFolders, _addDriveLiteSyncWidget);
 
     _addDriveServerFoldersWidget = new AddDriveServerFoldersWidget(_gui, this);
     _stepStackedWidget->insertWidget(RemoteFolders, _addDriveServerFoldersWidget);
@@ -109,7 +94,7 @@ void AddDriveWizard::initUI() {
 
     connect(_addDriveLoginWidget, &AddDriveLoginWidget::terminated, this, &AddDriveWizard::onStepTerminated);
     connect(_addDriveListWidget, &AddDriveListWidget::terminated, this, &AddDriveWizard::onStepTerminated);
-    connect(_addDriveSmartSyncWidget, &AddDriveSmartSyncWidget::terminated, this, &AddDriveWizard::onStepTerminated);
+    connect(_addDriveLiteSyncWidget, &AddDriveLiteSyncWidget::terminated, this, &AddDriveWizard::onStepTerminated);
     connect(_addDriveServerFoldersWidget, &AddDriveServerFoldersWidget::terminated, this, &AddDriveWizard::onStepTerminated);
     connect(_addDriveLocalFolderWidget, &AddDriveLocalFolderWidget::terminated, this, &AddDriveWizard::onStepTerminated);
     connect(_addDriveExtensionSetupWidget, &AddDriveExtensionSetupWidget::terminated, this, &AddDriveWizard::onStepTerminated);
@@ -134,7 +119,7 @@ void AddDriveWizard::startNextStep(bool backward) {
         } else {
             _addDriveListWidget->setAddUserClicked(false);
         }
-    } else if (_currentStep == SmartSync) {
+    } else if (_currentStep == LiteSync) {
         VirtualFileMode virtualFileMode;
         ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
         if (exitCode != ExitCodeOk) {
@@ -146,7 +131,7 @@ void AddDriveWizard::startNextStep(bool backward) {
             // Skip Lite Sync step
             _currentStep = (Step)(_currentStep + (backward ? -1 : 1));
         }
-    } else if (_currentStep == RemoteFolders && _smartSync) {
+    } else if (_currentStep == RemoteFolders && _liteSync) {
         // Skip Remote Folders step
         _currentStep = (Step)(_currentStep + (backward ? -1 : 1));
     } else if (_currentStep == ExtensionSetup) {
@@ -161,7 +146,7 @@ void AddDriveWizard::startNextStep(bool backward) {
 
         bool skipExtSetup = true;
 #ifdef Q_OS_MAC
-        if (virtualFileMode == VirtualFileModeMac && _smartSync) {
+        if (virtualFileMode == VirtualFileModeMac && _liteSync) {
             // Check LiteSync ext authorizations
             std::string liteSyncExtErrorDescr;
             bool liteSyncExtOk =
@@ -191,7 +176,7 @@ void AddDriveWizard::startNextStep(bool backward) {
         _addDriveListWidget->setUserDbId(_userDbId);
         _addDriveListWidget->setDrivesData();
         _addDriveListWidget->setUsersData();
-    } else if (_currentStep == SmartSync) {
+    } else if (_currentStep == LiteSync) {
         setBackgroundForcedColor(QColor());
     } else if (_currentStep == RemoteFolders) {
         setBackgroundForcedColor(QColor());
@@ -199,7 +184,7 @@ void AddDriveWizard::startNextStep(bool backward) {
     } else if (_currentStep == LocalFolder) {
         setBackgroundForcedColor(QColor());
         _addDriveLocalFolderWidget->setDrive(_driveInfo.name());
-        _addDriveLocalFolderWidget->setSmartSync(_smartSync);
+        _addDriveLocalFolderWidget->setLiteSync(_liteSync);
         QString localFolderPath = Theme::instance()->defaultClientFolder();
         if (!QDir(localFolderPath).isAbsolute()) {
             localFolderPath = QDir::homePath() + dirSeparator + localFolderPath;
@@ -220,17 +205,15 @@ void AddDriveWizard::startNextStep(bool backward) {
         _addDriveConfirmationWidget->setFolderPath(_localFolderPath);
     }
 
-    if (setupDrive) {
-        if (!addSync(_userDbId, _driveInfo.accountId(), _driveInfo.driveId(), _localFolderPath, _serverFolderPath, _smartSync,
-                     _blackList, _whiteList)) {
-            qCWarning(lcAddDriveWizard()) << "Error in addSync!";
-            reject();
-        }
+    if (setupDrive && !addSync(_userDbId, _driveInfo.accountId(), _driveInfo.driveId(), _localFolderPath, _serverFolderPath,
+                               _liteSync, _blackList, _whiteList)) {
+        qCWarning(lcAddDriveWizard()) << "Error in addSync!";
+        reject();
     }
 }
 
 bool AddDriveWizard::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
-                             const QString &serverFolderPath, bool smartSync, const QSet<QString> &blackList,
+                             const QString &serverFolderPath, bool liteSync, const QSet<QString> &blackList,
                              const QSet<QString> &whiteList) {
     QString localFolderPathNormalized = QDir::fromNativeSeparators(localFolderPath);
 
@@ -252,7 +235,7 @@ bool AddDriveWizard::addSync(int userDbId, int accountId, int driveId, const QSt
     }
 
     ExitCode exitCode = GuiRequests::addSync(userDbId, accountId, driveId, localFolderPathNormalized, serverFolderPath, QString(),
-                                             smartSync, blackList, whiteList, _syncDbId);
+                                             liteSync, blackList, whiteList, _syncDbId);
     if (exitCode != ExitCodeOk) {
         qCWarning(lcAddDriveWizard()) << "Error in Requests::addSync";
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Failed to create new synchronization"), QMessageBox::Ok, this);
@@ -299,9 +282,9 @@ void AddDriveWizard::onStepTerminated(bool next) {
         if (!stayCurrentStep) {
             startNextStep(!next);
         }
-    } else if (_currentStep == SmartSync) {
+    } else if (_currentStep == LiteSync) {
         if (next) {
-            _smartSync = _addDriveSmartSyncWidget->smartSync();
+            _liteSync = _addDriveLiteSyncWidget->liteSync();
         }
         startNextStep(!next);
     } else if (_currentStep == RemoteFolders) {
@@ -314,8 +297,8 @@ void AddDriveWizard::onStepTerminated(bool next) {
     } else if (_currentStep == LocalFolder) {
         if (next) {
             _localFolderPath = _addDriveLocalFolderWidget->localFolderPath();
-            if (_smartSync) {
-                _smartSync = _addDriveLocalFolderWidget->folderCompatibleWithSmartSync();
+            if (_liteSync) {
+                _liteSync = _addDriveLocalFolderWidget->folderCompatibleWithLiteSync();
             }
         }
         startNextStep(!next);

@@ -30,7 +30,7 @@ void TestIo::testCreateAlias() {
 
     // A MacOSX Finder alias on a regular file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path / "regular_file_alias";
 
@@ -45,7 +45,7 @@ void TestIo::testCreateAlias() {
 
     // A MacOSX Finder alias on a regular directory.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
 
@@ -60,7 +60,7 @@ void TestIo::testCreateAlias() {
 
     // The target file does not exist: failure
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
         const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
 
@@ -72,7 +72,7 @@ void TestIo::testCreateAlias() {
 
     // The alias path is the path of an existing file: overwriting
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path / "file.txt";
         { std::ofstream ofs(path); }
@@ -88,7 +88,7 @@ void TestIo::testCreateAlias() {
 
     // The alias path is the path of an existing directory: failure
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path;
 
@@ -107,7 +107,7 @@ void TestIo::testCreateAlias() {
 
     // The alias path is the target path (of an existing file): no error!
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "file.txt";
         { std::ofstream ofs(path); }
         const SyncPath targetPath = path;
@@ -125,22 +125,24 @@ void TestIo::testCreateAlias() {
 
     // The alias file name is very long: failure
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
+        const std::string veryLongfileName(1000,
+                                           'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, aliasError);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 
     // The target file name is very long: failure
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "alias.txt";  // This file doesn't exist.
 
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
+        const std::string veryLongfileName(1000,
+                                           'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath targetPath = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
 
         IoError aliasError = IoErrorSuccess;
@@ -157,7 +159,7 @@ void TestIo::testCreateAlias() {
 
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, aliasError);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 
@@ -166,7 +168,7 @@ void TestIo::testCreateAlias() {
         const std::string pathSegment(50, 'a');
         const SyncPath targetPath = makeVeryLonPath(_localTestDirPath);
 
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "alias.txt";  // This file doesn't exist.
 
         IoError aliasError = IoErrorSuccess;
@@ -177,9 +179,8 @@ void TestIo::testCreateAlias() {
 
     // The alias file name contains emojis: success
     {
-        using namespace std::string_literals;  // operator ""s
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / std::string{u8"🫃😋🌲👣🍔🕉️⛎"s};
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError aliasError = IoErrorUnknown;

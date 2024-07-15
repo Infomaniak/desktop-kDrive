@@ -10,6 +10,7 @@
     - [CPPUnit](#cppunit)
     - [Sentry](#sentry)
     - [xxHash](#xxhash)
+    - [libzip](#libzip)
 - [Build in Debug](#build-in-debug)
     - [Qt Creator](#using-qt-creator)
         - [Configuration](#configuration)
@@ -34,18 +35,37 @@ cd desktop-kDrive && git submodule update --init --recursive
 These requirements will only apply if you want to build from a Linux device  
 Currently, the build for Linux release is created from a podman container
 
-You will need cmake and gcc-c++ to compile the libraries and the kDrive project  
+You will need cmake and clang to compile the libraries and the kDrive project  
 This documentation was made for Ubuntu 22.04 LTS
 
 ## Packages :
 
-If not already installed, you will need **git**, **cmake** and **clang** packages.
+If not already installed, you will need **git**, **cmake** and **clang** (clang-18 or higher) packages.
 
 ```bash
 sudo apt install -y git
 sudo apt install -y cmake
 sudo apt install -y clang
 ```
+
+Ensure that CLANG is installed with at least version 18 by running the following command :
+
+```bash
+clang --version
+```
+
+If the version is lower than 18, you can install the latest version with the following commands :
+
+```bash
+wget https://apt.llvm.org/llvm.sh
+chmod u+x llvm.sh
+apt install lsb-release wget software-properties-common gnupg
+sudo ./llvm.sh 18
+sudo update-alternatives --install /usr/bin/clang clang /usr/lib/llvm-18/bin/clang 100
+sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/lib/llvm-18/bin/clang++ 100
+```
+
+Check the version again with `clang --version` to ensure that the version is now 18 or higher.
 
 ## Qt 6.2.3
 
@@ -94,7 +114,7 @@ sudo make install
 
 ## Poco
 
-Poco installation requires the previous OpenSSL installation to be complete
+> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
 
 ```bash
 cd ~/Projects
@@ -153,7 +173,26 @@ cmake ..
 sudo cmake --build . --target install
 ```
 
+## libzip
+
+Clone and install libzip
+
+```bash
+cd ~/Projects
+git clone https://github.com/nih-at/libzip.git
+cd libzip
+git checkout tags/v1.10.1
+mkdir build && cd build
+cmake ..
+make
+make install
+```
+
 # Build in Debug
+
+## Linking dependencies
+
+In order for CMake to be able to find all dependencies, you might need to define `LD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
 
 ## Using Qt Creator 
 
@@ -174,12 +213,10 @@ In the project build settings, paste the following lines in the Initial Configur
 -DKDRIVE_THEME_DIR=/home/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/build-desktop-kDrive-Desktop_Qt_6_2_3_GCC_64bit-Debug/bin
 -DBUILD_TESTING=OFF
--DWITH_CRASHREPORTER=OFF
 ```
 
 ### Debugging
 
-In order that all libraries are found, you might need to define `LD_LIBRARY_PATH=/usr/local/lib`in your environment variables.
 The configuration and database files are stored in the `~/.config/kDrive` directory.  
 The log files will be generated in the `/tmp/kDrive-logdir` directory.
 

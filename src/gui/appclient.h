@@ -31,12 +31,6 @@
 #include <QTimer>
 #include <QLoggingCategory>
 
-namespace CrashReporter {
-
-class Handler;
-
-}
-
 namespace KDC {
 
 Q_DECLARE_LOGGING_CATEGORY(lcAppClient)
@@ -94,6 +88,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         void showNotification(const QString &title, const QString &message);
         void errorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         void errorsCleared(int syncDbId);
+        void logUploadStatusUpdated(LogUploadState status, int percent);
 
     public slots:
         void onWizardDone(int);
@@ -106,33 +101,33 @@ class AppClient : public SharedTools::QtSingleApplication {
 
         void onQuit();
 
+        void onServerDisconnected();
+
     private:
         bool parseOptions(const QStringList &);
         void setupLogging();
 
-        std::shared_ptr<ClientGui> _gui;
+        void startServerAndDie(bool serverCrashDetected);
+        bool connectToServer();
 
-        Theme *_theme;
+        std::shared_ptr<ClientGui> _gui = nullptr;
+
+        Theme *_theme = Theme::instance();
 
         QElapsedTimer _startedAt;
-        quint16 _commPort;
+        quint16 _commPort = 0;
 
         // options from command line:
         QString _logFile;
         QString _logDir;
-        std::chrono::hours _logExpire;
-        bool _logFlush;
-        bool _logDebug;
-        bool _debugMode;
-
-#if defined(WITH_CRASHREPORTER)
-        QScopedPointer<CrashReporter::Handler> _crashHandler;
-#endif
-
+        std::chrono::hours _logExpire = std::chrono::hours(0);
+        bool _logFlush = false;
+        bool _logDebug = false;
+        bool _debugMode = false;
         QScopedPointer<UpdaterClient> _updaterClient;
+        bool _quitInProcess = false;
 
     private slots:
-        void onParseMessage(const QString &, QObject *);
         void onUseMonoIconsChanged(bool);
         void onCleanup();
         void onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params);

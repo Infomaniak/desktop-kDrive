@@ -37,14 +37,14 @@ void OperationGeneratorWorker::execute() {
     _bytesToDownload = 0;
 
     // Mark all nodes "Unprocessed"
-    _syncPal->_localUpdateTree->markAllNodesUnprocessed();
-    _syncPal->_remoteUpdateTree->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSideLocal)->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSideRemote)->markAllNodesUnprocessed();
 
     _deletedNodes.clear();
 
     // Initiate breadth-first search with root nodes from both update trees
-    _queuedToExplore.push(_syncPal->_localUpdateTree->rootNode());
-    _queuedToExplore.push(_syncPal->_remoteUpdateTree->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideRemote)->rootNode());
 
     // Explore both update trees
     while (!_queuedToExplore.empty()) {
@@ -145,23 +145,22 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
 
     op->setType(OperationTypeCreate);
     op->setAffectedNode(currentNode);
-    ReplicaSide targetSide = currentNode->side() == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal;
+    ReplicaSide targetSide = otherSide(currentNode->side());
     op->setTargetSide(targetSide);
-    // We do not set parent node here since it might has been just created as well. In that case, parent node does not exist yet
+    // We do not set parent node here since it might have been just created as well. In that case, parent node does not exist yet
     // in update tree.
-    op->setNewName(targetSide == ReplicaSideLocal ? currentNode->finalLocalName()
-                                                  : currentNode->name());  // Use validName only on local replica
+    op->setNewName(currentNode->name());
     currentNode->setStatus(NodeStatusProcessed);
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Create-Create pseudo conflict detected. Operation Create to be propagated in DB only for item "
                                    << SyncName2WStr(currentNode->name()).c_str());
         }
     } else {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                 _logger, L"Create operation "
                              << op->id() << L" to be propagated on " << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
@@ -199,13 +198,13 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Edit-Edit pseudo conflict detected. Operation Edit to be propagated in DB only for item "
                                    << SyncName2WStr(currentNode->name()).c_str());
         }
     } else {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Edit operation "
                                             << op->id() << L" to be propagated on "
                                             << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str() << L" replica for item "
@@ -237,13 +236,13 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
 
     /*
      * Special case:
-     * 1 - The file name contained à special character, for exemple: "test:1.png" and was rename locally "test%3a1.png".
-     * 2 - The file is rename "test%3a2.png" on local side. Since the "%3a" was not removed, the name is uploaded as it is on
+     * 1 - The file name contained à special character, for example: "test:1.png" and was renamed locally "test%3a1.png".
+     * 2 - The file is renamed "test%3a2.png" on local side. Since the "%3a" was not removed, the name is uploaded as it is on
      * local replica and appears now "test%3a2.png" on remote. 3 - The file is renamed "test:2.png" on remote replica. We then try
      * to rename the local file "test%3a2.png" but fail since it already exist
      */
-    if (currentNode->side() == ReplicaSideRemote && correspondingNode->validLocalName().empty() &&
-        currentNode->validLocalName() == correspondingNode->name()) {
+    if (currentNode->side() == ReplicaSideRemote && correspondingNode->name().empty() &&
+        currentNode->name() == correspondingNode->name()) {
         // Only update DB and tree
         op->setOmit(true);
     }
@@ -252,8 +251,7 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
-    op->setNewName(op->targetSide() == ReplicaSideLocal ? currentNode->finalLocalName()
-                                                        : currentNode->name());  // Use validName only on local replica
+    op->setNewName(currentNode->name());
     if (currentNode->hasChangeEvent(OperationTypeEdit) && currentNode->status() == NodeStatusUnprocessed) {
         currentNode->setStatus(NodeStatusPartiallyProcessed);
     } else {
@@ -262,13 +260,13 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                 _logger, L"Move-Move (Source) pseudo conflict detected. Operation Move to be propagated in DB only for item "
                              << SyncName2WStr(currentNode->name()).c_str());
         }
     } else {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Move operation "
                                    << op->id() << L" to be propagated on "
@@ -282,12 +280,12 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
 
 void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> currentNode,
                                                        std::shared_ptr<Node> correspondingNode) {
-    SyncOpPtr op = std::make_shared<SyncOperation>();
+    auto op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode);  // Node must exists on both replica (except for create operations)
+    assert(correspondingNode);  // Node must exist on both replica (except for create operations)
 
     // Do not generate delete operation if parent already deleted
-    if (_deletedNodes.find(*currentNode->parentNode()->id()) != _deletedNodes.end()) {
+    if (_deletedNodes.contains(*currentNode->parentNode()->id())) {
         return;
     }
 
@@ -310,17 +308,17 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Corresponding file already deleted on "
                                             << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
                                             << L" replica. Operation Delete to be propagated in DB only for item "
                                             << SyncName2WStr(currentNode->name()).c_str());
         }
         _syncPal->_restart =
-            true;  // In certains cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
+            true;  // In certain cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
                    // of next sync because nothing has changed but create events are not propagated
     } else {
-        if (ParametersCache::instance()->parameters().extendedLog()) {
+        if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                 _logger, L"Delete operation "
                              << op->id() << L" to be propagated on " << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()

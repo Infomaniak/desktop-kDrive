@@ -2,8 +2,6 @@ project(libsyncengine)
 
 find_package(Poco 1.12.5 REQUIRED Foundation Net NetSSL JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
-find_package(log4cplus 2.1.0 REQUIRED)
-find_package(xxHash 0.8.1 REQUIRED)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -22,7 +20,7 @@ set(syncengine_SRCS
     jobs/abstractjob.h jobs/abstractjob.cpp
     jobs/abstractpropagatorjob.h
     ## Network jobs
-    jobs/network/networkjobsparams.h
+    jobs/network/networkjobsparams.h jobs/network/networkjobsparams.cpp
     jobs/network/abstractnetworkjob.h jobs/network/abstractnetworkjob.cpp
     jobs/network/abstracttokennetworkjob.h jobs/network/abstracttokennetworkjob.cpp
     jobs/network/getrootfilelistjob.h jobs/network/getrootfilelistjob.cpp
@@ -169,23 +167,8 @@ endif()
 
 # Link
 target_link_libraries(${libsyncengine_NAME}
-    ${libcommon_NAME}
-    ${libcommonserver_NAME}
     ${libparms_NAME}
     Poco::Foundation Poco::Net Poco::NetSSL Poco::JSON Poco::Util
     OpenSSL::SSL OpenSSL::Crypto)
 
-if (WIN32)
-    target_link_libraries(${libsyncengine_NAME}
-        log4cplus::log4cplusU
-        xxHash::xxhash)
-elseif(APPLE)
-    target_link_libraries(${libsyncengine_NAME}
-        "/usr/local/lib/liblog4cplusU.dylib"
-        "/usr/local/lib/libxxhash.0.dylib")
-else()
-    target_link_libraries(${libsyncengine_NAME}
-        "/usr/local/lib/liblog4cplusU.so"
-        "/usr/local/lib/libxxhash.so")
-endif()
 

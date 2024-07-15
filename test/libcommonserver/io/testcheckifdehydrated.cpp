@@ -36,16 +36,16 @@ void TestIo::testCheckIfFileIsDehydrated() {
         bool isDehydrated = false;
         CPPUNIT_ASSERT(_testObj->checkIfFileIsDehydrated(path, isDehydrated, ioError));
 #if defined(__APPLE__)
-        CPPUNIT_ASSERT(ioError == IoErrorAttrNotFound);
-#elif defined(_WIN32)
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorAttrNotFound, ioError);
+#elif defined(__unix__) || defined(_WIN32)
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 #endif
         CPPUNIT_ASSERT(!isDehydrated);
     }
 #if defined(__APPLE__)
     // A dehydrated file
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "dehydrated_file";
         {
             std::ofstream ofs(path);
@@ -61,7 +61,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
     }
     // A hydrated file
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "hydrated_file";
         {
             std::ofstream ofs(path);
@@ -80,7 +80,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
 #if defined(_WIN32)
     // A dehydrated file
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "dehydrated_file";
         { std::ofstream ofs(path); }
 
@@ -93,7 +93,7 @@ void TestIo::testCheckIfFileIsDehydrated() {
     }
     // A hydrated file
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "hydrated_file";
         { std::ofstream ofs(path); }
 
@@ -106,19 +106,23 @@ void TestIo::testCheckIfFileIsDehydrated() {
 #endif
     // A non-existing file
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "non_existing_file.txt";
 
         IoError ioError = IoErrorSuccess;
         bool isDehydrated = true;
         CPPUNIT_ASSERT(_testObj->checkIfFileIsDehydrated(path, isDehydrated, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+#if defined(__unix__)
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+#else
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
+#endif
         CPPUNIT_ASSERT(!isDehydrated);
     }
 
     // A file missing owner read permission
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "permission_less_file.txt";
         {
             std::ofstream ofs(path);

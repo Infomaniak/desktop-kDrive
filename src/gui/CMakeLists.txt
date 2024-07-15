@@ -57,10 +57,9 @@ set(client_SRCS
     adddriveloginwidget.h adddriveloginwidget.cpp
     adddrivelistwidget.h adddrivelistwidget.cpp
     adddriveserverfolderswidget.h adddriveserverfolderswidget.cpp
-    adddrivesmartsyncwidget.h adddrivesmartsyncwidget.cpp
+    adddriveslitesyncwidget.h adddriveslitesyncwidget.cpp
     adddrivewizard.h adddrivewizard.cpp
     appclient.h appclient.cpp
-    bandwidthdialog.h bandwidthdialog.cpp
     basefoldertreeitemwidget.h basefoldertreeitemwidget.cpp
     bigfoldersdialog.h bigfoldersdialog.cpp
     bottomwidget.h bottomwidget.cpp
@@ -114,7 +113,6 @@ set(client_SRCS
     menuwidgetlite.h menuwidgetlite.cpp
     parameterscache.h parameterscache.cpp
     parametersdialog.h parametersdialog.cpp
-    parameterswidget.h parameterswidget.cpp
     preferencesblocwidget.h preferencesblocwidget.cpp
     preferencesmenubarwidget.h preferencesmenubarwidget.cpp
     preferenceswidget.h preferenceswidget.cpp
@@ -272,15 +270,6 @@ if (APPLE)
     target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE} ${SERVICE_MANAGEMENT_LIBRARY})
 endif()
 
-if(WITH_CRASHREPORTER)
-    target_link_libraries(${APPLICATION_CLIENT_EXECUTABLE} crashreporter-handler)
-
-    if(UNIX AND NOT MAC)
-        find_package(Threads REQUIRED)
-        target_link_libraries( ${APPLICATION_CLIENT_EXECUTABLE} ${CMAKE_THREAD_LIBS_INIT})
-    endif()
-endif()
-
 if(ZLIB_FOUND)
   target_link_libraries("${APPLICATION_CLIENT_EXECUTABLE}" ZLIB::ZLIB)
 endif(ZLIB_FOUND)
@@ -311,9 +300,14 @@ endif()
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     get_target_property (QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 
+    set(ENV_QTDIR $ENV{QTDIR})
+    set(ENV_DESTDIR $ENV{DESTDIR})
+
     install(CODE "
-        message(STATUS \"Deploying (Qt) dependencies and fixing library paths for kdrive_client...\")
-        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path/. -add_rpath @executable_path/../Frameworks \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
+        message(STATUS \"Deploying (Qt) dependencies for kdrive_client...\")
+        execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
+        message(STATUS \"Fixing library paths for kdrive_client...\")
+        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path/. -add_rpath @executable_path/../Frameworks ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
         " COMPONENT RUNTIME)
 endif()
 

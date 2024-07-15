@@ -1,2 +1,0 @@
-add_subdirectory(libcrashreporter-handler)
-add_subdirectory(libcrashreporter-gui)

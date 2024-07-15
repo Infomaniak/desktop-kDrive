@@ -19,12 +19,9 @@
 #include "clientgui.h"
 #include "guiutility.h"
 #include "custommessagebox.h"
-#include "enablestateholder.h"
 #include "appclient.h"
-#include "menuwidget.h"
 #include "guirequests.h"
 #include "parameterscache.h"
-#include "libcommongui/logger.h"
 #include "libcommongui/utility/utility.h"
 #include "libcommon/theme/theme.h"
 
@@ -50,26 +47,7 @@ namespace KDC {
 
 Q_LOGGING_CATEGORY(lcClientGui, "gui.clientgui", QtInfoMsg)
 
-ClientGui::ClientGui(AppClient *parent)
-    : QObject(),
-      _tray(nullptr),
-      _synthesisPopover(nullptr),
-      _parametersDialog(nullptr),
-      _addDriveWizard(nullptr),
-      _loginDialog(nullptr),
-      _workaroundShowAndHideTray(false),
-      _workaroundNoAboutToShowUpdate(false),
-      _workaroundFakeDoubleClick(false),
-      _workaroundManualVisibility(false),
-      _delayedTrayUpdateTimer(QTimer()),
-      _notificationEnableDate(QDateTime()),
-      _app(parent),
-      _generalErrorsCounter(0),
-      _currentUserDbId(0),
-      _currentAccountDbId(0),
-      _currentDriveDbId(0),
-      _driveWithNewErrorSet(QSet<int>()),
-      _refreshErrorListTimer(QTimer()) {
+ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(qGuiApp, &QGuiApplication::screenAdded, this, &ClientGui::onScreenUpdated);
     connect(qGuiApp, &QGuiApplication::screenRemoved, this, &ClientGui::onScreenUpdated);
 
@@ -105,6 +83,9 @@ ClientGui::ClientGui(AppClient *parent)
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
 
     connect(&_refreshErrorListTimer, &QTimer::timeout, this, &ClientGui::onRefreshErrorList);
+
+    connect(_app, &AppClient::logUploadStatusUpdated, this, &ClientGui::logUploadStatusUpdated);
+
     _refreshErrorListTimer.setInterval(1 * 1000);
     _refreshErrorListTimer.start();
 }
@@ -531,10 +512,6 @@ void ClientGui::resetSystray() {
     QIcon testIcon = Theme::instance()->folderOfflineIcon(/*systray?*/ true, /*currently visible?*/ false);
     _tray->setIcon(testIcon);
 
-    QAction *actionSynthesis = nullptr;
-    QAction *actionPreferences = nullptr;
-    QAction *actionQuit = nullptr;
-
     if (_tray->geometry().width() == 0) {
         _tray->setContextMenu(new QMenu());
 #ifdef Q_OS_LINUX
@@ -542,13 +519,13 @@ void ClientGui::resetSystray() {
         QString version;
         if (KDC::GuiUtility::getLinuxDesktopType(type, version)) {
             if (type.contains("GNOME") && version.toDouble() >= 40) {
-                actionSynthesis = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"),
-                                                                  QString(tr("Synthesis")));
-                actionPreferences = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"),
-                                                                    QString(tr("Preferences")));
+                _actionSynthesis =
+                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
+                _actionPreferences =
+                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
                 _tray->contextMenu()->addSeparator();
-                actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"),
-                                                             QString(tr("Quit")));
+                _actionQuit =
+                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
             }
         }
 #endif
@@ -556,11 +533,15 @@ void ClientGui::resetSystray() {
 
     if (!_tray->contextMenu() || _tray->contextMenu()->isEmpty()) {
         connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
-    } else {
-        connect(actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
-        connect(actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
-        connect(actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
     }
+#ifdef Q_OS_LINUX
+    else if (_actionSynthesis && _actionPreferences && _actionQuit) {
+        connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
+        connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
+        connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
+        connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
+    }
+#endif
 
     _tray->show();
 }
@@ -897,77 +878,65 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
     emit refreshStatusNeeded();
 }
 
-void ClientGui::onRefreshErrorList() {
-    ExitCode exitCode;
+ExitCode ClientGui::loadError(int driveDbId, int syncDbId, ErrorLevel level) {
+    const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
+    if (exitCode != ExitCodeOk) {
+        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
+    }
 
+    return exitCode;
+}
+
+
+void ClientGui::onRefreshErrorList() {
     if (_driveWithNewErrorSet.count()) {
         emit refreshStatusNeeded();
     }
 
-    QSet<int>::iterator i = _driveWithNewErrorSet.begin();
-    while (i != _driveWithNewErrorSet.end()) {
-        int driveDbId = *i;
-
-        _errorInfoMap[driveDbId].clear();
-        if (driveDbId == 0) {
-            // Server level errors
-            exitCode = GuiRequests::getErrorInfoList(ErrorLevelServer, 0, MAX_ERRORS_DISPLAYED, _errorInfoMap[0]);
-            if (exitCode != ExitCodeOk) {
-                qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoListByTime for level=" << ErrorLevelServer;
-                return;
-            }
-
-            _generalErrorsCounter = _errorInfoMap[0].count();
-            emit errorAdded(0);
-        } else {
-            // Drive level error (SyncPal or Node)
-            const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
-            if (driveInfoMapIt == _driveInfoMap.end()) {
-                qCWarning(lcClientGui()) << "Drive not found in drive map for driveDbId=" << driveDbId;
-                return;
-            }
-
-            for (const auto &syncInfoMapIt : _syncInfoMap) {
-                if (syncInfoMapIt.second.driveDbId() == driveDbId) {
-                    //                    if (syncInfoMapIt.second.status() == SyncStatusUndefined) {
-                    //                        continue;
-                    //                    }
-
-                    // Load SyncPal level errors
-                    exitCode = GuiRequests::getErrorInfoList(ErrorLevelSyncPal, syncInfoMapIt.first, MAX_ERRORS_DISPLAYED,
-                                                             _errorInfoMap[driveDbId]);
-                    if (exitCode != ExitCodeOk) {
-                        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoListByTime for level=" << ErrorLevelSyncPal
-                                                 << " syncDbId=" << syncInfoMapIt.first;
-                        return;
-                    }
-
-                    // Load Node level errors
-                    exitCode = GuiRequests::getErrorInfoList(ErrorLevelNode, syncInfoMapIt.first, MAX_ERRORS_DISPLAYED,
-                                                             _errorInfoMap[driveDbId]);
-                    if (exitCode != ExitCodeOk) {
-                        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoListByTime for level=" << ErrorLevelNode
-                                                 << " syncDbId=" << syncInfoMapIt.first;
-                        return;
-                    }
-                }
-            }
-
-            int unresolvedErrorsCount = 0;
-            int autoresolvedErrorsCount = 0;
-            for (auto errorInfo : _errorInfoMap[driveDbId]) {
-                if (errorInfo.autoResolved()) {
-                    autoresolvedErrorsCount++;
-                } else {
-                    unresolvedErrorsCount++;
-                }
-            }
-            driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
-            driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
-            emit errorAdded(driveDbId);
+    // Server level errors.
+    if (_driveWithNewErrorSet.contains(0)) {
+        _errorInfoMap[0].clear();
+        if (ExitCodeOk != ClientGui::loadError(0, 0, ErrorLevelServer)) {
+            return;
         }
 
-        i = _driveWithNewErrorSet.erase(i);
+        _generalErrorsCounter = _errorInfoMap[0].count();
+        emit errorAdded(0);
+        _driveWithNewErrorSet.remove(0);
+    }
+
+    // Drive level errors (SyncPal or Node).
+    for (auto it = _driveWithNewErrorSet.begin(); it != _driveWithNewErrorSet.end();) {
+        const int driveDbId = *it;
+        _errorInfoMap[driveDbId].clear();
+
+        const auto driveInfoMapIt = _driveInfoMap.find(driveDbId);
+        if (driveInfoMapIt == _driveInfoMap.end()) {
+            qCWarning(lcClientGui()) << "Drive not found in drive map for driveDbId=" << driveDbId;
+            return;
+        }
+
+        for (const auto &[syncDbId, syncInfo] : _syncInfoMap) {
+            if (syncInfo.driveDbId() != driveDbId) continue;
+            for (auto level : std::vector<ErrorLevel>{ErrorLevelSyncPal, ErrorLevelNode}) {
+                if (ExitCodeOk != loadError(driveDbId, syncDbId, level)) return;
+            }
+        }
+
+        int unresolvedErrorsCount = 0;
+        int autoresolvedErrorsCount = 0;
+        for (const auto &errorInfo : _errorInfoMap[driveDbId]) {
+            if (errorInfo.autoResolved()) {
+                ++autoresolvedErrorsCount;
+            } else {
+                ++unresolvedErrorsCount;
+            }
+        }
+        driveInfoMapIt->second.setUnresolvedErrorsCount(unresolvedErrorsCount);
+        driveInfoMapIt->second.setAutoresolvedErrorsCount(autoresolvedErrorsCount);
+        emit errorAdded(driveDbId);
+
+        it = _driveWithNewErrorSet.erase(it);
     }
 }
 
@@ -1344,6 +1313,16 @@ void ClientGui::onExecuteSyncAction(ActionType type, ActionTarget target, int db
 void ClientGui::onRefreshStatusNeeded() {
     // resetSystray();
     computeOverallSyncStatus();
+}
+
+void ClientGui::retranslateUi() {
+#ifdef Q_OS_LINUX
+    if (_actionSynthesis && _actionPreferences && _actionQuit) {
+        _actionSynthesis->setText(QString(tr("Synthesis")));
+        _actionPreferences->setText(QString(tr("Preferences")));
+        _actionQuit->setText(QString(tr("Quit")));
+    }
+#endif
 }
 
 void ClientGui::activateLoadInfo(bool value) {

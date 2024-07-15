@@ -1,0 +1,63 @@
+name: MacOS kDrive desktop CI
+
+on:
+  pull_request: 
+    types: [synchronize, review_requested]
+
+concurrency:
+  group: macos-${{ github.head_ref }}
+  cancel-in-progress: true
+
+env:
+  KDRIVE_TEST_CI_API_TOKEN: ${{ secrets.KDRIVE_TOKEN }}
+  KDRIVE_TEST_CI_ACCOUNT_ID: ${{ vars.KDRIVE_TEST_CI_ACCOUNT_ID }}
+  KDRIVE_TEST_CI_USER_ID: ${{ vars.KDRIVE_TEST_CI_USER_ID }}
+  KDRIVE_TEST_CI_DRIVE_ID: ${{ vars.KDRIVE_TEST_CI_DRIVE_ID }}
+  KDRIVE_TEST_CI_REMOTE_DIR_ID: ${{ vars.KDRIVE_TEST_CI_REMOTE_DIR_ID }}
+  KDRIVE_TEST_CI_LOCAL_PATH: ${{ vars.KDRIVE_TEST_CI_LOCAL_PATH }}
+  KDRIVE_TEST_CI_REMOTE_PATH: ${{ vars.KDRIVE_TEST_CI_REMOTE_PATH }}
+  
+jobs:
+  build-kDrive:
+    runs-on: [ self-hosted, macOS, desktop-kdrive ]
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4.1.1
+        with:
+          ref: ${{ github.head_ref }}
+          submodules: recursive
+
+      - name: Unlock keychain to use the certificate
+        run : security unlock-keychain -p '${{ secrets.KEYCHAIN_PASSWORD }}' login.keychain
+
+      - name: Grant building script execute permission
+        run : chmod +x ./infomaniak-build-tools/macos/build-ci.sh
+      - name: Build kDrive desktop
+        run : ./infomaniak-build-tools/macos/build-ci.sh
+
+      - name: Grant tests script execute permission
+        run : chmod +x ./infomaniak-build-tools/run-tests.sh
+      - name: Execute tests
+        run : ./infomaniak-build-tools/run-tests.sh
+
+      - name: Get the path to kDrive-logdir
+        run : echo "logdir_path="$(find /private/var/folders/ -name kDrive-logdir 2>/dev/null)"" >> $GITHUB_ENV
+        if  : success() || failure()
+
+      - name: Upload tests logs artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-tests-logs
+          path: ${{ env.logdir_path }}/*
+          retention-days: 3
+          overwrite: true
+        if: contains(env.logdir_path, 'kDrive-logdir') && (success() || failure())
+
+      - name: Clean the log directory
+        if  : contains(env.logdir_path, 'kDrive-logdir')
+        run : rm -rf ${{ env.logdir_path }}/*
+        continue-on-error: true
+
+      - name: Clean-up generated code
+        run : rm -rf build-macos

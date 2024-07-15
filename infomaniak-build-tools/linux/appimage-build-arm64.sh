@@ -56,14 +56,22 @@ export KDRIVE_DEBUG=0
 cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DQT_FEATURE_neon=ON \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="/src/infomaniak" \
-    -DWITH_CRASHREPORTER=0 \
     -DBUILD_UNIT_TESTS=0 \
     "${CMAKE_PARAMS[@]}" \
     /src
 make -j4
+
+objcopy --only-keep-debug ./bin/kDrive ../kDrive.dbg
+objcopy --strip-debug ./bin/kDrive
+objcopy --add-gnu-debuglink=../kDrive.dbg ./bin/kDrive
+
+objcopy --only-keep-debug ./bin/kDrive_client ../kDrive_client.dbg
+objcopy --strip-debug ./bin/kDrive_client
+objcopy --add-gnu-debuglink=../kDrive_client.dbg ./bin/kDrive_client
+
 make DESTDIR=/app install
 
 # Move stuff around

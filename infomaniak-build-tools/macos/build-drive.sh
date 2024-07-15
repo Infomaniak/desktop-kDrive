@@ -43,15 +43,17 @@ export PATH=$QTDIR/bin:$PATH
 # Set Infomaniak Theme
 KDRIVE_DIR="$SRCDIR/infomaniak"
 
-# Path to Sparkle installation
-SPARKLE_DIR="$HOME/Library/Frameworks"
-
-# Prepare directory
-mkdir -p build-macos/client
-mkdir -p build-macos/install
-INSTALLDIR="$PWD/build-macos/install"
+# Set build dir
 BUILDDIR="$PWD/build-macos/client"
 
+# Set install dir
+INSTALLDIR="$PWD/build-macos/client/install"
+
+# Create install dir if needed
+mkdir -p build-macos/client
+mkdir -p build-macos/client/install
+
+# Backup the existing .app if there is one
 if [ -d "$INSTALLDIR/$APPNAME-old.app" ]; then
 	rm -rf "$INSTALLDIR/$APPNAME-old.app"
 fi
@@ -60,49 +62,39 @@ if [ -d "$INSTALLDIR/$APPNAME.app" ]; then
 	cp -a "$INSTALLDIR/$APPNAME.app" "$INSTALLDIR/$APPNAME-old.app"
 fi
 
-pushd "$BUILDDIR"
-
+# Prepare additional cmake arguments
 if [ -z "$KDRIVE_VERSION_BUILD" ]; then
 	KDRIVE_VERSION_BUILD="$(date +%Y%m%d)"
 fi
 
-# Prepare cmake arguments
 CMAKE_PARAMS=(-DKDRIVE_VERSION_BUILD="$KDRIVE_VERSION_BUILD")
 
 if [ -n "$TEAM_IDENTIFIER" -a -n "$SIGN_IDENTITY" ]; then
 	CMAKE_PARAMS+=(-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX="$TEAM_IDENTIFIER.")
 fi
 
-if [ -n "$APPLICATION_SERVER_URL" ]; then
-	CMAKE_PARAMS+=(-DAPPLICATION_SERVER_URL="$APPLICATION_SERVER_URL")
-fi
+# Configure
+pushd "$BUILDDIR"
 
-# Configure infomaniakdrive
 cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
-	-DCODE_SIGN_INJECT_BASE_ENTITLEMENTS="$CODE_SIGN_INJECT_BASE_ENTITLEMENTS" \
 	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DNO_SHIBBOLETH=1 \
-	-DSPARKLE_INCLUDE_DIR="$SPARKLE_DIR/Sparkle.framework/Headers" \
-	-DSPARKLE_LIBRARY="$SPARKLE_DIR/Sparkle.framework" \
-	-DOPENSSL_ROOT_DIR="/usr/local/" \
-	-DOPENSSL_INCLUDE_DIR="/usr/local/include/" \
-	-DOPENSSL_CRYPTO_LIBRARY="/usr/local/lib/libcrypto.dylib" \
-	-DOPENSSL_SSL_LIBRARY="/usr/local/lib/libssl.dylib" \
 	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
-	-DQTKEYCHAIN_LIBRARY="/usr/local/lib/libqt6keychain.dylib" \
-	-DQTKEYCHAIN_INCLUDE_DIR="/usr/local/include/qt6keychain/" \
-	-DQTDIR="$QTDIR" \
-	-DWITH_CRASHREPORTER=0 \
 	-DBUILD_UNIT_TESTS=0 \
 	"${CMAKE_PARAMS[@]}" \
 	"$SRCDIR"
 
-# Install it
-make install
+# Build
+make -j6 all install
+
+# Generate Debug Symbol files
+dsymutil ./install/kDrive.app/Contents/MacOS/kDrive -o ./install/kDrive.dSYM
+dsymutil ./bin/kDrive_client -o ./install/kDrive_client.dSYM
+
 popd
 
+# Sign
 SIGN_FILES=()
 
 if [ -n "$TEAM_IDENTIFIER" -a -n "$APP_DOMAIN" -a -n "$SIGN_IDENTITY" ]; then
@@ -119,6 +111,7 @@ else
 	$BUILDDIR/admin/osx/create_mac.sh "$INSTALLDIR" "$BUILDDIR"
 fi
 
+# Notarise
 if [ -n "$SIGN_FILES" ]; then
 	mkdir -p $INSTALLDIR/notorization
 	rm -rf $INSTALLDIR/notorization/*

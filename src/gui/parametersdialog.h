@@ -27,8 +27,6 @@
 #include "drivepreferenceswidget.h"
 #include "preferenceswidget.h"
 
-#include <map>
-
 #include <QByteArray>
 #include <QColor>
 #include <QDialog>
@@ -76,34 +74,38 @@ class ParametersDialog : public CustomDialog {
         enum Page { Drive = 0, Preferences, Errors };
 
         std::shared_ptr<ClientGui> _gui;
-        int _currentDriveDbId;
+        int _currentDriveDbId{0};
 
         // General errors
-        int _errorTabWidgetStackPosition;
+        int _errorTabWidgetStackPosition{0};
 
         QColor _backgroundMainColor;
-        QStackedWidget *_pageStackedWidget;
-        MainMenuBarWidget *_driveMenuBarWidget;
-        PreferencesMenuBarWidget *_preferencesMenuBarWidget;
-        ErrorsMenuBarWidget *_errorsMenuBarWidget;
-        PreferencesWidget *_preferencesWidget;
-        DrivePreferencesWidget *_drivePreferencesWidget;
-        QScrollArea *_drivePreferencesScrollArea;
-        QWidget *_noDrivePagewidget;
-        ActionWidget *_sendLogsWidget;
-        QStackedWidget *_errorsStackedWidget;
-        QLabel *_defaultTextLabel;
+        QStackedWidget *_pageStackedWidget{nullptr};
+        MainMenuBarWidget *_driveMenuBarWidget{nullptr};
+        PreferencesMenuBarWidget *_preferencesMenuBarWidget{nullptr};
+        ErrorsMenuBarWidget *_errorsMenuBarWidget{nullptr};
+        PreferencesWidget *_preferencesWidget{nullptr};
+        DrivePreferencesWidget *_drivePreferencesWidget{nullptr};
+        QScrollArea *_drivePreferencesScrollArea{nullptr};
+        QWidget *_noDrivePagewidget{nullptr};
+        ActionWidget *_sendLogsWidget{nullptr};
+        QStackedWidget *_errorsStackedWidget{nullptr};
+        QLabel *_defaultTextLabel{nullptr};
 
         void initUI();
         QByteArray contents(const QString &path);
         void reset();
 
-        QString getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause);
-        QString getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin);
-        QString getConflictText(ConflictType conflictType, ConflictTypeResolution resolution);
-        QString getInconsistencyText(InconsistencyType inconsistencyType);
-        QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "");
-        QString getErrorMessage(ErrorInfo &errorInfo);
+        QString getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const noexcept;
+        QString getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const noexcept;
+        QString getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const noexcept;
+        QString getInconsistencyText(InconsistencyType inconsistencyType) const noexcept;
+        QString getCancelText(CancelType cancelType, const QString &path, const QString &destinationPath = "") const noexcept;
+        QString getErrorMessage(const ErrorInfo &errorInfo) const noexcept;
+        QString getBackErrorText(const ErrorInfo &errorInfo) const noexcept;
+        QString getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const noexcept;
+        QString getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const noexcept;
+        QString getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept;
 
         void createErrorTabWidgetIfNeeded(int driveDbId);
         void refreshErrorList(int driveDbId);

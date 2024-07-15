@@ -1,6 +1,7 @@
 project(server)
 
-find_package(Qt6 REQUIRED COMPONENTS Network Xml Svg)
+find_package(Qt6 REQUIRED COMPONENTS Network Svg)
+find_package(Poco 1.12.5 REQUIRED XML)
 find_package(sentry REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
@@ -41,6 +42,7 @@ set(server_SRCS
     ../libcommonserver/vfs.h ../libcommonserver/vfs.cpp
     ../libcommonserver/plugin.h ../libcommonserver/plugin.cpp
     navigationpanehelper.h navigationpanehelper.cpp
+    logarchiver.h logarchiver.cpp
     socketapi.h socketapi.cpp
     socketlistener.h socketlistener.cpp
     appserver.h appserver.cpp
@@ -145,10 +147,17 @@ else()
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
 endif()
 
-set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
-    MACOSX_BUNDLE TRUE
-)
+if (APPLE)
+    set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${INSTALL_OUTPUT_DIRECTORY}
+        MACOSX_BUNDLE TRUE
+    )
+else()
+    set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+        MACOSX_BUNDLE TRUE
+    )
+endif()
 
 # Includes
 if (WIN32)
@@ -172,18 +181,14 @@ add_library(updater STATIC ${updater_SRCS})
 target_include_directories(updater PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(updater
-    Qt6::Network Qt6::Xml
-    ${updater_DEPS}
-    ${libparms_NAME}
-    ${libcommonserver_NAME}
-    ${libsyncengine_NAME})
+    Qt6::Network
+    Poco::XML
+    ${libsyncengine_NAME}
+    ${updater_DEPS})
 
 target_link_libraries(${APPLICATION_EXECUTABLE}
     Qt6::Network Qt6::Svg
     sentry::sentry
-    ${libcommon_NAME}
-    ${libcommonserver_NAME}
-    ${libsyncengine_NAME}
     updater)
 
 ## handle DBUS for Fdo notifications
@@ -201,15 +206,6 @@ endif()
 if (APPLE)
     find_library(SERVICE_MANAGEMENT_LIBRARY NAMES ServiceManagement)
     target_link_libraries(${APPLICATION_EXECUTABLE} ${SERVICE_MANAGEMENT_LIBRARY})
-endif()
-
-if(WITH_CRASHREPORTER)
-    target_link_libraries(${APPLICATION_EXECUTABLE} crashreporter-handler)
-
-    if(UNIX AND NOT MAC)
-        find_package(Threads REQUIRED)
-        target_link_libraries( ${APPLICATION_EXECUTABLE} ${CMAKE_THREAD_LIBS_INIT})
-    endif()
 endif()
 
 if(ZLIB_FOUND)
@@ -239,10 +235,13 @@ endif()
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     get_target_property (QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 
+    set(ENV_QTDIR $ENV{QTDIR})
+    set(ENV_DESTDIR $ENV{DESTDIR})
+
     install(CODE "
-        message(STATUS \"Deploying (Qt) dependencies and fixing library paths for kDrive... \")
-        execute_process(COMMAND \"${QTDIR}/bin/macdeployqt\" \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -executable=$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
-        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path/. -add_rpath @executable_path/../Frameworks \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
-        execute_process(COMMAND \"install_name_tool\" -change libxxhash.0.dylib @rpath/libxxhash.0.8.2.dylib \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+        message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
+        execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+        message(STATUS \"Fixing library paths for kDrive...\")
+        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path/. -add_rpath @executable_path/../Frameworks ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
         " COMPONENT RUNTIME)
 endif()

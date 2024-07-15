@@ -24,7 +24,6 @@
 
 #include "qtsingleapplication.h"
 #include "libcommonserver/commserver.h"
-#include "login/login.h"
 #include "syncpal/syncpal.h"
 #include "libcommonserver/vfs.h"
 #include "navigationpanehelper.h"
@@ -44,11 +43,6 @@
 #include <QThread>
 #include <QTimer>
 
-namespace CrashReporter {
-
-class Handler;
-
-}
 namespace KDC {
 
 class Theme;
@@ -90,8 +84,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void showHelp();
         void showVersion();
         void clearSyncNodes();
-        void showSettings();
-        void showSynthesis();
+        void sendShowSettingsMsg();
+        void sendShowSynthesisMsg();
         void clearKeychainKeys();
         void showAlreadyRunning();
 
@@ -113,17 +107,18 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         std::unique_ptr<NavigationPaneHelper> _navigationPaneHelper;
         QScopedPointer<SocketApi> _socketApi;
-        bool _appRestartRequired = false;
-        Theme *_theme;
-        bool _helpAsked = false;
-        bool _versionAsked = false;
-        bool _clearSyncNodesAsked = false;
-        bool _settingsAsked = false;
-        bool _synthesisAsked = false;
-        bool _clearKeychainKeysAsked = false;
-        bool _vfsInstallationDone = false;
-        bool _vfsActivationDone = false;
-        bool _vfsConnectionDone = false;
+        bool _appRestartRequired{false};
+        Theme *_theme{nullptr};
+        bool _helpAsked{false};
+        bool _versionAsked{false};
+        bool _clearSyncNodesAsked{false};
+        bool _settingsAsked{false};
+        bool _synthesisAsked{false};
+        bool _clearKeychainKeysAsked{false};
+        bool _vfsInstallationDone{false};
+        bool _vfsActivationDone{false};
+        bool _vfsConnectionDone{false};
+        bool _crashRecovered{false};
         QElapsedTimer _startedAt;
         QTimer _loadSyncsProgressTimer;
         QTimer _sendFilesNotificationsTimer;
@@ -131,17 +126,14 @@ class AppServer : public SharedTools::QtSingleApplication {
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
 
-
-#if defined(WITH_CRASHREPORTER)
-        QScopedPointer<CrashReporter::Handler> _crashHandler;
-#endif
-
         // options from command line:
-        bool _debugMode;
+        bool _debugMode{false};
 
         void parseOptions(const QStringList &);
         void initLogging() noexcept(false);
         void setupProxy();
+        bool serverCrashedRecently(int seconds = 60 /*Allow one server self restart per minute (default)*/);
+        bool clientCrashedRecently(int second = 60 /*Allow one client self restart per minute (default)*/);
 
         ExitCode migrateConfiguration(bool &proxyNotSupported);
         ExitCode updateUserInfo(User &user);
@@ -155,7 +147,9 @@ class AppServer : public SharedTools::QtSingleApplication {
                              bool firstInit = false);
         ExitCode stopSyncPal(int syncDbId, bool pausedByUser = false, bool quit = false, bool clear = false);
 
-        ExitCode createAndStartVfs(const Sync &sync, ExitCause &exitCause);
+        ExitCode createAndStartVfs(const Sync &sync, ExitCause &exitCause) noexcept;
+        // Call createAndStartVfs. Issue warnings, errors and pause the synchronization `sync` if needed.
+        ExitCode tryCreateAndStartVfs(Sync &sync) noexcept;
         ExitCode stopVfs(int syncDbId, bool unregister);
 
         ExitCode setSupportsVirtualFiles(int syncDbId, bool value);
@@ -165,6 +159,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         ExitCode processMigratedSyncOnceConnected(int userDbId, int driveId, Sync &sync, QSet<QString> &blackList,
                                                   QSet<QString> &undecidedList, bool &syncUpdated);
         ExitCode clearErrors(int syncDbId, bool autoResolved = false);
+        // Check if the synchronization `sync` is registred in the sync database and
+        // if the `sync` folder does not contain any other sync subfolder.
         ExitCode checkIfSyncIsValid(const Sync &sync);
 
         void sendUserAdded(const UserInfo &userInfo);
@@ -188,6 +184,11 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
         void sendErrorsCleared(int syncDbId);
+
+        // See types.h -> AppStateKey for the possible values of status
+        void cancelLogUpload();
+        void uploadLog(bool includeArchivedLogs);
+        void sendLogUploadStatusUpdated(LogUploadState status, int percent);
 
         void startSyncPals();
         void stopSyncTask(int syncDbId);  // Long task which can block GUI: post-poned in the event loop by means of timer
@@ -230,6 +231,11 @@ class AppServer : public SharedTools::QtSingleApplication {
                                                  SyncFileInstruction status, int count);
         static void sendShowNotification(const QString &title, const QString &message);
 
+        void showSettings();
+        void showSynthesis();
+
+        void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
+
     private slots:
         void onLoadInfo();
         void onUpdateSyncsProgress();
@@ -239,7 +245,8 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onShowWindowsUpdateErrorDialog();
         void onCleanup();
         void onRequestReceived(int id, RequestNum num, const QByteArray &params);
-        void onStartClientReceived();
+        void onRestartClientReceived();
+        void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
 };
 
 

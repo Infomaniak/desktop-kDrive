@@ -150,7 +150,7 @@ bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const S
     isExcluded = false;
     ioError = IoErrorSuccess;
 
-    if (!checkIfIsAnExcludedHiddenFile(basePath, relativePath, isExcluded, ioError)) {
+    if (!checkIfIsExcludedBecauseHidden(basePath, relativePath, isExcluded, ioError)) {
         return false;
     }
 
@@ -158,13 +158,13 @@ bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const S
         return true;
     }
 
-    isExcluded = isExcludedTemplate(relativePath, isWarning);
+    isExcluded = isExcludedByTemplate(relativePath, isWarning);
 
     return true;
 }
 
-bool ExclusionTemplateCache::checkIfIsAnExcludedHiddenFile(const SyncPath &basePath, const SyncPath &relativePath,
-                                                           bool &isExcluded, IoError &ioError) noexcept {
+bool ExclusionTemplateCache::checkIfIsExcludedBecauseHidden(const SyncPath &basePath, const SyncPath &relativePath,
+                                                            bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
     ioError = IoErrorSuccess;
 
@@ -181,7 +181,7 @@ bool ExclusionTemplateCache::checkIfIsAnExcludedHiddenFile(const SyncPath &baseP
         }
 
         if (isHidden) {
-            if (ParametersCache::instance()->parameters().extendedLog()) {
+            if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_INFO(Log::instance()->getLogger(),
                           L"Item \"" << Path2WStr(absolutePath).c_str() << L"\" rejected because it is hidden");
             }
@@ -192,16 +192,17 @@ bool ExclusionTemplateCache::checkIfIsAnExcludedHiddenFile(const SyncPath &baseP
     return true;
 }
 
-bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bool &isWarning) noexcept {
+bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, bool &isWarning) noexcept {
     const std::lock_guard<std::mutex> lock(_mutex);
     const std::string fileName = SyncName2Str(relativePath.filename().native());
     for (const auto &pattern : _regexPatterns) {
         const std::string &patternStr = pattern.second.templ();
         isWarning = pattern.second.warning();
+
         switch (pattern.second.complexity()) {
             case ExclusionTemplateComplexitySimplest: {
                 if (fileName == patternStr) {
-                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                    if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(),
                                   L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
                                              << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
@@ -233,7 +234,7 @@ bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bo
                 }
 
                 if (exclude) {
-                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                    if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(),
                                   L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
                                              << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");
@@ -245,7 +246,7 @@ bool ExclusionTemplateCache::isExcludedTemplate(const SyncPath &relativePath, bo
             case ExclusionTemplateComplexityComplex:
             default: {
                 if (std::regex_match(fileName, pattern.first)) {
-                    if (ParametersCache::instance()->parameters().extendedLog()) {
+                    if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(),
                                   L"Item \"" << Path2WStr(relativePath).c_str() << L"\" rejected because of rule \""
                                              << Utility::s2ws(pattern.second.templ()).c_str() << L"\"");

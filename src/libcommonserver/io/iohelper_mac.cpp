@@ -32,25 +32,6 @@ namespace KDC {
 
 bool isLocked(const SyncPath &path);
 
-bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
-    isDehydrated = false;
-    ioError = IoErrorSuccess;
-
-    static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
-
-    std::string value;
-    const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);
-    if (!result) {
-        return false;
-    }
-
-    if (!value.empty()) {
-        isDehydrated = (value != "F");
-    }
-
-    return true;
-}
-
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
     return (error == IoErrorNoSuchFileOrDirectory) || (error == IoErrorAttrNotFound) || (error == IoErrorAccessDenied);
@@ -122,6 +103,61 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
 
     // XAttr has been set
     ioError = IoErrorSuccess;
+    return true;
+}
+
+bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
+    isDehydrated = false;
+    ioError = IoErrorSuccess;
+
+    static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
+
+    std::string value;
+    const bool result = IoHelper::getXAttrValue(itemPath.native(), EXT_ATTR_STATUS, value, ioError);
+    if (!result) {
+        return false;
+    }
+
+    if (!value.empty()) {
+        isDehydrated = (value != "F");
+    }
+
+    return true;
+}
+
+bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
+    read = false;
+    write = false;
+    exec = false;
+
+    ItemType itemType;
+    const bool success = getItemType(path, itemType);
+    if (!success) {
+        LOGW_WARN(logger(), L"Failed to get item type: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        return false;
+    }
+    ioError = itemType.ioError;
+    if (ioError != IoErrorSuccess) {
+        return _isExpectedError(ioError);
+    }
+    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
+
+    std::error_code ec;
+    std::filesystem::perms perms =
+        isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
+    if (ec) {
+       const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
+        ioError = stdError2ioError(ec);
+        if (!exists) {
+            ioError = IoErrorNoSuchFileOrDirectory;
+        }
+        LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
+        return _isExpectedError(ioError);
+    }
+
+    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
+    write = isLocked(path) ? false : ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
+    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
     return true;
 }
 

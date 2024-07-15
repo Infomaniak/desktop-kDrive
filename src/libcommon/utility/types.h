@@ -21,7 +21,6 @@
 #include <string>
 #include <filesystem>
 #include <functional>
-#include <cctype>
 #include <optional>
 #include <unordered_set>
 #include <variant>
@@ -37,6 +36,8 @@ typedef std::string NodeId;
 typedef std::filesystem::path SyncPath;
 typedef std::filesystem::path::string_type SyncName;
 typedef std::filesystem::path::value_type SyncChar;
+typedef std::filesystem::directory_entry DirectoryEntry;
+typedef std::filesystem::directory_options DirectoryOptions;
 
 typedef std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring> SigValueType;
 
@@ -91,6 +92,10 @@ typedef std::function<void(const char *)> ExecuteCommand;
 
 typedef enum { ReplicaSideUnknown, ReplicaSideLocal, ReplicaSideRemote } ReplicaSide;
 
+inline ReplicaSide otherSide(ReplicaSide side) {
+    return side == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal;
+}
+
 typedef enum {
     NodeTypeUnknown,
     NodeTypeFile,  // File or symlink
@@ -118,11 +123,14 @@ typedef enum {
     ExitCodeBackError,    // Error in an API call
     ExitCodeSystemError,  // IO error etc.
     ExitCodeFatalError,   // SyncPal fatal error
-    ExitCodeInconsistencyError,
+    ExitCodeLogicError,   // Consequence of faulty logic within the program such as violating logical preconditions or class
+                          // invariants and may be preventable
     ExitCodeTokenRefreshed,
     ExitCodeNoWritePermission,
     ExitCodeRateLimited,
-    ExitCodeInvalidSync  // The sync configuration is not valid
+    ExitCodeInvalidSync,  // The sync configuration is not valid
+    ExitCodeOperationCanceled,
+    ExitCodeInvalidOperation
 } ExitCode;
 
 typedef enum {
@@ -161,7 +169,9 @@ typedef enum {
     ExitCauseNetworkTimeout,
     ExitCauseSocketsDefuncted,  // macOS: sockets defuncted by kernel
     ExitCauseNoSearchPermission,
-    ExitCauseNotFound
+    ExitCauseNotFound,
+    ExitCauseQuotaExceeded,
+    ExitCauseFullListParsingError
 } ExitCause;
 
 // Conflict types ordered by priority
@@ -198,7 +208,10 @@ typedef enum {
     InconsistencyTypeReservedName = 0x04,
     InconsistencyTypeNameLength = 0x08,
     InconsistencyTypePathLength = 0x10,
-    InconsistencyTypeNotYetSupportedChar = 0x20  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+    InconsistencyTypeNotYetSupportedChar =
+        0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+    InconsistencyTypeDuplicateNames =
+        0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
 } InconsistencyType;
 
 inline InconsistencyType operator|(InconsistencyType a, InconsistencyType b) {
@@ -337,7 +350,11 @@ typedef enum {
     IoErrorFileExists,
     IoErrorFileNameTooLong,
     IoErrorInvalidArgument,
+    IoErrorInvalidDirectoryIterator,
+    IoErrorInvalidFileName,
     IoErrorIsADirectory,
+    IoErrorIsAFile,
+    IoErrorMaxDepthExceeded,
     IoErrorNoSuchFileOrDirectory,
     IoErrorResultOutOfRange,
     IoErrorUnknown
@@ -354,4 +371,21 @@ struct ItemType {
         // `LinkTypeUnknown`) and its target doesn't exist.
         IoError ioError{IoErrorSuccess};
 };
+
+enum class AppStateKey {
+    // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
+    LastServerSelfRestartDate,
+    LastClientSelfRestartDate,
+    LastSuccessfulLogUploadDate,
+    LastLogUploadArchivePath,
+    LogUploadState,
+    LogUploadPercent,
+    Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
+};
+
+enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
+
+// Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
+using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
+
 }  // namespace KDC

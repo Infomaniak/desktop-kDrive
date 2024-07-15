@@ -37,4 +37,26 @@ bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydra
     return true;
 }
 
+bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError) noexcept {
+    read = false;
+    write = false;
+    exec = false;
+
+    std::error_code ec;
+    std::filesystem::perms perms = std::filesystem::status(path, ec).permissions();
+    if (ec) {
+        const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
+        ioError = stdError2ioError(ec);
+        if (!exists) {
+            ioError = IoErrorNoSuchFileOrDirectory;
+        }
+        return _isExpectedError(ioError);
+    }
+
+    read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
+    write = ((perms & std::filesystem::perms::owner_write) != std::filesystem::perms::none);
+    exec = ((perms & std::filesystem::perms::owner_exec) != std::filesystem::perms::none);
+    return true;
+}
+
 }  // namespace KDC

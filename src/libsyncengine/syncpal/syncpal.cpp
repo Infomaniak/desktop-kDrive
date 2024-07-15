@@ -47,6 +47,7 @@
 #include "jobs/local/localmovejob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/jobmanager.h"
+#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "tmpblacklistmanager.h"
 
@@ -57,54 +58,7 @@ namespace KDC {
 #define SYNCDB _syncDbId
 
 SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted)
-    : _logger(Log::instance()->getLogger()),
-      _syncDbId(0),
-      _driveDbId(0),
-      _driveId(0),
-      _accountDbId(0),
-      _userDbId(0),
-      _userId(0),
-      _driveName(std::string()),
-      _localPath(SyncPath()),
-      _targetPath(SyncPath()),
-      _vfsMode(VirtualFileModeOff),
-      _restart(false),
-      _isPaused(false),
-      _syncHasFullyCompleted(hasFullyCompleted),
-      _addError(nullptr),
-      _addCompletedItem(nullptr),
-      _vfsIsExcluded(nullptr),
-      _vfsExclude(nullptr),
-      _vfsPinState(nullptr),
-      _vfsSetPinState(nullptr),
-      _vfsStatus(nullptr),
-      _vfsCreatePlaceholder(nullptr),
-      _vfsConvertToPlaceholder(nullptr),
-      _vfsUpdateMetadata(nullptr),
-      _vfsUpdateFetchStatus(nullptr),
-      _syncDb(nullptr),
-      _interruptSync(std::shared_ptr<bool>(new bool(false))),
-      _localSnapshot(nullptr),
-      _remoteSnapshot(nullptr),
-      _localOperationSet(nullptr),
-      _remoteOperationSet(nullptr),
-      _localUpdateTree(nullptr),
-      _remoteUpdateTree(nullptr),
-      _conflictQueue(nullptr),
-      _syncOps(nullptr),
-      _syncPalWorker(nullptr),
-      _localFSObserverWorker(nullptr),
-      _remoteFSObserverWorker(nullptr),
-      _computeFSOperationsWorker(nullptr),
-      _localUpdateTreeWorker(nullptr),
-      _remoteUpdateTreeWorker(nullptr),
-      _platformInconsistencyCheckerWorker(nullptr),
-      _conflictFinderWorker(nullptr),
-      _conflictResolverWorker(nullptr),
-      _operationsGeneratorWorker(nullptr),
-      _operationsSorterWorker(nullptr),
-      _executorWorker(nullptr),
-      _tmpBlacklistManager(nullptr) {
+    : _logger(Log::instance()->getLogger()), _syncHasFullyCompleted(hasFullyCompleted) {
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init : " << Utility::formatSyncPath(syncDbPath).c_str());
 
     if (!createOrOpenDb(syncDbPath, version)) {
@@ -114,54 +68,7 @@ SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, bool ha
     createSharedObjects();
 }
 
-SyncPal::SyncPal(int syncDbId, const std::string &version)
-    : _logger(Log::instance()->getLogger()),
-      _syncDbId(syncDbId),
-      _driveDbId(0),
-      _driveId(0),
-      _accountDbId(0),
-      _userDbId(0),
-      _userId(0),
-      _driveName(std::string()),
-      _localPath(SyncPath()),
-      _targetPath(SyncPath()),
-      _vfsMode(VirtualFileModeOff),
-      _restart(false),
-      _isPaused(false),
-      _syncHasFullyCompleted(false),
-      _addError(nullptr),
-      _addCompletedItem(nullptr),
-      _vfsIsExcluded(nullptr),
-      _vfsExclude(nullptr),
-      _vfsPinState(nullptr),
-      _vfsSetPinState(nullptr),
-      _vfsStatus(nullptr),
-      _vfsCreatePlaceholder(nullptr),
-      _vfsConvertToPlaceholder(nullptr),
-      _vfsUpdateMetadata(nullptr),
-      _vfsUpdateFetchStatus(nullptr),
-      _syncDb(nullptr),
-      _interruptSync(std::shared_ptr<bool>(new bool(false))),
-      _localSnapshot(nullptr),
-      _remoteSnapshot(nullptr),
-      _localOperationSet(nullptr),
-      _remoteOperationSet(nullptr),
-      _localUpdateTree(nullptr),
-      _remoteUpdateTree(nullptr),
-      _conflictQueue(nullptr),
-      _syncOps(nullptr),
-      _syncPalWorker(nullptr),
-      _localFSObserverWorker(nullptr),
-      _remoteFSObserverWorker(nullptr),
-      _computeFSOperationsWorker(nullptr),
-      _localUpdateTreeWorker(nullptr),
-      _remoteUpdateTreeWorker(nullptr),
-      _platformInconsistencyCheckerWorker(nullptr),
-      _conflictFinderWorker(nullptr),
-      _conflictResolverWorker(nullptr),
-      _operationsGeneratorWorker(nullptr),
-      _operationsSorterWorker(nullptr),
-      _executorWorker(nullptr) {
+SyncPal::SyncPal(int syncDbId, const std::string &version) : _logger(Log::instance()->getLogger()), _syncDbId(syncDbId) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
 
     // Get sync
@@ -258,9 +165,6 @@ SyncPal::SyncPal(int syncDbId, const std::string &version)
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
 
-#ifdef __APPLE__
-    fixFileNamesWithColon(_syncDb, _localPath);
-#endif
     fixInconsistentFileNames(_syncDb, _localPath);
     fixNodeTableDeleteItemsWithNullParentNodeId();
 
@@ -339,7 +243,7 @@ SyncStep SyncPal::step() const {
 }
 
 ExitCode SyncPal::fileStatus(ReplicaSide side, const SyncPath &path, SyncFileStatus &status) const {
-    if (_tmpBlacklistManager && _tmpBlacklistManager->isTmpBlacklisted(side, path)) {
+    if (_tmpBlacklistManager && _tmpBlacklistManager->isTmpBlacklisted(path, side)) {
         if (path == Utility::sharedFolderName()) {
             status = SyncFileStatusSuccess;
         } else {
@@ -521,7 +425,7 @@ bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTi
 
 bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
                                    bool &finished) {
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOGW_SYNCPAL_DEBUG(_logger,
                            L"vfsUpdateFetchStatus : " << Utility::formatSyncPath(path).c_str() << L" received=" << received);
     }
@@ -612,6 +516,8 @@ void SyncPal::createSharedObjects() {
     // Create shared objects
     _localSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
     _remoteSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
+    _localSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
+    _remoteSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
     _localOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
     _remoteOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
     _localUpdateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
@@ -687,6 +593,8 @@ void SyncPal::free() {
     _interruptSync.reset();
     _localSnapshot.reset();
     _remoteSnapshot.reset();
+    _localSnapshotCopy.reset();
+    _remoteSnapshotCopy.reset();
     _localOperationSet.reset();
     _remoteOperationSet.reset();
     _localUpdateTree.reset();
@@ -698,6 +606,8 @@ void SyncPal::free() {
     ASSERT(_interruptSync.use_count() == 0);
     ASSERT(_localSnapshot.use_count() == 0);
     ASSERT(_remoteSnapshot.use_count() == 0);
+    ASSERT(_localSnapshotCopy.use_count() == 0);
+    ASSERT(_remoteSnapshotCopy.use_count() == 0);
     ASSERT(_localOperationSet.use_count() == 0);
     ASSERT(_remoteOperationSet.use_count() == 0);
     ASSERT(_localUpdateTree.use_count() == 0);
@@ -797,6 +707,19 @@ void SyncPal::directDownloadCallback(UniqueId jobId) {
         return;
     }
 
+    if (directDownloadJobsMapIt->second->getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+        Error error;
+        error.setLevel(ErrorLevelNode);
+        error.setSyncDbId(syncDbId());
+        error.setRemoteNodeId(directDownloadJobsMapIt->second->remoteNodeId());
+        error.setPath(directDownloadJobsMapIt->second->localPath());
+        error.setExitCode(ExitCodeBackError);
+        error.setExitCause(ExitCauseNotFound);
+        addError(error);
+
+        vfsCancelHydrate(directDownloadJobsMapIt->second->localPath());
+    }
+
     _syncPathToDownloadJobMap.erase(directDownloadJobsMapIt->second->affectedFilePath());
     _directDownloadJobsMap.erase(directDownloadJobsMapIt);
 }
@@ -864,7 +787,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         job->setVfsUpdateFetchStatusCallback(vfsUpdateFetchStatusCallback);
 
 #ifdef __APPLE__
-        // Not done in Windows case: the pin state and the status must not be set by the download job because hydratation could be
+        // Not done in Windows case: the pin state and the status must not be set by the download job because hydration could be
         // asked for a move and so, the file place will change just after the dl.
         std::function<bool(const SyncPath &, PinState)> vfsSetPinStateCallback =
             std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);
@@ -1008,8 +931,8 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshot->exists(*nodeIdIt)
-                                                                : _remoteSnapshot->exists(*nodeIdIt);
+        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshotCopy->exists(*nodeIdIt)
+                                                                      : _remoteSnapshotCopy->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
@@ -1038,6 +961,22 @@ ExitCode SyncPal::updateSyncNode() {
     }
 
     return ExitCodeOk;
+}
+
+std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
+    if (copy) {
+        return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshotCopy : _remoteSnapshotCopy);
+    } else {
+        return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshot : _remoteSnapshot);
+    }
+}
+
+std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) {
+    return (side == ReplicaSide::ReplicaSideLocal ? _localOperationSet : _remoteOperationSet);
+}
+
+std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) {
+    return (side == ReplicaSide::ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree);
 }
 
 ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId) const {
@@ -1160,14 +1099,14 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
 
 ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap) {
     for (const auto &localFileInfo : localFileMap) {
-        SyncName newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
-            localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
-        SyncPath destPath = localFileInfo.second.parent_path() / newName;
-        LocalMoveJob renameJob(localFileInfo.second, destPath);
-        if (renameJob.runSynchronously() != ExitCodeOk) {
-            LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Utility::formatSyncPath(localFileInfo.second).c_str() << L" into "
-                                                          << Utility::formatSyncPath(destPath).c_str());
-            return renameJob.exitCode();
+        SyncPath destPath;
+        if (ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(
+                localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixTypeConflict, &destPath);
+            exitCode != ExitCodeOk) {
+            LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Path2WStr(localFileInfo.second).c_str() << L" into "
+                                                          << Path2WStr(destPath).c_str());
+
+            return exitCode;
         }
 
         DbNodeId dbId = -1;
@@ -1372,79 +1311,6 @@ bool SyncPal::isDownloadOngoing(const SyncPath &localPath) {
     return false;
 }
 
-#ifdef __APPLE__
-void SyncPal::fixFileNamesWithColon(std::shared_ptr<SyncDb> syncDb, const SyncPath &localPath) {
-    if (syncDb->fromVersion().empty()) {
-        // New DB
-        return;
-    }
-
-    // Fix file names with ':' character
-    std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(syncDb->fromVersion());
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.2")) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Fix file names with colon");
-
-        std::vector<DbNode> dbNodeList;
-        if (!syncDb->selectAllRenamedNodes(dbNodeList, true)) {
-            LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::selectAllRenamedNodes");
-            return;
-        }
-
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Rename " << dbNodeList.size() << " files");
-        for (DbNode &dbNode : dbNodeList) {
-            // Get old local path
-            SyncPath oldLocalPath;
-            SyncPath remotePath;
-            bool found;
-            if (!syncDb->path(dbNode.nodeId(), oldLocalPath, remotePath, found)) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::path");
-                continue;
-            }
-            if (!found) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
-                continue;
-            }
-
-            // Get new local name
-            SyncName newLocalName;
-            if (!PlatformInconsistencyCheckerUtility::instance()->fixNameForbiddenChars(dbNode.nameRemote(), newLocalName)) {
-                // No fix done
-                newLocalName = dbNode.nameRemote();
-            }
-
-            // Update local name in DB
-            dbNode.setNameLocal(newLocalName);
-            if (!syncDb->updateNode(dbNode, found)) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::updateNode");
-                continue;
-            }
-            if (!found) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
-                continue;
-            }
-
-            // Get new local path
-            SyncPath newLocalPath;
-            if (!syncDb->path(dbNode.nodeId(), newLocalPath, remotePath, found)) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::path");
-                continue;
-            }
-            if (!found) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
-                continue;
-            }
-
-            // Rename file
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Rename " << Utility::formatSyncPath(localPath / oldLocalPath).c_str() << L" to "
-                                  << Utility::formatSyncPath(localPath / newLocalPath).c_str());
-            LocalMoveJob moveJob(localPath / oldLocalPath, localPath / newLocalPath);
-            moveJob.runSynchronously();
-        }
-    }
-}
-#endif
-
 void SyncPal::fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const SyncPath &path) {
     if (syncDb->fromVersion().empty()) {
         // New DB
@@ -1506,6 +1372,10 @@ void SyncPal::increaseErrorCount(const NodeId &nodeId, NodeType type, const Sync
     _tmpBlacklistManager->increaseErrorCount(nodeId, type, relativePath, side);
 }
 
+int SyncPal::getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept {
+    return _tmpBlacklistManager->getErrorCount(nodeId, side);
+}
+
 void SyncPal::blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side) {
     _tmpBlacklistManager->blacklistItem(nodeId, relativePath, side);
 }
@@ -1516,6 +1386,11 @@ void SyncPal::refreshTmpBlacklist() {
 
 void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) {
     _tmpBlacklistManager->removeItemFromTmpBlacklist(nodeId, side);
+}
+
+void SyncPal::copySnapshots() {
+    _localSnapshotCopy = _localSnapshot;
+    _remoteSnapshotCopy = _remoteSnapshot;
 }
 
 }  // namespace KDC

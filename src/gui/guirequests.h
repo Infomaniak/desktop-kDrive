@@ -91,10 +91,10 @@ struct GuiRequests {
                                      QString &errorDescr);
         static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);
         static ExitCode addSync(int userDbId, int accountId, int driveId, const QString localFolderPath,
-                                const QString &serverFolderPath, const QString &serverFolderNodeId, bool smartSync,
+                                const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 QSet<QString> blackList, QSet<QString> whiteList, int &syncDbId);
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                const QString &serverFolderNodeId, bool smartSync, QSet<QString> blackList,
+                                const QString &serverFolderNodeId, bool liteSync, QSet<QString> blackList,
                                 QSet<QString> whiteList, int &syncDbId);
         static ExitCode startSyncs(int userDbId);
         static ExitCode getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
@@ -121,6 +121,10 @@ struct GuiRequests {
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);
         static ExitCode setLaunchOnStartup(bool enabled);
+        static ExitCode getAppState(AppStateKey key, AppStateValue &value);
+        static ExitCode updateAppState(AppStateKey key, const AppStateValue &value);
+        static ExitCode getLogDirEstimatedSize(uint64_t &size);
+        static ExitCode sendLogToSupport(bool sendArchivedLogs);
+        static ExitCode cancelLogUploadToSupport();
 };
-
 }  // namespace KDC

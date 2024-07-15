@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <vector>
 #include <optional>
-#include <unordered_set>
 #include <unordered_map>
 
 namespace KDC {
@@ -64,8 +63,6 @@ class Node {
         inline ReplicaSide side() const { return _side; }
         inline SyncName name() const { return _name; }
         inline NodeType type() const { return _type; }
-        inline SyncName validLocalName() const { return _validLocalName; }
-        inline SyncName finalLocalName() const { return _validLocalName.empty() ? _name : _validLocalName; }
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
         inline int changeEvents() const { return _changeEvents; }
         inline std::optional<SyncTime> createdAt() const { return _createdAt; }
@@ -84,9 +81,6 @@ class Node {
 
         inline void setIdb(const std::optional<DbNodeId> &idb) { _idb = idb; }
         inline void setName(const SyncName &name) { _name = Utility::normalizedSyncName(name); }
-        inline void setValidLocalName(const SyncName &validLocalName) {
-            _validLocalName = Utility::normalizedSyncName(validLocalName);
-        }
         inline void setInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType = newInconsistencyType; }
         inline void addInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType |= newInconsistencyType; }
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
@@ -113,28 +107,27 @@ class Node {
         inline void insertChangeEvent(const OperationType &op) { _changeEvents |= op; }
         inline void deleteChangeEvent(const OperationType &op) { _changeEvents ^= op; }
         inline void clearChangeEvents() { _changeEvents = OperationTypeNone; }
-        inline bool hasChangeEvent() { return _changeEvents != OperationTypeNone; }
-        inline bool hasChangeEvent(const int op) { return _changeEvents & op; }
+        inline bool hasChangeEvent() const { return _changeEvents != OperationTypeNone; }
+        inline bool hasChangeEvent(const int op) const { return _changeEvents & op; }
 
         inline void insertConflictAlreadyConsidered(const ConflictType &conf) { _conflictsAlreadyConsidered.push_back(conf); }
         inline void clearConflictAlreadyConsidered() { _conflictsAlreadyConsidered.clear(); }
 
-        bool isEditFromDeleteCreate();
+        bool isEditFromDeleteCreate() const;
 
-        bool isRoot() const;
-        bool isCommonDocumentsFolder() const;
-        bool isSharedFolder() const;
+        [[nodiscard]] bool isRoot() const;
+        [[nodiscard]] bool isCommonDocumentsFolder() const;
+        [[nodiscard]] bool isSharedFolder() const;
 
-        SyncPath getPath(bool localName = false);
+        [[nodiscard]] SyncPath getPath() const;
 
-        inline bool isTmp() const { return _isTmp; }
+        [[nodiscard]] inline bool isTmp() const { return _isTmp; }
         inline void setIsTmp(bool newIsTmp) { _isTmp = newIsTmp; }
 
     private:
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSideUnknown;
         SyncName _name;
-        SyncName _validLocalName;
         InconsistencyType _inconsistencyType = InconsistencyTypeNone;
         NodeType _type = NodeTypeUnknown;
         int _changeEvents = OperationTypeNone;

@@ -48,7 +48,6 @@ class ExecutorWorker : public OperationProcessor {
 
         void handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError);
         void checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
-        void blacklistLocalItem(const SyncPath &absolutePath);
         bool generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
         bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path, bool &isDehydratedPlaceholder);
         bool createPlaceholder(const SyncPath &relativeLocalPath);
@@ -71,7 +70,7 @@ class ExecutorWorker : public OperationProcessor {
 
         void waitForAllJobsToFinish(bool &hasError);
         bool deleteFinishedAsyncJobs();
-        bool isManagedBackError(const ExitCause exitCause, bool &isInconsistencyIssue);
+        bool handleManagedBackError(ExitCause jobExitCause, SyncOpPtr syncOp, bool isInconsistencyIssue, bool downloadImpossible);
         bool handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpPtr syncOp, const SyncPath &relativeLocalPath);
         void handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &relativeLocalPath);
         void sendProgress();
@@ -95,10 +94,10 @@ class ExecutorWorker : public OperationProcessor {
         inline bool isLiteSyncActivated() { return _syncPal->_vfsMode != VirtualFileModeOff; }
 
         inline std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) {
-            return syncOp->targetSide() == ReplicaSideRemote ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
+            return _syncPal->updateTree(otherSide(syncOp->targetSide()));
         }
         inline std::shared_ptr<UpdateTree> targetUpdateTree(SyncOpPtr syncOp) {
-            return syncOp->targetSide() == ReplicaSideLocal ? _syncPal->_localUpdateTree : _syncPal->_remoteUpdateTree;
+            return _syncPal->updateTree(syncOp->targetSide());
         }
 
         void increaseErrorCount(SyncOpPtr syncOp);
@@ -107,10 +106,9 @@ class ExecutorWorker : public OperationProcessor {
         std::queue<UniqueId> _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
         std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
-
         std::list<UniqueId> _opList;
+        std::recursive_mutex _mutex;
 
-        std::mutex _mutex;
         ExitCode _executorExitCode = ExitCodeUnknown;
         ExitCause _executorExitCause = ExitCauseUnknown;
 

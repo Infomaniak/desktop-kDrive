@@ -11,6 +11,7 @@
 	- [OpenSSL](#openssl)
 	- [Poco](#poco)
 	- [xxHash](#xxhash)
+	- [libzip](#libzip)
 	- [Sparkle](#sparkle)
 	- [Packages](#packages)
 	- [Notarytool](#notarytool)
@@ -102,15 +103,19 @@ sudo cmake --build . --target install
 
 Download and build CPPUnit :
 
+You will probably need to install `automake` and `libtool`:
+```
+brew install automake
+brew install libtool
+```
+
+CPPUnit must be build in single architecture. Replace with `x86_64` or `arm64` in the following command:
 ```bash
 cd ~/Projects
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 cd cppunit
 ./autogen.sh
-# If needed, run :
-	# brew install automake
-	# brew install libtool
-./configure CXXFLAGS="-arch x86_64 -arch arm64 -mmacosx-version-min=10.15"
+./configure CXXFLAGS="-arch <your_arch> -mmacosx-version-min=10.15"
 make
 sudo make install
 ```
@@ -123,9 +128,9 @@ Configure x86_64 :
 
 ```bash
 cd ~/Projects
-git clone git://git.openssl.org/openssl.git
+git clone https://github.com/openssl/openssl.git
 cd openssl
-git checkout tags/openssl_3.2.1
+git checkout tags/openssl-3.2.1
 cd ..
 mv openssl openssl.x86_64
 cp -Rf openssl.x86_64 openssl.arm64
@@ -158,6 +163,8 @@ sudo cp openssl.multi/* /usr/local/lib/
 
 ## Poco
 
+> :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
+
 Download and build Poco :
 
 ```bash
@@ -187,9 +194,36 @@ cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET=
 sudo cmake --build . --target install
 ```
 
+## libzip  
+
+> :warning: because the cmake builds in multi-architecture, `libzip` and its dependencies (in this case `zstd` must be installed in multi-architecture as well)
+
+Install `zstd` for multi-architecture :
+```bash
+cd ~/Projects
+curl -o zstd-1.5.6.tar.gz -L https://github.com/facebook/zstd/archive/v1.5.6.tar.gz
+tar xzf zstd-1.5.6.tar.gz
+mkdir -p zstd-1.5.6/build/cmake/build && cd zstd-1.5.6/build/cmake/build
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" ..
+cmake --build . --config Release
+sudo cmake --build . --config Release --target install
+```
+
+Clone and install libzip
+```bash
+cd ~/Projects
+git clone https://github.com/nih-at/libzip.git
+cd libzip
+git checkout tags/v1.10.1
+mkdir build && cd build
+cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -Dzstd_SHARED_LIBRARY="/usr/local/lib/libzstd.1.5.6.dylib" -Dzstd_INCLUDE_DIR="/usr/local/include" ..
+make
+sudo make install
+```
+
 ## Sparkle
 
-Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.3.1) version 2.3.1 and copy the Sparkle directory in `~` and name it "Sparkle"  
+Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.2) version 2.6.2 and copy the Sparkle directory in `~` and name it "Sparkle"  
 Copy and paste **Sparkle.Frameworks** in `~/Library/Frameworks` (create the directory is needed)
 
 ## Packages
@@ -207,6 +241,11 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 ```
 
 # Build in Debug
+
+## Linking dependencies
+
+In order for CMake to be able to find all dependencies, you might need to define `DYLD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
+Either add `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib` in your personal `.zshrc` file or add the environment variable in your IDE.
 
 ## Using Qt Creator
 
@@ -228,7 +267,6 @@ In the project build settings, paste the following lines in the Initial Configur
 -DKDRIVE_THEME_DIR=/Users/<user>/Projects/desktop-kDrive/infomaniak
 -DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/bin
 -DBUILD_TESTING=OFF
--DWITH_CRASHREPORTER=OFF
 %{CMAKE_OSX_ARCHITECTURES:DefaultFlag}
 ```
 
@@ -236,10 +274,6 @@ Build - Build Steps - Build :
 `cmake --build . --target all install`
 
 Build - Build Steps - Custom Process Step 1 :  
-`Command	: %{Qt:QT_INSTALL_BINS}/macdeployqt`  
-`Arguments	: %{buildDir}/bin/kDrive.app -no-strip -executable=%{buildDir}/bin/kDrive.app/Contents/MacOS/kDrive_client`
-
-Build - Build Steps - Custom Process Step 2 :  
 `Command	: /Users/<user name>/Projects/kdrive/admin/osx/sign_app_debug.sh`  
 `Arguments	: %{ActiveProject:RunConfig:Executable:FileName} %{buildDir}/bin/kDrive.app "Developer ID Application: Infomaniak Network SA (864VDCS2QY)" "864VDCS2QY" "com.infomaniak.drive.desktopclient" 2>&1 1>/dev/null`
 

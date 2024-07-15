@@ -18,20 +18,20 @@
 
 #pragma once
 
-#include "parmslib.h"
+#include "libparms/parmslib.h"
 #include "parameters.h"
 #include "user.h"
 #include "account.h"
 #include "drive.h"
 #include "sync.h"
 #include "exclusiontemplate.h"
-#include <list>
 #ifdef __APPLE__
 #include "exclusionapp.h"
 #endif
 #include "error.h"
 #include "migrationselectivesync.h"
-#include "db/db.h"
+#include "libcommonserver/db/db.h"
+
 
 namespace KDC {
 
@@ -122,17 +122,27 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool insertMigrationSelectiveSync(const MigrationSelectiveSync &migrationSelectiveSync);
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
+        bool selectAppState(AppStateKey key, AppStateValue &value, bool &found);
+        bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found);  // update or insert
+
     private:
-        static std::shared_ptr<ParmsDb> _instance;
+        friend class TestParmsDb;
         bool _test;
+
+        static std::shared_ptr<ParmsDb> _instance;
 
         ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test);
 
         bool insertDefaultParameters();
+        bool insertDefaultAppState();
+        bool insertAppState(AppStateKey key, const std::string &value);
         bool updateExclusionTemplates();
+
+        bool createAppState();
+        bool prepareAppState();
+
 #ifdef __APPLE__
         bool updateExclusionApps();
 #endif
 };
-
 }  // namespace KDC

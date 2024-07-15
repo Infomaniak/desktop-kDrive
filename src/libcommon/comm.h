@@ -18,10 +18,6 @@
 
 #pragma once
 
-#include <QColor>
-#include <QDataStream>
-#include <QIODevice>
-
 #define COMM_SHORT_TIMEOUT 1000
 #define COMM_AVERAGE_TIMEOUT 10000
 #define COMM_LONG_TIMEOUT 60000
@@ -110,6 +106,11 @@ typedef enum {
     REQUEST_NUM_UTILITY_HASSYSTEMLAUNCHONSTARTUP,
     REQUEST_NUM_UTILITY_HASLAUNCHONSTARTUP,
     REQUEST_NUM_UTILITY_SETLAUNCHONSTARTUP,
+    REQUEST_NUM_UTILITY_SET_APPSTATE,
+    REQUEST_NUM_UTILITY_GET_APPSTATE,
+    REQUEST_NUM_UTILITY_SEND_LOG_TO_SUPPORT,
+    REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT,
+    REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE,
     REQUEST_NUM_UPDATER_VERSION,
     REQUEST_NUM_UPDATER_ISKDCUPDATER,
     REQUEST_NUM_UPDATER_ISSPARKLEUPDATER,
@@ -156,38 +157,6 @@ typedef enum {
     SIGNAL_NUM_UTILITY_ERROR_ADDED,
     SIGNAL_NUM_UTILITY_ERRORS_CLEARED,
     SIGNAL_NUM_UTILITY_SHOW_SETTINGS,
-    SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS
+    SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS,
+    SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED,
 } SignalNum;
-
-struct ArgsReader {
-        template <class... Args>
-        explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
-            read(args...);
-        }
-        template <class T>
-        void read(const T p) {
-            stream << p;
-        }
-        template <class T, class... Args>
-        void read(const T p, Args... args) {
-            stream << p;
-            read(args...);
-        }
-        explicit operator QByteArray() const { return params; }
-        QByteArray params;
-        QDataStream stream;
-};
-
-struct ArgsWriter {
-        explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
-        template <class T>
-        void write(T &r) {
-            stream >> r;
-        }
-        template <class T, class... Args>
-        void write(T &r, Args... args) {
-            stream >> r;
-            extract(args...);
-        }
-        QDataStream stream;
-};

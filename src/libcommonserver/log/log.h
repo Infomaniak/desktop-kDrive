@@ -22,6 +22,8 @@
 #include "libcommon/utility/types.h"
 
 #include <log4cplus/logger.h>
+#include <log4cplus/loggingmacros.h>
+
 #include <sentry.h>
 
 namespace KDC {
@@ -161,16 +163,23 @@ class COMMONSERVER_EXPORT Log {
         inline log4cplus::Logger getLogger() { return _logger; }
         bool configure(bool useLog, LogLevel logLevel, bool purgeOldLogs);
 
+		/*! Returns the path of the log file.
+         * \return The path of the log file.
+         */
+        SyncPath getLogFilePath() const;
+
         static const std::wstring instanceName;
         static const std::wstring rfName;
         static const std::wstring rfPattern;
         static const int rfMaxBackupIdx;
 
     private:
-        Log(const log4cplus::tstring &filePath);
-
+        friend class TestLog;
+        friend class TestIo;
+        explicit Log(const log4cplus::tstring &filePath);
         static std::shared_ptr<Log> _instance;
         log4cplus::Logger _logger;
+        SyncPath _filePath;
 };
 
 }  // namespace KDC
