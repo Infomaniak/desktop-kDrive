@@ -760,7 +760,7 @@ void TestConflictResolverWorker::testMoveMoveCycle2() {
     lNodeAA->deleteChildren(lNodeAAA);
     lNodeAB->insertChildren(lNodeAAA);
 
-    // Simulate move of node AB to AA, on remote replica
+    // Simulate move of node AB to AAA, on remote replica
     std::shared_ptr<Node> rNodeA = _syncPal->_remoteUpdateTree->getNodeById("rA");
     std::shared_ptr<Node> rNodeAA = _syncPal->_remoteUpdateTree->getNodeById("rAA");
     std::shared_ptr<Node> rNodeAAA = _syncPal->_remoteUpdateTree->getNodeById("rAAA");
