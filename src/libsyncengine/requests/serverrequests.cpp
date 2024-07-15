@@ -888,8 +888,8 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
-        case ExitCodeInconsistencyError: {
-            return false;
+        case ExitCodeLogicError: {
+            return true;
         }
         case ExitCodeDataError: {
             switch (error.exitCause()) {

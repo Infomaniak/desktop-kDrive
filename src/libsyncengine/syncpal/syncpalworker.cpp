@@ -150,8 +150,8 @@ void SyncPalWorker::execute() {
                        (stepWorkers[1] && workersExitCode[1] == ExitCodeDataError) ||
                        (stepWorkers[0] && workersExitCode[0] == ExitCodeBackError) ||
                        (stepWorkers[1] && workersExitCode[1] == ExitCodeBackError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeInconsistencyError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeInconsistencyError)) {
+                       (stepWorkers[0] && workersExitCode[0] == ExitCodeLogicError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCodeLogicError)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop the step workers and restart a full sync
@@ -400,12 +400,10 @@ SyncStep SyncPalWorker::nextStep() const {
                 auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->ops().size()
                                                << " " << Utility::side2Str(side).c_str()
-                                               << " operations detected (# CREATE: "
-                                               << opsSet->nbOpsByType(OperationTypeCreate)
+                                               << " operations detected (# CREATE: " << opsSet->nbOpsByType(OperationTypeCreate)
                                                << ", # EDIT: " << opsSet->nbOpsByType(OperationTypeEdit)
                                                << ", # MOVE: " << opsSet->nbOpsByType(OperationTypeMove)
-                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete)
-                                               << ")");
+                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete) << ")");
             };
             logNbOps(ReplicaSideLocal);
             logNbOps(ReplicaSideRemote);
