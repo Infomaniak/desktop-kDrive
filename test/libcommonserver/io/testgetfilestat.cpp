@@ -160,7 +160,7 @@ void TestIo::testGetFileStat() {
 #if defined(__APPLE__) || defined(WIN32)
         const SyncPath path = temporaryDirectory.path() / "hidden_file.txt";
 #else
-        const SyncPath path = temporaryDirectory.path / ".hidden_file.txt";
+        const SyncPath path = temporaryDirectory.path() / ".hidden_file.txt";
 #endif
         {
             std::ofstream ofs(path);
