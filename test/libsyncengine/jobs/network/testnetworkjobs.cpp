@@ -210,7 +210,6 @@ void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT(resObj);
 
     bool newFileFound = false;
-
     for (const auto dataArray = resObj->getArray(dataKey); const auto &item : *dataArray) {
         const auto &dirObj = item.extract<Poco::JSON::Object::Ptr>();
         if (_dummyFileName == dirObj->get(nameKey)) {

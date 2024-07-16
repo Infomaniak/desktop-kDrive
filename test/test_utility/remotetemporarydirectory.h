@@ -32,7 +32,6 @@ class RemoteTemporaryDirectory {
 
     private:
         int _driveDbId{0};
-
         NodeId _dirId;
         SyncName _dirName;
 };

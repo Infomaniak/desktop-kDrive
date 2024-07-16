@@ -49,6 +49,6 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
 RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     DeleteJob job(_driveDbId, _dirId, "", "");
     job.setBypassCheck(true);
-    job.runSynchronously();
+    CPPUNIT_ASSERT(job.runSynchronously());
 }
 }  // namespace KDC
