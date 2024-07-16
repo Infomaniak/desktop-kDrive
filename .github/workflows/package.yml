@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - 'RELEASE-**'
+      - 'HOTFIX**'
   workflow_dispatch:
 
 concurrency:
