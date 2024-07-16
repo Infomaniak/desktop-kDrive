@@ -27,7 +27,6 @@
 #include "jobs/network/renamejob.h"
 #include "jobs/network/uploadjob.h"
 #include "jobs/network/upload_session/uploadsession.h"
-#include "jobs/network/getfileinfojob.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
@@ -53,8 +52,6 @@ ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::stri
     : OperationProcessor(syncPal, name, shortName) {}
 
 void ExecutorWorker::executorCallback(UniqueId jobId) {
-    const std::scoped_lock lock(_mutex);
-
     _terminatedJobs.push(jobId);
 }
 
@@ -167,7 +164,6 @@ void ExecutorWorker::execute() {
                 std::function<void(UniqueId)> callback =
                     std::bind(&ExecutorWorker::executorCallback, this, std::placeholders::_1);
                 JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
-                const std::scoped_lock lock(_mutex);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
             } else {
@@ -1561,8 +1557,6 @@ bool ExecutorWorker::enoughLocalSpace(SyncOpPtr syncOp) {
 }
 
 void ExecutorWorker::waitForAllJobsToFinish(bool &hasError) {
-    const std::scoped_lock lock(_mutex);
-
     while (!_ongoingJobs.empty()) {
         if (stopAsked()) {
             cancelAllOngoingJobs();
@@ -1593,8 +1587,6 @@ void ExecutorWorker::waitForAllJobsToFinish(bool &hasError) {
 }
 
 bool ExecutorWorker::deleteFinishedAsyncJobs() {
-    const std::scoped_lock lock(_mutex);
-
     bool hasError = false;
     while (!_terminatedJobs.empty()) {
         // Delete all terminated jobs
@@ -1874,8 +1866,6 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
 }
 
 void ExecutorWorker::sendProgress() {
-    const std::scoped_lock lock(_mutex);
-
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - _fileProgressTimer;
     if (elapsed_seconds.count() > SEND_PROGRESS_DELAY) {
         _fileProgressTimer = std::chrono::steady_clock::now();
@@ -2489,8 +2479,6 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
 }
 
 void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
-    const std::scoped_lock lock(_mutex);
-
     LOG_SYNCPAL_DEBUG(_logger, "Cancelling all queued executor jobs");
 
     // First, abort all jobs that are not running yet to avoid starting them for nothing
