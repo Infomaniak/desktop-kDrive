@@ -240,7 +240,7 @@ void TestLogArchiver::testCompressLogs(void) {
 
     {  // Test the progress callback with a cancel
         LOG_DEBUG(_logger, "Test log compression with progress callback and cancel");
-        TemporaryDirectory tempDir("logArchiver");
+        LocalTemporaryDirectory tempDir("logArchiver");
         std::ofstream logFile(tempDir.path / "test.log");
         for (int i = 0; i < 10000; i++) {
             logFile << "Test log line " << i << std::endl;
@@ -315,7 +315,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
     }
 
     {  // Test the generation of the archive
-        LocalTemporaryDirectory tempDir("GenerateLogsSupportArchive")
+        LocalTemporaryDirectory tempDir("GenerateLogsSupportArchive");
         SyncPath archivePath;
         ExitCause cause = ExitCauseUnknown;
         int previousPercent = 0;
@@ -340,7 +340,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive(void) {
     }
 
     {  // Test with a cancel
-        LocalTemporaryDirectory tempDir("GenerateLogsSupportArchiveCancel")
+        LocalTemporaryDirectory tempDir("GenerateLogsSupportArchiveCancel");
         SyncPath archiveFile;
         ExitCause cause = ExitCauseUnknown;
         std::function<bool(int)> progress = [](int) { return false; };

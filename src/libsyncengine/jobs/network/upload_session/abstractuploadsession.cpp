@@ -450,7 +450,7 @@ bool AbstractUploadSession::cancelSession() {
 
     try {
         LOG_INFO(_logger, "Aborting upload session: " << _sessionToken.c_str());
-        UploadSessionCancelJob cancelJob(_driveDbId, _filePath, _sessionToken);
+        auto cancelJob = createCancelJob();
 
         const ExitCode exitCode = cancelJob->runSynchronously();
         if (exitCode != ExitCodeOk) {

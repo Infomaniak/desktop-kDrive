@@ -129,9 +129,8 @@ typedef enum {
     ExitCodeNoWritePermission,
     ExitCodeRateLimited,
     ExitCodeInvalidSync,  // The sync configuration is not valid
-    ExitCodeInvalidOperation
-    ExitCodeOperationCanceled,
     ExitCodeInvalidOperation,
+    ExitCodeOperationCanceled,
     ExitCodeUpdateRequired,
 } ExitCode;
 
@@ -173,7 +172,7 @@ typedef enum {
     ExitCauseNoSearchPermission,
     ExitCauseNotFound,
     ExitCauseQuotaExceeded,
-    ExitCauseFullListParsingError
+    ExitCauseFullListParsingError,
     ExitCauseOperationCanceled
 } ExitCause;
 

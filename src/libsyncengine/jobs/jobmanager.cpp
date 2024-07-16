@@ -283,7 +283,8 @@ int JobManager::countUploadSession() {
 }
 
 bool JobManager::canRun(const std::shared_ptr<AbstractJob> job, int uploadSessionCount) {
-    return !isParentPendingOrRunning(job->jobId()) && !(std::dynamic_pointer_cast<UploadSession>(job) && uploadSessionCount > 0);
+    return !isParentPendingOrRunning(job->jobId()) &&
+           !(std::dynamic_pointer_cast<AbstractUploadSession>(job) && uploadSessionCount > 0);
 }
 
 void JobManager::managePendingJobs(int uploadSessionCount) {
@@ -292,7 +293,6 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
     // Check if parent jobs of the pending jobs has finished
     std::erase_if(_pendingJobs, [&uploadSessionCount](const auto &item) {
         if (const auto &job = item.second.first; canRun(job, uploadSessionCount)) {
-                                                         uploadSessionCount >= Poco::ThreadPool::defaultPool().capacity() / 10)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completly from job manager
                 _managedJobs.erase(item.first);
@@ -302,7 +302,7 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
                                                                    << job->jobId() << " for execution");
                 } else {
                     LOGW_DEBUG(Log::instance()->getLogger(),
-                              "The thread pool has recovered capacity, queuing job " << job->jobId() << " for execution");
+                               "The thread pool has recovered capacity, queuing job " << job->jobId() << " for execution");
                 }
                 _queuedJobs.push(item.second);
             }

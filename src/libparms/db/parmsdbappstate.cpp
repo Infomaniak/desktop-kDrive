@@ -43,7 +43,7 @@ constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadDate[] = "0";
 constexpr const char *APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath = APP_STATE_DEFAULT_IS_EMPTY;
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; //KDC::LogUploadState::None
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
-constexpr char APP_STATE_KEY_DEFAULT_LogUploadToken[] = "";
+constexpr const char *APP_STATE_KEY_DEFAULT_LogUploadToken = APP_STATE_DEFAULT_IS_EMPTY;
 
 namespace KDC {
 

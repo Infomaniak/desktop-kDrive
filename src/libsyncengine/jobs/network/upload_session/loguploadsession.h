@@ -21,8 +21,6 @@
 #include "abstractuploadsession.h"
 #include "utility/types.h"
 
-#include <log4cplus/logger.h>
-
 namespace KDC {
 
 class LogUploadSession : public AbstractUploadSession {

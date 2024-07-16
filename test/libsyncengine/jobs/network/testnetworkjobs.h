@@ -86,11 +86,11 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testRename();
         void testUpload();
         void testUploadAborted();
-        void testUploadSessionDriveConstructorException();
-        void testUploadSessionDriveSynchronous();
-        void testUploadSessionDriveAsynchronous();
-        void testUploadSessionDriveSynchronousAborted();
-        void testUploadSessionDriveAsynchronousAborted();
+        void testUploadSessionConstructorException();
+        void testUploadSessionSynchronous();
+        void testUploadSessionAsynchronous();
+        void testUploadSessionSynchronousAborted();
+        void testUploadSessionAsynchronousAborted();
 
     private:
         bool createTestDir();

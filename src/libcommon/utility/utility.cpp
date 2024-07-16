@@ -314,8 +314,9 @@ std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue)
     }
 }
 
-bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName) {
-    return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName));
+bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName,
+                                 std::function<bool(int)> progressCallback) {
+    return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName), progressCallback);
 }
 
 bool CommonUtility::compressFile(const std::string& originalName, const std::string& targetName, std::function<bool(int)> progressCallback) {
