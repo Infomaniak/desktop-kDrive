@@ -1,7 +1,7 @@
 project(libcommon)
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
-find_package(Poco 1.12.5 REQUIRED Foundation JSON Util)
+find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
 find_package(sentry REQUIRED)
 find_package(libzip 1.10.1 REQUIRED)
 
