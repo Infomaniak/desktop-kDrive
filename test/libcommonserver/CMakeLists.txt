@@ -30,9 +30,9 @@ if (WIN32)
 endif ()
 
 if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
-    include_directories("C:/Program Files (x86)/cppunit/include")
-    include_directories("C:/Program Files (x86)/Sentry-Native/include")
+    include_directories("C:/Projects/log4cplus/include")
+    include_directories("C:/Projects/cppunit/include")
+    include_directories("C:/Projects/Sentry-Native/include")
 else ()
     include_directories("/usr/local/include")
 endif ()
@@ -60,9 +60,9 @@ endif ()
 if (WIN32)
     target_link_libraries(${testcommonserver_NAME}
             debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
+            "C:/Projects/cppunit/lib/cppunitd.lib"
             optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
+            "C:/Projects/cppunit/lib/cppunit.lib")
 elseif (APPLE)
     target_link_libraries(${testcommonserver_NAME}
             "/usr/local/lib/libcppunit.dylib")

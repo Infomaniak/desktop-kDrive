@@ -51,12 +51,9 @@ if(APPLE)
 endif()
 
 if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
-    include_directories("C:/Program Files (x86)/cppunit/include")
-    include_directories("C:/Program Files (x86)/Sentry-Native/include")
-    include_directories("C:/Program Files (x86)/xxHash/include")
-    include_directories("C:/Program Files (x86)/libzip/include")
-else ()
+    include_directories("C:/Projects/log4cplus/include")
+    include_directories("C:/Projects/cppunit/include")
+else()
     include_directories("/usr/local/include")
 endif ()
 
@@ -83,11 +80,11 @@ endif ()
 
 if (WIN32)
     target_link_libraries(${testserver_NAME}
-            debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
-            optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
-elseif (APPLE)
+        debug
+        "C:/Projects/cppunit/lib/cppunitd.lib"
+        optimized
+        "C:/Projects/cppunit/lib/cppunit.lib")
+elseif(APPLE)
     target_link_libraries(${testserver_NAME}
             "/usr/local/lib/libcppunit.dylib")
 else ()
@@ -102,10 +99,9 @@ if (APPLE)
         "${libsyncengine_NAME}_vfs_mac" "${updater_DEPS}")
 else()
     target_link_libraries(${testserver_NAME}
-            ${libsyncengine_NAME})
-endif ()
-
-if (APPLE)
+        ${libsyncengine_NAME})
+endif()
+if(APPLE)
     # Default sync exclude list
     install(FILES ${CMAKE_SOURCE_DIR}/sync-exclude-osx.lst DESTINATION ${BIN_OUTPUT_DIRECTORY} RENAME sync-exclude.lst)
 

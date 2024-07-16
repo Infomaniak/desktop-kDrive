@@ -57,18 +57,7 @@ std::map<LogLevel, std::pair<int, QString>> DebuggingDialog::_logLevelMap = {{Lo
                                                                              {LogLevelError, {3, QString(tr("Error"))}},
                                                                              {LogLevelFatal, {4, QString(tr("Fatal"))}}};
 
-DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : CustomDialog(true, parent),
-      _gui(gui),
-      _recordDebuggingSwitch(nullptr),
-      _debugLevelComboBox(nullptr),
-      _extendedLogCheckBox(nullptr),
-      _saveButton(nullptr),
-      _recordDebugging(false),
-      _extendedLog(false),
-      _minLogLevel(LogLevelInfo),
-      _deleteLogs(false),
-      _needToSave(false) {
+DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) : CustomDialog(true, parent), _gui(gui) {
     initUI();
     _recordDebugging = ParametersCache::instance()->parametersInfo().useLog();
     _extendedLog = ParametersCache::instance()->parametersInfo().extendedLog();
@@ -199,14 +188,14 @@ void DebuggingDialog::initUI() {
     debugLevelSelectionHBox->addWidget(_extendedLogCheckBox);
 
     // Debug info main box | Debug Level Main Box | Debug level select box | Helper
-    CustomToolButton *extendedLogHelpButton = new CustomToolButton();
-    extendedLogHelpButton->setObjectName("helpButton");
-    extendedLogHelpButton->setIconPath(":/client/resources/icons/actions/help.svg");
-    extendedLogHelpButton->setFixedSize(15, 15);
-    extendedLogHelpButton->setEnabled(false);
-    extendedLogHelpButton->setToolTip(extendedLogCheckBoxToolTip);
-    extendedLogHelpButton->setToolTipDuration(20000);
-    debugLevelSelectionHBox->addWidget(extendedLogHelpButton);
+    _extendedLogHelpButton = new CustomToolButton();
+    _extendedLogHelpButton->setObjectName("helpButton");
+    _extendedLogHelpButton->setIconPath(":/client/resources/icons/actions/help.svg");
+    _extendedLogHelpButton->setFixedSize(15, 15);
+    _extendedLogHelpButton->setEnabled(false);
+    _extendedLogHelpButton->setToolTip(extendedLogCheckBoxToolTip);
+    _extendedLogHelpButton->setToolTipDuration(20000);
+    debugLevelSelectionHBox->addWidget(_extendedLogHelpButton);
 
     debuggingInfoMainHBox->addSpacing(boxHSpacing);
 
@@ -601,9 +590,11 @@ void DebuggingDialog::updateUI() {
 
     if (_minLogLevel != LogLevel::LogLevelDebug) {
         _extendedLogCheckBox->hide();
+        _extendedLogHelpButton->hide();
         _extendedLog = false;
     } else {
         _extendedLogCheckBox->show();
+        _extendedLogHelpButton->show();
     }
 }
 
