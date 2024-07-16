@@ -43,7 +43,7 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         void testTargetUpdateTree();
 
         log4cplus::Logger _logger;
-        std::shared_ptr <ExecutorWorker> _testObj;
+        std::shared_ptr<ExecutorWorker> _testObj = nullptr;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 };
 
