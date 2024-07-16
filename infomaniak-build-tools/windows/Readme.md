@@ -137,7 +137,7 @@ Clone and build `Poco`:
 cd F:\Projects
 git clone https://github.com/pocoproject/poco.git
 cd poco
-git checkout tags/poco-1.12.5-release
+git checkout tags/poco-1.13.3-release
 mkdir build
 cd build
 cmake -G "Visual Studio 16 2019" .. -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" -DOPENSSL_INCLUDE_DIR="C:\Program Files\OpenSSL\include" -DOPENSSL_CRYPTO_LIBRARY=libcrypto.lib -DOPENSSL_SSL_LIBRARY=libssl.lib
