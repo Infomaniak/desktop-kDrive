@@ -175,8 +175,8 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &exists,
-                                                    IoError &ioError) noexcept;
+        static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
+                                                    NodeId &otherNodeId, IoError &ioError) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!

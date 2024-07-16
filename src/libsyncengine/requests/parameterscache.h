@@ -37,6 +37,9 @@ class SYNCENGINE_EXPORT ParametersCache {
         inline Parameters &parameters() { return _parameters; }
         ExitCode save();
 
+        void setUploadSessionParallelThreads(int count);  // For testing purpose
+        void decreaseUploadSessionParallelThreads();
+
     private:
         static std::shared_ptr<ParametersCache> _instance;
         Parameters _parameters;

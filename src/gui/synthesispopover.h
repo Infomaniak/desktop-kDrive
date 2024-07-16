@@ -84,7 +84,9 @@ class SynthesisPopover : public QDialog {
         void onItemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo);
         void onDriveQuotaUpdated(int driveDbId);
         void onRefreshErrorList(int driveDbId);
+        void onAppVersionLocked(bool currentVersionLocked);
         void onRefreshStatusNeeded();
+        void onUpdateAvailabalityChange();
 
     private:
         std::shared_ptr<ClientGui> _gui;
@@ -101,6 +103,8 @@ class SynthesisPopover : public QDialog {
         ButtonsBarWidget *_buttonsBarWidget{nullptr};
         QStackedWidget *_stackedWidget{nullptr};
         QWidget *_defaultSynchronizedPageWidget{nullptr};
+        QWidget *_mainWidget{nullptr};
+        QWidget *_lockedAppVersionWidget{nullptr};
         NotificationsDisabled _notificationsDisabled{NotificationsDisabledNever};
         QDateTime _notificationsDisabledUntilDateTime;
         QLabel *_notImplementedLabel{nullptr};
@@ -111,7 +115,8 @@ class SynthesisPopover : public QDialog {
         QUrl _localFolderUrl;
         QUrl _remoteFolderUrl;
         qint64 _lastRefresh{0};
-
+        QPushButton *_lockedAppUpdateButton{nullptr};
+        QLabel *_lockedAppUpdateOptionalLabel{nullptr};
         void changeEvent(QEvent *event) override;
         void paintEvent(QPaintEvent *event) override;
         bool event(QEvent *event) override;
@@ -163,6 +168,7 @@ class SynthesisPopover : public QDialog {
         void onSelectionChanged(bool isSelected);
         void onLinkActivated(const QString &link);
         void onUpdateSynchronizedListWidget();
+        void onStartInstaller() noexcept;
         void retranslateUi();
 };
 

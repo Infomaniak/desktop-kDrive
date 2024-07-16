@@ -19,23 +19,37 @@
 #pragma once
 
 #include "testincludes.h"
-#include "syncpal/syncpal.h"
+#include "utility/types.h"
 
 using namespace CppUnit;
 
 namespace KDC {
+class SnapshotItem;
 
-class TestSnapshot : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSnapshot);
-        CPPUNIT_TEST(testSnapshot);
+class TestSnapshotItemHandler : public CppUnit::TestFixture {
+    public:
+        CPPUNIT_TEST_SUITE(TestSnapshotItemHandler);
+        CPPUNIT_TEST(testUpdateItem);
+        CPPUNIT_TEST(testGetItem);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
         void tearDown() override;
 
-    private:
-        void testSnapshot();
+    protected:
+        void testUpdateItem();
+        void testGetItem();
 };
+
+namespace snapshotitem_checker {
+struct Result {
+        bool success{true};
+        std::string message;
+};
+
+static std::string makeMessage(const CppUnit::Exception &e);
+static Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept;
+};  // namespace snapshotitem_checker
 
 }  // namespace KDC

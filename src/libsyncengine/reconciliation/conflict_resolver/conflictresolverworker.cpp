@@ -122,9 +122,6 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
                 // Generate a delete operation to remove entry from the DB only (not from the FS!)
                 // The deleted file will be restored on next sync iteration
-                std::unordered_set<std::shared_ptr<Node>> allDeletedNodes;
-                findAllChildNodes(deleteNode, allDeletedNodes);
-
                 auto deleteOp = std::make_shared<SyncOperation>();
                 deleteOp->setType(OperationTypeDelete);
                 deleteOp->setAffectedNode(deleteNode);
@@ -144,9 +141,6 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             } else {
                 // Delete the edit node from DB
                 // This will cause the file to be detected as new in the next sync iteration, thus it will be restored
-                std::unordered_set<std::shared_ptr<Node>> allDeletedNodes;
-                findAllChildNodes(editNode, allDeletedNodes);
-
                 auto deleteOp = std::make_shared<SyncOperation>();
                 deleteOp->setType(OperationTypeDelete);
                 deleteOp->setAffectedNode(editNode);

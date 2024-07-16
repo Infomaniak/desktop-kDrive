@@ -89,10 +89,12 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         // Check if exists with same nodeId
         if (opTypeFromOS == OperationTypeDelete) {
             NodeId prevNodeId = _snapshot->itemId(relativePath);
-            bool exists = false;
+            bool existsWithSameId = false;
+            NodeId otherNodeId;
             IoError ioError = IoErrorSuccess;
             if (!prevNodeId.empty()) {
-                if (IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, exists, ioError) && !exists) {
+                if (IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId, ioError) &&
+                    !existsWithSameId) {
                     if (_snapshot->removeItem(prevNodeId)) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
                                                         << Utility::formatSyncPath(absolutePath).c_str() << L" ("

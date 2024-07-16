@@ -27,7 +27,6 @@
 #include "jobs/network/renamejob.h"
 #include "jobs/network/uploadjob.h"
 #include "jobs/network/upload_session/uploadsession.h"
-#include "jobs/network/getfileinfojob.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
@@ -53,7 +52,6 @@ ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::stri
     : OperationProcessor(syncPal, name, shortName) {}
 
 void ExecutorWorker::executorCallback(UniqueId jobId) {
-    const std::lock_guard<std::mutex> lock(_mutex);
     _terminatedJobs.push(jobId);
 }
 
@@ -1589,8 +1587,6 @@ void ExecutorWorker::waitForAllJobsToFinish(bool &hasError) {
 }
 
 bool ExecutorWorker::deleteFinishedAsyncJobs() {
-    const std::lock_guard<std::mutex> lock(_mutex);
-
     bool hasError = false;
     while (!_terminatedJobs.empty()) {
         // Delete all terminated jobs
