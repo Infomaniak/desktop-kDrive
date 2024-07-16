@@ -48,7 +48,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     // A regular symbolic link on a file
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -62,7 +62,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     // A regular symbolic link on a folder
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -85,7 +85,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
     // A dangling symbolic link
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
         const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
@@ -99,7 +99,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 #if defined(__APPLE__)
     // A MacOSX Finder alias on a regular file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path / "regular_file_alias";
 
@@ -115,7 +115,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
     // A dangling MacOSX Finder alias on a non-existing file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = temporaryDirectory.path / "file_to_be_deleted.png";  // This file will be deleted.
         const SyncPath path = temporaryDirectory.path / "dangling_file_alias";
         {
@@ -142,7 +142,7 @@ void TestIo::testCheckIfPathExistsAllBranches() {
     // Failing to read a regular symbolic link because of an unexpected error.
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -163,7 +163,7 @@ void TestIo::testCheckIfPathExistsAllBranches() {
     // Reading a regular symbolic link that is removed after `filesystem::is_simlink` was called.
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -185,7 +185,7 @@ void TestIo::testCheckIfPathExistsAllBranches() {
     // after `filesystem::is_simlink` was called.
     // No error on Windows. Access denied on MacOSX and Linux.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
 
@@ -227,128 +227,136 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     // A regular file
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A regular directory
     {
         const SyncPath path = _localTestDirPath / "test_pictures";
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A regular symbolic link on a file
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A regular symbolic link on a folder
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A non-existing file
     {
         const SyncPath path = _localTestDirPath / "non_existing.jpg";
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorSuccess;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
     }
 
     // A dangling symbolic link
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
         const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A regular file but the function is given a wrong node identifier
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId = "wrong_node_id";
 
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
 #if defined(__APPLE__)
     // A MacOSX Finder alias on a regular file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path / "regular_file_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         NodeId nodeId;
         IoError ioError = IoErrorUnknown;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A dangling MacOSX Finder alias on a non-existing file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = temporaryDirectory.path / "file_to_be_deleted.png";  // This file will be deleted.
         const SyncPath path = temporaryDirectory.path / "dangling_file_alias";
         { std::ofstream ofs(targetPath); }
@@ -359,13 +367,14 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         std::filesystem::remove(targetPath);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         NodeId nodeId;
         IoError ioError = IoErrorUnknown;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 #endif
@@ -375,7 +384,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
     // Failing to read a regular symbolic link because of an unexpected error.
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -384,13 +393,14 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
             return false;
         });
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorSuccess;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(!_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(!_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorUnknown);
 
         _testObj->resetFunctions();
@@ -399,7 +409,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
     // Reading a symlink within a subdirectory whose owner exec permission is removed
     // right before `std::filesystem::read_symlink` is called.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
 
@@ -412,19 +422,20 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
             return std::filesystem::read_symlink(path, ec);
         });
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
 
         // Restore permission to allow subdir removal
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_exec, std::filesystem::perm_options::add);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(exists);
+        CPPUNIT_ASSERT(existsWithSameId);
 #else
-        CPPUNIT_ASSERT(!exists);  // getLocalNodeId returns an empty string because of the denied access.
+        CPPUNIT_ASSERT(!existsWithSameId);  // getLocalNodeId returns an empty string because of the denied access.
         CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
 #endif
 
@@ -434,7 +445,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
     // Reading a regular symbolic link that is removed right after `filesystem::is_simlink` was called.
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -443,13 +454,14 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
             return std::filesystem::read_symlink(path, ec);
         });
 
-        bool exists = false;
+        bool existsWithSameId = false;
+        NodeId otherNodeId;
         IoError ioError = IoErrorSuccess;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, exists, ioError));
-        CPPUNIT_ASSERT(!exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
+        CPPUNIT_ASSERT(!existsWithSameId);
         CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
 
         _testObj->resetFunctions();

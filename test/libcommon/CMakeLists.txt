@@ -10,6 +10,7 @@ set(testcommon_SRCS
 
         test.cpp
         api_token/testapitoken.cpp api_token/testapitoken.h
+        utility/testutility.cpp utility/testutility.h
 )
 
 if (WIN32)

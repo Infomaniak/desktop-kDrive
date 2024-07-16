@@ -103,15 +103,19 @@ sudo cmake --build . --target install
 
 Download and build CPPUnit :
 
+You will probably need to install `automake` and `libtool`:
+```
+brew install automake
+brew install libtool
+```
+
+CPPUnit must be build in single architecture. Replace with `x86_64` or `arm64` in the following command:
 ```bash
 cd ~/Projects
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 cd cppunit
 ./autogen.sh
-# If needed, run :
-	# brew install automake
-	# brew install libtool
-./configure CXXFLAGS="-arch x86_64 -arch arm64 -mmacosx-version-min=10.15"
+./configure CXXFLAGS="-arch <your_arch> -mmacosx-version-min=10.15"
 make
 sudo make install
 ```
@@ -124,9 +128,9 @@ Configure x86_64 :
 
 ```bash
 cd ~/Projects
-git clone git://git.openssl.org/openssl.git
+git clone https://github.com/openssl/openssl.git
 cd openssl
-git checkout tags/openssl_3.2.1
+git checkout tags/openssl-3.2.1
 cd ..
 mv openssl openssl.x86_64
 cp -Rf openssl.x86_64 openssl.arm64
@@ -167,7 +171,7 @@ Download and build Poco :
 cd ~/Projects
 git clone https://github.com/pocoproject/poco.git
 cd poco
-git checkout tags/poco-1.13.2-release
+git checkout tags/poco-1.13.3-release
 mkdir build
 cd build
 cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DOPENSSL_ROOT_DIR=/usr/local/ -DOPENSSL_INCLUDE_DIR=/usr/local/include/ -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.dylib -DENABLE_DATA_ODBC=OFF 

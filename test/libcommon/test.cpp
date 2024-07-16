@@ -19,9 +19,11 @@
 #include "testincludes.h"
 
 #include "api_token/testapitoken.h"
+#include "utility/testutility.h"
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
 }  // namespace KDC
 
 int main(int, char **) {

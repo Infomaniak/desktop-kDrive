@@ -121,6 +121,26 @@ void UpdaterClient::startInstaller() const {
     }
 }
 
+UpdateState UpdaterClient::updateState() const {
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_STATUS, QByteArray(), results)) {
+        throw std::runtime_error(EXECUTE_ERROR_MSG);
+    }
+
+    UpdateState ret;
+    QDataStream resultStream(&results, QIODevice::ReadOnly);
+    resultStream >> ret;
+
+    return ret;
+}
+
+void UpdaterClient::unskipUpdate() const {
+    QByteArray results;
+    if (!CommClient::instance()->execute(REQUEST_NUM_RECONSIDER_SKIPPED_UPDATE, QByteArray(), results)) {
+        throw std::runtime_error(EXECUTE_ERROR_MSG);
+    }
+}
+
 void UpdaterClient::showWindowsUpdaterDialog(const QString &targetVersion, const QString &targetVersionString,
                                              const QString &clientVersion) {
     KDC::UpdateErrorDialog *dialog = new KDC::UpdateErrorDialog(targetVersion, targetVersionString, clientVersion);

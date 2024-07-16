@@ -274,7 +274,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
         sentry_capture_event(event);
     }
 
-    return true;
+    return res;
 }
 
 bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {
@@ -291,8 +291,31 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     }
     return true;
 }
-bool CommonUtility::compressFile(const std::wstring& originalName, const std::wstring& targetName, std::function<bool(int)> progressCallback) {
-    return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName), progressCallback);
+
+std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) noexcept {
+    using enum AppStateKey;
+    switch (appStateValue) {
+        case LastServerSelfRestartDate:
+            return "LastServerSelfRestartDate";
+        case LastClientSelfRestartDate:
+            return "LastClientSelfRestartDate";
+        case LastSuccessfulLogUploadDate:
+            return "LastSuccessfulLogUploadDate";
+        case LastLogUploadArchivePath:
+            return "LastLogUploadArchivePath";
+        case LogUploadState:
+            return "LogUploadState";
+        case LogUploadPercent:
+            return "LogUploadPercent";
+        case Unknown:
+            return "Unknown";
+        default:
+            return "AppStateKey not found (" + std::to_string(static_cast<int>(appStateValue)) + ")";
+    }
+}
+
+bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName) {
+    return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName));
 }
 
 bool CommonUtility::compressFile(const std::string& originalName, const std::string& targetName, std::function<bool(int)> progressCallback) {
@@ -494,7 +517,7 @@ QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
     return QString();
 }
 
-const SyncPath CommonUtility::getAppDir() {
+SyncPath CommonUtility::getAppDir() {
     const KDC::SyncPath dirPath(KDC::getAppDir_private());
     return dirPath;
 }
@@ -503,8 +526,8 @@ bool CommonUtility::hasDarkSystray() {
     return KDC::hasDarkSystray_private();
 }
 
-const SyncPath CommonUtility::getAppSupportDir() {
-    SyncPath dirPath(KDC::getAppSupportDir_private());
+SyncPath CommonUtility::getAppSupportDir() {
+    SyncPath dirPath(getAppSupportDir_private());
 
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
@@ -687,7 +710,7 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
         }
     }
 
-    return true;
+    return false;
 }
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();

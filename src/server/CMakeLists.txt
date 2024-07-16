@@ -1,7 +1,7 @@
 project(server)
 
 find_package(Qt6 REQUIRED COMPONENTS Network Svg)
-find_package(Poco 1.12.5 REQUIRED XML)
+find_package(Poco 1.13.3 REQUIRED XML)
 find_package(sentry REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)

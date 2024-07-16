@@ -432,8 +432,9 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             paramsStream >> targetVersion;
             paramsStream >> targetVersionString;
             paramsStream >> clientVersion;
-
-            UpdaterClient::instance()->showWindowsUpdaterDialog(targetVersion, targetVersionString, clientVersion);
+            QTimer::singleShot(500, this, [this, targetVersion, targetVersionString, clientVersion]() {
+                _updaterClient->showWindowsUpdaterDialog(targetVersion, targetVersionString, clientVersion);
+            });
             break;
         }
         case SIGNAL_NUM_UTILITY_SHOW_SETTINGS: {
@@ -446,7 +447,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
         }
         case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
             LogUploadState status;
-            int progress; // Progress in percentage
+            int progress;  // Progress in percentage
             paramsStream >> status;
             paramsStream >> progress;
             emit logUploadStatusUpdated(status, progress);

@@ -41,8 +41,6 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/Dynamic/Var.h>
 
-#include <queue>
-
 namespace KDC {
 
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
@@ -94,31 +92,12 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
 
     _snapshot->init();
     _updating = true;
+    countListingRequests();
 
-    {
-        auto listingFullTimerEnd = std::chrono::steady_clock::now();
-        std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
-        if (elapsedTime.count() > 3600) {  // 1h
-            _listingFullCounter = 0;
-            _listingFullTimer = listingFullTimerEnd;
-        } else if (_listingFullCounter > 60) {
-            // If there is more then 1 listing/full request per minute for an hour -> send a sentry
-#ifdef NDEBUG
-            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING,
-                                                                "RemoteFileSystemObserverWorker::generateInitialSnapshot",
-                                                                "Too many listing/full requests, sync is looping"));
-#endif
-            _listingFullCounter = 0;
-            _listingFullTimer = listingFullTimerEnd;
-        }
-    }
-    _listingFullCounter++;
+    const ExitCode exitCode = initWithCursor();
 
-    ExitCode exitCode = initWithCursor();
-    ExitCause exitCause = ExitCause();
-
-    auto end = std::chrono::steady_clock::now();
-    std::chrono::duration<double> elapsedSeconds = end - start;
+    const auto end = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> elapsedSeconds = end - start;
     if (exitCode == ExitCodeOk && !stopAsked()) {
         _snapshot->setValid(true);
         LOG_SYNCPAL_INFO(
@@ -127,8 +106,17 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
         invalidateSnapshot();
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
 
-        if (exitCode == ExitCodeNetworkError && exitCause == ExitCauseNetworkTimeout) {
-            _syncPal->addError(Error(ERRID, exitCode, exitCause));
+        switch (exitCode) {
+            case ExitCodeNetworkError:
+                _syncPal->addError(Error(ERRID, exitCode, exitCause()));
+                break;
+            case ExitCodeLogicError:
+                if (exitCause() == ExitCauseFullListParsingError) {
+                    _syncPal->addError(Error(_syncPal->syncDbId(), name(), exitCode, exitCause()));
+                }
+                break;
+            default:
+                break;
         }
     }
     _updating = false;
@@ -145,6 +133,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
     ExitCode exitCode = _syncPal->listingCursor(_cursor, timestamp);
     if (exitCode != ExitCodeOk) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::listingCursor");
+
         setExitCause(ExitCauseDbAccessError);
         return exitCode;
     }
@@ -291,7 +280,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         return ExitCodeDataError;
     }
 
-    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_HIGHEST);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_LOW);
     while (!JobManager::instance()->isJobFinished(job->jobId())) {
         if (stopAsked()) {
             return ExitCodeOk;
@@ -308,7 +297,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     if (saveCursor) {
-        std::string cursor = job->getCursor();
+        const std::string cursor = job->getCursor();
         if (cursor != _cursor) {
             _cursor = cursor;
             LOG_SYNCPAL_DEBUG(_logger, "Cursor updated: " << _cursor.c_str());
@@ -323,8 +312,8 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     // Parse reply
-    LOG_SYNCPAL_DEBUG(_logger, "Begin reply parsing");
-    auto start = std::chrono::steady_clock::now();
+    LOG_SYNCPAL_DEBUG(_logger, "Begin parsing of the CSV reply");
+    const auto start = std::chrono::steady_clock::now();
     SnapshotItem item;
     bool error = false;
     bool ignore = false;
@@ -338,9 +327,9 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         itemCount++;
 
         if (error) {
-            LOG_SYNCPAL_WARN(_logger, "Failed to parse CSV reply");
-            setExitCause(ExitCauseUnknown);
-            return ExitCodeDataError;
+            LOG_SYNCPAL_WARN(_logger, "Logic error: failed to parse CSV reply.");
+            setExitCause(ExitCauseFullListParsingError);
+            return ExitCodeLogicError;
         }
 
         if (stopAsked()) {
@@ -357,11 +346,10 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
             continue;
         }
 
-        auto insertInfo = existingFiles.insert(Str2SyncName(item.parentId()) + item.name());
-        if (!insertInfo.second) {
-            // Item with exact same name already exist in parent folder
+        if (const auto &[_, inserted] = existingFiles.insert(Str2SyncName(item.parentId()) + item.name()); !inserted) {
+            // An item with the exact same name already exists in the parent folder.
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
-                               L"Item \"" << SyncName2WStr(item.name()).c_str() << L"\" already exist in directory \""
+                               L"Item \"" << SyncName2WStr(item.name()).c_str() << L"\" already exists in directory \""
                                           << SyncName2WStr(_snapshot->name(item.parentId())).c_str() << L"\"");
 
             SyncPath path;
@@ -418,7 +406,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             return ExitCodeDataError;
         }
 
-        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_HIGHEST);
+        JobManager::instance()->queueAsyncJob(notifyJob, Poco::Thread::PRIO_LOW);
         while (!JobManager::instance()->isJobFinished(notifyJob->jobId())) {
             if (stopAsked()) {
                 LOG_DEBUG(_logger, "Request " << notifyJob->jobId() << ": aborting LongPoll job");
@@ -428,7 +416,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 
             {
                 const std::lock_guard<std::mutex> lock(_mutex);
-                if (_updating) {  // We want to update snapshot immediatly, cancel LongPoll job and send a listing/continue
+                if (_updating) {  // We want to update snapshot immediately, cancel LongPoll job and send a listing/continue
                                   // request
                     notifyJob->abort();
                     changes = true;
@@ -482,7 +470,7 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr actionArray) {
     if (!actionArray) return ExitCodeOk;
 
-    std::set<NodeId, std::equal_to<>> movedItems;
+    std::set<NodeId, std::less<>> movedItems;
 
     for (auto it = actionArray->begin(); it != actionArray->end(); ++it) {
         if (stopAsked()) {
@@ -591,7 +579,7 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 }
 
 ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName, const ActionInfo &actionInfo,
-                                                       std::set<NodeId, std::equal_to<>> &movedItems) {
+                                                       std::set<NodeId, std::less<>> &movedItems) {
     SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime,
                       actionInfo.type, actionInfo.size, actionInfo.canWrite);
 
@@ -619,11 +607,21 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             _snapshot->updateItem(item);
             if (actionInfo.type == NodeTypeDirectory && actionInfo.actionCode != ActionCode::actionCodeCreate) {
                 // Retrieve all children
-                ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
-                ExitCause exitCause = this->exitCause();
+                const ExitCode exitCode = exploreDirectory(actionInfo.nodeId);
 
-                if (exitCode == ExitCodeNetworkError && exitCause == ExitCauseNetworkTimeout) {
-                    _syncPal->addError(Error(ERRID, exitCode, exitCause));
+                switch (exitCode) {
+                    case ExitCodeNetworkError:
+                        if (exitCause() == ExitCauseNetworkTimeout) {
+                            _syncPal->addError(Error(ERRID, exitCode, exitCause()));
+                        }
+                        break;
+                    case ExitCodeLogicError:
+                        if (exitCause() == ExitCauseFullListParsingError) {
+                            _syncPal->addError(Error(_syncPal->syncDbId(), name(), exitCode, exitCause()));
+                        }
+                        break;
+                    default:
+                        break;
                 }
 
                 if (exitCode != ExitCodeOk) return exitCode;
@@ -740,6 +738,28 @@ bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &na
     (void)type;
 #endif
     return false;
+}
+
+void RemoteFileSystemObserverWorker::countListingRequests() {
+    const auto listingFullTimerEnd = std::chrono::steady_clock::now();
+    const std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
+    bool resetTimer = elapsedTime.count() > 3600;  // 1h
+    if (_listingFullCounter > 60) {
+        // If there is more then 1 listing/full request per minute for an hour -> send a sentry
+#ifdef NDEBUG
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING,
+                                                            "RemoteFileSystemObserverWorker::generateInitialSnapshot",
+                                                            "Too many listing/full requests, sync is looping"));
+#endif
+        resetTimer = true;
+    }
+
+    if (resetTimer) {
+        _listingFullCounter = 0;
+        _listingFullTimer = listingFullTimerEnd;
+    }
+
+    _listingFullCounter++;
 }
 
 }  // namespace KDC

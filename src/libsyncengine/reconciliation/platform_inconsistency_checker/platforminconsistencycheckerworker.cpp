@@ -86,7 +86,7 @@ ExitCode PlatformInconsistencyCheckerWorker::checkTree(std::shared_ptr<Node> rem
             checkAgainstSiblings = true;
         }
 
-        ExitCode exitCode = checkTree(currentChildNode, parentPath / remoteNode->finalLocalName());
+        ExitCode exitCode = checkTree(currentChildNode, parentPath / remoteNode->name());
         if (exitCode != ExitCodeOk) {
             return exitCode;
         }
@@ -104,12 +104,14 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
     // Local node needs to be excluded before call to blacklistTemporarily because
     // we need the DB entry to retrieve the corresponding node
     NodeIdPair nodeIDs;
-    const auto localNode = correspondingNodeDirect(remoteNode);
-    if (localNode) {
+
+    if (const auto localNode = correspondingNodeDirect(remoteNode); localNode) {
         // Also exclude local node by adding "conflict" suffix
         const SyncPath absoluteLocalPath = _syncPal->localPath() / localNode->getPath();
-        LOGW_SYNCPAL_INFO(_logger, L"Excluding also local item with " << Utility::formatSyncPath(absoluteLocalPath).c_str() << L".");
-        PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalPath, PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
+        LOGW_SYNCPAL_INFO(_logger,
+                          L"Excluding also local item with " << Utility::formatSyncPath(absoluteLocalPath).c_str() << L".");
+        PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalPath,
+                                                             PlatformInconsistencyCheckerUtility::SuffixTypeConflict);
 
         if (localNode->id().has_value()) nodeIDs.localId = *localNode->id();
     }
@@ -136,7 +138,8 @@ void PlatformInconsistencyCheckerWorker::blacklistNode(const std::shared_ptr<Nod
         default:
             break;
     }
-    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting remote item with " << Utility::formatSyncPath(relativePath).c_str() << L" because " << causeStr.c_str() << L".");
+    LOGW_SYNCPAL_INFO(_logger, L"Blacklisting remote item with " << Utility::formatSyncPath(relativePath).c_str() << L" because "
+                                                                 << causeStr.c_str() << L".");
 
     nodeIDs.remoteId = *remoteNode->id();
     _idsToBeRemoved.emplace_back(nodeIDs);
@@ -162,7 +165,7 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
     return true;
 }
 
-void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(std::shared_ptr<Node> remoteParentNode) {
+void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode) {
 #if defined(__APPLE__) || defined(_WIN32)
     std::unordered_map<SyncName, std::shared_ptr<Node>> processedNodesByName;  // key: lowercase name
     auto it = remoteParentNode->children().begin();
@@ -182,7 +185,7 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(std::shar
         std::shared_ptr<Node> currentChildNode = it->second;
 
         // Check case conflicts
-        SyncName lowercaseName = Poco::toLower(it->second->finalLocalName());
+        SyncName lowercaseName = Poco::toLower(it->second->name());
         auto insertInfo = processedNodesByName.insert({lowercaseName, currentChildNode});
         if (!insertInfo.second) {
             // Check if this node is a special folder

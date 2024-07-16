@@ -20,7 +20,7 @@
 
 VERSION=$(grep "KDRIVE_VERSION_FULL" "build-macos/client/version.h" | awk '{print $3}')
 APP_NAME=kDrive-${VERSION}.pkg
-mv build-macos/install/$APP_NAME build-macos
+mv build-macos/client/install/$APP_NAME build-macos
 cd build-macos
 
 tar -cvf kDrive-debug-macos.tar kDrive.dSYM kDrive_client.dSYM

@@ -18,6 +18,7 @@
 
 #include "jobmanager.h"
 #include "jobs/network/networkjobsparams.h"
+#include "jobs/network/abstractnetworkjob.h"
 #include "log/log.h"
 #include "jobs/network/upload_session/abstractuploadsession.h"
 #include "libcommonserver/utility/utility.h"
@@ -51,7 +52,7 @@ std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priori
     JobManager::_queuedJobs;
 std::unordered_set<UniqueId> JobManager::_runningJobs;
 std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>> JobManager::_pendingJobs;
-std::mutex JobManager::_mutex;
+std::recursive_mutex JobManager::_mutex;
 
 JobManager *JobManager::instance() {
     if (!_instance) {
@@ -71,7 +72,7 @@ void JobManager::clear() {
         _instance->_thread = nullptr;
     }
 
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     _pendingJobs.clear();
     while (!_queuedJobs.empty()) {
         _queuedJobs.pop();
@@ -81,39 +82,54 @@ void JobManager::clear() {
 }
 
 void JobManager::queueAsyncJob(std::shared_ptr<AbstractJob> job, Poco::Thread::Priority priority /*= Poco::Thread::PRIO_NORMAL*/,
-                               std::function<void(UniqueId)> externalCallback /*= nullptr*/) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-    _queuedJobs.push({job, priority});
-
+                               std::function<void(UniqueId)> externalCallback /*= nullptr*/) noexcept {
+    const std::scoped_lock lock(_mutex);
     job->setMainCallback(defaultCallback);
-    try {
-        _managedJobs.insert({job->jobId(), job});
-    } catch (std::exception &) {
-        LOG_WARN(_logger, "Job not managed");
-    }
 
     if (externalCallback) {
         job->setAdditionalCallback(externalCallback);
     }
+
+    _queuedJobs.push({job, priority});
+    _managedJobs.insert({job->jobId(), job});
 }
 
 bool JobManager::isJobFinished(const UniqueId &jobId) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     return _managedJobs.find(jobId) == _managedJobs.end();
 }
 
 std::shared_ptr<AbstractJob> JobManager::getJob(const UniqueId &jobId) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-    auto jobPtr = _managedJobs.find(jobId);
-    if (jobPtr != _managedJobs.end()) {
+    const std::scoped_lock lock(_mutex);
+    if (auto jobPtr = _managedJobs.find(jobId); jobPtr != _managedJobs.end()) {
         return jobPtr->second;
     }
     return nullptr;
 }
 
+void JobManager::setPoolCapacity(int count) {
+    _maxNbThread = count;
+    Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
+}
+
+void JobManager::decreasePoolCapacity() {
+    if (JobManager::instance()->maxNbThreads() > threadPoolMinCapacity) {
+        // Decrease pool capacity
+        // TODO: Store the pool capacity in DB?
+        _maxNbThread -= std::ceil((JobManager::instance()->maxNbThreads() - threadPoolMinCapacity) / 2.0);
+        Poco::ThreadPool::defaultPool().addCapacity(_maxNbThread - Poco::ThreadPool::defaultPool().capacity());
+        LOG_DEBUG(Log::instance()->getLogger(), "Job Manager capacity set to " << _maxNbThread);
+    } else {
+#ifdef NDEBUG
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "JobManager::defaultCallback",
+                                                            "JobManager capacity cannot be decreased"));
+#endif
+    }
+}
+
 void JobManager::defaultCallback(UniqueId jobId) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-    auto node = _managedJobs.extract(jobId);
+    const std::scoped_lock lock(_mutex);
+    _managedJobs.erase(jobId);
     _runningJobs.erase(jobId);
 }
 
@@ -129,24 +145,28 @@ JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
 }
 
-void JobManager::run() {
+void JobManager::run() noexcept {
     while (true) {
         if (_stop) {
             break;
         }
 
-        // Count UploadSessionJobs running
-        int uploadSessionCount = countUploadSession();
+        {
+            const std::scoped_lock lock(_mutex);
 
-        // Count UploadSessionJobs running
-        while (Poco::ThreadPool::defaultPool().available()) {
-            if (_stop) {
-                break;
-            }
+            // Count running UploadSession jobs
+            int uploadSessionCount = countUploadSession();
 
-            {
-                const std::scoped_lock<std::mutex> lock(_mutex);
+            // Count available pool jobs
+            auto poolJobsAvailable = [=]() {
+                try {
+                    return Poco::ThreadPool::defaultPool().available();
+                } catch (Poco::Exception &) {
+                    return 0;
+                }
+            };
 
+            while (poolJobsAvailable() && !_stop) {
                 if (_queuedJobs.empty()) {
                     break;
                 }
@@ -154,41 +174,35 @@ void JobManager::run() {
                 const auto &job = jobItem.first;
                 _queuedJobs.pop();
 
-                if (!canStartJob(job, uploadSessionCount)) {
-                    try {
-                        _pendingJobs.try_emplace(job->jobId(), jobItem);
-                        if (job->hasParentJob()) {
-                            LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->jobId()
-                                                                           << " is pending (waiting for parent job "
-                                                                           << job->parentJobId() << " to complete)");
-                        } else {
-                            LOG_DEBUG(Log::instance()->getLogger(),
-                                      "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
-                        }
-                    } catch (std::exception &) {
-                        LOG_WARN(Log::instance()->getLogger(), "Job " << job->jobId() << " insertion in pending queue failed");
-                    }
-                } else {
+                if (canRun(job, uploadSessionCount)) {
                     if (std::dynamic_pointer_cast<AbstractUploadSession>(job)) {
                         uploadSessionCount++;
                     }
 
                     startJob(jobItem);
+                } else {
+                    _pendingJobs.insert({job->jobId(), jobItem});
+                    if (job->hasParentJob()) {
+                        LOG_DEBUG(Log::instance()->getLogger(), "Job " << job->jobId() << " is pending (waiting for parent job "
+                                                                       << job->parentJobId() << " to complete)");
+                    } else {
+                        LOG_DEBUG(Log::instance()->getLogger(),
+                                  "Job " << job->jobId() << " is pending (thread pool maximum capacity reached)");
+                    }
                 }
+
+                // adjustMaxNbThread();
             }
 
-            // adjustMaxNbThread();
+            managePendingJobs(uploadSessionCount);
         }
 
-        managePendingJobs(uploadSessionCount);
-
-        if (_queuedJobs.empty()) {
-            Utility::msleep(100);  // Sleep for 0.1s
-        }
+        Utility::msleep(100);  // Sleep for 0.1s
     }
 }
 
 void JobManager::startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority> nextJob) {
+    const std::scoped_lock lock(_mutex);
     try {
         if (nextJob.first->isAborted()) {
             LOG_DEBUG(Log::instance()->getLogger(), "Job " << nextJob.first->jobId() << " has been canceled");
@@ -208,6 +222,7 @@ void JobManager::startJob(std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::
 }
 
 bool JobManager::isParentPendingOrRunning(UniqueId jobIb) {
+    const std::scoped_lock lock(_mutex);
     if (_managedJobs.find(jobIb) == _managedJobs.end()) {
         return false;
     }
@@ -256,7 +271,7 @@ void JobManager::adjustMaxNbThread() {
 }
 
 int JobManager::countUploadSession() {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     int uploadSessionCount = 0;
     for (UniqueId id : _runningJobs) {
         const auto &job = _managedJobs[id];
@@ -267,12 +282,17 @@ int JobManager::countUploadSession() {
     return uploadSessionCount;
 }
 
+bool JobManager::canRun(const std::shared_ptr<AbstractJob> job, int uploadSessionCount) {
+    return !isParentPendingOrRunning(job->jobId()) && !(std::dynamic_pointer_cast<UploadSession>(job) && uploadSessionCount > 0);
+}
+
 void JobManager::managePendingJobs(int uploadSessionCount) {
-    const std::scoped_lock<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
 
     // Check if parent jobs of the pending jobs has finished
     std::erase_if(_pendingJobs, [&uploadSessionCount](const auto &item) {
-        if (const auto &job = item.second.first; canStartJob(job, uploadSessionCount)) {
+        if (const auto &job = item.second.first; canRun(job, uploadSessionCount)) {
+                                                         uploadSessionCount >= Poco::ThreadPool::defaultPool().capacity() / 10)) {
             if (job->isAborted()) {
                 // The job is aborted, remove it completly from job manager
                 _managedJobs.erase(item.first);

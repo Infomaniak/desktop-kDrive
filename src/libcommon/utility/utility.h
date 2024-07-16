@@ -26,6 +26,8 @@
 
 #include <QByteArray>
 #include <QCoreApplication>
+#include <QDataStream>
+#include <QIODevice>
 
 #ifdef _WIN32
 #include <strsafe.h>
@@ -64,6 +66,7 @@ struct COMMON_EXPORT CommonUtility {
         static QString escape(const QString &in);
         static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
         static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);
+        static std::string appStateKeyToString(const AppStateKey &appStateValue) noexcept;
 
         static bool compressFile(const std::wstring &originalName, const std::wstring &targetName, std::function<bool(int)> progressCallback = nullptr);
         static bool compressFile(const std::string &originalName, const std::string &targetName, std::function<bool(int)> progressCallback = nullptr);
@@ -79,8 +82,8 @@ struct COMMON_EXPORT CommonUtility {
 
         static SyncPath relativePath(const SyncPath &rootPath, const SyncPath &path);
 
-        static const SyncPath getAppDir();
-        static const SyncPath getAppSupportDir();
+        static SyncPath getAppDir();
+        static SyncPath getAppSupportDir();
         static SyncPath getAppWorkingDir();
 
         static QString getFileIconPathFromFileName(const QString &fileName, NodeType type);
@@ -109,5 +112,39 @@ struct COMMON_EXPORT CommonUtility {
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
 };
+
+struct ArgsReader {
+        template <class... Args>
+        explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
+            read(args...);
+        }
+        template <class T>
+        void read(const T p) {
+            stream << p;
+        }
+        template <class T, class... Args>
+        void read(const T p, Args... args) {
+            stream << p;
+            read(args...);
+        }
+        explicit operator QByteArray() const { return params; }
+        QByteArray params;
+        QDataStream stream;
+};
+
+struct ArgsWriter {
+        explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
+        template <class T>
+        void write(T &r) {
+            stream >> r;
+        }
+        template <class T, class... Args>
+        void write(T &r, Args &...args) {
+            stream >> r;
+            write(args...);
+        }
+        QDataStream stream;
+};
+
 
 }  // namespace KDC
