@@ -19,6 +19,10 @@
 #include "testio.h"
 
 #include "libcommonserver/io/filestat.h"
+#include "utility/utility.h"
+#ifdef __APPLE__
+#include "server/vfs/mac/litesyncextconnector.h"
+#endif
 
 #include <filesystem>
 
@@ -485,6 +489,5 @@ void TestIo::testGetFileStat() {
 #endif
     }
 }
-
 
 }  // namespace KDC

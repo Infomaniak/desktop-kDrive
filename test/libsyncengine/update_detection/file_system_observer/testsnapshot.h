@@ -34,11 +34,8 @@ class TestSnapshot : public CppUnit::TestFixture {
         void setUp() override;
         void tearDown() override;
 
-    protected:
-        void testSnapshot();
-
     private:
-        std::shared_ptr<SyncPal> _syncPal = nullptr;
+        void testSnapshot();
 };
 
 }  // namespace KDC
