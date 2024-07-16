@@ -422,6 +422,7 @@ void DebuggingDialog::displayHeavyLogBox() {
     } else {
         displaySize = logDirSize;
     }
+    displaySize = std::floor(displaySize * 10) / 10;
     _heavyLogLabel->setText(heavyLogLabelStr.arg(displaySize).arg(sizeUnit));
     _sendLogButton->setText(sendLogButtonText);
     _sendLogButton->setEnabled(sendLogButtonEnabled);

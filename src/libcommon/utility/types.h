@@ -132,6 +132,7 @@ typedef enum {
     ExitCodeInvalidOperation,
     ExitCodeOperationCanceled,
     ExitCodeUpdateRequired,
+    ExitCodeLogUploadFailed
 } ExitCode;
 
 typedef enum {

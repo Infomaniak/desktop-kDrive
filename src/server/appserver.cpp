@@ -2042,7 +2042,7 @@ void AppServer::cancelLogUpload() {
 
     if (exitCode != ExitCodeOk) {
         LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport : " << exitCode << " | " << exitCause);
-        addError(Error(ERRID, exitCode, exitCause));
+        addError(Error(ERRID, ExitCodeLogUploadFailed, exitCause));
         sendLogUploadStatusUpdated(LogUploadState::Failed, 0);  // Considered as a failure, in case the operation was not
                                                                 // canceled, the gui will receive updated status quickly.
         return;
@@ -2090,7 +2090,7 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
         return;
     } else if (exitCode != ExitCodeOk) {
         LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << exitCode << " | " << exitCause);
-        addError(Error(ERRID, exitCode, exitCause));
+        addError(Error(ERRID, ExitCodeLogUploadFailed, exitCause));
     }
     sendLogUploadStatusUpdated(exitCode == ExitCodeOk ? LogUploadState::Success : LogUploadState::Failed, 0);
 }

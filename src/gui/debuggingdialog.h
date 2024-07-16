@@ -21,6 +21,7 @@
 #include "customdialog.h"
 #include "customswitch.h"
 #include "customcombobox.h"
+#include "customtoolbutton.h"
 #include "customcheckbox.h"
 #include "libcommon/utility/types.h"
 #include "libcommon/info/parametersinfo.h"
