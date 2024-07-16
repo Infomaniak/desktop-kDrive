@@ -53,9 +53,9 @@ if (USE_OUR_OWN_SQLITE3)
 endif ()
 
 if (WIN32)
-    include_directories("C:/Projects/log4cplus/include")
-    include_directories("C:/Projects/cppunit/include")
-else()
+    include_directories("F:/Projects/log4cplus/include")
+    include_directories("C:/Program Files (x86)/cppunit/include")
+else ()
     include_directories("/usr/local/include")
 endif ()
 
@@ -82,11 +82,11 @@ endif ()
 
 if (WIN32)
     target_link_libraries(${testsyncengine_NAME}
-        debug
-        "C:/Projects/cppunit/lib/cppunitd.lib"
-        optimized
-        "C:/Projects/cppunit/lib/cppunit.lib")
-elseif(APPLE)
+            debug
+            "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
+            optimized
+            "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
+elseif (APPLE)
     target_link_libraries(${testsyncengine_NAME}
             "/usr/local/lib/libcppunit.dylib")
 else ()
