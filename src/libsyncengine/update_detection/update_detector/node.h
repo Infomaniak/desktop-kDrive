@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <vector>
 #include <optional>
-#include <unordered_set>
 #include <unordered_map>
 
 namespace KDC {
