@@ -2,7 +2,7 @@ project(gui)
 
 find_package(Qt6 REQUIRED COMPONENTS Network Sql Widgets SvgWidgets WebEngineWidgets)
 find_package(Qt6LinguistTools)
-find_package(Poco 1.12.5 REQUIRED Foundation Net)
+find_package(Poco 1.13.3 REQUIRED Foundation Net)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
