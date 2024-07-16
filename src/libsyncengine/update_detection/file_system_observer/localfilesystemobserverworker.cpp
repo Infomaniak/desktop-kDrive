@@ -63,9 +63,9 @@ void LocalFileSystemObserverWorker::stop() {
 void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<std::filesystem::path, OperationType>> &changes) {
     const std::lock_guard<std::recursive_mutex> lock(_recursiveMutex);
 
-    // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contains
-    // several operations. Only Delete event seems to be 100% reliable Move event from outside of the synced dir to inside it will
-    // be considered by the OS as move while must be considered by the synchroniser as create
+    // Warning: OperationType retrieved from FSEvent (macOS) seems to be unreliable in some cases. One event might contain
+    // several operations. Only Delete event seems to be 100% reliable Move event from outside the synced dir to inside it will
+    // be considered by the OS as move while must be considered by the synchronizer as Create.
     if (!_snapshot->isValid()) {
         // Snapshot generation is ongoing, queue the events and process them later
         _pendingFileEvents.insert(_pendingFileEvents.end(), changes.begin(), changes.end());
@@ -89,10 +89,12 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         // Check if exists with same nodeId
         if (opTypeFromOS == OperationTypeDelete) {
             NodeId prevNodeId = _snapshot->itemId(relativePath);
-            bool exists = false;
+            bool existsWithSameId = false;
+            NodeId otherNodeId;
             IoError ioError = IoErrorSuccess;
             if (!prevNodeId.empty()) {
-                if (IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, exists, ioError) && !exists) {
+                if (IoHelper::checkIfPathExistsWithSameNodeId(absolutePath, prevNodeId, existsWithSameId, otherNodeId, ioError) &&
+                    !existsWithSameId) {
                     if (_snapshot->removeItem(prevNodeId)) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
                                                         << Utility::formatSyncPath(absolutePath).c_str() << L" ("
@@ -145,7 +147,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
                                                                                        isWarning, toExclude, ioError);
             if (!success) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
                                                << Utility::formatIoError(absolutePath, ioError).c_str());
                 invalidateSnapshot();
                 return;
@@ -266,8 +268,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                         // Change status in order to start hydration/dehydration
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
                         if (!_syncPal->vfsFileStatusChanged(absolutePath, SyncFileStatusSyncing)) {
-                            LOG_SYNCPAL_WARN(_logger, "Error in SyncPal::vfsFileStatusChanged: "
-                                                          << Utility::formatSyncPath(absolutePath).c_str());
+                            LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: "
+                                                           << Utility::formatSyncPath(absolutePath).c_str());
                             invalidateSnapshot();
                             return;
                         }
@@ -275,7 +277,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 }
 
 #else
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring spurious edit notification on file: "
                                                     << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                     << Utility::s2ws(nodeId).c_str() << L")");
@@ -302,7 +304,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                                                     << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                     << Utility::s2ws(itemId).c_str() << L")");
                 } else {
-                    LOGW_SYNCPAL_WARN(_logger, L"Failed to delete item: " << Utility::formatSyncPath(absolutePath).c_str()
+                    LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath).c_str()
                                                                           << L" (" << Utility::s2ws(itemId).c_str() << L")");
                     invalidateSnapshot();
                     return;
@@ -332,12 +334,17 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
                               nodeType, fileStat.size, isLink);
 
-            if (_snapshot->updateItem(item)) {
-                if (ParametersCache::instance()->parameters().extendedLog()) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
-                                                    << Utility::formatSyncPath(absolutePath).c_str() << L" ("
-                                                    << Utility::s2ws(nodeId).c_str() << L") at " << fileStat.modtime);
-                }
+            if (!_snapshot->updateItem(item)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
+                                                                      << Utility::s2ws(nodeId).c_str() << L")");
+                invalidateSnapshot();
+                return;
+            }
+
+            if (ParametersCache::isExtendedLogEnabled()) {
+                LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: " << Utility::formatSyncPath(absolutePath).c_str()
+                                                                                 << L" (" << Utility::s2ws(nodeId).c_str()
+                                                                                 << L") at " << fileStat.modtime);
 
                 //                if (nodeType == NodeTypeFile) {
                 //                    if (canComputeChecksum(absolutePath)) {
@@ -345,11 +352,6 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 //                        _checksumWorker->computeChecksum(nodeId, absolutePath);
                 //                    }
                 //                }
-            } else {
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
-                                                                      << Utility::s2ws(nodeId).c_str() << L")");
-                invalidateSnapshot();
-                return;
             }
 
             // Manage directories moved from outside the synchronized directory
@@ -393,7 +395,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         // Update snapshot
         if (_snapshot->updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
                                                fileStat.modtime, nodeType, fileStat.size, isLink))) {
-            if (ParametersCache::instance()->parameters().extendedLog()) {
+            if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                       << Utility::s2ws(nodeId).c_str() << L") updated in local snapshot at "
                                                       << fileStat.modtime);
@@ -519,6 +521,7 @@ bool LocalFileSystemObserverWorker::canComputeChecksum(const SyncPath &absoluteP
 }
 
 #ifdef __APPLE__
+
 ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const SyncPath &path, SyncTime lastModifiedLocal,
                                                     bool &valid) const {
     // If the item is a dehydrated placeholder, only metadata update are possible
@@ -563,6 +566,7 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
 
     return ExitCodeOk;
 }
+
 #endif
 
 void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolutePath) {
@@ -575,8 +579,8 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
     const bool success =
         ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
     if (!success) {
-        LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                               << Utility::formatIoError(absolutePath, ioError).c_str());
+        LOGW_WARN(_logger,
+                  L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError).c_str());
         return;
     }
     if (isExcluded) {
@@ -667,7 +671,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             return ExitCodeSystemError;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-            if (ParametersCache::instance()->parameters().extendedLog()) {
+            if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(dirIt->path()).c_str() << L" found");
             }
 
@@ -731,7 +735,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
                                                                                            isWarning, isExcluded, ioError);
                 if (!success) {
-                    LOGW_SYNCPAL_DEBUG(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
                                                     << Utility::formatIoError(absolutePath, ioError).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
@@ -843,7 +847,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
                               itemType.nodeType, fileStat.size, isLink);
             if (_snapshot->updateItem(item)) {
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
                                                     << Utility::formatSyncPath(absolutePath.filename()).c_str() << L" inode:"
                                                     << nodeId.c_str() << L" parent inode:" << Utility::s2ws(parentNodeId).c_str()

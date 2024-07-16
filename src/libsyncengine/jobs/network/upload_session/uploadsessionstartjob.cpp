@@ -43,22 +43,23 @@ UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, const
     : UploadSessionStartJob(uploadType, 0, filename, size, "", totalChunks) {}
 
 UploadSessionStartJob::~UploadSessionStartJob() {
-    switch (_uploadType) {
-        case UploadSessionType::Standard:
-            if (_vfsForceStatus) {
-                if (!_vfsForceStatus(_filePath, true, 0, true)) {
+    try {
+        switch (_uploadType) {
+            case UploadSessionType::Standard:
+                if (_vfsForceStatus && !_vfsForceStatus(_filePath, true, 0, true)) {
                     LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
                 }
-            }
-            break;
-        case UploadSessionType::LogUpload:
-            break;
-        default:
-            LOGW_FATAL(_logger, L"Unknown upload type");
-            break;
+                break;
+            case UploadSessionType::LogUpload:
+                break;
+            default:
+                LOGW_FATAL(_logger, L"Unknown upload type");
+                break;
+        }
+    } catch (const std::exception &e) {
+        LOGW_FATAL(_logger, L"Exception in ~UploadSessionStartJob: " << e.what());
     }
 }
-
 std::string UploadSessionStartJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/upload/session/start";
@@ -67,9 +68,9 @@ std::string UploadSessionStartJob::getSpecificUrl() {
 
 void UploadSessionStartJob::setData(bool &canceled) {
     Poco::JSON::Object json;
-    auto timestamp = std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch());
-    
+    using namespace std::chrono;
+    auto timestamp = duration_cast<seconds>(time_point_cast<seconds>(system_clock::now()).time_since_epoch());
+
     switch (_uploadType) {
         case UploadSessionType::Standard:
             if (_fileId.empty()) {

@@ -89,10 +89,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                      std::string &error, std::string &errorDescr);
         static ExitCode getUserAvailableDrives(int userDbId, QHash<int, DriveAvailableInfo> &list);
         static ExitCode addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
-                                const QString &serverFolderPath, const QString &serverFolderNodeId, bool smartSync,
+                                const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                 bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo);
         static ExitCode addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                const QString &serverFolderNodeId, bool smartSync, bool showInNavigationPane, SyncInfo &syncInfo);
+                                const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane, SyncInfo &syncInfo);
         static ExitCode getNodeInfo(int userDbId, int driveId, const QString &nodeId, NodeInfo &nodeInfo, bool withPath = false);
         static ExitCode getSubFolders(int userDbId, int driveId, const QString &nodeId, QList<NodeInfo> &list,
                                       bool withPath = false);
@@ -142,8 +142,9 @@ struct SYNCENGINE_EXPORT ServerRequests {
 
         /* Send log to support
          * \param includeArchivedLog If true, all logs will be sent, else only the last session logs will be sent.
-         * \param progressCallback The callback to be called with the progress percentage, the function returns false if the user cancels the operation (else true).
-         * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to ExitCauseUnknown;
+         * \param progressCallback The callback to be called with the progress percentage, the function returns false if the user
+         * cancels the operation (else true). \param exitCause The exit cause to be filled in case of error. If no error occurred,
+         * it will be set to ExitCauseUnknown;
          */
         static ExitCode sendLogToSupport(bool includeArchivedLog, const std::function<bool(LogUploadState, int)> &progressCallback,
                                          ExitCause &exitCause);

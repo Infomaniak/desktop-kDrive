@@ -34,10 +34,7 @@
 
 namespace KDC {
 
-std::string getAppSupportDir();
-std::string getAppDir();
-
-static std::string getAppSupportDir_private() {
+static SyncPath getAppSupportDir_private() {
     const char *homeDir;
     if ((homeDir = getenv("HOME")) == NULL) {
         homeDir = getpwuid(getuid())->pw_dir;

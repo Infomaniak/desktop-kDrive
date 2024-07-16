@@ -297,44 +297,44 @@
     </message>
 </context>
 <context>
-    <name>KDC::AddDriveSmartSyncWidget</name>
+    <name>KDC::AddDriveLiteSyncWidget</name>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="152"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="152"/>
         <source>Conserve your computer space</source>
         <translation>Bewahren Sie Ihren Rechnerspeicherplatz</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="172"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="172"/>
         <source>Decide which files should be available online or locally</source>
         <translation>Entscheiden Sie, welche Dateien online oder lokal verfügbar sein sollen</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="192"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="192"/>
         <source>LATER</source>
         <translation>SPÄTER</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="198"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="198"/>
         <source>YES</source>
         <translation>JA</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="130"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="130"/>
         <source>Lite Sync syncs all your files without using your computer space. You can browse the files in your kDrive and download them locally whenever you want. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Learn more&lt;/a&gt;</source>
         <translation>Lite Sync synchronisiert alle Ihre Dateien, ohne Ihren Rechnerspeicherplatz zu nutzen. Sie können die Dateien in Ihrem kDrive durchsuchen und jederzeit lokal herunterladen. &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Mehr erfahren&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="212"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="212"/>
         <source>Unable to open link %1.</source>
         <translation>Link %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="117"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="117"/>
         <source>Would you like to activate Lite Sync (Beta) ?</source>
         <translation>Möchten Sie Lite Sync aktivieren (Beta)?</translation>
     </message>
     <message>
-        <location filename="../src/gui/adddrivesmartsyncwidget.cpp" line="119"/>
+        <location filename="../src/gui/adddriveslitesyncwidget.cpp" line="119"/>
         <source>Would you like to activate Lite Sync ?</source>
         <translation>Möchten Sie Lite Sync aktivieren?</translation>
     </message>

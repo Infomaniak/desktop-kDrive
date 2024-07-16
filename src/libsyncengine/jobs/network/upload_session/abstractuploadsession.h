@@ -101,7 +101,7 @@ class AbstractUploadSession : public AbstractJob {
         std::unordered_map<UniqueId, std::shared_ptr<UploadSessionChunkJob>> _ongoingChunkJobs;
         uint64_t _threadCounter = 0;  // Number of running
 
-        std::mutex _mutex;
+        std::recursive_mutex _mutex;
 };
 
 }  // namespace KDC

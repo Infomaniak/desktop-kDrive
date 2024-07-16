@@ -1,3 +1,4 @@
+#include "kdcupdater.h"
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -34,8 +35,6 @@
 #include <QtNetwork>
 #include <QtGui>
 #include <QtWidgets>
-
-#include <stdio.h>
 
 #include <log4cplus/loggingmacros.h>
 
@@ -74,7 +73,6 @@ void UpdaterScheduler::slotTimerFired() {
 KDCUpdater::KDCUpdater(const QUrl &url)
     : UpdaterServer(),
       _updateUrl(url),
-      _state(Unknown),
       _accessManager(new QNetworkAccessManager(this)),
       _timeoutWatchdog(new QTimer(this)) {}
 
@@ -148,6 +146,25 @@ QString KDCUpdater::statusString() const {
     }
 }
 
+UpdateState KDCUpdater::updateState() const {
+    switch (downloadState()) {
+        case Downloading:
+            return UpdateState::Downloading;
+        case DownloadComplete:
+            return UpdateState::Ready;
+        case LastVersionSkipped:
+            return UpdateState::Skipped;
+        case UpdateOnlyAvailableThroughSystem:
+            return UpdateState::ManualOnly;
+        case CheckingServer:
+            return UpdateState::Checking;
+        case UpToDate:
+            return UpdateState::None;
+        default:
+            return UpdateState::Error;
+    }
+}
+
 int KDCUpdater::downloadState() const {
     return _state;
 }
@@ -179,10 +196,11 @@ void KDCUpdater::slotStartInstaller() {
         return;
     }
 
-    LOG_WARN(Log::instance()->getLogger(), L"Running updater" << Utility::s2ws(updateFile.toStdString()).c_str());
+    LOGW_WARN(Log::instance()->getLogger(), L"Running updater" << Utility::s2ws(updateFile.toStdString()).c_str());
 
     if (updateFile.endsWith(".exe")) {
-        QProcess::startDetached(updateFile, QStringList() << "/S" << "/launch");
+        QProcess::startDetached(updateFile, QStringList() << "/S"
+                                                          << "/launch");
     } else if (updateFile.endsWith(".msi")) {
         // When MSIs are installed without gui they cannot launch applications
         // as they lack the user context. That is why we need to run the client
@@ -203,6 +221,9 @@ void KDCUpdater::slotStartInstaller() {
                                    preparePathForPowershell(QCoreApplication::applicationFilePath()));
 
         QProcess::startDetached("powershell.exe", QStringList{"-Command", command});
+    } else {
+        checkForUpdate();
+        LOG_WARN(Log::instance()->getLogger(), "Unknown update file type or no update file availble.");
     }
 }
 
@@ -231,15 +252,15 @@ void KDCUpdater::slotVersionInfoArrived() {
     QNetworkReply *reply = qobject_cast<QNetworkReply *>(sender());
     reply->deleteLater();
     if (reply->error() != QNetworkReply::NoError) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 L"Failed to reach version check url: " << Utility::s2ws(reply->errorString().toStdString()).c_str());
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Failed to reach version check url: " << Utility::s2ws(reply->errorString().toStdString()).c_str());
         setDownloadState(KDCUpdater::Unknown);
         return;
     }
 
     QString xml = QString::fromUtf8(reply->readAll());
 
-    bool ok;
+    bool ok = false;
     _updateInfo = UpdateInfo::parseString(xml, &ok);
     if (ok) {
         versionInfoArrived(_updateInfo);
@@ -353,6 +374,10 @@ void NSISUpdater::versionInfoArrived(const UpdateInfo &info) {
             SyncPath targetPath(CommonUtility::getAppSupportDir());
             _targetFile = SyncName2QStr((targetPath / QStr2SyncName(url.mid(url.lastIndexOf('/') + 1))).native());
             if (QFile(_targetFile).exists()) {
+                ParametersCache::instance()->parameters().setUpdateTargetVersion(updateInfo().version().toStdString());
+                ParametersCache::instance()->parameters().setUpdateTargetVersionString(
+                    updateInfo().versionString().toStdString());
+                ParametersCache::instance()->parameters().setUpdateFileAvailable(_targetFile.toStdString());
                 setDownloadState(DownloadComplete);
             } else {
                 QNetworkReply *reply = qnam()->get(QNetworkRequest(QUrl(url)));
@@ -472,6 +497,7 @@ bool NSISUpdater::handleStartup() {
 
 void NSISUpdater::slotSetSeenVersion() {
     ParametersCache::instance()->parameters().setSeenVersion(updateInfo().version().toStdString());
+    setDownloadState(LastVersionSkipped);
     ExitCode exitCode = ParametersCache::instance()->save();
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
@@ -479,10 +505,22 @@ void NSISUpdater::slotSetSeenVersion() {
     }
 }
 
+
+void NSISUpdater::slotUnsetSeenVersion() {
+    if (ParametersCache::instance()->parameters().seenVersion().empty()) {
+        return;
+    }
+    ParametersCache::instance()->parameters().setSeenVersion(std::string());
+    ExitCode exitCode = ParametersCache::instance()->save();
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
+        return;
+    }
+    checkForUpdate();
+}
 ////////////////////////////////////////////////////////////////////////
 
-PassiveUpdateNotifier::PassiveUpdateNotifier(const QUrl &url) : KDCUpdater(url) {
-}
+PassiveUpdateNotifier::PassiveUpdateNotifier(const QUrl &url) : KDCUpdater(url) {}
 
 void PassiveUpdateNotifier::versionInfoArrived(const UpdateInfo &info) {
     qint64 currentVer = Helper::currentVersionToInt();

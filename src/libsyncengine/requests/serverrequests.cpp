@@ -47,7 +47,7 @@
 #include "utility/jsonparserutility.h"
 #include "server/logarchiver.h"
 #include "libsyncengine/jobs/jobmanager.h"
-#include "libsyncengine/jobs/network/upload_session/uploadsessionlog.h"
+#include "libsyncengine/jobs/network/upload_session/loguploadsession.h"
 
 #include <QDir>
 #include <QUuid>
@@ -882,6 +882,8 @@ ExitCode ServerRequests::createSync(const Sync &sync, SyncInfo &syncInfo) {
 
 bool ServerRequests::isDisplayableError(const Error &error) {
     switch (error.exitCode()) {
+        case ExitCodeUpdateRequired:
+            return true;
         case ExitCodeNetworkError: {
             switch (error.exitCause()) {
                 case ExitCauseNetworkTimeout:
@@ -891,8 +893,8 @@ bool ServerRequests::isDisplayableError(const Error &error) {
                     return false;
             }
         }
-        case ExitCodeInconsistencyError: {
-            return false;
+        case ExitCodeLogicError: {
+            return true;
         }
         case ExitCodeDataError: {
             switch (error.exitCause()) {
@@ -1012,8 +1014,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
 
     IoHelper::logArchiverDirectoryPath(logUploadTempFolder, ioError);
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in IoHelper::logArchiverDirectoryPath : "
-                                                   << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
+        LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::logArchiverDirectoryPath: "
+                                                    << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         return ExitCodeSystemError;
     }
 
@@ -1024,8 +1026,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in IoHelper::createDirectory : " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::createDirectory: " << Utility::formatIoError(logUploadTempFolder, ioError).c_str());
         exitCause = ioError == IoErrorDiskFull ? ExitCauseNotEnoughDiskSpace : ExitCauseUnknown;
         return ExitCodeSystemError;
     }
@@ -1055,7 +1057,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     // Upload archive
-    auto uploadSessionLog = std::make_shared<UploadSessionLog>(archivePath);
+    auto uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
 
     std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
         [&safeProgressCallback, &uploadSessionLog](UniqueId, int percent) {  // Progress callback
@@ -1083,8 +1085,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
 
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
-        // We do not delete the archive here, The path is stored in the app state and the user can try to upload it
-        // manually
+        // We do not delete the archive here. The path is stored in the app state so that the user can still try to upload it
+        // manually.
         return exitCode;
     }
 
@@ -1099,7 +1101,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
 
     if (bool found = false;
         !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) || !found ||
-        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string(""), found) || !found) {
+        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string{}, found) || !found) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
     return ExitCodeOk;
@@ -1526,13 +1528,13 @@ ExitCode ServerRequests::deleteLiteSyncNotAllowedErrors() {
 #endif
 
 ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const QString &localFolderPath,
-                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool smartSync,
+                                 const QString &serverFolderPath, const QString &serverFolderNodeId, bool liteSync,
                                  bool showInNavigationPane, AccountInfo &accountInfo, DriveInfo &driveInfo, SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - userDbId="
                                                 << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
                                                 << L" localFolderPath=" << Path2WStr(QStr2Path(localFolderPath)).c_str()
                                                 << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str()
-                                                << L" smartSync=" << smartSync);
+                                                << L" liteSync=" << liteSync);
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
@@ -1594,23 +1596,23 @@ ExitCode ServerRequests::addSync(int userDbId, int accountId, int driveId, const
                                                                                         << L" accountDbId=" << accountDbId);
     }
 
-    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, smartSync, showInNavigationPane, syncInfo);
+    return addSync(driveDbId, localFolderPath, serverFolderPath, serverFolderNodeId, liteSync, showInNavigationPane, syncInfo);
 }
 
 ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, const QString &serverFolderPath,
-                                 const QString &serverFolderNodeId, bool smartSync, bool showInNavigationPane,
+                                 const QString &serverFolderNodeId, bool liteSync, bool showInNavigationPane,
                                  SyncInfo &syncInfo) {
     LOGW_INFO(Log::instance()->getLogger(), L"Adding new sync - driveDbId="
                                                 << driveDbId << L" localFolderPath="
                                                 << Path2WStr(QStr2Path(localFolderPath)).c_str() << L" serverFolderPath="
-                                                << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" smartSync=" << smartSync);
+                                                << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" liteSync=" << liteSync);
 
 #ifndef Q_OS_WIN
     Q_UNUSED(showInNavigationPane)
 #endif
 
 #if !defined(Q_OS_MAC) && !defined(Q_OS_WIN)
-    Q_UNUSED(smartSync)
+    Q_UNUSED(liteSync)
 #endif
 
     ExitCode exitCode;
@@ -1645,9 +1647,9 @@ ExitCode ServerRequests::addSync(int driveDbId, const QString &localFolderPath, 
     sync.setSupportVfs(supportVfs);
 
 #if defined(Q_OS_MAC)
-    sync.setVirtualFileMode(smartSync ? VirtualFileModeMac : VirtualFileModeOff);
+    sync.setVirtualFileMode(liteSync ? VirtualFileModeMac : VirtualFileModeOff);
 #elif defined(Q_OS_WIN32)
-    sync.setVirtualFileMode(smartSync ? VirtualFileModeWin : VirtualFileModeOff);
+    sync.setVirtualFileMode(liteSync ? VirtualFileModeWin : VirtualFileModeOff);
 #else
     sync.setVirtualFileMode(VirtualFileModeOff);
 #endif

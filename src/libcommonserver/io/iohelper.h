@@ -54,16 +54,9 @@ struct IoHelper {
                 SyncPath _directoryPath;
                 std::filesystem::recursive_directory_iterator _dirIterator;
         };
+        IoHelper() = default;
 
-    public:
-        IoHelper(){};
-
-        inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
-
-#ifdef _WIN32
-        static int _getAndSetRightsMethod;
-#endif
-
+        inline static void setLogger(const log4cplus::Logger &logger) { _logger = logger; }
         static IoError stdError2ioError(int error) noexcept;
         static IoError stdError2ioError(const std::error_code &ec) noexcept;
         static IoError posixError2ioError(int error) noexcept;
@@ -182,8 +175,8 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &exists,
-                                                    IoError &ioError) noexcept;
+        static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
+                                                    NodeId &otherNodeId, IoError &ioError) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!
@@ -337,6 +330,7 @@ struct IoHelper {
         static bool createJunction(const std::string &data, const SyncPath &path, IoError &ioError) noexcept;
         static bool readJunction(const SyncPath &path, std::string &data, SyncPath &targetPath, IoError &ioError) noexcept;
         static bool createJunctionFromPath(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept;
+        static TRUSTEE &getTrustee();
 #endif
         //! Checks if the item indicated by the specified path is dehydrated.
         /*!
@@ -407,7 +401,12 @@ struct IoHelper {
         static bool _setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
 #ifdef _WIN32
-        static bool _setRightsWindowsApiInheritance; // For windows tests only
+        static bool _setRightsWindowsApiInheritance;  // For windows tests only
+        static int _getAndSetRightsMethod;
+        static std::unique_ptr<BYTE[]> _psid;
+        static TRUSTEE _trustee;
+        static std::mutex _initRightsWindowsApiMutex;
+        static void initRightsWindowsApi();
 #endif
 };
 

@@ -25,8 +25,7 @@ namespace KDC {
 
 class DeleteJob : public AbstractTokenNetworkJob {
     public:
-        DeleteJob(int driveDbId, const NodeId &fileId, const SyncPath &absoluteLocalFilepath);
-        ~DeleteJob();
+        DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath);
 
         virtual bool canRun() override;
 
@@ -35,7 +34,8 @@ class DeleteJob : public AbstractTokenNetworkJob {
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
         virtual void setData(bool &canceled) override { canceled = false; }
 
-        std::string _fileId;
+        const NodeId _remoteItemId;
+        const NodeId _localItemId;
         SyncPath _absoluteLocalFilepath;
 };
 

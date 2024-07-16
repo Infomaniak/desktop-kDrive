@@ -19,7 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
-#include "test_utility/temporarydirectory.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "libcommonserver/io/iohelper.h"
 
 using namespace CppUnit;
@@ -43,7 +43,7 @@ struct IoHelperTests : public IoHelper {
 
 class TestIo : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestIo);
-        CPPUNIT_TEST(testCheckSetAndGetRights); // Keep this test before any tests that may use set/get rights functions
+        CPPUNIT_TEST(testCheckSetAndGetRights);  // Keep this test before any tests that may use set/get rights functions
         CPPUNIT_TEST(testGetItemType);
         CPPUNIT_TEST(testGetFileSize);
         CPPUNIT_TEST(testTempDirectoryPath);
@@ -107,6 +107,7 @@ class TestIo : public CppUnit::TestFixture {
 
     private:
         void testGetItemTypeSimpleCases(void);
+        void testGetItemTypeEdgeCases(void);
         void testGetItemTypeAllBranches(void);
 
         void testGetFileSizeSimpleCases(void);
@@ -156,6 +157,7 @@ struct GetItemChecker {
 };
 
 SyncPath makeVeryLonPath(const SyncPath &rootPath);
+SyncPath makeFileNameWithEmojis();
 
 
 }  // namespace KDC

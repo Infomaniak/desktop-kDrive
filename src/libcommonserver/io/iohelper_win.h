@@ -18,6 +18,7 @@
 
 #include <QString>  // setFileHidden uses a QString
 
+#define UMDF_USING_NTSTATUS
 #include <windows.h>
 
 // Definitions for zwQueryDirectoryFile - Begin

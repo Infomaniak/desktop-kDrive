@@ -32,6 +32,10 @@ namespace KDC {
 class Snapshot : public SharedObject {
     public:
         Snapshot(ReplicaSide side, const DbNode &dbNode);
+        ~Snapshot();
+
+        Snapshot(Snapshot const &) = delete;
+        Snapshot &operator=(Snapshot &other);
 
         void init();
 
@@ -68,9 +72,9 @@ class Snapshot : public SharedObject {
         bool isAncestor(const NodeId &itemId, const NodeId &ancestorItemId);
         bool isOrphan(const NodeId &itemId);
 
-        inline ReplicaSide side() const { return _side; }
+        [[nodiscard]] inline ReplicaSide side() const { return _side; }
 
-        inline NodeId rootFolderId() const { return _rootFolderId; }
+        [[nodiscard]] inline NodeId rootFolderId() const { return _rootFolderId; }
         inline void setRootFolderId(const NodeId &nodeId) { _rootFolderId = nodeId; }
 
         bool isEmpty();
@@ -87,8 +91,6 @@ class Snapshot : public SharedObject {
         std::unordered_map<NodeId, SnapshotItem> _items;  // key: id
         bool _isValid = false;
         std::recursive_mutex _mutex;
-
-        friend class TestSnapshot;
 };
 
 }  // namespace KDC

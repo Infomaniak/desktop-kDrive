@@ -64,6 +64,14 @@ bool FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<Uni
     return false;
 }
 
+uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
+    const std::lock_guard<std::mutex> lock(_mutex);
+    if (auto it = _opsByType.find(type); it != _opsByType.end()) {
+        return it->second.size();
+    }
+    return 0;
+}
+
 void FSOperationSet::clear() {
     std::unordered_map<UniqueId, FSOpPtr>::iterator it = _ops.begin();
     while (it != _ops.end()) {
@@ -119,6 +127,16 @@ bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FS
         }
     }
     return false;
+}
+
+FSOperationSet &FSOperationSet::operator=(const FSOperationSet &other) {
+    if (this != &other) {
+        _ops = other._ops;
+        _opsByType = other._opsByType;
+        _opsByNodeId = other._opsByNodeId;
+    }
+
+    return *this;
 }
 
 }  // namespace KDC

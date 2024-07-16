@@ -1,10 +1,8 @@
 project(libcommon)
 
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
-find_package(Poco 1.12.5 REQUIRED Foundation JSON Util)
-find_package(log4cplus 2.1.0 REQUIRED)
+find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
 find_package(sentry REQUIRED)
-find_package(xxHash 0.8.2 REQUIRED)
 find_package(libzip 1.10.1 REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
@@ -80,24 +78,16 @@ target_link_libraries(${libcommon_NAME}
     libzip::zip
     )
 
-if (WIN32)
-    target_link_libraries(${libcommon_NAME}
-        log4cplus::log4cplusU
-        xxHash::xxhash)
-elseif(APPLE)
+if(APPLE)
     # For utility_mac.mm
     find_library(FOUNDATION_LIBRARY NAMES Foundation)
     find_library(CORESERVICES_LIBRARY NAMES CoreServices)
     find_library(APPKIT_LIBRARY NAMES AppKit)
 
     target_link_libraries(${libcommon_NAME}
-        "/usr/local/lib/liblog4cplusU.dylib"
         ${FOUNDATION_LIBRARY}
         ${CORESERVICES_LIBRARY}
         ${APPKIT_LIBRARY})
-else()
-    target_link_libraries(${libcommon_NAME}
-        "/usr/local/lib/liblog4cplusU.so")
 endif()
 
 if(ZLIB_FOUND)

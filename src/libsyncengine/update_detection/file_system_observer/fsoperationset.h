@@ -33,14 +33,18 @@ typedef std::shared_ptr<FSOperation> FSOpPtr;
 class FSOperationSet : public SharedObject {
     public:
         FSOperationSet() = default;
+        ~FSOperationSet();
+
         FSOperationSet(const FSOperationSet &other)
             : _ops(other._ops), _opsByType(other._opsByType), _opsByNodeId(other._opsByNodeId) {}
-        ~FSOperationSet();
+        FSOperationSet &operator=(const FSOperationSet &other);
 
         inline const std::unordered_map<UniqueId, FSOpPtr> &ops() const { return _ops; }
         bool getOp(UniqueId id, FSOpPtr &opPtr, bool lockMutex = true);
         bool getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops);
         bool getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops);
+
+        uint64_t nbOpsByType(const OperationType type);
 
         void clear();
         void insertOp(FSOpPtr opPtr);
@@ -48,12 +52,6 @@ class FSOperationSet : public SharedObject {
         bool removeOp(const NodeId &nodeId, const OperationType opType);
 
         bool findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res);
-
-        void operator=(const FSOperationSet &other) {
-            _ops = other._ops;
-            _opsByType = other._opsByType;
-            _opsByNodeId = other._opsByNodeId;
-        }
 
     private:
         std::unordered_map<UniqueId, FSOpPtr> _ops;

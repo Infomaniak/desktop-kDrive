@@ -46,94 +46,11 @@
 
 namespace KDC {
 
-static bool initTrusteeWithUserSID() {
-    if (Utility::_psid != nullptr) {  // should never happen
-        Utility::_psid.reset();
-        LOGW_WARN(Log::instance()->getLogger(), "Error in initTrusteeWithUserSID - _pssid is not null");
-    }
-    Utility::_trustee = {0};
-
-    // Get SID associated with the current process
-    auto hToken_std = std::make_unique<HANDLE>();
-    PHANDLE hToken = hToken_std.get();
-    if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, hToken)) {
-        DWORD dwError = GetLastError();
-        if (dwError == ERROR_NO_TOKEN) {
-            if (!ImpersonateSelf(SecurityImpersonation)) {
-                dwError = GetLastError();
-                LOGW_WARN(Log::instance()->getLogger(), "Error in ImpersonateSelf - err=" << dwError);
-                return false;
-            }
-
-            if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, hToken)) {
-                dwError = GetLastError();
-                LOGW_WARN(Log::instance()->getLogger(), "Error in OpenThreadToken - err=" << dwError);
-                return false;
-            }
-        } else {
-            LOGW_WARN(Log::instance()->getLogger(), "Error in OpenThreadToken - err=" << dwError);
-            return false;
-        }
-    }
-
-    DWORD dwLength = 0;
-    GetTokenInformation(*hToken, TokenUser, nullptr, 0, &dwLength);
-    if (dwLength == 0) {
-        DWORD dwError = GetLastError();
-        LOGW_WARN(Log::instance()->getLogger(), "Error in GetTokenInformation 1 - err=" << dwError);
-        return false;
-    }
-    auto pTokenUser_std = std::make_unique<TOKEN_USER[]>(dwLength);
-    PTOKEN_USER pTokenUser = pTokenUser_std.get();
-    if (pTokenUser == nullptr) {
-        LOGW_WARN(Log::instance()->getLogger(), "Memory allocation error");
-        return false;
-    }
-
-    if (!GetTokenInformation(*hToken, TokenUser, pTokenUser, dwLength, &dwLength)) {
-        DWORD dwError = GetLastError();
-        LOGW_WARN(Log::instance()->getLogger(), "Error in GetTokenInformation 2 - err=" << dwError);
-        return false;
-    }
-
-    Utility::_psid = std::make_unique<BYTE[]>(GetLengthSid(pTokenUser->User.Sid));
-
-    if (!CopySid(GetLengthSid(pTokenUser->User.Sid), Utility::_psid.get(), pTokenUser->User.Sid)) {
-        DWORD dwError = GetLastError();
-        LOGW_WARN(Log::instance()->getLogger(), "Error in CopySid - err=" << dwError);
-        Utility::_psid.reset();
-        return false;
-    }
-
-    // initialize the trustee structure
-    BuildTrusteeWithSid(&Utility::_trustee, Utility::_psid.get());
-
-    return true;
-}
-
-static bool init_private() {
-    if (Utility::_psid != nullptr) {
-        return false;
-    }
-
-    initTrusteeWithUserSID();
-
-    const std::string useGetRightsFallbackMethod = CommonUtility::envVarValue("KDRIVE_USE_GETRIGHTS_FALLBACK_METHOD");
-    if (!useGetRightsFallbackMethod.empty()) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Use getRights fallback method");
-        IoHelper::_getAndSetRightsMethod = 1;
-    }
-
-    return true;
-}
-
-static void free_private() {
-    if (Utility::_psid != nullptr) {
-        Utility::_psid.reset();
-    }
-}
-
 static bool moveItemToTrash_private(const SyncPath &itemPath) {
+    if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
+        LOGW_INFO(Log::instance()->getLogger(), L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to CoCreateInstance is failing.");
+    }
+    
     // Create the IFileOperation object
     IFileOperation *fileOperation = nullptr;
     HRESULT hr = CoCreateInstance(__uuidof(FileOperation), NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));
@@ -147,7 +64,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
                     << L" - CoCreateInstance failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
-
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "CoCreateInstance failed"));
 
@@ -166,6 +83,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
                     << L" - SetOperationFlags failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "SetOperationFlags failed"));
@@ -189,6 +107,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
                     << L" - SHCreateItemFromParsingName failed with error: "
                     << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "SHCreateItemFromParsingName failed"));
@@ -211,6 +130,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstring errorStr = errorStream.str();
 
         sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "DeleteItem failed"));
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         fileOrFolderItem->Release();
         fileOperation->Release();
@@ -229,6 +149,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         errorStream << L"Move to trash failed for item " << Path2WStr(itemPath).c_str()
                     << L" - PerformOperations failed with error: " << Utility::s2ws(std::system_category().message(hr)).c_str();
         std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "PerformOperations failed"));
@@ -250,6 +171,7 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
         std::wstringstream errorStream;
         errorStream << L"Move to trash aborted for item " << Path2WStr(itemPath).c_str();
         std::wstring errorStr = errorStream.str();
+        LOGW_WARN(Log::instance()->getLogger(), errorStr.c_str());
 
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility::moveItemToTrash", "Move to trash aborted"));
@@ -263,7 +185,6 @@ static bool moveItemToTrash_private(const SyncPath &itemPath) {
     fileOrFolderItem->Release();
     fileOperation->Release();
     CoUninitialize();
-
     return true;
 }
 

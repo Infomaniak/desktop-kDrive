@@ -21,8 +21,10 @@
 
 #include "libcommonserver/utility/utility.h"
 #include "update_detection/file_system_observer/snapshot/snapshotitem.h"
-#include "requests/parameterscache.h"
+
+#ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#endif
 
 #include <Poco/JSON/Parser.h>
 
@@ -30,9 +32,223 @@
 
 namespace KDC {
 
+SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger) {};
+
+void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
+                                   const std::exception &exc) {
+    const std::wstring header = L"Error in SnapshotItem::" + methodName;
+    const std::wstring strStr = L"str='" + Utility::s2ws(str) + L"', ";
+    const std::wstring excStr = L"exc='" + stdErrorType + L"', " + L"err=" + Utility::s2ws(exc.what()) + L"'.";
+
+    const std::wstring msg = header + strStr + excStr;
+
+    LOGW_WARN(_logger, msg.c_str());
+}
+
+bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item) {
+    switch (index) {
+        case CsvIndexId: {
+            item.setId(str);
+            break;
+        }
+        case CsvIndexParentId: {
+            item.setParentId(str);
+            break;
+        }
+        case CsvIndexName: {
+            SyncName name = Str2SyncName(str);
+#ifdef _WIN32
+            SyncName newName;
+            if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name, newName)) {
+                name = newName;
+            }
+#endif
+            item.setName(name);
+            break;
+        }
+        case CsvIndexType: {
+            if (str == "dir") {
+                item.setType(NodeTypeDirectory);
+            } else {
+                item.setType(NodeTypeFile);
+            }
+            break;
+        }
+        case CsvIndexSize: {
+            try {
+                item.setSize(str.empty() ? 0 : std::stoll(str));
+            } catch (std::invalid_argument const &exc) {
+                logError(L"setSize", L"invalid_argument", str, exc);
+                return false;
+            } catch (std::out_of_range const &exc) {
+                logError(L"setSize", L"out_of_range", str, exc);
+                return false;
+            }
+
+            if (item.size() < 0) {
+                LOGW_WARN(_logger, "Error in setSize, got a negative value - str='" << str.c_str() << "'");
+                return false;
+            }
+
+            break;
+        }
+        case CsvIndexCreatedAt: {
+            try {
+                item.setCreatedAt(str.empty() ? 0 : std::stoll(str));
+            } catch (std::invalid_argument const &exc) {
+                logError(L"setCreatedAt", L"invalid_argument", str, exc);
+                return false;
+            } catch (std::out_of_range const &exc) {
+                logError(L"setCreatedAt", L"out_of_range", str, exc);
+                return false;
+            }
+
+            if (item.createdAt() < 0) {
+                LOGW_WARN(_logger, "Error in setCreatedAt, got a negative value - str='" << str.c_str() << "'");
+                return false;
+            }
+
+            break;
+        }
+        case CsvIndexModtime: {
+            try {
+                item.setLastModified(str.empty() ? 0 : std::stoll(str));
+            } catch (std::invalid_argument const &exc) {
+                logError(L"setLastModified", L"invalid_argument", str, exc);
+                return false;
+            } catch (std::out_of_range const &exc) {
+                logError(L"setLastModified", L"out_of_range", str, exc);
+                return false;
+            }
+
+            if (item.lastModified() < 0) {
+                LOGW_WARN(_logger, "Error in setLastModified, got a negative value - str='" << str.c_str() << "'");
+                return false;
+            }
+
+            break;
+        }
+        case CsvIndexCanWrite: {
+            item.setCanWrite(str == "1");
+            break;
+        }
+        case CsvIndexIsLink: {
+            item.setIsLink(str == "1");
+            break;
+        }
+        default: {
+            // Ignore additionnal columns
+            break;
+        }
+    }
+    return true;
+}
+
+void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state) {
+    for (char c : line) {
+        if (c == ',' && (!state.readingDoubleQuotedValue || state.prevCharDoubleQuotes)) {
+            state.readingDoubleQuotedValue = false;
+            state.prevCharDoubleQuotes = false;
+            if (!updateSnapshotItem(state.tmp, state.index, item)) {
+                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << Utility::s2ws(line).c_str() << "L'.");
+                error = true;
+                return;
+            }
+            state.tmp.clear();
+            incrementCsvIndex(state.index);
+        } else if (c == '"') {
+            ++state.doubleQuoteCount;
+            if (!state.readingDoubleQuotedValue) {
+                state.readingDoubleQuotedValue = true;
+            } else {
+                if (state.prevCharDoubleQuotes) {
+                    // Replace 2 successive double quotes by one
+                    state.prevCharDoubleQuotes = false;
+                    state.tmp.push_back('"');
+                } else {
+                    state.prevCharDoubleQuotes = true;
+                }
+            }
+        } else {
+            state.tmp.push_back(c);
+        }
+    }
+}
+
+bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore) {
+    error = false;
+    ignore = false;
+
+    std::string line;
+    std::getline(ss, line);
+    if (line.empty()) {
+        return false;
+    }
+
+    if (_ignoreFirstLine) {
+        // The first line of the CSV full listing consists of the column names:
+        // "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link"
+        _ignoreFirstLine = false;
+        line.clear();
+        std::getline(ss, line);
+        if (line.empty()) {
+            return false;
+        }
+    }
+
+    ParsingState state;
+
+    while (state.readNextLine) {
+        state.readNextLine = false;
+
+        readSnapshotItemFields(item, line, error, state);
+        if (error) return true;
+
+        if (state.doubleQuoteCount > 2) {
+            LOGW_WARN(_logger, L"Item name contains double quote, ignoring it.");
+            ignore = true;
+            return true;
+        }
+
+        // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
+        if (state.readingDoubleQuotedValue) {
+            state.tmp.push_back('\n');
+            state.readNextLine = true;
+            const std::string lastParsedLine = line;
+            std::getline(ss, line);
+            if (line.empty()) {
+                LOGW_WARN(_logger, L"CSV full listing parsing error. Invalid line='"
+                                       << Utility::s2ws(lastParsedLine).c_str()
+                                       << L"'. Check double quote balance and line return characters.");
+                error = true;
+                return true;
+            }
+        }
+    }
+
+    if (state.index < CsvIndexEnd - 1) {
+        LOGW_WARN(_logger, L"Invalid item");
+        ignore = true;
+        return true;
+    }
+
+    // Update last value
+    if (!updateSnapshotItem(state.tmp, state.index, item)) {
+        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line).c_str());
+        error = true;
+        return true;
+    }
+
+    return true;
+}
+
 CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId,
                                                            std::unordered_set<NodeId> blacklist /*= {}*/, bool zip /*= true*/)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0), _dirId(dirId), _blacklist(blacklist), _zip(zip) {
+    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0),
+      _dirId(dirId),
+      _blacklist(blacklist),
+      _zip(zip),
+      _snapshotItemHandler(_logger) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = API_TIMEOUT + 15;
 
@@ -45,91 +261,7 @@ bool CsvFullFileListWithCursorJob::getItem(SnapshotItem &item, bool &error, bool
     error = false;
     ignore = false;
 
-    std::string line;
-    std::getline(_ss, line);
-    if (line.empty()) {
-        return false;
-    }
-
-    if (_ignoreFirstLine) {
-        std::getline(_ss, line);
-        if (line.empty()) {
-            return false;
-        }
-        _ignoreFirstLine = false;
-    }
-
-    CsvIndex index = CsvIndexId;
-    bool readingDoubleQuotedValue = false;
-    bool prevCharDoubleQuotes = false;
-    bool readNextLine = true;
-    std::string tmp;
-    uint doubleQuoteCount = 0;
-    while (readNextLine) {
-        readNextLine = false;
-
-        for (char &c : line) {
-            if (c == ',' && (!readingDoubleQuotedValue || prevCharDoubleQuotes)) {
-                readingDoubleQuotedValue = false;
-                prevCharDoubleQuotes = false;
-                if (!updateSnapshotItem(tmp, index, item)) {
-                    LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line).c_str());
-                    error = true;
-                    return true;
-                }
-                tmp.clear();
-                index = static_cast<CsvIndex>(static_cast<int>(index) + 1);
-            } else if (c == '"') {
-                doubleQuoteCount++;
-                if (!readingDoubleQuotedValue) {
-                    readingDoubleQuotedValue = true;
-                } else {
-                    if (prevCharDoubleQuotes) {
-                        // Replace 2 successive double quotes by one
-                        prevCharDoubleQuotes = false;
-                        tmp.push_back('"');
-                    } else {
-                        prevCharDoubleQuotes = true;
-                    }
-                }
-            } else {
-                tmp.push_back(c);
-            }
-        }
-
-        if (doubleQuoteCount > 2) {
-            LOGW_WARN(_logger, L"Item name contains double quote, ignoring it.");
-            ignore = true;
-            return true;
-        }
-
-        // File name could have line return in it. If so, read next line and continue parsing
-        if (readingDoubleQuotedValue) {
-            tmp.push_back('\n');
-            readNextLine = true;
-            std::getline(_ss, line);
-            if (line.empty()) {
-                LOGW_WARN(_logger, L"Invalid line");
-                ignore = true;
-                return true;
-            }
-        }
-    }
-
-    if (index < CsvIndexEnd - 1) {
-        LOGW_WARN(_logger, L"Invalid item");
-        ignore = true;
-        return true;
-    }
-
-    // Update last value
-    if (!updateSnapshotItem(tmp, index, item)) {
-        LOGW_WARN(_logger, L"Error in updateSnapshotItem - line=" << Utility::s2ws(line).c_str());
-        error = true;
-        return true;
-    }
-
-    return true;
+    return _snapshotItemHandler.getItem(item, _ss, error, ignore);
 }
 
 std::string CsvFullFileListWithCursorJob::getCursor() {
@@ -188,99 +320,6 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
                    L"Reply " << jobId() << L" received - length=" << length << " value=" << Utility::s2ws(_ss.str()).c_str());
     }
 
-    return true;
-}
-
-bool CsvFullFileListWithCursorJob::updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item) {
-    switch (index) {
-        case CsvIndexId: {
-            item.setId(str);
-            break;
-        }
-        case CsvIndexParentId: {
-            item.setParentId(str);
-            break;
-        }
-        case CsvIndexName: {
-            SyncName name = Str2SyncName(str);
-#ifdef _WIN32
-            SyncName newName;
-            if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(name, newName)) {
-                name = newName;
-            }
-#endif
-            item.setName(name);
-            break;
-        }
-        case CsvIndexType: {
-            if (str == "dir") {
-                item.setType(NodeTypeDirectory);
-            } else {
-                item.setType(NodeTypeFile);
-            }
-            break;
-        }
-        case CsvIndexSize: {
-            try {
-                item.setSize(str.empty() ? 0 : std::stoll(str));
-            } catch (std::invalid_argument const &ex) {
-                LOGW_WARN(_logger, L"Error in SnapshotItem::setSize - str=" << Utility::s2ws(str).c_str()
-                                                                            << L" exc=invalid_argument err="
-                                                                            << Utility::s2ws(ex.what()).c_str());
-                return false;
-            } catch (std::out_of_range const &ex) {
-                LOGW_WARN(_logger, L"Error in SnapshotItem::setSize - str=" << Utility::s2ws(str).c_str()
-                                                                            << L" exc=out_of_range err="
-                                                                            << Utility::s2ws(ex.what()).c_str());
-                return false;
-            }
-            break;
-        }
-        case CsvIndexCreatedAt: {
-            try {
-                item.setCreatedAt(str.empty() ? 0 : std::stoll(str));
-            } catch (std::invalid_argument const &ex) {
-                LOGW_WARN(_logger, L"Error in SnapshotItem::setCreatedAt - str=" << Utility::s2ws(str).c_str()
-                                                                                 << L" exc=invalid_argument err="
-                                                                                 << Utility::s2ws(ex.what()).c_str());
-                return false;
-            } catch (std::out_of_range const &ex) {
-                LOGW_WARN(_logger, L"Error in SnapshotItem::setCreatedAt - str=" << Utility::s2ws(str).c_str()
-                                                                                 << L" exc=out_of_range err="
-                                                                                 << Utility::s2ws(ex.what()).c_str());
-                return false;
-            }
-            break;
-        }
-        case CsvIndexModtime: {
-            try {
-                item.setLastModified(str.empty() ? 0 : std::stoll(str));
-            } catch (std::invalid_argument const &ex) {
-                LOGW_WARN(_logger, L"Error in SnapshotItem::setLastModified - str=" << Utility::s2ws(str).c_str()
-                                                                                    << L" exc=invalid_argument err="
-                                                                                    << Utility::s2ws(ex.what()).c_str());
-                return false;
-            } catch (std::out_of_range const &ex) {
-                LOGW_WARN(_logger, L"Error in SnapshotItem::setLastModified - str=" << Utility::s2ws(str).c_str()
-                                                                                    << L" exc=out_of_range err="
-                                                                                    << Utility::s2ws(ex.what()).c_str());
-                return false;
-            }
-            break;
-        }
-        case CsvIndexCanWrite: {
-            item.setCanWrite(str == "1");
-            break;
-        }
-        case CsvIndexIsLink: {
-            item.setIsLink(str == "1");
-            break;
-        }
-        default: {
-            // Ignore additionnal columns
-            break;
-        }
-    }
     return true;
 }
 

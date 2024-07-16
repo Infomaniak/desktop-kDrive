@@ -248,7 +248,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
             int retryCount = 0;
             while (!done) {
                 if (isAborted()) {
-                    LOG_DEBUG(_logger, "Request " << jobId() << ": aborting download job");
+                    LOG_DEBUG(_logger, "Request " << jobId() << ": aborted");
                     break;
                 }
 

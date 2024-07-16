@@ -89,13 +89,13 @@ ExitCode ExcludeListPropagator::checkItems() {
             const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
                                                                                        isWarning, isExcluded, ioError);
             if (!success) {
-                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in ExclusionTemplateCache::isExcluded: "
                                                                     << Utility::formatIoError(dirIt->path(), ioError).c_str());
                 return ExitCodeSystemError;
             } else if (isExcluded) {
                 if (isWarning) {
-                    NodeId localNodeId = _syncPal->_localSnapshot->itemId(relativePath);
-                    NodeType localNodeType = _syncPal->_localSnapshot->type(localNodeId);
+                    NodeId localNodeId = _syncPal->snapshot(ReplicaSideLocal)->itemId(relativePath);
+                    NodeType localNodeType = _syncPal->snapshot(ReplicaSideLocal)->type(localNodeId);
                     Error error(_syncPal->syncDbId(), "", localNodeId, localNodeType, relativePath, ConflictTypeNone,
                                 InconsistencyTypeNone, CancelTypeExcludedByTemplate);
                     _syncPal->addError(error);
@@ -112,7 +112,7 @@ ExitCode ExcludeListPropagator::checkItems() {
                 if (!found) continue;
 
                 // Remove node (and children by cascade) from DB
-                if (ParametersCache::instance()->parameters().extendedLog()) {
+                if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Removing node "
                                                                          << Path2WStr(relativePath).c_str()
                                                                          << L" from DB because it is excluded from sync");

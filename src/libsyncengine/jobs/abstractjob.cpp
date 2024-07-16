@@ -27,18 +27,11 @@ namespace KDC {
 UniqueId AbstractJob::_nextJobId = 0;
 std::mutex AbstractJob::_nextJobIdMutex;
 
-AbstractJob::AbstractJob()
-    : _logger(Log::instance()->getLogger()),
-      _vfsUpdateFetchStatus(nullptr),
-      _vfsSetPinState(nullptr),
-      _vfsForceStatus(nullptr),
-      _vfsStatus(nullptr),
-      _vfsUpdateMetadata(nullptr),
-      _vfsCancelHydrate(nullptr) {
-    const std::lock_guard<std::mutex> lock(_nextJobIdMutex);
+AbstractJob::AbstractJob() : _logger(Log::instance()->getLogger()) {
+    const std::lock_guard lock(_nextJobIdMutex);
     _jobId = _nextJobId++;
 
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         _isExtendedLog = true;
         LOG_DEBUG(_logger, "Job " << _jobId << " created");
     }
@@ -47,7 +40,7 @@ AbstractJob::AbstractJob()
 AbstractJob::~AbstractJob() {
     _mainCallback = nullptr;
     _additionalCallback = nullptr;
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(_logger, "Job " << _jobId << " deleted");
     }
 }
@@ -60,12 +53,16 @@ ExitCode AbstractJob::runSynchronously() {
 void AbstractJob::setProgress(int64_t newProgress) {
     _progress = newProgress;
     if (_progressPercentCallback) {
-        if (_expectedFinishProgress == -1) {
-            LOG_WARN(
-                _logger,
-                L"Could not calculate progress percentage as _expectedFinishProgress is not set (but _progressPercentCallback is set).");
+        if (_expectedFinishProgress == expectedFinishProgressNotSetValue) {
+            LOG_DEBUG(_logger,
+                      "Could not calculate progress percentage as _expectedFinishProgress is not set by the derived class (but "
+                      "_progressPercentCallback is set by the caller).");
+            _expectedFinishProgress = expectedFinishProgressNotSetValueWarningLogged;
+            _progressPercentCallback(_jobId, 100);
+        } else if (_expectedFinishProgress == expectedFinishProgressNotSetValueWarningLogged) {
+            _progressPercentCallback(_jobId, 100);
         } else {
-            _progressPercentCallback(_jobId, ((_progress*100) / _expectedFinishProgress));
+            _progressPercentCallback(_jobId, static_cast<int>((_progress * 100) / _expectedFinishProgress));
         }
     }
 }
@@ -79,7 +76,7 @@ bool AbstractJob::progressChanged() {
 }
 
 void AbstractJob::abort() {
-    if (ParametersCache::instance()->parameters().extendedLog()) {
+    if (ParametersCache::isExtendedLogEnabled()) {
         LOG_DEBUG(_logger, "Aborting job " << jobId());
     }
     _abort = true;

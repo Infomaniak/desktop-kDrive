@@ -108,9 +108,9 @@ FolderItemWidget::FolderItemWidget(int syncDbId, std::shared_ptr<ClientGui> gui,
     folderVBoxLayout->addWidget(_synchroLabel);
 
     // Smart sync activation icon
-    _smartSyncIconLabel = new CustomLabel(this);
-    _smartSyncIconLabel->setVisible(false);
-    detailHBoxLayout->addWidget(_smartSyncIconLabel);
+    _liteSyncIconLabel = new CustomLabel(this);
+    _liteSyncIconLabel->setVisible(false);
+    detailHBoxLayout->addWidget(_liteSyncIconLabel);
 
     // Menu button
     _menuButton = new CustomToolButton(this);
@@ -209,26 +209,26 @@ void FolderItemWidget::setUpdateWidgetLabelVisible(bool visible) {
 }
 
 void FolderItemWidget::setSupportVfs(bool value) {
-    _smartSyncAvailable = value;
-    _smartSyncIconLabel->setVisible(value);
+    _liteSyncAvailable = value;
+    _liteSyncIconLabel->setVisible(value);
 }
 
-void FolderItemWidget::setSmartSyncActivated(bool value) {
-    _smartSyncActivated = value;
+void FolderItemWidget::setLiteSyncActivated(bool value) {
+    _liteSyncActivated = value;
 
     static const QPixmap liteSynOnPixmap =
         KDC::GuiUtility::getIconWithColor(menuIconPath(MenuAction::LiteSyncOn), QColor(16, 117, 187)).pixmap(QSize(18, 18));
     static const QPixmap liteSynOffPixmap =
         KDC::GuiUtility::getIconWithColor(menuIconPath(MenuAction::LiteSyncOff), QColor(159, 159, 159)).pixmap(QSize(18, 18));
 
-    _smartSyncIconLabel->setPixmap(value ? liteSynOnPixmap : liteSynOffPixmap);
+    _liteSyncIconLabel->setPixmap(value ? liteSynOnPixmap : liteSynOffPixmap);
 
     static const QString liteSyncActivated =
         tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
     static const QString liteSyncDeactivated =
         tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.");
 
-    _smartSyncIconLabel->setToolTip(value ? liteSyncActivated : liteSyncDeactivated);
+    _liteSyncIconLabel->setToolTip(value ? liteSyncActivated : liteSyncDeactivated);
 }
 
 void FolderItemWidget::showEvent(QShowEvent *) {
@@ -439,13 +439,13 @@ void FolderItemWidget::onDeactivateLitesyncTriggered() {
 void FolderItemWidget::setToolTipsEnabled(bool enabled) noexcept {
     if (enabled) {
         _menuButton->setToolTip(tr("More actions"));
-        _smartSyncIconLabel->setToolTip(
-            _smartSyncActivated ? tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your "
-                                     "computer's storage space.")
-                                : tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer."));
+        _liteSyncIconLabel->setToolTip(
+            _liteSyncActivated ? tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your "
+                                    "computer's storage space.")
+                               : tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer."));
     } else {
         _menuButton->setToolTip("");
-        _smartSyncIconLabel->setToolTip("");
+        _liteSyncIconLabel->setToolTip("");
     }
 }
 

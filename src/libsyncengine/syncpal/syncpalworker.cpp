@@ -150,8 +150,8 @@ void SyncPalWorker::execute() {
                        (stepWorkers[1] && workersExitCode[1] == ExitCodeDataError) ||
                        (stepWorkers[0] && workersExitCode[0] == ExitCodeBackError) ||
                        (stepWorkers[1] && workersExitCode[1] == ExitCodeBackError) ||
-                       (stepWorkers[0] && workersExitCode[0] == ExitCodeInconsistencyError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeInconsistencyError)) {
+                       (stepWorkers[0] && workersExitCode[0] == ExitCodeLogicError) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCodeLogicError)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop the step workers and restart a full sync
@@ -164,7 +164,9 @@ void SyncPalWorker::execute() {
             } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeDbError) ||
                        (stepWorkers[1] && workersExitCode[1] == ExitCodeDbError) ||
                        (stepWorkers[0] && workersExitCode[0] == ExitCodeSystemError) ||
-                       (stepWorkers[1] && workersExitCode[1] == ExitCodeSystemError)) {
+                       (stepWorkers[1] && workersExitCode[1] == ExitCodeSystemError) ||
+                       (stepWorkers[0] && workersExitCode[0] == ExitCodeUpdateRequired) ||
+                       (stepWorkers[1] && workersExitCode[1] == ExitCodeUpdateRequired)) {
                 LOG_SYNCPAL_INFO(_logger, "***** Step " << stepName(_step).c_str() << " has aborted");
 
                 // Stop all workers and exit
@@ -177,6 +179,9 @@ void SyncPalWorker::execute() {
                       stepWorkers[1]->exitCause() == ExitCauseFileAccessError))) {
                     // Exit without error
                     exitCode = ExitCodeOk;
+                } else if ((stepWorkers[0] && workersExitCode[0] == ExitCodeUpdateRequired) ||
+                           (stepWorkers[1] && workersExitCode[1] == ExitCodeUpdateRequired)) {
+                    exitCode = ExitCodeUpdateRequired;
                 } else {
                     exitCode = ExitCodeFatalError;
                     setExitCause(ExitCauseWorkerExited);
@@ -277,15 +282,16 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
         case SyncStepUpdateDetection1:
             workers[0] = _syncPal->_computeFSOperationsWorker;
             workers[1] = nullptr;
-            inputSharedObject[0] = _syncPal->_localSnapshot;
-            inputSharedObject[1] = _syncPal->_remoteSnapshot;
+            _syncPal->copySnapshots();
+            inputSharedObject[0] = _syncPal->snapshot(ReplicaSideLocal, true);
+            inputSharedObject[1] = _syncPal->snapshot(ReplicaSideRemote, true);
             _syncPal->_restart = false;
             break;
         case SyncStepUpdateDetection2:
             workers[0] = _syncPal->_localUpdateTreeWorker;
             workers[1] = _syncPal->_remoteUpdateTreeWorker;
-            inputSharedObject[0] = _syncPal->_localOperationSet;
-            inputSharedObject[1] = _syncPal->_remoteOperationSet;
+            inputSharedObject[0] = _syncPal->operationSet(ReplicaSideLocal);
+            inputSharedObject[1] = _syncPal->operationSet(ReplicaSideRemote);
             break;
         case SyncStepReconciliation1:
             workers[0] = _syncPal->_platformInconsistencyCheckerWorker;
@@ -389,22 +395,34 @@ SyncStep SyncPalWorker::nextStep() const {
                        ? SyncStepUpdateDetection1
                        : SyncStepIdle;
             break;
-        case SyncStepUpdateDetection1:
-            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_localOperationSet->ops().size() << " local operations detected");
-            LOG_SYNCPAL_DEBUG(_logger, _syncPal->_remoteOperationSet->ops().size() << " remote operations detected");
+        case SyncStepUpdateDetection1: {
+            auto logNbOps = [=](const ReplicaSide side) {
+                auto opsSet = _syncPal->operationSet(side);
+                LOG_SYNCPAL_DEBUG(_logger, opsSet->ops().size()
+                                               << " " << Utility::side2Str(side).c_str()
+                                               << " operations detected (# CREATE: " << opsSet->nbOpsByType(OperationTypeCreate)
+                                               << ", # EDIT: " << opsSet->nbOpsByType(OperationTypeEdit)
+                                               << ", # MOVE: " << opsSet->nbOpsByType(OperationTypeMove)
+                                               << ", # DELETE: " << opsSet->nbOpsByType(OperationTypeDelete) << ")");
+            };
+            logNbOps(ReplicaSideLocal);
+            logNbOps(ReplicaSideRemote);
+
             if (!_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap().empty()) {
                 _syncPal->fixCorruptedFile(_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap());
                 _syncPal->_restart = true;
                 return SyncStepIdle;
             }
 
-            return (_syncPal->_localOperationSet->updated() || _syncPal->_remoteOperationSet->updated())
+            return (_syncPal->operationSet(ReplicaSideLocal)->updated() || _syncPal->operationSet(ReplicaSideRemote)->updated())
                        ? SyncStepUpdateDetection2
                        : SyncStepDone;
             break;
+        }
         case SyncStepUpdateDetection2:
-            return (_syncPal->_localUpdateTree->updated() || _syncPal->_remoteUpdateTree->updated()) ? SyncStepReconciliation1
-                                                                                                     : SyncStepDone;
+            return (_syncPal->updateTree(ReplicaSideLocal)->updated() || _syncPal->updateTree(ReplicaSideRemote)->updated())
+                       ? SyncStepReconciliation1
+                       : SyncStepDone;
             break;
         case SyncStepReconciliation1:
             return SyncStepReconciliation2;

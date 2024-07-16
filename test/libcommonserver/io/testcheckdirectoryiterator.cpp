@@ -28,9 +28,6 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestIo::testCheckDirectoryIterator() {
-#ifdef _WIN32
-    Utility::init();  // Initialize the utility library, needed to access/change the permissions on Windows
-#endif
     testCheckDirectoryIteratorNonExistingPath();
     testCheckDirectoryIteratorExistingPath();
     testCheckDirectoryRecursive();
@@ -59,7 +56,7 @@ void TestIo::testCheckDirectoryIteratorNonExistingPath() {
 }
 
 void TestIo::testCheckDirectoryIteratorExistingPath() {
-    TemporaryDirectory tempDir;
+    LocalTemporaryDirectory tempDir;
 
     // Create test empty directory
     const SyncPath emptyDir = tempDir.path / "chekDirIt/empty_dir";
@@ -125,7 +122,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 }
 
 void TestIo::testCheckDirectoryRecursive(void) {
-    TemporaryDirectory tempDir;
+    LocalTemporaryDirectory tempDir;
 
     // Create test directory with 4 directories with 1 file each
     SyncPath recursiveDir = tempDir.path / "chekDirIt/recursive_dir";
@@ -176,7 +173,7 @@ void TestIo::testCheckDirectoryRecursive(void) {
 
 void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
     // Create test directory with one file
-    TemporaryDirectory tempDir;
+    LocalTemporaryDirectory tempDir;
     SyncPath oneFileDir = tempDir.path / "chekDirIt/oneFile_dir";
     std::filesystem::create_directories(oneFileDir);
     std::ofstream file(oneFileDir / "oneFile.txt");
@@ -207,7 +204,7 @@ void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
 void TestIo::testCheckDirectoryIteratorPermission() {
     {
         // Check that the directory iterator skips each directory with no permission
-        TemporaryDirectory tempDir;
+        LocalTemporaryDirectory tempDir;
         const SyncPath noPermissionDir = tempDir.path / "chekDirIt/noPermission";
         const SyncPath noPermissionFile = noPermissionDir / "file.txt";
 
@@ -245,7 +242,7 @@ void TestIo::testCheckDirectoryIteratorPermission() {
 }
 
 void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
-    TemporaryDirectory tempDir;
+    LocalTemporaryDirectory tempDir;
 
     // Create test directory with 5 subdirectories
     const SyncPath path = tempDir.path.string() + "\\chekDirIt\\IteratorUnexpectedDelete";
@@ -279,7 +276,7 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
 }
 
 void TestIo::testCheckDirectoryPermissionLost(void) {
-    const TemporaryDirectory temporaryDirectory;
+    const LocalTemporaryDirectory temporaryDirectory;
     const SyncPath chekDirItDir = temporaryDirectory.path / "chekDirIt";
     const SyncPath permLostRoot = chekDirItDir / "permissionLost";
     const SyncPath subDir = permLostRoot / "subDir1";

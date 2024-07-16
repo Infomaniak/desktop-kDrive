@@ -272,11 +272,11 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
     }
 
     isHidden = filestat.isHidden;
-#endif
+#endif  // #ifdef __APPLE__
 
     return true;
 }
-#endif
+#endif  // #if defined(__APPLE__) || defined(__unix__)
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is a symbolic link.
@@ -464,7 +464,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     IoHelper::DirectoryIterator dir;
     IoHelper::getDirectoryIterator(path, true, ioError, dir);
     if (ioError != IoErrorSuccess) {
-        LOG_WARN(logger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
         return _isExpectedError(ioError);
     }
 
@@ -474,8 +474,8 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) {
             if (maxDepth == 0) {
-                LOG_WARN(logger(), "Max depth reached in getDirectorySize, skipping deeper directories: "
-                                       << Utility::formatSyncPath(path).c_str());
+                LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories: "
+                                        << Utility::formatSyncPath(path).c_str());
                 ioError = IoErrorMaxDepthExceeded;
                 return _isExpectedError(ioError);
             }
@@ -491,14 +491,14 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         if (!ec) {
             size += entrySize;
         } else {
-            LOG_WARN(logger(), "Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
+            LOGW_WARN(logger(), L"Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
             ioError = stdError2ioError(ec);
             return _isExpectedError(ioError);
         }
     }
 
     if (!endOfDirectory) {
-        LOG_WARN(logger(), "Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
         return _isExpectedError(ioError);
     }
 
@@ -514,6 +514,20 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    //!\ Don't use IoHelper::logger() here, as Log::_instance may not be initialized yet. /!\_
+    try {
+        if (directoryPath = Log::instance()->getLogFilePath().parent_path(); !directoryPath.empty()) {
+            return true;
+        } else {
+            throw std::runtime_error("Log directory path is empty.");
+        }
+    } catch (const std::exception &e) {
+        if (Log::isSet()) {
+            LOGW_WARN(logger(), L"Error in IoHelper::logDirectoryPath: " << e.what());
+        } 
+        // We can't log the error, so we just generate the path for the logger to initialize.
+    }
+
     if (!tempDirectoryPath(directoryPath, ioError)) {
         return false;
     }
@@ -561,22 +575,24 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     return true;
 }
 
-bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &exists,
-                                               IoError &ioError) noexcept {
-    exists = false;
+bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
+                                               NodeId &otherNodeId, IoError &ioError) noexcept {
+    existsWithSameId = false;
+    otherNodeId.clear();
     ioError = IoErrorSuccess;
 
+    bool exists = false;
     if (!checkIfPathExists(path, exists, ioError)) {
         return false;
     }
 
     if (exists) {
         // Check nodeId
-        NodeId tmpNodeId;
-        if (!getNodeId(path, tmpNodeId)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for path=" << Path2WStr(path).c_str());
+        if (!getNodeId(path, otherNodeId)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(path).c_str());
         }
-        exists = (nodeId == tmpNodeId);
+
+        existsWithSameId = (nodeId == otherNodeId);
     }
 
     return true;
@@ -836,6 +852,4 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 
     return true;
 }
-
-
 }  // namespace KDC
