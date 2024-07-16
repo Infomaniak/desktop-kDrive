@@ -28,7 +28,16 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
     woss << std::put_time(&tm, "%Y%m%d_%H%M");
 
     path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
-    std::filesystem::create_directory(path);
+    int retryCount = 0;
+    const int maxRetry = 100;
+    while (!std::filesystem::create_directory(path) && retryCount < maxRetry) {
+        retryCount++;
+        path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
+    }
+
+    if (retryCount == maxRetry) {
+        throw std::runtime_error("Failed to create local temporary directory");
+    }
 }
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {

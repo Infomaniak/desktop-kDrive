@@ -33,13 +33,14 @@ class TestSyncPal : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE_END();
 
     public:
+        TestSyncPal() {}
         void setUp() override;
         void tearDown() override;
 
     private:
         std::shared_ptr<SyncPal> _syncPal;
         std::shared_ptr<ParmsDb> _parmsDb;
-        std::shared_ptr<LocalTemporaryDirectory> _localTempDir;
+        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
         int _driveDbId;
         SyncPath _localPath;
         SyncPath _remotePath;

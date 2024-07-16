@@ -42,8 +42,7 @@ void TestSyncPal::setUp() {
     if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remotePathStr.empty() || apiTokenStr.empty()) {
         throw std::runtime_error("Some environment variables are missing!");
     }
-    _localTempDir = std::make_shared<LocalTemporaryDirectory>("TestSyncPal");
-    const std::string localPathStr = _localTempDir->path.string();
+    const std::string localPathStr = _localTempDir.path.string();
     // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
@@ -94,7 +93,6 @@ void TestSyncPal::tearDown() {
         _syncPal->stop(false, true, true);
     }
     ParmsDb::reset();
-    _localTempDir.reset();
 }
 
 void TestSyncPal::testUpdateTree() {
