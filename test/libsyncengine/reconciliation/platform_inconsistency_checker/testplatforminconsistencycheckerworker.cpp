@@ -225,7 +225,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     CPPUNIT_ASSERT(!ec);
     bool foundConflicted = false;
     for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-        if (Utility::startsWith(dirIt->path().filename().native(), "a1")) {
+        if (Utility::startsWith(SyncName2Str(dirIt->path().filename()), std::string("a1"))) {
             foundConflicted = true;
             break;
         }
