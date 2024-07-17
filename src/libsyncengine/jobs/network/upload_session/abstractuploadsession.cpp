@@ -64,18 +64,6 @@ void AbstractUploadSession::runJob() {
     assert(_uploadSessionType != UploadSessionType::Unknown);
 
     runJobInit();
-        }
-    }
-
-        }
-    }
-
-        }
-    }
-
-        }
-    }
-
     bool ok = true;
     while (_state != StateFinished && !isAborted()) {
         switch (_state) {
