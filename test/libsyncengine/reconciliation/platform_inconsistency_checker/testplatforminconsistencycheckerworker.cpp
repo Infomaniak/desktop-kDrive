@@ -25,6 +25,7 @@
 #include "syncpal/tmpblacklistmanager.h"
 
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#include "test_utility/localtemporarydirectory.h"
 
 using namespace CppUnit;
 
@@ -42,17 +43,27 @@ namespace KDC {
 #define MAX_NAME_LENGTH_WIN_SHORT 255
 
 void TestPlatformInconsistencyCheckerWorker::setUp() {
-    // Create SyncPal
+    // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParametersCache::instance()->parameters().setExtendedLog(true);
 
-    SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
-    std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(syncDbPath, "3.4.0", true);
-    _syncPal->syncDb()->setAutoDelete(true);
+    // Insert user, account, drive & sync
+    User user(1, 1, "dummy");
+    ParmsDb::instance()->insertUser(user);
+
+    Account account(1, 1, user.dbId());
+    ParmsDb::instance()->insertAccount(account);
+
+    Drive drive(1, 1, account.dbId(), std::string(), 0, std::string());
+    ParmsDb::instance()->insertDrive(drive);
+
+    Sync sync(1, drive.dbId(), _tempDir.path, "");
+    ParmsDb::instance()->insertSync(sync);
+
+    // Create SyncPal
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal->_syncDb->setAutoDelete(true);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
     _syncPal->_platformInconsistencyCheckerWorker =
@@ -149,6 +160,78 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash() {
 
 #if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+#else
+    CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+#endif
+}
+
+void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
+    // Create local files
+    std::vector<std::string> nodes = {{"a1"}, {"A"}};
+    for (const auto &n : nodes) {
+        std::ofstream ofs(_tempDir.path / n);
+        ofs << "Some content.\n";
+        ofs.close();
+    }
+
+    // Set up DB
+    DbNode dbNode_A(2, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", defaultTime, defaultTime,
+                    defaultTime, NodeType::NodeTypeDirectory, defaultSize, std::nullopt);
+    DbNode dbNode_a(3, _syncPal->_syncDb->rootNode().nodeId(), Str("a1"), Str("a1"), "la", "ra", defaultTime, defaultTime,
+                    defaultTime, NodeType::NodeTypeDirectory, defaultSize, std::nullopt);
+    DbNodeId dbNodeIdDir_A;
+    DbNodeId dbNodeIdDir_a;
+    bool constraintError = false;
+    _syncPal->_syncDb->insertNode(dbNode_A, dbNodeIdDir_A, constraintError);
+    _syncPal->_syncDb->insertNode(dbNode_a, dbNodeIdDir_a, constraintError);
+
+    // Set up remote tree
+    std::shared_ptr<Node> remoteParentNode = _syncPal->_remoteUpdateTree->rootNode();
+    std::shared_ptr<Node> node_ra =
+        std::make_shared<Node>(dbNodeIdDir_a, _syncPal->_remoteUpdateTree->side(), Str("a"), NodeTypeFile, OperationTypeMove,
+                               "ra", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
+    std::shared_ptr<Node> node_rA =
+        std::make_shared<Node>(dbNodeIdDir_A, _syncPal->_remoteUpdateTree->side(), Str("A"), NodeTypeFile, OperationTypeNone,
+                               "rA", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
+
+    remoteParentNode->insertChildren(node_ra);
+    remoteParentNode->insertChildren(node_rA);
+
+    _syncPal->_remoteUpdateTree->insertNode(node_ra);
+    _syncPal->_remoteUpdateTree->insertNode(node_rA);
+
+    // Set up local tree
+    std::shared_ptr<Node> localParentNode = _syncPal->_localUpdateTree->rootNode();
+    std::shared_ptr<Node> node_la = std::make_shared<Node>(dbNodeIdDir_a, _syncPal->_localUpdateTree->side(), Str("a1"),
+                                                           NodeTypeFile, OperationTypeNone, "la", 0, 0, 12345, localParentNode);
+    std::shared_ptr<Node> node_lA = std::make_shared<Node>(dbNodeIdDir_A, _syncPal->_localUpdateTree->side(), Str("A"),
+                                                           NodeTypeFile, OperationTypeNone, "lA", 0, 0, 12345, localParentNode);
+
+    localParentNode->insertChildren(node_la);
+    localParentNode->insertChildren(node_lA);
+
+    _syncPal->_localUpdateTree->insertNode(node_la);
+    _syncPal->_localUpdateTree->insertNode(node_rA);
+
+    // Check name clash
+    _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(remoteParentNode);
+
+#if defined(WIN32) || defined(__APPLE__)
+    CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+    CPPUNIT_ASSERT(!std::filesystem::exists(_tempDir.path / "a1"));
+    std::error_code ec;
+    auto dirIt = std::filesystem::recursive_directory_iterator(_syncPal->_localPath,
+                                                               std::filesystem::directory_options::skip_permission_denied, ec);
+    CPPUNIT_ASSERT(!ec);
+    bool foundConflicted = false;
+    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        if (Utility::startsWith(dirIt->path().filename().native(), "a1")) {
+            foundConflicted = true;
+            break;
+        }
+    }
+    CPPUNIT_ASSERT(foundConflicted);
+
 #else
     CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
 #endif
