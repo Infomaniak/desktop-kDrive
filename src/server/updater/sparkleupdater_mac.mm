@@ -20,8 +20,9 @@
 
 #include "common/utility.h"
 #include "libcommon/utility/utility.h"
-#include "updater/sparkleupdater.h"
+#include "sparkleupdater.h"
 #include "libcommonserver/log/log.h"
+#include "libparms/db/parmsdb.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -79,6 +80,9 @@
 - (void)updater:(SPUUpdater *)updater willInstallUpdate:(SUAppcastItem *)update {
     Q_UNUSED(updater)
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Install update");
+    if (bool found = false; !KDC::ParmsDb::instance()->updateAppState(KDC::AppStateKey::LastServerSelfRestartDate, KDC::SELF_RESTARTE_DISABLE_VALUE, found) || !found) { //Desactivate the selfRestarter
+        LOG_ERROR(KDC::Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
 }
 
 - (void)updater:(SPUUpdater *)updater didAbortWithError:(NSError *)error {

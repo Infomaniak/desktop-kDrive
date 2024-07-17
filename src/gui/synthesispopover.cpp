@@ -28,12 +28,13 @@
 #include "parameterscache.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
+#include "updater/updaterclient.h"
 
 #undef CONSOLE_DEBUG
 #ifdef CONSOLE_DEBUG
 #include <iostream>
 #endif
-
+#include <sentry.h>
 #include <QActionGroup>
 #include <QApplication>
 #include <QBoxLayout>
@@ -50,12 +51,14 @@
 #include <QProcess>
 #include <QScreen>
 #include <QScrollBar>
+#include <QPushButton>
 
 #define UPDATE_PROGRESS_DELAY 500
 
 namespace KDC {
 
 static const QSize windowSize(440, 575);
+static const QSize lockedWindowSize(440, 400);
 static const int triangleHeight = 10;
 static const int triangleWidth = 20;
 static const int trianglePosition = 100;  // Position from side
@@ -381,7 +384,8 @@ bool SynthesisPopover::event(QEvent *event) {
 
 void SynthesisPopover::initUI() {
     /*
-     *  mainVBox
+     *  _mainWidget
+     *    mainVBox
      *      hBoxToolBar
      *          iconLabel
      *          _errorsButton
@@ -401,20 +405,36 @@ void SynthesisPopover::initUI() {
      *          notImplementedLabel2
      *          _synchronizedListWidget[]
      *      bottomWidget
+     *  _lockedAppVersionWidget
+     *    lockedAppVersionVBox
+     *      updateIconLabel
+     *      lockedAppUpdateAppLabel
+     *      lockedAppLabel
+     *      _lockedAppUpdateOptionalLabel (not on Linux with menu tray)
+     *      lockedAppUpdateButton (not on Linux with menu tray)
+     *
      */
+    auto *appVBox = new QVBoxLayout();
+    appVBox->setContentsMargins(0, 0, 0, 0);
+    setLayout(appVBox);
 
-    QVBoxLayout *mainVBox = new QVBoxLayout();
+    _mainWidget = new QWidget(this);
+    _lockedAppVersionWidget = new QWidget(this);
+    _lockedAppVersionWidget->hide();
+
+    appVBox->addWidget(_mainWidget);
+    appVBox->addWidget(_lockedAppVersionWidget);
+
+    auto *mainVBox = new QVBoxLayout(_mainWidget);
     mainVBox->setContentsMargins(triangleHeight, triangleHeight, triangleHeight, triangleHeight);
     mainVBox->setSpacing(0);
-    setLayout(mainVBox);
-
     // Tool bar
-    QHBoxLayout *hBoxToolBar = new QHBoxLayout();
+    auto *hBoxToolBar = new QHBoxLayout();
     hBoxToolBar->setContentsMargins(toolBarHMargin, toolBarVMargin, toolBarHMargin, toolBarVMargin);
     hBoxToolBar->setSpacing(toolBarSpacing);
     mainVBox->addLayout(hBoxToolBar);
 
-    QLabel *iconLabel = new QLabel(this);
+    auto *iconLabel = new QLabel(this);
     iconLabel->setPixmap(
         KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg").pixmap(logoIconSize, logoIconSize));
     hBoxToolBar->addWidget(iconLabel);
@@ -440,7 +460,7 @@ void SynthesisPopover::initUI() {
     hBoxToolBar->addWidget(_menuButton);
 
     // Drive selection
-    QHBoxLayout *hBoxDriveBar = new QHBoxLayout();
+    auto *hBoxDriveBar = new QHBoxLayout();
     hBoxDriveBar->setContentsMargins(driveBoxHMargin, driveBoxVMargin, driveBoxHMargin, driveBoxVMargin);
 
     _driveSelectionWidget = new DriveSelectionWidget(_gui);
@@ -462,15 +482,15 @@ void SynthesisPopover::initUI() {
     _buttonsBarWidget->hide();
     mainVBox->addWidget(_buttonsBarWidget);
 
-    CustomTogglePushButton *synchronizedButton = new CustomTogglePushButton(tr("Synchronized"), _buttonsBarWidget);
+    auto *synchronizedButton = new CustomTogglePushButton(tr("Synchronized"), _buttonsBarWidget);
     synchronizedButton->setIconPath(":/client/resources/icons/actions/sync.svg");
     _buttonsBarWidget->insertButton(DriveInfoClient::SynthesisStackedWidgetSynchronized, synchronizedButton);
 
-    CustomTogglePushButton *favoritesButton = new CustomTogglePushButton(tr("Favorites"), _buttonsBarWidget);
+    auto *favoritesButton = new CustomTogglePushButton(tr("Favorites"), _buttonsBarWidget);
     favoritesButton->setIconPath(":/client/resources/icons/actions/favorite.svg");
     _buttonsBarWidget->insertButton(DriveInfoClient::SynthesisStackedWidgetFavorites, favoritesButton);
 
-    CustomTogglePushButton *activityButton = new CustomTogglePushButton(tr("Activity"), _buttonsBarWidget);
+    auto *activityButton = new CustomTogglePushButton(tr("Activity"), _buttonsBarWidget);
     activityButton->setIconPath(":/client/resources/icons/actions/notifications.svg");
     _buttonsBarWidget->insertButton(DriveInfoClient::SynthesisStackedWidgetActivity, activityButton);
 
@@ -493,11 +513,78 @@ void SynthesisPopover::initUI() {
     _stackedWidget->insertWidget(DriveInfoClient::SynthesisStackedWidgetActivity, _notImplementedLabel2);
 
     // Bottom
-    BottomWidget *bottomWidget = new BottomWidget(this);
+    auto *bottomWidget = new BottomWidget(this);
     mainVBox->addWidget(bottomWidget);
 
+    //// Locked app
+    auto *lockedAppVersionVBox = new QVBoxLayout(_lockedAppVersionWidget);
+    lockedAppVersionVBox->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+    lockedAppVersionVBox->setContentsMargins(40, 40, 40, 40);
+    // Update icon
+    auto *updateIconLabel = new QLabel(this);
+    updateIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/pictures/kdrive-update.svg")
+                                   .pixmap(lockedWindowSize.height() / 3, lockedWindowSize.height() / 3));
+    updateIconLabel->setAlignment(Qt::AlignHCenter);
+    lockedAppVersionVBox->addWidget(updateIconLabel);
+
+    lockedAppVersionVBox->addSpacing(defaultPageSpacing);
+
+    // Update app label
+    auto *lockedAppupdateAppLabel = new QLabel(tr("Update kDrive App"), this);
+    lockedAppupdateAppLabel->setObjectName("defaultTitleLabel");
+    lockedAppupdateAppLabel->setAlignment(Qt::AlignHCenter);
+    lockedAppVersionVBox->addWidget(lockedAppupdateAppLabel);
+
+    lockedAppVersionVBox->addSpacing(defaultPageSpacing);
+
+    // Locked app label
+    auto *lockedAppLabel = new QLabel(
+        tr("This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."),
+        this);
+    lockedAppLabel->setObjectName("defaultTextLabel");
+    lockedAppLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    lockedAppLabel->setAlignment(Qt::AlignHCenter);
+    lockedAppLabel->setWordWrap(true);
+    lockedAppVersionVBox->addWidget(lockedAppLabel);
+
+    lockedAppVersionVBox->addSpacing(defaultPageSpacing);
+
+    // Optional label (status reported by tha app in case of Error)
+    _lockedAppUpdateOptionalLabel = new QLabel();
+    _lockedAppUpdateOptionalLabel->setObjectName("defaultTextLabel");
+    _lockedAppUpdateOptionalLabel->setAlignment(Qt::AlignHCenter);
+    _lockedAppUpdateOptionalLabel->setWordWrap(true);
+    _lockedAppUpdateOptionalLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    _lockedAppUpdateOptionalLabel->setVisible(false);
+#ifndef Q_OS_LINUX
+    lockedAppVersionVBox->addWidget(_lockedAppUpdateOptionalLabel);
+#endif
+
+    // Update button
+    auto *lockedAppUpdateButtonHBox = new QHBoxLayout();
+    lockedAppUpdateButtonHBox->setAlignment(Qt::AlignHCenter);
+
+    _lockedAppUpdateButton = new QPushButton();
+    _lockedAppUpdateButton->setObjectName("KDCdefaultbutton");
+    _lockedAppUpdateButton->setFlat(true);
+    _lockedAppUpdateButton->setText(tr("Update"));
+    _lockedAppUpdateButton->setEnabled(false);
+    lockedAppUpdateButtonHBox->addWidget(_lockedAppUpdateButton);
+    lockedAppVersionVBox->addLayout(lockedAppUpdateButtonHBox);
+
+#ifdef Q_OS_LINUX
+    // On Linux, the update button is not displayed, the update need to be done manually by the user (download on the website)
+    _lockedAppUpdateButton->hide();
+    auto *lockedAppUpdateManualLabel = new QLabel(tr("Please download the latest version on the website."), this);
+    lockedAppUpdateManualLabel->setObjectName("defaultTextLabel");
+    lockedAppUpdateManualLabel->setAlignment(Qt::AlignHCenter);
+    lockedAppUpdateManualLabel->setWordWrap(true);
+    lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    lockedAppVersionVBox->addWidget(lockedAppUpdateManualLabel);
+#endif  //
+
     // Shadow
-    QGraphicsDropShadowEffect *effect = new QGraphicsDropShadowEffect(this);
+    auto *effect = new QGraphicsDropShadowEffect(this);
     effect->setBlurRadius(shadowBlurRadius);
     effect->setOffset(0);
     effect->setColor(KDC::GuiUtility::getShadowColor(true));
@@ -505,7 +592,7 @@ void SynthesisPopover::initUI() {
 
     // Init labels and setup connection for on the fly translation
     retranslateUi();
-    LanguageChangeFilter *languageFilter = new LanguageChangeFilter(this);
+    auto *languageFilter = new LanguageChangeFilter(this);
     installEventFilter(languageFilter);
     connect(languageFilter, &LanguageChangeFilter::retranslate, this, &SynthesisPopover::retranslateUi);
 
@@ -518,6 +605,8 @@ void SynthesisPopover::initUI() {
     connect(_statusBarWidget, &StatusBarWidget::resumeSync, this, &SynthesisPopover::onResumeSync);
     connect(_statusBarWidget, &StatusBarWidget::linkActivated, this, &SynthesisPopover::onLinkActivated);
     connect(_buttonsBarWidget, &ButtonsBarWidget::buttonToggled, this, &SynthesisPopover::onButtonBarToggled);
+    connect(UpdaterClient::instance(), &UpdaterClient::downloadStateChanged, this, &SynthesisPopover::onUpdateAvailabalityChange,
+            Qt::UniqueConnection);
 }
 
 QUrl SynthesisPopover::syncUrl(int syncDbId, const QString &filePath) {
@@ -971,6 +1060,75 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
         addSynchronizedListWidgetItem(driveInfoIt->second, row);
         driveInfoIt->second.synchronizedItemList()[row].setDisplayed(true);
     }
+}
+
+void SynthesisPopover::onUpdateAvailabalityChange() {
+    using enum UpdateState;
+    if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
+
+    QString statusString;
+    UpdateState updateState = Error;
+    try {
+        if (!UpdaterClient::instance()->isSparkleUpdater()) {
+            statusString = UpdaterClient::instance()->statusString();
+            updateState = UpdaterClient::instance()->updateState();
+        } else {
+            updateState = Ready;  // On macOS, we just start the installer (Sparkle does the rest)
+        }
+    } catch (std::exception const &) {
+        return;
+    }
+
+    _lockedAppUpdateButton->setEnabled(updateState == Ready);
+    _lockedAppUpdateOptionalLabel->setVisible(updateState != Ready && updateState != Downloading);
+    switch (updateState) {
+        case Ready:
+            _lockedAppUpdateButton->setText(tr("Update"));
+            break;
+        case Downloading:
+            _lockedAppUpdateButton->setText(tr("Update download in progress"));
+            break;
+        case Skipped:
+            UpdaterClient::instance()->unskipUpdate();
+        case Checking:
+            _lockedAppUpdateButton->setText(tr("Looking for update..."));
+            break;
+        case ManualOnly:
+            _lockedAppUpdateButton->setText(tr("Manual update"));
+            _lockedAppUpdateOptionalLabel->setText(statusString);
+            break;
+        default:
+            _lockedAppUpdateButton->setText(tr("Unavailable"));
+            _lockedAppUpdateOptionalLabel->setText(statusString);
+            sentry_capture_event(sentry_value_new_message_event(
+                SENTRY_LEVEL_FATAL, // FATAL as the app is not usable
+                "AppLocked", (std::string("406 Error received but unable to fetch an update: ") + statusString.toStdString()).c_str()));
+            break;
+    }
+    connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
+}
+
+void SynthesisPopover::onStartInstaller() noexcept{
+    try {
+        UpdaterClient::instance()->startInstaller();
+    } catch (std::exception const &) {
+        // Do nothing
+    }
+}
+
+void SynthesisPopover::onAppVersionLocked(bool currentVersionLocked) {
+    if (currentVersionLocked && _lockedAppVersionWidget->isHidden()) {
+        _mainWidget->hide();
+        _lockedAppVersionWidget->show();
+        setFixedSize(lockedWindowSize);
+        _gui->closeAllExcept(this);
+        onUpdateAvailabalityChange();
+    } else if (!currentVersionLocked && _mainWidget->isHidden()) {
+        _lockedAppVersionWidget->hide();
+        _mainWidget->show();
+        setFixedSize(windowSize);
+    }
+    setPosition(_sysTrayIconRect);
 }
 
 void SynthesisPopover::onRefreshErrorList(int /*driveDbId*/) {

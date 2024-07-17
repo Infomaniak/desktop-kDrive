@@ -171,7 +171,7 @@ Download and build Poco :
 cd ~/Projects
 git clone https://github.com/pocoproject/poco.git
 cd poco
-git checkout tags/poco-1.13.2-release
+git checkout tags/poco-1.13.3-release
 mkdir build
 cd build
 cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DOPENSSL_ROOT_DIR=/usr/local/ -DOPENSSL_INCLUDE_DIR=/usr/local/include/ -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.dylib -DENABLE_DATA_ODBC=OFF 
