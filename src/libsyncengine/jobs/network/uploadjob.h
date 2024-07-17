@@ -42,7 +42,6 @@ class UploadJob : public AbstractTokenNetworkJob {
 
     protected:
         virtual bool canRun() override;
-        virtual void runJob() noexcept override;
         virtual bool handleResponse(std::istream &is) override;
 
     private:

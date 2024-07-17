@@ -18,26 +18,25 @@
 
 #pragma once
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
+#include "testincludes.h"
+#include "vfs.h"
+#include "propagation/executor/executorworker.h"
 
 namespace KDC {
 
-class TestUtility : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestUtility);
-        CPPUNIT_TEST(testGetAppSupportDir);
-        CPPUNIT_TEST(testIsVersionLower);
-        CPPUNIT_TEST(testStringToAppStateValue);
-        CPPUNIT_TEST(testArgsWriter);
-        CPPUNIT_TEST(testCompressFile);
+class TestExecutor : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestExecutor);
+        CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
         CPPUNIT_TEST_SUITE_END();
 
-    protected:
-        void testGetAppSupportDir();
-        void testIsVersionLower();
-        void testStringToAppStateValue();
-        void testArgsWriter();
-        void testCompressFile();
+    public:
+        void setUp() override;
+
+    private:
+        void testCheckLiteSyncInfoForCreate();
+
+        std::shared_ptr<SyncPal> _syncPal;
+        Sync _sync;
 };
 
 }  // namespace KDC

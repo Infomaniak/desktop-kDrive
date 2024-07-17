@@ -18,26 +18,23 @@
 
 #pragma once
 
-#include <cppunit/TestFixture.h>
-#include <cppunit/extensions/HelperMacros.h>
+#include "testincludes.h"
+#include "server/vfs/mac/vfs_mac.h"
 
 namespace KDC {
 
-class TestUtility : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestUtility);
-        CPPUNIT_TEST(testGetAppSupportDir);
-        CPPUNIT_TEST(testIsVersionLower);
-        CPPUNIT_TEST(testStringToAppStateValue);
-        CPPUNIT_TEST(testArgsWriter);
-        CPPUNIT_TEST(testCompressFile);
+class TestVfsMac : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestVfsMac);
+        CPPUNIT_TEST(testStatus);
         CPPUNIT_TEST_SUITE_END();
 
-    protected:
-        void testGetAppSupportDir();
-        void testIsVersionLower();
-        void testStringToAppStateValue();
-        void testArgsWriter();
-        void testCompressFile();
+    public:
+        void setUp() override;
+
+    private:
+        void testStatus();
+
+        std::unique_ptr<VfsMac> _vfs;
 };
 
 }  // namespace KDC
