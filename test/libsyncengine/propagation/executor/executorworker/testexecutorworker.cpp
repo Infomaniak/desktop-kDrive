@@ -49,10 +49,10 @@ void TestExecutorWorker::testAffectedUpdateTree() {
     // Normal cases
     auto syncOp = std::make_shared<SyncOperation>();
     syncOp->setTargetSide(ReplicaSideLocal);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _testObj->affectedUpdateTree(syncOp)->side());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _testObj->affectedUpdateTree(syncOp)->side());
 
     syncOp->setTargetSide(ReplicaSideRemote);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _testObj->affectedUpdateTree(syncOp)->side());
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _testObj->affectedUpdateTree(syncOp)->side());
 
     // ReplicaSideUnknown case
     syncOp->setTargetSide(ReplicaSideUnknown);
