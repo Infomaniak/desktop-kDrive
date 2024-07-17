@@ -39,7 +39,6 @@ void TestExecutorWorker::setUp() {
 }
 
 void TestExecutorWorker::tearDown() {
-    _testObj->cancelAllOngoingJobs();
     _syncPal->stop(false, true, false);
     _testObj.reset();
     _syncPal.reset();
@@ -50,10 +49,10 @@ void TestExecutorWorker::testAffectedUpdateTree() {
     // Normal cases
     auto syncOp = std::make_shared<SyncOperation>();
     syncOp->setTargetSide(ReplicaSideLocal);
-    CPPUNIT_ASSERT_EQUAL(_syncPal->_remoteUpdateTree, _testObj->affectedUpdateTree(syncOp));
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _testObj->affectedUpdateTree(syncOp)->side());
 
     syncOp->setTargetSide(ReplicaSideRemote);
-    CPPUNIT_ASSERT_EQUAL(_syncPal->_localUpdateTree, _testObj->affectedUpdateTree(syncOp));
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _testObj->affectedUpdateTree(syncOp)->side());
 
     // ReplicaSideUnknown case
     syncOp->setTargetSide(ReplicaSideUnknown);
@@ -64,10 +63,10 @@ void TestExecutorWorker::testTargetUpdateTree() {
     // Normal cases
     auto syncOp = std::make_shared<SyncOperation>();
     syncOp->setTargetSide(ReplicaSideLocal);
-    CPPUNIT_ASSERT_EQUAL(_syncPal->_localUpdateTree, _testObj->targetUpdateTree(syncOp));
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _testObj->targetUpdateTree(syncOp)->side());
 
     syncOp->setTargetSide(ReplicaSideRemote);
-    CPPUNIT_ASSERT_EQUAL(_syncPal->_remoteUpdateTree, _testObj->targetUpdateTree(syncOp));
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _testObj->targetUpdateTree(syncOp)->side());
 
     // ReplicaSideUnknown case
     syncOp->setTargetSide(ReplicaSideUnknown);

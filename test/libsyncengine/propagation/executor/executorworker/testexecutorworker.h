@@ -27,7 +27,6 @@ namespace KDC {
 
 class TestExecutorWorker;
 
-using testFctPtr = void (TestExecutorWorker::*)();
 class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
         CPPUNIT_TEST(testAffectedUpdateTree);
