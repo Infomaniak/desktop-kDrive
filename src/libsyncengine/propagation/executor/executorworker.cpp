@@ -285,7 +285,8 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
 
         if (isDehydratedPlaceholder) {
             // Blacklist dehydrated placeholder
-            blacklistLocalItem(absoluteLocalFilePath);
+            PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilePath,
+                                                                 PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
 
             // Remove from update tree
             affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
