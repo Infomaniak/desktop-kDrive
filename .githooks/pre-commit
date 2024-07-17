@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # A hook script to format the source files about to be committed with clang-format.
 # Called by "git commit" with no arguments.  
