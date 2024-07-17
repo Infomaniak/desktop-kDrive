@@ -506,7 +506,7 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
             errorLabel->setObjectName("normalTextLabel");
             errorLabel->setContentsMargins(25, 5, 0, 0);
             errorLabel->setText(tr("Share the folder with SwissTransfer <br>") +
-                                tr(" 1. We automatically compress your log <a style=\"%1\" href=\"%2\">here</a>.<br>")
+                                tr(" 1. We automatically compressed your log <a style=\"%1\" href=\"%2\">here</a>.<br>")
                                     .arg(CommonUtility::linkStyle, QString::fromStdString(archivePath.parent_path().string())) +
                                 tr(" 2. Transfer the archive with <a style=\"%1\" href=\"%2\">swisstransfer.com</a><br>")
                                     .arg(CommonUtility::linkStyle, "https://www.swisstransfer.com/") +
