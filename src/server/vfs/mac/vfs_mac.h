@@ -98,7 +98,7 @@ class VfsMac : public Vfs {
         void stopImpl(bool unregister) override;
 
     private:
-        LiteSyncExtConnector *_connector;
+        LiteSyncExtConnector *_connector{nullptr};
 
         void resetLiteSyncConnector();
         const QString _localSyncPath;

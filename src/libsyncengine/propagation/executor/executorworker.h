@@ -72,7 +72,7 @@ class ExecutorWorker : public OperationProcessor {
         void handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError);
         void checkAlreadyExcluded(const SyncPath &absolutePath, const NodeId &parentId);
         bool generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) noexcept;
-        bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path, bool &isDehydratedPlaceholder);
+        bool checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder);
         bool createPlaceholder(const SyncPath &relativeLocalPath);
         bool convertToPlaceholder(const SyncPath &relativeLocalPath, bool hydrated, bool &needRestart);
 
@@ -138,7 +138,7 @@ class ExecutorWorker : public OperationProcessor {
 
         bool _snapshotToInvalidate = false;
 
-        friend class TestExecutorWorker;
+        friend class TestExecutor;
 };
 
 }  // namespace KDC

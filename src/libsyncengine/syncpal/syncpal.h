@@ -367,7 +367,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestConflictResolverWorker;
         friend class TestOperationGeneratorWorker;
         friend class TestOperationSorterWorker;
-        friend class TestExecutorWorker;
+        friend class TestExecutor;
         friend class TestSnapshot;
         friend class TestLocalJobs;
         friend class TestIntegration;
