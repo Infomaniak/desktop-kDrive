@@ -27,7 +27,7 @@ import shutil
 import subprocess
 import sys
 
-def version_regex(arg_value, pattern=re.compile("^(\d+\.)?(\d+\.)?(\*|\d+)")):
+def version_regex(arg_value, pattern=re.compile(r'^(\d+\.)?(\d+\.)?(\*|\d+)')):
     if not pattern.match(arg_value):
         raise argparse.ArgumentTypeError("invalid version")
     return arg_value
