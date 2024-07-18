@@ -93,24 +93,17 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testUploadSessionAsynchronousAborted();
 
     private:
-        bool createTestDir();
+        // bool createTestDir();
         bool createTestFiles();
 
         int _driveDbId = 0;
         int _userDbId = 0;
         NodeId _remoteDirId;
 
-        SyncName _dummyDirName;
-        SyncPath _dummyLocalDirPath;
-        NodeId _dummyLocalDirId;
-        NodeId _dummyRemoteDirId;
-        bool _deleteDummyDir = false;
-
         SyncName _dummyFileName;
         SyncPath _dummyLocalFilePath;
         NodeId _dummyLocalFileId;
         NodeId _dummyRemoteFileId;
-        bool _deleteDummyFile = false;
 
         static int _nbParalleleThreads;
 };

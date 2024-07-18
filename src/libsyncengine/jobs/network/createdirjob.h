@@ -27,20 +27,22 @@ class CreateDirJob : public AbstractTokenNetworkJob {
     public:
         CreateDirJob(int driveDbId, const SyncPath &filepath, const NodeId &parentId, const SyncName &name,
                      const std::string &color = "");
-        ~CreateDirJob();
+        CreateDirJob(int driveDbId, const NodeId &parentId, const SyncName &name);
+        ~CreateDirJob() override;
 
-        inline const NodeId &parentDirId() const { return _parentDirId; }
+        [[nodiscard]] inline const NodeId &parentDirId() const { return _parentDirId; }
 
-        inline const NodeId &nodeId() const { return _nodeId; }
-        inline SyncTime modtime() const { return _modtime; }
+        [[nodiscard]] inline const NodeId &nodeId() const { return _nodeId; }
+        [[nodiscard]] inline SyncTime modtime() const { return _modtime; }
 
     protected:
-        virtual bool handleResponse(std::istream &is) override;
+        bool handleResponse(std::istream &is) override;
 
     private:
-        virtual std::string getSpecificUrl() override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual void setData(bool &canceled) override;
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &, bool &) override { /* Query parameters are not mandatory */
+        }
+        void setData(bool &canceled) override;
 
         SyncPath _filePath;
         NodeId _parentDirId;
