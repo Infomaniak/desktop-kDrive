@@ -186,32 +186,32 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     _syncPal->_syncDb->insertNode(dbNode_a, dbNodeIdDir_a, constraintError);
 
     // Set up remote tree
-    std::shared_ptr<Node> remoteParentNode = _syncPal->_remoteUpdateTree->rootNode();
+    std::shared_ptr<Node> remoteParentNode = _syncPal->getUpdateTree(ReplicaSideRemote)->rootNode();
     std::shared_ptr<Node> node_ra =
-        std::make_shared<Node>(dbNodeIdDir_a, _syncPal->_remoteUpdateTree->side(), Str("a"), NodeTypeFile, OperationTypeMove,
-                               "ra", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
+        std::make_shared<Node>(dbNodeIdDir_a, ReplicaSideRemote, Str("a"), NodeTypeFile, OperationTypeMove,
+                               "ra", 0, 0, 12345, _syncPal->getUpdateTree(ReplicaSideRemote)->rootNode());
     std::shared_ptr<Node> node_rA =
-        std::make_shared<Node>(dbNodeIdDir_A, _syncPal->_remoteUpdateTree->side(), Str("A"), NodeTypeFile, OperationTypeNone,
-                               "rA", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
+        std::make_shared<Node>(dbNodeIdDir_A, ReplicaSideRemote, Str("A"), NodeTypeFile, OperationTypeNone,
+                               "rA", 0, 0, 12345, _syncPal->getUpdateTree(ReplicaSideRemote)->rootNode());
 
     remoteParentNode->insertChildren(node_ra);
     remoteParentNode->insertChildren(node_rA);
 
-    _syncPal->_remoteUpdateTree->insertNode(node_ra);
-    _syncPal->_remoteUpdateTree->insertNode(node_rA);
+    _syncPal->getUpdateTree(ReplicaSideRemote)->insertNode(node_ra);
+    _syncPal->getUpdateTree(ReplicaSideRemote)->insertNode(node_rA);
 
     // Set up local tree
     std::shared_ptr<Node> localParentNode = _syncPal->_localUpdateTree->rootNode();
-    std::shared_ptr<Node> node_la = std::make_shared<Node>(dbNodeIdDir_a, _syncPal->_localUpdateTree->side(), Str("a1"),
+    std::shared_ptr<Node> node_la = std::make_shared<Node>(dbNodeIdDir_a, ReplicaSideLocal, Str("a1"),
                                                            NodeTypeFile, OperationTypeNone, "la", 0, 0, 12345, localParentNode);
-    std::shared_ptr<Node> node_lA = std::make_shared<Node>(dbNodeIdDir_A, _syncPal->_localUpdateTree->side(), Str("A"),
+    std::shared_ptr<Node> node_lA = std::make_shared<Node>(dbNodeIdDir_A,ReplicaSideLocal, Str("A"),
                                                            NodeTypeFile, OperationTypeNone, "lA", 0, 0, 12345, localParentNode);
 
     localParentNode->insertChildren(node_la);
     localParentNode->insertChildren(node_lA);
 
-    _syncPal->_localUpdateTree->insertNode(node_la);
-    _syncPal->_localUpdateTree->insertNode(node_rA);
+    _syncPal->getUpdateTree(ReplicaSideLocal)->insertNode(node_la);
+    _syncPal->getUpdateTree(ReplicaSideLocal)->insertNode(node_rA);
 
     // Check name clash
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(remoteParentNode);
