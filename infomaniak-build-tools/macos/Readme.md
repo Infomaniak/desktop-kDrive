@@ -99,6 +99,12 @@ cmake .. -DUNICODE=1 -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOY
 sudo cmake --build . --target install
 ```
 
+If an error occurs with the the include of `catch.hpp`, you can disable the test. Modify the above command with:
+
+```bash
+cmake .. -DUNICODE=1 -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DWITH_UNIT_TESTS=OFF -DLOG4CPLUS_BUILD_TESTING=OFF
+```
+
 ## CPPUnit
 
 Download and build CPPUnit :
@@ -119,6 +125,8 @@ cd cppunit
 make
 sudo make install
 ```
+
+If the server does not reply to the `git clone` command, you can download the source from https://dev-www.libreoffice.org/src/.
 
 ## OpenSSL
 
