@@ -44,7 +44,7 @@ void KDC::TestLocalJobs::setUp() {
 
 void KDC::TestLocalJobs::testLocalJobs() {
     const LocalTemporaryDirectory temporaryDirectory("testLocalJobs");
-    const SyncPath localDirPath = temporaryDirectory.path / "tmp_dir";
+    const SyncPath localDirPath = temporaryDirectory.path() / "tmp_dir";
 
     // Create
     LocalCreateDirJob createJob(localDirPath);
@@ -57,7 +57,7 @@ void KDC::TestLocalJobs::testLocalJobs() {
     std::filesystem::copy(picturesPath / "picture-1.jpg", localDirPath / "tmp_picture.jpg");
 
     // Copy
-    const SyncPath copyDirPath = temporaryDirectory.path / "tmp_dir2";
+    const SyncPath copyDirPath = temporaryDirectory.path() / "tmp_dir2";
     LocalCopyJob copyJob(localDirPath, copyDirPath);
     copyJob.runSynchronously();
 

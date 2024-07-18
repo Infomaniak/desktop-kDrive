@@ -84,7 +84,7 @@ void TestLog::testExpiredLogFiles(void) {
     CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
     Utility::msleep(4000);  // Wait for the fake log file to expire
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())
-        ->setExpire(5);                                  // Force the check of exspired files at the next log
+        ->setExpire(5);                                  // Force the check of expired files at the next log
     LOG_DEBUG(_logger, "Log to trigger the appender.");  // Generate a log to trigger the appender
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
 }

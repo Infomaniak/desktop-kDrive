@@ -10,6 +10,7 @@ set(testsyncengine_SRCS
         ../test.cpp
         test.cpp
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
+        ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
         # Database
         db/testsyncdb.h db/testsyncdb.cpp
