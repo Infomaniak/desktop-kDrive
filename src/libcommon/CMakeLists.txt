@@ -3,6 +3,7 @@ project(libcommon)
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
 find_package(sentry REQUIRED)
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo NoConfig)
 find_package(libzip 1.10.1 REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)

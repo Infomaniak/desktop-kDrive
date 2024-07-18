@@ -5,6 +5,7 @@ find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(log4cplus 2.1.0 REQUIRED)
 find_package(xxHash 0.8.2 REQUIRED)
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo NoConfig)
 find_package(libzip 1.10.1 REQUIRED)
 
 add_definitions(-DUNICODE)
