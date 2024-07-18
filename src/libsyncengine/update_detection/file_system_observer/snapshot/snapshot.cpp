@@ -78,7 +78,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
         return false;
     }
 
-    SnapshotItem &prevItem = _items[newItem.id()];
+    const SnapshotItem &prevItem = _items[newItem.id()];
 
     // Update parent's children lists
     bool parentChanged = false;
@@ -140,15 +140,15 @@ bool Snapshot::removeItem(const NodeId &id) {
     removeChildrenRecursively(id);
 
     // Remove it also from its parent's children
-    auto parentIt = _items.find(it->second.parentId());
-    if (parentIt != _items.end()) {
+    if (auto parentIt = _items.find(it->second.parentId()); parentIt != _items.end()) {
         parentIt->second.removeChildren(id);
     }
 
     _items.erase(id);
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOG_DEBUG(Log::instance()->getLogger(), "Item " << id.c_str() << " removed from remote snapshot.");
+        LOG_DEBUG(Log::instance()->getLogger(),
+                  "Item " << id.c_str() << " removed from " << Utility::side2Str(_side).c_str() << " snapshot.");
     }
 
     return true;
@@ -186,8 +186,7 @@ NodeId Snapshot::itemId(const SyncPath &path) {
 NodeId Snapshot::parentId(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     NodeId ret;
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         ret = it->second.parentId();
     }
     return ret;
@@ -195,8 +194,7 @@ NodeId Snapshot::parentId(const NodeId &itemId) {
 
 bool Snapshot::setParentId(const NodeId &itemId, const NodeId &newParentId) {
     const std::scoped_lock lock(_mutex);
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         it->second.setParentId(newParentId);
 
         if (!isOrphan(itemId)) {
@@ -262,8 +260,7 @@ SyncName Snapshot::name(const NodeId &itemId) {
 
 bool Snapshot::setName(const NodeId &itemId, const SyncName &newName) {
     const std::scoped_lock lock(_mutex);
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         it->second.setName(newName);
 
         if (!isOrphan(itemId)) {
@@ -277,8 +274,7 @@ bool Snapshot::setName(const NodeId &itemId, const SyncName &newName) {
 SyncTime Snapshot::createdAt(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     SyncTime ret = 0;
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         ret = it->second.createdAt();
     }
     return ret;
@@ -286,8 +282,7 @@ SyncTime Snapshot::createdAt(const NodeId &itemId) {
 
 bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
     const std::scoped_lock lock(_mutex);
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         it->second.setCreatedAt(newTime);
 
         if (!isOrphan(itemId)) {
@@ -301,8 +296,7 @@ bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
 SyncTime Snapshot::lastModified(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     SyncTime ret = 0;
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         ret = it->second.lastModified();
     }
     return ret;
@@ -310,8 +304,7 @@ SyncTime Snapshot::lastModified(const NodeId &itemId) {
 
 bool Snapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
     const std::scoped_lock lock(_mutex);
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         it->second.setLastModified(newTime);
 
         if (!isOrphan(itemId)) {
@@ -325,8 +318,7 @@ bool Snapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
 NodeType Snapshot::type(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     NodeType ret = NodeTypeUnknown;
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         ret = it->second.type();
     }
     return ret;
@@ -353,8 +345,7 @@ int64_t Snapshot::size(const NodeId &itemId) {
 std::string Snapshot::contentChecksum(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     std::string ret;
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         ret = it->second.contentChecksum();
     }
     return ret;
@@ -363,8 +354,7 @@ std::string Snapshot::contentChecksum(const NodeId &itemId) {
 bool Snapshot::setContentChecksum(const NodeId &itemId, const std::string &newChecksum) {
     const std::scoped_lock lock(_mutex);
     // Note: do not call "startUpdate" here since the computation of content checksum is asynchronous
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         it->second.setContentChecksum(newChecksum);
         return true;
     }
@@ -374,8 +364,7 @@ bool Snapshot::setContentChecksum(const NodeId &itemId, const std::string &newCh
 bool Snapshot::canWrite(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     bool ret = true;
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         ret = it->second.canWrite();
     }
     return ret;
@@ -384,8 +373,7 @@ bool Snapshot::canWrite(const NodeId &itemId) {
 bool Snapshot::canShare(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     bool ret = true;
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         ret = it->second.canShare();
     }
     return ret;
@@ -398,8 +386,7 @@ bool Snapshot::clearContentChecksum(const NodeId &itemId) {
 
 bool Snapshot::exists(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
-    auto it = _items.find(itemId);
-    if (it != _items.end() && !isOrphan(itemId)) {
+    if (auto it = _items.find(itemId); it != _items.end() && !isOrphan(itemId)) {
         return true;
     }
     return false;
@@ -413,8 +400,7 @@ bool Snapshot::pathExists(const SyncPath &path) {
 bool Snapshot::isLink(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     bool ret = false;
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         ret = it->second.isLink();
     }
     return ret;
@@ -422,8 +408,7 @@ bool Snapshot::isLink(const NodeId &itemId) {
 
 bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) {
     const std::scoped_lock lock(_mutex);
-    auto it = _items.find(itemId);
-    if (it != _items.end()) {
+    if (auto it = _items.find(itemId); it != _items.end()) {
         childrenIds = it->second.childrenIds();
         return true;
     }
@@ -433,8 +418,8 @@ bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &
 void Snapshot::ids(std::unordered_set<NodeId> &ids) {
     const std::scoped_lock lock(_mutex);
     ids.clear();
-    for (const auto &it : _items) {
-        ids.insert(it.first);
+    for (const auto &[id, _] : _items) {
+        ids.insert(id);
     }
 }
 

@@ -1,7 +1,7 @@
 project(libcommonserver)
 
 find_package(SQLite3 3.8.0 REQUIRED)
-find_package(Poco 1.12.5 REQUIRED Foundation Net JSON Util)
+find_package(Poco 1.13.3 REQUIRED Foundation Net JSON Util)
 find_package(OpenSSL 3.1.0 REQUIRED SSL Crypto)
 find_package(log4cplus 2.1.0 REQUIRED)
 find_package(xxHash 0.8.2 REQUIRED)

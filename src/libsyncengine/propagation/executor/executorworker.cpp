@@ -27,7 +27,6 @@
 #include "jobs/network/renamejob.h"
 #include "jobs/network/uploadjob.h"
 #include "jobs/network/upload_session/uploadsession.h"
-#include "jobs/network/getfileinfojob.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
@@ -53,8 +52,6 @@ ExecutorWorker::ExecutorWorker(std::shared_ptr<SyncPal> syncPal, const std::stri
     : OperationProcessor(syncPal, name, shortName) {}
 
 void ExecutorWorker::executorCallback(UniqueId jobId) {
-    const std::scoped_lock lock(_mutex);
-
     _terminatedJobs.push(jobId);
 }
 
@@ -167,7 +164,6 @@ void ExecutorWorker::execute() {
                 std::function<void(UniqueId)> callback =
                     std::bind(&ExecutorWorker::executorCallback, this, std::placeholders::_1);
                 JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
-                const std::scoped_lock lock(_mutex);
                 _ongoingJobs.insert({job->jobId(), job});
                 _jobToSyncOpMap.insert({job->jobId(), syncOp});
             } else {
@@ -288,11 +284,9 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
         }
 
         if (isDehydratedPlaceholder) {
-            // Delete the file
-            LocalDeleteJob deleteJob(_syncPal->driveDbId(), _syncPal->_localPath, relativeLocalFilePath, true,
-                                     syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "");
-            deleteJob.setBypassCheck(true);
-            deleteJob.runSynchronously();
+            // Blacklist dehydrated placeholder
+            PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilePath,
+                                                                 PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
 
             // Remove from update tree
             affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
@@ -775,7 +769,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
     return true;
 }
 
-bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path, bool &isDehydratedPlaceholder) {
+bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder) {
     isDehydratedPlaceholder = false;
 
     if (syncOp->targetSide() == ReplicaSideRemote) {
@@ -794,7 +788,7 @@ bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path
             return false;
         }
 
-        if (isPlaceholder && !isHydrated) {
+        if (isPlaceholder && !isHydrated && !isSyncing) {
             LOGW_SYNCPAL_INFO(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(path).c_str());
             isDehydratedPlaceholder = true;
         }
@@ -854,12 +848,6 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
     syncItem.setLocalNodeId(std::to_string(fileStat.inode));
 
     if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem, needRestart)) {  // TODO : should not use SyncFileItem
-        return false;
-    }
-
-    bool isSyncing = hydrated;
-    if (!_syncPal->vfsForceStatus(absoluteLocalFilePath, isSyncing, 100, hydrated)) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
 
@@ -1561,8 +1549,6 @@ bool ExecutorWorker::enoughLocalSpace(SyncOpPtr syncOp) {
 }
 
 void ExecutorWorker::waitForAllJobsToFinish(bool &hasError) {
-    const std::scoped_lock lock(_mutex);
-
     while (!_ongoingJobs.empty()) {
         if (stopAsked()) {
             cancelAllOngoingJobs();
@@ -1593,8 +1579,6 @@ void ExecutorWorker::waitForAllJobsToFinish(bool &hasError) {
 }
 
 bool ExecutorWorker::deleteFinishedAsyncJobs() {
-    const std::scoped_lock lock(_mutex);
-
     bool hasError = false;
     while (!_terminatedJobs.empty()) {
         // Delete all terminated jobs
@@ -1874,8 +1858,6 @@ void ExecutorWorker::handleForbiddenAction(SyncOpPtr syncOp, const SyncPath &rel
 }
 
 void ExecutorWorker::sendProgress() {
-    const std::scoped_lock lock(_mutex);
-
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - _fileProgressTimer;
     if (elapsed_seconds.count() > SEND_PROGRESS_DELAY) {
         _fileProgressTimer = std::chrono::steady_clock::now();
@@ -2489,8 +2471,6 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
 }
 
 void ExecutorWorker::cancelAllOngoingJobs(bool reschedule /*= false*/) {
-    const std::scoped_lock lock(_mutex);
-
     LOG_SYNCPAL_DEBUG(_logger, "Cancelling all queued executor jobs");
 
     // First, abort all jobs that are not running yet to avoid starting them for nothing

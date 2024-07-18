@@ -24,66 +24,17 @@
 #include "libcommon/utility/utility.h"
 #include "db/syncdb.h"
 #include "db/parmsdb.h"
+#include "requests/parameterscache.h"
 
 using namespace CppUnit;
 
 namespace KDC {
 
 void TestSnapshot::setUp() {
-    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
-    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
-    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
-    const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-
-    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
-        apiTokenStr.empty()) {
-        throw std::runtime_error("Some environment variables are missing!");
-    }
-
-    // Insert api token into keystore
-    ApiToken apiToken;
-    apiToken.setAccessToken(apiTokenStr);
-
-    std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
-
-    // Create parmsDb
-    bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
-
-    // Insert user, account, drive & sync
-    int userId = atoi(userIdStr.c_str());
-    User user(1, userId, keychainKey);
-    ParmsDb::instance()->insertUser(user);
-
-    int accountId(atoi(accountIdStr.c_str()));
-    Account account(1, accountId, user.dbId());
-    ParmsDb::instance()->insertAccount(account);
-
-    int driveDbId = 1;
-    int driveId = atoi(driveIdStr.c_str());
-    Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
-    ParmsDb::instance()->insertDrive(drive);
-
-    Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
-    ParmsDb::instance()->insertSync(sync);
-
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
-    _syncPal->_syncDb->setAutoDelete(true);
+    ParametersCache::instance(true);
 }
 
-void TestSnapshot::tearDown() {
-    ParmsDb::instance()->close();
-    if (_syncPal && _syncPal->_syncDb) {
-        _syncPal->_syncDb->close();
-    }
-}
+void TestSnapshot::tearDown() {}
 
 /**
  * Tree:
@@ -99,65 +50,74 @@ void TestSnapshot::tearDown() {
  */
 
 void TestSnapshot::testSnapshot() {
-    //    CPPUNIT_ASSERT(_syncPal->_localSnapshot->rootFolderId() == SyncDb::driveRootNode().nodeIdLocal());
+    const NodeId rootNodeId = SyncDb::driveRootNode().nodeIdLocal().value();
 
-    SnapshotItem itemA("a", SyncDb::driveRootNode().nodeIdLocal().value(), Str("A"), 1640995201, 1640995201,
-                       NodeType::NodeTypeDirectory, 123);
-    _syncPal->_localSnapshot->updateItem(itemA);
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists("a"));
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->name("a") == Str("A"));
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->type("a") == NodeType::NodeTypeDirectory);
-    auto itItem = _syncPal->_localSnapshot->_items.find(SyncDb::driveRootNode().nodeIdLocal().value());
-    CPPUNIT_ASSERT(itItem->second.childrenIds().find("a") != itItem->second.childrenIds().end());
+    const DbNode dummyRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
+                               NodeTypeDirectory, 0, std::nullopt);
+    Snapshot snapshot(ReplicaSideLocal, dummyRootNode);
 
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("a", SyncDb::driveRootNode().nodeIdLocal().value(), Str("A*"), 1640995202,
-                                                      1640995202, NodeType::NodeTypeDirectory, 123));
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->name("a") == Str("A*"));
+    // Insert node A
+    const SnapshotItem itemA("a", rootNodeId, Str("A"), 1640995201, 1640995201, NodeType::NodeTypeDirectory, 123);
+    snapshot.updateItem(itemA);
+    CPPUNIT_ASSERT(snapshot.exists("a"));
+    CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(snapshot.name("a")));
+    CPPUNIT_ASSERT_EQUAL(NodeType::NodeTypeDirectory, snapshot.type("a"));
+    std::unordered_set<NodeId> childrenIds;
+    snapshot.getChildrenIds(rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("a"));
 
-    SnapshotItem itemB("b", SyncDb::driveRootNode().nodeIdLocal().value(), Str("B"), 1640995203, 1640995203,
-                       NodeType::NodeTypeDirectory, 123);
-    _syncPal->_localSnapshot->updateItem(itemB);
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists("b"));
-    itItem = _syncPal->_localSnapshot->_items.find(SyncDb::driveRootNode().nodeIdLocal().value());
-    CPPUNIT_ASSERT(itItem->second.childrenIds().find("b") != itItem->second.childrenIds().end());
+    // Update node A
+    snapshot.updateItem(SnapshotItem("a", rootNodeId, Str("A*"), 1640995202, 1640995202, NodeType::NodeTypeDirectory, 123));
+    CPPUNIT_ASSERT_EQUAL(std::string("A*"), SyncName2Str(snapshot.name("a")));
 
-    SnapshotItem itemAA("aa", "a", Str("AA"), 1640995204, 1640995204, NodeType::NodeTypeDirectory, 123);
-    _syncPal->_localSnapshot->updateItem(itemAA);
-    itItem = _syncPal->_localSnapshot->_items.find("a");
-    CPPUNIT_ASSERT(itItem->second.childrenIds().find("aa") != itItem->second.childrenIds().end());
+    // Insert node B
+    const SnapshotItem itemB("b", rootNodeId, Str("B"), 1640995203, 1640995203, NodeType::NodeTypeDirectory, 123);
+    snapshot.updateItem(itemB);
+    CPPUNIT_ASSERT(snapshot.exists("b"));
+    snapshot.getChildrenIds(rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("b"));
 
-    SnapshotItem itemAAA("aaa", "aa", Str("AAA"), 1640995205, 1640995205, NodeType::NodeTypeFile, 123);
-    _syncPal->_localSnapshot->updateItem(itemAAA);
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists("aaa"));
-    itItem = _syncPal->_localSnapshot->_items.find("aa");
-    CPPUNIT_ASSERT(itItem->second.childrenIds().find("aaa") != itItem->second.childrenIds().end());
+    // Insert child nodes
+    const SnapshotItem itemAA("aa", "a", Str("AA"), 1640995204, 1640995204, NodeType::NodeTypeDirectory, 123);
+    snapshot.updateItem(itemAA);
+    CPPUNIT_ASSERT(snapshot.exists("aa"));
+    snapshot.getChildrenIds("a", childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("aa"));
+
+    const SnapshotItem itemAAA("aaa", "aa", Str("AAA"), 1640995205, 1640995205, NodeType::NodeTypeFile, 123);
+    snapshot.updateItem(itemAAA);
+    CPPUNIT_ASSERT(snapshot.exists("aaa"));
+    snapshot.getChildrenIds("aa", childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("aaa"));
 
     SyncPath path;
-    _syncPal->_localSnapshot->path("aaa", path);
+    snapshot.path("aaa", path);
     CPPUNIT_ASSERT(path == std::filesystem::path("A*/AA/AAA"));
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->name("aaa") == Str("AAA"));
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->lastModified("aaa") == 1640995205);
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->type("aaa") == NodeType::NodeTypeFile);
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->contentChecksum("aaa") == "");  // Checksum never computed for now
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->itemId(std::filesystem::path("A*/AA/AAA")) == "aaa");
+    CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(snapshot.name("aaa")));
+    CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(1640995205), snapshot.lastModified("aaa"));
+    CPPUNIT_ASSERT_EQUAL(NodeType::NodeTypeFile, snapshot.type("aaa"));
+    CPPUNIT_ASSERT(snapshot.contentChecksum("aaa").empty());  // Checksum never computed for now
+    CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), snapshot.itemId(std::filesystem::path("A*/AA/AAA")));
 
-    _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("aa", "b", Str("AA"), 1640995204, 1640995204, NodeType::NodeTypeDirectory, 123));
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->parentId("aa") == "b");
-    itItem = _syncPal->_localSnapshot->_items.find("b");
-    CPPUNIT_ASSERT(itItem->second.childrenIds().find("aa") != itItem->second.childrenIds().end());
-    itItem = _syncPal->_localSnapshot->_items.find("a");
-    CPPUNIT_ASSERT(itItem->second.childrenIds().empty());
+    // Move node AA under B
+    snapshot.updateItem(SnapshotItem("aa", "b", Str("AA"), 1640995204, 1640995204, NodeType::NodeTypeDirectory, 123));
+    CPPUNIT_ASSERT(snapshot.parentId("aa") == "b");
+    snapshot.getChildrenIds("b", childrenIds);
+    CPPUNIT_ASSERT(childrenIds.contains("aa"));
+    snapshot.getChildrenIds("a", childrenIds);
+    CPPUNIT_ASSERT(childrenIds.empty());
 
-    _syncPal->_localSnapshot->removeItem("b");
-    CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists("aaa"));
-    CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists("aa"));
-    CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists("b"));
-    itItem = _syncPal->_localSnapshot->_items.find(SyncDb::driveRootNode().nodeIdLocal().value());
-    CPPUNIT_ASSERT(itItem->second.childrenIds().find("b") == itItem->second.childrenIds().end());
+    // Remove node B
+    snapshot.removeItem("b");
+    snapshot.getChildrenIds(rootNodeId, childrenIds);
+    CPPUNIT_ASSERT(!snapshot.exists("aaa"));
+    CPPUNIT_ASSERT(!snapshot.exists("aa"));
+    CPPUNIT_ASSERT(!snapshot.exists("b"));
+    CPPUNIT_ASSERT(!childrenIds.contains("b"));
 
-    _syncPal->_localSnapshot->init();
-    CPPUNIT_ASSERT(_syncPal->_localSnapshot->_items.size() == 1);
+    // Reset snapshot
+    snapshot.init();
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), snapshot.nbItems());
 }
 
 }  // namespace KDC

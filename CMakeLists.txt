@@ -23,11 +23,11 @@ include("${CMAKE_CURRENT_LIST_DIR}/THEME.cmake")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-IF(UNIX AND NOT APPLE)
+IF (UNIX AND NOT APPLE)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        "/usr/local/lib"
+            "/usr/local/lib"
     )
-ELSEIF(WIN32)
+ELSEIF (WIN32)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
         "C:/Program Files/OpenSSL"
         "C:/Program Files (x86)/Poco"
@@ -36,7 +36,7 @@ ELSEIF(WIN32)
         "C:/Program Files (x86)/xxHash"
         "C:/Program Files (x86)/libzip"
     )
-ENDIF()
+ENDIF ()
 
 set(libcommon_NAME "${APPLICATION_NAME}common")
 set(libcommonserver_NAME "${APPLICATION_NAME}commonserver")
@@ -52,59 +52,59 @@ set(ENABLE_JSON TRUE)
 include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 # Allows includes based on src/ like #include "common/utility.h"
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_BINARY_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/test
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_BINARY_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/test
 )
 
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 add_definitions(
-    -DQT_USE_QSTRINGBUILDER
-    -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
-    -DQT_DEPRECATED_WARNINGS
+        -DQT_USE_QSTRINGBUILDER
+        -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
+        -DQT_DEPRECATED_WARNINGS
 )
 
 if (APPLE)
     set(DATADIR ${DATA_INSTALL_DIR})
-else()
+else ()
     set(DATADIR "share")
-endif()
+endif ()
 
 set(SHAREDIR ${DATADIR})
 
 if (NOT APPLE)
     set(PLUGINDIR "${CMAKE_INSTALL_FULL_LIBDIR}/${APPLICATION_SHORTNAME}/plugins" CACHE STRING "Extra path to look for Qt plugins like for VFS. May be relative to binary.")
-else()
+else ()
     # Inside the .app bundle
     set(PLUGINDIR "../PlugIns" CACHE STRING "Extra path to look for Qt plugins like for VFS. May be relative to binary.")
-endif()
+endif ()
 
 #####
 ## handle BUILD_KDRIVE_OSX_BUNDLE
 # BUILD_KDRIVE_OSX_BUNDLE was not initialized OR set to true on OSX
-if(APPLE AND (NOT DEFINED BUILD_KDRIVE_OSX_BUNDLE OR BUILD_KDRIVE_OSX_BUNDLE))
+if (APPLE AND (NOT DEFINED BUILD_KDRIVE_OSX_BUNDLE OR BUILD_KDRIVE_OSX_BUNDLE))
     set(BUILD_KDRIVE_OSX_BUNDLE ON)
     set(KDRIVE_OSX_BUNDLE "${APPLICATION_NAME}.app")
 
     set(LIB_INSTALL_DIR "${APPLICATION_NAME}.app/Contents/MacOS")
     set(BIN_INSTALL_DIR "${APPLICATION_NAME}.app/Contents/MacOS")
 
-# BUILD_KDRIVE_OSX_BUNDLE was disabled on OSX
-elseif(APPLE AND NOT BUILD_KDRIVE_OSX_BUNDLE)
+    # BUILD_KDRIVE_OSX_BUNDLE was disabled on OSX
+elseif (APPLE AND NOT BUILD_KDRIVE_OSX_BUNDLE)
     message(FATAL_ERROR "Building in non-bundle mode on OSX is currently not supported. Comment this error out if you want to work on it.")
 
-# any other platform
-else()
+    # any other platform
+else ()
     set(BUILD_KDRIVE_OSX_BUNDLE OFF)
-endif()
+endif ()
 #####
 
 option(NO_MSG_HANDLER "Don't redirect QDebug outputs to the log window/file" OFF)
-if(NO_MSG_HANDLER)
-   add_definitions(-DNO_MSG_HANDLER=1)
-endif()
+if (NO_MSG_HANDLER)
+    add_definitions(-DNO_MSG_HANDLER=1)
+endif ()
 
 # this option builds the shell integration
 option(BUILD_EXTENSIONS "BUILD_EXTENSIONS" ON)
@@ -127,26 +127,26 @@ option(BUILD_GUI "BUILD_GUI" ON)
 # build the tests
 option(BUILD_UNIT_TESTS "BUILD_UNIT_TESTS" OFF)
 
-if(APPLE)
+if (APPLE)
     # build uninstaller
     option(BUILD_UNINSTALLER "BUILD_UNINSTALLER" ON)
-endif(APPLE)
+endif (APPLE)
 
-if(APPLE)
-  set( SOCKETAPI_TEAM_IDENTIFIER_PREFIX "" CACHE STRING "SocketApi prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit" )
-endif()
+if (APPLE)
+    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "" CACHE STRING "SocketApi prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit")
+endif ()
 
-if(BUILD_CLIENT)
-    if(APPLE)
+if (BUILD_CLIENT)
+    if (APPLE)
         find_package(Sparkle)
-    endif(APPLE)
+    endif (APPLE)
 
-   find_package(ZLIB REQUIRED)
-endif()
+    find_package(ZLIB REQUIRED)
+endif ()
 
 if (NOT DEFINED APPLICATION_ICON_NAME)
     set(APPLICATION_ICON_NAME "${APPLICATION_SHORTNAME}")
-endif()
+endif ()
 
 if (WIN32)
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
@@ -156,7 +156,7 @@ if (WIN32)
     add_definitions(-D_WIN32_WINNT=0x0600)
     add_definitions(-DWINVER=0x0600)
     add_definitions(-DNTDDI_VERSION=0x0A000003)
-endif(WIN32)
+endif (WIN32)
 
 if (UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
@@ -166,48 +166,48 @@ if (UNIX)
 endif()
 
 # Handle Translations, pick all client_* files from trans directory.
-file( GLOB TRANS_FILES ${CMAKE_SOURCE_DIR}/translations/client_*.ts)
+file(GLOB TRANS_FILES ${CMAKE_SOURCE_DIR}/translations/client_*.ts)
 set(TRANSLATIONS ${TRANS_FILES})
 
-if(BUILD_CLIENT)
+if (BUILD_CLIENT)
     add_subdirectory(src)
-    if(NOT BUILD_LIBRARIES_ONLY)
-        if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
+    if (NOT BUILD_LIBRARIES_ONLY)
+        if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
             add_subdirectory(admin)
-        endif(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
-    endif(NOT BUILD_LIBRARIES_ONLY)
-endif()
+        endif (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
+    endif (NOT BUILD_LIBRARIES_ONLY)
+endif ()
 
-if(BUILD_DOCS)
+if (BUILD_DOCS)
     add_subdirectory(docs)
-endif()
+endif ()
 
-if(BUILD_EXTENSIONS)
+if (BUILD_EXTENSIONS)
     add_subdirectory(extensions)
-endif()
+endif ()
 
-if(BUILD_UNINSTALLER)
+if (BUILD_UNINSTALLER)
     add_subdirectory(uninstaller)
-endif()
+endif ()
 
 # Tests
-if(BUILD_UNIT_TESTS)
+if (BUILD_UNIT_TESTS)
     add_subdirectory("test")
-endif()
+endif ()
 
 # utf8proc
 if (UNIX)
     add_subdirectory(src/3rdparty/utf8proc)
-endif()
+endif ()
 
 # keychain
 add_subdirectory(src/3rdparty/keychain)
 
-message( STATUS "Configure files" )
+message(STATUS "Configure files")
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
-if(BUILD_KDRIVE_OSX_BUNDLE)
+if (BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
     install(FILES embedded.provisionprofile DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/)
 
@@ -251,13 +251,13 @@ elseif(BUILD_CLIENT)
         find_library(XXHASH_SHARED_LIBRARY NAMES xxHash PATH_SUFFIXES "bin" NO_CACHE)
         message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
         install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
-    else()
+    else ()
         # Default sync exclude list
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_INSTALL_PREFIX}/sync-exclude.lst)
         else()
             install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
-        endif()
+        endif ()
 
         # Sentry
         find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
@@ -268,5 +268,5 @@ elseif(BUILD_CLIENT)
         find_library(XXHASH_SHARED_LIBRARY NAMES xxhash NO_CACHE)
         message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
         install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
-    endif()
-endif()
+    endif ()
+endif ()

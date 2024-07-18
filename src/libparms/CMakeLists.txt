@@ -1,6 +1,6 @@
 project(libparms)
 
-find_package(Poco 1.12.5 REQUIRED Foundation)
+find_package(Poco 1.13.3 REQUIRED Foundation)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)

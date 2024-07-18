@@ -21,6 +21,8 @@
 #include <QObject>
 #include <QString>
 
+#include "libcommon/utility/types.h"
+
 namespace KDC {
 
 class Updater : public QObject {
@@ -36,6 +38,7 @@ class Updater : public QObject {
         virtual bool downloadCompleted() const = 0;
         virtual bool updateFound() const = 0;
         virtual void startInstaller() const = 0;
+        virtual UpdateState updateState() const = 0;
 };
 
 }  // namespace KDC
