@@ -23,8 +23,8 @@
 namespace KDC {
 
 struct FileStat {
-        time_t creationTime = 0;
-        time_t modtime = 0;
+        SyncTime creationTime = 0;
+        SyncTime modtime = 0;
         int64_t size = 0;
         uint64_t inode = 0;
         bool isHidden = false;

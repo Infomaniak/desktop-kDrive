@@ -147,7 +147,7 @@ class ExecutorWorker : public OperationProcessor {
 
         bool _snapshotToInvalidate = false;
 
-        friend class TestExecutor;
+        friend class TestExecutorWorker;
 };
 
 }  // namespace KDC

@@ -24,9 +24,10 @@
 
 namespace KDC {
 
-class TestExecutor : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestExecutor);
+class TestExecutorWorker : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestExecutorWorker);
         CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
+        CPPUNIT_TEST(testFixModificationDate);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -34,6 +35,7 @@ class TestExecutor : public CppUnit::TestFixture {
 
     private:
         void testCheckLiteSyncInfoForCreate();
+        void testFixModificationDate();
 
         std::shared_ptr<SyncPal> _syncPal;
         Sync _sync;
