@@ -166,7 +166,7 @@ void TestExecutorWorker::testFixModificationDate() {
     // Create temp directory
     const LocalTemporaryDirectory temporaryDirectory;
     // Create file
-    const SyncName filename = "test_file.txt";
+    const SyncName filename = Str("test_file.txt");
     const SyncPath path = temporaryDirectory.path / filename;
     {
         std::ofstream ofs(path);
