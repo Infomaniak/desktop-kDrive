@@ -17,6 +17,7 @@
  */
 
 #pragma once
+
 #include "utility/types.h"
 
 #include <string>

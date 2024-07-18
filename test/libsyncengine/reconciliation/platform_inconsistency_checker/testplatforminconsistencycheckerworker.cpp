@@ -58,7 +58,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     const Drive drive(1, 1, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    const Sync sync(1, drive.dbId(), _tempDir.path, "");
+    const Sync sync(1, drive.dbId(), _tempDir.path(), "");
     ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
@@ -168,7 +168,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash() {
 void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     // Create local files
     for (const std::vector<std::string> nodes = {{"a1"}, {"A"}}; const auto &n : nodes) {
-        std::ofstream ofs(_tempDir.path / n);
+        std::ofstream ofs(_tempDir.path() / n);
         ofs << "Some content.\n";
         ofs.close();
     }
@@ -217,7 +217,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 
 #if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
-    CPPUNIT_ASSERT(!std::filesystem::exists(_tempDir.path / "a1"));
+    CPPUNIT_ASSERT(!std::filesystem::exists(_tempDir.path() / "a1"));
     std::error_code ec;
     auto dirIt = std::filesystem::recursive_directory_iterator(_syncPal->_localPath,
                                                                std::filesystem::directory_options::skip_permission_denied, ec);
