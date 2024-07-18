@@ -12,6 +12,9 @@
     - [xxHash](#xxhash)
     - [libzip](#libzip)
 - [Build in Debug](#build-in-debug)
+    - [Using CLion](#using-clion)
+        - [Prerequisites](#prerequisites)
+        - [CMake Parameters](#cmake-parameters)
     - [Qt Creator](#using-qt-creator)
         - [Configuration](#configuration)
         - [Debugging](#debugging)
@@ -215,7 +218,7 @@ sudo apt-get install libglib2.0-dev
 sudo apt install libsecret-1-0 libsecret-1-dev libglib2.0-dev
 ```
 
-## Configuration
+## CMake Parameters
 
 CMake options:
 
