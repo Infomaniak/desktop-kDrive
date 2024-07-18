@@ -16,6 +16,10 @@
 	- [Packages](#packages)
 	- [Notarytool](#notarytool)
 - [Build in Debug](#build-in-debug)
+	- [Using CLion](#using-clion)
+        - [CMake Parameters](#cmake-parameters)
+		- [Run CMake install](#run-cmake-install)
+		- [Sign package](#sign-package)
 	- [Qt Creator](#using-qt-creator)
 		- [Qt Configuration](#qt-configuration)
 - [Build in Release](#build-in-release)
@@ -164,7 +168,7 @@ If you have an ARM architecture, run `sudo make install` then continue
 cd ~/Projects
 lipo -arch arm64 openssl.arm64/libcrypto.3.dylib -arch x86_64 openssl.x86_64/libcrypto.3.dylib -output openssl.multi/libcrypto.3.dylib -create
 lipo -arch arm64 openssl.arm64/libssl.3.dylib -arch x86_64 openssl.x86_64/libssl.3.dylib -output openssl.multi/libssl.3.dylib -create
-lipo -arch arm64 openssl.arm64/libcrypto.a -arch x86_64 openssl.x86_64/libcrypto.a -output openssl.multi/libcrypto.a -create   
+lipo -arch arm64 openssl.arm64/libcrypto.a -arch x86_64 openssl.x86_64/libcrypto.a -output openssl.multi/libcrypto.a -create
 lipo -arch arm64 openssl.arm64/libssl.a -arch x86_64 openssl.x86_64/libssl.a -output openssl.multi/libssl.a -create
 sudo cp openssl.multi/* /usr/local/lib/
 ```
@@ -255,6 +259,42 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 In order for CMake to be able to find all dependencies, you might need to define `DYLD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
 Either add `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib` in your personal `.zshrc` file or add the environment variable in your IDE.
 
+## Using CLion
+
+### CMake Parameters
+
+CMake options:
+
+```
+-DCMAKE_BUILD_TYPE:STRING=Debug
+-DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
+-DKDRIVE_THEME_DIR=/Users/<user_name>/Projects/desktop-kDrive/infomaniak
+-DCMAKE_INSTALL_PREFIX=/Users/clementkunz/Projects/CLion-build-debug/install
+-DBUILD_UNIT_TESTS:BOOL=ON
+-DCMAKE_PREFIX_PATH:STRING=/Users/<user_name>/Qt/6.2.3/macos
+-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
+```
+
+### Run CMake install
+
+Edit the `kDrive` profile:
+
+![alt text](edit_profile.png)
+
+Add `CMake install` in the `Before launch` steps:
+
+![alt text](cmake_install.png)
+
+### Sign package
+
+Add a `Run external tool` in the `Before launch` steps:
+
+![alt text](run_ext_tool.png)
+
+Create the external tool to run `sign_app_debug.sh`:
+
+![alt text](sign_package.png)
+
 ## Using Qt Creator
 
 ### Qt Configuration
@@ -278,10 +318,10 @@ In the project build settings, paste the following lines in the Initial Configur
 %{CMAKE_OSX_ARCHITECTURES:DefaultFlag}
 ```
 
-Build - Build Steps - Build :  
+Build - Build Steps - Build :  
 `cmake --build . --target all install`
 
-Build - Build Steps - Custom Process Step 1 :  
+Build - Build Steps - Custom Process Step 1 :  
 `Command	: /Users/<user name>/Projects/kdrive/admin/osx/sign_app_debug.sh`  
 `Arguments	: %{ActiveProject:RunConfig:Executable:FileName} %{buildDir}/bin/kDrive.app "Developer ID Application: Infomaniak Network SA (864VDCS2QY)" "864VDCS2QY" "com.infomaniak.drive.desktopclient" 2>&1 1>/dev/null`
 
