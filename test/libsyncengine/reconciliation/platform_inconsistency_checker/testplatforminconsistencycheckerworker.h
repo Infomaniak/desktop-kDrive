@@ -50,7 +50,6 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
 
     private:
         std::shared_ptr<SyncPal> _syncPal{nullptr};
-
         LocalTemporaryDirectory _tempDir{"testNameClashAfterRename"};
 };
 
