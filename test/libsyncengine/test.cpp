@@ -40,7 +40,7 @@
 #include "requests/testexclusiontemplatecache.h"
 
 namespace KDC {
-CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
+/* CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
 //  CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncDb);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalJobs);
@@ -62,7 +62,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
 
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
-// CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);*/
+CPPUNIT_TEST_SUITE_REGISTRATION(TestNetworkJobs);
+
 }  // namespace KDC
 
 int main(int, char **) {

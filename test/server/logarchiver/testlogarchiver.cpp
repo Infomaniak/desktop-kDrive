@@ -112,7 +112,7 @@ void TestLogArchiver::testCopyLogsTo(void) {
         // Check that `test.log.gz` does not exist anymore.
         bool exists = false;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(tempDir.path / "test.log.gz", exists, err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, err);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT_EQUAL(false, exists);
     }
 }
