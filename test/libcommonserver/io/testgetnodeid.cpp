@@ -45,7 +45,7 @@ void TestIo::testGetNodeId() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         NodeId nodeId;
@@ -57,7 +57,7 @@ void TestIo::testGetNodeId() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         NodeId nodeId;
@@ -99,7 +99,7 @@ void TestIo::testGetNodeId() {
     // An existing file with dots and colons in its name
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / ":.file.::.name.:";
+        const SyncPath path = temporaryDirectory.path() / ":.file.::.name.:";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -114,7 +114,7 @@ void TestIo::testGetNodeId() {
     // An existing file with emojis in its name
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
+        const SyncPath path = temporaryDirectory.path() / makeFileNameWithEmojis();
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -129,8 +129,8 @@ void TestIo::testGetNodeId() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         std::error_code ec;
@@ -147,7 +147,7 @@ void TestIo::testGetNodeId() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -163,7 +163,7 @@ void TestIo::testGetNodeId() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -178,8 +178,8 @@ void TestIo::testGetNodeId() {
     // A dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "file_to_be_deleted.png";  // This file will be deleted.
-        const SyncPath path = temporaryDirectory.path / "dangling_file_alias";
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         {
             std::ofstream ofs(targetPath);
             ofs << "Some content.\n";
@@ -202,10 +202,10 @@ void TestIo::testGetNodeId() {
     // A dangling MacOSX Finder alias on a non-existing directory.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "directory_to_be_deleted";  // This directory will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted";  // This directory will be deleted.
         std::filesystem::create_directory(targetPath);
 
-        const SyncPath path = temporaryDirectory.path / "dangling_directory_alias";
+        const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -224,7 +224,7 @@ void TestIo::testGetNodeId() {
     // A regular file missing all permissions (no error expected)
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_file.txt";
+        const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -245,7 +245,7 @@ void TestIo::testGetNodeId() {
     // A regular directory missing all permissions (no error expected)
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_directory";
+        const SyncPath path = temporaryDirectory.path() / "permission_less_directory";
         std::filesystem::create_directory(path);
 
         const auto allPermissions =
@@ -263,7 +263,7 @@ void TestIo::testGetNodeId() {
     // A regular file within a subdirectory that misses owner read permission (no error expected)
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
+        const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
         const SyncPath path = subdir / "file.txt";
         {
@@ -287,7 +287,7 @@ void TestIo::testGetNodeId() {
     // - no error on Windows
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
+        const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
         const SyncPath path = subdir / "file.txt";
         { std::ofstream ofs(path); }

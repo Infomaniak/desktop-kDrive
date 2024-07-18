@@ -33,7 +33,7 @@ void TestIo::testSetXAttrValue() {
     // A regular file
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -76,7 +76,7 @@ void TestIo::testSetXAttrValue() {
     // A regular file missing owner write permission: access denied expected
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_file.txt";
+        const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -101,7 +101,7 @@ void TestIo::testSetXAttrValue() {
     // A regular file
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         {
             std::ofstream ofs(path);
             ofs.close();

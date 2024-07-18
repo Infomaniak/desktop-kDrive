@@ -284,11 +284,9 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
         }
 
         if (isDehydratedPlaceholder) {
-            // Delete the file
-            LocalDeleteJob deleteJob(_syncPal->driveDbId(), _syncPal->_localPath, relativeLocalFilePath, true,
-                                     syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "");
-            deleteJob.setBypassCheck(true);
-            deleteJob.runSynchronously();
+            // Blacklist dehydrated placeholder
+            PlatformInconsistencyCheckerUtility::renameLocalFile(absoluteLocalFilePath,
+                                                                 PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
 
             // Remove from update tree
             affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
@@ -771,7 +769,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
     return true;
 }
 
-bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path, bool &isDehydratedPlaceholder) {
+bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, const SyncPath &path, bool &isDehydratedPlaceholder) {
     isDehydratedPlaceholder = false;
 
     if (syncOp->targetSide() == ReplicaSideRemote) {
@@ -790,7 +788,7 @@ bool ExecutorWorker::checkLiteSyncInfoForCreate(SyncOpPtr syncOp, SyncPath &path
             return false;
         }
 
-        if (isPlaceholder && !isHydrated) {
+        if (isPlaceholder && !isHydrated && !isSyncing) {
             LOGW_SYNCPAL_INFO(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(path).c_str());
             isDehydratedPlaceholder = true;
         }
@@ -850,12 +848,6 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
     syncItem.setLocalNodeId(std::to_string(fileStat.inode));
 
     if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem, needRestart)) {  // TODO : should not use SyncFileItem
-        return false;
-    }
-
-    bool isSyncing = hydrated;
-    if (!_syncPal->vfsForceStatus(absoluteLocalFilePath, isSyncing, 100, hydrated)) {
-        LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
         return false;
     }
 

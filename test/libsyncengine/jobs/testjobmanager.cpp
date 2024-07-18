@@ -196,12 +196,12 @@ void TestJobManager::testWithCallback() {
 
 void TestJobManager::testWithCallbackMediumFiles() {
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
-    testWithCallbackBigFiles(temporaryDirectory.path, 50, 15);  // 15 files of 50 MB
+    testWithCallbackBigFiles(temporaryDirectory.path(), 50, 15);  // 15 files of 50 MB
 }
 
 void TestJobManager::testWithCallbackBigFiles() {
     const LocalTemporaryDirectory temporaryDirectory("testJobManager");
-    testWithCallbackBigFiles(temporaryDirectory.path, 200, 10);  // 10 files of 200 MB
+    testWithCallbackBigFiles(temporaryDirectory.path(), 200, 10);  // 10 files of 200 MB
 }
 
 void TestJobManager::testCancelJobs() {

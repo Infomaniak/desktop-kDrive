@@ -15,33 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "localtemporarydirectory.h"
 
-#include "io/filestat.h"
-#include "io/iohelper.h"
+#pragma once
 
-#include <sstream>
+#include "testincludes.h"
+#include "server/vfs/mac/vfs_mac.h"
 
 namespace KDC {
 
-LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
-    const std::time_t now = std::time(nullptr);
-    const std::tm tm = *std::localtime(&now);
-    std::ostringstream woss;
-    woss << std::put_time(&tm, "%Y%m%d_%H%M");
+class TestVfsMac : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestVfsMac);
+        CPPUNIT_TEST(testStatus);
+        CPPUNIT_TEST_SUITE_END();
 
-    _path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
-    std::filesystem::create_directory(_path);
+    public:
+        void setUp() override;
 
-    FileStat fileStat;
-    IoError ioError = IoErrorSuccess;
-    IoHelper::getFileStat(_path, &fileStat, ioError);
-    _id = std::to_string(fileStat.inode);
-}
+    private:
+        void testStatus();
 
-LocalTemporaryDirectory::~LocalTemporaryDirectory() {
-    std::filesystem::remove_all(_path);
-}
-
+        std::unique_ptr<VfsMac> _vfs;
+};
 
 }  // namespace KDC
