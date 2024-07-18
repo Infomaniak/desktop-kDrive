@@ -51,7 +51,7 @@ void TestIo::testCheckIfIsDirectory() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoErrorUnknown;
@@ -66,9 +66,9 @@ void TestIo::testCheckIfIsDirectory() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path_ = temporaryDirectory.path / "symbolic_link";
+        const SyncPath path_ = temporaryDirectory.path() / "symbolic_link";
         std::filesystem::create_symlink(targetPath, path_);
-        const SyncPath path = temporaryDirectory.path / "symbolic_link_link";
+        const SyncPath path = temporaryDirectory.path() / "symbolic_link_link";
         std::filesystem::create_symlink(path_, path);
 
         IoError ioError = IoErrorUnknown;
@@ -83,7 +83,7 @@ void TestIo::testCheckIfIsDirectory() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoErrorUnknown;
@@ -115,8 +115,8 @@ void TestIo::testCheckIfIsDirectory() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "non_existing_file.txt";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_file.txt";  // This file does not exist.
+        const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoErrorSuccess;
@@ -130,7 +130,7 @@ void TestIo::testCheckIfIsDirectory() {
     // A regular directory missing all permissions: no error expected
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_directory";
+        const SyncPath path = temporaryDirectory.path() / "permission_less_directory";
         std::filesystem::create_directory(path);
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
@@ -170,10 +170,10 @@ void TestIo::testCheckIfIsDirectory() {
     // - Access denied expected on MacOSX and Linux
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "subdir";
+        const SyncPath path = temporaryDirectory.path() / "subdir";
         std::filesystem::create_directory(path);
 
-        std::filesystem::permissions(temporaryDirectory.path, std::filesystem::perms::owner_exec,
+        std::filesystem::permissions(temporaryDirectory.path(), std::filesystem::perms::owner_exec,
                                      std::filesystem::perm_options::remove);
 
         IoError ioError = IoErrorSuccess;
@@ -188,7 +188,7 @@ void TestIo::testCheckIfIsDirectory() {
         CPPUNIT_ASSERT(!isDirectory);
 #endif
         // Restore permission to allow subdir removal
-        std::filesystem::permissions(temporaryDirectory.path, std::filesystem::perms::owner_exec,
+        std::filesystem::permissions(temporaryDirectory.path(), std::filesystem::perms::owner_exec,
                                      std::filesystem::perm_options::add);
     }
 
@@ -197,7 +197,7 @@ void TestIo::testCheckIfIsDirectory() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
@@ -214,7 +214,7 @@ void TestIo::testCheckIfIsDirectory() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -230,10 +230,10 @@ void TestIo::testCheckIfIsDirectory() {
     // A dangling MacOSX Finder alias on a non-existing directory.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "directory_to_be_deleted";  // This directory will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted";  // This directory will be deleted.
         std::filesystem::create_directory(targetPath);
 
-        const SyncPath path = temporaryDirectory.path / "dangling_directory_alias";
+        const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
 
         IoError aliasError;
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
@@ -253,7 +253,7 @@ void TestIo::testCreateDirectory() {
     // Creates successfully a directory
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_directory";
+        const SyncPath path = temporaryDirectory.path() / "regular_directory";
 
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->createDirectory(path, ioError));
@@ -270,7 +270,7 @@ void TestIo::testCreateDirectory() {
     // Fails to create a directory because the dir path indicates an existing directory
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path;
+        const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoErrorSuccess;
         CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
@@ -280,7 +280,7 @@ void TestIo::testCreateDirectory() {
     // Fails to create a directory because the dir path indicates an existing file
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         { std::ofstream ofs(path); }
 
         IoError ioError = IoErrorSuccess;
@@ -293,9 +293,9 @@ void TestIo::testCreateDirectory() {
     // - Access denied on MacOSX and Linux.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "subdir";
+        const SyncPath path = temporaryDirectory.path() / "subdir";
 
-        std::filesystem::permissions(temporaryDirectory.path, std::filesystem::perms::owner_exec,
+        std::filesystem::permissions(temporaryDirectory.path(), std::filesystem::perms::owner_exec,
                                      std::filesystem::perm_options::remove);
 
         IoError ioError = IoErrorSuccess;
@@ -307,7 +307,7 @@ void TestIo::testCreateDirectory() {
         CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
 #endif
         // Restore permission to allow subdir removal
-        std::filesystem::permissions(temporaryDirectory.path, std::filesystem::perms::owner_exec,
+        std::filesystem::permissions(temporaryDirectory.path(), std::filesystem::perms::owner_exec,
                                      std::filesystem::perm_options::add);
     }
 

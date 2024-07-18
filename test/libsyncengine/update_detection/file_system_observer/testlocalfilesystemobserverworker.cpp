@@ -36,6 +36,8 @@
 #include <Poco/Path.h>
 #include <Poco/File.h>
 
+#include <memory>
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -49,7 +51,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
 
-    _testRootFolderPath = _tempDir.path / "sync_folder";
+    _testRootFolderPath = _tempDir.path() / "sync_folder";
 
     Poco::File((_testRootFolderPath / "A" / "AA").string()).createDirectories();
     Poco::File((_testRootFolderPath / "A" / "AB").string()).createDirectories();
@@ -76,9 +78,8 @@ void TestLocalFileSystemObserverWorker::setUp() {
     // Create SyncPal
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(syncDbPath, "3.4.0", true));
-    _syncPal->syncDb()->setAutoDelete(true);
-
+    _syncPal = std::make_shared<SyncPal>(syncDbPath, "3.4.0", true);
+    _syncPal->_syncDb->setAutoDelete(true);
     _syncPal->_localPath = _testRootFolderPath;
 
 #if defined(_WIN32)

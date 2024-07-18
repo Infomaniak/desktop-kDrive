@@ -17,6 +17,9 @@
  */
 #include "localtemporarydirectory.h"
 
+#include "io/filestat.h"
+#include "io/iohelper.h"
+
 #include <sstream>
 
 namespace KDC {
@@ -27,21 +30,26 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
     std::ostringstream woss;
     woss << std::put_time(&tm, "%Y%m%d_%H%M");
 
-    path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
+    _path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
     int retryCount = 0;
     const int maxRetry = 100;
-    while (!std::filesystem::create_directory(path) && retryCount < maxRetry) {
+    while (!std::filesystem::create_directory(_path) && retryCount < maxRetry) {
         retryCount++;
-        path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
+        _path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
     }
 
     if (retryCount == maxRetry) {
         throw std::runtime_error("Failed to create local temporary directory");
     }
+  
+    FileStat fileStat;
+    IoError ioError = IoErrorSuccess;
+    IoHelper::getFileStat(_path, &fileStat, ioError);
+    _id = std::to_string(fileStat.inode);
 }
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {
-    std::filesystem::remove_all(path);
+    std::filesystem::remove_all(_path);
 }
 
 

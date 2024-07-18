@@ -83,7 +83,7 @@ class AbstractJob : public Poco::Runnable {
         virtual void abort();
         bool isAborted() const;
 
-        inline bool bypassCheck() const { return _bypassCheck; }
+        [[nodiscard]] inline bool bypassCheck() const { return _bypassCheck; }
         inline void setBypassCheck(bool newBypassCheck) { _bypassCheck = newBypassCheck; }
 
     protected:

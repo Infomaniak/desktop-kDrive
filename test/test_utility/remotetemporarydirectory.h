@@ -15,25 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
 #include "utility/types.h"
-#include <string>
-#include <filesystem>
 
 namespace KDC {
 
-class LocalTemporaryDirectory {
+class RemoteTemporaryDirectory {
     public:
-        explicit LocalTemporaryDirectory(const std::string& testType = "undef");
-        ~LocalTemporaryDirectory();
+        RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId, const std::string& testType = "undef");
+        ~RemoteTemporaryDirectory();
 
-        [[nodiscard]] const std::filesystem::path& path() const { return _path; }
-        [[nodiscard]] const NodeId& id() const { return _id; }
+        [[nodiscard]] const NodeId& id() const { return _dirId; }
+        [[nodiscard]] const SyncName& name() const { return _dirName; }
 
     private:
-        std::filesystem::path _path;
-        NodeId _id;
+        int _driveDbId{0};
+        NodeId _dirId;
+        SyncName _dirName;
 };
 
 }  // namespace KDC
