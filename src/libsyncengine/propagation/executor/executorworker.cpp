@@ -678,7 +678,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 _executorExitCode = needRestart
                                         ? ExitCodeDataError
                                         : ExitCodeSystemError;  // TODO : data error here leads to a rebuild of the snapshots
-                                                                // while just running the sync again should be enough
+                // while just running the sync again should be enough
                 _executorExitCause = needRestart ? ExitCauseUnexpectedFileSystemEvent : ExitCauseUnknown;
                 return false;
             }
@@ -847,7 +847,8 @@ bool ExecutorWorker::convertToPlaceholder(const SyncPath &relativeLocalPath, boo
 
     syncItem.setLocalNodeId(std::to_string(fileStat.inode));
 
-    if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem, needRestart)) {  // TODO : should not use SyncFileItem
+    if (!_syncPal->vfsConvertToPlaceholder(absoluteLocalFilePath, syncItem,
+                                           needRestart)) {  // TODO : should not use SyncFileItem
         return false;
     }
 
@@ -916,7 +917,7 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
             _syncPal->setProgressComplete(
                 relativeLocalFilePath,
                 SyncFileStatusIgnored);  // TODO: we do not want to propagate the changes, but they must be kept on local replica.
-                                         // Rename the file and exclude the renamed file
+            // Rename the file and exclude the renamed file
             return;
         }
 
@@ -1042,7 +1043,41 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
     return true;
 }
 
-bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolutePath, bool &ignoreItem, bool &isSyncing) {
+bool ExecutorWorker::fixModificationDate(SyncOpPtr syncOp, const SyncPath &absolutePath) {
+    const auto id = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";
+    LOGW_SYNCPAL_DEBUG(_logger, L"Do not upload dehydrated placeholders: " << Utility::formatSyncPath(absolutePath).c_str()
+                                                                           << L" (" << Utility::s2ws(id).c_str() << L")");
+
+    // Update last modification date in order to avoid generating more EDIT operations.
+    bool found = false;
+    DbNode dbNode;
+    if (!_syncPal->_syncDb->node(*syncOp->correspondingNode()->idb(), dbNode, found)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
+        _executorExitCode = ExitCodeDbError;
+        _executorExitCause = ExitCauseDbAccessError;
+        return false;
+    }
+    if (!found) {
+        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << *syncOp->correspondingNode()->idb());
+        _executorExitCode = ExitCodeDataError;
+        _executorExitCause = ExitCauseDbEntryNotFound;
+        return false;
+    }
+
+    bool exists = false;
+    if (!Utility::setFileDates(absolutePath, dbNode.created(), dbNode.lastModifiedRemote(), false, exists)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(absolutePath).c_str());
+    }
+    if (exists) {
+        LOGW_SYNCPAL_INFO(_logger,
+                          L"Last modification date updated locally to avoid further wrongly generated EDIT operations for file: "
+                              << Utility::formatSyncPath(absolutePath).c_str());
+    }
+    // If file does not exist anymore, do nothing special. This is fine, it will not generate EDIT operations anymore.
+    return true;
+}
+
+bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, const SyncPath &absolutePath, bool &ignoreItem, bool &isSyncing) {
     ignoreItem = false;
 
     bool isPlaceholder = false;
@@ -1058,12 +1093,8 @@ bool ExecutorWorker::checkLiteSyncInfoForEdit(SyncOpPtr syncOp, SyncPath &absolu
 
     if (syncOp->targetSide() == ReplicaSideRemote) {
         if (isPlaceholder && !isHydrated) {
-            std::string id = syncOp->affectedNode()->id().has_value() ? syncOp->affectedNode()->id().value() : "";
-            LOGW_SYNCPAL_DEBUG(_logger, L"Do not upload dehydrated placeholders: "
-                                            << Utility::formatSyncPath(absolutePath).c_str() << L" (" << Utility::s2ws(id).c_str()
-                                            << L")");
             ignoreItem = true;
-            return true;
+            return fixModificationDate(syncOp, absolutePath);
         }
     } else {
         if (isPlaceholder) {
@@ -1332,7 +1363,8 @@ void ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &hasError) {
         bool exists = false;
         if (!hasRight(syncOp, exists)) {
             // Ignore operation
-            _syncPal->setProgressComplete(relativePath, SyncFileStatusIgnored);  // TODO : do not exclude item from sync, rollback
+            _syncPal->setProgressComplete(relativePath,
+                                          SyncFileStatusIgnored);  // TODO : do not exclude item from sync, rollback
             return;
         }
 
@@ -1691,7 +1723,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         cancelAllOngoingJobs();
         _syncPal->_restart = true;
         _syncPal->setProgressComplete(
-            relativeLocalPath, SyncFileStatusSuccess);  // Not really success but the file should not appear in error in Finder
+            relativeLocalPath,
+            SyncFileStatusSuccess);  // Not really success but the file should not appear in error in Finder
         _executorExitCode = ExitCodeOk;
 
         return false;
@@ -1772,8 +1805,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
         const bool bypassProgressComplete = syncOp->affectedNode()->hasChangeEvent(OperationTypeCreate) &&
                                             syncOp->affectedNode()->hasChangeEvent(
                                                 OperationTypeDelete);  // TODO : If node has both create and delete events, bypass
-                                                                       // progress complete. But this should be refactored
-                                                                       // alongside UpdateTreeWorker::getOrCreateNodeFromPath
+        // progress complete. But this should be refactored
+        // alongside UpdateTreeWorker::getOrCreateNodeFromPath
 
         if (!bypassProgressComplete) {
             _syncPal->setProgressComplete(relativeLocalPath, status);
