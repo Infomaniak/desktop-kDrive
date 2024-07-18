@@ -310,7 +310,7 @@ bool AbstractUploadSession::sendChunks() {
 
         if (!prepareChunkJob(chunkJob)) {
             LOGW_WARN(_logger,
-                      L"Failed to prepare chunk job " << chunkNb << L" of file " << Path2WStr(_filePath.filename()).c_str());
+                      L"Failed to prepare chunk job " << chunkNb << L" of file " << Utility::formatSyncPath(_filePath.filename()).c_str());
             jobCreationError = true;
             break;
         }
