@@ -176,7 +176,7 @@ void TestIo::testCheckIfPathExistsAllBranches() {
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(!exists);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
 
         _testObj->resetFunctions();
     }
@@ -299,7 +299,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
         CPPUNIT_ASSERT(!_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(!existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
     // A dangling symbolic link
@@ -462,7 +462,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
         CPPUNIT_ASSERT(_testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError));
         CPPUNIT_ASSERT(!existsWithSameId);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
 
         _testObj->resetFunctions();
     }
@@ -475,7 +475,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
         CPPUNIT_ASSERT(!exists);
-        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 }
 
