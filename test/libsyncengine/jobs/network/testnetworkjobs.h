@@ -58,9 +58,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testLogUploadSessionConstructorException);
 #ifdef _NIGHTLY_TESTS
-        CPPUNIT_TEST(testLogUploadSessionSynchronous);
         CPPUNIT_TEST(testLogUploadSessionAsynchronous);
-        CPPUNIT_TEST(testLogUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testLogUploadSessionAsynchronousAborted);
 #endif
         CPPUNIT_TEST_SUITE_END();
@@ -99,9 +97,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
         void testLogUploadSessionConstructorException();
-        void testLogUploadSessionSynchronous();
         void testLogUploadSessionAsynchronous();
-        void testLogUploadSessionSynchronousAborted();
         void testLogUploadSessionAsynchronousAborted();
 
     private:

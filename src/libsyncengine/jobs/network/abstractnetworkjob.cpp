@@ -445,11 +445,13 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         }
         case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {
             _exitCode = ExitCodeUpdateRequired;
+            LOG_WARN(_logger, "Received HTTP_UPGRADE_REQUIRED, update required");
             break;
         }
         case Poco::Net::HTTPResponse::HTTP_TOO_MANY_REQUESTS: {
             // Rate limitation
             _exitCode = ExitCodeRateLimited;
+            LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
         }
         default: {
             if (!isAborted()) {
