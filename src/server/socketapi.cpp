@@ -1,3 +1,4 @@
+
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -792,9 +793,9 @@ void SocketApi::command_GET_STRINGS(const QString &argument, SocketListener *lis
         {"COPY_PRIVATE_LINK_MENU_TITLE", tr("Copy private share link")},
     }};
     listener->sendMessage(QString("GET_STRINGS%1BEGIN").arg(MSG_CDE_SEPARATOR));
-    for (auto &keyValue : strings) {
-        if (argument.isEmpty() || argument == QString(keyValue.first)) {
-            listener->sendMessage(QString("STRING%1%2%1%3").arg(MSG_CDE_SEPARATOR).arg(keyValue.first, keyValue.second));
+    for (auto &[key, value] : strings) {
+        if (argument.isEmpty() || argument == key) {
+            listener->sendMessage(QString("STRING%1%2%1%3").arg(MSG_CDE_SEPARATOR).arg(key, value));
         }
     }
     listener->sendMessage(QString("GET_STRINGS%1END").arg(MSG_CDE_SEPARATOR));

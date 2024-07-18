@@ -39,10 +39,6 @@ void TestExecutorWorker::setUp() {
     const std::string remotePathStr = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH");
     const std::string apiTokenStr = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
 
-    if (accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() || apiTokenStr.empty()) {
-        throw std::runtime_error("Some environment variables are missing!");
-    }
-
     // Insert api token into keystore
     std::string keychainKey("123");
     KeyChainManager::instance(true);
@@ -74,8 +70,7 @@ void TestExecutorWorker::setUp() {
 
     // Setup proxy
     Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
+    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
 
@@ -167,7 +162,7 @@ void TestExecutorWorker::testFixModificationDate() {
     const LocalTemporaryDirectory temporaryDirectory;
     // Create file
     const SyncName filename = Str("test_file.txt");
-    const SyncPath path = temporaryDirectory.path / filename;
+    const SyncPath path = temporaryDirectory.path() / filename;
     {
         std::ofstream ofs(path);
         ofs << "abc";
@@ -179,7 +174,7 @@ void TestExecutorWorker::testFixModificationDate() {
                   "cs");
     DbNodeId dbNodeId;
     bool constraintError = false;
-    _syncPal->_syncDb->insertNode(dbNode, dbNodeId, constraintError);
+    _syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
 
     // Generate sync operation
     std::shared_ptr<Node> node =

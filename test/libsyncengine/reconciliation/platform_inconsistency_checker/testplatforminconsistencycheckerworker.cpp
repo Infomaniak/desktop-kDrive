@@ -52,7 +52,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
     _syncPal = std::make_shared<SyncPal>(syncDbPath, "3.4.0", true);
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
     _syncPal->_platformInconsistencyCheckerWorker =
@@ -62,8 +62,8 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
 void TestPlatformInconsistencyCheckerWorker::tearDown() {
     ParmsDb::instance()->close();
     ParmsDb::reset();
-    if (_syncPal && _syncPal->_syncDb) {
-        _syncPal->_syncDb->close();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
     }
 }
 
