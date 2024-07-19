@@ -230,8 +230,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         SyncPath getLocalPath() const { return _localPath; };
         void setLocalPath(const SyncPath &path) { _localPath = path; };
 
-        std::shared_ptr<SyncDb> syncDb() const { return _syncDb; };
-
     private:
         log4cplus::Logger _logger;
         int _syncDbId{0};
