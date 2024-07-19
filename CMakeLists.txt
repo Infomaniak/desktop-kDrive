@@ -3,6 +3,11 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(client)
 
+if (WIN32 AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    # Use fallback library types for imported dependencies
+    set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
+endif ()
+
 IF(APPLE)
     IF(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")
         SET(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "Build architectures for Mac OS X" FORCE)
