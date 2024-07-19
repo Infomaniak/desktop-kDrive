@@ -18,19 +18,22 @@
 
 #pragma once
 
-#include "libcommon/utility/types.h"
+#include "utility/types.h"
 
 namespace KDC {
 
-struct FileStat {
-        SyncTime creationTime = 0;
-        SyncTime modtime = 0;
-        int64_t size = 0;
-        uint64_t inode = 0;
-        bool isHidden = false;
-        // Type of the item or target item if symlink
-        // Value for a dangling symlink: NodeTypeUnknown (macOS & Linux), NodeTypeFile/NodeTypeDirectory (Windows)
-        NodeType nodeType = NodeTypeUnknown;
+class RemoteTemporaryDirectory {
+    public:
+        RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId, const std::string& testType = "undef");
+        ~RemoteTemporaryDirectory();
+
+        [[nodiscard]] const NodeId& id() const { return _dirId; }
+        [[nodiscard]] const SyncName& name() const { return _dirName; }
+
+    private:
+        int _driveDbId{0};
+        NodeId _dirId;
+        SyncName _dirName;
 };
 
 }  // namespace KDC

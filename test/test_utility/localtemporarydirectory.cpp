@@ -17,6 +17,9 @@
  */
 #include "localtemporarydirectory.h"
 
+#include "io/filestat.h"
+#include "io/iohelper.h"
+
 #include <sstream>
 
 namespace KDC {
@@ -27,13 +30,18 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
     std::ostringstream woss;
     woss << std::put_time(&tm, "%Y%m%d_%H%M");
 
-    path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
-    std::filesystem::create_directory(path);
-    path = std::filesystem::canonical(path);  // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
+    _path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
+    _path = std::filesystem::canonical(path);  // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
+    std::filesystem::create_directory(_path);
+
+    FileStat fileStat;
+    IoError ioError = IoErrorSuccess;
+    IoHelper::getFileStat(_path, &fileStat, ioError);
+    _id = std::to_string(fileStat.inode);
 }
 
 LocalTemporaryDirectory::~LocalTemporaryDirectory() {
-    std::filesystem::remove_all(path);
+    std::filesystem::remove_all(_path);
 }
 
 

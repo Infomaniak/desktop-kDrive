@@ -173,7 +173,6 @@ FakesAssemblies/
 # reference to "build"
 !building.adoc
 extensions/MacOSX/kDriveFinderSync.xcworkspace/contents.xcworkspacedata
-test/libsyncengine/update_detection/file_system_observer/test_folder/sync_folder
 
 # CLion settings folder
 .idea

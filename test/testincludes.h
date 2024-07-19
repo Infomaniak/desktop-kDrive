@@ -39,6 +39,8 @@
 #include "libcommon/utility/utility.h"
 
 static const KDC::SyncPath localTestDirPath(KDC::Utility::s2ws(TEST_DIR) + L"/test_ci");
+static const KDC::SyncTime defaultTime = std::time(nullptr);
+static const int64_t defaultSize = 1654788079;
 
 static std::string loadEnvVariable(const std::string &key) {
     const std::string val = KDC::CommonUtility::envVarValue(key);

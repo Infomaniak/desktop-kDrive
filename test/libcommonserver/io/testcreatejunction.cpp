@@ -29,7 +29,7 @@ void TestIo::testCreateJunction() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const SyncPath path = temporaryDirectory.path / "regular_dir_junction";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_junction";
 
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
@@ -52,7 +52,7 @@ void TestIo::testCreateJunction() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "non_existing_dir";  // It doesn't exist.
-        const SyncPath path = temporaryDirectory.path / "dir_junction";
+        const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
@@ -67,7 +67,7 @@ void TestIo::testCreateJunction() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "dir_junction";
+        const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));

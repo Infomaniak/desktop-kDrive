@@ -50,7 +50,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up $$$$$");
 
-    _testRootFolderPath = _tempDir.path / "sync_folder";
+    _testRootFolderPath = _tempDir.path() / "sync_folder";
 
     Poco::File((_testRootFolderPath / "A" / "AA").string()).createDirectories();
     Poco::File((_testRootFolderPath / "A" / "AB").string()).createDirectories();

@@ -21,24 +21,9 @@
 #include "vfs.h"
 #include "io/iohelper.h"
 #include "log/log.h"
+#include "test_utility/localtemporarydirectory.h"
 
 namespace KDC {
-
-// TODO : to be removed once merged to `develop`. Use `LocalTemporaryDirectory` instead.
-struct TmpTemporaryDirectory {
-        SyncPath path;
-        TmpTemporaryDirectory() {
-            const std::time_t now = std::time(nullptr);
-            const std::tm tm = *std::localtime(&now);
-            std::ostringstream woss;
-            woss << std::put_time(&tm, "%Y%m%d_%H%M");
-
-            path = std::filesystem::temp_directory_path() / ("kdrive_io_unit_tests_" + woss.str());
-            std::filesystem::create_directory(path);
-        }
-
-        ~TmpTemporaryDirectory() { std::filesystem::remove_all(path); }
-};
 
 static const SyncTime defaultTime = std::time(nullptr);
 
@@ -57,7 +42,7 @@ void TestVfsMac::testStatus() {
     // A hydrated placeholder.
     {
         // Create temp directory and file.
-        const TmpTemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path / filename;
         {
             std::ofstream ofs(path);
@@ -83,7 +68,7 @@ void TestVfsMac::testStatus() {
     // A dehydrated placeholder.
     {
         // Create temp directory
-        const TmpTemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         // Create placeholder
         const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
         struct stat fileInfo;
@@ -110,7 +95,7 @@ void TestVfsMac::testStatus() {
     // A partially hydrated placeholder (syncing item).
     {
         // Create temp directory
-        const TmpTemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         // Create placeholder
         const auto extConnector = LiteSyncExtConnector::instance(Log::instance()->getLogger(), ExecuteCommand());
         struct stat fileInfo;
@@ -145,7 +130,7 @@ void TestVfsMac::testStatus() {
     // Not a placeholder.
     {
         // Create temp directory
-        const TmpTemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         // Create file
         const SyncPath path = temporaryDirectory.path / filename;
         {
