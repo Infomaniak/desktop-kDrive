@@ -145,7 +145,7 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
             const auto dirIt = std::filesystem::recursive_directory_iterator(
                 dir, std::filesystem::directory_options::skip_permission_denied, ec);
             if (ec) {
-                LOG4CPLUS_WARN(_logger, "Error in findSubFolders: " << Utility::formatStdError(ec).c_str());
+                LOG4CPLUS_WARN(_logger, L"Error in findSubFolders: " << Utility::formatStdError(ec).c_str());
                 return false;
             }
 

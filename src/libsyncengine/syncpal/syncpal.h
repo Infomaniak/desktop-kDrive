@@ -225,16 +225,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
-        std::shared_ptr<Snapshot> getSnapshot(ReplicaSide side) {
-            if (side == ReplicaSideUnknown) return nullptr;
-
-            return side == ReplicaSideLocal ? _localSnapshot : _remoteSnapshot;
-        }
-
         SyncPath getLocalPath() const { return _localPath; };
         void setLocalPath(const SyncPath &path) { _localPath = path; };
 
-        std::shared_ptr<SyncDb> getSyncDb() const { return _syncDb; };
+        std::shared_ptr<SyncDb> syncDb() const { return _syncDb; };
 
     private:
         log4cplus::Logger _logger;

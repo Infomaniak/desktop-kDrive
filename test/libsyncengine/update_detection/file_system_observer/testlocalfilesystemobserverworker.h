@@ -36,6 +36,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
         CPPUNIT_TEST(testFolderWatcherWithInitialSnapshot);
         CPPUNIT_TEST(testFolderWatcherWithFiles);
+        CPPUNIT_TEST(testFolderWatcherDeleteDir);
         CPPUNIT_TEST(testFolderWatcherWithDirs);
         CPPUNIT_TEST(testFolderWatcherWithSpecialCases);
         CPPUNIT_TEST_SUITE_END();
@@ -61,6 +62,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         void testFolderWatcherWithInitialSnapshot();
         void testFolderWatcherWithFiles();
         void testFolderWatcherWithDirs();
+        void testFolderWatcherDeleteDir();
         void testFolderWatcherWithSpecialCases();
 };
 
