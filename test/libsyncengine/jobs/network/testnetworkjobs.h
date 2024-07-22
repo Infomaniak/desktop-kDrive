@@ -20,7 +20,6 @@
 
 #include "testincludes.h"
 #include "utility/types.h"
-#define _NIGHTLY_TESTS
 using namespace CppUnit;
 
 namespace KDC {
@@ -56,11 +55,6 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
-        CPPUNIT_TEST(testLogUploadSessionConstructorException);
-#ifdef _NIGHTLY_TESTS
-        CPPUNIT_TEST(testLogUploadSessionAsynchronous);
-        CPPUNIT_TEST(testLogUploadSessionAsynchronousAborted);
-#endif
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -96,29 +90,19 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testDriveUploadSessionAsynchronous();
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
-        void testLogUploadSessionConstructorException();
-        void testLogUploadSessionAsynchronous();
-        void testLogUploadSessionAsynchronousAborted();
 
     private:
-        bool createTestDir();
+        // bool createTestDir();
         bool createTestFiles();
 
         int _driveDbId = 0;
         int _userDbId = 0;
         NodeId _remoteDirId;
 
-        SyncName _dummyDirName;
-        SyncPath _dummyLocalDirPath;
-        NodeId _dummyLocalDirId;
-        NodeId _dummyRemoteDirId;
-        bool _deleteDummyDir = false;
-
         SyncName _dummyFileName;
         SyncPath _dummyLocalFilePath;
         NodeId _dummyLocalFileId;
         NodeId _dummyRemoteFileId;
-        bool _deleteDummyFile = false;
 
         static int _nbParalleleThreads;
 };
