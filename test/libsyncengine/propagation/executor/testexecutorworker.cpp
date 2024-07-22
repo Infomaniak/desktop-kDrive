@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testexecutor.h"
+#include "testexecutorworker.h"
 
 #include "vfs.h"
 
@@ -32,34 +32,12 @@
 
 namespace KDC {
 
-// TODO : to be removed once merged to `develop`. Use `LocalTemporaryDirectory` instead.
-struct TmpTemporaryDirectory {
-        SyncPath path;
-        TmpTemporaryDirectory() {
-            const std::time_t now = std::time(nullptr);
-            const std::tm tm = *std::localtime(&now);
-            std::ostringstream woss;
-            woss << std::put_time(&tm, "%Y%m%d_%H%M");
-
-            path = std::filesystem::temp_directory_path() / ("kdrive_io_unit_tests_" + woss.str());
-            std::filesystem::create_directory(path);
-        }
-
-        ~TmpTemporaryDirectory() { std::filesystem::remove_all(path); }
-};
-
-static const SyncTime defaultTime = std::time(nullptr);
-
-void TestExecutor::setUp() {
-    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
-    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
-    const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-
-    if (accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() || apiTokenStr.empty()) {
-        throw std::runtime_error("Some environment variables are missing!");
-    }
+void TestExecutorWorker::setUp() {
+    const std::string accountIdStr = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID");
+    const std::string driveIdStr = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
+    const std::string localPathStr = loadEnvVariable("KDRIVE_TEST_CI_LOCAL_PATH");
+    const std::string remotePathStr = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH");
+    const std::string apiTokenStr = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
 
     // Insert api token into keystore
     std::string keychainKey("123");
@@ -92,8 +70,7 @@ void TestExecutor::setUp() {
 
     // Setup proxy
     Parameters parameters;
-    bool found = false;
-    if (ParmsDb::instance()->selectParameters(parameters, found) && found) {
+    if (bool found = false; ParmsDb::instance()->selectParameters(parameters, found) && found) {
         Proxy::instance(parameters.proxyConfig());
     }
 
@@ -101,7 +78,7 @@ void TestExecutor::setUp() {
     _syncPal->createWorkers();
 }
 
-void TestExecutor::testCheckLiteSyncInfoForCreate() {
+void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
     // Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
@@ -178,6 +155,44 @@ void TestExecutor::testCheckLiteSyncInfoForCreate() {
         CPPUNIT_ASSERT(!isDehydratedPlaceholder);
     }
 #endif
+}
+
+void TestExecutorWorker::testFixModificationDate() {
+    // Create temp directory
+    const LocalTemporaryDirectory temporaryDirectory;
+    // Create file
+    const SyncName filename = Str("test_file.txt");
+    const SyncPath path = temporaryDirectory.path() / filename;
+    {
+        std::ofstream ofs(path);
+        ofs << "abc";
+        ofs.close();
+    }
+
+    // Update DB
+    DbNode dbNode(0, 123, filename, filename, "lid", "rid", defaultTime, defaultTime, defaultTime, NodeTypeFile, defaultSize,
+                  "cs");
+    DbNodeId dbNodeId;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
+
+    // Generate sync operation
+    std::shared_ptr<Node> node =
+        std::make_shared<Node>(std::nullopt, ReplicaSideLocal, filename, NodeTypeFile, "lid", defaultTime, 12345, defaultSize);
+    std::shared_ptr<Node> correspondingNode = std::make_shared<Node>(std::nullopt, ReplicaSideLocal, filename, NodeTypeFile,
+                                                                     "rid", defaultTime, defaultTime, defaultSize);
+    SyncOpPtr op = std::make_shared<SyncOperation>();
+    op->setAffectedNode(node);
+    op->setCorrespondingNode(correspondingNode);
+
+    _syncPal->_executorWorker->fixModificationDate(op, path);
+
+    FileStat filestat;
+    IoError ioError = IoErrorUnknown;
+    IoHelper::getFileStat(path, &filestat, ioError);
+
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+    CPPUNIT_ASSERT_EQUAL(defaultTime, filestat.modtime);
 }
 
 }  // namespace KDC

@@ -32,7 +32,7 @@
 #include "reconciliation/conflict_resolver/testconflictresolverworker.h"
 #include "propagation/operation_sorter/testoperationsorterworker.h"
 #include "propagation/executor/testintegration.h"
-#include "propagation/executor/testexecutor.h"
+#include "propagation/executor/testexecutorworker.h"
 #include "jobs/network/testnetworkjobs.h"
 #include "jobs/network/testsnapshotitemhandler.h"
 #include "jobs/local/testlocaljobs.h"

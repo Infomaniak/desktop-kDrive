@@ -49,7 +49,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         bool exists = false;
@@ -63,7 +63,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         bool exists = false;
@@ -86,8 +86,8 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         bool exists = false;
@@ -101,7 +101,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -116,8 +116,8 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     // A dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "file_to_be_deleted.png";  // This file will be deleted.
-        const SyncPath path = temporaryDirectory.path / "dangling_file_alias";
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         {
             std::ofstream ofs(targetPath);
             ofs << "Some content.\n";
@@ -143,7 +143,7 @@ void TestIo::testCheckIfPathExistsAllBranches() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setIsSymlinkFunction([](const SyncPath &, std::error_code &ec) -> bool {
@@ -164,7 +164,7 @@ void TestIo::testCheckIfPathExistsAllBranches() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setReadSymlinkFunction([](const SyncPath &path, std::error_code &ec) -> SyncPath {
@@ -186,7 +186,7 @@ void TestIo::testCheckIfPathExistsAllBranches() {
     // No error on Windows. Access denied on MacOSX and Linux.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
+        const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
 
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
@@ -256,7 +256,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         bool existsWithSameId = false;
@@ -274,7 +274,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         bool existsWithSameId = false;
@@ -305,8 +305,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         bool existsWithSameId = false;
@@ -338,7 +338,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -357,8 +357,8 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     // A dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "file_to_be_deleted.png";  // This file will be deleted.
-        const SyncPath path = temporaryDirectory.path / "dangling_file_alias";
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         { std::ofstream ofs(targetPath); }
 
         IoError aliasError;
@@ -385,7 +385,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setIsSymlinkFunction([](const SyncPath &, std::error_code &ec) -> bool {
@@ -410,7 +410,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
     // right before `std::filesystem::read_symlink` is called.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
+        const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
 
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
@@ -446,7 +446,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdAllBranches() {
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         _testObj->setReadSymlinkFunction([](const SyncPath &path, std::error_code &ec) -> SyncPath {
