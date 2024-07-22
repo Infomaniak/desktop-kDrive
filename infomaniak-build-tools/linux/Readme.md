@@ -126,6 +126,7 @@ sudo make install
 
 > :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
 
+For ARM64:
 ```bash
 cd ~/Projects
 git clone https://github.com/pocoproject/poco.git
@@ -134,6 +135,18 @@ git checkout tags/poco-1.13.3-release
 mkdir cmake-build
 cd cmake-build
 cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.so
+sudo cmake --build . --target install
+```
+
+For AMD64:
+```bash
+cd ~/Projects
+git clone https://github.com/pocoproject/poco.git
+cd poco
+git checkout tags/poco-1.13.3-release
+mkdir cmake-build
+cd cmake-build
+cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so
 sudo cmake --build . --target install
 ```
 
