@@ -23,8 +23,24 @@ class DialogController {
     
     let kDriveBundleId = "com.infomaniak.drive.desktopclient"
     lazy var kDriveAppPath: URL? = NSWorkspace.shared.urlForApplication(withBundleIdentifier: kDriveBundleId)?.appendingPathComponent("Contents").appendingPathComponent("MacOS").appendingPathComponent("kDrive")
+    let appSupportOpt = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?.appendingPathComponent("kDrive")
     
     // uninstall functions
+    
+    func run(_ cmd: String) {
+        let pipe = Pipe()
+        let process = Process()
+        process.launchPath = "/bin/sh"
+        process.arguments = ["-c", String(format:"%@", cmd)]
+        process.standardOutput = pipe
+        process.launch()
+    }
+    
+    func deactivateAutoRestart() {
+        // sqlite3 is installed by default on macOS in /usr/bin
+        let query = "sqlite3 \"" + (appSupportOpt?.absoluteString ?? "unknown") + ".parms.db\" 'UPDATE app_state SET value=-1 WHERE key=0;'"
+        run(query)
+    }
     
     func forceQuitApp() {
         let runningApplications = NSWorkspace.shared.runningApplications
@@ -36,7 +52,6 @@ class DialogController {
     }
     
     func deleteConfigFolder() {
-        let appSupportOpt = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?.appendingPathComponent("kDrive")
         let preferencesOpt = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first?.appendingPathComponent("Preferences").appendingPathComponent("kDrive")
         do {
             if let appSupport = appSupportOpt {
@@ -186,7 +201,7 @@ class DialogController {
     }
     
     func uninstall(removeConfig : Bool) {
-        
+        deactivateAutoRestart()
         forceQuitApp()
         // wait the app quitting
         sleep(1)
