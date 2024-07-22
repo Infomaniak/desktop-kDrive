@@ -46,7 +46,7 @@ static const int recordDebuggingBoxVMargin = 20;
 static const int debugLevelLabelBoxVMargin = 10;
 static const int debugLevelSelectBoxVMargin = 20;
 static const QString debuggingFolderLink = "debuggingFolderLink";
-QString heavyLogLabelStr = QObject::tr(
+static const QString heavyLogLabelStr = QObject::tr(
     "The entire folder is large (%1 %2) and may take some time to share. To reduce the sharing time, we recommend that you "
     "share only the last kDrive session.");
 Q_LOGGING_CATEGORY(lcDebuggingDialog, "gui.debuggingdialog", QtInfoMsg)

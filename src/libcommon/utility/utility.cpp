@@ -314,15 +314,17 @@ std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue)
 }
 
 bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName,
-                                 std::function<bool(int)> progressCallback) {
+                                 const std::function<bool(int)> &progressCallback) {
     return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName), progressCallback);
 }
 
-bool CommonUtility::compressFile(const std::string& originalName, const std::string& targetName, std::function<bool(int)> progressCallback) {
+bool CommonUtility::compressFile(const std::string &originalName, const std::string &targetName,
+                                 const std::function<bool(int)> &progressCallback) {
     return compressFile(QString::fromStdString(originalName), QString::fromStdString(targetName), progressCallback);
 }
 
-bool CommonUtility::compressFile(const QString& originalName, const QString& targetName, std::function<bool(int)> progressCallback) {
+bool CommonUtility::compressFile(const QString &originalName, const QString &targetName,
+                                 const std::function<bool(int)> &progressCallback) {
 #ifdef ZLIB_FOUND
     const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
 
@@ -338,15 +340,14 @@ bool CommonUtility::compressFile(const QString& originalName, const QString& tar
     qint64 compressedSize = 0;
     while (!original.atEnd()) {
         auto data = original.read(1024 * 1024);
-        auto written = gzwrite(compressed, data.data(), data.size());
-        if (written != data.size()) {
+        if (auto written = gzwrite(compressed, data.data(), data.size()); written != data.size()) {
             gzclose(compressed);
             return false;
         }
         compressedSize += data.size();
         if (!safeProgressCallback(static_cast<int>((100 * compressedSize) / original.size()))) {
             gzclose(compressed);
-            return true; // User cancelled
+            return true;  // User cancelled
         }
     }
     gzclose(compressed);
