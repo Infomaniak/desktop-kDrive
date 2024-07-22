@@ -1081,7 +1081,11 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     exitCode = uploadSessionLog->exitCode();
-    exitCause = uploadSessionLog->exitCause();
+    if (uploadSessionLog->isAborted()) {
+        exitCause = ExitCauseOperationCanceled;
+    } else {
+        exitCause = uploadSessionLog->exitCause();
+    }
 
     if (exitCode != ExitCodeOk) {
         LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
@@ -1092,17 +1096,19 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
 
     IoHelper::deleteDirectory(logUploadTempFolder, ioError);  // Delete temp folder if the upload was successful
 
-    std::string uploadDate = "";
-    const std::time_t now = std::time(nullptr);
-    const std::tm tm = *std::localtime(&now);
-    std::ostringstream woss;
-    woss << std::put_time(&tm, "%D at %Hh%M");
-    uploadDate = woss.str();
+    if (exitCause != ExitCauseOperationCanceled) {
+        std::string uploadDate = "";
+        const std::time_t now = std::time(nullptr);
+        const std::tm tm = *std::localtime(&now);
+        std::ostringstream woss;
+        woss << std::put_time(&tm, "%D at %Hh%M");
+        uploadDate = woss.str();
 
-    if (bool found = false;
-        !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) || !found ||
-        !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string{}, found) || !found) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        if (bool found = false;
+            !ParmsDb::instance()->updateAppState(AppStateKey::LastSuccessfulLogUploadDate, uploadDate, found) || !found ||
+            !ParmsDb::instance()->updateAppState(AppStateKey::LastLogUploadArchivePath, std::string{}, found) || !found) {
+            LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+        }
     }
     return ExitCodeOk;
 }
