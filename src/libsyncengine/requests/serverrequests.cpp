@@ -1125,7 +1125,7 @@ ExitCode ServerRequests::cancelLogToSupport(ExitCause &exitCause) {
         return ExitCodeOk;  // The user has already canceled the operation
     }
 
-    if (logUploadState == LogUploadState::Uploading || logUploadState == LogUploadState::Archiving) {
+    if (logUploadState != LogUploadState::Uploading && logUploadState != LogUploadState::Archiving) {
         return ExitCodeInvalidOperation;  // The operation is not in progress
     }
 
