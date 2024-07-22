@@ -47,18 +47,19 @@
 #include "utility/jsonparserutility.h"
 #include "requests/parameterscache.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/remotetemporarydirectory.h"
 
 using namespace CppUnit;
 
 namespace KDC {
 
-static const NodeId pictureDirRemoteId = "56851";       // test_ci/test_pictures
-static const NodeId picture1RemoteId = "97373";         // test_ci/test_pictures/picture-1.jpg
-static const NodeId testFileRemoteId = "97370";         // test_ci/test_networkjobs/test_download.txt
-static const NodeId testFileRemoteRenameId = "97376";   // test_ci/test_networkjobs/test_rename*.txt
-static const NodeId testBigFileRemoteId = "97601";      // test_ci/big_file_dir/big_text_file.txt
-static const NodeId testDummyDirRemoteId = "98648";     // test_ci/dummy_dir
-static const NodeId testDummyFileRemoteId = "98649";    // test_ci/dummy_dir/picture.jpg
+static const NodeId pictureDirRemoteId = "56851";      // test_ci/test_pictures
+static const NodeId picture1RemoteId = "97373";        // test_ci/test_pictures/picture-1.jpg
+static const NodeId testFileRemoteId = "97370";        // test_ci/test_networkjobs/test_download.txt
+static const NodeId testFileRemoteRenameId = "97376";  // test_ci/test_networkjobs/test_rename*.txt
+static const NodeId testBigFileRemoteId = "97601";     // test_ci/big_file_dir/big_text_file.txt
+static const NodeId testDummyDirRemoteId = "98648";    // test_ci/dummy_dir
+static const NodeId testDummyFileRemoteId = "98649";   // test_ci/dummy_dir/picture.jpg
 
 static const std::string desktopTeamTestDriveName = "kDrive Desktop Team";
 static const std::string bigFileDirName = "big_file_dir";
@@ -119,42 +120,35 @@ void TestNetworkJobs::setUp() {
 void TestNetworkJobs::tearDown() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ Tear Down");
 
-    if (_deleteDummyFile) {
-        DeleteJob job(_driveDbId, _dummyRemoteFileId, "1234", _dummyLocalFilePath);
-        ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCodeOk);
-    }
-
-    if (_deleteDummyDir) {
-        DeleteJob job(_driveDbId, _dummyRemoteDirId, "1234", _dummyLocalDirPath);
+    if (!_dummyRemoteFileId.empty()) {
+        DeleteJob job(_driveDbId, _dummyRemoteFileId, "", "");
         job.setBypassCheck(true);
-        ExitCode exitCode = job.runSynchronously();
-        CPPUNIT_ASSERT(exitCode == ExitCodeOk);
+        job.runSynchronously();
     }
+    if (!_dummyLocalFilePath.empty()) std::filesystem::remove_all(_dummyLocalFilePath);
 
     ParmsDb::instance()->close();
     ParmsDb::reset();
 }
 
 void TestNetworkJobs::testCreateDir() {
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testCreateDir");
 
     GetFileListJob fileListJob(_driveDbId, _remoteDirId);
-    ExitCode exitCode = fileListJob.runSynchronously();
+    const ExitCode exitCode = fileListJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
 
     bool newDirFound = false;
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    for (auto it = dataArray->begin(); it != dataArray->end(); ++it) {
-        Poco::JSON::Object::Ptr dirObj = it->extract<Poco::JSON::Object::Ptr>();
+    for (const auto dataArray = resObj->getArray(dataKey); const auto &item : *dataArray) {
+        const auto &dirObj = item.extract<Poco::JSON::Object::Ptr>();
 
         SyncName name;
         CPPUNIT_ASSERT(JsonParserUtility::extractValue(dirObj, nameKey, name));
 
-        if (_dummyDirName == name) {
+        if (remoteTmpDir.name() == name) {
             newDirFound = true;
             break;
         }
@@ -164,14 +158,14 @@ void TestNetworkJobs::testCreateDir() {
 
 void TestNetworkJobs::testCopyToDir() {
     // Create test dir
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testCopyToDir");
 
-    SyncName filename = Str("testCopyToDir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
-    CopyToDirectoryJob job(_driveDbId, testFileRemoteId, _dummyRemoteDirId, filename);
+    const SyncName filename = Str("testCopyToDir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
+    CopyToDirectoryJob job(_driveDbId, testFileRemoteId, remoteTmpDir.id(), filename);
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
-    GetFileListJob fileListJob(_driveDbId, _dummyRemoteDirId);
+    GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     exitCode = fileListJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
@@ -216,31 +210,28 @@ void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT(resObj);
 
     bool newFileFound = false;
-    Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
-        Poco::JSON::Object::Ptr dirObj = it->extract<Poco::JSON::Object::Ptr>();
-        SyncName currentName = dirObj->get(nameKey);
-        if (_dummyFileName == currentName) {
+    for (const auto dataArray = resObj->getArray(dataKey); const auto &item : *dataArray) {
+        const auto &dirObj = item.extract<Poco::JSON::Object::Ptr>();
+        if (_dummyFileName == dirObj->get(nameKey)) {
             newFileFound = true;
             break;
         }
     }
     CPPUNIT_ASSERT(!newFileFound);
 
-    _deleteDummyFile = false;
-
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDelete");
+    const LocalTemporaryDirectory localTmpDir("testDelete");
 
     // Delete directory - Empty local id & path provided => canRun == false
-    DeleteJob jobEmptyLocalDirId(_driveDbId, _dummyRemoteDirId, "", "");
+    DeleteJob jobEmptyLocalDirId(_driveDbId, remoteTmpDir.id(), "", "");
     CPPUNIT_ASSERT(!jobEmptyLocalDirId.canRun());
 
     // Delete directory - A local dir exists with the same path & id => canRun == false
-    DeleteJob jobLocalDirExists(_driveDbId, _dummyRemoteDirId, _dummyLocalDirId, _dummyLocalDirPath);
+    DeleteJob jobLocalDirExists(_driveDbId, remoteTmpDir.id(), localTmpDir.id(), localTmpDir.path());
     CPPUNIT_ASSERT(!jobLocalDirExists.canRun());
 
     // Delete directory - A local dir exists with the same path but not the same id => canRun == true
-    DeleteJob jobLocalDirSynonymExists(_driveDbId, _dummyRemoteDirId, "1234", _dummyLocalDirPath);
+    DeleteJob jobLocalDirSynonymExists(_driveDbId, remoteTmpDir.id(), "1234", localTmpDir.path());
     CPPUNIT_ASSERT(jobLocalDirSynonymExists.canRun());
     exitCode = jobLocalDirSynonymExists.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
@@ -254,23 +245,21 @@ void TestNetworkJobs::testDelete() {
     CPPUNIT_ASSERT(resObj);
 
     bool newDirFound = false;
-    dataArray = resObj->getArray(dataKey);
+    const auto dataArray = resObj->getArray(dataKey);
     for (Poco::JSON::Array::ConstIterator it = dataArray->begin(); it != dataArray->end(); ++it) {
         Poco::JSON::Object::Ptr dirObj = it->extract<Poco::JSON::Object::Ptr>();
         SyncName currentName = dirObj->get(nameKey);
-        if (_dummyDirName == currentName) {
+        if (remoteTmpDir.name() == currentName) {
             newDirFound = true;
             break;
         }
     }
     CPPUNIT_ASSERT(!newDirFound);
-
-    _deleteDummyDir = false;
 }
 
 void TestNetworkJobs::testDownload() {
     const LocalTemporaryDirectory temporaryDirectory("testDownload");
-    SyncPath localDestFilePath = temporaryDirectory.path / "test_file.txt";
+    SyncPath localDestFilePath = temporaryDirectory.path() / "test_file.txt";
     DownloadJob job(_driveDbId, testFileRemoteId, localDestFilePath, 0, 0, 0, false);
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
@@ -285,7 +274,7 @@ void TestNetworkJobs::testDownload() {
 
 void TestNetworkJobs::testDownloadAborted() {
     const LocalTemporaryDirectory temporaryDirectory("testDownloadAborted");
-    SyncPath localDestFilePath = temporaryDirectory.path / bigFileName;
+    SyncPath localDestFilePath = temporaryDirectory.path() / bigFileName;
     std::shared_ptr<DownloadJob> job =
         std::make_shared<DownloadJob>(_driveDbId, testBigFileRemoteId, localDestFilePath, 0, 0, 0, false);
     JobManager::instance()->queueAsyncJob(job);
@@ -563,7 +552,7 @@ void TestNetworkJobs::testThumbnail() {
 }
 
 void TestNetworkJobs::testDuplicateRenameMove() {
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDuplicateRenameMove");
 
     // Duplicate
     DuplicateJob dupJob(_driveDbId, testFileRemoteId, Str("test_duplicate.txt"));
@@ -581,12 +570,12 @@ void TestNetworkJobs::testDuplicateRenameMove() {
     CPPUNIT_ASSERT(!dupFileId.empty());
 
     // Move
-    MoveJob moveJob(_driveDbId, "", dupFileId, _dummyRemoteDirId);
+    MoveJob moveJob(_driveDbId, "", dupFileId, remoteTmpDir.id());
     moveJob.setBypassCheck(true);
     exitCode = moveJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
-    GetFileListJob fileListJob(_driveDbId, _dummyRemoteDirId);
+    GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     exitCode = fileListJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
@@ -599,7 +588,7 @@ void TestNetworkJobs::testDuplicateRenameMove() {
 
 void TestNetworkJobs::testRename() {
     // Rename
-    SyncName filename = Str("test_rename_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
+    const SyncName filename = Str("test_rename_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum()) + Str(".txt");
     RenameJob renamejob(_driveDbId, testFileRemoteRenameId, filename);
     renamejob.runSynchronously();
 
@@ -617,11 +606,11 @@ void TestNetworkJobs::testRename() {
 }
 
 void TestNetworkJobs::testUpload() {
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUpload");
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), _dummyRemoteDirId, 0);
+    UploadJob job(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
     ExitCode exitCode = job.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
@@ -640,12 +629,12 @@ void TestNetworkJobs::testUpload() {
 }
 
 void TestNetworkJobs::testUploadAborted() {
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadAborted");
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    std::shared_ptr<UploadJob> job =
-        std::make_shared<UploadJob>(_driveDbId, localFilePath, localFilePath.filename().native(), _dummyRemoteDirId, 0);
+    const std::shared_ptr<UploadJob> job =
+        std::make_shared<UploadJob>(_driveDbId, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 0);
     JobManager::instance()->queueAsyncJob(job);
 
     Utility::msleep(1000);  // Wait 1sec
@@ -659,32 +648,30 @@ void TestNetworkJobs::testUploadAborted() {
 }
 
 void TestNetworkJobs::testUploadSessionConstructorException() {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionConstructor");
-
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionConstructorException");
 
     SyncPath localFilePath =
         localTestDirPath;  // The constructor of UploadSession will attempt to retrieve the file size of directory.
 
     CPPUNIT_ASSERT_THROW_MESSAGE(
         "UploadSession() didn't throw as expected",
-        UploadSession(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dummyRemoteDirId, 12345, false, 1),
+        UploadSession(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1),
         std::runtime_error);
 }
 
 void TestNetworkJobs::testUploadSessionSynchronous() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionSynchronous");
 
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionSynchronous");
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dummyRemoteDirId,
+    UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                                    12345, false, 1);
     ExitCode exitCode = uploadSessionJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
-    GetFileListJob fileListJob(_driveDbId, _dummyRemoteDirId);
+    GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     exitCode = fileListJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
@@ -698,15 +685,15 @@ void TestNetworkJobs::testUploadSessionSynchronous() {
 void TestNetworkJobs::testUploadSessionAsynchronous() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronous");
 
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionAsynchronous");
 
-    SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
+    const SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     ExitCode exitCode = ExitCodeUnknown;
     NodeId nodeId;
     while (_nbParalleleThreads > 0) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronous - " << _nbParalleleThreads << " threads");
-        UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dummyRemoteDirId,
+        UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                                        12345, false, _nbParalleleThreads);
         exitCode = uploadSessionJob.runSynchronously();
         if (exitCode == ExitCodeOk) {
@@ -727,7 +714,7 @@ void TestNetworkJobs::testUploadSessionAsynchronous() {
 
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
-    GetFileListJob fileListJob(_driveDbId, _dummyRemoteDirId);
+    GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     exitCode = fileListJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
@@ -741,14 +728,14 @@ void TestNetworkJobs::testUploadSessionAsynchronous() {
 void TestNetworkJobs::testUploadSessionSynchronousAborted() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionSynchronousAborted");
 
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionSynchronousAborted");
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     LOGW_DEBUG(Log::instance()->getLogger(),
                L"$$$$$ testUploadSessionSynchronousAborted - " << _nbParalleleThreads << " threads");
     std::shared_ptr<UploadSession> uploadSessionJob = std::make_shared<UploadSession>(
-        _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dummyRemoteDirId, 12345, false, 1);
+        _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1);
     JobManager::instance()->queueAsyncJob(uploadSessionJob);
 
     Utility::msleep(1000);  // Wait 1sec
@@ -764,12 +751,12 @@ void TestNetworkJobs::testUploadSessionSynchronousAborted() {
 void TestNetworkJobs::testUploadSessionAsynchronousAborted() {
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronousAborted");
 
-    CPPUNIT_ASSERT(createTestDir());
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionAsynchronousAborted");
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     std::shared_ptr<UploadSession> uploadSessionJob =
-        std::make_shared<UploadSession>(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), _dummyRemoteDirId,
+        std::make_shared<UploadSession>(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                                         12345, false, _nbParalleleThreads);
     JobManager::instance()->queueAsyncJob(uploadSessionJob);
 
@@ -781,7 +768,7 @@ void TestNetworkJobs::testUploadSessionAsynchronousAborted() {
     Utility::msleep(1000);  // Wait 1sec
 
     LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronousAborted - Check jobs");
-    GetFileListJob fileListJob(_driveDbId, _dummyRemoteDirId);
+    GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     ExitCode exitCode = fileListJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
@@ -790,41 +777,6 @@ void TestNetworkJobs::testUploadSessionAsynchronousAborted() {
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
     CPPUNIT_ASSERT(dataArray);
     CPPUNIT_ASSERT(dataArray->empty());
-}
-
-bool TestNetworkJobs::createTestDir() {
-    _dummyDirName = Str("test_dir_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
-
-    // Create local test dir
-    _dummyLocalDirPath = localTestDirPath / _dummyDirName;
-    CPPUNIT_ASSERT(std::filesystem::create_directory(_dummyLocalDirPath));
-
-    // Extract local dir ID
-    FileStat fileStat;
-    IoError ioError = IoErrorSuccess;
-    IoHelper::getFileStat(_dummyLocalDirPath, &fileStat, ioError);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
-    _dummyLocalDirId = std::to_string(fileStat.inode);
-
-    // Create remote test dir
-    CreateDirJob job(_driveDbId, _dummyDirName, _remoteDirId, _dummyDirName);
-    ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCodeOk);
-
-    // Extract file ID
-    if (job.jsonRes()) {
-        Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
-        if (dataObj) {
-            _dummyRemoteDirId = dataObj->get(idKey).toString();
-        }
-    }
-
-    if (_dummyRemoteDirId.empty()) {
-        return false;
-    }
-
-    _deleteDummyDir = true;
-    return true;
 }
 
 bool TestNetworkJobs::createTestFiles() {
@@ -860,7 +812,6 @@ bool TestNetworkJobs::createTestFiles() {
         return false;
     }
 
-    _deleteDummyFile = true;
     return true;
 }
 

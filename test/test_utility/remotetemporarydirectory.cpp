@@ -1,0 +1,54 @@
+/*
+ * Infomaniak kDrive - Desktop
+ * Copyright (C) 2023-2024 Infomaniak Network SA
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#include "testincludes.h"
+#include "remotetemporarydirectory.h"
+
+#include "libsyncengine/jobs/network/createdirjob.h"
+#include "libsyncengine/jobs/network/deletejob.h"
+#include "libsyncengine/jobs/network/networkjobsparams.h"
+#include "libcommonserver/utility/utility.h"
+
+namespace KDC {
+RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& parentId,
+                                                   const std::string& testType /*= "undef"*/)
+    : _driveDbId(driveDbId) {
+    // Generate directory name
+    const std::time_t now = std::time(nullptr);
+    const std::tm tm = *std::localtime(&now);
+    std::ostringstream woss;
+    woss << std::put_time(&tm, "%Y%m%d_%H%M");
+
+    _dirName = Str("kdrive_") + Str2SyncName(testType) + Str("_unit_tests_") + Str2SyncName(woss.str());
+
+    // Create remote test dir
+    CreateDirJob job(_driveDbId, parentId, _dirName);
+    CPPUNIT_ASSERT(job.runSynchronously());
+
+    // Extract file ID
+    CPPUNIT_ASSERT(job.jsonRes());
+    Poco::JSON::Object::Ptr dataObj = job.jsonRes()->getObject(dataKey);
+    CPPUNIT_ASSERT(dataObj);
+    _dirId = dataObj->get(idKey).toString();
+}
+RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
+    DeleteJob job(_driveDbId, _dirId, "", "");
+    job.setBypassCheck(true);
+    CPPUNIT_ASSERT(job.runSynchronously());
+}
+}  // namespace KDC

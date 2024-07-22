@@ -32,7 +32,7 @@ void TestIo::testCreateAlias() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -47,7 +47,7 @@ void TestIo::testCreateAlias() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -62,7 +62,7 @@ void TestIo::testCreateAlias() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -74,7 +74,7 @@ void TestIo::testCreateAlias() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         { std::ofstream ofs(path); }
 
         IoError aliasError = IoErrorUnknown;
@@ -90,7 +90,7 @@ void TestIo::testCreateAlias() {
     {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path;
+        const SyncPath path = temporaryDirectory.path();
 
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -108,7 +108,7 @@ void TestIo::testCreateAlias() {
     // The alias path is the target path (of an existing file): no error!
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         { std::ofstream ofs(path); }
         const SyncPath targetPath = path;
 
@@ -139,7 +139,7 @@ void TestIo::testCreateAlias() {
     // The target file name is very long: failure
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "alias.txt";  // This file doesn't exist.
+        const SyncPath path = temporaryDirectory.path() / "alias.txt";  // This file doesn't exist.
 
         const std::string veryLongfileName(1000,
                                            'a');  // Exceeds the max allowed name length on every file system of interest.
@@ -169,7 +169,7 @@ void TestIo::testCreateAlias() {
         const SyncPath targetPath = makeVeryLonPath(_localTestDirPath);
 
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "alias.txt";  // This file doesn't exist.
+        const SyncPath path = temporaryDirectory.path() / "alias.txt";  // This file doesn't exist.
 
         IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -180,7 +180,7 @@ void TestIo::testCreateAlias() {
     // The alias file name contains emojis: success
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
+        const SyncPath path = temporaryDirectory.path() / makeFileNameWithEmojis();
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError aliasError = IoErrorUnknown;
