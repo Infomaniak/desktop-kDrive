@@ -40,8 +40,7 @@ class LogArchiver {
          * \param exitCause The exit cause to be filled in case of error. If no error occurred, it will be set to
          *      ExitCauseUnknown;
          * \param test If true, the archive will be generated with test.zip name.
-         * \return True if the archive
-         * was generated successfully, false otherwise.
+         * \return The exit code of the operation.
          */
         static ExitCode generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputDir,
                                                    std::function<bool(int)> progressCallback, SyncPath &archivePath,
