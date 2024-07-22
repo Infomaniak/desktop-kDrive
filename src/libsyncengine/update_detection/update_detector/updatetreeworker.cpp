@@ -129,8 +129,7 @@ ExitCode UpdateTreeWorker::searchForParentNode(const SyncPath &nodePath, std::sh
 }
 
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
-    std::unordered_set<UniqueId> deleteOpsIds;
-    _operationSet->getOpsByType(OperationTypeDelete, deleteOpsIds);
+    std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationTypeDelete);
     for (const auto &deleteOpId : deleteOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -249,8 +248,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
 ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
     _createFileOperationSet.clear();
     FSOpPtrMap createDirectoryOperationSet;
-    std::unordered_set<UniqueId> createOpsIds;
-    _operationSet->getOpsByType(OperationTypeCreate, createOpsIds);
+    std::unordered_set<UniqueId> createOpsIds = _operationSet->getOpsByType(OperationTypeCreate);
 
     bool isSnapshotRebuildRequired = false;
 
@@ -368,8 +366,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
     const ExitCode exitCode = handleCreateOperationsWithSamePath();
     if (exitCode != ExitCodeOk) return exitCode;  // Rebuild the snapshot.
 
-    std::unordered_set<UniqueId> deleteOpsIds;
-    _operationSet->getOpsByType(OperationTypeDelete, deleteOpsIds);
+    std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationTypeDelete);
     for (const auto &deleteOpId : deleteOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -487,8 +484,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
 }
 
 ExitCode UpdateTreeWorker::step5CreateDirectory() {
-    std::unordered_set<UniqueId> createOpsIds;
-    _operationSet->getOpsByType(OperationTypeCreate, createOpsIds);
+    std::unordered_set<UniqueId> createOpsIds = _operationSet->getOpsByType(OperationTypeCreate);
     for (const auto &createOpId : createOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -608,8 +604,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
 }
 
 ExitCode UpdateTreeWorker::step7EditFile() {
-    std::unordered_set<UniqueId> editOpsIds;
-    _operationSet->getOpsByType(OperationTypeEdit, editOpsIds);
+    std::unordered_set<UniqueId> editOpsIds = _operationSet->getOpsByType(OperationTypeEdit);
     for (const auto &editOpId : editOpsIds) {
         // worker stop or pause
         if (stopAsked()) {
@@ -809,8 +804,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
 }
 
 ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
-    std::unordered_set<UniqueId> moveOpsIds;
-    _operationSet->getOpsByType(OperationTypeMove, moveOpsIds);
+    std::unordered_set<UniqueId> moveOpsIds = _operationSet->getOpsByType(OperationTypeMove);
     for (const auto &moveOpId : moveOpsIds) {
         if (stopAsked()) {
             return ExitCodeOk;

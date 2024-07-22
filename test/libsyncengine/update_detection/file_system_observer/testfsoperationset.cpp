@@ -56,8 +56,7 @@ void TestFsOperationSet::testGetOpsByType() {
 
     for (OperationType type : _operationTypes) {
         for (int i = 0; i < 3; i++) {
-            std::unordered_set<UniqueId> ops;
-            fsOperationSet.getOpsByType(type, ops);
+            std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByType(type);
             CPPUNIT_ASSERT_EQUAL(size_t(i), ops.size());
 
             auto op = std::make_shared<FSOperation>(type, nodeId + nodeIdSuffix);
@@ -79,13 +78,11 @@ void TestFsOperationSet::testGetOpsByNodeId() {
     }
 
     // Test with a non existing node
-    std::unordered_set<UniqueId> ops;
-    ops.insert(1);
-    fsOperationSet.getOpsByNodeId("nonExistingNodeId", ops);
+    std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByNodeId("nonExistingNodeId");
     CPPUNIT_ASSERT_EQUAL(size_t(0), ops.size());
 
     // Test with an existing node
-    fsOperationSet.getOpsByNodeId(nodeId, ops);
+    ops = fsOperationSet.getOpsByNodeId(nodeId);
     CPPUNIT_ASSERT_EQUAL(size_t(6), ops.size());
     for (auto id : opsIds) {
         CPPUNIT_ASSERT(ops.contains(id));
@@ -93,7 +90,7 @@ void TestFsOperationSet::testGetOpsByNodeId() {
 
     // Test with an empty set
     fsOperationSet.clear();
-    fsOperationSet.getOpsByNodeId(nodeId, ops);
+    ops = fsOperationSet.getOpsByNodeId(nodeId);
     CPPUNIT_ASSERT_EQUAL(size_t(0), ops.size());
 }
 
@@ -137,8 +134,7 @@ void TestFsOperationSet::testClear() {
     for (OperationType type : _operationTypes) {
         CPPUNIT_ASSERT_EQUAL(uint64_t(0), fsOperationSet.nbOpsByType(type));
         for (int i = 1; i <= 2; i++) {
-            std::unordered_set<UniqueId> ops;
-            fsOperationSet.getOpsByNodeId(nodeId + nodeIdSuffix, ops);
+            std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByNodeId(nodeId + nodeIdSuffix);
             CPPUNIT_ASSERT_EQUAL(size_t(0), ops.size());
             nodeIdSuffix++;
         }
@@ -155,14 +151,12 @@ void TestFsOperationSet::testInsertOp() {
             auto op = std::make_shared<FSOperation>(type, nodeId + nodeIdSuffix);
             fsOperationSet.insertOp(op);
             nodeIdSuffix++;
-            std::unordered_map<UniqueId, FSOpPtr> opsAll;
-            fsOperationSet.getAllOps(opsAll);
+            std::unordered_map<UniqueId, FSOpPtr> opsAll = fsOperationSet.getAllOps();
             CPPUNIT_ASSERT(opsAll.contains(op->id()));
             CPPUNIT_ASSERT_EQUAL(uint64_t(i + 1), fsOperationSet.nbOpsByType(type));
-            std::unordered_set<UniqueId> ops;
-            fsOperationSet.getOpsByNodeId(op->nodeId(), ops);
+            std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByNodeId(op->nodeId());
             CPPUNIT_ASSERT(ops.contains(op->id()));
-            fsOperationSet.getOpsByType(type, ops);
+            ops = fsOperationSet.getOpsByType(type);
             CPPUNIT_ASSERT(ops.contains(op->id()));
         }
     }
@@ -180,21 +174,20 @@ void TestFsOperationSet::testRemoveOp() {
 
     // Test removeOp with an existing operation (uniqueId)
     CPPUNIT_ASSERT(fsOperationSet.removeOp(op1->id()));
-    fsOperationSet.getAllOps(allOps);
+    allOps = fsOperationSet.getAllOps();
     CPPUNIT_ASSERT(!allOps.contains(op1->id()));
-    std::unordered_set<UniqueId> ops;
-    fsOperationSet.getOpsByType(OperationTypeCreate, ops);
+    std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByType(OperationTypeCreate);
     CPPUNIT_ASSERT(!ops.contains(op1->id()));
-    fsOperationSet.getOpsByNodeId(nodeId, ops);
+    ops = fsOperationSet.getOpsByNodeId(nodeId);
     CPPUNIT_ASSERT(!ops.contains(op1->id()));
 
     // Test removeOp with an existing operation (Node id + type)
     CPPUNIT_ASSERT(fsOperationSet.removeOp(nodeId, OperationTypeMove));
-    fsOperationSet.getAllOps(allOps);
+    allOps = fsOperationSet.getAllOps();
     CPPUNIT_ASSERT(!allOps.contains(op2->id()));
-    fsOperationSet.getOpsByType(OperationTypeMove, ops);
+    ops = fsOperationSet.getOpsByType(OperationTypeMove);
     CPPUNIT_ASSERT(!ops.contains(op2->id()));
-    fsOperationSet.getOpsByNodeId(nodeId, ops);
+    ops = fsOperationSet.getOpsByNodeId(nodeId);
     CPPUNIT_ASSERT(!ops.contains(op2->id()));
 
     // Test removeOp with a not existing operation
@@ -244,8 +237,8 @@ void TestFsOperationSet::testOperatorEqual() {
     CPPUNIT_ASSERT_EQUAL(fsOperationSet2.nbOps(), fsOperationSet1.nbOps());
     std::unordered_map<UniqueId, FSOpPtr> ops1;
     std::unordered_map<UniqueId, FSOpPtr> ops2;
-    fsOperationSet1.getAllOps(ops1);
-    fsOperationSet2.getAllOps(ops2);
+    ops1 = fsOperationSet1.getAllOps();
+    ops2 = fsOperationSet2.getAllOps();
     for (const auto &[key, value] : ops2) {
         CPPUNIT_ASSERT(ops2.contains(key));
     }
@@ -255,8 +248,8 @@ void TestFsOperationSet::testOperatorEqual() {
     for (OperationType type : _operationTypes) {
         std::unordered_set<UniqueId> opsByType1;
         std::unordered_set<UniqueId> opsByType2;
-        fsOperationSet1.getOpsByType(type, opsByType1);
-        fsOperationSet2.getOpsByType(type, opsByType2);
+        opsByType1 = fsOperationSet1.getOpsByType(type);
+        opsByType2 = fsOperationSet2.getOpsByType(type);
         CPPUNIT_ASSERT_EQUAL(opsByType2.size(), opsByType1.size());
         for (const auto &id : opsByType2) {
             CPPUNIT_ASSERT(opsByType1.contains(id));
@@ -265,8 +258,8 @@ void TestFsOperationSet::testOperatorEqual() {
         for (int i = 0; i < 3; i++) {
             std::unordered_set<UniqueId> opsByNodeId1;
             std::unordered_set<UniqueId> opsByNodeId2;
-            fsOperationSet1.getOpsByNodeId(nodeId + nodeIdSuffix, opsByNodeId1);
-            fsOperationSet2.getOpsByNodeId(nodeId + nodeIdSuffix, opsByNodeId2);
+            opsByNodeId1 = fsOperationSet1.getOpsByNodeId(nodeId + nodeIdSuffix);
+            opsByNodeId2 = fsOperationSet2.getOpsByNodeId(nodeId + nodeIdSuffix);
             CPPUNIT_ASSERT_EQUAL(opsByNodeId2.size(), opsByNodeId1.size());
             for (const auto &id : opsByNodeId2) {
                 CPPUNIT_ASSERT(opsByNodeId1.contains(id));
@@ -296,8 +289,8 @@ void TestFsOperationSet::testCopyConstructor() {
     /// ops()
     std::unordered_map<UniqueId, FSOpPtr> ops;
     std::unordered_map<UniqueId, FSOpPtr> opsCopy;
-    fsOperationSetCopy.getAllOps(ops);
-    fsOperationSetCopy.getAllOps(opsCopy);
+    ops = fsOperationSetCopy.getAllOps();
+    opsCopy = fsOperationSetCopy.getAllOps();
     CPPUNIT_ASSERT_EQUAL(ops.size(), opsCopy.size());
     for (const auto &[key, value] : ops) {
         CPPUNIT_ASSERT(opsCopy.contains(key));
@@ -305,20 +298,16 @@ void TestFsOperationSet::testCopyConstructor() {
     /// getOpsByType() and getOpsByNodeId()
     nodeIdSuffix = '0';
     for (OperationType type : _operationTypes) {
-        std::unordered_set<UniqueId> opsByType1;
-        std::unordered_set<UniqueId> opsByType2;
-        fsOperationSet.getOpsByType(type, opsByType1);
-        fsOperationSetCopy.getOpsByType(type, opsByType2);
+        std::unordered_set<UniqueId> opsByType1 = fsOperationSet.getOpsByType(type);
+        std::unordered_set<UniqueId> opsByType2 = fsOperationSetCopy.getOpsByType(type);
         CPPUNIT_ASSERT_EQUAL(opsByType2.size(), opsByType1.size());
         for (const auto &id : opsByType2) {
             CPPUNIT_ASSERT(opsByType1.contains(id));
         }
 
         for (int i = 0; i < 3; i++) {
-            std::unordered_set<UniqueId> opsByNodeId1;
-            std::unordered_set<UniqueId> opsByNodeId2;
-            fsOperationSet.getOpsByNodeId(nodeId + nodeIdSuffix, opsByNodeId1);
-            fsOperationSetCopy.getOpsByNodeId(nodeId + nodeIdSuffix, opsByNodeId2);
+            std::unordered_set<UniqueId> opsByNodeId1 = fsOperationSet.getOpsByNodeId(nodeId + nodeIdSuffix);
+            std::unordered_set<UniqueId> opsByNodeId2 = fsOperationSetCopy.getOpsByNodeId(nodeId + nodeIdSuffix);
             CPPUNIT_ASSERT_EQUAL(opsByNodeId2.size(), opsByNodeId1.size());
             for (const auto &id : opsByNodeId2) {
                 CPPUNIT_ASSERT(opsByNodeId1.contains(id));

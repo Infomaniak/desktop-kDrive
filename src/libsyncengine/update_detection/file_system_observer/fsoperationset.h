@@ -41,8 +41,9 @@ class FSOperationSet : public SharedObject {
 
         bool getOp(UniqueId id, FSOpPtr &opPtr) const;
         void getAllOps(std::unordered_map<UniqueId, FSOpPtr> &ops) const;
-        void getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops) const;
-        void getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops) const;
+        std::unordered_map<UniqueId, FSOpPtr> getAllOps() const;
+        std::unordered_set<UniqueId> getOpsByType(const OperationType type) const;
+        std::unordered_set<UniqueId> getOpsByNodeId(const NodeId &nodeId) const;
 
         uint64_t nbOps() const;
         uint64_t nbOpsByType(const OperationType type) const;
