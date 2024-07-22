@@ -3,6 +3,11 @@ project(libcommon)
 find_package(Qt6 REQUIRED COMPONENTS Network Widgets Gui Sql)
 find_package(Poco 1.13.3 REQUIRED Foundation JSON Util)
 find_package(sentry REQUIRED)
+
+if (UNIX AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    # Use fallback library types for imported dependencies
+    set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo NoConfig)
+endif ()
 find_package(libzip 1.10.1 REQUIRED)
 
 set(CMAKE_AUTOMOC TRUE)
