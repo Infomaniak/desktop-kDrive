@@ -258,7 +258,7 @@ void DebuggingDialog::initUI() {
     heavyLogCheckBox->setToolTip(heavyLogCheckBoxToolTip);
     heavyLogCheckBox->setToolTipDuration(20000);
     heavyLogCheckBoxVBox->addWidget(heavyLogCheckBox);
-
+    _sendArchivedLogs = !heavyLogCheckBox->isChecked();
     // Log upload | Main box | heavy log box | Checkbox box | Helper
     CustomToolButton *heavyLogHelpButton = new CustomToolButton();
     heavyLogHelpButton->setObjectName("helpButton");
@@ -629,7 +629,7 @@ void DebuggingDialog::onDeleteLogsCheckBoxClicked(bool checked) {
 }
 
 void DebuggingDialog::onSendArchivedLogsCheckBoxClicked(bool checked) {
-    _sendArchivedLogs = checked;
+    _sendArchivedLogs = !checked;
 }
 
 void DebuggingDialog::onExit() {
@@ -652,12 +652,12 @@ void DebuggingDialog::onExit() {
     }
 }
 
-void DebuggingDialog::onSendLogButtonTriggered(bool checked) {
+void DebuggingDialog::onSendLogButtonTriggered() {
     _sendLogButton->setEnabled(false);
     GuiRequests::sendLogToSupport(_sendArchivedLogs);
 }
 
-void DebuggingDialog::onCancelLogUploadButtonTriggered(bool checked) {
+void DebuggingDialog::onCancelLogUploadButtonTriggered() {
     _cancelLogUploadButton->setEnabled(false);
     GuiRequests::cancelLogUploadToSupport();
 }

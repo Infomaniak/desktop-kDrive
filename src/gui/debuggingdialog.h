@@ -78,8 +78,8 @@ class DebuggingDialog : public CustomDialog {
         void onDeleteLogsCheckBoxClicked(bool checked = false);
         void onSendArchivedLogsCheckBoxClicked(bool checked = false);
         void onExit();
-        void onSendLogButtonTriggered(bool checked = false);
-        void onCancelLogUploadButtonTriggered(bool checked = false);
+        void onSendLogButtonTriggered();
+        void onCancelLogUploadButtonTriggered();
         void onSaveButtonTriggered(bool checked = false);
         void onLinkActivated(const QString &link);
         void onLogUploadStatusUpdated(LogUploadState state, int progress);
