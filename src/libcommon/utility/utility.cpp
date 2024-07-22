@@ -293,21 +293,20 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
 }
 
 std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) noexcept {
-    using enum AppStateKey;
     switch (appStateValue) {
-        case LastServerSelfRestartDate:
+        case AppStateKey::LastServerSelfRestartDate:
             return "LastServerSelfRestartDate";
-        case LastClientSelfRestartDate:
+        case AppStateKey::LastClientSelfRestartDate:
             return "LastClientSelfRestartDate";
-        case LastSuccessfulLogUploadDate:
+        case AppStateKey::LastSuccessfulLogUploadDate:
             return "LastSuccessfulLogUploadDate";
-        case LastLogUploadArchivePath:
+        case AppStateKey::LastLogUploadArchivePath:
             return "LastLogUploadArchivePath";
-        case LogUploadState:
+        case AppStateKey::LogUploadState:
             return "LogUploadState";
-        case LogUploadPercent:
+        case AppStateKey::LogUploadPercent:
             return "LogUploadPercent";
-        case Unknown:
+        case AppStateKey::Unknown:
             return "Unknown";
         default:
             return "AppStateKey not found (" + std::to_string(static_cast<int>(appStateValue)) + ")";

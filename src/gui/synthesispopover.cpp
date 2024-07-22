@@ -1063,37 +1063,36 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
 }
 
 void SynthesisPopover::onUpdateAvailabalityChange() {
-    using enum UpdateState;
     if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
 
     QString statusString;
-    UpdateState updateState = Error;
+    UpdateState updateState = UpdateState::Error;
     try {
         if (!UpdaterClient::instance()->isSparkleUpdater()) {
             statusString = UpdaterClient::instance()->statusString();
             updateState = UpdaterClient::instance()->updateState();
         } else {
-            updateState = Ready;  // On macOS, we just start the installer (Sparkle does the rest)
+            updateState = UpdateState::Ready;  // On macOS, we just start the installer (Sparkle does the rest)
         }
     } catch (std::exception const &) {
         return;
     }
 
-    _lockedAppUpdateButton->setEnabled(updateState == Ready);
-    _lockedAppUpdateOptionalLabel->setVisible(updateState != Ready && updateState != Downloading);
+    _lockedAppUpdateButton->setEnabled(updateState == UpdateState::Ready);
+    _lockedAppUpdateOptionalLabel->setVisible(updateState != UpdateState::Ready && updateState != UpdateState::Downloading);
     switch (updateState) {
-        case Ready:
+        case UpdateState::Ready:
             _lockedAppUpdateButton->setText(tr("Update"));
             break;
-        case Downloading:
+        case UpdateState::Downloading:
             _lockedAppUpdateButton->setText(tr("Update download in progress"));
             break;
-        case Skipped:
+        case UpdateState::Skipped:
             UpdaterClient::instance()->unskipUpdate();
-        case Checking:
+        case UpdateState::Checking:
             _lockedAppUpdateButton->setText(tr("Looking for update..."));
             break;
-        case ManualOnly:
+        case UpdateState::ManualOnly:
             _lockedAppUpdateButton->setText(tr("Manual update"));
             _lockedAppUpdateOptionalLabel->setText(statusString);
             break;
