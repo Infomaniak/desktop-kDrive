@@ -24,9 +24,6 @@
 
 namespace KDC {
 
-static const SyncTime defaultTime = 1654788079;
-static const int64_t defaultSize = 1654788079;
-
 void TestConflictResolverWorker::setUp() {
     // Create SyncPal
     bool alreadyExists = false;

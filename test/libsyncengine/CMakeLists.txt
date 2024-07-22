@@ -41,14 +41,13 @@ set(testsyncengine_SRCS
         reconciliation/operation_generator/testoperationgeneratorworker.h reconciliation/operation_generator/testoperationgeneratorworker.cpp
         # Propagation
         propagation/operation_sorter/testoperationsorterworker.h propagation/operation_sorter/testoperationsorterworker.cpp
-        propagation/executor/executorworker/testexecutorworker.h propagation/executor/executorworker/testexecutorworker.cpp
+        propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         propagation/executor/testintegration.h propagation/executor/testintegration.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         # Requests
         requests/testexclusiontemplatecache.h requests/testexclusiontemplatecache.cpp
-        ../test_classes/syncpaltest.cpp
-        ../test_classes/syncpaltest.h
+        ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
 )
 
 if (USE_OUR_OWN_SQLITE3)
@@ -56,9 +55,9 @@ if (USE_OUR_OWN_SQLITE3)
 endif ()
 
 if (WIN32)
-    include_directories("F:/Projects/log4cplus/include")
-    include_directories("C:/Program Files (x86)/cppunit/include")
-else ()
+    include_directories("C:/Projects/log4cplus/include")
+    include_directories("C:/Projects/cppunit/include")
+else()
     include_directories("/usr/local/include")
 endif ()
 
@@ -85,11 +84,11 @@ endif ()
 
 if (WIN32)
     target_link_libraries(${testsyncengine_NAME}
-            debug
-            "C:/Program Files (x86)/cppunit/lib/cppunitd.lib"
-            optimized
-            "C:/Program Files (x86)/cppunit/lib/cppunit.lib")
-elseif (APPLE)
+        debug
+        "C:/Projects/cppunit/lib/cppunitd.lib"
+        optimized
+        "C:/Projects/cppunit/lib/cppunit.lib")
+elseif(APPLE)
     target_link_libraries(${testsyncengine_NAME}
             "/usr/local/lib/libcppunit.dylib")
 else ()

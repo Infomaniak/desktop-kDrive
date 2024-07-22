@@ -130,7 +130,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _vfsCancelHydrate = vfsCancelHydrate;
         }
 
-        inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
+        [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
         inline int syncDbId() const { return _syncDbId; }
         inline int driveDbId() const { return _driveDbId; }
         inline int driveId() const { return _driveId; }
@@ -218,7 +218,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
         virtual void refreshTmpBlacklist();
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
-
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
@@ -367,7 +366,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestConflictResolverWorker;
         friend class TestOperationGeneratorWorker;
         friend class TestOperationSorterWorker;
-        friend class TestExecutor;
+        friend class TestExecutorWorker;
         friend class TestSnapshot;
         friend class TestLocalJobs;
         friend class TestIntegration;

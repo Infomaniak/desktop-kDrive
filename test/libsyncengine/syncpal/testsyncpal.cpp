@@ -42,7 +42,7 @@ void TestSyncPal::setUp() {
     if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remotePathStr.empty() || apiTokenStr.empty()) {
         throw std::runtime_error("Some environment variables are missing!");
     }
-    const std::string localPathStr = _localTempDir.path.string();
+    const std::string localPathStr = _localTempDir.path().string();
     // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
