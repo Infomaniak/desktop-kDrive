@@ -101,6 +101,13 @@ cmake .. -DUNICODE=1
 sudo cmake --build . --target install
 ```
 
+If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
+
+```bash
+cd ../catch
+git checkout v2.x
+```
+
 ## OpenSSL
 
 The OpenSSL Configure will require Perl to be installed first
