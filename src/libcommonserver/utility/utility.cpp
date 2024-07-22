@@ -706,7 +706,8 @@ SyncName Utility::logFileNameWithTime() {
 
 std::string Utility::toUpper(const std::string &str) {
     std::string upperStr(str);
-    std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
+    // std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });   // Needs gcc-11
+    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
     return upperStr;
 }
 
