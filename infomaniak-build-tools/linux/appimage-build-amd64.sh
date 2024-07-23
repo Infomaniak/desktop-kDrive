@@ -18,52 +18,64 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-ulimit -n 4000000
-
 set -xe
 
-mkdir -p /app
-mkdir -p /build
-
-# Set Qt-6.2
-export QT_BASE_DIR=/opt/qt6.2.3
-export QTDIR=$QT_BASE_DIR
-export QMAKE=$QT_BASE_DIR/bin/qmake
-export PATH=$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH
-export LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
-export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
+export QT_BASE_DIR="~/Qt/6.2.3"
+export QTDIR="$QT_BASE_DIR/gcc_64"
 export BASEPATH=$PWD
+export CONTENTDIR="$BASEPATH/build-linux"
+export BUILDDIR="$CONTENTDIR/build"
+export APPDIR="$CONTENTDIR/app"
+
+extract_debug () {
+    objcopy --only-keep-debug "$1/$2" $CONTENTDIR/$2-amd64.dbg
+    objcopy --strip-debug "$1/$2"
+    objcopy --add-gnu-debuglink=$CONTENTDIR/kDrive-amd64.dbg "$1/$2"
+}
+
+mkdir -p $APPDIR
+mkdir -p $BUILDDIR
+
+export QMAKE=$QTDIR/bin/qmake
+export PATH=$QTDIR/bin:$QTDIR/libexec:$PATH
+export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
+export PKG_CONFIG_PATH=$QTDIR/lib/pkgconfig:$PKG_CONFIG_PATH
 
 # Set defaults
-export SUFFIX="master"
+export SUFFIX=""
 
 # Build client
-cd /build
-mkdir -p client
-cd client
+cd $BUILDDIR
+mkdir -p $BUILDDIR/client
 
 CMAKE_PARAMS=()
 
-if [ -n "$APPLICATION_SERVER_URL" ]; then
-	CMAKE_PARAMS+=(-DAPPLICATION_SERVER_URL="$APPLICATION_SERVER_URL")
-fi
-
-if [ -n "$KDRIVE_VERSION_BUILD" ]; then
-	CMAKE_PARAMS+=(-DKDRIVE_VERSION_BUILD="$KDRIVE_VERSION_BUILD")
-fi
-
 export KDRIVE_DEBUG=0
 
-cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
-    -DCMAKE_INSTALL_PREFIX=/usr \
+cmake -B$BUILDDIR -H$BASEPATH \
+    -DOPENSSL_ROOT_DIR=/usr/local \
+    -DOPENSSL_INCLUDE_DIR=/usr/local/include \
+    -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib64/libcrypto.so \
+    -DOPENSSL_SSL_LIBRARY=/usr/local/lib64/libssl.so \
     -DQT_FEATURE_neon=OFF \
-    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_BUILDTYPE=RelWithDebInfo \
+    -DCMAKE_PREFIX_PATH=$BASEPATH \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DBIN_INSTALL_DIR=$BUILDDIR/client \
     -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
+    -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
     -DBUILD_UNIT_TESTS=0 \
-    "${CMAKE_PARAMS[@]}"
-    
-make -j4
+    "${CMAKE_PARAMS[@]}" \
+
+make -j$(nproc)
+
+extract_debug ./bin kDrive
+extract_debug ./bin kDrive_client
+
+make DESTDIR=$APPDIR install
+
+cp $BASEPATH/sync-exclude-linux.lst $BUILDDIR/bin/sync-exclude.lst
 
 objcopy --only-keep-debug ./bin/kDrive ../kDrive.dbg
 objcopy --strip-debug ./bin/kDrive
@@ -73,10 +85,10 @@ objcopy --only-keep-debug ./bin/kDrive_client ../kDrive_client.dbg
 objcopy --strip-debug ./bin/kDrive_client
 objcopy --add-gnu-debuglink=../kDrive_client.dbg ./bin/kDrive_client
 
-make DESTDIR=/app install
+make DESTDIR=$APPDIR install
 
 # Move stuff around
-cd /app
+cd $APPDIR
 
 mkdir -p ./usr/plugins
 cp -P -r /opt/qt6.2.3/plugins/* ./usr/plugins/
