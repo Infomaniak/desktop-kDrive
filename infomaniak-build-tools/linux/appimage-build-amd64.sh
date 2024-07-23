@@ -61,7 +61,8 @@ cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
     -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DBUILD_UNIT_TESTS=0 \
-    "${CMAKE_PARAMS[@]}" \
+    "${CMAKE_PARAMS[@]}"
+    
 make -j4
 
 objcopy --only-keep-debug ./bin/kDrive ../kDrive.dbg
