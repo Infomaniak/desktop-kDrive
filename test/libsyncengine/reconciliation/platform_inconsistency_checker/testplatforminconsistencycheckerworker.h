@@ -20,6 +20,7 @@
 
 #include "testincludes.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerworker.h"
+#include "test_utility/localtemporarydirectory.h"
 
 using namespace CppUnit;
 
@@ -31,6 +32,7 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCheckNameForbiddenChars);
         CPPUNIT_TEST(testCheckReservedNames);
         CPPUNIT_TEST(testNameClash);
+        CPPUNIT_TEST(testNameClashAfterRename);
         CPPUNIT_TEST(testExecute);
         CPPUNIT_TEST_SUITE_END();
 
@@ -43,10 +45,12 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
         void testCheckNameForbiddenChars();
         void testCheckReservedNames();
         void testNameClash();
+        void testNameClashAfterRename();
         void testExecute();
 
     private:
         std::shared_ptr<SyncPal> _syncPal{nullptr};
+        LocalTemporaryDirectory _tempDir{"testNameClashAfterRename"};
 };
 
 }  // namespace KDC
