@@ -379,7 +379,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         }
 
         if (isProgressTracked()) {
-            setProgress(getProgress() + itEnd - itBegin);
+            addProgress(itEnd - itBegin);
         }
 
         itBegin = itEnd;

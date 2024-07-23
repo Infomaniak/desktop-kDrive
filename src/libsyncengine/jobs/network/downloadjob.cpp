@@ -261,7 +261,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                     break;
                 } else {
                     std::streamsize readSize = is.gcount();
-                    setProgress(getProgress() + readSize);
+                    addProgress(readSize);
 
                     if (readSize > 0) {
                         output.write(buffer.get(), readSize);

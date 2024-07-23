@@ -114,7 +114,7 @@ void AbstractUploadSession::uploadChunkCallback(UniqueId jobId) {
         }
 
         _threadCounter--;
-        setProgress(getProgress() + jobInfo.mapped()->chunkSize());
+        addProgress(jobInfo.mapped()->chunkSize());
         LOG_INFO(_logger,
                  "Session " << _sessionToken.c_str() << ", thread " << jobId << " finished. " << _threadCounter << " running");
     }
@@ -332,7 +332,7 @@ bool AbstractUploadSession::sendChunks() {
                 _jobExecutionError = true;
                 break;
             }
-            setProgress(getProgress() + actualChunkSize);
+            addProgress(actualChunkSize);
         }
     }
 

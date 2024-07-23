@@ -55,6 +55,7 @@ class AbstractJob : public Poco::Runnable {
         }
         inline virtual int64_t getProgress() { return _progress; }
         void setProgress(int64_t newProgress);
+        void addProgress(int64_t progressToAdd);
         bool progressChanged();
         inline const SyncPath &affectedFilePath() const { return _affectedFilePath; }
         inline void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }

@@ -67,6 +67,10 @@ void AbstractJob::setProgress(int64_t newProgress) {
     }
 }
 
+void AbstractJob::addProgress(int64_t progressToAdd) {
+    setProgress(_progress + progressToAdd);
+}
+
 bool AbstractJob::progressChanged() {
     if (_progress > _lastProgress) {
         _lastProgress = _progress;
