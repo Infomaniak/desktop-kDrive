@@ -524,7 +524,7 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
     } catch (const std::exception &e) {
         if (Log::isSet()) {
             LOGW_WARN(logger(), L"Error in IoHelper::logDirectoryPath: " << e.what());
-        } 
+        }
         // We can't log the error, so we just generate the path for the logger to initialize.
     }
 
@@ -566,6 +566,10 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
 
     if (itemType.linkType == LinkTypeNone && itemType.ioError != IoErrorSuccess) {
         exists = ioError != IoErrorNoSuchFileOrDirectory;
+        if (ioError == IoErrorNoSuchFileOrDirectory) {
+            ioError = IoErrorSuccess;
+            return true;
+        }
         return _isExpectedError(ioError);
     }
 
