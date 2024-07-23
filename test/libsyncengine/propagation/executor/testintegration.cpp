@@ -505,7 +505,7 @@ void TestIntegration::testInconsistency() {
     // Check path length
     CPPUNIT_ASSERT(_syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, testSizeRemoteId, _newTestFileLocalId, found));
     CPPUNIT_ASSERT(found);
-    std::shared_ptr<Node> node = _syncPal->_localUpdateTree->getNodeById(_newTestFileLocalId);
+    std::shared_ptr<Node> node = _syncPal->updateTree(ReplicaSideLocal)->getNodeById(_newTestFileLocalId);
     CPPUNIT_ASSERT(node);
     CPPUNIT_ASSERT(node->name().size() < 255);
 
@@ -513,7 +513,7 @@ void TestIntegration::testInconsistency() {
     CPPUNIT_ASSERT(
         _syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, testSpecialCharsRemoteId, _newTestFileLocalId, found));
     CPPUNIT_ASSERT(found);
-    std::shared_ptr<Node> node2 = _syncPal->_localUpdateTree->getNodeById(_newTestFileLocalId);
+    std::shared_ptr<Node> node2 = _syncPal->updateTree(ReplicaSideLocal)->getNodeById(_newTestFileLocalId);
     CPPUNIT_ASSERT(node2);
     CPPUNIT_ASSERT(node2->name() == Str("test_%3ainco%3ansiste%3a%3ancy.txt"));
 
@@ -521,20 +521,20 @@ void TestIntegration::testInconsistency() {
     CPPUNIT_ASSERT(
         _syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, testCaseSensitiveRemoteId1, _newTestFileLocalId, found));
     CPPUNIT_ASSERT(found);
-    std::shared_ptr<Node> node3 = _syncPal->_localUpdateTree->getNodeById(_newTestFileLocalId);
+    std::shared_ptr<Node> node3 = _syncPal->updateTree(ReplicaSideLocal)->getNodeById(_newTestFileLocalId);
     CPPUNIT_ASSERT(node3);
 
     CPPUNIT_ASSERT(
         _syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, testCaseSensitiveRemoteId2, _newTestFileLocalId, found));
     CPPUNIT_ASSERT(found);
-    std::shared_ptr<Node> node4 = _syncPal->_localUpdateTree->getNodeById(_newTestFileLocalId);
+    std::shared_ptr<Node> node4 = _syncPal->updateTree(ReplicaSideLocal)->getNodeById(_newTestFileLocalId);
     CPPUNIT_ASSERT(node4);
     CPPUNIT_ASSERT(node4->name() != node3->name());
 
     CPPUNIT_ASSERT(
         _syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, testCaseSensitiveRemoteId3, _newTestFileLocalId, found));
     CPPUNIT_ASSERT(found);
-    std::shared_ptr<Node> node5 = _syncPal->_localUpdateTree->getNodeById(_newTestFileLocalId);
+    std::shared_ptr<Node> node5 = _syncPal->updateTree(ReplicaSideLocal)->getNodeById(_newTestFileLocalId);
     CPPUNIT_ASSERT(node5);
     CPPUNIT_ASSERT(node5->name() != node4->name());
 

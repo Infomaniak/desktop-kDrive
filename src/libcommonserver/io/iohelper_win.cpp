@@ -113,6 +113,11 @@ time_t FileTimeToUnixTime(LARGE_INTEGER filetime, DWORD *remainder) {
     ft.dwLowDateTime = filetime.LowPart;
     return FileTimeToUnixTime(&ft, remainder);
 }
+
+bool fileExistsFromCode(int code) noexcept {
+    return (code != ERROR_FILE_NOT_FOUND) && (code != ERROR_PATH_NOT_FOUND) && (code != ERROR_INVALID_DRIVE);
+}
+
 }  // namespace
 
 int IoHelper::_getAndSetRightsMethod = -1;  // -1: not initialized, 0: Windows API, 1: std::filesystem
@@ -122,7 +127,7 @@ TRUSTEE IoHelper::_trustee = {nullptr};
 std::mutex IoHelper::_initRightsWindowsApiMutex;
 
 bool IoHelper::fileExists(const std::error_code &ec) noexcept {
-    return (ec.value() != ERROR_FILE_NOT_FOUND) && (ec.value() != ERROR_PATH_NOT_FOUND) && (ec.value() != ERROR_INVALID_DRIVE);
+    return fileExistsFromCode(ec.value());
 }
 
 IoError IoHelper::stdError2ioError(int error) noexcept {
@@ -189,10 +194,15 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
     while (retry) {
         retry = false;
 
-        hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+        const DWORD dwShareMode = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
+        hParent = CreateFileW(path.parent_path().wstring().c_str(), FILE_LIST_DIRECTORY, dwShareMode, NULL, OPEN_EXISTING,
                               FILE_FLAG_BACKUP_SEMANTICS, NULL);
         if (hParent == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
+            if (!fileExistsFromCode(dwError)) {
+                ioError = IoErrorNoSuchFileOrDirectory;
+                return true;
+            }
             if (counter) {
                 retry = true;
                 Utility::msleep(10);
@@ -202,8 +212,9 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
                 continue;
             }
 
-            LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatSyncPath(path.parent_path()).c_str());
             ioError = dWordError2ioError(dwError);
+            LOGW_WARN(logger(), L"Error in CreateFileW: " << Utility::formatIoError(path.parent_path(), ioError).c_str());
+            
             return _isExpectedError(ioError);
         }
     }
@@ -242,7 +253,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
         (!isNtfs && dwError != 0)) {  // On FAT32 file system, NT_SUCCESS will return false even if it is a success, therefore we
                                       // also check GetLastError
         LOGW_DEBUG(Log::instance()->getLogger(),
-                   L"Error in zwQueryDirectoryFile: " << Utility::formatSyncPath(path.parent_path()).c_str());
+            L"Error in zwQueryDirectoryFile: " << Utility::formatSyncPath(path.parent_path()).c_str());
         CloseHandle(hParent);
 
         if (!NT_SUCCESS(status)) {

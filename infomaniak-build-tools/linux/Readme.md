@@ -181,7 +181,7 @@ sudo cmake --build . --target install
 Clone and install libzip
 
 ```bash
-sudo apt install zlib1g-de
+sudo apt install zlib1g-dev
 cd ~/Projects
 git clone https://github.com/nih-at/libzip.git
 cd libzip

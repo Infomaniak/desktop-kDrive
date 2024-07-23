@@ -17,6 +17,7 @@
  */
 
 #include "testlocalfilesystemobserverworker.h"
+#include "test_classes/syncpaltest.h"
 
 #include "config.h"
 #if defined(_WIN32)
@@ -35,8 +36,6 @@
 
 #include <Poco/Path.h>
 #include <Poco/File.h>
-
-#include <memory>
 
 using namespace CppUnit;
 
@@ -66,22 +65,23 @@ void TestLocalFileSystemObserverWorker::setUp() {
     bool alreadyExists = false;
     SyncPath parmsDbPath = Db::makeDbName(alreadyExists);
     std::filesystem::remove(parmsDbPath);
+
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
     ParmsDb::instance()->setAutoDelete(true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
     ParametersCache::instance()->parameters().setSyncHiddenFiles(true);
 
-    bool constraintError;
+    bool constraintError = false;
     ParmsDb::instance()->insertExclusionTemplate(
         ExclusionTemplate(".DS_Store", true),
         constraintError);  // TODO : to be removed once we have a default list of file excluded implemented
-    // Create SyncPal
-    SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
+    const SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(syncDbPath, "3.4.0", true);
-    _syncPal->_syncDb->setAutoDelete(true);
 
-    _syncPal->_localPath = _testRootFolderPath;
+    // Create SyncPal
+    _syncPal = std::shared_ptr<SyncPal>(new SyncPalTest(syncDbPath, "3.4.0", true));
+    _syncPal->syncDb()->setAutoDelete(true);
+    _syncPal->setLocalPath(_testRootFolderPath);
 
 #if defined(_WIN32)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
@@ -98,44 +98,46 @@ void TestLocalFileSystemObserverWorker::setUp() {
 void TestLocalFileSystemObserverWorker::tearDown() {
     LOGW_DEBUG(_logger, L"$$$$$ Tear Down $$$$$");
 
-    _syncPal->_localFSObserverWorker->stop();
+    if (_syncPal && _syncPal->_localFSObserverWorker) {
+      _syncPal->_localFSObserverWorker->stop();
+    }
 
     ParmsDb::instance()->close();
 
-    if (_syncPal && _syncPal->_syncDb) {
-        _syncPal->_syncDb->close();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
     }
 }
 
-void TestLocalFileSystemObserverWorker::testFolderWatcher() {
-    // Test initial snapshot
-    {
+void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
         std::unordered_set<NodeId> ids;
-        _syncPal->_localSnapshot->ids(ids);
+        _syncPal->snapshot(ReplicaSideLocal)->ids(ids);
 
         uint64_t fileCounter = 0;
         for (const auto &id : ids) {
-            if (_syncPal->_localSnapshot->name(id) == Str(".DS_Store") ||
-                _syncPal->_localSnapshot->name(id) == Str(".ds_store")) {
+            const auto name = _syncPal->snapshot(ReplicaSideLocal)->name(id);
+            if (name == Str(".DS_Store") || name == Str(".ds_store")) {
                 continue;  // Ignore ".DS_Store"
             }
 
-            const NodeId parentId = _syncPal->_localSnapshot->parentId(id);
+            const NodeId parentId = _syncPal->snapshot(ReplicaSideLocal)->parentId(id);
             SyncPath parentPath;
-            if (_syncPal->_localSnapshot->path(parentId, parentPath) && parentPath.filename() == _testPicturesFolderName) {
+            if (!parentId.empty() && _syncPal->snapshot(ReplicaSideLocal)->path(parentId, parentPath) &&
+                parentPath.filename() == _testPicturesFolderName) {
                 fileCounter++;
             }
         }
-        CPPUNIT_ASSERT(fileCounter == _nbFileInTestDir);
-    }
+        CPPUNIT_ASSERT_EQUAL(fileCounter, _nbFileInTestDir);
+}
 
-    // Test files
+void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
+    NodeId itemId;
     {
         /// Create file
         LOGW_DEBUG(_logger, L"***** test create file *****");
-        SyncPath testFileRelativePath = "A/test_file.txt";
+        const SyncPath testFileRelativePath = SyncPath("A") / "test_file.txt";
         SyncPath testAbsolutePath = _testRootFolderPath / testFileRelativePath;
-        std::string testCallStr = R"(echo "This is a create test" >> )" + testAbsolutePath.make_preferred().string();
+        const std::string testCallStr = R"(echo "This is a create test" >> )" + testAbsolutePath.make_preferred().string();
         std::system(testCallStr.c_str());
 
         Utility::msleep(1000);  // Wait 1sec
@@ -143,74 +145,90 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         FileStat fileStat;
         bool exists = false;
         IoHelper::getFileStat(testAbsolutePath, &fileStat, exists);
-        NodeId itemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
+        itemId = std::to_string(fileStat.inode);
+
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->exists(itemId));
         SyncPath testSyncPath;
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->path(itemId, testSyncPath) && testSyncPath == testFileRelativePath);
-
-        /// Edit file
-        LOGW_DEBUG(_logger, L"***** test edit file *****");
-        SyncTime prevModTime = _syncPal->_localSnapshot->lastModified(itemId);
-        testCallStr = R"(echo "This is an edit test" >> )" + testAbsolutePath.make_preferred().string();
-        std::system(testCallStr.c_str());
-
-        Utility::msleep(1000);  // Wait 1sec
-
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->lastModified(itemId) > prevModTime);
-
-        /// Move file
-        LOGW_DEBUG(_logger, L"***** test move file *****");
-        SyncPath source = testAbsolutePath;
-        testFileRelativePath = "B";
-        testAbsolutePath = _testRootFolderPath / testFileRelativePath;
-#ifdef _WIN32
-        testCallStr = "move " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
-#else
-        testCallStr = "mv " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
-
-        Utility::msleep(1000);  // Wait 1sec
-
-        NodeId parentId = _syncPal->_localSnapshot->parentId(itemId);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(parentId) == testFileRelativePath);
-
-        /// Rename file
-        LOGW_DEBUG(_logger, L"***** test rename file *****");
-        source = _testRootFolderPath / "B" / "test_file.txt";
-        testAbsolutePath = _testRootFolderPath / "B" / "test_file_renamed.txt";
-#ifdef _WIN32
-        testCallStr = "ren " + source.make_preferred().string() + " " + testAbsolutePath.filename().string();
-#else
-        testCallStr = "mv " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
-
-        Utility::msleep(1000);  // Wait 1sec
-
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(itemId) == Str("test_file_renamed.txt"));
-
-        /// Delete file
-        LOGW_DEBUG(_logger, L"***** test delete file *****");
-#ifdef _WIN32
-        testCallStr = "del " + testAbsolutePath.make_preferred().string();
-#else
-        testCallStr = "rm -r " + testAbsolutePath.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
-
-        Utility::msleep(1000);  // Wait 1sec
-
-        CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(itemId));
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->path(itemId, testSyncPath) &&
+                       testSyncPath == testFileRelativePath);
     }
 
-    // Test directories
+    {
+        /// Edit file
+        LOGW_DEBUG(_logger, L"***** test edit file *****");
+        const SyncTime prevModTime = _syncPal->snapshot(ReplicaSideLocal)->lastModified(itemId);
+        const SyncPath testFileRelativePath = SyncPath("A") / "test_file.txt";
+        SyncPath testAbsolutePath = _testRootFolderPath / testFileRelativePath;
+        const std::string testCallStr = R"(echo "This is an edit test" >> )" + testAbsolutePath.make_preferred().string();
+        std::system(testCallStr.c_str());
+
+        Utility::msleep(1000);  // Wait 1sec
+
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->lastModified(itemId) > prevModTime);
+    }
+
+    {
+        /// Move file
+        LOGW_DEBUG(_logger, L"***** test move file *****");
+        SyncPath source = _testRootFolderPath / SyncPath("A") / "test_file.txt";
+        SyncPath target = _testRootFolderPath / SyncPath("B") / "test_file.txt";
+#ifdef _WIN32
+        const std::string testCallStr = "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
+#else
+        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
+#endif
+        std::system(testCallStr.c_str());
+
+        Utility::msleep(1000);  // Wait 1sec
+
+        const NodeId parentId = _syncPal->snapshot(ReplicaSideLocal)->parentId(itemId);
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->name(parentId) == SyncPath("B"));
+    }
+
+    {
+        /// Rename file
+        LOGW_DEBUG(_logger, L"***** test rename file *****");
+        SyncPath source = _testRootFolderPath / "B" / "test_file.txt";
+        SyncPath target = _testRootFolderPath / "B" / "test_file_renamed.txt";
+#ifdef _WIN32
+        const std::string testCallStr = "ren " + source.make_preferred().string() + " " + target.filename().string();
+#else
+        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
+#endif
+        std::system(testCallStr.c_str());
+
+        Utility::msleep(1000);  // Wait 1sec
+
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->name(itemId) == Str("test_file_renamed.txt"));
+    }
+
+    {
+        /// Delete file
+        LOGW_DEBUG(_logger, L"***** test delete file *****");
+        SyncPath testAbsolutePath = _testRootFolderPath / "B" / "test_file_renamed.txt";
+#ifdef _WIN32
+        const std::string testCallStr = "del " + testAbsolutePath.make_preferred().string();
+#else
+        const std::string testCallStr = "rm -r " + testAbsolutePath.make_preferred().string();
+#endif
+        std::system(testCallStr.c_str());
+
+        Utility::msleep(1000);  // Wait 1sec
+
+        CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSideLocal)->exists(itemId));
+    }
+
+    LOGW_DEBUG(_logger, L"Tests for files successful!");
+}
+
+void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
+    NodeId itemId;
     {
         /// Create dir
         LOGW_DEBUG(_logger, L"***** test create dir *****");
-        SyncPath testRelativePath = Str("A/AC");
+        SyncPath testRelativePath = SyncPath("A") / SyncPath("AC");
         SyncPath testAbsolutePath = _testRootFolderPath / testRelativePath;
-        std::string testCallStr = "mkdir " + testAbsolutePath.make_preferred().string();
+        const std::string testCallStr = "mkdir " + testAbsolutePath.make_preferred().string();
         std::system(testCallStr.c_str());
 
         Utility::msleep(1000);  // Wait 1sec
@@ -218,109 +236,135 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         FileStat fileStat;
         bool exists = false;
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
-        NodeId itemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
+        itemId = std::to_string(fileStat.inode);
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->exists(itemId));
         SyncPath testSyncPath;
-        _syncPal->_localSnapshot->path(itemId, testSyncPath);
+        _syncPal->snapshot(ReplicaSideLocal)->path(itemId, testSyncPath);
         CPPUNIT_ASSERT(testSyncPath.string() == testRelativePath);
+    }
 
+    {
         /// Move dir
         LOGW_DEBUG(_logger, L"***** test move dir *****");
-        SyncPath source = testAbsolutePath;
-        testRelativePath = "B/AC";
-        testAbsolutePath = _testRootFolderPath / testRelativePath;
+        SyncPath source = _testRootFolderPath / SyncPath("A") / SyncPath("AC");
+        SyncPath testRelativePath = SyncPath("B") / SyncPath("AC");
+        SyncPath target = _testRootFolderPath / testRelativePath;
 #ifdef _WIN32
-        testCallStr = "move " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
+        const std::string testCallStr = "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
 #else
-        testCallStr = "mv " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
+        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
 #endif
         std::system(testCallStr.c_str());
 
         Utility::msleep(1000);  // Wait 1sec
 
-        _syncPal->_localSnapshot->path(itemId, testSyncPath);
-        CPPUNIT_ASSERT(testSyncPath.string() == testRelativePath);
+        SyncPath testSyncPath;
+        _syncPal->snapshot(ReplicaSideLocal)->path(itemId, testSyncPath);
+        CPPUNIT_ASSERT(testSyncPath == testRelativePath);
+    }
 
+    {
         /// Rename dir
         LOGW_DEBUG(_logger, L"***** test rename dir *****");
-        source = testAbsolutePath;
-        testRelativePath = "B/ACc";
-        testAbsolutePath = _testRootFolderPath / testRelativePath;
+        SyncPath source = _testRootFolderPath / SyncPath("B") / SyncPath("AC");
+        SyncPath testRelativePath = SyncPath("B") / SyncPath("ACc");
+        SyncPath target = _testRootFolderPath / testRelativePath;
 #ifdef _WIN32
-        testCallStr = "ren " + source.make_preferred().string() + " " + testAbsolutePath.filename().string();
+        const std::string testCallStr = "ren " + source.make_preferred().string() + " " + target.filename().string() + " >nil";
 #else
-        testCallStr = "mv " + source.make_preferred().string() + " " + testAbsolutePath.make_preferred().string();
+        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
 #endif
         std::system(testCallStr.c_str());
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(itemId) == Str("ACc"));
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->name(itemId) == Str("ACc"));
+    }
 
-        /// Copy dir from outside sync dir
-        LOGW_DEBUG(_logger, L"***** test copy dir from outside sync dir *****");
-        source = _testFolderPath / "test_dir";
-        testAbsolutePath = _testRootFolderPath;
-
-#ifdef _WIN32
-        Poco::File(source.make_preferred().string()).copyTo(testAbsolutePath.make_preferred().string());
-#else
-        testCallStr = "cp -R " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string();
-        std::system(testCallStr.c_str());
-#endif
-
-        Utility::msleep(1000);  // Wait 1sec
-
-        testAbsolutePath = _testRootFolderPath / "test_dir";
-        IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
-        itemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
-
-        SyncPath testPicturePath = testAbsolutePath / Str("picture-1.jpg");
-        IoHelper::getFileStat(testPicturePath.make_preferred().native().c_str(), &fileStat, exists);
-        NodeId pictureItemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(pictureItemId));
-
-        /// Delete dir and all its content
-        LOGW_DEBUG(_logger, L"***** test delete dir *****");
-#ifdef _WIN32
-        testCallStr = "rmdir /s /q " + testAbsolutePath.make_preferred().string();
-#else
-        testCallStr = "rm -r " + testAbsolutePath.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
-
-        Utility::msleep(1000);  // Wait 1sec
-
-        CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(itemId));
-        CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(pictureItemId));
-
+    {
         /// Move dir from outside sync dir
         LOGW_DEBUG(_logger, L"***** test move dir from outside sync dir *****");
         std::filesystem::copy((_testFolderPath / Str("test_dir")).make_preferred().native(),
                               (_testFolderPath / Str("test_dir_copy")).make_preferred().native());
 
-        source = _testFolderPath / "test_dir_copy";
+        SyncPath source = _testFolderPath / "test_dir_copy";
 #ifdef _WIN32
-        testCallStr = "move " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string();
+        const std::string testCallStr =
+            "move " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string() + " >nil";
 #else
-        testCallStr = "mv " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string();
+        const std::string testCallStr =
+            "mv " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string();
 #endif
         std::system(testCallStr.c_str());
 
         Utility::msleep(1000);  // Wait 1sec
 
-        testAbsolutePath = _testRootFolderPath / "test_dir_copy";
+        SyncPath testAbsolutePath = _testRootFolderPath / "test_dir_copy";
+        FileStat fileStat;
+        bool exists = false;
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->exists(itemId));
 
-        testAbsolutePath += Str("/picture-1.jpg");
+        testAbsolutePath /= Str("picture-1.jpg");
         IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
         itemId = std::to_string(fileStat.inode);
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(itemId));
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->exists(itemId));
+    }
+    LOGW_DEBUG(_logger, L"Tests for directories successful!");
+}
+
+
+void TestLocalFileSystemObserverWorker::testFolderWatcherDeleteDir() {
+    NodeId itemId;
+    NodeId pictureItemId;
+    {
+        /// Copy dir from outside sync dir
+        LOGW_DEBUG(_logger, L"***** test copy dir from outside sync dir *****");
+        SyncPath source = _testFolderPath / "test_dir";
+
+#ifdef _WIN32
+        Poco::File(source.make_preferred().string()).copyTo(_testRootFolderPath.make_preferred().string());
+#else
+        const std::string testCallStr =
+            "cp -R " + source.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string();
+        std::system(testCallStr.c_str());
+#endif
+        Utility::msleep(1000);  // Wait 1sec
+
+        FileStat fileStat;
+        bool exists = false;
+        SyncPath testAbsolutePath = _testRootFolderPath / "test_dir";
+        IoHelper::getFileStat(testAbsolutePath.make_preferred().native().c_str(), &fileStat, exists);
+        itemId = std::to_string(fileStat.inode);
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->exists(itemId));
+
+        SyncPath testPicturePath = testAbsolutePath / Str("picture-1.jpg");
+        IoHelper::getFileStat(testPicturePath.make_preferred().native().c_str(), &fileStat, exists);
+        pictureItemId = std::to_string(fileStat.inode);
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->exists(pictureItemId));
+    }
+    {
+        /// Delete dir and all its content
+        LOGW_DEBUG(_logger, L"***** test delete dir *****");
+        SyncPath testAbsolutePath = _testRootFolderPath / "test_dir";
+#ifdef _WIN32
+        const std::string testCallStr = "rmdir /s /q " + testAbsolutePath.make_preferred().string();
+#else
+        const std::string testCallStr = "rm -r " + testAbsolutePath.make_preferred().string();
+#endif
+        std::system(testCallStr.c_str());
+
+        Utility::msleep(1000);  // Wait 1sec
+
+        CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSideLocal)->exists(itemId));
+        CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSideLocal)->exists(pictureItemId));
     }
 
+    LOGW_DEBUG(_logger, L"***** Tests for copy and deletion of directories succesfully finished! *****");
+}
+
+void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases() {
     // Test 4.3.3.2, p.62 - a) delete(“x”) + create(“x”) + edit(“x”,<newcontent>) + move(“x”,“y”)
     {
         LOGW_DEBUG(_logger, L"***** delete(x) + create(x) + edit(x,<newcontent>) + move(x,y) *****");
@@ -353,7 +397,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         //// move
 #ifdef _WIN32
         testCallStr = "move " + testAbsolutePath.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string() +
-                      "\\aa.jpg";
+                      "\\aa.jpg"  + " >nil";
 #else
         testCallStr =
             "mv " + testAbsolutePath.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string() + "/aa.jpg";
@@ -362,8 +406,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(newItemId));
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(newItemId) == Str("aa.jpg"));
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->exists(newItemId));
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->name(newItemId) == Str("aa.jpg"));
     }
 
     // Test 4.3.3.2, p.62 - b) move(“x”,“y”) + create(“x”) + edit(“x”,<newcontent>) + delete(“x”)
@@ -377,7 +421,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
         NodeId initItemId = std::to_string(fileStat.inode);
 #ifdef _WIN32
         std::string testCallStr = "move " + _testRootFolderPath.make_preferred().string() + "\\test_b\\b.jpg" + " " +
-                                  _testRootFolderPath.make_preferred().string() + "\\bb.jpg";
+            _testRootFolderPath.make_preferred().string() + "\\bb.jpg" + " >nil";
 #else
         std::string testCallStr = "mv " + _testRootFolderPath.make_preferred().string() + "/test_b/b.jpg" + " " +
                                   _testRootFolderPath.make_preferred().string() + "/bb.jpg";
@@ -406,12 +450,12 @@ void TestLocalFileSystemObserverWorker::testFolderWatcher() {
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(initItemId));
-        CPPUNIT_ASSERT(!_syncPal->_localSnapshot->exists(newItemId));
-        CPPUNIT_ASSERT(_syncPal->_localSnapshot->name(initItemId) == Str("bb.jpg"));
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->exists(initItemId));
+        CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSideLocal)->exists(newItemId));
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal)->name(initItemId) == Str("bb.jpg"));
     }
 
-    LOGW_DEBUG(_logger, L"***** Tests succesfully finished! *****");
+    LOGW_DEBUG(_logger, L"***** Tests of special cases succesfully finished! *****");
 }
 
 }  // namespace KDC

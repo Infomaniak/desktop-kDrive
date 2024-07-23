@@ -964,6 +964,8 @@ ExitCode SyncPal::updateSyncNode() {
 }
 
 std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
+    if (side == ReplicaSideUnknown) return nullptr;
+
     if (copy) {
         return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshotCopy : _remoteSnapshotCopy);
     } else {
