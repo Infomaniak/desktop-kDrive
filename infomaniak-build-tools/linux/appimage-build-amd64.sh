@@ -32,6 +32,7 @@ export QMAKE=$QT_BASE_DIR/bin/qmake
 export PATH=$QT_BASE_DIR/bin:$QT_BASE_DIR/libexec:$PATH
 export LD_LIBRARY_PATH=$QT_BASE_DIR/lib:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=$QT_BASE_DIR/lib/pkgconfig:$PKG_CONFIG_PATH
+export BASEPATH=$PWD
 
 # Set defaults
 export SUFFIX="master"
@@ -58,10 +59,9 @@ cmake -DCMAKE_PREFIX_PATH=$QT_BASE_DIR \
     -DQT_FEATURE_neon=OFF \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DKDRIVE_VERSION_SUFFIX=$SUFFIX \
-    -DKDRIVE_THEME_DIR="/src/infomaniak" \
+    -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DBUILD_UNIT_TESTS=0 \
     "${CMAKE_PARAMS[@]}" \
-    /src
 make -j4
 
 objcopy --only-keep-debug ./bin/kDrive ../kDrive.dbg
