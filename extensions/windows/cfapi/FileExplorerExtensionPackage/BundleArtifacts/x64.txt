@@ -1,1 +1,1 @@
-MainPackage=F:\Projects\desktop-kDrive\extensions\windows\cfapi\FileExplorerExtensionPackage\bin\x64\Release\FileExplorerExtensionPackage_3.6.0.0_x64.msix
+MainPackage=F:\Projects\desktop-kDrive\extensions\windows\cfapi\FileExplorerExtensionPackage\bin\x64\Release\FileExplorerExtensionPackage_3.6.3.0_x64.msix
