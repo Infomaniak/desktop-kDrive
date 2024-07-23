@@ -53,7 +53,6 @@ class AbstractUploadSession : public AbstractJob {
         virtual bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) = 0;
         virtual bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob);
 
-        virtual bool prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) = 0;
         inline SyncPath getFilePath() const { return _filePath; }
         inline log4cplus::Logger &getLogger() { return _logger; }
         inline uint64_t getTotalChunks() const { return _totalChunks; }

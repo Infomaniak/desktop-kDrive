@@ -308,13 +308,6 @@ bool AbstractUploadSession::sendChunks() {
             break;
         }
 
-        if (!prepareChunkJob(chunkJob)) {
-            LOGW_WARN(_logger,
-                      L"Failed to prepare chunk job " << chunkNb << L" of file " << Utility::formatSyncPath(_filePath.filename()).c_str());
-            jobCreationError = true;
-            break;
-        }
-
         if (_isAsynchrounous) {
             std::function<void(UniqueId)> callback = [this](UniqueId jobId) { uploadChunkCallback(jobId); };
             {

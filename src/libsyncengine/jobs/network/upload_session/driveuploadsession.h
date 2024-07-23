@@ -38,7 +38,6 @@ class DriveUploadSession : public AbstractUploadSession {
 
     protected:
 
-        bool prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) override;
         bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) override;
         bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
         bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
@@ -56,8 +55,6 @@ class DriveUploadSession : public AbstractUploadSession {
 
         NodeId _fileId;
         SyncTime _modtimeIn = 0;
-
-        bool _liteSyncActivated = false;
 
         int64_t _uploadSessionTokenDbId = 0;
         NodeId _remoteParentDirId;

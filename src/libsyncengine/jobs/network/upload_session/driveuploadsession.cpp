@@ -28,7 +28,6 @@ DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> sy
       _driveDbId(driveDbId),
       _syncDb(syncDb),
       _modtimeIn(modtime),
-      _liteSyncActivated(liteSyncActivated),
       _remoteParentDirId(remoteParentDirId) {
     _uploadSessionType = UploadSessionType::Standard;
 }
@@ -61,16 +60,6 @@ std::shared_ptr<UploadSessionFinishJob> DriveUploadSession::createFinishJob() {
 
 std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken());
-}
-
-// Set VFS callbacks
-bool DriveUploadSession::prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) {
-    if (_liteSyncActivated) {
-        chunkJob->setVfsUpdateFetchStatusCallback(_vfsUpdateFetchStatus);
-        chunkJob->setVfsSetPinStateCallback(_vfsSetPinState);
-        chunkJob->setVfsForceStatusCallback(_vfsForceStatus);
-    }
-    return true;
 }
 
 bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {

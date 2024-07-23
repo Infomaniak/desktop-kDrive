@@ -53,10 +53,6 @@ std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::LogUpload, getSessionToken());
 }
 
-bool LogUploadSession::prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) {
-    return true;
-}
-
 bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
     AppStateValue appStateValue = "";
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {

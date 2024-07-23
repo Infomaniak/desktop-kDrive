@@ -35,7 +35,6 @@ class LogUploadSession : public AbstractUploadSession {
         std::shared_ptr<UploadSessionFinishJob> createFinishJob() override;
         std::shared_ptr<UploadSessionCancelJob> createCancelJob() override;
 
-        bool prepareChunkJob(const std::shared_ptr<UploadSessionChunkJob> &chunkJob) override;
         bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) override;
         bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
         bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
