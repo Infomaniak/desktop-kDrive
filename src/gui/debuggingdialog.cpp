@@ -419,8 +419,8 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
         _logUploadInfoHBox->removeItem(_logUploadInfoHBox->itemAt(0));
     }
 
-    QString archivePathStr = "";
-    QString lasSuccessfullUploadDate = "";
+    QString archivePathStr;
+    QString lasSuccessfullUploadDate;
 
     AppStateValue appStateValue = std::string();
     ExitCode exitcode = GuiRequests::getAppState(AppStateKey::LastLogUploadArchivePath, appStateValue);
@@ -660,7 +660,7 @@ void DebuggingDialog::onSaveButtonTriggered(bool checked) {
 }
 
 void DebuggingDialog::onLinkActivated(const QString &link) {
-    QString folderPath = "";
+    QString folderPath;
     if (link == debuggingFolderLink) {
         folderPath = Logger::instance()->temporaryFolderLogDirPath();
     } else {
