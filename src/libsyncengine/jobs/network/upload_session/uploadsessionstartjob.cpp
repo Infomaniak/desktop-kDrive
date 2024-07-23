@@ -42,24 +42,6 @@ UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, const
                                              uint64_t totalChunks)
     : UploadSessionStartJob(uploadType, 0, filename, size, "", totalChunks) {}
 
-UploadSessionStartJob::~UploadSessionStartJob() {
-    try {
-        switch (_uploadType) {
-            case UploadSessionType::Standard:
-                if (_vfsForceStatus && !_vfsForceStatus(_filePath, true, 0, true)) {
-                    LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
-                }
-                break;
-            case UploadSessionType::LogUpload:
-                break;
-            default:
-                LOGW_FATAL(_logger, L"Unknown upload type");
-                break;
-        }
-    } catch (const std::exception &e) {
-        LOGW_FATAL(_logger, L"Exception in ~UploadSessionStartJob: " << e.what());
-    }
-}
 std::string UploadSessionStartJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/upload/session/start";

@@ -106,7 +106,7 @@ void AbstractUploadSession::uploadChunkCallback(UniqueId jobId) {
     const std::scoped_lock lock(_mutex);
     auto jobInfo = _ongoingChunkJobs.extract(jobId);
     if (!jobInfo.empty() && jobInfo.mapped()) {
-        if (jobInfo.mapped() && (jobInfo.mapped()->hasHttpError() || jobInfo.mapped()->exitCode() != ExitCodeOk)) {
+        if (jobInfo.mapped()->hasHttpError() || jobInfo.mapped()->exitCode() != ExitCodeOk) {
             LOGW_WARN(_logger, L"Failed to upload chunk " << jobId << L" of file " << Path2WStr(_filePath.filename()).c_str());
             _exitCode = jobInfo.mapped()->exitCode();
             _exitCause = jobInfo.mapped()->exitCause();

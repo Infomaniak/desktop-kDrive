@@ -36,8 +36,6 @@ class UploadSessionStartJob : public AbstractUploadSessionJob {
         // Using file name for log upload
         UploadSessionStartJob(UploadSessionType uploadType, const SyncName &filename, uint64_t size, uint64_t totalChunks);
 
-        ~UploadSessionStartJob();
-
     private:
         virtual std::string getSpecificUrl() override;
         virtual void setQueryParameters(Poco::URI &, bool &) override {}
