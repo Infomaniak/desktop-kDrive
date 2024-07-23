@@ -91,9 +91,9 @@ void DebuggingDialog::initUI() {
     QHBoxLayout *enableDebuggingTopHBox = new QHBoxLayout();
     enableDebuggingMainHBox->addLayout(enableDebuggingTopHBox);
 
-    // Enable Debug Main Box | Top Box | Label (boldTextLabel)
+    // Enable Debug Main Box | Top Box | Label (largeNormalBoldTextLabel)
     QLabel *recordDebuggingLabel = new QLabel();
-    recordDebuggingLabel->setObjectName("boldTextLabel");
+    recordDebuggingLabel->setObjectName("largeNormalBoldTextLabel");
     recordDebuggingLabel->setText(tr("Save debugging information in a folder on my computer (Recommended)"));
     enableDebuggingTopHBox->addWidget(recordDebuggingLabel);
 
@@ -105,7 +105,7 @@ void DebuggingDialog::initUI() {
 
     // Enable Debug Main Box | Label (normalTextLabel)
     QLabel *recordDebuggingInfoLabel = new QLabel();
-    recordDebuggingInfoLabel->setObjectName("normalTextLabel");
+    recordDebuggingInfoLabel->setObjectName("largeNormalTextLabel");
     recordDebuggingInfoLabel->setText(tr("This information enables IT support to determine the origin of an incident."));
     enableDebuggingMainHBox->addWidget(recordDebuggingInfoLabel);
 
@@ -122,6 +122,7 @@ void DebuggingDialog::initUI() {
 
     // Scollable main widget
     QWidget *scrollableMainWidget = new QWidget();
+    scrollableMainWidget->setObjectName("debugDialogScrollable");
 
     // Scrollable main widget | Main layout
     QVBoxLayout *scrollableMainLayout = new QVBoxLayout(scrollableMainWidget);
@@ -140,9 +141,9 @@ void DebuggingDialog::initUI() {
     debugLevelTitleHBox->setAlignment(Qt::AlignLeft);
     debugLevelMainBox->addLayout(debugLevelTitleHBox);
 
-    // Debug info main box | Debug Level Main Box | Title box | Label (boldTextLabel)
+    // Debug info main box | Debug Level Main Box | Title box | Label (largeNormalBoldTextLabel)
     QLabel *debugLevelTitleLabel = new QLabel();
-    debugLevelTitleLabel->setObjectName("boldTextLabel");
+    debugLevelTitleLabel->setObjectName("largeNormalBoldTextLabel");
     debugLevelTitleLabel->setText(tr("Debug level"));
     debugLevelTitleHBox->addWidget(debugLevelTitleLabel);
 
@@ -222,9 +223,9 @@ void DebuggingDialog::initUI() {
     debuggingInfoMainHBox->addWidget(logUploadFrame);
 
 
-    // Log upload | Main box | Label (boldTextLabel)
+    // Log upload | Main box | Label (largeNormalBoldTextLabel)
     QLabel *logUploadLabel = new QLabel();
-    logUploadLabel->setObjectName("boldTextLabel");
+    logUploadLabel->setObjectName("largeNormalBoldTextLabel");
     logUploadLabel->setText(tr("Share the debug folder with Infomaniak support."));
     logUploadMainBox->addWidget(logUploadLabel);
 
@@ -237,7 +238,7 @@ void DebuggingDialog::initUI() {
 
     // Log upload | Main box | heavy log box | Label (normalTextLabel)
     _heavyLogLabel = new QLabel();
-    _heavyLogLabel->setObjectName("normalTextLabel");
+    _heavyLogLabel->setObjectName("largeNormalTextLabel");
     _heavyLogLabel->setText(heavyLogLabelStr.arg("-").arg("---"));
     _heavyLogBox->hide();  // show only if the log dir is large, see at the end of the function
     _heavyLogLabel->setWordWrap(true);
@@ -308,7 +309,6 @@ void DebuggingDialog::initUI() {
     scrollArea->setWidgetResizable(true);
     scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-    scrollArea->setBackgroundRole(QPalette::Base);
     mainLayout->addWidget(scrollArea);
     mainLayout->addSpacing(boxHSpacing);
     // Add dialog buttons
@@ -482,7 +482,7 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
         errorTitleHBox->addWidget(warningIconLabel);
 
         QLabel *errorTitleLabel = new QLabel();
-        errorTitleLabel->setObjectName("boldTextLabel");
+        errorTitleLabel->setObjectName("largeNormalBoldTextLabel");
 
         QString errorText = tr("Failed to share");
         QLabel *errorLabel = new QLabel();
@@ -491,7 +491,7 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
         if (archivePathStr.isEmpty()) {  // We don't pass the archiving step, most likely because there is no drive setup
             errorTitleLabel->setText(errorText);
             errorTitleHBox->addWidget(errorTitleLabel);
-            errorLabel->setObjectName("normalTextLabel");
+            errorLabel->setObjectName("largeNormalTextLabel");
             errorLabel->setTextFormat(Qt::RichText);
             errorLabel->setContentsMargins(25, 5, 0, 0);
             errorLabel->setText(tr("1. Check that you are logged in <br>2. Check that you have configured at least one kDrive"));
@@ -503,7 +503,7 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
             errorTitleHBox->addWidget(errorTitleLabel);
 
             errorLabel->setTextFormat(Qt::RichText);
-            errorLabel->setObjectName("normalTextLabel");
+            errorLabel->setObjectName("largeNormalTextLabel");
             errorLabel->setContentsMargins(25, 5, 0, 0);
             errorLabel->setText(tr("Share the folder with SwissTransfer <br>") +
                                 tr(" 1. We automatically compressed your log <a style=\"%1\" href=\"%2\">here</a>.<br>")
@@ -539,7 +539,7 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
     lastUploadTitleHBox->addWidget(checkIconLabel);
 
     QLabel *lastUploadTitleLabel = new QLabel();
-    lastUploadTitleLabel->setObjectName("boldTextLabel");
+    lastUploadTitleLabel->setObjectName("largeNormalBoldTextLabel");
     lastUploadTitleLabel->setText(tr("Last upload the %1").arg(lasSuccessfullUploadDate));
     lastUploadTitleLabel->setStyleSheet("QLabel {color: #2C8736;}");
     lastUploadTitleHBox->addWidget(lastUploadTitleLabel);
@@ -565,7 +565,7 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
         cancelTitleHBox->addWidget(warningIconLabel);
 
         QLabel *cancelTitleLabel = new QLabel();
-        cancelTitleLabel->setObjectName("boldTextLabel");
+        cancelTitleLabel->setObjectName("largeNormalBoldTextLabel");
         cancelTitleLabel->setStyleSheet("QLabel {color: #CC6102;}");
         cancelTitleLabel->setText(tr("Sharing has been cancelled"));
         cancelTitleHBox->addWidget(cancelTitleLabel);
