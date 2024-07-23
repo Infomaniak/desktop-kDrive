@@ -400,7 +400,7 @@ void DebuggingDialog::displayHeavyLogBox() {
     if (exitCode != ExitCode::ExitCodeOk) {
         qCWarning(lcDebuggingDialog) << "Failed to get log dir estimated size";
     }
-    if (logDirSize > 100000) {
+    if (logDirSize > 100000000) {
         _heavyLogBox->setVisible(true);
     } else {
         _heavyLogBox->setVisible(false);
