@@ -47,7 +47,7 @@ static const int debugLevelLabelBoxVMargin = 10;
 static const int debugLevelSelectBoxVMargin = 20;
 static const QString debuggingFolderLink = "debuggingFolderLink";
 static const QString heavyLogLabelStr = QObject::tr(
-    "The entire folder is large (%1 %2) and may take some time to share. To reduce the sharing time, we recommend that you "
+    "The entire folder is large (> 100 MB) and may take some time to share. To reduce the sharing time, we recommend that you "
     "share only the last kDrive session.");
 Q_LOGGING_CATEGORY(lcDebuggingDialog, "gui.debuggingdialog", QtInfoMsg)
 
@@ -239,7 +239,7 @@ void DebuggingDialog::initUI() {
     // Log upload | Main box | heavy log box | Label (normalTextLabel)
     _heavyLogLabel = new QLabel();
     _heavyLogLabel->setObjectName("largeNormalTextLabel");
-    _heavyLogLabel->setText(heavyLogLabelStr.arg("-").arg("---"));
+    _heavyLogLabel->setText(heavyLogLabelStr);
     _heavyLogBox->hide();  // show only if the log dir is large, see at the end of the function
     _heavyLogLabel->setWordWrap(true);
     heavyLogHBox->addWidget(_heavyLogLabel);
@@ -408,22 +408,7 @@ void DebuggingDialog::displayHeavyLogBox() {
         _sendLogButton->setEnabled(sendLogButtonEnabled);
         return;
     }
-    QString sizeUnit = tr("bytes");
-    float displaySize = 0;
-    if (logDirSize >= std::pow(10, 3) && logDirSize < std::pow(10, 6)) {
-        displaySize = std::floor(logDirSize / std::pow(10, 3));  // Convert to KB
-        sizeUnit = tr("KB");
-    } else if (logDirSize >= std::pow(10, 6) && logDirSize < std::pow(10, 9)) {
-        displaySize = logDirSize / std::pow(10, 6);  // Convert to MB
-        sizeUnit = tr("MB");
-    } else if (logDirSize >= std::pow(10, 9)) {
-        displaySize = logDirSize / std::pow(10, 9);  // Convert to GB
-        sizeUnit = tr("GB");
-    } else {
-        displaySize = logDirSize;
-    }
-    displaySize = std::floor(displaySize * 10) / 10;
-    _heavyLogLabel->setText(heavyLogLabelStr.arg(displaySize).arg(sizeUnit));
+    _heavyLogLabel->setText(heavyLogLabelStr);
     _sendLogButton->setText(sendLogButtonText);
     _sendLogButton->setEnabled(sendLogButtonEnabled);
 }
