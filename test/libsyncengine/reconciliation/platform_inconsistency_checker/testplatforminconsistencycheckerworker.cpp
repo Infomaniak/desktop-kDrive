@@ -145,12 +145,12 @@ void TestPlatformInconsistencyCheckerWorker::testCheckReservedNames() {
 
 void TestPlatformInconsistencyCheckerWorker::testNameClash() {
     const auto parentNode =
-        std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("parentNode"), NodeTypeDirectory,
-                               OperationTypeCreate, "parentID", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
+        std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("parentNode"), NodeTypeDirectory,
+                               OperationTypeCreate, "parentID", 0, 0, 12345, _syncPal->updateTree(ReplicaSideRemote)->rootNode());
 
-    const auto nodeLower = std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("a"), NodeTypeFile,
+    const auto nodeLower = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("a"), NodeTypeFile,
                                                   OperationTypeCreate, "a", 0, 0, 12345, parentNode);
-    const auto nodeUpper = std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("A"), NodeTypeFile,
+    const auto nodeUpper = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("A"), NodeTypeFile,
                                                   OperationTypeCreate, "A", 0, 0, 12345, parentNode);
 
     parentNode->insertChildren(nodeLower);
@@ -268,8 +268,8 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
 #if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(exactly1exist);
 #else
-    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->exists(*nodeUpper->id()) &&
-                   _syncPal->_remoteUpdateTree->exists(*nodeLower->id()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSideRemote)->exists(*nodeUpper->id()) &&
+                   _syncPal->updateTree(ReplicaSideRemote)->exists(*nodeLower->id()));
 #endif
 }
 

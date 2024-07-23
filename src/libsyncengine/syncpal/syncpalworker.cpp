@@ -296,7 +296,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
         case SyncStepReconciliation1:
             workers[0] = _syncPal->_platformInconsistencyCheckerWorker;
             workers[1] = nullptr;
-            inputSharedObject[0] = _syncPal->_remoteUpdateTree;
+            inputSharedObject[0] = _syncPal->updateTree(ReplicaSideRemote);
             inputSharedObject[1] = nullptr;
             break;
         case SyncStepReconciliation2:
