@@ -37,7 +37,7 @@ using namespace Windows::Security::Cryptography;
 #define REGKEY_AUMID L"AUMID"
 
 // Package family name, see FileExplorerExtensionPackage / Package.appxmanifest
-#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_csy8f8zhvqa20!App"
+#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_dbrs6rk4qqhna!App"
 
 std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID,
                                                        DWORD *namespaceCLSIDSize) {
