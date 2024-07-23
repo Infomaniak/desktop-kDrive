@@ -34,7 +34,11 @@ class LocalFileSystemObserverWorker;
 
 class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
-        CPPUNIT_TEST(testFolderWatcher);
+        CPPUNIT_TEST(testFolderWatcherWithInitialSnapshot);
+        CPPUNIT_TEST(testFolderWatcherWithFiles);
+        CPPUNIT_TEST(testFolderWatcherDeleteDir);
+        CPPUNIT_TEST(testFolderWatcherWithDirs);
+        CPPUNIT_TEST(testFolderWatcherWithSpecialCases);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -54,6 +58,12 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
 
         LocalTemporaryDirectory _tempDir;
         SyncPath _testRootFolderPath;
+
+        void testFolderWatcherWithInitialSnapshot();
+        void testFolderWatcherWithFiles();
+        void testFolderWatcherWithDirs();
+        void testFolderWatcherDeleteDir();
+        void testFolderWatcherWithSpecialCases();
 };
 
 }  // namespace KDC

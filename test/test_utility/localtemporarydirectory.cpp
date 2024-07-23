@@ -32,6 +32,7 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
 
     _path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str());
     std::filesystem::create_directory(_path);
+    _path = std::filesystem::canonical(_path);  // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
 
     FileStat fileStat;
     IoError ioError = IoErrorSuccess;
