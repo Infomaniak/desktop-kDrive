@@ -129,9 +129,10 @@ typedef enum {
     ExitCodeNoWritePermission,
     ExitCodeRateLimited,
     ExitCodeInvalidSync,  // The sync configuration is not valid
-    ExitCodeOperationCanceled,
     ExitCodeInvalidOperation,
+    ExitCodeOperationCanceled,
     ExitCodeUpdateRequired,
+    ExitCodeLogUploadFailed
 } ExitCode;
 
 typedef enum {
@@ -172,7 +173,8 @@ typedef enum {
     ExitCauseNoSearchPermission,
     ExitCauseNotFound,
     ExitCauseQuotaExceeded,
-    ExitCauseFullListParsingError
+    ExitCauseFullListParsingError,
+    ExitCauseOperationCanceled
 } ExitCause;
 
 // Conflict types ordered by priority
@@ -241,6 +243,8 @@ typedef enum {
     CancelTypeExcludedByTemplate,
     CancelTypeHardlink
 } CancelType;
+
+enum class UploadSessionType { Unknown, Standard, LogUpload };
 
 typedef enum { NodeStatusUnknown = 0, NodeStatusUnprocessed, NodeStatusPartiallyProcessed, NodeStatusProcessed } NodeStatus;
 
@@ -381,6 +385,7 @@ enum class AppStateKey {
     LastLogUploadArchivePath,
     LogUploadState,
     LogUploadPercent,
+    LogUploadToken,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
 constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;

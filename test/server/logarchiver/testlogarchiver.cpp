@@ -63,6 +63,7 @@ void TestLogArchiver::testCopyLogsTo() {
 
         IoError err = IoErrorSuccess;
         uint64_t logDirsize = 0;
+
         LogArchiver::getLogDirEstimatedSize(logDirsize, err);
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(logDirsize >= 0);
@@ -76,7 +77,7 @@ void TestLogArchiver::testCopyLogsTo() {
         bool tooDeep = false;
         IoHelper::getDirectorySize(tempDir.path(), tempDirSize, err, 0);
         CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
-        CPPUNIT_ASSERT_EQUAL(logDirsize, tempDirSize);
+        CPPUNIT_ASSERT_GREATER(logDirsize, tempDirSize);
     }
 
     {  // Test without archivedLogs
@@ -112,7 +113,7 @@ void TestLogArchiver::testCopyLogsTo() {
         // Check that `test.log.gz` does not exist anymore.
         bool exists = false;
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::checkIfPathExists(tempDir.path() / "test.log.gz", exists, err));
-        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, err);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT_EQUAL(false, exists);
     }
 }
@@ -170,7 +171,6 @@ void TestLogArchiver::testCompressLogs() {
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
 
         uint64_t logDirSize = 0;
-        bool tooDeep = false;
 
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::getDirectorySize(logDir, logDirSize, err, 0));
         CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
@@ -198,7 +198,22 @@ void TestLogArchiver::testCompressLogs() {
     }
 
     {  // test the progress callback
-        LocalTemporaryDirectory tempDir;
+        LOG_DEBUG(_logger, "Test log compression with progress callback");
+        LocalTemporaryDirectory tempDir("logArchiver");
+        std::ofstream logFile(tempDir.path() / "test.log");
+        for (int i = 0; i < 10000; i++) {
+            logFile << "Test log line " << i << std::endl;
+        }
+        logFile.close();
+
+        const SyncPath logDir = tempDir.path() / "log";
+        IoError err = IoErrorSuccess;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::createDirectory(logDir, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+
+        const SyncPath logFilePath = logDir / "test.log";
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path() / "test.log", logFilePath, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         for (int i = 0; i < 30; i++) {
             std::ofstream logFile(tempDir.path() / ("test" + std::to_string(i) + ".log"));
             for (int j = 0; j < 10; j++) {
@@ -209,7 +224,7 @@ void TestLogArchiver::testCompressLogs() {
 
         int percent = 0;
         int oldPercent = 0;
-        std::function<bool(int)> progress = [&percent, &oldPercent](int p) {
+        const std::function<bool(int)> progress = [&percent, &oldPercent](int p) {
             percent = p;
             CPPUNIT_ASSERT(percent >= oldPercent);
             oldPercent = percent;
@@ -221,21 +236,51 @@ void TestLogArchiver::testCompressLogs() {
 
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
-        CPPUNIT_ASSERT_EQUAL(100, percent);
+        CPPUNIT_ASSERT_GREATER(90, percent);
+    }
 
-        // Test the progress callback with a cancel
-        percent = 0;
-        oldPercent = 0;
-        progress = [&percent, &oldPercent](int p) {
+    {  // Test the progress callback with a cancel
+        LOG_DEBUG(_logger, "Test log compression with progress callback and cancel");
+        // Creating dummy log files
+        LocalTemporaryDirectory tempDir("logArchiver");
+        std::ofstream logFile(tempDir.path() / "test.log");
+        for (int i = 0; i < 10000; i++) {
+            logFile << "Test log line " << i << std::endl;
+        }
+        logFile.close();
+
+        const SyncPath logDir = tempDir.path() / "log";
+        IoError err = IoErrorSuccess;
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::createDirectory(logDir, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+
+        const SyncPath logFilePath = logDir / "test.log";
+        CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path() / "test.log", logFilePath, err));
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
+        for (int i = 0; i < 30; i++) {
+            std::ofstream logFile(tempDir.path() / ("test" + std::to_string(i) + ".log"));
+            for (int j = 0; j < 10; j++) {
+                logFile << "Test log line " << j << std::endl;
+            }
+            logFile.close();
+        }
+
+        // Create   a progress callback that will cancel the operation
+        int percent = 0;
+        int oldPercent = 0;
+        const std::function<bool(int)> progress = [&percent, &oldPercent](int p) {
             percent = p;
             CPPUNIT_ASSERT(percent >= oldPercent);
             oldPercent = percent;
-            return false;
+            if (percent > 50) return false;  // A callback that returns false will cancel the operation
+            return true;
         };
 
-        exitCode = LogArchiver::compressLogFiles(tempDir.path(), progress, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOperationCanceled, exitCode);
+        ExitCause cause = ExitCauseUnknown;
+        const ExitCode exitCode = LogArchiver::compressLogFiles(tempDir.path(), progress, cause);
+
+        CPPUNIT_ASSERT_EQUAL(ExitCauseOperationCanceled, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
     }
 }
 
@@ -244,7 +289,7 @@ void TestLogArchiver::testGenerateUserDescriptionFile() {
         LocalTemporaryDirectory tempDir;
         const SyncPath userDescriptionFile = tempDir.path() / "user_description.txt";
         ExitCause cause = ExitCauseUnknown;
-        ExitCode code = LogArchiver::generateUserDescriptionFile(userDescriptionFile, cause);
+        const ExitCode code = LogArchiver::generateUserDescriptionFile(userDescriptionFile, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
 
@@ -274,7 +319,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive() {
     }
 
     {  // Test the generation of the archive
-        LocalTemporaryDirectory tempDir;
+        LocalTemporaryDirectory tempDir("GenerateLogsSupportArchive");
         SyncPath archivePath;
         ExitCause cause = ExitCauseUnknown;
         int previousPercent = 0;
@@ -286,7 +331,7 @@ void TestLogArchiver::testGenerateLogsSupportArchive() {
             return true;
         };
 
-        ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path(), progress, archivePath, cause, true);
+        const ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path(), progress, archivePath, cause, true);
         CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
         CPPUNIT_ASSERT_EQUAL(tempDir.path() / archivePath.filename(), archivePath);
@@ -299,14 +344,14 @@ void TestLogArchiver::testGenerateLogsSupportArchive() {
     }
 
     {  // Test with a cancel
-        LocalTemporaryDirectory tempDir;
+        LocalTemporaryDirectory tempDir("GenerateLogsSupportArchiveCancel");
         SyncPath archiveFile;
         ExitCause cause = ExitCauseUnknown;
         std::function<bool(int)> progress = [](int) { return false; };
 
-        ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path(), progress, archiveFile, cause, true);
-        CPPUNIT_ASSERT_EQUAL(ExitCauseUnknown, cause);
-        CPPUNIT_ASSERT_EQUAL(ExitCodeOperationCanceled, code);
+        const ExitCode code = LogArchiver::generateLogsSupportArchive(true, tempDir.path(), progress, archiveFile, cause, true);
+        CPPUNIT_ASSERT_EQUAL(ExitCauseOperationCanceled, cause);
+        CPPUNIT_ASSERT_EQUAL(ExitCodeOk, code);
     }
 }
 

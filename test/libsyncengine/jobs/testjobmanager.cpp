@@ -25,7 +25,7 @@
 #include "jobs/network/deletejob.h"
 #include "jobs/network/getfilelistjob.h"
 #include "jobs/network/uploadjob.h"
-#include "jobs/network/upload_session/uploadsession.h"
+#include "jobs/network/upload_session/driveuploadsession.h"
 #include "network/proxy.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
@@ -498,13 +498,13 @@ void TestJobManager::testWithCallbackBigFiles(const SyncPath &dirPath, int size,
             std::function<void(UniqueId)> callback = std::bind(&TestJobManager::callback, this, std::placeholders::_1);
 
             if (size <= useUploadSessionThreshold) {
-                std::shared_ptr<UploadJob> job =
+                auto job =
                     std::make_shared<UploadJob>(_driveDbId, dirEntry.path(), dirEntry.path().filename().native(), _dirId, 0);
                 JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
                 const std::scoped_lock lock(_mutex);
                 _ongoingJobs.insert({job->jobId(), job});
             } else {
-                std::shared_ptr<UploadSession> job = std::make_shared<UploadSession>(
+                auto job = std::make_shared<DriveUploadSession>(
                     _driveDbId, nullptr, dirEntry.path(), dirEntry.path().filename().native(), _dirId, 12345, false,
                     ParametersCache::instance()->parameters().uploadSessionParallelJobs());
                 JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);

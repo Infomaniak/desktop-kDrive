@@ -10,8 +10,9 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 
 set(testserver_SRCS
     ../test.cpp
-    ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
-    ../../src/server/logarchiver.h ../../src/server/logarchiver.cpp
+    ../test_utility/localtemporarydirectory.cpp
+    ../../src/server/logarchiver.h
+    ../../src/server/logarchiver.cpp
     ${CMAKE_SOURCE_DIR}/src/libcommon/updater.h ${CMAKE_SOURCE_DIR}/src/libcommon/updater.cpp
     ${server_srcs_path}/logarchiver.h
     ${server_srcs_path}/logarchiver.cpp

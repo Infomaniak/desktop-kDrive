@@ -59,7 +59,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A regular symbolic link on a symlink
