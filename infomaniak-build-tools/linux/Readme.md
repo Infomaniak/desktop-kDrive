@@ -95,6 +95,9 @@ cd ~/Projects
 git clone --recurse-submodules https://github.com/log4cplus/log4cplus.git
 cd log4cplus
 git checkout 2.1.x
+cd catch
+git checkout v2.x
+cd ..
 mkdir cmake-build
 cd cmake-build
 cmake .. -DUNICODE=1
@@ -114,7 +117,7 @@ The OpenSSL Configure will require Perl to be installed first
 
 ```bash
 cd ~/Projects
-git clone https://github.com/openssl/openssl.git
+git clone git@github.com:openssl/openssl.git
 cd openssl
 git checkout tags/openssl-3.2.1
 ./Configure shared
@@ -207,6 +210,7 @@ sudo apt-get install zlib1g-dev
 Clone and install libzip
 
 ```bash
+sudo apt install zlib1g-de
 cd ~/Projects
 git clone https://github.com/nih-at/libzip.git
 cd libzip
