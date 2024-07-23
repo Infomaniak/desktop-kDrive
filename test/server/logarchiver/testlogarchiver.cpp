@@ -241,6 +241,7 @@ void TestLogArchiver::testCompressLogs() {
 
     {  // Test the progress callback with a cancel
         LOG_DEBUG(_logger, "Test log compression with progress callback and cancel");
+        // Creating dummy log files
         LocalTemporaryDirectory tempDir("logArchiver");
         std::ofstream logFile(tempDir.path() / "test.log");
         for (int i = 0; i < 10000; i++) {
@@ -264,13 +265,15 @@ void TestLogArchiver::testCompressLogs() {
             logFile.close();
         }
 
+        // Create   a progress callback that will cancel the operation
         int percent = 0;
         int oldPercent = 0;
         const std::function<bool(int)> progress = [&percent, &oldPercent](int p) {
             percent = p;
             CPPUNIT_ASSERT(percent >= oldPercent);
             oldPercent = percent;
-            return false;
+            if (percent > 50) return false;  // A callback that returns false will cancel the operation
+            return true;
         };
 
         ExitCause cause = ExitCauseUnknown;
