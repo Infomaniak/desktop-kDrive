@@ -667,9 +667,9 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    DriveUploadSession DriveUploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+    DriveUploadSession driveUploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                                    12345, false, 1);
-    ExitCode exitCode = DriveUploadSessionJob.runSynchronously();
+    ExitCode exitCode = driveUploadSessionJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
@@ -679,7 +679,7 @@ void TestNetworkJobs::testDriveUploadSessionSynchronous() {
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == DriveUploadSessionJob.nodeId());
+    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == driveUploadSessionJob.nodeId());
     CPPUNIT_ASSERT(Utility::s2ws(dataArray->getObject(0)->get(nameKey)) == Path2WStr(localFilePath.filename()));
 }
 
@@ -694,13 +694,13 @@ void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
     NodeId nodeId;
     while (_nbParalleleThreads > 0) {
         LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - " << _nbParalleleThreads << " threads");
-        DriveUploadSession DriveUploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+        DriveUploadSession driveUploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                                        12345, false, _nbParalleleThreads);
-        exitCode = DriveUploadSessionJob.runSynchronously();
+        exitCode = driveUploadSessionJob.runSynchronously();
         if (exitCode == ExitCodeOk) {
-            nodeId = DriveUploadSessionJob.nodeId();
+            nodeId = driveUploadSessionJob.nodeId();
             break;
-        } else if (exitCode == ExitCodeNetworkError && DriveUploadSessionJob.exitCause() == ExitCauseSocketsDefuncted) {
+        } else if (exitCode == ExitCodeNetworkError && driveUploadSessionJob.exitCause() == ExitCauseSocketsDefuncted) {
             LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
