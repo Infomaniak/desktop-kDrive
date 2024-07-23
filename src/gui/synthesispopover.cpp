@@ -1064,7 +1064,7 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
 
 void SynthesisPopover::onUpdateAvailabalityChange() {
     if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
-
+    if(_lockedAppVersionWidget->isHidden()) return;
     QString statusString;
     UpdateState updateState = UpdateState::Error;
     try {
