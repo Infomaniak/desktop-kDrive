@@ -42,7 +42,7 @@ podman run --rm -it \
 	--env APPLICATION_SERVER_URL="$APPLICATION_SERVER_URL" \
 	--env KDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
 	--arch arm64 \
-	ghcr.io/infomaniak/kdrive-desktop-linux:latest /bin/bash -c "/src/infomaniak-build-tools/linux/appimage-build-arm64.sh"
+	ghcr.io/infomaniak/kdrive-desktop-linux:arm64 /bin/bash -c "/src/infomaniak-build-tools/linux/appimage-build-arm64.sh"
 podman machine stop build_kdrive
 
 VERSION=$(grep "KDRIVE_VERSION_FULL" "$BUILDDIR/client/version.h" | awk '{print $3}')
