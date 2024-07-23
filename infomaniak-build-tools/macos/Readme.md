@@ -20,7 +20,7 @@
         - [CMake Parameters](#cmake-parameters)
 		- [Run CMake install](#run-cmake-install)
 		- [Sign package](#sign-package)
-	- [Qt Creator](#using-qt-creator)
+	- [Using Qt Creator](#using-qt-creator)
 		- [Qt Configuration](#qt-configuration)
 - [Build in Release](#build-in-release)
 	- [Requirements](#requirements)

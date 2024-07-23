@@ -15,7 +15,7 @@
     - [Using CLion](#using-clion)
         - [Prerequisites](#prerequisites)
         - [CMake Parameters](#cmake-parameters)
-    - [Qt Creator](#using-qt-creator)
+    - [Using Qt Creator](#using-qt-creator)
         - [Configuration](#configuration)
         - [Debugging](#debugging)
 - [Build in Release](#build-in-release)

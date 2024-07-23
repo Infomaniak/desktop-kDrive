@@ -19,7 +19,7 @@
 - [Build in Debug](#build-in-debug)
     - [Using CLion](#using-clion)
         - [CMake Parameters](#cmake-parameters)
-    - [Qt Creator](#using-qt-creator)
+    - [Using Qt Creator](#using-qt-creator)
         - [Additionnal Requirements](#additionnal-requirements)
         - [CMake Parameters](#cmake-parameters)
     - [VS2019](#using-Visual-Studio-2019)
