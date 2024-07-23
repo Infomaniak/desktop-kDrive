@@ -570,10 +570,10 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
         cancelTitleLabel->setText(tr("Sharing has been cancelled"));
         cancelTitleHBox->addWidget(cancelTitleLabel);
 
-        if (!lasSuccessfullUploadDate.isEmpty()) {
+        if (!lasSuccessfullUploadDate.isEmpty() && lasSuccessfullUploadDate.toStdString() != "0") {
             _logUploadInfoHBox->addWidget(lastUploadFrame);
         }
-    } else if (status == LogUploadState::Success) {
+    } else if (status == LogUploadState::Success && lasSuccessfullUploadDate.toStdString() != "0") {
         _logUploadInfoHBox->addWidget(lastUploadFrame);
     }
     return;
