@@ -310,7 +310,7 @@ void DebuggingDialog::initUI() {
     scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     scrollArea->setBackgroundRole(QPalette::Base);
     mainLayout->addWidget(scrollArea);
-
+    mainLayout->addSpacing(boxHSpacing);
     // Add dialog buttons
     QHBoxLayout *buttonsHBox = new QHBoxLayout();
     buttonsHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
