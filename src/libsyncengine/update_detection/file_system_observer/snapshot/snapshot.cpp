@@ -208,31 +208,43 @@ bool Snapshot::setParentId(const NodeId &itemId, const NodeId &newParentId) {
     return false;
 }
 
-bool Snapshot::path(const NodeId &itemId, SyncPath &path) {
-    const std::scoped_lock lock(_mutex);
+bool Snapshot::path(const NodeId &itemId, SyncPath &path) const noexcept {
+    path.clear();
+
+    if (itemId.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Snapshot::path: empty item ID argument.");
+        return false;
+    }
+
     bool ok = true;
     std::deque<SyncName> names;
-
     bool parentIsRoot = false;
     NodeId id = itemId;
-    while (!parentIsRoot) {
-        if (auto it = _items.find(id); it != _items.end()) {
-            names.push_back(it->second.name());
-            id = it->second.parentId();
-            parentIsRoot = id == _rootFolderId;
-            continue;
-        }
 
-        ok = false;
-        break;
+    {
+        const std::scoped_lock lock(_mutex);
+        while (!parentIsRoot) {
+            if (const auto it = _items.find(id); it != _items.end()) {
+                names.push_back(it->second.name());
+                id = it->second.parentId();
+                parentIsRoot = id == _rootFolderId;
+                continue;
+            }
+
+            ok = false;
+            break;
+        }
     }
 
     // Construct path
-    path.clear();
+    SyncName tmp;
     while (!names.empty()) {
         path /= names.back();
         names.pop_back();
     }
+    if (!tmp.empty()) tmp.pop_back();  // Remove the last '/'
+    path = tmp;
+
     return ok;
 }
 

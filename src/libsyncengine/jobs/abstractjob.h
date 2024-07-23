@@ -26,6 +26,9 @@
 
 namespace KDC {
 
+constexpr int expectedFinishProgressNotSetValue = -2;
+constexpr int expectedFinishProgressNotSetValueWarningLogged = -1;
+
 class AbstractJob : public Poco::Runnable {
     public:
         AbstractJob();
@@ -38,25 +41,33 @@ class AbstractJob : public Poco::Runnable {
          * Callback to get reply
          * Job ID is passed as argument
          */
-        inline void setMainCallback(const std::function<void(uint64_t)> newCallback) { _mainCallback = newCallback; }
-        inline void setAdditionalCallback(const std::function<void(uint64_t)> newCallback) { _additionalCallback = newCallback; }
+        inline void setMainCallback(const std::function<void(uint64_t)> &newCallback) { _mainCallback = newCallback; }
+        inline void setAdditionalCallback(const std::function<void(uint64_t)> &newCallback) { _additionalCallback = newCallback; }
+        inline void setProgressPercentCallback(const std::function<void(UniqueId, int)> &newCallback) {
+            _progressPercentCallback = newCallback;
+        }
 
         inline ExitCode exitCode() const { return _exitCode; }
         inline ExitCause exitCause() const { return _exitCause; }
 
+        inline void setProgressExpectedFinalValue(int64_t newExpectedFinishProgress) {
+            _expectedFinishProgress = newExpectedFinishProgress;
+        }
         inline virtual int64_t getProgress() { return _progress; }
+        void setProgress(int64_t newProgress);
+        void addProgress(int64_t progressToAdd);
         bool progressChanged();
         inline const SyncPath &affectedFilePath() const { return _affectedFilePath; }
         inline void setAffectedFilePath(const SyncPath &newAffectedFilePath) { _affectedFilePath = newAffectedFilePath; }
-        inline bool isProgressTracked() { return _progress > -1; }
+        inline bool isProgressTracked() const { return _progress > -1; }
 
         inline UniqueId jobId() const { return _jobId; }
         inline UniqueId parentJobId() const { return _parentJobId; }
         inline void setParentJobId(UniqueId newParentId) { _parentJobId = newParentId; }
         inline bool hasParentJob() const { return _parentJobId > -1; }
 
-        inline bool isExtendedLog() { return _isExtendedLog; }
-        inline bool isRunning() { return _isRunning; }
+        inline bool isExtendedLog() const { return _isExtendedLog; }
+        inline bool isRunning() const { return _isRunning; }
 
         inline void setVfsUpdateFetchStatusCallback(
             std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> callback) noexcept {
@@ -93,20 +104,16 @@ class AbstractJob : public Poco::Runnable {
         ExitCode _exitCode = ExitCodeUnknown;
         ExitCause _exitCause = ExitCauseUnknown;
 
-        int64_t _progress = -1;      // Progress is -1 when it is not relevant for the current job
-        int64_t _lastProgress = -1;  // Progress last time it was checked using progressChanged()
-        SyncPath _affectedFilePath;  // The file path associated to _progress
-
         std::function<bool(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled, bool &finished)>
-            _vfsUpdateFetchStatus;
-        std::function<bool(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState;
-        std::function<bool(const SyncPath &path, bool isSyncing, int progress, bool isHydrated)> _vfsForceStatus;
+            _vfsUpdateFetchStatus = nullptr;
+        std::function<bool(const SyncPath &itemPath, PinState pinState)> _vfsSetPinState = nullptr;
+        std::function<bool(const SyncPath &path, bool isSyncing, int progress, bool isHydrated)> _vfsForceStatus = nullptr;
         std::function<bool(const SyncPath &path, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress)>
-            _vfsStatus;
+            _vfsStatus = nullptr;
         std::function<bool(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
                            const NodeId &id, std::string &error)>
-            _vfsUpdateMetadata;
-        std::function<bool(const SyncPath &path)> _vfsCancelHydrate;
+            _vfsUpdateMetadata = nullptr;
+        std::function<bool(const SyncPath &path)> _vfsCancelHydrate = nullptr;
 
     private:
         virtual void run() final;
@@ -114,12 +121,20 @@ class AbstractJob : public Poco::Runnable {
 
         std::function<void(UniqueId)> _mainCallback = nullptr;        // Used by the job manager to keep track of running jobs
         std::function<void(UniqueId)> _additionalCallback = nullptr;  // Used by the caller to be notified of job completion
+        std::function<void(UniqueId id, int progress)> _progressPercentCallback =
+            nullptr;  // Used by the caller to be notified of job progress.
 
         static UniqueId _nextJobId;
         static std::mutex _nextJobIdMutex;
 
         UniqueId _jobId = 0;
         UniqueId _parentJobId = -1;  // ID of that parent job i.e. the job that must be completed before starting this one
+
+        int64_t _expectedFinishProgress =
+            expectedFinishProgressNotSetValue;  // Expected progress value when the job is finished. -2 means it is not set.
+        int64_t _progress = -1;                 // Progress is -1 when it is not relevant for the current job
+        int64_t _lastProgress = -1;             // Progress last time it was checked using progressChanged()
+        SyncPath _affectedFilePath;             // The file path associated to _progress
 
         bool _abort = false;
         bool _bypassCheck = false;

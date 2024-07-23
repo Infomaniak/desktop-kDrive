@@ -19,6 +19,9 @@
 #include "config.h"
 #include "testutility.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
+#include "test_utility/localtemporarydirectory.h"
+#include <iostream>
 
 namespace KDC {
 
@@ -37,6 +40,7 @@ void TestUtility::testGetAppSupportDir() {
 #endif
     CPPUNIT_ASSERT_MESSAGE(faillureMessage.c_str(), appSupportDir.string().find(APPLICATION_NAME) != std::wstring::npos);
 }
+
 void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "3.5.8"));
 
@@ -61,6 +65,7 @@ void TestUtility::testIsVersionLower() {
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.7"));
     CPPUNIT_ASSERT(!CommonUtility::isVersionLower("3.5.8", "2.6.9"));
 }
+
 void TestUtility::testStringToAppStateValue() {
     // Normal conditions
     AppStateValue value = std::string();
@@ -209,5 +214,67 @@ void TestUtility::testArgsWriter() {
         CPPUNIT_ASSERT_EQUAL(d, i);
         CPPUNIT_ASSERT_EQUAL(e, j);
     }
+}
+
+void TestUtility::testCompressFile() {
+    LocalTemporaryDirectory tmpDir("CommonUtility_compressFile");
+    SyncPath filePath = tmpDir.path() / "testFile.txt";
+    
+    // Test with an empty file
+    std::ofstream file(filePath);
+    file.close();
+
+    SyncPath outPath = tmpDir.path() / "resEmptyFile.zip";
+    CommonUtility::compressFile(filePath.string(), outPath.string());
+
+    bool exists = false;
+    IoError error = IoErrorUnknown;
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, error);
+    CPPUNIT_ASSERT(exists);
+
+    // Test with a non empty file
+    file.open(filePath);
+    for (int i = 0 ; i < 100 ; i++) {
+        file << "test" << std::endl;
+    }
+    file.close();
+
+    uint64_t size = 0;
+    CPPUNIT_ASSERT(IoHelper::getFileSize(filePath, size, error));
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, error);
+
+    outPath = tmpDir.path() / "resFile.zip";
+    CommonUtility::compressFile(filePath.string(), outPath.string());
+
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, error);
+    CPPUNIT_ASSERT(exists);
+
+    uint64_t compressedSize = 0;
+    CPPUNIT_ASSERT(IoHelper::getFileSize(outPath, compressedSize, error));
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, error);
+    CPPUNIT_ASSERT(compressedSize < size);
+
+    // Test with a non existing file
+    outPath = tmpDir.path() / "resNonExistingFile.zip";
+    CPPUNIT_ASSERT(!CommonUtility::compressFile("nonExistingFile.txt", outPath.string()));
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, error);
+    CPPUNIT_ASSERT(!exists);
+
+    // Test with a non existing output dir
+    outPath = tmpDir.path() / "nonExistingDir" / "resNonExistingDir.zip";
+    CPPUNIT_ASSERT(!CommonUtility::compressFile(filePath.string(), outPath.string()));
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, error);
+    CPPUNIT_ASSERT(!exists);
+
+    // Test with wstring path
+    outPath = tmpDir.path() / "resWstring.zip";
+    CommonUtility::compressFile(filePath.wstring(), outPath.wstring());
+    CPPUNIT_ASSERT(IoHelper::checkIfPathExists(outPath, exists, error));
+    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, error);
+    CPPUNIT_ASSERT(exists);
 }
 }  // namespace KDC

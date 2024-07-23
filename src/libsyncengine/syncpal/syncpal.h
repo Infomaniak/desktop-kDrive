@@ -221,6 +221,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
+        SyncPath getLocalPath() const { return _localPath; };
+        void setLocalPath(const SyncPath &path) { _localPath = path; };
+
     private:
         friend class TestSyncPal;
         log4cplus::Logger _logger;

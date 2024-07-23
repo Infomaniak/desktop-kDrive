@@ -17,6 +17,8 @@
  */
 #pragma once
 
+#pragma once
+
 #include "utility/types.h"
 #include <string>
 #include <filesystem>

@@ -662,6 +662,18 @@ KDC--CustomDialog QToolButton:hover
     border: none;
 }
 
+KDC--CustomDialog QScrollArea
+{
+    background-color: #2D3034;
+    border: 0px;
+}
+
+
+KDC--CustomDialog QWidget#debugDialogScrollable
+{
+    background-color: #2D3034;
+}
+
 /**************************/
 /* KDC--UpdateErrorDialog */
 /**************************/

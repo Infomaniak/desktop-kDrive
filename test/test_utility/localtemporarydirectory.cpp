@@ -42,6 +42,7 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
         throw std::runtime_error("Failed to create local temporary directory");
     }
   
+    _path = std::filesystem::canonical(_path);  // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
     FileStat fileStat;
     IoError ioError = IoErrorSuccess;
     IoHelper::getFileStat(_path, &fileStat, ioError);

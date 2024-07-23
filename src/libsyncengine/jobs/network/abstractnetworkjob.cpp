@@ -329,7 +329,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     }
 
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
-
+   
     // Set headers
     req.set("User-Agent", _userAgent);
     req.setContentType(contentType);
@@ -379,7 +379,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         }
 
         if (isProgressTracked()) {
-            _progress += itEnd - itBegin;
+            addProgress(itEnd - itBegin);
         }
 
         itBegin = itEnd;
@@ -445,11 +445,13 @@ bool AbstractNetworkJob::receiveResponse(const Poco::URI &uri) {
         }
         case Poco::Net::HTTPResponse::HTTP_UPGRADE_REQUIRED: {
             _exitCode = ExitCodeUpdateRequired;
+            LOG_WARN(_logger, "Received HTTP_UPGRADE_REQUIRED, update required");
             break;
         }
         case Poco::Net::HTTPResponse::HTTP_TOO_MANY_REQUESTS: {
             // Rate limitation
             _exitCode = ExitCodeRateLimited;
+            LOG_WARN(_logger, "Received HTTP_TOO_MANY_REQUESTS, rate limited");
         }
         default: {
             if (!isAborted()) {

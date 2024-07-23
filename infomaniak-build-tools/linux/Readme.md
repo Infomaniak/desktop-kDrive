@@ -12,7 +12,10 @@
     - [xxHash](#xxhash)
     - [libzip](#libzip)
 - [Build in Debug](#build-in-debug)
-    - [Qt Creator](#using-qt-creator)
+    - [Using CLion](#using-clion)
+        - [Prerequisites](#prerequisites)
+        - [CMake Parameters](#cmake-parameters)
+    - [Using Qt Creator](#using-qt-creator)
         - [Configuration](#configuration)
         - [Debugging](#debugging)
 - [Build in Release](#build-in-release)
@@ -101,6 +104,13 @@ cmake .. -DUNICODE=1
 sudo cmake --build . --target install
 ```
 
+If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
+
+```bash
+cd ../catch
+git checkout v2.x
+```
+
 ## OpenSSL
 
 The OpenSSL Configure will require Perl to be installed first
@@ -119,6 +129,19 @@ sudo make install
 
 > :warning: **`Poco` requires [OpenSSL](#openssl) to be installed.**
 
+For ARM64:
+```bash
+cd ~/Projects
+git clone https://github.com/pocoproject/poco.git
+cd poco
+git checkout tags/poco-1.13.3-release
+mkdir cmake-build
+cd cmake-build
+cmake .. -DOPENSSL_ROOT_DIR=/usr/local -DOPENSSL_INCLUDE_DIR=/usr/local/include -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.so -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.so
+sudo cmake --build . --target install
+```
+
+For AMD64:
 ```bash
 cd ~/Projects
 git clone https://github.com/pocoproject/poco.git
@@ -157,7 +180,7 @@ cd sentry-native
 git checkout tags/0.6.7
 git submodule init
 git submodule update --recursive
-cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
+cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.7.2/gcc_arm64
 cmake --build build --parallel
 sudo cmake --install build
 ```
@@ -178,10 +201,16 @@ sudo cmake --build . --target install
 
 ## libzip
 
+First, install the `dev` version of zlib:
+
+```bash
+sudo apt-get install zlib1g-dev
+```
+
 Clone and install libzip
 
 ```bash
-sudo apt install zlib1g-de
+sudo apt install zlib1g-dev
 cd ~/Projects
 git clone https://github.com/nih-at/libzip.git
 cd libzip
@@ -197,6 +226,36 @@ sudo make install
 ## Linking dependencies
 
 In order for CMake to be able to find all dependencies, you might need to define `LD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
+
+## Using CLion
+
+### Prerequisites
+
+Install the following libraries:
+
+```bash
+sudo apt-get install mesa-utils
+sudo apt-get install freeglut3-dev
+sudo apt-get install libsqlite3-dev
+sudo apt-get install -y pkg-config
+sudo apt-get install libglib2.0-dev
+sudo apt install libsecret-1-0 libsecret-1-dev libglib2.0-dev
+```
+
+## CMake Parameters
+
+CMake options:
+
+```
+-DCMAKE_BUILD_TYPE:STRING=Debug
+-DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
+-DKDRIVE_THEME_DIR=/home/<user>/Projects/desktop-kDrive/infomaniak
+-DCMAKE_INSTALL_PREFIX=/home/<user>/Projects/CLion-build-debug/bin
+-DBUILD_UNIT_TESTS:BOOL=ON
+-DCMAKE_PREFIX_PATH:STRING=/home/<user>/Qt/6.7.2/gcc_arm64
+-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
+-DQT_DEBUG_FIND_PACKAGE=ON
+```
 
 ## Using Qt Creator 
 
