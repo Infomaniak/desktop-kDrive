@@ -36,7 +36,7 @@ void PlatformInconsistencyCheckerWorker::execute() {
 
     _idsToBeRemoved.clear();
 
-    ExitCode exitCode = checkTree(_syncPal->_remoteUpdateTree->rootNode(), _syncPal->_remoteUpdateTree->rootNode()->name());
+    ExitCode exitCode = checkTree(_syncPal->updateTree(ReplicaSideRemote)->rootNode(), _syncPal->updateTree(ReplicaSideRemote)->rootNode()->name());
 
     for (const auto &idItem : _idsToBeRemoved) {
         _syncPal->updateTree(ReplicaSideRemote)->deleteNode(idItem.remoteId);

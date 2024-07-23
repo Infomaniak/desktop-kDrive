@@ -27,6 +27,7 @@ class TestSyncPal : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSyncPal);
         CPPUNIT_TEST(testAll);
         CPPUNIT_TEST(testConflictQueue);
+        CPPUNIT_TEST(testGetSnapshot);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -36,6 +37,7 @@ class TestSyncPal : public CppUnit::TestFixture {
     protected:
         void testAll();
         void testConflictQueue();
+        void testGetSnapshot();
 
     private:
         std::shared_ptr<SyncPal> _syncPal;
