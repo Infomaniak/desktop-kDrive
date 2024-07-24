@@ -127,8 +127,8 @@ bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FS
     return false;
 }
 
-ReplicaSide FSOperationSet::side() const {
-    const std::scoped_lock lock(_mutex);
+ReplicaSide FSOperationSet::side() const { 
+    // No lock needed, read only value
     return _side;
 }
 
