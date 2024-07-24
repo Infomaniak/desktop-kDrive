@@ -237,14 +237,12 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path) const noexcept {
     }
 
     // Construct path
-    SyncName tmp;
+    SyncPath tmp;
     while (!names.empty()) {
-        path /= names.back();
+        tmp /= names.back();
         names.pop_back();
     }
-    if (!tmp.empty()) tmp.pop_back();  // Remove the last '/'
     path = tmp;
-
     return ok;
 }
 
