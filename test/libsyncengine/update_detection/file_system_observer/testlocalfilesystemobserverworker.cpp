@@ -127,7 +127,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
                 fileCounter++;
             }
         }
-        CPPUNIT_ASSERT_EQUAL(fileCounter, _nbFileInTestDir);
+        CPPUNIT_ASSERT_EQUAL(_nbFileInTestDir, fileCounter);
 }
 
 void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
