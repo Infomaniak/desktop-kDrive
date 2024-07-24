@@ -1,4 +1,4 @@
-# kDrive Desktop Configuration - Linux
+sudo apt-get install libgl1-mesa-dev# kDrive Desktop Configuration - Linux
 
 - [kDrive files](#kdrive-files)
 - [Installation Requirements](#installation-requirements)
@@ -195,6 +195,10 @@ sudo make install
 # Build in Debug
 
 ## Linking dependencies
+
+sudo apt-get install libgl1-mesa-dev
+sudo apt-get install sqlite3 libsqlite3-dev
+sudo apt-get install libsecret-1-dev
 
 In order for CMake to be able to find all dependencies, you might need to define `LD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
 
