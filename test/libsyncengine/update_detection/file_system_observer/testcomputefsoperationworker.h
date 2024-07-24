@@ -55,7 +55,7 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
 
     private:
         std::shared_ptr<SyncPal> _syncPal;
-        std::shared_ptr<LocalTemporaryDirectory> _localTempDir;
+        LocalTemporaryDirectory _localTempDir{"TestSyncPal"};
 };
 
 }  // namespace KDC
