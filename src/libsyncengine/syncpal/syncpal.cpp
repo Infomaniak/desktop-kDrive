@@ -1403,6 +1403,8 @@ void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side)
 void SyncPal::copySnapshots() {
     *_localSnapshotCopy = *_localSnapshot;
     *_remoteSnapshotCopy = *_remoteSnapshot;
+    _localSnapshot->startRead();
+    _remoteSnapshot->startRead();
 }
 
 }  // namespace KDC
