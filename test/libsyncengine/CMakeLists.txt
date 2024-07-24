@@ -42,6 +42,7 @@ set(testsyncengine_SRCS
         # Propagation
         propagation/operation_sorter/testoperationsorterworker.h propagation/operation_sorter/testoperationsorterworker.cpp
         propagation/executor/testintegration.h propagation/executor/testintegration.cpp
+        propagation/executor/testexecutorworker.h propagation/executor/testexecutorworker.cpp
         # SyncPal
         syncpal/testsyncpal.h syncpal/testsyncpal.cpp
         # Requests

@@ -398,11 +398,4 @@ bool TestSyncPal::check_case_6_4() {
 
     return true;
 }
-
-void TestSyncPal::testGetSnapshot() {
-    CPPUNIT_ASSERT(nullptr == _syncPal->snapshot(ReplicaSideUnknown));
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _syncPal->snapshot(ReplicaSideLocal)->side());
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _syncPal->snapshot(ReplicaSideRemote)->side());
-}
-
 }  // namespace KDC

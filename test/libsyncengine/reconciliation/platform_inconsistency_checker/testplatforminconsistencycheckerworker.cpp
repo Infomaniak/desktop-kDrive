@@ -185,22 +185,22 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     _syncPal->_syncDb->insertNode(dbNodeUpper, dbNodeIdUpper, constraintError);
 
     // Set up remote tree
-    const auto remoteParentNode = _syncPal->getUpdateTree(ReplicaSideRemote)->rootNode();
+    const auto remoteParentNode = _syncPal->updateTree(ReplicaSideRemote)->rootNode();
     const auto remoteNodeLower =
         std::make_shared<Node>(dbNodeIdLower, ReplicaSideRemote, Str("a"), NodeTypeFile, OperationTypeMove, "ra", 0, 0, 12345,
-                               _syncPal->getUpdateTree(ReplicaSideRemote)->rootNode());
+                               _syncPal->updateTree(ReplicaSideRemote)->rootNode());
     const auto remoteNodeUpper =
         std::make_shared<Node>(dbNodeIdUpper, ReplicaSideRemote, Str("A"), NodeTypeFile, OperationTypeNone, "rA", 0, 0, 12345,
-                               _syncPal->getUpdateTree(ReplicaSideRemote)->rootNode());
+                               _syncPal->updateTree(ReplicaSideRemote)->rootNode());
 
     remoteParentNode->insertChildren(remoteNodeLower);
     remoteParentNode->insertChildren(remoteNodeUpper);
 
-    _syncPal->getUpdateTree(ReplicaSideRemote)->insertNode(remoteNodeLower);
-    _syncPal->getUpdateTree(ReplicaSideRemote)->insertNode(remoteNodeUpper);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(remoteNodeLower);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(remoteNodeUpper);
 
     // Set up local tree
-    const auto localParentNode = _syncPal->getUpdateTree(ReplicaSideLocal)->rootNode();
+    const auto localParentNode = _syncPal->updateTree(ReplicaSideLocal)->rootNode();
     const auto localNodeLower = std::make_shared<Node>(dbNodeIdLower, ReplicaSideLocal, Str("a1"), NodeTypeFile,
                                                        OperationTypeNone, "la", 0, 0, 12345, localParentNode);
     const auto localNodeUpper = std::make_shared<Node>(dbNodeIdUpper, ReplicaSideLocal, Str("A"), NodeTypeFile, OperationTypeNone,
@@ -209,8 +209,8 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     localParentNode->insertChildren(localNodeLower);
     localParentNode->insertChildren(localNodeUpper);
 
-    _syncPal->getUpdateTree(ReplicaSideLocal)->insertNode(localNodeLower);
-    _syncPal->getUpdateTree(ReplicaSideLocal)->insertNode(localNodeUpper);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(localNodeLower);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(localNodeUpper);
 
     // Check name clash
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(remoteParentNode);

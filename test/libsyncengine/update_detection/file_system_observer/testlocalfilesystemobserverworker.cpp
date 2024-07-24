@@ -79,7 +79,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     std::filesystem::remove(syncDbPath);
 
     // Create SyncPal
-    _syncPal = std::make_shared<SyncPalTest>(SyncDbPath, "3.4.0", true);
+    _syncPal = std::make_shared<SyncPalTest>(syncDbPath, "3.4.0", true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->setLocalPath(_testRootFolderPath);
 
