@@ -30,7 +30,5 @@ class TestTypes : public CppUnit::TestFixture {
 
     protected:
         void testOtherSide();
-
 };
-
 }  // namespace KDC
