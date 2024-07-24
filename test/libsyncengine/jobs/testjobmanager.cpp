@@ -208,13 +208,13 @@ void TestJobManager::testCancelJobs() {
     // Upload all files in testDir
     ulong jobCounter = 0;
     for (auto &dirEntry : std::filesystem::directory_iterator(localTestDirPath_manyFiles)) {
-        std::shared_ptr<UploadJob> job =
+        auto job =
             std::make_shared<UploadJob>(_driveDbId, dirEntry.path(), dirEntry.path().filename().native(), _dirId, 0);
         std::function<void(UniqueId)> callback = std::bind(&TestJobManager::callback, this, std::placeholders::_1);
         JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
         jobCounter++;
         const std::scoped_lock lock(_mutex);
-        _ongoingJobs.insert({job->jobId(), job});
+        _ongoingJobs.try_emplace(job->jobId(), job);
     }
 
     Utility::msleep(1000);  // Wait 1sec

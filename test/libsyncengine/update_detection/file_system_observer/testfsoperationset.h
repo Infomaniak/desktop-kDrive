@@ -16,20 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
-#include "db/syncdb.h"
+#pragma once
 
-#include <filesystem>
+#include "testincludes.h"
+#include "syncpal/syncpal.h"
 
 using namespace CppUnit;
 
 namespace KDC {
 
-class TestSyncDb : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSyncDb);
-        CPPUNIT_TEST(testNodes);
-        CPPUNIT_TEST(testSyncNodes);
-        CPPUNIT_TEST(testCorrespondingNodeId);
+class TestFsOperationSet : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestFsOperationSet);
+        CPPUNIT_TEST(testGetOp);
+        CPPUNIT_TEST(testGetOpsByType);
+        CPPUNIT_TEST(testGetOpsByNodeId);
+        CPPUNIT_TEST(testNbOpsByType);
+        CPPUNIT_TEST(testClear);
+        CPPUNIT_TEST(testInsertOp);
+        CPPUNIT_TEST(testRemoveOp);
+        CPPUNIT_TEST(testfindOp);
+        CPPUNIT_TEST(testOperatorEqual);
+        CPPUNIT_TEST(testCopyConstructor);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -37,12 +44,18 @@ class TestSyncDb : public CppUnit::TestFixture {
         void tearDown() override;
 
     protected:
-        void testNodes();
-        void testSyncNodes();
-        void testCorrespondingNodeId();
-
+        void testGetOp();
+        void testGetOpsByType();
+        void testGetOpsByNodeId();
+        void testNbOpsByType();
+        void testClear();
+        void testInsertOp();
+        void testRemoveOp();
+        void testfindOp();
+        void testOperatorEqual();
+        void testCopyConstructor();
     private:
-        SyncDb *_testObj;
+        std::vector<OperationType> _operationTypes;
 };
 
 }  // namespace KDC

@@ -27,9 +27,10 @@
 
 namespace KDC {
 
-static const time_t defaultTime = std::time(0);
-
-/**
+static const SyncTime defaultTime = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now())
+                                        .time_since_epoch()
+                                        .count();
+ /**
  * init tree:
  *
  *      Root
@@ -46,14 +47,13 @@ void TestComputeFSOperationWorker::setUp() {
     const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
     const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
     const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
     const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
     const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
 
-    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
-        apiTokenStr.empty()) {
+    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remotePathStr.empty() || apiTokenStr.empty()) {
         throw std::runtime_error("Some environment variables are missing!");
     }
+    const std::string localPathStr = _localTempDir.path().string();
 
     /// Insert api token into keystore
     ApiToken apiToken;
@@ -86,60 +86,60 @@ void TestComputeFSOperationWorker::setUp() {
     Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
     ParmsDb::instance()->insertSync(sync);
 
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal->syncDb()->setAutoDelete(true);
 
     /// Insert node "AC" in blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeBlackList, {"lac"});
 
     /// Insert nodes in DB
-    DbNode nodeDirA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", defaultTime, defaultTime,
+    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", defaultTime, defaultTime,
                     defaultTime, NodeType::NodeTypeDirectory, 0, std::nullopt);
-    DbNode nodeDirB(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", defaultTime, defaultTime,
+    DbNode nodeDirB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", defaultTime, defaultTime,
                     defaultTime, NodeType::NodeTypeDirectory, 0, std::nullopt);
     DbNodeId dbNodeIdDirA;
     DbNodeId dbNodeIdDirB;
     bool constraintError = false;
-    _syncPal->_syncDb->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
-    _syncPal->_syncDb->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
 
     DbNode nodeFileAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", defaultTime, defaultTime, defaultTime,
                       NodeType::NodeTypeFile, 0, "cs_aa");
     DbNodeId dbNodeIdFileAA;
-    _syncPal->_syncDb->insertNode(nodeFileAA, dbNodeIdFileAA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeFileAA, dbNodeIdFileAA, constraintError);
 
     DbNode nodeFileAB(0, dbNodeIdDirA, Str("AB"), Str("AB"), "lab", "rab", defaultTime, defaultTime, defaultTime,
                       NodeType::NodeTypeFile, 0, "cs_ab");
 
     DbNodeId dbNodeIdFileAB;
-    _syncPal->_syncDb->insertNode(nodeFileAB, dbNodeIdFileAB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeFileAB, dbNodeIdFileAB, constraintError);
 
     // AC not in db since it should be excluded from sync
 
     DbNode nodeFileBA(0, dbNodeIdDirB, Str("BA"), Str("BA"), "lba", "rba", defaultTime, defaultTime, defaultTime,
                       NodeType::NodeTypeFile, 0, "cs_ba");
     DbNodeId dbNodeIdFileBA;
-    _syncPal->_syncDb->insertNode(nodeFileBA, dbNodeIdFileBA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeFileBA, dbNodeIdFileBA, constraintError);
 
     DbNode nodeFileBB(0, dbNodeIdDirB, Str("BB"), Str("BB"), "lbb", "rbb", defaultTime, defaultTime, defaultTime,
                       NodeType::NodeTypeFile, 0, "cs_bb");
     DbNodeId dbNodeIdFileBB;
-    _syncPal->_syncDb->insertNode(nodeFileBB, dbNodeIdFileBB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeFileBB, dbNodeIdFileBB, constraintError);
 
     /// Init test snapshot
     //// Insert dir in snapshot
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem(nodeDirA.nodeIdLocal().value(), _syncPal->_syncDb->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
+        SnapshotItem(nodeDirA.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
                      nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123));
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem(nodeDirB.nodeIdLocal().value(), _syncPal->_syncDb->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
+        SnapshotItem(nodeDirB.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
                      nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123));
 
     _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem(nodeDirA.nodeIdRemote().value(), _syncPal->_syncDb->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
+        SnapshotItem(nodeDirA.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
                      nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123));
     _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem(nodeDirB.nodeIdRemote().value(), _syncPal->_syncDb->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
+        SnapshotItem(nodeDirB.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
                      nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123));
 
     //// Insert files in snapshot
@@ -179,10 +179,11 @@ void TestComputeFSOperationWorker::setUp() {
     ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(true);
 
     _syncPal->_computeFSOperationsWorker =
-        std::shared_ptr<ComputeFSOperationWorker>(new ComputeFSOperationWorker(_syncPal, "Test Compute FS Operations", "TCOP"));
+        std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP");
     _syncPal->_computeFSOperationsWorker->setTesting(true);
-    _syncPal->copySnapshots();
     _syncPal->_localPath = localTestDirPath;
+    _syncPal->copySnapshots();
+    _syncPal->_computeFSOperationsWorker->execute();
 }
 
 void TestComputeFSOperationWorker::tearDown() {
@@ -190,8 +191,9 @@ void TestComputeFSOperationWorker::tearDown() {
 }
 
 void TestComputeFSOperationWorker::testNoOps() {
+    _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->ops().empty());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSideLocal)->nbOps());
 }
 
 void TestComputeFSOperationWorker::testMultipleOps() {
@@ -215,7 +217,7 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // Rename operation on a blacklisted directory
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-renamed"));
 
-
+    _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
 
     FSOpPtr tmpOp = nullptr;
@@ -235,15 +237,16 @@ void TestComputeFSOperationWorker::testMultipleOps() {
 
 void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     // Add file in DB
-    DbNode nodeTest(0, _syncPal->_syncDb->rootNode().nodeId(), Str("test.lnk"), Str("test.lnk"), "ltest", "rtest", defaultTime,
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("test.lnk"), Str("test.lnk"), "ltest", "rtest", defaultTime,
                     defaultTime, defaultTime, NodeType::NodeTypeFile, 0, std::nullopt);
     DbNodeId dbNodeIdTest;
     bool constraintError = false;
-    _syncPal->_syncDb->insertNode(nodeTest, dbNodeIdTest, constraintError);
+    _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
 
     // File is excluded by template, it does not appear in snapshot
+    _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->ops().empty());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->_localOperationSet->nbOps());
 }
 
 }  // namespace KDC

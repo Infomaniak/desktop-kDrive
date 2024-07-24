@@ -79,7 +79,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     std::filesystem::remove(syncDbPath);
 
     // Create SyncPal
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPalTest(syncDbPath, "3.4.0", true));
+    _syncPal = std::make_shared<SyncPalTest>(syncDbPath, "3.4.0", true);
     _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->setLocalPath(_testRootFolderPath);
 
@@ -127,7 +127,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
                 fileCounter++;
             }
         }
-        CPPUNIT_ASSERT_EQUAL(fileCounter, _nbFileInTestDir);
+        CPPUNIT_ASSERT_EQUAL(_nbFileInTestDir, fileCounter);
 }
 
 void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {

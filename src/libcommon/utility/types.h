@@ -93,6 +93,7 @@ typedef std::function<void(const char *)> ExecuteCommand;
 typedef enum { ReplicaSideUnknown, ReplicaSideLocal, ReplicaSideRemote } ReplicaSide;
 
 inline ReplicaSide otherSide(ReplicaSide side) {
+    if (side == ReplicaSideUnknown) return ReplicaSideUnknown;
     return side == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal;
 }
 

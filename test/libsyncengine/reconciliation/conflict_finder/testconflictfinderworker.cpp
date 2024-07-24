@@ -35,7 +35,7 @@ void TestConflictFinderWorker::setUp() {
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
     _syncPal = std::shared_ptr<SyncPal>(new SyncPal(syncDbPath, "3.4.0", true));
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
 
     _syncPal->_conflictFinderWorker =
         std::shared_ptr<ConflictFinderWorker>(new ConflictFinderWorker(_syncPal, "Conflict Finder", "COFD"));
@@ -46,7 +46,7 @@ void TestConflictFinderWorker::setUp() {
 
 void TestConflictFinderWorker::tearDown() {
     ParmsDb::instance()->close();
-    _syncPal->_syncDb->close();
+    _syncPal->syncDb()->close();
 }
 
 void TestConflictFinderWorker::setUpTreesAndDb() {
@@ -72,54 +72,54 @@ void TestConflictFinderWorker::setUpTreesAndDb() {
     DbNodeId dbnodeIdfile51;
 
     bool constraintError = false;
-    DbNode nodeDbA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
+    DbNode nodeDbA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
-    DbNode nodeDbB(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
+    DbNode nodeDbB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbB, dbNodeIdDirB, constraintError);
-    DbNode nodeDir1(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDbB, dbNodeIdDirB, constraintError);
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
     DbNode nodeFile112(0, dbNodeIdDir11, Str("File 1.1.2"), Str("File 1.1.2"), "112", "r112", tLoc, tLoc, tDrive,
                        NodeType::NodeTypeFile, 0, "cs 1.1");
-    _syncPal->_syncDb->insertNode(nodeFile112, dbNodeId112, constraintError);
+    _syncPal->syncDb()->insertNode(nodeFile112, dbNodeId112, constraintError);
     DbNode nodeDir111(0, dbNodeIdDir111, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "r111", tLoc, tLoc, tDrive,
                       NodeType::NodeTypeDirectory, 0, "cs 1.1.1");
-    _syncPal->_syncDb->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
     DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
                         NodeType::NodeTypeFile, 0, "cs 1.1.1");
-    _syncPal->_syncDb->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
     DbNode nodeDir31(0, dbNodeIdDir3, Str("Dir 3.1"), Str("Dir 3.1"), "31", "r31", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir31, dbNodeIdDir31, constraintError);
-    DbNode nodeDir4(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir31, dbNodeIdDir31, constraintError);
+    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
     DbNode nodedir41(0, dbnodeIdDir4, Str("Dir 4.1"), Str("Dir 4.1"), "41", "r41", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodedir41, dbnodeIdDir41, constraintError);
+    _syncPal->syncDb()->insertNode(nodedir41, dbnodeIdDir41, constraintError);
     DbNode nodeDir411(0, dbnodeIdDir41, Str("Dir 4.1.1"), Str("Dir 4.1.1"), "411", "r411", tLoc, tLoc, tDrive,
                       NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir411, dbnodeIdDir411, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir411, dbnodeIdDir411, constraintError);
     DbNode nodeFile4111(0, dbnodeIdDir411, Str("File 4.1.1.1"), Str("File 4.1.1.1"), "4111", "r4111", tLoc, tLoc, tDrive,
                         NodeType::NodeTypeFile, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeFile4111, dbnodeIdfile4111, constraintError);
+    _syncPal->syncDb()->insertNode(nodeFile4111, dbnodeIdfile4111, constraintError);
     DbNode nodeFile4112(0, dbnodeIdDir411, Str("File 4.1.1.2"), Str("File 4.1.1.2"), "4112", "r4112", tLoc, tLoc, tDrive,
                         NodeType::NodeTypeFile, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeFile4112, dbnodeIdfile4112, constraintError);
-    DbNode nodeDir5(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeFile4112, dbnodeIdfile4112, constraintError);
+    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
     DbNode nodeFile51(0, dbnodeIdDir5, Str("File 5.1"), Str("File 5.1"), "51", "r51", tLoc, tLoc, tDrive, NodeType::NodeTypeFile,
                       0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeFile51, dbnodeIdfile51, constraintError);
+    _syncPal->syncDb()->insertNode(nodeFile51, dbnodeIdfile51, constraintError);
 
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
@@ -468,12 +468,12 @@ void TestConflictFinderWorker::testCase55b() {
     DbNodeId dbNodeIdFileA;
 
     bool constraintError = false;
-    DbNode nodeDbA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
+    DbNode nodeDbA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbA, dbNodeIdFileA, constraintError);
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("A", _syncPal->_syncDb->rootNode().nodeIdLocal().value(), Str("A"), 222,
+    _syncPal->syncDb()->insertNode(nodeDbA, dbNodeIdFileA, constraintError);
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("A", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("A"), 222,
                                                       222, NodeTypeFile, 123, true, "36"));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rA", _syncPal->_syncDb->rootNode().nodeIdRemote().value(), Str("A"), 222,
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rA", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("A"), 222,
                                                        222, NodeTypeFile, 123, true, "63"));
 
     // Start situation
@@ -524,9 +524,9 @@ void TestConflictFinderWorker::testCase55c() {
     DbNodeId dbNodeIdFileA;
 
     bool constraintError = false;
-    DbNode nodeDbA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
+    DbNode nodeDbA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbA, dbNodeIdFileA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbA, dbNodeIdFileA, constraintError);
 
     // Start situation
     std::shared_ptr<Node> nodeA = std::shared_ptr<Node>(new Node(dbNodeIdFileA, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("A"),
@@ -582,14 +582,14 @@ void TestConflictFinderWorker::testCase57() {
     DbNodeId dbNodeIdFileC;
 
     bool constraintError = false;
-    DbNode nodeDbA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
+    DbNode nodeDbA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
-    DbNode nodeDbB(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
+    DbNode nodeDbB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbB, dbNodeIdDirB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbB, dbNodeIdDirB, constraintError);
     DbNode nodeDbC(0, dbNodeIdDirA, Str("c"), Str("c"), "c", "rc", tLoc, tLoc, tDrive, NodeType::NodeTypeFile, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbC, dbNodeIdFileC, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbC, dbNodeIdFileC, constraintError);
 
     // Start situation
     std::shared_ptr<Node> nodeA = std::shared_ptr<Node>(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("A"),
@@ -659,12 +659,12 @@ void TestConflictFinderWorker::testCase59() {
     DbNodeId dbNodeIdDirB;
 
     bool constraintError = false;
-    DbNode nodeDbA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
+    DbNode nodeDbA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
-    DbNode nodeDbB(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
+    DbNode nodeDbB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbB, dbNodeIdDirB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbB, dbNodeIdDirB, constraintError);
 
     // Start situation
     SyncTime createdAt = 1654788079;
@@ -713,12 +713,12 @@ void TestConflictFinderWorker::testCase510() {
     DbNodeId dbNodeIdFileX;
 
     bool constraintError = false;
-    DbNode nodeDbA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
+    DbNode nodeDbA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
-    DbNode nodeDbX(0, _syncPal->_syncDb->rootNode().nodeId(), Str("x"), Str("x"), "X", "rX", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
+    DbNode nodeDbX(0, _syncPal->syncDb()->rootNode().nodeId(), Str("x"), Str("x"), "X", "rX", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeFile, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbX, dbNodeIdFileX, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbX, dbNodeIdFileX, constraintError);
 
     // Start situation
     SyncTime createdAt = 1654788079;
@@ -778,12 +778,12 @@ void TestConflictFinderWorker::testCase511() {
     DbNodeId dbNodeIdDirB;
 
     bool constraintError = false;
-    DbNode nodeDbA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
+    DbNode nodeDbA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
-    DbNode nodeDbB(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDbA, dbNodeIdDirA, constraintError);
+    DbNode nodeDbB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbB, dbNodeIdDirB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbB, dbNodeIdDirB, constraintError);
 
     // Start situation
     SyncTime createdAt = 1654788079;
@@ -845,15 +845,15 @@ void TestConflictFinderWorker::testCase513() {
     DbNodeId dbNodeIdDirN;
 
     bool constraintError = false;
-    DbNode nodeDbQ(0, _syncPal->_syncDb->rootNode().nodeId(), Str("q"), Str("q"), "q", "rq", tLoc, tLoc, tDrive,
+    DbNode nodeDbQ(0, _syncPal->syncDb()->rootNode().nodeId(), Str("q"), Str("q"), "q", "rq", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbQ, dbNodeIdDirQ, constraintError);
-    DbNode nodeDbR(0, _syncPal->_syncDb->rootNode().nodeId(), Str("r"), Str("r"), "r", "rr", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDbQ, dbNodeIdDirQ, constraintError);
+    DbNode nodeDbR(0, _syncPal->syncDb()->rootNode().nodeId(), Str("r"), Str("r"), "r", "rr", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbR, dbNodeIdDirR, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbR, dbNodeIdDirR, constraintError);
     DbNode nodeDbN(0, dbNodeIdDirQ, Str("n"), Str("n"), "n", "rn", tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0,
                    std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbN, dbNodeIdDirN, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbN, dbNodeIdDirN, constraintError);
 
     // Start situation
     SyncTime createdAt = 1654788079;
@@ -924,18 +924,18 @@ void TestConflictFinderWorker::testCase516() {
     DbNodeId dbNodeIdDirM;
 
     bool constraintError = false;
-    DbNode nodeDbQ(0, _syncPal->_syncDb->rootNode().nodeId(), Str("q"), Str("q"), "q", "rq", tLoc, tLoc, tDrive,
+    DbNode nodeDbQ(0, _syncPal->syncDb()->rootNode().nodeId(), Str("q"), Str("q"), "q", "rq", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbQ, dbNodeIdDirQ, constraintError);
-    DbNode nodeDbR(0, _syncPal->_syncDb->rootNode().nodeId(), Str("r"), Str("r"), "r", "rr", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDbQ, dbNodeIdDirQ, constraintError);
+    DbNode nodeDbR(0, _syncPal->syncDb()->rootNode().nodeId(), Str("r"), Str("r"), "r", "rr", tLoc, tLoc, tDrive,
                    NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbR, dbNodeIdDirR, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbR, dbNodeIdDirR, constraintError);
     DbNode nodeDbN(0, dbNodeIdDirR, Str("n"), Str("n"), "n", "rn", tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0,
                    std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbN, dbNodeIdDirN, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbN, dbNodeIdDirN, constraintError);
     DbNode nodeDbM(0, dbNodeIdDirQ, Str("m"), Str("m"), "m", "rm", tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0,
                    std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDbM, dbNodeIdDirM, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDbM, dbNodeIdDirM, constraintError);
 
     // Start situation
     SyncTime createdAt = 1654788079;

@@ -624,7 +624,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     // impossible move if dest = source + "/"
     SyncPath source = (o1->affectedNode()->moveOrigin().has_value() ? o1->affectedNode()->moveOrigin().value() : "");
     SyncPath dest = o1->affectedNode()->getPath();
-    if (!Utility::startsWith(dest.native(), source.native() + Str("/"))) {
+    if (!Utility::startsWith(dest.lexically_normal(), SyncPath(source.native() + Str("/")).lexically_normal())) {
         return std::nullopt;
     }
 

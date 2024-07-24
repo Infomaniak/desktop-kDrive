@@ -161,9 +161,11 @@ NodeId Snapshot::itemId(const SyncPath &path) {
     auto itemIt = _items.find(_rootFolderId);
 
     for (auto pathIt = path.begin(); pathIt != path.end(); pathIt++) {
-        if (pathIt->native() == Str("/")) {
+#ifndef _WIN32
+        if (pathIt->lexically_normal() == SyncPath(Str("/")).lexically_normal()) {
             continue;
         }
+#endif  // _WIN32
 
         bool idFound = false;
         for (const NodeId &childId : itemIt->second.childrenIds()) {
@@ -235,15 +237,12 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path) const noexcept {
     }
 
     // Construct path
-    SyncName tmp;
+    SyncPath tmp;
     while (!names.empty()) {
-        tmp.append(names.back());
-        tmp.append(Str("/"));
+        tmp /= names.back();
         names.pop_back();
     }
-    if (!tmp.empty()) tmp.pop_back();  // Remove the last '/'
     path = tmp;
-
     return ok;
 }
 

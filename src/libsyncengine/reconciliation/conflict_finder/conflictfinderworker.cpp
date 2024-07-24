@@ -411,8 +411,10 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 continue;
             }
 
-            if (Utility::startsWith(localDbPath.native(), remoteDbPath.native() + Str("/")) ||
-                Utility::startsWith(remoteDbPath.native(), localDbPath.native() + Str("/"))) {
+            if (Utility::startsWith(SyncPath(localDbPath).lexically_normal(),
+                                    SyncPath(remoteDbPath.native() + Str("/")).lexically_normal()) ||
+                Utility::startsWith(SyncPath(remoteDbPath).lexically_normal(),
+                                    SyncPath(localDbPath.native() + Str("/")).lexically_normal())) {
                 continue;
             }
 

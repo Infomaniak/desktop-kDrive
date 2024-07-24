@@ -21,6 +21,7 @@
 #include "testincludes.h"
 #include "vfs.h"
 #include "propagation/executor/executorworker.h"
+#include "test_utility/localtemporarydirectory.h"
 
 namespace KDC {
 
@@ -28,6 +29,8 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestExecutorWorker);
         CPPUNIT_TEST(testCheckLiteSyncInfoForCreate);
         CPPUNIT_TEST(testFixModificationDate);
+        CPPUNIT_TEST(testAffectedUpdateTree);
+        CPPUNIT_TEST(testTargetUpdateTree);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -36,9 +39,11 @@ class TestExecutorWorker : public CppUnit::TestFixture {
     private:
         void testCheckLiteSyncInfoForCreate();
         void testFixModificationDate();
-
+        void testAffectedUpdateTree();
+        void testTargetUpdateTree();
         std::shared_ptr<SyncPal> _syncPal;
         Sync _sync;
+        LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
 };
 
 }  // namespace KDC

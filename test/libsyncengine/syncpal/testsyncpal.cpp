@@ -36,15 +36,13 @@ void TestSyncPal::setUp() {
     const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
     const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
     const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
     const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
     const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
 
-    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() ||
-        apiTokenStr.empty()) {
+    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remotePathStr.empty() || apiTokenStr.empty()) {
         throw std::runtime_error("Some environment variables are missing!");
     }
-
+    const std::string localPathStr = _localTempDir.path().string();
     // Insert api token into keystore
     ApiToken apiToken;
     apiToken.setAccessToken(apiTokenStr);
@@ -94,8 +92,72 @@ void TestSyncPal::tearDown() {
     if (_syncPal) {
         _syncPal->stop(false, true, true);
     }
-
     ParmsDb::reset();
+}
+
+void TestSyncPal::testUpdateTree() {
+    auto updateTree = _syncPal->updateTree(ReplicaSideLocal);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, updateTree->side());
+
+    updateTree = _syncPal->updateTree(ReplicaSideRemote);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, updateTree->side());
+
+    updateTree = _syncPal->updateTree(ReplicaSideUnknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), updateTree);
+}
+
+void TestSyncPal::testSnapshot() {
+    auto snapshot = _syncPal->snapshot(ReplicaSideLocal);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, snapshot->side());
+
+    snapshot = _syncPal->snapshot(ReplicaSideRemote);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, snapshot->side());
+
+    snapshot = _syncPal->snapshot(ReplicaSideUnknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
+
+    snapshot = _syncPal->snapshot(ReplicaSideLocal, true);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, snapshot->side());
+
+    snapshot = _syncPal->snapshot(ReplicaSideRemote, true);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, snapshot->side());
+
+    snapshot = _syncPal->snapshot(ReplicaSideUnknown, true);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
+
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal, true).get() != _syncPal->snapshot(ReplicaSideLocal, false).get());
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideRemote, true).get() != _syncPal->snapshot(ReplicaSideRemote, false).get());
+}
+
+void TestSyncPal::testOperationSet() {
+    auto operationSet = _syncPal->operationSet(ReplicaSideLocal);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, operationSet->side());
+
+    operationSet = _syncPal->operationSet(ReplicaSideRemote);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, operationSet->side());
+
+    operationSet = _syncPal->operationSet(ReplicaSideUnknown);
+    CPPUNIT_ASSERT_EQUAL(std::shared_ptr<FSOperationSet>(nullptr), operationSet);
+}
+
+void TestSyncPal::testCopySnapshots() {
+    _syncPal->copySnapshots();
+
+    // Check that the copy is the same as the original
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSideLocal, true)->nbItems(),
+                         _syncPal->snapshot(ReplicaSideLocal, false)->nbItems());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSideLocal, true)->isValid(),
+                         _syncPal->snapshot(ReplicaSideLocal, false)->isValid());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSideLocal, true)->rootFolderId(),
+                         _syncPal->snapshot(ReplicaSideLocal, false)->rootFolderId());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSideLocal, true)->side(), _syncPal->snapshot(ReplicaSideLocal, false)->side());
+
+    // Check that the copy is different object
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal, true).get() != _syncPal->snapshot(ReplicaSideLocal, false).get());
+    _syncPal->snapshot(ReplicaSideLocal, false)->setValid(true);
+    _syncPal->snapshot(ReplicaSideLocal, true)->setValid(false);
+    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSideLocal, true)->isValid() !=
+                   _syncPal->snapshot(ReplicaSideLocal, false)->isValid());
 }
 
 void TestSyncPal::testAll() {
@@ -297,13 +359,13 @@ bool TestSyncPal::exec_case_6_4() {
     bool found;
 
     std::optional<NodeId> driveIdN;
-    _syncPal->_syncDb->id(ReplicaSide::ReplicaSideRemote, remoteCasePath / "n", driveIdN, found);
+    _syncPal->syncDb()->id(ReplicaSide::ReplicaSideRemote, remoteCasePath / "n", driveIdN, found);
     if (!found || !driveIdN.has_value()) {
         return false;
     }
 
     std::optional<NodeId> driveIdT;
-    _syncPal->_syncDb->id(ReplicaSide::ReplicaSideRemote, remoteCasePath / "t", driveIdT, found);
+    _syncPal->syncDb()->id(ReplicaSide::ReplicaSideRemote, remoteCasePath / "t", driveIdT, found);
     if (!found || !driveIdT.has_value()) {
         return false;
     }
@@ -329,18 +391,11 @@ bool TestSyncPal::check_case_6_4() {
     bool found;
 
     std::optional<NodeId> driveIdQ;
-    _syncPal->_syncDb->id(ReplicaSide::ReplicaSideRemote, remoteCasePath / "n/g/w/q", driveIdQ, found);
+    _syncPal->syncDb()->id(ReplicaSide::ReplicaSideRemote, remoteCasePath / "n/g/w/q", driveIdQ, found);
     if (!found || !driveIdQ.has_value()) {
         return false;
     }
 
     return true;
 }
-
-void TestSyncPal::testGetSnapshot() {
-    CPPUNIT_ASSERT(nullptr == _syncPal->snapshot(ReplicaSideUnknown));
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _syncPal->snapshot(ReplicaSideLocal)->side());
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _syncPal->snapshot(ReplicaSideRemote)->side());
-}
-
 }  // namespace KDC

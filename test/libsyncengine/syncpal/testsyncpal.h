@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#pragma once
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
 #include "syncpal/syncpal.h"
 
 using namespace CppUnit;
@@ -25,28 +26,32 @@ namespace KDC {
 
 class TestSyncPal : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSyncPal);
-        CPPUNIT_TEST(testAll);
-        CPPUNIT_TEST(testConflictQueue);
-        CPPUNIT_TEST(testGetSnapshot);
+        CPPUNIT_TEST(testUpdateTree);
+        CPPUNIT_TEST(testSnapshot);
+        CPPUNIT_TEST(testCopySnapshots);
+        CPPUNIT_TEST(testOperationSet);
         CPPUNIT_TEST_SUITE_END();
 
     public:
+        TestSyncPal() {}
         void setUp() override;
         void tearDown() override;
-
-    protected:
-        void testAll();
-        void testConflictQueue();
-        void testGetSnapshot();
 
     private:
         std::shared_ptr<SyncPal> _syncPal;
         std::shared_ptr<ParmsDb> _parmsDb;
-
+        LocalTemporaryDirectory _localTempDir = LocalTemporaryDirectory("TestSyncpal");
         int _driveDbId;
         SyncPath _localPath;
         SyncPath _remotePath;
 
+        void testUpdateTree();
+        void testSnapshot();
+        void testOperationSet();
+        void testCopySnapshots();
+
+        void testAll();
+        void testConflictQueue();
         bool exec_case_6_4();
         bool check_case_6_4();
 };
