@@ -40,7 +40,6 @@ class FSOperationSet : public SharedObject {
         FSOperationSet &operator=(FSOperationSet &other);
 
         bool getOp(UniqueId id, FSOpPtr &opPtr) const;
-        void getAllOps(std::unordered_map<UniqueId, FSOpPtr> &ops) const;
         std::unordered_map<UniqueId, FSOpPtr> getAllOps() const;
         std::unordered_set<UniqueId> getOpsByType(const OperationType type) const;
         std::unordered_set<UniqueId> getOpsByNodeId(const NodeId &nodeId) const;
@@ -57,7 +56,6 @@ class FSOperationSet : public SharedObject {
         ReplicaSide side() const;
 
     private:
-        friend class TestFsOperationSet;
         std::unordered_map<UniqueId, FSOpPtr> _ops;
         std::unordered_map<OperationType, std::unordered_set<UniqueId>> _opsByType;
         std::unordered_map<NodeId, std::unordered_set<UniqueId>> _opsByNodeId;

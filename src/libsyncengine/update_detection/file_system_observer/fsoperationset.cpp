@@ -33,6 +33,7 @@ bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) const {
     }
     return false;
 }
+
 std::unordered_map<UniqueId, FSOpPtr> FSOperationSet::getAllOps() const {
     const std::scoped_lock lock(_mutex);
     return _ops;
@@ -92,11 +93,8 @@ bool FSOperationSet::removeOp(UniqueId id) {
     startUpdate();
     if (auto it = _ops.find(id); it != _ops.end()) {
         _opsByType[it->second->operationType()].erase(id);
-        if (_opsByType.find(it->second->operationType())->second.empty()) {
-            _opsByType.erase(it->second->operationType());
-        }
         _opsByNodeId[it->second->nodeId()].erase(id);
-        if (_opsByNodeId.find(it->second->nodeId())->second.empty()) {
+        if (_opsByNodeId[it->second->nodeId()].empty()) {  // Remove nodeId from map if no more ops for this node
             _opsByNodeId.erase(it->second->nodeId());
         }
         _ops.erase(id);
@@ -127,7 +125,7 @@ bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FS
     return false;
 }
 
-ReplicaSide FSOperationSet::side() const { 
+ReplicaSide FSOperationSet::side() const {
     // No lock needed, read only value
     return _side;
 }
