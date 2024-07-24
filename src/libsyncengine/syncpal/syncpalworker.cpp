@@ -391,7 +391,8 @@ SyncStep SyncPalWorker::nextStep() const {
         case SyncStepIdle:
             return (_syncPal->isSnapshotValid(ReplicaSideLocal) && _syncPal->isSnapshotValid(ReplicaSideRemote) &&
                     !_syncPal->_localFSObserverWorker->updating() && !_syncPal->_remoteFSObserverWorker->updating() &&
-                    (_syncPal->_localSnapshot->updated() || _syncPal->_remoteSnapshot->updated() || _syncPal->_restart))
+                    (_syncPal->snapshot(ReplicaSideLocal)->updated() || _syncPal->snapshot(ReplicaSideRemote)->updated() ||
+                     _syncPal->_restart))
                        ? SyncStepUpdateDetection1
                        : SyncStepIdle;
             break;
