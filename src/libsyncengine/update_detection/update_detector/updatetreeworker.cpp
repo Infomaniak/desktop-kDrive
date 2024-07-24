@@ -1075,13 +1075,13 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
     std::vector<std::pair<SyncName, NodeId>> names;
     SyncPath pathTmp(path);
     while (pathTmp != pathTmp.root_path()) {
-        names.push_back({pathTmp.filename(), "0"});
+        names.emplace_back(pathTmp.filename(), "0");
         pathTmp = pathTmp.parent_path();
     }
 
     // Vector ID
     SyncPath tmpPath;
-    for (std::vector<std::pair<SyncName, NodeId>>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         tmpPath.append(nameIt->first);
         bool found = false;
         std::optional<NodeId> tmpNodeId{};
@@ -1096,7 +1096,7 @@ ExitCode UpdateTreeWorker::getNewPathAfterMove(const SyncPath &path, SyncPath &n
         nameIt->second = *tmpNodeId;
     }
 
-    for (std::vector<std::pair<SyncName, NodeId>>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         FSOpPtr op = nullptr;
         if (_operationSet->findOp(nameIt->second, OperationTypeMove, op)) {
             newPath = op->destinationPath();
