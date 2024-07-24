@@ -151,11 +151,11 @@ if (APPLE)
     set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${INSTALL_OUTPUT_DIRECTORY}
         MACOSX_BUNDLE TRUE
+        INSTALL_RPATH "@executable_path/../Frameworks"
     )
 else()
     set_target_properties( ${APPLICATION_EXECUTABLE} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
-        MACOSX_BUNDLE TRUE
     )
 endif()
 
@@ -187,7 +187,7 @@ target_link_libraries(updater
     ${updater_DEPS})
 
 target_link_libraries(${APPLICATION_EXECUTABLE}
-    Qt6::Network Qt6::Svg
+    Qt6::Svg
     sentry::sentry
     updater)
 
@@ -238,10 +238,12 @@ if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     set(ENV_QTDIR $ENV{QTDIR})
     set(ENV_DESTDIR $ENV{DESTDIR})
 
+    cmake_path(GET SPARKLE_LIBRARY PARENT_PATH USER_FRAMEWORK_PATH)
+
     install(CODE "
         message(STATUS \"Deploying (Qt) dependencies for kDrive...\")
         execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
         message(STATUS \"Fixing library paths for kDrive...\")
-        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path/. -add_rpath @executable_path/../Frameworks ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
+        execute_process(COMMAND \"install_name_tool\" -delete_rpath ${USER_FRAMEWORK_PATH} ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_EXECUTABLE})
         " COMPONENT RUNTIME)
 endif()
