@@ -258,10 +258,10 @@ void TestConflictResolverWorker::testEditDelete2() {
         if (op->type() == OperationTypeMove) {
             CPPUNIT_ASSERT(!op->newName().empty());
             CPPUNIT_ASSERT_EQUAL(_syncPal->updateTree(ReplicaSideRemote)->rootNode(), op->newParentNode());
-            CPPUNIT_ASSERT_EQUAL(false, op->omit());
+            CPPUNIT_ASSERT(!op->omit());
             CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->affectedNode());
         } else if (op->type() == OperationTypeDelete) {
-            CPPUNIT_ASSERT_EQUAL(true, op->omit());
+            CPPUNIT_ASSERT(op->omit());
             CPPUNIT_ASSERT_EQUAL(rNodeAAA, op->affectedNode());
         } else {
             CPPUNIT_ASSERT(false);  // Should not happen
