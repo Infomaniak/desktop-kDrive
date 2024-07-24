@@ -39,7 +39,7 @@ void TestOperationSorterWorker::setUp() {
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
     _syncPal = std::shared_ptr<SyncPal>(new SyncPal(syncDbPath, "3.4.0", true));
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
 
     _syncPal->_operationsSorterWorker =
         std::shared_ptr<OperationSorterWorker>(new OperationSorterWorker(_syncPal, "Operation Sorter", "OPSO"));
@@ -47,7 +47,7 @@ void TestOperationSorterWorker::setUp() {
 
 void TestOperationSorterWorker::tearDown() {
     ParmsDb::instance()->close();
-    _syncPal->_syncDb->close();
+    _syncPal->syncDb()->close();
 }
 
 void TestOperationSorterWorker::testMoveFirstAfterSecond() {
@@ -141,72 +141,72 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     DbNodeId dbnodeIdDir5;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
     DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "id drive 1.1", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
     DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "id drive 111", tLoc, tLoc, tDrive,
                       NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
     DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
                         NodeType::NodeTypeFile, 0, "cs 1.1.1");
-    _syncPal->_syncDb->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-    DbNode nodeDir4(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
-    DbNode nodeDir5(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
+    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""),
-                                            NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdLocal(),
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->syncDb()->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideLocal)->side(), Str(""),
+                                            NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdLocal(),
                                             createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->_localUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1"), NodeTypeDirectory,
                                          OperationTypeNone, "d1", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->_localUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                           OperationTypeNone, "11", createdAt, lastmodified, size, node1));
-    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->_localUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1.1"),
                                            NodeTypeDirectory, OperationTypeNone, "111", createdAt, lastmodified, size, node11));
-    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->_localUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("File 1.1.1.1"),
                                             NodeTypeFile, OperationTypeNone, "1111", createdAt, lastmodified, size, node111));
-    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->_localUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 2"), NodeTypeDirectory,
                                          OperationTypeNone, "2", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->_localUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 3"), NodeTypeDirectory,
                                          OperationTypeNone, "3", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node4(new Node(dbnodeIdDir4, _syncPal->_localUpdateTree->side(), Str("Dir 4"), NodeTypeDirectory,
+    std::shared_ptr<Node> node4(new Node(dbnodeIdDir4, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 4"), NodeTypeDirectory,
                                          OperationTypeNone, "4", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->_localUpdateTree->side(), Str("Dir 5"), NodeTypeDirectory,
+    std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 5"), NodeTypeDirectory,
                                          OperationTypeNone, "5", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
-                                             NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdRemote(),
+    std::shared_ptr<Node> rrootNode(new Node(_syncPal->syncDb()->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideRemote)->side(), Str(""),
+                                             NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdRemote(),
                                              createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->_remoteUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1"), NodeTypeDirectory,
                                           OperationTypeNone, "r1", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                            OperationTypeNone, "r11", createdAt, lastmodified, size, rNode1));
-    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1.1"),
                                             NodeTypeDirectory, OperationTypeNone, "r111", createdAt, lastmodified, size,
                                             rNode11));
-    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->_remoteUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("File 1.1.1.1"),
                                              NodeTypeFile, OperationTypeNone, "r1111", createdAt, lastmodified, size, rNode111));
-    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->_remoteUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 2"), NodeTypeDirectory,
                                           OperationTypeNone, "r2", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->_remoteUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 3"), NodeTypeDirectory,
                                           OperationTypeNone, "r3", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode4(new Node(dbnodeIdDir4, _syncPal->_remoteUpdateTree->side(), Str("Dir 4"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode4(new Node(dbnodeIdDir4, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 4"), NodeTypeDirectory,
                                           OperationTypeNone, "r4", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode5(new Node(dbnodeIdDir5, _syncPal->_remoteUpdateTree->side(), Str("Dir 5"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 5"), NodeTypeDirectory,
                                           OperationTypeNone, "r5", createdAt, lastmodified, size, rrootNode));
 
     SyncOpPtr op1 = std::make_shared<SyncOperation>();
@@ -251,30 +251,30 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     DbNodeId dbnodeIdDir5;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
     DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "id drive 1.1", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
     DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "id drive 111", tLoc, tLoc, tDrive,
                       NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
     DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
                         NodeType::NodeTypeFile, 0, "cs 1.1.1");
-    _syncPal->_syncDb->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-    DbNode nodeDir4(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
-    DbNode nodeDir5(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
+    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
@@ -282,43 +282,43 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""),
                                             NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdLocal(),
                                             createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->_localUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1"), NodeTypeDirectory,
                                          OperationTypeNone, "d1", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->_localUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                           OperationTypeNone, "11", createdAt, lastmodified, size, node1));
-    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->_localUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1.1"),
                                            NodeTypeDirectory, OperationTypeNone, "111", createdAt, lastmodified, size, node11));
-    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->_localUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("File 1.1.1.1"),
                                             NodeTypeFile, OperationTypeNone, "1111", createdAt, lastmodified, size, node111));
-    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->_localUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 2"), NodeTypeDirectory,
                                          OperationTypeNone, "2", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->_localUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 3"), NodeTypeDirectory,
                                          OperationTypeNone, "3", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node4(new Node(dbnodeIdDir4, _syncPal->_localUpdateTree->side(), Str("Dir 4"), NodeTypeDirectory,
+    std::shared_ptr<Node> node4(new Node(dbnodeIdDir4, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 4"), NodeTypeDirectory,
                                          OperationTypeNone, "4", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->_localUpdateTree->side(), Str("Dir 5"), NodeTypeDirectory,
+    std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 5"), NodeTypeDirectory,
                                          OperationTypeNone, "5", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
                                              NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdRemote(),
                                              createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->_remoteUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1"), NodeTypeDirectory,
                                           OperationTypeNone, "r1", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                            OperationTypeNone, "r11", createdAt, lastmodified, size, rNode1));
-    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1.1"),
                                             NodeTypeDirectory, OperationTypeNone, "r111", createdAt, lastmodified, size,
                                             rNode11));
-    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->_remoteUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("File 1.1.1.1"),
                                              NodeTypeFile, OperationTypeNone, "r1111", createdAt, lastmodified, size, rNode111));
-    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->_remoteUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 2"), NodeTypeDirectory,
                                           OperationTypeNone, "r2", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->_remoteUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 3"), NodeTypeDirectory,
                                           OperationTypeNone, "r3", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode4(new Node(dbnodeIdDir4, _syncPal->_remoteUpdateTree->side(), Str("Dir 4"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode4(new Node(dbnodeIdDir4, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 4"), NodeTypeDirectory,
                                           OperationTypeNone, "r4", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode5(new Node(dbnodeIdDir5, _syncPal->_remoteUpdateTree->side(), Str("Dir 5"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 5"), NodeTypeDirectory,
                                           OperationTypeNone, "r5", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> node111C(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("Dir 1.1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node111C(new Node(std::nullopt, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1.1"), NodeTypeDirectory,
                                             OperationTypeCreate, "111c", createdAt, lastmodified, size, node3));
 
     node111->setMoveOrigin("Dir 3/Dir 1.1.1");
@@ -365,72 +365,72 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     DbNodeId dbnodeIdDir5;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
     DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
     DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "r111", tLoc, tLoc, tDrive,
                       NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
     DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
                         NodeType::NodeTypeFile, 0, "cs 1.1.1");
-    _syncPal->_syncDb->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-    DbNode nodeDir4(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
-    DbNode nodeDir5(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
+    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""),
-                                            NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdLocal(),
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->syncDb()->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideLocal)->side(), Str(""),
+                                            NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdLocal(),
                                             createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->_localUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1"), NodeTypeDirectory,
                                          OperationTypeNone, "d1", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->_localUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                           OperationTypeNone, "11", createdAt, lastmodified, size, node1));
-    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->_localUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 2"), NodeTypeDirectory,
                                          OperationTypeNone, "2", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->_localUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1.1"),
                                            NodeTypeDirectory, OperationTypeNone, "111", createdAt, lastmodified, size, node2));
-    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->_localUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("File 1.1.1.1"),
                                             NodeTypeFile, OperationTypeNone, "1111", createdAt, lastmodified, size, node111));
-    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->_localUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 3"), NodeTypeDirectory,
                                          OperationTypeNone, "3", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node4(new Node(dbnodeIdDir4, _syncPal->_localUpdateTree->side(), Str("Dir 4"), NodeTypeDirectory,
+    std::shared_ptr<Node> node4(new Node(dbnodeIdDir4, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 4"), NodeTypeDirectory,
                                          OperationTypeNone, "4", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->_localUpdateTree->side(), Str("Dir 5"), NodeTypeDirectory,
+    std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 5"), NodeTypeDirectory,
                                          OperationTypeNone, "5", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
-                                             NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdRemote(),
+    std::shared_ptr<Node> rrootNode(new Node(_syncPal->syncDb()->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideRemote)->side(), Str(""),
+                                             NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdRemote(),
                                              createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->_remoteUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1"), NodeTypeDirectory,
                                           OperationTypeNone, "r1", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                            OperationTypeNone, "r11", createdAt, lastmodified, size, rNode1));
-    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1.1"),
                                             NodeTypeDirectory, OperationTypeNone, "r111", createdAt, lastmodified, size,
                                             rNode11));
-    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->_remoteUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("File 1.1.1.1"),
                                              NodeTypeFile, OperationTypeNone, "r1111", createdAt, lastmodified, size, rNode111));
-    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->_remoteUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 2"), NodeTypeDirectory,
                                           OperationTypeNone, "r2", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->_remoteUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 3"), NodeTypeDirectory,
                                           OperationTypeNone, "r3", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode4(new Node(dbnodeIdDir4, _syncPal->_remoteUpdateTree->side(), Str("Dir 4"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode4(new Node(dbnodeIdDir4, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 4"), NodeTypeDirectory,
                                           OperationTypeNone, "r4", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode5(new Node(dbnodeIdDir5, _syncPal->_remoteUpdateTree->side(), Str("Dir 5"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 5"), NodeTypeDirectory,
                                           OperationTypeNone, "r5", createdAt, lastmodified, size, rrootNode));
 
     node111->setMoveOrigin("Dir 1/Dir 1.1/Dir 1.1.1");
@@ -477,72 +477,72 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     DbNodeId dbnodeIdDir5;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
     DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "id drive 1.1", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
     DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "id drive 111", tLoc, tLoc, tDrive,
                       NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
     DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
                         NodeType::NodeTypeFile, 0, "cs 1.1.1");
-    _syncPal->_syncDb->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
-    DbNode nodeDir4(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    DbNode nodeDir4(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 4"), Str("Dir 4"), "4", "r4", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
-    DbNode nodeDir5(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir4, dbnodeIdDir4, constraintError);
+    DbNode nodeDir5(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 5"), Str("Dir 5"), "5", "r5", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir5, dbnodeIdDir5, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
     std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""),
-                                            NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdLocal(),
+                                            NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdLocal(),
                                             createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->_localUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1"), NodeTypeDirectory,
                                          OperationTypeNone, "d1", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node11(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node11(new Node(std::nullopt, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                           OperationTypeNone, "11", createdAt, lastmodified, size, node1));
-    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->_localUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1.1"),
                                            NodeTypeDirectory, OperationTypeNone, "111", createdAt, lastmodified, size, node11));
-    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->_localUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("File 1.1.1.1"),
                                             NodeTypeFile, OperationTypeNone, "1111", createdAt, lastmodified, size, node111));
-    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->_localUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 2"), NodeTypeDirectory,
                                          OperationTypeNone, "2", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->_localUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 3"), NodeTypeDirectory,
                                          OperationTypeNone, "3", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node4(new Node(dbnodeIdDir4, _syncPal->_localUpdateTree->side(), Str("Dir 4"), NodeTypeDirectory,
+    std::shared_ptr<Node> node4(new Node(dbnodeIdDir4, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 4"), NodeTypeDirectory,
                                          OperationTypeNone, "4", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->_localUpdateTree->side(), Str("Dir 5"), NodeTypeDirectory,
+    std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 5"), NodeTypeDirectory,
                                          OperationTypeNone, "5", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
-                                             NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdRemote(),
+                                             NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdRemote(),
                                              createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->_remoteUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1"), NodeTypeDirectory,
                                           OperationTypeNone, "r1", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                            OperationTypeNone, "r11", createdAt, lastmodified, size, rNode1));
-    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1.1"),
                                             NodeTypeDirectory, OperationTypeNone, "r111", createdAt, lastmodified, size,
                                             rNode11));
-    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->_remoteUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("File 1.1.1.1"),
                                              NodeTypeFile, OperationTypeNone, "r1111", createdAt, lastmodified, size, rNode111));
-    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->_remoteUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 2"), NodeTypeDirectory,
                                           OperationTypeNone, "r2", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->_remoteUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 3"), NodeTypeDirectory,
                                           OperationTypeNone, "r3", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode4(new Node(dbnodeIdDir4, _syncPal->_remoteUpdateTree->side(), Str("Dir 4"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode4(new Node(dbnodeIdDir4, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 4"), NodeTypeDirectory,
                                           OperationTypeNone, "r4", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode5(new Node(dbnodeIdDir5, _syncPal->_remoteUpdateTree->side(), Str("Dir 5"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 5"), NodeTypeDirectory,
                                           OperationTypeNone, "r5", createdAt, lastmodified, size, rrootNode));
 
     rootNode->insertChildren(node1);
@@ -584,23 +584,23 @@ void TestOperationSorterWorker::testFixCreateBeforeMoveBis() {
     DbNodeId dbNodeIdDirA;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir A"), Str("Dir A"), "dA", "rdA", tLoc, tLoc, tDrive,
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir A"), Str("Dir A"), "dA", "rdA", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir1, dbNodeIdDirA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDirA, constraintError);
 
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""),
-                                            NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdLocal(),
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideLocal)->side(), Str(""),
+                                            NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdLocal(),
                                             createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->_localUpdateTree->side(), Str("Dir A"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir A"), NodeTypeDirectory,
                                          OperationTypeMove, "dA", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
-                                             NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdRemote(),
+                                             NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdRemote(),
                                              createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->_remoteUpdateTree->side(), Str("Dir A"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir A"), NodeTypeDirectory,
                                           OperationTypeNone, "rdA", createdAt, lastmodified, size, rrootNode));
 
 
@@ -608,11 +608,11 @@ void TestOperationSorterWorker::testFixCreateBeforeMoveBis() {
 
     // Rename Dir A -> Dir B
     nodeA->setMoveOrigin("Dir A");
-    nodeA->setMoveOriginParentDbId(_syncPal->_syncDb->rootNode().nodeId());
+    nodeA->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
     nodeA->setName(Str("Dir B"));
 
     // Create Dir A
-    std::shared_ptr<Node> nodeABis(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("Dir A"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeABis(new Node(std::nullopt, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir A"), NodeTypeDirectory,
                                             OperationTypeCreate, "dABis", createdAt, lastmodified, size, rootNode));
 
     SyncOpPtr op1 = std::make_shared<SyncOperation>();
@@ -645,61 +645,61 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     DbNodeId dbNodeIdDir3;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
     DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
     DbNode nodeDir111(0, dbNodeIdDir11, Str("Dir 1.1.1"), Str("Dir 1.1.1"), "111", "r111", tLoc, tLoc, tDrive,
                       NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir111, dbNodeIdDir111, constraintError);
     DbNode nodeFile1111(0, dbNodeIdDir111, Str("File 1.1.1.1"), Str("File 1.1.1.1"), "1111", "r1111", tLoc, tLoc, tDrive,
                         NodeType::NodeTypeFile, 0, "cs 1.1.1");
-    _syncPal->_syncDb->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
-    DbNode nodeDir2(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeFile1111, dbNodeIdFile1111, constraintError);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""),
-                                            NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdLocal(),
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideLocal)->side(), Str(""),
+                                            NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdLocal(),
                                             createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->_localUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1"), NodeTypeDirectory,
                                          OperationTypeNone, "d1", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->_localUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                           OperationTypeNone, "11", createdAt, lastmodified, size, node1));
-    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->_localUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> node111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1.1"),
                                            NodeTypeDirectory, OperationTypeNone, "111", createdAt, lastmodified, size, node11));
-    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->_localUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> node1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("File 1.1.1.1"),
                                             NodeTypeFile, OperationTypeNone, "1111", createdAt, lastmodified, size, node111));
-    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->_localUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 2"), NodeTypeDirectory,
                                          OperationTypeNone, "2", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->_localUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 3"), NodeTypeDirectory,
                                          OperationTypeNone, "3", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
-                                             NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdRemote(),
+                                             NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdRemote(),
                                              createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->_remoteUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1"), NodeTypeDirectory,
                                           OperationTypeNone, "r1", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                            OperationTypeNone, "r11", createdAt, lastmodified, size, rNode1));
-    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1.1"),
+    std::shared_ptr<Node> rNode111(new Node(dbNodeIdDir111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1.1"),
                                             NodeTypeDirectory, OperationTypeNone, "r111", createdAt, lastmodified, size,
                                             rNode11));
-    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->_remoteUpdateTree->side(), Str("File 1.1.1.1"),
+    std::shared_ptr<Node> rNode1111(new Node(dbNodeIdFile1111, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("File 1.1.1.1"),
                                              NodeTypeFile, OperationTypeNone, "r1111", createdAt, lastmodified, size, rNode111));
-    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->_remoteUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 2"), NodeTypeDirectory,
                                           OperationTypeNone, "r2", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->_remoteUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 3"), NodeTypeDirectory,
                                           OperationTypeNone, "r3", createdAt, lastmodified, size, rrootNode));
 
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("d1", _syncPal->_syncDb->rootNode().nodeIdLocal().value(), Str("Dir 1"),
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("d1", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("Dir 1"),
                                                       createdAt, lastmodified, NodeTypeDirectory, size));
     _syncPal->_localSnapshot->updateItem(
         SnapshotItem("11", "d1", Str("Dir 1.1"), createdAt, lastmodified, NodeTypeDirectory, size));
@@ -707,12 +707,12 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
         SnapshotItem("111", "11", Str("Dir 1.1.1"), createdAt, lastmodified, NodeTypeDirectory, size));
     _syncPal->_localSnapshot->updateItem(
         SnapshotItem("1111c", "111", Str("File 1.1.1.1"), createdAt, lastmodified, NodeTypeDirectory, size));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("2", _syncPal->_syncDb->rootNode().nodeIdLocal().value(), Str("Dir 2"),
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("2", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("Dir 2"),
                                                       createdAt, lastmodified, NodeTypeDirectory, size));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem("3", _syncPal->_syncDb->rootNode().nodeIdLocal().value(), Str("Dir 3"),
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("3", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("Dir 3"),
                                                       createdAt, lastmodified, NodeTypeDirectory, size));
 
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r1", _syncPal->_syncDb->rootNode().nodeIdRemote().value(), Str("Dir 1"),
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r1", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("Dir 1"),
                                                        createdAt, lastmodified, NodeTypeDirectory, size));
     _syncPal->_remoteSnapshot->updateItem(
         SnapshotItem("r11", "r1", Str("Dir 1.1"), createdAt, lastmodified, NodeTypeDirectory, size));
@@ -720,12 +720,12 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
         SnapshotItem("r111", "r11", Str("Dir 1.1.1"), createdAt, lastmodified, NodeTypeDirectory, size));
     _syncPal->_remoteSnapshot->updateItem(
         SnapshotItem("r1111", "r111", Str("File 1.1.1.1"), createdAt, lastmodified, NodeTypeDirectory, size));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r2", _syncPal->_syncDb->rootNode().nodeIdRemote().value(), Str("Dir 2"),
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r2", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("Dir 2"),
                                                        createdAt, lastmodified, NodeTypeDirectory, size));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r3", _syncPal->_syncDb->rootNode().nodeIdRemote().value(), Str("Dir 3"),
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r3", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("Dir 3"),
                                                        createdAt, lastmodified, NodeTypeDirectory, size));
 
-    std::shared_ptr<Node> node1111C(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("File 1.1.1.1"), NodeTypeFile,
+    std::shared_ptr<Node> node1111C(new Node(std::nullopt, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("File 1.1.1.1"), NodeTypeFile,
                                              OperationTypeCreate, "1111c", createdAt, lastmodified, size, node111));
 
     SyncOpPtr op1 = std::make_shared<SyncOperation>();
@@ -765,18 +765,18 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
     DbNodeId dbNodeIdDir3;
 
     bool constraintError = true;
-    DbNode nodeDir1(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
     DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir2(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
@@ -784,24 +784,24 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
     std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""),
                                             NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdLocal(),
                                             createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->_localUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1"), NodeTypeDirectory,
                                          OperationTypeNone, "d1", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->_localUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                           OperationTypeNone, "11", createdAt, lastmodified, size, node1));
-    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->_localUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 2"), NodeTypeDirectory,
                                          OperationTypeNone, "2", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->_localUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 3"), NodeTypeDirectory,
                                          OperationTypeNone, "3", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
-                                             NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdRemote(),
+    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideRemote)->side(), Str(""),
+                                             NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdRemote(),
                                              createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->_remoteUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1"), NodeTypeDirectory,
                                           OperationTypeNone, "r1", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                            OperationTypeNone, "r11", createdAt, lastmodified, size, rNode1));
-    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->_remoteUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 2"), NodeTypeDirectory,
                                           OperationTypeNone, "r2", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->_remoteUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 3"), NodeTypeDirectory,
                                           OperationTypeNone, "r3", createdAt, lastmodified, size, rrootNode));
 
     node11->setMoveOrigin("Dir 1/Dir 1.1");
@@ -814,7 +814,7 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
     node3->insertChangeEvent(OperationTypeMove);
     node3->setParentNode(node1);
     node3->setName(Str("Dir 1.1"));
-    node3->setMoveOriginParentDbId(_syncPal->_syncDb->rootNode().nodeId());
+    node3->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
     node3->setMoveOrigin("Dir 3");
     node1->insertChildren(node3);
     rootNode->deleteChildren(node3);
@@ -872,42 +872,42 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
     DbNodeId dbNodeIdDirAAB;
 
     bool constraintError = false;
-    DbNode nodeDirA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", tLoc, tLoc, tDrive,
+    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
-    DbNode nodeDirB(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
+    DbNode nodeDirB(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
     DbNode nodeDirAA(0, dbNodeIdDirA, Str("AA"), Str("AA"), "laa", "raa", tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0,
                      std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirAA, dbNodeIdDirAA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirAA, dbNodeIdDirAA, constraintError);
     DbNode nodeDirAB(0, dbNodeIdDirA, Str("AB"), Str("AB"), "lab", "rab", tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0,
                      std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirAB, dbNodeIdDirAB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirAB, dbNodeIdDirAB, constraintError);
     DbNode nodeDirAAA(0, dbNodeIdDirAA, Str("AAA"), Str("AAA"), "laaa", "raaa", tLoc, tLoc, tDrive, NodeType::NodeTypeFile, 0,
                       std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirAAA, dbNodeIdDirAAA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirAAA, dbNodeIdDirAAA, constraintError);
     DbNode nodeDirAAB(0, dbNodeIdDirAA, Str("AAB"), Str("AAB"), "laab", "raab", tLoc, tLoc, tDrive, NodeType::NodeTypeFile, 0,
                       std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirAAB, dbNodeIdDirAAB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirAAB, dbNodeIdDirAAB, constraintError);
 
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
-    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""),
-                                            NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdLocal(),
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideLocal)->side(), Str(""),
+                                            NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdLocal(),
                                             createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->_localUpdateTree->side(), Str("A"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("A"), NodeTypeDirectory,
                                          OperationTypeCreate, "a", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> nodeB(new Node(dbNodeIdDirB, _syncPal->_localUpdateTree->side(), Str("B"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeB(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("B"), NodeTypeDirectory,
                                          OperationTypeCreate, "b", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> nodeAA(new Node(dbNodeIdDirAA, _syncPal->_localUpdateTree->side(), Str("AA"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeAA(new Node(dbNodeIdDirAA, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("AA"), NodeTypeDirectory,
                                           OperationTypeCreate, "aa", createdAt, lastmodified, size, nodeA));
-    std::shared_ptr<Node> nodeAB(new Node(dbNodeIdDirAB, _syncPal->_localUpdateTree->side(), Str("AB"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeAB(new Node(dbNodeIdDirAB, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("AB"), NodeTypeDirectory,
                                           OperationTypeCreate, "ab", createdAt, lastmodified, size, nodeA));
-    std::shared_ptr<Node> nodeAAA(new Node(dbNodeIdDirAAA, _syncPal->_localUpdateTree->side(), Str("AAA"), NodeTypeFile,
+    std::shared_ptr<Node> nodeAAA(new Node(dbNodeIdDirAAA, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("AAA"), NodeTypeFile,
                                            OperationTypeCreate, "aaa", createdAt, lastmodified, size, nodeAA));
-    std::shared_ptr<Node> nodeAAB(new Node(dbNodeIdDirAAB, _syncPal->_localUpdateTree->side(), Str("AAB"), NodeTypeFile,
+    std::shared_ptr<Node> nodeAAB(new Node(dbNodeIdDirAAB, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("AAB"), NodeTypeFile,
                                            OperationTypeCreate, "aab", createdAt, lastmodified, size, nodeAA));
 
     SyncOpPtr opA = std::make_shared<SyncOperation>();
@@ -1056,43 +1056,43 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFilp() {
     DbNodeId dbNodeIdDir3;
 
     bool constraintError = false;
-    DbNode nodeDir1(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
+    DbNode nodeDir1(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 1"), Str("Dir 1"), "d1", "r1", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir1, dbNodeIdDir1, constraintError);
     DbNode nodeDir11(0, dbNodeIdDir1, Str("Dir 1.1"), Str("Dir 1.1"), "11", "r11", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
-    DbNode nodeDir2(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir11, dbNodeIdDir11, constraintError);
+    DbNode nodeDir2(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 2"), Str("Dir 2"), "2", "r2", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
-    DbNode nodeDir3(0, _syncPal->_syncDb->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDir2, dbNodeIdDir2, constraintError);
+    DbNode nodeDir3(0, _syncPal->syncDb()->rootNode().nodeId(), Str("Dir 3"), Str("Dir 3"), "3", "r3", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDir3, dbNodeIdDir3, constraintError);
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""),
-                                            NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdLocal(),
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideLocal)->side(), Str(""),
+                                            NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdLocal(),
                                             createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->_localUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1"), NodeTypeDirectory,
                                          OperationTypeCreate, "d1", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->_localUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> node11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                           OperationTypeCreate, "11", createdAt, lastmodified, size, node1));
-    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->_localUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> node2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 2"), NodeTypeDirectory,
                                          OperationTypeNone, "2", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->_localUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("Dir 3"), NodeTypeDirectory,
                                          OperationTypeNone, "3", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""),
-                                             NodeTypeDirectory, OperationTypeNone, _syncPal->_syncDb->rootNode().nodeIdRemote(),
+    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSideRemote)->side(), Str(""),
+                                             NodeTypeDirectory, OperationTypeNone, _syncPal->syncDb()->rootNode().nodeIdRemote(),
                                              createdAt, lastmodified, size, nullptr));
-    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->_remoteUpdateTree->side(), Str("Dir 1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1"), NodeTypeDirectory,
                                           OperationTypeNone, "r1", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->_remoteUpdateTree->side(), Str("Dir 1.1"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode11(new Node(dbNodeIdDir11, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 1.1"), NodeTypeDirectory,
                                            OperationTypeNone, "r11", createdAt, lastmodified, size, rNode1));
-    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->_remoteUpdateTree->side(), Str("Dir 2"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode2(new Node(dbNodeIdDir2, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 2"), NodeTypeDirectory,
                                           OperationTypeNone, "r2", createdAt, lastmodified, size, rrootNode));
-    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->_remoteUpdateTree->side(), Str("Dir 3"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNode3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("Dir 3"), NodeTypeDirectory,
                                           OperationTypeNone, "r3", createdAt, lastmodified, size, rrootNode));
 
     rootNode->deleteChildren(node1);
@@ -1101,7 +1101,7 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFilp() {
     node1->deleteChildren(node11);
     node1->insertChangeEvent(OperationTypeMove);
     node1->setMoveOrigin("Dir 1");
-    node1->setMoveOriginParentDbId(_syncPal->_syncDb->rootNode().nodeId());
+    node1->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
     rootNode->insertChildren(node11);
     node11->setParentNode(rootNode);
     node11->insertChangeEvent(OperationTypeMove);
@@ -1155,52 +1155,52 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     DbNodeId dbNodeIdDire;
 
     bool constraintError = false;
-    DbNode nodeDirn(0, _syncPal->_syncDb->rootNode().nodeId(), Str("n"), Str("n"), "n", "re", tLoc, tLoc, tDrive,
+    DbNode nodeDirn(0, _syncPal->syncDb()->rootNode().nodeId(), Str("n"), Str("n"), "n", "re", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirn, dbNodeIdDirn, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirn, dbNodeIdDirn, constraintError);
     DbNode nodeDirt(0, dbNodeIdDirn, Str("t"), Str("t"), "t", "rq", tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0,
                     std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirt, dbNodeIdDirt, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirt, dbNodeIdDirt, constraintError);
     DbNode nodeDirq(0, dbNodeIdDirt, Str("q"), Str("q"), "q", "rt", tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0,
                     std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirq, dbNodeIdDirq, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirq, dbNodeIdDirq, constraintError);
     DbNode nodeDire(0, dbNodeIdDirq, Str("e"), Str("e"), "e", "rn", tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0,
                     std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDire, dbNodeIdDire, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDire, dbNodeIdDire, constraintError);
 
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
-    std::shared_ptr<Node> nodeN(new Node(dbNodeIdDirn, _syncPal->_localUpdateTree->side(), Str("n"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeN(new Node(dbNodeIdDirn, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("n"), NodeTypeDirectory,
                                          OperationTypeNone, "n", createdAt, lastmodified, size,
-                                         _syncPal->_localUpdateTree->rootNode()));
-    std::shared_ptr<Node> nodeT(new Node(dbNodeIdDirt, _syncPal->_localUpdateTree->side(), Str("t"), NodeTypeDirectory,
+                                         _syncPal->updateTree(ReplicaSideLocal)->rootNode()));
+    std::shared_ptr<Node> nodeT(new Node(dbNodeIdDirt, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("t"), NodeTypeDirectory,
                                          OperationTypeNone, "t", createdAt, lastmodified, size,
-                                         _syncPal->_localUpdateTree->rootNode()));
-    std::shared_ptr<Node> nodeQ(new Node(dbNodeIdDirq, _syncPal->_localUpdateTree->side(), Str("q"), NodeTypeDirectory,
+                                         _syncPal->updateTree(ReplicaSideLocal)->rootNode()));
+    std::shared_ptr<Node> nodeQ(new Node(dbNodeIdDirq, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("q"), NodeTypeDirectory,
                                          OperationTypeNone, "q", createdAt, lastmodified, size, nodeT));
-    std::shared_ptr<Node> nodeE(new Node(dbNodeIdDire, _syncPal->_localUpdateTree->side(), Str("e"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeE(new Node(dbNodeIdDire, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("e"), NodeTypeDirectory,
                                          OperationTypeNone, "e", createdAt, lastmodified, size, nodeQ));
-    std::shared_ptr<Node> rNodeN(new Node(dbNodeIdDirn, _syncPal->_remoteUpdateTree->side(), Str("n"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNodeN(new Node(dbNodeIdDirn, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("n"), NodeTypeDirectory,
                                           OperationTypeNone, "rn", createdAt, lastmodified, size,
-                                          _syncPal->_remoteUpdateTree->rootNode()));
-    std::shared_ptr<Node> rNodeT(new Node(dbNodeIdDirt, _syncPal->_remoteUpdateTree->side(), Str("t"), NodeTypeDirectory,
+                                          _syncPal->updateTree(ReplicaSideRemote)->rootNode()));
+    std::shared_ptr<Node> rNodeT(new Node(dbNodeIdDirt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("t"), NodeTypeDirectory,
                                           OperationTypeNone, "rt", createdAt, lastmodified, size,
-                                          _syncPal->_remoteUpdateTree->rootNode()));
-    std::shared_ptr<Node> rNodeQ(new Node(dbNodeIdDirq, _syncPal->_remoteUpdateTree->side(), Str("q"), NodeTypeDirectory,
+                                          _syncPal->updateTree(ReplicaSideRemote)->rootNode()));
+    std::shared_ptr<Node> rNodeQ(new Node(dbNodeIdDirq, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("q"), NodeTypeDirectory,
                                           OperationTypeNone, "rq", createdAt, lastmodified, size, rNodeT));
-    std::shared_ptr<Node> rNodeE(new Node(dbNodeIdDire, _syncPal->_remoteUpdateTree->side(), Str("e"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNodeE(new Node(dbNodeIdDire, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("e"), NodeTypeDirectory,
                                           OperationTypeNone, "re", createdAt, lastmodified, size, rNodeQ));
 
-    _syncPal->_localUpdateTree->insertNode(nodeN);
-    _syncPal->_localUpdateTree->insertNode(nodeT);
-    _syncPal->_localUpdateTree->insertNode(nodeQ);
-    _syncPal->_localUpdateTree->insertNode(nodeE);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(nodeN);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(nodeT);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(nodeQ);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(nodeE);
 
-    _syncPal->_remoteUpdateTree->insertNode(rNodeN);
-    _syncPal->_remoteUpdateTree->insertNode(rNodeT);
-    _syncPal->_remoteUpdateTree->insertNode(rNodeQ);
-    _syncPal->_remoteUpdateTree->insertNode(rNodeE);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(rNodeN);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(rNodeT);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(rNodeQ);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(rNodeE);
 
     // local changes
     nodeQ->deleteChildren(nodeE);
@@ -1208,9 +1208,9 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     nodeE->setName(Str("n"));
     nodeE->setMoveOrigin("t/q/e");
     nodeE->setMoveOriginParentDbId(dbNodeIdDirq);
-    _syncPal->_localUpdateTree->rootNode()->insertChildren(nodeE);
-    _syncPal->_localUpdateTree->rootNode()->deleteChildren(nodeN);
-    nodeE->setParentNode(_syncPal->_localUpdateTree->rootNode());
+    _syncPal->updateTree(ReplicaSideLocal)->rootNode()->insertChildren(nodeE);
+    _syncPal->updateTree(ReplicaSideLocal)->rootNode()->deleteChildren(nodeN);
+    nodeE->setParentNode(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
     nodeE->insertChildren(nodeN);
     nodeN->insertChangeEvent(OperationTypeMove);
     nodeN->setParentNode(nodeE);
@@ -1221,7 +1221,7 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     // remote changes
     rNodeT->setParentNode(rNodeN);
     rNodeN->insertChildren(rNodeT);
-    _syncPal->_remoteUpdateTree->rootNode()->deleteChildren(rNodeT);
+    _syncPal->updateTree(ReplicaSideRemote)->rootNode()->deleteChildren(rNodeT);
     rNodeT->insertChangeEvent(OperationTypeMove);
 
     SyncOpPtr op1 = std::make_shared<SyncOperation>();
@@ -1236,7 +1236,7 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     op2->setTargetSide(ReplicaSideLocal);
     op2->setAffectedNode(nodeE);
     op2->setNewName(Str("n"));
-    op2->setNewParentNode(_syncPal->_localUpdateTree->rootNode());
+    op2->setNewParentNode(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
     op3->setType(OperationTypeMove);
     op3->setTargetSide(ReplicaSideRemote);
     op3->setAffectedNode(rNodeT);
@@ -1258,31 +1258,31 @@ void TestOperationSorterWorker::testFindCompleteCycles() {
     DbNodeId dbNodeIdD;
 
     bool constraintError = false;
-    DbNode nodeDirn(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", tLoc, tLoc, tDrive,
+    DbNode nodeDirn(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "la", "ra", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirn, dbNodeIdA, constraintError);
-    DbNode nodeDirt(0, _syncPal->_syncDb->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDirn, dbNodeIdA, constraintError);
+    DbNode nodeDirt(0, _syncPal->syncDb()->rootNode().nodeId(), Str("B"), Str("B"), "lb", "rb", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirt, dbNodeIdB, constraintError);
-    DbNode nodeDirq(0, _syncPal->_syncDb->rootNode().nodeId(), Str("C"), Str("C"), "lc", "rc", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDirt, dbNodeIdB, constraintError);
+    DbNode nodeDirq(0, _syncPal->syncDb()->rootNode().nodeId(), Str("C"), Str("C"), "lc", "rc", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirq, dbNodeIdC, constraintError);
-    DbNode nodeDire(0, _syncPal->_syncDb->rootNode().nodeId(), Str("D"), Str("D"), "ld", "rd", tLoc, tLoc, tDrive,
+    _syncPal->syncDb()->insertNode(nodeDirq, dbNodeIdC, constraintError);
+    DbNode nodeDire(0, _syncPal->syncDb()->rootNode().nodeId(), Str("D"), Str("D"), "ld", "rd", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDire, dbNodeIdD, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDire, dbNodeIdD, constraintError);
 
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
     std::shared_ptr<Node> nodeA(
-        new Node(dbNodeIdA, _syncPal->_localUpdateTree->side(), Str("A"), NodeTypeDirectory, "a", createdAt, lastmodified, size));
+        new Node(dbNodeIdA, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("A"), NodeTypeDirectory, "a", createdAt, lastmodified, size));
     std::shared_ptr<Node> nodeB(
-        new Node(dbNodeIdB, _syncPal->_localUpdateTree->side(), Str("B"), NodeTypeDirectory, "b", createdAt, lastmodified, size));
+        new Node(dbNodeIdB, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("B"), NodeTypeDirectory, "b", createdAt, lastmodified, size));
     std::shared_ptr<Node> nodeC(
-        new Node(dbNodeIdC, _syncPal->_localUpdateTree->side(), Str("C"), NodeTypeDirectory, "c", createdAt, lastmodified, size));
+        new Node(dbNodeIdC, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("C"), NodeTypeDirectory, "c", createdAt, lastmodified, size));
     std::shared_ptr<Node> nodeD(
-        new Node(dbNodeIdD, _syncPal->_localUpdateTree->side(), Str("D"), NodeTypeDirectory, "d", createdAt, lastmodified, size));
+        new Node(dbNodeIdD, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("D"), NodeTypeDirectory, "d", createdAt, lastmodified, size));
 
     SyncOpPtr opA = std::make_shared<SyncOperation>();
     opA->setAffectedNode(nodeA);
@@ -1322,9 +1322,9 @@ void TestOperationSorterWorker::testBreakCycleEx1() {
     DbNodeId dbNodeIdDirA;
 
     bool constraintError = false;
-    DbNode nodeDirA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
+    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeFile, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
 
     // initial situation
 
@@ -1335,23 +1335,23 @@ void TestOperationSorterWorker::testBreakCycleEx1() {
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
-    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->_localUpdateTree->side(), Str("A"), NodeTypeFile,
+    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("A"), NodeTypeFile,
                                          OperationTypeNone, "A", createdAt, lastmodified, size,
-                                         _syncPal->_localUpdateTree->rootNode()));
-    std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->_remoteUpdateTree->side(), Str("A"), NodeTypeFile,
+                                         _syncPal->updateTree(ReplicaSideLocal)->rootNode()));
+    std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("A"), NodeTypeFile,
                                           OperationTypeNone, "rA", createdAt, lastmodified, size,
-                                          _syncPal->_remoteUpdateTree->rootNode()));
+                                          _syncPal->updateTree(ReplicaSideRemote)->rootNode()));
 
-    _syncPal->_localUpdateTree->insertNode(nodeA);
-    _syncPal->_remoteUpdateTree->insertNode(rNodeA);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(nodeA);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(rNodeA);
 
-    std::shared_ptr<Node> nodeNewA(new Node(std::nullopt, _syncPal->_localUpdateTree->side(), Str("A"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeNewA(new Node(std::nullopt, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("A"), NodeTypeDirectory,
                                             OperationTypeNone, "newA", createdAt, lastmodified, size,
-                                            _syncPal->_localUpdateTree->rootNode()));
+                                            _syncPal->updateTree(ReplicaSideLocal)->rootNode()));
     nodeNewA->insertChildren(nodeA);
     nodeA->setParentNode(nodeNewA);
     nodeA->setName(Str("subpath"));
-    nodeA->setMoveOriginParentDbId(_syncPal->_syncDb->rootNode().nodeId());
+    nodeA->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
     nodeA->setMoveOrigin("A");
 
     SyncOpPtr op1 = std::make_shared<SyncOperation>();
@@ -1382,12 +1382,12 @@ void TestOperationSorterWorker::testBreakCycleEx2() {
     DbNodeId dbNodeIdDirB;
 
     bool constraintError = false;
-    DbNode nodeDirA(0, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
+    DbNode nodeDirA(0, _syncPal->syncDb()->rootNode().nodeId(), Str("A"), Str("A"), "A", "rA", tLoc, tLoc, tDrive,
                     NodeType::NodeTypeDirectory, 0, std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirA, dbNodeIdDirA, constraintError);
     DbNode nodeDirB(0, dbNodeIdDirA, Str("B"), Str("B"), "B", "rB", tLoc, tLoc, tDrive, NodeType::NodeTypeDirectory, 0,
                     std::nullopt);
-    _syncPal->_syncDb->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
+    _syncPal->syncDb()->insertNode(nodeDirB, dbNodeIdDirB, constraintError);
 
     // initial situation
 
@@ -1400,31 +1400,31 @@ void TestOperationSorterWorker::testBreakCycleEx2() {
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
-    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->_localUpdateTree->side(), Str("A"), NodeTypeDirectory,
+    std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("A"), NodeTypeDirectory,
                                          OperationTypeNone, "A", createdAt, lastmodified, size,
-                                         _syncPal->_localUpdateTree->rootNode()));
-    std::shared_ptr<Node> nodeB(new Node(dbNodeIdDirB, _syncPal->_localUpdateTree->side(), Str("B"), NodeTypeDirectory,
+                                         _syncPal->updateTree(ReplicaSideLocal)->rootNode()));
+    std::shared_ptr<Node> nodeB(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSideLocal)->side(), Str("B"), NodeTypeDirectory,
                                          OperationTypeNone, "B", createdAt, lastmodified, size, nodeA));
-    std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->_remoteUpdateTree->side(), Str("A"), NodeTypeDirectory,
+    std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("A"), NodeTypeDirectory,
                                           OperationTypeNone, "rA", createdAt, lastmodified, size,
-                                          _syncPal->_remoteUpdateTree->rootNode()));
-    std::shared_ptr<Node> rNodeB(new Node(dbNodeIdDirB, _syncPal->_remoteUpdateTree->side(), Str("B"), NodeTypeDirectory,
+                                          _syncPal->updateTree(ReplicaSideRemote)->rootNode()));
+    std::shared_ptr<Node> rNodeB(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("B"), NodeTypeDirectory,
                                           OperationTypeNone, "rB", createdAt, lastmodified, size, rNodeA));
 
-    _syncPal->_localUpdateTree->rootNode()->insertChildren(nodeA);
+    _syncPal->updateTree(ReplicaSideLocal)->rootNode()->insertChildren(nodeA);
     nodeA->insertChildren(nodeB);
-    _syncPal->_localUpdateTree->insertNode(nodeA);
-    _syncPal->_localUpdateTree->insertNode(nodeB);
-    _syncPal->_remoteUpdateTree->rootNode()->insertChildren(rNodeA);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(nodeA);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(nodeB);
+    _syncPal->updateTree(ReplicaSideRemote)->rootNode()->insertChildren(rNodeA);
     rNodeA->insertChildren(rNodeB);
-    _syncPal->_remoteUpdateTree->insertNode(rNodeA);
-    _syncPal->_remoteUpdateTree->insertNode(nodeB);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(rNodeA);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(nodeB);
 
     nodeA->insertChangeEvent(OperationTypeDelete);
     nodeA->deleteChildren(nodeB);
     nodeB->insertChangeEvent(OperationTypeMove);
     nodeB->setName(Str("A"));
-    nodeB->setParentNode(_syncPal->_localUpdateTree->rootNode());
+    nodeB->setParentNode(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
     nodeB->setMoveOrigin("A/B");
     nodeB->setMoveOriginParentDbId(dbNodeIdDirA);
 
@@ -1436,7 +1436,7 @@ void TestOperationSorterWorker::testBreakCycleEx2() {
     op2->setAffectedNode(nodeB);
     op2->setType(OperationTypeMove);
     op2->setNewName(Str("A"));
-    op2->setNewParentNode(_syncPal->_localUpdateTree->rootNode());
+    op2->setNewParentNode(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
     op2->setTargetSide(op2->affectedNode()->side());
 
     SyncOpPtr resolutionOp = std::make_shared<SyncOperation>();

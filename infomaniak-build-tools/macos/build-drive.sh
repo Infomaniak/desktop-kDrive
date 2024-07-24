@@ -43,6 +43,9 @@ export PATH=$QTDIR/bin:$PATH
 # Set Infomaniak Theme
 KDRIVE_DIR="$SRCDIR/infomaniak"
 
+# Path to Sparkle installation
+SPARKLE_DIR="$HOME/Library/Frameworks"
+
 # Set build dir
 BUILDDIR="$PWD/build-macos/client"
 
@@ -80,6 +83,7 @@ cmake \
 	-DCMAKE_OSX_DEPLOYMENT_TARGET="$MACOSX_DEPLOYMENT_TARGET" \
 	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR" \
 	-DCMAKE_BUILD_TYPE=Release \
+	-DSPARKLE_LIBRARY="$SPARKLE_DIR/Sparkle.framework" \
 	-DKDRIVE_THEME_DIR="$KDRIVE_DIR" \
 	-DBUILD_UNIT_TESTS=0 \
 	"${CMAKE_PARAMS[@]}" \

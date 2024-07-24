@@ -117,9 +117,7 @@ void TestIo::testCreateAlias() {
         CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto privateTargetPath =
-            SyncPath{"/private" + std::string(targetPath.c_str())};  // Simple concatenation doesn't append the `/private` prefix.
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, privateTargetPath, LinkTypeFinderAlias, NodeTypeFile);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 

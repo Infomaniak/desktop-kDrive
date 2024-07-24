@@ -19,9 +19,33 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Release notes - kDrive 3.6.2</h1>
+<h1>Release notes - kDrive 3.6.3</h1>
+<h2><b>New features</b></h2>
+  <ul>
+    <li>Add the possibility to send log files from the application preferences</li>
+    <li>Activation of automatic testing</li>
+    <li>Improvement of the performance of rights management on Windows Server</li>
+  </ul>
 <h2><b>Bug fixes</b></h2>
   <ul>
-    <li>Fixes upload management of dehydrated placeholders</li>
+    <li>Fixed parsing of file name containing special characters such as double quotes, backslashes or line returns</li>
+    <li>Fixed false modification date that causes the application to systematically attempt to re-upload a file</li>
+    <li>Fixed an issue in step 3 that causes the synchronization to restart</li>
+    <li>Fixed issue with ".lnk" files on macOS</li>
+    <li>Fixed issue with upload jobs</li>
+    <li>Fixed the progress bar style while setting up a new synchronisation</li>
+    <li>Fixed frequent abortion of propagation phase</li>
+    <li>Fixed “Move-ParentDelete” conflict resolution</li>
+    <li>Fixed behavior in case of name clash</li>
+    <li>Fixed the way configuration folder path is retrieved on Windows</li>
+    <li>Fixed, on macOS, the access to a link with long path or special character in name</li>
+    <li>Fixed crash on synchronization removal</li>
+    <li>Added protection to prevent the creation of nested synchronizations</li>
+    <li>Fixed issue with files whose names are NFD encoded on Windows</li>
+    <li>Fixed archiving of old log files</li>
+    <li>Update Spanish localization</li>
+    <li>Fixed date format</li>
+    <li>Fixed colors in the conflict resolution window if dark theme activated</li>
+  </ul>
 </body>
 </html>

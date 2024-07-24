@@ -6,11 +6,13 @@ find_package(log4cplus 2.1.0 REQUIRED)
 set(testcommon_NAME ${APPLICATION_NAME}_test_common)
 
 set(testcommon_SRCS
+        ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test.cpp
 
         test.cpp
         api_token/testapitoken.cpp api_token/testapitoken.h
         utility/testutility.cpp utility/testutility.h
+        utility/testtypes.cpp utility/testtypes.h
 )
 
 if (WIN32)

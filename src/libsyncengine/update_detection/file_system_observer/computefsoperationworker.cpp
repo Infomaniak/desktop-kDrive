@@ -584,8 +584,8 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
             return ExitCodeOk;
         }
 
-        const bool localSnapshotIsLink = _syncPal->_localSnapshotCopy->isLink(dbNode.nodeIdLocal().value());
-        if (localSnapshotIsLink) {
+        if (const bool localSnapshotIsLink = _syncPal->snapshot(ReplicaSideLocal, true)->isLink(dbNode.nodeIdLocal().value());
+            localSnapshotIsLink) {
             // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
             return ExitCodeOk;
         }

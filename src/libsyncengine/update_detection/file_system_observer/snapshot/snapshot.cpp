@@ -161,9 +161,11 @@ NodeId Snapshot::itemId(const SyncPath &path) {
     auto itemIt = _items.find(_rootFolderId);
 
     for (auto pathIt = path.begin(); pathIt != path.end(); pathIt++) {
-        if (pathIt->native() == Str("/")) {
+#ifndef _WIN32
+        if (pathIt->lexically_normal() == SyncPath(Str("/")).lexically_normal()) {
             continue;
         }
+#endif  // _WIN32
 
         bool idFound = false;
         for (const NodeId &childId : itemIt->second.childrenIds()) {
@@ -206,36 +208,41 @@ bool Snapshot::setParentId(const NodeId &itemId, const NodeId &newParentId) {
     return false;
 }
 
-bool Snapshot::path(const NodeId &itemId, SyncPath &path) {
-    const std::scoped_lock lock(_mutex);
+bool Snapshot::path(const NodeId &itemId, SyncPath &path) const noexcept {
+    path.clear();
+
+    if (itemId.empty()) {
+        LOG_WARN(Log::instance()->getLogger(), "Error in Snapshot::path: empty item ID argument.");
+        return false;
+    }
+
     bool ok = true;
     std::deque<SyncName> names;
-
     bool parentIsRoot = false;
     NodeId id = itemId;
-    while (!parentIsRoot) {
-        if (auto it = _items.find(id); it != _items.end()) {
-            names.push_back(it->second.name());
-            id = it->second.parentId();
-            parentIsRoot = id == _rootFolderId;
-            continue;
-        }
 
-        ok = false;
-        break;
+    {
+        const std::scoped_lock lock(_mutex);
+        while (!parentIsRoot) {
+            if (const auto it = _items.find(id); it != _items.end()) {
+                names.push_back(it->second.name());
+                id = it->second.parentId();
+                parentIsRoot = id == _rootFolderId;
+                continue;
+            }
+
+            ok = false;
+            break;
+        }
     }
 
     // Construct path
-    path.clear();
-    SyncName tmp;
+    SyncPath tmp;
     while (!names.empty()) {
-        tmp.append(names.back());
-        tmp.append(Str("/"));
+        tmp /= names.back();
         names.pop_back();
     }
-    tmp.pop_back();  // Remove the last '/'
     path = tmp;
-
     return ok;
 }
 

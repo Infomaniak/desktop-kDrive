@@ -25,6 +25,7 @@
 #include "syncpal/tmpblacklistmanager.h"
 
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
+#include "test_utility/localtemporarydirectory.h"
 
 using namespace CppUnit;
 
@@ -42,17 +43,27 @@ namespace KDC {
 #define MAX_NAME_LENGTH_WIN_SHORT 255
 
 void TestPlatformInconsistencyCheckerWorker::setUp() {
-    // Create SyncPal
+    // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    std::filesystem::remove(parmsDbPath);
+    const auto parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParametersCache::instance()->parameters().setExtendedLog(true);
 
-    SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
-    std::filesystem::remove(syncDbPath);
-    _syncPal = std::make_shared<SyncPal>(syncDbPath, "3.4.0", true);
-    _syncPal->syncDb()->setAutoDelete(true);
+    // Insert user, account, drive & sync
+    const User user(1, 1, "dummy");
+    ParmsDb::instance()->insertUser(user);
+
+    const Account account(1, 1, user.dbId());
+    ParmsDb::instance()->insertAccount(account);
+
+    const Drive drive(1, 1, account.dbId(), std::string(), 0, std::string());
+    ParmsDb::instance()->insertDrive(drive);
+
+    const Sync sync(1, drive.dbId(), _tempDir.path(), "");
+    ParmsDb::instance()->insertSync(sync);
+
+    // Create SyncPal
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal->_syncDb->setAutoDelete(true);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
     _syncPal->_platformInconsistencyCheckerWorker =
@@ -133,17 +144,17 @@ void TestPlatformInconsistencyCheckerWorker::testCheckReservedNames() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testNameClash() {
-    std::shared_ptr<Node> parentNode =
-        std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("parentNode"), NodeTypeDirectory,
-                               OperationTypeCreate, "parentID", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
+    const auto parentNode =
+        std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("parentNode"), NodeTypeDirectory,
+                               OperationTypeCreate, "parentID", 0, 0, 12345, _syncPal->updateTree(ReplicaSideRemote)->rootNode());
 
-    std::shared_ptr<Node> node_a = std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("a"),
-                                                          NodeTypeFile, OperationTypeCreate, "a", 0, 0, 12345, parentNode);
-    std::shared_ptr<Node> node_A = std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("A"),
-                                                          NodeTypeFile, OperationTypeCreate, "A", 0, 0, 12345, parentNode);
+    const auto nodeLower = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("a"), NodeTypeFile,
+                                                  OperationTypeCreate, "a", 0, 0, 12345, parentNode);
+    const auto nodeUpper = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("A"), NodeTypeFile,
+                                                  OperationTypeCreate, "A", 0, 0, 12345, parentNode);
 
-    parentNode->insertChildren(node_a);
-    parentNode->insertChildren(node_A);
+    parentNode->insertChildren(nodeLower);
+    parentNode->insertChildren(nodeUpper);
 
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(parentNode);
 
@@ -154,36 +165,111 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash() {
 #endif
 }
 
+void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
+    // Create local files
+    for (const std::vector<std::string> nodes = {{"a1"}, {"A"}}; const auto &n : nodes) {
+        std::ofstream ofs(_tempDir.path() / n);
+        ofs << "Some content.\n";
+        ofs.close();
+    }
+
+    // Set up DB
+    const DbNode dbNodeLower(2, _syncPal->_syncDb->rootNode().nodeId(), Str("a1"), Str("a1"), "la", "ra", defaultTime,
+                             defaultTime, defaultTime, NodeType::NodeTypeDirectory, defaultSize, std::nullopt);
+    const DbNode dbNodeUpper(3, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", defaultTime, defaultTime,
+                             defaultTime, NodeType::NodeTypeDirectory, defaultSize, std::nullopt);
+    DbNodeId dbNodeIdLower;
+    DbNodeId dbNodeIdUpper;
+    bool constraintError = false;
+    _syncPal->_syncDb->insertNode(dbNodeLower, dbNodeIdLower, constraintError);
+    _syncPal->_syncDb->insertNode(dbNodeUpper, dbNodeIdUpper, constraintError);
+
+    // Set up remote tree
+    const auto remoteParentNode = _syncPal->updateTree(ReplicaSideRemote)->rootNode();
+    const auto remoteNodeLower =
+        std::make_shared<Node>(dbNodeIdLower, ReplicaSideRemote, Str("a"), NodeTypeFile, OperationTypeMove, "ra", 0, 0, 12345,
+                               _syncPal->updateTree(ReplicaSideRemote)->rootNode());
+    const auto remoteNodeUpper =
+        std::make_shared<Node>(dbNodeIdUpper, ReplicaSideRemote, Str("A"), NodeTypeFile, OperationTypeNone, "rA", 0, 0, 12345,
+                               _syncPal->updateTree(ReplicaSideRemote)->rootNode());
+
+    remoteParentNode->insertChildren(remoteNodeLower);
+    remoteParentNode->insertChildren(remoteNodeUpper);
+
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(remoteNodeLower);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(remoteNodeUpper);
+
+    // Set up local tree
+    const auto localParentNode = _syncPal->updateTree(ReplicaSideLocal)->rootNode();
+    const auto localNodeLower = std::make_shared<Node>(dbNodeIdLower, ReplicaSideLocal, Str("a1"), NodeTypeFile,
+                                                       OperationTypeNone, "la", 0, 0, 12345, localParentNode);
+    const auto localNodeUpper = std::make_shared<Node>(dbNodeIdUpper, ReplicaSideLocal, Str("A"), NodeTypeFile, OperationTypeNone,
+                                                       "lA", 0, 0, 12345, localParentNode);
+
+    localParentNode->insertChildren(localNodeLower);
+    localParentNode->insertChildren(localNodeUpper);
+
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(localNodeLower);
+    _syncPal->updateTree(ReplicaSideLocal)->insertNode(localNodeUpper);
+
+    // Check name clash
+    _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(remoteParentNode);
+
+#if defined(WIN32) || defined(__APPLE__)
+    CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+    CPPUNIT_ASSERT(!std::filesystem::exists(_tempDir.path() / "a1"));
+    std::error_code ec;
+    auto dirIt = std::filesystem::recursive_directory_iterator(_syncPal->_localPath,
+                                                               std::filesystem::directory_options::skip_permission_denied, ec);
+    CPPUNIT_ASSERT(!ec);
+    bool foundConflicted = false;
+    for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
+        const auto filename = dirIt->path().filename().string();
+        const auto pos = filename.find("_conflict_");
+        if (Utility::startsWith(filename, std::string("a1")) && pos != std::string::npos) {
+            foundConflicted = true;
+            break;
+        }
+    }
+    CPPUNIT_ASSERT(foundConflicted);
+
+#else
+    CPPUNIT_ASSERT(_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
+#endif
+}
+
 void TestPlatformInconsistencyCheckerWorker::testExecute() {
-    std::shared_ptr<Node> parentNode =
-        std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("parentNode"), NodeTypeDirectory,
-                               OperationTypeCreate, "parentID", 0, 0, 12345, _syncPal->_remoteUpdateTree->rootNode());
+    const auto parentNode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(),
+                                                   Str("parentNode"), NodeTypeDirectory, OperationTypeCreate, "parentID", 0, 0,
+                                                   12345, _syncPal->updateTree(ReplicaSideRemote)->rootNode());
 
-    std::shared_ptr<Node> node_a = std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("a"),
-                                                          NodeTypeFile, OperationTypeCreate, "a", 0, 0, 12345, parentNode);
-    std::shared_ptr<Node> node_A = std::make_shared<Node>(std::nullopt, _syncPal->_remoteUpdateTree->side(), Str("A"),
-                                                          NodeTypeFile, OperationTypeCreate, "A", 0, 0, 12345, parentNode);
+    const auto nodeLower = std::make_shared<Node>(std::nullopt, ReplicaSideRemote, Str("a"), NodeTypeFile, OperationTypeCreate,
+                                                  "a", 0, 0, 12345, parentNode);
+    const auto nodeUpper = std::make_shared<Node>(std::nullopt, ReplicaSideRemote, Str("A"), NodeTypeFile, OperationTypeCreate,
+                                                  "A", 0, 0, 12345, parentNode);
 
-    _syncPal->_remoteUpdateTree->rootNode()->insertChildren(parentNode);
-    parentNode->insertChildren(node_a);
-    parentNode->insertChildren(node_A);
+    _syncPal->updateTree(ReplicaSideRemote)->rootNode()->insertChildren(parentNode);
+    parentNode->insertChildren(nodeLower);
+    parentNode->insertChildren(nodeUpper);
 
-    _syncPal->_remoteUpdateTree->insertNode(parentNode);
-    _syncPal->_remoteUpdateTree->insertNode(node_a);
-    _syncPal->_remoteUpdateTree->insertNode(node_A);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(parentNode);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(nodeLower);
+    _syncPal->updateTree(ReplicaSideRemote)->insertNode(nodeUpper);
 
     _syncPal->_platformInconsistencyCheckerWorker->execute();
 
-    bool exactly1exist =
-        (_syncPal->_remoteUpdateTree->exists(*node_A->id()) && !_syncPal->_remoteUpdateTree->exists(*node_a->id())) ||
-        (!_syncPal->_remoteUpdateTree->exists(*node_A->id()) && _syncPal->_remoteUpdateTree->exists(*node_a->id()));
+    const bool exactly1exist = (_syncPal->updateTree(ReplicaSideRemote)->exists(*nodeUpper->id()) &&
+                                !_syncPal->updateTree(ReplicaSideRemote)->exists(*nodeLower->id())) ||
+                               (!_syncPal->updateTree(ReplicaSideRemote)->exists(*nodeUpper->id()) &&
+                                _syncPal->updateTree(ReplicaSideRemote)->exists(*nodeLower->id()));
 
-    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->exists(*parentNode->id()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSideRemote)->exists(*parentNode->id()));
 
 #if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(exactly1exist);
 #else
-    CPPUNIT_ASSERT(_syncPal->_remoteUpdateTree->exists(*node_A->id()) && _syncPal->_remoteUpdateTree->exists(*node_a->id()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSideRemote)->exists(*nodeUpper->id()) &&
+                   _syncPal->updateTree(ReplicaSideRemote)->exists(*nodeLower->id()));
 #endif
 }
 

@@ -25,8 +25,12 @@ namespace KDC {
 
 class UploadSessionChunkJob : public AbstractUploadSessionJob {
     public:
-        UploadSessionChunkJob(int driveDbId, const SyncPath &filepath, const std::string &sessionToken,
+        UploadSessionChunkJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath, const std::string &sessionToken,
                               const std::string &chunkContent, uint64_t chunkNb, uint64_t chunkSize, UniqueId sessionJobId);
+        
+        UploadSessionChunkJob(UploadSessionType uploadType, const SyncPath &filepath,
+                              const std::string &sessionToken, const std::string &chunkContent, uint64_t chunkNb,
+                              uint64_t chunkSize, UniqueId sessionJobId);
         ~UploadSessionChunkJob();
 
         inline const std::string &chunkHash() const { return _chunkHash; }

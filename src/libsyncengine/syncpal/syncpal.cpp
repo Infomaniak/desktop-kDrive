@@ -514,16 +514,16 @@ void SyncPal::loadProgress(int64_t &currentFile, int64_t &totalFiles, int64_t &c
 
 void SyncPal::createSharedObjects() {
     // Create shared objects
-    _localSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
-    _remoteSnapshot = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
-    _localSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
-    _remoteSnapshotCopy = std::shared_ptr<Snapshot>(new Snapshot(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
-    _localOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
-    _remoteOperationSet = std::shared_ptr<FSOperationSet>(new FSOperationSet());
-    _localUpdateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::ReplicaSideLocal, _syncDb->rootNode()));
-    _remoteUpdateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::ReplicaSideRemote, _syncDb->rootNode()));
-    _conflictQueue = std::shared_ptr<ConflictQueue>(new ConflictQueue(_localUpdateTree, _remoteUpdateTree));
-    _syncOps = std::shared_ptr<SyncOperationList>(new SyncOperationList());
+    _localSnapshot = std::make_shared<Snapshot>(ReplicaSideLocal, _syncDb->rootNode());
+    _remoteSnapshot = std::make_shared<Snapshot>(ReplicaSideRemote, _syncDb->rootNode());
+    _localSnapshotCopy = std::make_shared<Snapshot>(ReplicaSideLocal, _syncDb->rootNode());
+    _remoteSnapshotCopy = std::make_shared<Snapshot>(ReplicaSideRemote, _syncDb->rootNode());
+    _localOperationSet = std::make_shared<FSOperationSet>(ReplicaSideLocal);
+    _remoteOperationSet = std::make_shared<FSOperationSet>(ReplicaSideRemote);
+    _localUpdateTree = std::make_shared<UpdateTree>(ReplicaSideLocal, _syncDb->rootNode());
+    _remoteUpdateTree = std::make_shared<UpdateTree>(ReplicaSideRemote, _syncDb->rootNode());
+    _conflictQueue = std::make_shared<ConflictQueue>(_localUpdateTree, _remoteUpdateTree);
+    _syncOps = std::make_shared<SyncOperationList>();
 
     // Init SyncNode table cache
     SyncNodeCache::instance()->initCache(_syncDbId, _syncDb);
@@ -931,8 +931,8 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? _localSnapshotCopy->exists(*nodeIdIt)
-                                                                      : _remoteSnapshotCopy->exists(*nodeIdIt);
+        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? snapshot(ReplicaSideLocal, true)->exists(*nodeIdIt)
+                                                                      : snapshot(ReplicaSideRemote, true)->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
@@ -964,6 +964,10 @@ ExitCode SyncPal::updateSyncNode() {
 }
 
 std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
+    if (side == ReplicaSideUnknown) {
+        LOG_ERROR(_logger, "Call to SyncPal::snapshot with 'ReplicaSideUnknown').");
+        return nullptr;
+    }
     if (copy) {
         return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshotCopy : _remoteSnapshotCopy);
     } else {
@@ -972,10 +976,18 @@ std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
 }
 
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) {
+    if (side == ReplicaSideUnknown) {
+        LOG_ERROR(_logger, "Call to SyncPal::operationSet with 'ReplicaSideUnknown').");
+        return nullptr;
+    }
     return (side == ReplicaSide::ReplicaSideLocal ? _localOperationSet : _remoteOperationSet);
 }
 
 std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) {
+    if (side == ReplicaSideUnknown) {
+        LOG_ERROR(_logger, "Call to SyncPal::updateTree with 'ReplicaSideUnknown').");
+        return nullptr;
+    }
     return (side == ReplicaSide::ReplicaSideLocal ? _localUpdateTree : _remoteUpdateTree);
 }
 
@@ -1270,7 +1282,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
 
     for (auto &uploadSessionToken : uploadSessionTokenList) {
         try {
-            auto job = std::make_shared<UploadSessionCancelJob>(_driveDbId, "", uploadSessionToken.token());
+            auto job = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCodeOk) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
@@ -1389,8 +1401,8 @@ void SyncPal::removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side)
 }
 
 void SyncPal::copySnapshots() {
-    _localSnapshotCopy = _localSnapshot;
-    _remoteSnapshotCopy = _remoteSnapshot;
+    *_localSnapshotCopy = *_localSnapshot;
+    *_remoteSnapshotCopy = *_remoteSnapshot;
 }
 
 }  // namespace KDC

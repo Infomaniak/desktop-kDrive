@@ -17,7 +17,6 @@
  */
 
 #include "testnetworkjobs.h"
-
 #include "jobs/network/copytodirectoryjob.h"
 #include "jobs/network/createdirjob.h"
 #include "jobs/network/deletejob.h"
@@ -35,7 +34,8 @@
 #include "jobs/network/jsonfullfilelistwithcursorjob.h"
 #include "jobs/network/movejob.h"
 #include "jobs/network/renamejob.h"
-#include "jobs/network/upload_session/uploadsession.h"
+#include "jobs/network/upload_session/driveuploadsession.h"
+#include "jobs/network/upload_session/loguploadsession.h"
 #include "jobs/network/uploadjob.h"
 #include "jobs/jobmanager.h"
 #include "network/proxy.h"
@@ -48,6 +48,7 @@
 #include "requests/parameterscache.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
+#include <iostream>
 
 using namespace CppUnit;
 
@@ -647,28 +648,28 @@ void TestNetworkJobs::testUploadAborted() {
     CPPUNIT_ASSERT(newNodeId.empty());
 }
 
-void TestNetworkJobs::testUploadSessionConstructorException() {
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionConstructorException");
+void TestNetworkJobs::testDriveUploadSessionConstructorException() {
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionConstructorException");
 
     SyncPath localFilePath =
-        localTestDirPath;  // The constructor of UploadSession will attempt to retrieve the file size of directory.
+        localTestDirPath;  // The constructor of DriveUploadSession will attempt to retrieve the file size of directory.
 
     CPPUNIT_ASSERT_THROW_MESSAGE(
-        "UploadSession() didn't throw as expected",
-        UploadSession(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1),
+        "DriveUploadSession() didn't throw as expected",
+        DriveUploadSession(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1),
         std::runtime_error);
 }
 
-void TestNetworkJobs::testUploadSessionSynchronous() {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionSynchronous");
+void TestNetworkJobs::testDriveUploadSessionSynchronous() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronous");
 
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionSynchronous");
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionSynchronous");
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+    DriveUploadSession driveUploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                                    12345, false, 1);
-    ExitCode exitCode = uploadSessionJob.runSynchronously();
+    ExitCode exitCode = driveUploadSessionJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);
 
     GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
@@ -678,29 +679,29 @@ void TestNetworkJobs::testUploadSessionSynchronous() {
     Poco::JSON::Object::Ptr resObj = fileListJob.jsonRes();
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr dataArray = resObj->getArray(dataKey);
-    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == uploadSessionJob.nodeId());
+    CPPUNIT_ASSERT(dataArray->getObject(0)->get(idKey) == driveUploadSessionJob.nodeId());
     CPPUNIT_ASSERT(Utility::s2ws(dataArray->getObject(0)->get(nameKey)) == Path2WStr(localFilePath.filename()));
 }
 
-void TestNetworkJobs::testUploadSessionAsynchronous() {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronous");
+void TestNetworkJobs::testDriveUploadSessionAsynchronous() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous");
 
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionAsynchronous");
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionAsynchronous");
 
     const SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     ExitCode exitCode = ExitCodeUnknown;
     NodeId nodeId;
     while (_nbParalleleThreads > 0) {
-        LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronous - " << _nbParalleleThreads << " threads");
-        UploadSession uploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+        LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - " << _nbParalleleThreads << " threads");
+        DriveUploadSession driveUploadSessionJob(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                                        12345, false, _nbParalleleThreads);
-        exitCode = uploadSessionJob.runSynchronously();
+        exitCode = driveUploadSessionJob.runSynchronously();
         if (exitCode == ExitCodeOk) {
-            nodeId = uploadSessionJob.nodeId();
+            nodeId = driveUploadSessionJob.nodeId();
             break;
-        } else if (exitCode == ExitCodeNetworkError && uploadSessionJob.exitCause() == ExitCauseSocketsDefuncted) {
-            LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronous - Sockets defuncted by kernel");
+        } else if (exitCode == ExitCodeNetworkError && driveUploadSessionJob.exitCause() == ExitCauseSocketsDefuncted) {
+            LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronous - Sockets defuncted by kernel");
             // Decrease upload session max parallel jobs
             if (_nbParalleleThreads > 1) {
                 _nbParalleleThreads = std::floor(_nbParalleleThreads / 2.0);
@@ -725,49 +726,49 @@ void TestNetworkJobs::testUploadSessionAsynchronous() {
     CPPUNIT_ASSERT(dataArray->getObject(0)->get(nameKey) == localFilePath.filename().string());
 }
 
-void TestNetworkJobs::testUploadSessionSynchronousAborted() {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionSynchronousAborted");
+void TestNetworkJobs::testDriveUploadSessionSynchronousAborted() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionSynchronousAborted");
 
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionSynchronousAborted");
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionSynchronousAborted");
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
     LOGW_DEBUG(Log::instance()->getLogger(),
-               L"$$$$$ testUploadSessionSynchronousAborted - " << _nbParalleleThreads << " threads");
-    std::shared_ptr<UploadSession> uploadSessionJob = std::make_shared<UploadSession>(
+               L"$$$$$ testDriveUploadSessionSynchronousAborted - " << _nbParalleleThreads << " threads");
+    std::shared_ptr<DriveUploadSession> DriveUploadSessionJob = std::make_shared<DriveUploadSession>(
         _driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(), 12345, false, 1);
-    JobManager::instance()->queueAsyncJob(uploadSessionJob);
+    JobManager::instance()->queueAsyncJob(DriveUploadSessionJob);
 
     Utility::msleep(1000);  // Wait 1sec
 
-    uploadSessionJob->abort();
+    DriveUploadSessionJob->abort();
 
     Utility::msleep(1000);  // Wait 1sec
 
-    NodeId newNodeId = uploadSessionJob->nodeId();
+    NodeId newNodeId = DriveUploadSessionJob->nodeId();
     CPPUNIT_ASSERT(newNodeId.empty());
 }
 
-void TestNetworkJobs::testUploadSessionAsynchronousAborted() {
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronousAborted");
+void TestNetworkJobs::testDriveUploadSessionAsynchronousAborted() {
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted");
 
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testUploadSessionAsynchronousAborted");
+    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDriveUploadSessionAsynchronousAborted");
 
     SyncPath localFilePath = localTestDirPath / bigFileDirName / bigFileName;
 
-    std::shared_ptr<UploadSession> uploadSessionJob =
-        std::make_shared<UploadSession>(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
+    std::shared_ptr<DriveUploadSession> DriveUploadSessionJob =
+        std::make_shared<DriveUploadSession>(_driveDbId, nullptr, localFilePath, localFilePath.filename().native(), remoteTmpDir.id(),
                                         12345, false, _nbParalleleThreads);
-    JobManager::instance()->queueAsyncJob(uploadSessionJob);
+    JobManager::instance()->queueAsyncJob(DriveUploadSessionJob);
 
     Utility::msleep(1000);  // Wait 1sec
 
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronousAborted - Abort");
-    uploadSessionJob->abort();
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted - Abort");
+    DriveUploadSessionJob->abort();
 
     Utility::msleep(1000);  // Wait 1sec
 
-    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testUploadSessionAsynchronousAborted - Check jobs");
+    LOGW_DEBUG(Log::instance()->getLogger(), L"$$$$$ testDriveUploadSessionAsynchronousAborted - Check jobs");
     GetFileListJob fileListJob(_driveDbId, remoteTmpDir.id());
     ExitCode exitCode = fileListJob.runSynchronously();
     CPPUNIT_ASSERT(exitCode == ExitCodeOk);

@@ -92,7 +92,7 @@ void TestSnapshot::testSnapshot() {
 
     SyncPath path;
     snapshot.path("aaa", path);
-    CPPUNIT_ASSERT(path == std::filesystem::path("A*/AA/AAA"));
+    CPPUNIT_ASSERT_EQUAL(SyncPath("A*/AA/AAA"), path);
     CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(snapshot.name("aaa")));
     CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(1640995205), snapshot.lastModified("aaa"));
     CPPUNIT_ASSERT_EQUAL(NodeType::NodeTypeFile, snapshot.type("aaa"));

@@ -23,10 +23,10 @@
 
 namespace KDC {
 
-UploadSessionChunkJob::UploadSessionChunkJob(int driveDbId, const SyncPath &filepath, const std::string &sessionToken,
-                                             const std::string &chunkContent, uint64_t chunkNb, uint64_t chunkSize,
-                                             UniqueId sessionJobId)
-    : AbstractUploadSessionJob(driveDbId, filepath, sessionToken),
+UploadSessionChunkJob::UploadSessionChunkJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
+                                             const std::string &sessionToken, const std::string &chunkContent, uint64_t chunkNb,
+                                             uint64_t chunkSize, UniqueId sessionJobId)
+    : AbstractUploadSessionJob(uploadType, driveDbId, filepath, sessionToken),
       _chunkNb(chunkNb),
       _chunkSize(chunkSize),
       _sessionJobId(sessionJobId) {
@@ -37,6 +37,11 @@ UploadSessionChunkJob::UploadSessionChunkJob(int driveDbId, const SyncPath &file
     _data = chunkContent;
     _chunkHash = Utility::computeXxHash(_data);
 }
+
+UploadSessionChunkJob::UploadSessionChunkJob(UploadSessionType uploadType, const SyncPath &filepath,
+                                             const std::string &sessionToken, const std::string &chunkContent, uint64_t chunkNb,
+                                             uint64_t chunkSize, UniqueId sessionJobId)
+    : UploadSessionChunkJob(uploadType, 0, filepath, sessionToken, chunkContent, chunkNb, chunkSize, sessionJobId) {}
 
 UploadSessionChunkJob::~UploadSessionChunkJob() {}
 

@@ -400,6 +400,11 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                       "Please update the application to continue using it.")
                 .arg(err);
             break;
+        case ExitCodeLogUploadFailed:
+            return tr("The log upload failed (error %1).<br>"
+                      "Please try again later.")
+                .arg(err);
+            break;
         case ExitCodeOk:
         case ExitCodeNeedRestart:
         case ExitCodeLogicError:
@@ -1386,5 +1391,4 @@ void ParametersDialog::refreshErrorList(int driveDbId) {
         _drivePreferencesWidget->showErrorBanner(unresolvedErrorCount > 0);
     }
 }
-
 }  // namespace KDC

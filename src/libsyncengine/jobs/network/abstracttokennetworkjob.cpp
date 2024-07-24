@@ -30,14 +30,15 @@
 
 #include <Poco/JSON/Parser.h>
 
-#define API_PREFIX_DRIVE "/drive"
-#define API_PREFIX_PROFILE "/profile"
+constexpr char API_PREFIX_DRIVE[] = "/drive";
+constexpr char API_PREFIX_DESKTOP[] = "/desktop";
+constexpr char API_PREFIX_PROFILE[] = "/profile";
 
-#define ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG "Failed to create AbstractTokenNetworkJob instance!"
-#define ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN "Invalid Token"
-#define ABSTRACTTOKENNETWORKJOB_EXEC_ERROR_MSG "Failed to execute AbstractTokenNetworkJob!"
+constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG[] = "Failed to create AbstractTokenNetworkJob instance!";
+constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN[] = "Invalid Token";
+constexpr char ABSTRACTTOKENNETWORKJOB_EXEC_ERROR_MSG[] = "Failed to execute AbstractTokenNetworkJob!";
 
-#define TOKEN_LIFETIME 7200  // 2 hours
+constexpr int TOKEN_LIFETIME = 7200;  // 2 hours
 
 namespace KDC {
 
@@ -125,6 +126,9 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
             break;
         case ApiProfile:
             str += API_PREFIX_PROFILE;
+            break;
+        case ApiDesktop:
+            str += API_PREFIX_DESKTOP;
             break;
     }
 
@@ -291,6 +295,7 @@ std::string AbstractTokenNetworkJob::getUrl() {
     switch (_apiType) {
         case ApiDrive:
         case ApiDriveByUser:
+        case ApiDesktop:
             apiUrl = KDRIVE_API_V2_URL;
             break;
         case ApiNotifyDrive:
@@ -376,9 +381,24 @@ bool AbstractTokenNetworkJob::handleOctetStreamResponse(std::istream &is) {
 
 std::string AbstractTokenNetworkJob::loadToken() {
     std::string token;
+    if (_apiType == ApiDesktop) {  // Fetch the drive identifier of the first available sync.
+        std::vector<Sync> syncList;
+        if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
+            LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
+            throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
+        }
+
+        if (syncList.empty()) {
+            LOG_WARN(_logger, "No sync found");
+            throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
+        }
+
+        _driveDbId = syncList[0].driveDbId();
+    }
 
     switch (_apiType) {
         case ApiDrive:
+        case ApiDesktop:
         case ApiNotifyDrive: {
             if (_driveDbId) {
                 auto it = _driveToApiKeyMap.find(_driveDbId);

@@ -25,8 +25,8 @@ namespace KDC {
 
 class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
     public:
-        AbstractUploadSessionJob(int driveDbId);
-        AbstractUploadSessionJob(int driveDbId, const SyncPath &filepath, const std::string &sessionToken);
+        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId);
+        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath, const std::string &sessionToken);
         ~AbstractUploadSessionJob() override = default;
 
         inline const std::string &sessionToken() const { return _sessionToken; }

@@ -1326,7 +1326,7 @@ bool SyncDb::id(ReplicaSide snapshot, const SyncPath &path, std::optional<NodeId
     std::vector<SyncName> names;
     SyncPath pathTmp(path);
     while (pathTmp != pathTmp.root_path()) {
-        names.push_back(pathTmp.filename().native());
+        names.push_back(pathTmp.filename());
         pathTmp = pathTmp.parent_path();
     }
 
@@ -1558,7 +1558,7 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
     }
 
     // Fill names' vector
-    std::vector<std::string> names;
+    std::vector<SyncName> names;
 
     bool parentNodeDbIdIsNull;
     DbNodeId parentNodeDbId;
@@ -1566,8 +1566,8 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
     if (!parentNodeDbIdIsNull) {
         ASSERT(queryInt64Value(id, SELECT_NODE_BY_REPLICAID_PARENTID, parentNodeDbId));
 
-        std::string name;
-        ASSERT(queryStringValue(
+        SyncName name;
+        ASSERT(querySyncNameValue(
             id, snapshot == ReplicaSideLocal ? SELECT_NODE_BY_REPLICAID_NAMELOCAL : SELECT_NODE_BY_REPLICAID_NAMEDRIVE, name));
         names.push_back(name);
 
@@ -1592,7 +1592,7 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
                 ASSERT(queryInt64Value(SELECT_NODE_BY_NODEID_LITE_ID, 0, parentNodeDbId));
 
                 ASSERT(
-                    queryStringValue(SELECT_NODE_BY_NODEID_LITE_ID, (snapshot == ReplicaSide::ReplicaSideLocal ? 1 : 2), name));
+                    querySyncNameValue(SELECT_NODE_BY_NODEID_LITE_ID, (snapshot == ReplicaSide::ReplicaSideLocal ? 1 : 2), name));
                 names.push_back(name);
             }
 
@@ -1604,7 +1604,7 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
 
     // Construct path from names' vector
     path.clear();
-    for (std::vector<std::string>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         path.append(*nameIt);
     }
 
@@ -1801,7 +1801,13 @@ bool SyncDb::ancestor(ReplicaSide snapshot, const NodeId &nodeId1, const NodeId 
 
 // Returns database ID for the ID nodeId of snapshot
 bool SyncDb::dbId(ReplicaSide snapshot, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
+    found = false;
+    dbNodeId = 0;
+    if (snapshot == ReplicaSideUnknown) {
+        LOG_ERROR(_logger, "Call to SyncDb::dbId with snapshot=='ReplicaSideUnknown'");
+        return false;
+    }
 
     std::string id = (snapshot == ReplicaSide::ReplicaSideLocal ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));

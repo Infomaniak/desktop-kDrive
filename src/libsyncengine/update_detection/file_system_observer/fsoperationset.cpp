@@ -17,6 +17,7 @@
  */
 
 #include "fsoperationset.h"
+#include <cassert>
 
 namespace KDC {
 
@@ -24,48 +25,43 @@ FSOperationSet::~FSOperationSet() {
     clear();
 }
 
-bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr, bool lockMutex /*= true*/) {
-    if (lockMutex) {
-        _mutex.lock();
-    }
-
-    auto it = _ops.find(id);
-    if (it != _ops.end()) {
+bool FSOperationSet::getOp(UniqueId id, FSOpPtr &opPtr) const {
+    const std::scoped_lock lock(_mutex);
+    if (auto it = _ops.find(id); it != _ops.end()) {
         opPtr = it->second;
-        if (lockMutex) {
-            _mutex.unlock();
-        }
-        return true;
-    }
-
-    if (lockMutex) {
-        _mutex.unlock();
-    }
-    return false;
-}
-
-bool FSOperationSet::getOpsByType(const OperationType type, std::unordered_set<UniqueId> &ops) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-    auto it = _opsByType.find(type);
-    if (it != _opsByType.end()) {
-        ops = it->second;
         return true;
     }
     return false;
 }
 
-bool FSOperationSet::getOpsByNodeId(const NodeId &nodeId, std::unordered_set<UniqueId> &ops) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-    auto it = _opsByNodeId.find(nodeId);
-    if (it != _opsByNodeId.end()) {
-        ops = it->second;
-        return true;
-    }
-    return false;
+std::unordered_map<UniqueId, FSOpPtr> FSOperationSet::getAllOps() const {
+    const std::scoped_lock lock(_mutex);
+    return _ops;
 }
 
-uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+std::unordered_set<UniqueId> FSOperationSet::getOpsByType(const OperationType type) const {
+    const std::scoped_lock lock(_mutex);
+    if (auto it = _opsByType.find(type); it != _opsByType.end()) {
+        return it->second;
+    }
+    return std::unordered_set<UniqueId>();
+}
+
+std::unordered_set<UniqueId> FSOperationSet::getOpsByNodeId(const NodeId &nodeId) const {
+    const std::scoped_lock lock(_mutex);
+    if (auto it = _opsByNodeId.find(nodeId); it != _opsByNodeId.end()) {
+        return it->second;
+    }
+    return std::unordered_set<UniqueId>();
+}
+
+uint64_t FSOperationSet::nbOps() const {
+    const std::scoped_lock lock(_mutex);
+    return _ops.size();
+}
+
+uint64_t FSOperationSet::nbOpsByType(const OperationType type) const {
+    const std::scoped_lock lock(_mutex);
     if (auto it = _opsByType.find(type); it != _opsByType.end()) {
         return it->second.size();
     }
@@ -73,7 +69,8 @@ uint64_t FSOperationSet::nbOpsByType(const OperationType type) {
 }
 
 void FSOperationSet::clear() {
-    std::unordered_map<UniqueId, FSOpPtr>::iterator it = _ops.begin();
+    const std::scoped_lock lock(_mutex);
+    auto it = _ops.begin();
     while (it != _ops.end()) {
         it->second.reset();
         it++;
@@ -84,20 +81,22 @@ void FSOperationSet::clear() {
 }
 
 void FSOperationSet::insertOp(FSOpPtr opPtr) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     startUpdate();
-    _ops.insert({opPtr->id(), opPtr});
+    _ops.try_emplace(opPtr->id(), opPtr);
     _opsByType[opPtr->operationType()].insert(opPtr->id());
     _opsByNodeId[opPtr->nodeId()].insert(opPtr->id());
 }
 
 bool FSOperationSet::removeOp(UniqueId id) {
-    const std::lock_guard<std::mutex> lock(_mutex);
+    const std::scoped_lock lock(_mutex);
     startUpdate();
-    auto it = _ops.find(id);
-    if (it != _ops.end()) {
+    if (auto it = _ops.find(id); it != _ops.end()) {
         _opsByType[it->second->operationType()].erase(id);
         _opsByNodeId[it->second->nodeId()].erase(id);
+        if (_opsByNodeId[it->second->nodeId()].empty()) {  // Remove nodeId from map if no more ops for this node
+            _opsByNodeId.erase(it->second->nodeId());
+        }
         _ops.erase(id);
         return true;
     }
@@ -105,31 +104,34 @@ bool FSOperationSet::removeOp(UniqueId id) {
 }
 
 bool FSOperationSet::removeOp(const NodeId &nodeId, const OperationType opType) {
-    FSOpPtr op = nullptr;
-    if (findOp(nodeId, opType, op)) {
+    if (FSOpPtr op = nullptr; findOp(nodeId, opType, op)) {
         return removeOp(op->id());
     }
     return false;
 }
 
-bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res) {
-    const std::lock_guard<std::mutex> lock(_mutex);
-    auto it = _opsByNodeId.find(nodeId);
-    if (it != _opsByNodeId.end()) {
-        for (auto id : it->second) {
-            FSOpPtr opPtr = nullptr;
-            if (getOp(id, opPtr, false)) {
-                if (opPtr->operationType() == opType) {
-                    res = opPtr;
-                    return true;
-                }
-            }
+bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FSOpPtr &res) const {
+    const std::scoped_lock lock(_mutex);
+    if (!_opsByNodeId.contains(nodeId)) {
+        return false;
+    }
+    for (auto it = _opsByNodeId.find(nodeId); auto id : it->second) {
+        FSOpPtr opPtr = nullptr;
+        if (getOp(id, opPtr) && opPtr->operationType() == opType) {
+            res = opPtr;
+            return true;
         }
     }
     return false;
 }
 
-FSOperationSet &FSOperationSet::operator=(const FSOperationSet &other) {
+ReplicaSide FSOperationSet::side() const {
+    // No lock needed, read only value
+    return _side;
+}
+
+FSOperationSet &FSOperationSet::operator=(FSOperationSet &other) {
+    const std::scoped_lock lock(_mutex, other._mutex);
     if (this != &other) {
         _ops = other._ops;
         _opsByType = other._opsByType;
