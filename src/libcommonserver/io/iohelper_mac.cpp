@@ -138,7 +138,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     }
     ioError = itemType.ioError;
     if (ioError != IoErrorSuccess) {
-        return _isExpectedError(ioError);
+        return isExpectedError(ioError);
     }
     const bool isSymlink = itemType.linkType == LinkTypeSymlink;
 
@@ -152,7 +152,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             ioError = IoErrorNoSuchFileOrDirectory;
         }
         LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
-        return _isExpectedError(ioError);
+        return isExpectedError(ioError);
     }
 
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);
