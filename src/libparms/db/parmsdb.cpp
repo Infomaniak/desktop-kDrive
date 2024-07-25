@@ -1320,8 +1320,8 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
         queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
 
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.1")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.6.1 DB");
+    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.3")) {
+        LOG_DEBUG(_logger, "Upgrade < 3.6.3 DB");
         if (!createAppState()) {
             LOG_WARN(_logger, "Error in createAppState");
             return false;
