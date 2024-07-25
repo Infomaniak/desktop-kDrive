@@ -886,7 +886,7 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             return true;
         case ExitCodeNetworkError: {
             switch (error.exitCause()) {
-                case ExitCauseNetworkTimeout:
+                // case ExitCauseNetworkTimeout:
                 case ExitCauseSocketsDefuncted:
                     return true;
                 default:
