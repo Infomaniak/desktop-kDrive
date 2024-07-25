@@ -433,7 +433,8 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
     appStateValue = std::string();
     exitcode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadDate, appStateValue);
     if (exitcode == ExitCode::ExitCodeOk) {
-        lasSuccessfullUploadDate = QString::fromStdString(std::get<std::string>(appStateValue));
+        lasSuccessfullUploadDate =
+            convertAppStateTimeToLocalHumanReadable(QString::fromStdString(std::get<std::string>(appStateValue)));
     } else {
         qCWarning(lcDebuggingDialog) << "Failed to get last successful log upload date";
     }
@@ -587,6 +588,18 @@ void DebuggingDialog::updateUI() {
 void DebuggingDialog::setNeedToSave(bool value) {
     _needToSave = value;
     _saveButton->setEnabled(value);
+}
+
+QString DebuggingDialog::convertAppStateTimeToLocalHumanReadable(const QString &time) const {
+    // App state time is formatted as "month,day,year,hour,minute,second"
+    QStringList timeParts = time.split(',');
+    if (timeParts.size() != 6) {
+        // Invalid time format 
+        return time;
+    }
+
+    //: Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second
+    return tr("%1/%2/%3 at %4h%5m and %6s").arg(timeParts[1], timeParts[0], timeParts[2], timeParts[3], timeParts[4], timeParts[5]);
 }
 
 void DebuggingDialog::onRecordDebuggingSwitchClicked(bool checked) {

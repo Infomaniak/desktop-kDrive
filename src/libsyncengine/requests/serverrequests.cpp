@@ -1101,7 +1101,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
         const std::time_t now = std::time(nullptr);
         const std::tm tm = *std::localtime(&now);
         std::ostringstream woss;
-        woss << std::put_time(&tm, "%D at %Hh%M");
+        woss << std::put_time(&tm, "%m,%d,%y,%H,%M,%S");
         uploadDate = woss.str();
 
         if (bool found = false;

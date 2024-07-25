@@ -69,7 +69,7 @@ struct IoHelper {
           \param path is the file system path of the inspected item.
           \param itemType is the type of the item indicated by `path`.
           \return true if no unexpected error occurred, false otherwise.
-            See _isExpectedError for the definition of an expected error.
+            See isExpectedError for the definition of an expected error.
         */
         static bool getItemType(const SyncPath &path, ItemType &itemType) noexcept;
 
@@ -366,6 +366,9 @@ struct IoHelper {
                    (linkType == LinkTypeJunction && OldUtility::isWindows());
         }
 
+        // The most common and expected errors during IO operations
+        static bool isExpectedError(IoError ioError) noexcept;
+
     protected:
         friend class DirectoryIterator;
         friend class TestIo;
@@ -387,8 +390,6 @@ struct IoHelper {
         static log4cplus::Logger _logger;
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
-        // The most common and expected errors during IO operations
-        static bool _isExpectedError(IoError ioError) noexcept;
 #ifdef __APPLE__
         static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
 #endif

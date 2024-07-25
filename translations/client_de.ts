@@ -10,367 +10,6 @@
     </message>
 </context>
 <context>
-    <name>KDC</name>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="340"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="362"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="368"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="372"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="378"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="388"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="394"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="479"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="523"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="557"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="571"/>
-        <source>A technical error has occurred (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
-        <translation>„Bitte leeren Sie den Verlauf. Wenn der Fehler weiterhin besteht, wenden Sie sich bitte an unser Support-Team.“</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="346"/>
-        <source>It seems that your network connection is configured with too low a timeout for the application to work correctly (error %1).&lt;br&gt;Please check your network configuration.</source>
-        <translation>Es scheint, dass Ihre Netzwerkverbindung mit einem zu niedrigen Timeout konfiguriert ist, als dass die Anwendung ordnungsgemäß funktionieren könnte (Fehler %1).&lt;br&gt;Bitte überprüfen Sie Ihre Netzwerkkonfiguration.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="351"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="533"/>
-        <source>Cannot connect to kDrive server (error %1).&lt;br&gt;Attempting reconnection. Please check your Internet connection and your firewall.</source>
-        <translation>Es kann keine Verbindung zum kDrive-Server hergestellt werden (Fehler %1).&lt;br&gt;Es wird versucht, die Verbindung wiederherzustellen. Bitte überprüfen Sie Ihre Internetverbindung und Ihre Firewall.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="357"/>
-        <source>A login problem has occurred (error %1).&lt;br&gt;Please log in again and if the error persists, contact our support team.</source>
-        <translation>Es ist ein Anmeldeproblem aufgetreten (Fehler %1).&lt;br&gt;Bitte melden Sie sich erneut an. Wenn der Fehler weiterhin besteht, wenden Sie sich an unser Support-Team.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="384"/>
-        <source>Old synchronisation database doesn&apos;t exist or is not accessible.&lt;br&gt;Old blacklist data haven&apos;t been migrated.</source>
-        <translation>Alte Synchronisationsdatenbank besteht nicht oder ist nicht zugänglich. &lt;br/&gt;Alte Blacklist-Daten wurden nicht migriert.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="399"/>
-        <source>A new version of the application is available.&lt;br&gt;Please update the application to continue using it.</source>
-        <translation>Eine neue Version der Anwendung ist verfügbar.&lt;br&gt;Bitte aktualisieren Sie die Anwendung, um sie weiterhin verwenden zu können.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="404"/>
-        <source>The log upload failed (error %1).&lt;br&gt;Please try again later.</source>
-        <translation>Das Hochladen des Protokolls ist fehlgeschlagen (Fehler %1).&lt;br&gt;Bitte versuchen Sie es später erneut.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="428"/>
-        <source>The item misses search permission (error %1).&lt;br&gt;Please check that you have search/exec access to the parent folder.</source>
-        <translation>Für das Element fehlt die Suchberechtigung (Fehler %1).&lt;br&gt;Bitte überprüfen Sie, ob Sie Such-/Ausführungszugriff auf den übergeordneten Ordner haben.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="432"/>
-        <source>The synchronization folder is no longer accessible (error %1).&lt;br&gt;Synchronization will resume as soon as the folder is accessible.</source>
-        <translation>Auf den Synchronisierungsordner kann nicht mehr zugegriffen werden (Fehler %1).&lt;br&gt;Die Synchronisierung wird fortgesetzt, sobald auf den Ordner zugegriffen werden kann.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="437"/>
-        <source>The synchronization folder is inaccessible (error %1).&lt;br&gt;Please check that you have read access to this folder.</source>
-        <translation>Auf den Synchronisierungsordner kann nicht zugegriffen werden (Fehler %1).&lt;br&gt;Bitte überprüfen Sie, ob Sie Lesezugriff auf diesen Ordner haben.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="442"/>
-        <source>The synchronization folder is inaccessible (error %1).&lt;br&gt;Please check that you have write access to this folder.</source>
-        <translation>Der Synchronisierungsordner ist nicht zugänglich (Fehler %1). &lt;br/&gt;Bitte überprüfen Sie, ob Sie Schreibrechte für diesen Ordner haben.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="447"/>
-        <source>There is not enough space left on your disk.&lt;br&gt;The synchronization has been stopped.</source>
-        <translation>Es ist nicht mehr genug Speicherplatz auf Ihrer Festplatte vorhanden. &lt;br/&gt;Die Synchronisierung wurde angehalten.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="452"/>
-        <source>There is not enough memory left on your machine.&lt;br&gt;The synchronization has been stopped.</source>
-        <translation>Auf Ihrem Computer ist nicht mehr genügend Speicher vorhanden.&lt;br&gt;Die Synchronisierung wurde gestoppt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="456"/>
-        <source>Unable to start synchronization (error %1).&lt;br&gt;You must allow:&lt;br&gt;- kDrive in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Security&lt;br&gt;- kDrive LiteSync Extension in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Full Disk Access.</source>
-        <translation>Die Synchronisierung konnte nicht gestartet werden (Fehler %1).&lt;br&gt;Sie müssen Folgendes zulassen:&lt;br&gt;- kDrive in den Systemeinstellungen &gt;&gt; Datenschutz und Sicherheit &gt;&gt; Sicherheit&lt;br&gt;- kDrive LiteSync-Erweiterung in den Systemeinstellungen &gt;&gt; Datenschutz und Sicherheit &gt;&gt; Vollständiger Festplattenzugriff.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="463"/>
-        <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension is installed and Windows Search service is enabled.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
-        <translation>Das Lite Sync-Plugin kann nicht gestartet werden (Fehler %1).&lt;br&gt;Überprüfen Sie, ob die Lite Sync-Erweiterung installiert und der Windows-Suchdienst aktiviert ist.&lt;br&gt;Bitte leeren Sie den Verlauf, starten Sie neu und wenden Sie sich an unser Support-Team, wenn der Fehler weiterhin besteht.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="468"/>
-        <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension has the correct permissions and is running.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
-        <translation>Das Lite Sync-Plugin konnte nicht gestartet werden (Fehler %1).&lt;br&gt;Überprüfen Sie, ob die Lite Sync-Erweiterung über die richtigen Berechtigungen verfügt und ausgeführt wird.&lt;br&gt;Bitte leeren Sie den Verlauf, starten Sie neu und wenn der Fehler weiterhin besteht, wenden Sie sich an unser Support-Team.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="473"/>
-        <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
-        <translation>Das Lite Sync-Plugin konnte nicht gestartet werden (Fehler %1).&lt;br&gt;Bitte leeren Sie den Verlauf, starten Sie neu und kontaktieren Sie unser Support-Team, wenn der Fehler weiterhin besteht.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="488"/>
-        <source>The kDrive is in maintenance mode.&lt;br&gt;Synchronization will begin again as soon as possible. Please contact our support team if the error persists.</source>
-        <translation>Der kDrive befindet sich im Wartungsmodus. Die &lt;br/&gt;Synchronisierung wird schnellstmöglich wieder aufgenommen. Bitte wenden Sie sich an unseren Support, sofern der Fehler weiterhin auftritt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="494"/>
-        <source>The kDrive is blocked.&lt;br&gt;Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
-        <translation>Der kDrive ist gesperrt. &lt;br/&gt;Bitte verlängern Sie kDrive. Wenn keine Massnahmen ergriffen werden, werden die Daten dauerhaft gelöscht und können nicht wiederhergestellt werden.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="499"/>
-        <source>The kDrive is blocked.&lt;br&gt;Please contact an administrator to renew the kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
-        <translation>Der kDrive ist gesperrt. &lt;br/&gt;Bitte wenden Sie sich an einen Administrator, um den kDrive zu verlängern. Wenn keine Massnahmen ergriffen werden, werden die Daten dauerhaft gelöscht und können nicht wiederhergestellt werden.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="506"/>
-        <source>You are not authorised to access this kDrive.&lt;br&gt;Synchronization has been paused. Please contact an administrator.</source>
-        <translation>Sie sind nicht berechtigt, auf dieses kDrive zuzugreifen.&lt;br&gt;Die Synchronisierung wurde angehalten. Bitte wenden Sie sich an einen Administrator.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="510"/>
-        <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization will resume as soon as possible. Please contact our support team if the error persists.</source>
-        <translation>Es ist ein technischer Fehler aufgetreten (Fehler %1).&lt;br&gt;Die Synchronisierung wird so bald wie möglich fortgesetzt. Bitte wenden Sie sich an unser Support-Team, wenn der Fehler weiterhin besteht.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="529"/>
-        <source>The network connections have been dropped by the kernel (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
-        <translation>Die Netzwerkverbindungen wurden vom Kernel unterbrochen (Fehler %1).&lt;br&gt;Bitte leeren Sie den Verlauf. Wenn der Fehler weiterhin besteht, wenden Sie sich an unser Support-Team.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="540"/>
-        <source>Unfortunately your old configuration could not be migrated.&lt;br&gt;The application will use a blank configuration.</source>
-        <translation>Leider konnte Ihre alte Konfiguration nicht migriert werden. &lt;br/&gt;Das Programm verwendet eine leere Konfiguration.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="544"/>
-        <source>Unfortunately your old proxy configuration could not be migrated, SOCKS5 proxies are not supported at this time.&lt;br&gt;The application will use system proxy settings instead.</source>
-        <translation>Leider konnte Ihre alte Proxy-Konfiguration nicht migriert werden, SOCKS5-Proxies werden derzeit nicht unterstützt. Stattdessen werden &lt;br/&gt;die System-Proxyeinstellungen verwendet.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="549"/>
-        <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization has been restarted. Please empty the history and if the error persists, please contact our support team.</source>
-        <translation>Ein technischer Fehler (Fehler %1) ist aufgetreten. Die &lt;br/&gt;Synchronisierung wurde neu gestartet. Bitte leeren Sie den Verlauf; sollte der Fehler weiterhin auftreten, dann wenden Sie sich an unseren Support.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="561"/>
-        <source>An error accessing the synchronization database has happened (error %1).&lt;br&gt;Synchronization has been stopped.</source>
-        <translation>Beim Zugriff auf die Synchronisierungsdatenbank ist ein Fehler aufgetreten (Fehler %1). Die &lt;br/&gt;Synchronisierung wurde angehalten.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="576"/>
-        <source>A login problem has occurred (error %1).&lt;br&gt;Token invalid or revoked.</source>
-        <translation>Es ist ein Anmeldeproblem aufgetreten (Fehler %1).&lt;br&gt;Token ungültig oder widerrufen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="581"/>
-        <source>Nested synchronizations are prohibited (error %1).&lt;br&gt;You should only keep synchronizations whose folders are not nested.</source>
-        <translation>Verschachtelte Synchronisierungen sind verboten (Fehler %1).&lt;br&gt;Sie sollten nur Synchronisierungen behalten, deren Ordner nicht verschachtelt sind.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="585"/>
-        <source>The app does not have write rights to the synchronization folder.&lt;br&gt;The synchronization has been stopped.</source>
-        <translation>Die App hat keine Schreibrechte für den Synchronisierungsordner.&lt;br&gt;Die Synchronisierung wurde gestoppt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="591"/>
-        <source>File name parsing error (error %1).&lt;br&gt;Special characters such as double quotes, backslashes or line returns can cause parsing failures.</source>
-        <translation>Fehler beim Parsen des Dateinamens (Fehler %1).&lt;br&gt;Sonderzeichen wie doppelte Anführungszeichen, umgekehrte Schrägstriche oder Zeilenumbrüche können zu Parsingfehlern führen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="616"/>
-        <source>An element was moved to a deleted folder.&lt;br&gt;The move has been canceled.</source>
-        <translation>Ein Element wurde in einen gelöschten Ordner verschoben. &lt;br/&gt;Die Verschiebung wurde abgebrochen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="621"/>
-        <source>This element was moved by another user.&lt;br&gt;The deletion has been canceled.</source>
-        <translation>Dieses Element wurde von einem anderen Benutzer verschoben. &lt;br/&gt;Das Löschen wurde abgebrochen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="626"/>
-        <source>An element was created in this folder while it was being deleted.&lt;br&gt;The delete operation has been propagated anyway.</source>
-        <translation>Während des Löschens wurde in diesem Ordner ein Element erstellt.&lt;br&gt;Der Löschvorgang wurde trotzdem weitergegeben.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="631"/>
-        <source>This element has been moved somewhere else.&lt;br&gt;The local operation has been canceled.</source>
-        <translation>Dieses Element wurde an einen anderen Ort verschoben. &lt;br/&gt;Der lokale Vorgang wurde abgebrochen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="636"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="663"/>
-        <source>An element with the same name already exists in this location.&lt;br&gt;The local element has been renamed.</source>
-        <translation>An diesem Ort besteht bereits ein Element mit dem gleichen Namen. &lt;br/&gt;Das lokale Element wurde umbenannt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="641"/>
-        <source>An element with the same name already exists in this location.&lt;br&gt;The local operation has been canceled.</source>
-        <translation>An diesem Ort besteht bereits ein Element mit dem gleichen Namen. &lt;br/&gt;Der lokale Vorgang wurde abgebrochen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="647"/>
-        <source>The content of the file was modified while it was being deleted.&lt;br&gt;The deletion has been canceled.</source>
-        <translation>Der Inhalt der Datei wurde während des Löschens verändert. &lt;br/&gt;Das Löschen wurde abgebrochen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="651"/>
-        <source>The content of a synchronized element was modified while a parent folder was being deleted (e.g. the folder containing the current folder).&lt;br&gt;The file has been moved to the root of your kDrive.</source>
-        <translation>Der Inhalt eines synchronisierten Elements wurde geändert, während ein übergeordneter Ordner gelöscht wurde (z.B. der Ordner mit dem aktuellen Ordner). &lt;br/&gt;Die Datei wurde in das Stammverzeichnis Ihres kDrive verschoben.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="657"/>
-        <source>The content of an already synchronized file has been modified while this one or one of its parent folders has been deleted.&lt;br&gt;</source>
-        <translation>Der Inhalt einer bereits synchronisierten Datei wurde geändert, während diese oder eines ihrer übergeordneten Verzeichnisse gelöscht wurde.&lt;br&gt;</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="668"/>
-        <source>The file was modified at the same time by another user.&lt;br&gt;Your modifications have been saved in a copy.</source>
-        <translation>Die Datei wurde zur gleichen Zeit von einem anderen Benutzer geändert. &lt;br/&gt;Ihre Änderungen wurden in einer Kopie gespeichert.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="673"/>
-        <source>Another user has moved a parent folder of the destination.&lt;br&gt;The local operation has been canceled.</source>
-        <translation>Ein anderer Benutzer hat einen übergeordneten Ordner des Ziels verschoben. &lt;br/&gt;Der lokale Vorgang wurde abgebrochen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="689"/>
-        <source>An existing file/directory has an identical name with the same case options (same upper and lower case letters).&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Eine vorhandene Datei/ein vorhandenes Verzeichnis hat einen identischen Namen mit denselben Groß- und Kleinschreibungsoptionen (gleiche Groß- und Kleinbuchstaben).&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="696"/>
-        <source>The file/directory name contains an unsupported character.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Der Datei-/Verzeichnisname enthält ein nicht unterstütztes Zeichen.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="702"/>
-        <source>This file/directory name is reserved by your operating system.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Dieser Datei-/Verzeichnisname ist von Ihrem Betriebssystem reserviert.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="708"/>
-        <source>The file/directory name is too long.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Der Datei-/Verzeichnisname ist zu lang.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="714"/>
-        <source>The file/directory path is too long.&lt;br&gt;The file/directory is ignored.</source>
-        <translation>Der Datei-/Verzeichnispfad ist zu lang.&lt;br&gt;Die Datei/das Verzeichnis wird ignoriert.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="720"/>
-        <source>The file/directory name contains a recent UNICODE character not yet supported by your filesystem.&lt;br&gt;The parent directory has been excluded from synchronization.</source>
-        <translation>Der Datei-/Verzeichnisname enthält ein aktuelles UNICODE-Zeichen, das von Ihrem Dateisystem noch nicht unterstützt wird.&lt;br&gt;Das übergeordnete Verzeichnis wurde von der Synchronisierung ausgeschlossen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="726"/>
-        <source>The file/directory name coincides with the name of another item in the same directory.&lt;br&gt;This item is temporarily blacklisted. Consider removing duplicate items.</source>
-        <translation>Der Datei-/Verzeichnisname stimmt mit dem Namen eines anderen Elements im selben Verzeichnis überein.&lt;br&gt;Dieses Element steht vorübergehend auf der schwarzen Liste. Ziehen Sie in Erwägung, doppelte Elemente zu entfernen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="737"/>
-        <source>You are not allowed to create item.&lt;br&gt;The item has been excluded from synchronization.</source>
-        <translation>Sie dürfen keine Elemente erstellen. &lt;br/&gt;Das Element wurde von der Synchronisierung ausgeschlossen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="742"/>
-        <source>You are not allowed to edit item.&lt;br&gt;The file containing your modifications has been renamed and excluded from synchronization.</source>
-        <translation>Sie dürfen keine Elemente bearbeiten. &lt;br/&gt;Die Datei mit Ihren Änderungen wurde umbenannt und von der Synchronisierung ausgeschlossen.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="751"/>
-        <source>You are not allowed to rename item.&lt;br&gt;It will be restored with its original name.</source>
-        <translation>Sie dürfen das Element nicht umbenennen. &lt;br/&gt;Es wird mit seinem ursprünglichen Namen wiederhergestellt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="756"/>
-        <source>You are not allowed to move item to &quot;%1&quot;.&lt;br&gt;It will be restored to its original location.</source>
-        <translation>Sie dürfen das Element nicht zu &quot;%1&quot; verschieben.&lt;br&gt;Es wird an seinem ursprünglichen Ort wiederhergestellt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="762"/>
-        <source>You are not allowed to delete item.&lt;br&gt;It will be restored to its original location.</source>
-        <translation>Sie dürfen das Element nicht löschen. &lt;br/&gt;Es wird an seinem ursprünglichen Ort wiederhergestellt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="767"/>
-        <source>&quot;%1&quot; already exists on remote kDrive. It is not synced because it has been blacklisted.</source>
-        <translation>„%1“ existiert bereits auf dem Remote-kDrive. Es wird nicht synchronisiert, da es auf der schwarzen Liste steht.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="770"/>
-        <source>Failed to move item &quot;%1&quot; to bin, it has been blacklisted.</source>
-        <translation>Das Element „%1“ konnte nicht in den Papierkorb verschoben werden, da es auf der schwarzen Liste steht.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="773"/>
-        <source>&quot;%1&quot; already exists on local file system. It is not synced.</source>
-        <translation>„%1“ existiert bereits im lokalen Dateisystem. Es ist nicht synchronisiert.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="776"/>
-        <source>Failed to synchronize item &quot;%1&quot;. It has been temporarily blacklisted.&lt;br&gt;Another attempt to sync it will be done in one hour or on next application startup.</source>
-        <translation>Element „%1“ konnte nicht synchronisiert werden. Es wurde vorübergehend auf die schwarze Liste gesetzt.&lt;br&gt;Ein weiterer Synchronisierungsversuch erfolgt in einer Stunde oder beim nächsten Anwendungsstart.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="781"/>
-        <source>The item &quot;%1&quot; has been excluded from sync by a custom template.&lt;br&gt;You can disable this type of notification from the Preferences</source>
-        <translation>Das Element „%1“ wurde durch eine benutzerdefinierte Vorlage von der Synchronisierung ausgeschlossen.&lt;br&gt;Sie können diese Art von Benachrichtigung in den Einstellungen deaktivieren</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="786"/>
-        <source>The item &quot;%1&quot; has been excluded from sync because it&apos;s an hard link</source>
-        <translation>Das Element „%1“ wurde von der Synchronisierung ausgeschlossen, da es sich um einen festen Link handelt</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="801"/>
-        <source>The operation performed on item %1 is forbidden.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Der für Element %1 ausgeführte Vorgang ist verboten.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="807"/>
-        <source>The operation performed on item %1 failed.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>Der für Element %1 ausgeführte Vorgang ist fehlgeschlagen.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="812"/>
-        <source>The file &quot;%1&quot; is too large to be uploaded. It has been temporarily blacklisted.</source>
-        <translation>Die Datei „%1“ ist zu groß zum Hochladen. Es wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="815"/>
-        <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
-        <translation>Sie haben Ihr Kontingent überschritten. Erhöhen Sie Ihr Speicherplatzkontingent, um den Datei-Upload wieder zu aktivieren.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
-        <source>Impossible to download file &quot;%1&quot;</source>
-        <translation>Datei „%1“ konnte nicht heruntergeladen werden</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="821"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="855"/>
-        <source>Synchronization error.</source>
-        <translation>Synchronisierungsfehler.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="841"/>
-        <source>Can&apos;t access item %1.&lt;br&gt;Please fix the write permissions and restart the synchronization.</source>
-        <translation>Auf Element %1 kann nicht zugegriffen werden.&lt;br&gt;Bitte korrigieren Sie die Schreibberechtigungen und starten Sie die Synchronisierung neu.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="847"/>
-        <source>Move to trash failed for item %1</source>
-        <translation>Das Verschieben in den Papierkorb für Element %1 ist fehlgeschlagen</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="862"/>
-        <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
-        <translation>Es ist ein technischer Fehler aufgetreten.&lt;br&gt;Bitte leeren Sie den Verlauf. Wenn der Fehler weiterhin besteht, wenden Sie sich an unser Support-Team.</translation>
-    </message>
-</context>
-<context>
     <name>KDC::AboutDialog</name>
     <message>
         <location filename="../src/gui/aboutdialog.cpp" line="71"/>
@@ -1126,78 +765,86 @@ Wählen Sie diejenigen aus, die Sie synchronisieren möchten:</translation>
         <translation>ABBRECHEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="472"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="473"/>
         <source>Failed to share</source>
         <translation>Teilen fehlgeschlagen</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="482"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="483"/>
         <source>1. Check that you are logged in &lt;br&gt;2. Check that you have configured at least one kDrive</source>
         <translation>1. Überprüfen Sie, ob Sie angemeldet sind &lt;br&gt;2. Überprüfen Sie, ob Sie mindestens ein kDrive konfiguriert haben</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="487"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="488"/>
         <source> (Connexion interrupted)</source>
         <translation> (Verbindung unterbrochen)</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="493"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="494"/>
         <source>Share the folder with SwissTransfer &lt;br&gt;</source>
         <translation>Teilen Sie den Ordner mit SwissTransfer &lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="494"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="495"/>
         <source> 1. We automatically compressed your log &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;here&lt;/a&gt;.&lt;br&gt;</source>
         <translation> 1. Wir haben Ihr Protokoll &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;hier&lt;/a&gt; automatisch komprimiert.&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="496"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="497"/>
         <source> 2. Transfer the archive with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</source>
         <translation> 2. Übertragen Sie das Archiv mit &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="498"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="499"/>
         <source> 3. Share the link with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</source>
         <translation> 3. Teilen Sie den Link mit &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="528"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="529"/>
         <source>Last upload the %1</source>
+        <translatorcomment>Letzte Hochladung am %1</translatorcomment>
         <translation>Letztes Hochladen von %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="555"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="556"/>
         <source>Sharing has been cancelled</source>
         <translation>Die Freigabe wurde abgebrochen</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="624"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="602"/>
+        <source>%1/%2/%3 at %4h%5m and %6s</source>
+        <extracomment>Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second</extracomment>
+        <translatorcomment>ie: Letzte Hochladung am 29.01.24 um 13:04:06 Uhr</translatorcomment>
+        <translation>%2.%1.%3 um %4:%5:%6 Uhr</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/debuggingdialog.cpp" line="637"/>
         <source>Do you want to save your modifications?</source>
         <translation>Wollen Sie Ihre Änderungen speichern?</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="673"/>
-        <location filename="../src/gui/debuggingdialog.cpp" line="679"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="686"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="692"/>
         <source>Unable to open folder %1.</source>
         <translation>Ordner %1 kann nicht geöffnet werden.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="686"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="699"/>
         <source>  Share</source>
         <translation>  Aktie</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="696"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="709"/>
         <source>  Sharing | step 1/2 %1%</source>
         <translation>  Teilen | Schritt 1/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="705"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="718"/>
         <source>  Sharing | step 2/2 %1%</source>
         <translation>  Teilen | Schritt 2/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="715"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="728"/>
         <source>  Canceling...</source>
         <translation>  Stornieren...</translation>
     </message>
@@ -1607,75 +1254,63 @@ Wählen Sie diejenigen aus, die Sie synchronisieren möchten:</translation>
 <context>
     <name>KDC::FolderItemWidget</name>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="441"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="445"/>
         <source>More actions</source>
         <translation>Weitere Aktionen</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="169"/>
-        <location filename="../src/gui/folderitemwidget.cpp" line="462"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="179"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="465"/>
         <source>Synchronized into &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</source>
         <translation>Synchronisiert in &lt;a style=&quot;%1&quot; href=&quot;ref&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="227"/>
-        <location filename="../src/gui/folderitemwidget.cpp" line="443"/>
-        <source>Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer&apos;s storage space.</source>
-        <translation>Lite Sync (Beta) ist aktiviert. Dateien von kDrive bleiben in der Cloud und nutzen nicht den Speicherplatz Ihres Computers.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="229"/>
-        <location filename="../src/gui/folderitemwidget.cpp" line="445"/>
-        <source>Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.</source>
-        <translation>Lite Sync (Beta) ist deaktiviert. Die kDrive-Dateien nutzen den Speicherplatz Ihres Computers.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="330"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="334"/>
         <source>Activate Lite Sync</source>
         <translation>Lite Sync aktivieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="332"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="336"/>
         <source>Activate Lite Sync (Beta)</source>
         <translation>Lite Sync aktivieren (Beta)</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="466"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="469"/>
         <source>Unselected folders will be moved to your computer&apos;s recycle bin. Folders synced to kDrive will remain available online.</source>
         <translation>Nicht ausgewählte Ordner werden in den Papierkorb Ihres Computers verschoben. Ordner, die mit kDrive synchronisiert wurden, bleiben online verfügbar.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="470"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="473"/>
         <source>Unselected folders will be &lt;b&gt;permanently&lt;/b&gt; deleted from the computer. Folders synced to kDrive will remain available online.</source>
         <translation>Nicht ausgewählte Ordner werden &lt;b&gt;permanent&lt;/b&gt; vom Computer gelöscht. Ordner, die mit kDrive synchronisiert wurden, bleiben online verfügbar.</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="474"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="477"/>
         <source>Cancel</source>
         <translation>Abbrechen</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="475"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="478"/>
         <source>VALIDATE</source>
         <translation>BESTÄTIGEN</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="352"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="356"/>
         <source>Pause synchronization</source>
         <translation>Synchronisierung anhalten</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="341"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="345"/>
         <source>Deactivate Lite Sync</source>
         <translation>Lite Sync deaktivieren</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="362"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="366"/>
         <source>Resume synchronization</source>
         <translation>Synchronisierung fortsetzen</translation>
     </message>
     <message>
-        <location filename="../src/gui/folderitemwidget.cpp" line="373"/>
+        <location filename="../src/gui/folderitemwidget.cpp" line="377"/>
         <source>Remove synchronization</source>
         <translation>Synchronisierung entfernen</translation>
     </message>
@@ -1976,6 +1611,364 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
         <source>LAST LOG</source>
         <translation>LETZTES LOG</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="340"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="362"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="368"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="372"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="378"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="388"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="394"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="479"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="523"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="557"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="571"/>
+        <source>A technical error has occurred (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
+        <translation>Ein technischer Fehler ist aufgetreten (Fehler %1).&lt;br&gt;Bitte leeren Sie den Verlauf und kontaktieren Sie unser Support-Team, falls der Fehler weiterhin besteht.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="346"/>
+        <source>It seems that your network connection is configured with too low a timeout for the application to work correctly (error %1).&lt;br&gt;Please check your network configuration.</source>
+        <translation>Es scheint, dass Ihre Netzwerkverbindung mit einem zu niedrigen Timeout konfiguriert ist, als dass die Anwendung ordnungsgemäß funktionieren könnte (Fehler %1).&lt;br&gt;Bitte überprüfen Sie Ihre Netzwerkkonfiguration.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="351"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="533"/>
+        <source>Cannot connect to kDrive server (error %1).&lt;br&gt;Attempting reconnection. Please check your Internet connection and your firewall.</source>
+        <translation>Es kann keine Verbindung zum kDrive-Server hergestellt werden (Fehler %1).&lt;br&gt;Es wird versucht, die Verbindung wiederherzustellen. Bitte überprüfen Sie Ihre Internetverbindung und Ihre Firewall.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="357"/>
+        <source>A login problem has occurred (error %1).&lt;br&gt;Please log in again and if the error persists, contact our support team.</source>
+        <translation>Es ist ein Anmeldeproblem aufgetreten (Fehler %1).&lt;br&gt;Bitte melden Sie sich erneut an. Wenn der Fehler weiterhin besteht, wenden Sie sich an unser Support-Team.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="384"/>
+        <source>Old synchronisation database doesn&apos;t exist or is not accessible.&lt;br&gt;Old blacklist data haven&apos;t been migrated.</source>
+        <translation>Alte Synchronisationsdatenbank besteht nicht oder ist nicht zugänglich. &lt;br/&gt;Alte Blacklist-Daten wurden nicht migriert.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="399"/>
+        <source>A new version of the application is available.&lt;br&gt;Please update the application to continue using it.</source>
+        <translation>Eine neue Version der Anwendung ist verfügbar.&lt;br&gt;Bitte aktualisieren Sie die Anwendung, um sie weiterhin verwenden zu können.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="404"/>
+        <source>The log upload failed (error %1).&lt;br&gt;Please try again later.</source>
+        <translation>Das Hochladen des Protokolls ist fehlgeschlagen (Fehler %1).&lt;br&gt;Bitte versuchen Sie es später erneut.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="428"/>
+        <source>The item misses search permission (error %1).&lt;br&gt;Please check that you have search/exec access to the parent folder.</source>
+        <translation>Für das Element fehlt die Suchberechtigung (Fehler %1).&lt;br&gt;Bitte überprüfen Sie, ob Sie Such-/Ausführungszugriff auf den übergeordneten Ordner haben.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="432"/>
+        <source>The synchronization folder is no longer accessible (error %1).&lt;br&gt;Synchronization will resume as soon as the folder is accessible.</source>
+        <translation>Auf den Synchronisierungsordner kann nicht mehr zugegriffen werden (Fehler %1).&lt;br&gt;Die Synchronisierung wird fortgesetzt, sobald auf den Ordner zugegriffen werden kann.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="437"/>
+        <source>The synchronization folder is inaccessible (error %1).&lt;br&gt;Please check that you have read access to this folder.</source>
+        <translation>Auf den Synchronisierungsordner kann nicht zugegriffen werden (Fehler %1).&lt;br&gt;Bitte überprüfen Sie, ob Sie Lesezugriff auf diesen Ordner haben.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="442"/>
+        <source>The synchronization folder is inaccessible (error %1).&lt;br&gt;Please check that you have write access to this folder.</source>
+        <translation>Der Synchronisierungsordner ist nicht zugänglich (Fehler %1). &lt;br/&gt;Bitte überprüfen Sie, ob Sie Schreibrechte für diesen Ordner haben.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="447"/>
+        <source>There is not enough space left on your disk.&lt;br&gt;The synchronization has been stopped.</source>
+        <translation>Es ist nicht mehr genug Speicherplatz auf Ihrer Festplatte vorhanden. &lt;br/&gt;Die Synchronisierung wurde angehalten.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="452"/>
+        <source>There is not enough memory left on your machine.&lt;br&gt;The synchronization has been stopped.</source>
+        <translation>Auf Ihrem Computer ist nicht mehr genügend Speicher vorhanden.&lt;br&gt;Die Synchronisierung wurde gestoppt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="456"/>
+        <source>Unable to start synchronization (error %1).&lt;br&gt;You must allow:&lt;br&gt;- kDrive in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Security&lt;br&gt;- kDrive LiteSync Extension in System Settings &gt;&gt; Privacy &amp; Security &gt;&gt; Full Disk Access.</source>
+        <translation>Die Synchronisierung konnte nicht gestartet werden (Fehler %1).&lt;br&gt;Sie müssen Folgendes zulassen:&lt;br&gt;- kDrive in den Systemeinstellungen &gt;&gt; Datenschutz und Sicherheit &gt;&gt; Sicherheit&lt;br&gt;- kDrive LiteSync-Erweiterung in den Systemeinstellungen &gt;&gt; Datenschutz und Sicherheit &gt;&gt; Vollständiger Festplattenzugriff.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="463"/>
+        <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension is installed and Windows Search service is enabled.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
+        <translation>Das Lite Sync-Plugin kann nicht gestartet werden (Fehler %1).&lt;br&gt;Überprüfen Sie, ob die Lite Sync-Erweiterung installiert und der Windows-Suchdienst aktiviert ist.&lt;br&gt;Bitte leeren Sie den Verlauf, starten Sie neu und wenden Sie sich an unser Support-Team, wenn der Fehler weiterhin besteht.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="468"/>
+        <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Check that the Lite Sync extension has the correct permissions and is running.&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
+        <translation>Das Lite Sync-Plugin konnte nicht gestartet werden (Fehler %1).&lt;br&gt;Überprüfen Sie, ob die Lite Sync-Erweiterung über die richtigen Berechtigungen verfügt und ausgeführt wird.&lt;br&gt;Bitte leeren Sie den Verlauf, starten Sie neu und wenn der Fehler weiterhin besteht, wenden Sie sich an unser Support-Team.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="473"/>
+        <source>Unable to start Lite Sync plugin (error %1).&lt;br&gt;Please empty the history, restart and if the error persists, contact our support team.</source>
+        <translation>Das Lite Sync-Plugin konnte nicht gestartet werden (Fehler %1).&lt;br&gt;Bitte leeren Sie den Verlauf, starten Sie neu und kontaktieren Sie unser Support-Team, wenn der Fehler weiterhin besteht.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="488"/>
+        <source>The kDrive is in maintenance mode.&lt;br&gt;Synchronization will begin again as soon as possible. Please contact our support team if the error persists.</source>
+        <translation>Der kDrive befindet sich im Wartungsmodus. Die &lt;br/&gt;Synchronisierung wird schnellstmöglich wieder aufgenommen. Bitte wenden Sie sich an unseren Support, sofern der Fehler weiterhin auftritt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="494"/>
+        <source>The kDrive is blocked.&lt;br&gt;Please renew kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
+        <translation>Der kDrive ist gesperrt. &lt;br/&gt;Bitte verlängern Sie kDrive. Wenn keine Massnahmen ergriffen werden, werden die Daten dauerhaft gelöscht und können nicht wiederhergestellt werden.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="499"/>
+        <source>The kDrive is blocked.&lt;br&gt;Please contact an administrator to renew the kDrive. If no action is taken, the data will be permanently deleted and it will be impossible to recover them.</source>
+        <translation>Der kDrive ist gesperrt. &lt;br/&gt;Bitte wenden Sie sich an einen Administrator, um den kDrive zu verlängern. Wenn keine Massnahmen ergriffen werden, werden die Daten dauerhaft gelöscht und können nicht wiederhergestellt werden.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="506"/>
+        <source>You are not authorised to access this kDrive.&lt;br&gt;Synchronization has been paused. Please contact an administrator.</source>
+        <translation>Sie sind nicht berechtigt, auf dieses kDrive zuzugreifen.&lt;br&gt;Die Synchronisierung wurde angehalten. Bitte wenden Sie sich an einen Administrator.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="510"/>
+        <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization will resume as soon as possible. Please contact our support team if the error persists.</source>
+        <translation>Es ist ein technischer Fehler aufgetreten (Fehler %1).&lt;br&gt;Die Synchronisierung wird so bald wie möglich fortgesetzt. Bitte wenden Sie sich an unser Support-Team, wenn der Fehler weiterhin besteht.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="529"/>
+        <source>The network connections have been dropped by the kernel (error %1).&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
+        <translation>Die Netzwerkverbindungen wurden vom Kernel unterbrochen (Fehler %1).&lt;br&gt;Bitte leeren Sie den Verlauf. Wenn der Fehler weiterhin besteht, wenden Sie sich an unser Support-Team.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="540"/>
+        <source>Unfortunately your old configuration could not be migrated.&lt;br&gt;The application will use a blank configuration.</source>
+        <translation>Leider konnte Ihre alte Konfiguration nicht migriert werden. &lt;br/&gt;Das Programm verwendet eine leere Konfiguration.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="544"/>
+        <source>Unfortunately your old proxy configuration could not be migrated, SOCKS5 proxies are not supported at this time.&lt;br&gt;The application will use system proxy settings instead.</source>
+        <translation>Leider konnte Ihre alte Proxy-Konfiguration nicht migriert werden, SOCKS5-Proxies werden derzeit nicht unterstützt. Stattdessen werden &lt;br/&gt;die System-Proxyeinstellungen verwendet.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="549"/>
+        <source>A technical error has occurred (error %1).&lt;br&gt;Synchronization has been restarted. Please empty the history and if the error persists, please contact our support team.</source>
+        <translation>Ein technischer Fehler (Fehler %1) ist aufgetreten. Die &lt;br/&gt;Synchronisierung wurde neu gestartet. Bitte leeren Sie den Verlauf; sollte der Fehler weiterhin auftreten, dann wenden Sie sich an unseren Support.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="561"/>
+        <source>An error accessing the synchronization database has happened (error %1).&lt;br&gt;Synchronization has been stopped.</source>
+        <translation>Beim Zugriff auf die Synchronisierungsdatenbank ist ein Fehler aufgetreten (Fehler %1). Die &lt;br/&gt;Synchronisierung wurde angehalten.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="576"/>
+        <source>A login problem has occurred (error %1).&lt;br&gt;Token invalid or revoked.</source>
+        <translation>Es ist ein Anmeldeproblem aufgetreten (Fehler %1).&lt;br&gt;Token ungültig oder widerrufen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="581"/>
+        <source>Nested synchronizations are prohibited (error %1).&lt;br&gt;You should only keep synchronizations whose folders are not nested.</source>
+        <translation>Verschachtelte Synchronisierungen sind verboten (Fehler %1).&lt;br&gt;Sie sollten nur Synchronisierungen behalten, deren Ordner nicht verschachtelt sind.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="585"/>
+        <source>The app does not have write rights to the synchronization folder.&lt;br&gt;The synchronization has been stopped.</source>
+        <translation>Die App hat keine Schreibrechte für den Synchronisierungsordner.&lt;br&gt;Die Synchronisierung wurde gestoppt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="591"/>
+        <source>File name parsing error (error %1).&lt;br&gt;Special characters such as double quotes, backslashes or line returns can cause parsing failures.</source>
+        <translation>Fehler beim Parsen des Dateinamens (Fehler %1).&lt;br&gt;Sonderzeichen wie doppelte Anführungszeichen, umgekehrte Schrägstriche oder Zeilenumbrüche können zu Parsingfehlern führen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="616"/>
+        <source>An element was moved to a deleted folder.&lt;br&gt;The move has been canceled.</source>
+        <translation>Ein Element wurde in einen gelöschten Ordner verschoben. &lt;br/&gt;Die Verschiebung wurde abgebrochen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="621"/>
+        <source>This element was moved by another user.&lt;br&gt;The deletion has been canceled.</source>
+        <translation>Dieses Element wurde von einem anderen Benutzer verschoben. &lt;br/&gt;Das Löschen wurde abgebrochen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="626"/>
+        <source>An element was created in this folder while it was being deleted.&lt;br&gt;The delete operation has been propagated anyway.</source>
+        <translation>Während des Löschens wurde in diesem Ordner ein Element erstellt.&lt;br&gt;Der Löschvorgang wurde trotzdem weitergegeben.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="631"/>
+        <source>This element has been moved somewhere else.&lt;br&gt;The local operation has been canceled.</source>
+        <translation>Dieses Element wurde an einen anderen Ort verschoben. &lt;br/&gt;Der lokale Vorgang wurde abgebrochen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="636"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="663"/>
+        <source>An element with the same name already exists in this location.&lt;br&gt;The local element has been renamed.</source>
+        <translation>An diesem Ort besteht bereits ein Element mit dem gleichen Namen. &lt;br/&gt;Das lokale Element wurde umbenannt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="641"/>
+        <source>An element with the same name already exists in this location.&lt;br&gt;The local operation has been canceled.</source>
+        <translation>An diesem Ort besteht bereits ein Element mit dem gleichen Namen. &lt;br/&gt;Der lokale Vorgang wurde abgebrochen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="647"/>
+        <source>The content of the file was modified while it was being deleted.&lt;br&gt;The deletion has been canceled.</source>
+        <translation>Der Inhalt der Datei wurde während des Löschens verändert. &lt;br/&gt;Das Löschen wurde abgebrochen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="651"/>
+        <source>The content of a synchronized element was modified while a parent folder was being deleted (e.g. the folder containing the current folder).&lt;br&gt;The file has been moved to the root of your kDrive.</source>
+        <translation>Der Inhalt eines synchronisierten Elements wurde geändert, während ein übergeordneter Ordner gelöscht wurde (z.B. der Ordner mit dem aktuellen Ordner). &lt;br/&gt;Die Datei wurde in das Stammverzeichnis Ihres kDrive verschoben.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="657"/>
+        <source>The content of an already synchronized file has been modified while this one or one of its parent folders has been deleted.&lt;br&gt;</source>
+        <translation>Der Inhalt einer bereits synchronisierten Datei wurde geändert, während diese oder eines ihrer übergeordneten Verzeichnisse gelöscht wurde.&lt;br&gt;</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="668"/>
+        <source>The file was modified at the same time by another user.&lt;br&gt;Your modifications have been saved in a copy.</source>
+        <translation>Die Datei wurde zur gleichen Zeit von einem anderen Benutzer geändert. &lt;br/&gt;Ihre Änderungen wurden in einer Kopie gespeichert.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="673"/>
+        <source>Another user has moved a parent folder of the destination.&lt;br&gt;The local operation has been canceled.</source>
+        <translation>Ein anderer Benutzer hat einen übergeordneten Ordner des Ziels verschoben. &lt;br/&gt;Der lokale Vorgang wurde abgebrochen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="689"/>
+        <source>An existing file/directory has an identical name with the same case options (same upper and lower case letters).&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
+        <translation>Eine vorhandene Datei/ein vorhandenes Verzeichnis hat einen identischen Namen mit denselben Groß- und Kleinschreibungsoptionen (gleiche Groß- und Kleinbuchstaben).&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="696"/>
+        <source>The file/directory name contains an unsupported character.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
+        <translation>Der Datei-/Verzeichnisname enthält ein nicht unterstütztes Zeichen.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="702"/>
+        <source>This file/directory name is reserved by your operating system.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
+        <translation>Dieser Datei-/Verzeichnisname ist von Ihrem Betriebssystem reserviert.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="708"/>
+        <source>The file/directory name is too long.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
+        <translation>Der Datei-/Verzeichnisname ist zu lang.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="714"/>
+        <source>The file/directory path is too long.&lt;br&gt;The file/directory is ignored.</source>
+        <translation>Der Datei-/Verzeichnispfad ist zu lang.&lt;br&gt;Die Datei/das Verzeichnis wird ignoriert.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="720"/>
+        <source>The file/directory name contains a recent UNICODE character not yet supported by your filesystem.&lt;br&gt;The parent directory has been excluded from synchronization.</source>
+        <translation>Der Datei-/Verzeichnisname enthält ein aktuelles UNICODE-Zeichen, das von Ihrem Dateisystem noch nicht unterstützt wird.&lt;br&gt;Das übergeordnete Verzeichnis wurde von der Synchronisierung ausgeschlossen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="726"/>
+        <source>The file/directory name coincides with the name of another item in the same directory.&lt;br&gt;This item is temporarily blacklisted. Consider removing duplicate items.</source>
+        <translation>Der Datei-/Verzeichnisname stimmt mit dem Namen eines anderen Elements im selben Verzeichnis überein.&lt;br&gt;Dieses Element steht vorübergehend auf der schwarzen Liste. Ziehen Sie in Erwägung, doppelte Elemente zu entfernen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="737"/>
+        <source>You are not allowed to create item.&lt;br&gt;The item has been excluded from synchronization.</source>
+        <translation>Sie dürfen keine Elemente erstellen. &lt;br/&gt;Das Element wurde von der Synchronisierung ausgeschlossen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="742"/>
+        <source>You are not allowed to edit item.&lt;br&gt;The file containing your modifications has been renamed and excluded from synchronization.</source>
+        <translation>Sie dürfen keine Elemente bearbeiten. &lt;br/&gt;Die Datei mit Ihren Änderungen wurde umbenannt und von der Synchronisierung ausgeschlossen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="751"/>
+        <source>You are not allowed to rename item.&lt;br&gt;It will be restored with its original name.</source>
+        <translation>Sie dürfen das Element nicht umbenennen. &lt;br/&gt;Es wird mit seinem ursprünglichen Namen wiederhergestellt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="756"/>
+        <source>You are not allowed to move item to &quot;%1&quot;.&lt;br&gt;It will be restored to its original location.</source>
+        <translation>Sie dürfen das Element nicht zu &quot;%1&quot; verschieben.&lt;br&gt;Es wird an seinem ursprünglichen Ort wiederhergestellt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="762"/>
+        <source>You are not allowed to delete item.&lt;br&gt;It will be restored to its original location.</source>
+        <translation>Sie dürfen das Element nicht löschen. &lt;br/&gt;Es wird an seinem ursprünglichen Ort wiederhergestellt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="767"/>
+        <source>&quot;%1&quot; already exists on remote kDrive. It is not synced because it has been blacklisted.</source>
+        <translation>„%1“ existiert bereits auf dem Remote-kDrive. Es wird nicht synchronisiert, da es auf der schwarzen Liste steht.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="770"/>
+        <source>Failed to move item &quot;%1&quot; to bin, it has been blacklisted.</source>
+        <translation>Das Element „%1“ konnte nicht in den Papierkorb verschoben werden, da es auf der schwarzen Liste steht.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="773"/>
+        <source>&quot;%1&quot; already exists on local file system. It is not synced.</source>
+        <translation>„%1“ existiert bereits im lokalen Dateisystem. Es ist nicht synchronisiert.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="776"/>
+        <source>Failed to synchronize item &quot;%1&quot;. It has been temporarily blacklisted.&lt;br&gt;Another attempt to sync it will be done in one hour or on next application startup.</source>
+        <translation>Element „%1“ konnte nicht synchronisiert werden. Es wurde vorübergehend auf die schwarze Liste gesetzt.&lt;br&gt;Ein weiterer Synchronisierungsversuch erfolgt in einer Stunde oder beim nächsten Anwendungsstart.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="781"/>
+        <source>The item &quot;%1&quot; has been excluded from sync by a custom template.&lt;br&gt;You can disable this type of notification from the Preferences</source>
+        <translation>Das Element „%1“ wurde durch eine benutzerdefinierte Vorlage von der Synchronisierung ausgeschlossen.&lt;br&gt;Sie können diese Art von Benachrichtigung in den Einstellungen deaktivieren</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="786"/>
+        <source>The item &quot;%1&quot; has been excluded from sync because it&apos;s an hard link</source>
+        <translation>Das Element „%1“ wurde von der Synchronisierung ausgeschlossen, da es sich um einen festen Link handelt</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="801"/>
+        <source>The operation performed on item %1 is forbidden.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
+        <translation>Der für Element %1 ausgeführte Vorgang ist verboten.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="807"/>
+        <source>The operation performed on item %1 failed.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
+        <translation>Der für Element %1 ausgeführte Vorgang ist fehlgeschlagen.&lt;br&gt;Die Datei/das Verzeichnis wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="812"/>
+        <source>The file &quot;%1&quot; is too large to be uploaded. It has been temporarily blacklisted.</source>
+        <translation>Die Datei „%1“ ist zu groß zum Hochladen. Es wurde vorübergehend auf die schwarze Liste gesetzt.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="815"/>
+        <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
+        <translation>Sie haben Ihr Kontingent überschritten. Erhöhen Sie Ihr Speicherplatzkontingent, um den Datei-Upload wieder zu aktivieren.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
+        <source>Impossible to download file &quot;%1&quot;</source>
+        <translation>Datei „%1“ konnte nicht heruntergeladen werden</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="821"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="855"/>
+        <source>Synchronization error.</source>
+        <translation>Synchronisierungsfehler.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="841"/>
+        <source>Can&apos;t access item %1.&lt;br&gt;Please fix the write permissions and restart the synchronization.</source>
+        <translation>Auf Element %1 kann nicht zugegriffen werden.&lt;br&gt;Bitte korrigieren Sie die Schreibberechtigungen und starten Sie die Synchronisierung neu.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="847"/>
+        <source>Move to trash failed for item %1</source>
+        <translation>Das Verschieben in den Papierkorb für Element %1 ist fehlgeschlagen</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="862"/>
+        <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
+        <translation>Es ist ein technischer Fehler aufgetreten.&lt;br&gt;Bitte leeren Sie den Verlauf. Wenn der Fehler weiterhin besteht, wenden Sie sich an unser Support-Team.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
@@ -2404,7 +2397,7 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
     <message>
         <location filename="../src/gui/statusbarwidget.cpp" line="185"/>
         <source>Pause kDrive &quot;%1&quot; synchronization</source>
-        <translation>Unterbrechen Sie die Synchronisierung von kDrive „%1“.</translation>
+        <translation>Unterbrechen Sie die Synchronisierung von kDrive „%1“</translation>
     </message>
     <message>
         <location filename="../src/gui/statusbarwidget.cpp" line="186"/>
@@ -2757,6 +2750,26 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <location filename="../src/gui/debuggingdialog.cpp" line="49"/>
         <source>The entire folder is large (&gt; 100 MB) and may take some time to share. To reduce the sharing time, we recommend that you share only the last kDrive session.</source>
         <translation>Der gesamte Ordner ist groß (&gt; 100 MB) und die Freigabe kann einige Zeit dauern. Um die Freigabezeit zu verkürzen, empfehlen wir Ihnen, nur die letzte kDrive-Sitzung zu teilen.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="42"/>
+        <source>Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer&apos;s storage space.</source>
+        <translation>Lite Sync (Beta) ist aktiviert. Dateien von kDrive bleiben in der Cloud und nutzen nicht den Speicherplatz Ihres Computers.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="44"/>
+        <source>Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.</source>
+        <translation>Lite Sync (Beta) ist deaktiviert. Die kDrive-Dateien nutzen den Speicherplatz Ihres Computers.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="47"/>
+        <source>Lite sync is enabled. Files from kDrive remain in the Cloud and do not use your computer&apos;s storage space.</source>
+        <translation>Lite Sync ist aktiviert. Dateien von kDrive bleiben in der Cloud und nutzen nicht den Speicherplatz Ihres Computers.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/folderitemwidget.cpp" line="49"/>
+        <source>Lite sync is disabled. The kDrive files use the storage space of your computer.</source>
+        <translation>Lite Sync ist deaktiviert. Die kDrive-Dateien nutzen den Speicherplatz Ihres Computers.</translation>
     </message>
 </context>
 <context>
