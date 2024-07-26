@@ -652,8 +652,7 @@ void DebuggingDialog::onExit() {
 
 void DebuggingDialog::onSendLogButtonTriggered() {
     _sendLogButton->setEnabled(false);
-    _sendArchivedLogs |= _heavyLogBox->isHidden();
-    GuiRequests::sendLogToSupport(_sendArchivedLogs);
+    GuiRequests::sendLogToSupport(_sendArchivedLogs || _heavyLogBox->isHidden());
 }
 
 void DebuggingDialog::onCancelLogUploadButtonTriggered() {
