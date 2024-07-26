@@ -798,24 +798,22 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
 QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noexcept {
     switch (errorInfo.exitCause()) {
         case ExitCauseHttpErrForbidden: {
-            return tr("The operation performed on item %1 is forbidden.<br>"
-                      "The file/directory has been temporarily blacklisted.")
-                .arg(errorInfo.path());
+            return tr("The operation performed on item is forbidden.<br>"
+                      "The file/directory has been temporarily blacklisted.");
         }
         case ExitCauseApiErr:
         case ExitCauseUploadNotTerminated: {
-            return tr("The operation performed on item %1 failed.<br>"
-                      "The file/directory has been temporarily blacklisted.")
-                .arg(errorInfo.path());
+            return tr("The operation performed on this item failed.<br>"
+                      "The file/directory has been temporarily blacklisted.");
         }
         case ExitCauseFileTooBig: {
-            return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.").arg(errorInfo.path());
+            return tr("The file is too large to be uploaded. It has been temporarily blacklisted.");
         }
         case ExitCauseQuotaExceeded: {
             return tr("You have exceeded your quota. Increase your space quota to re-enable file upload.");
         }
         case ExitCauseNotFound: {
-            return tr("Impossible to download file \"%1\"").arg(errorInfo.path());
+            return tr("Impossible to download the file.");
         }
         default:
             return tr("Synchronization error.");
