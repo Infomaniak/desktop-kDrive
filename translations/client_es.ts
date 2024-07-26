@@ -695,154 +695,154 @@ Selecciona los que quieras sincronizar:</translation>
         <translation>Guardar información de depuración en una carpeta de mi computadora (recomendado)</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="109"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="111"/>
         <source>This information enables IT support to determine the origin of an incident.</source>
         <translation>Esta información permite al soporte de TI determinar el origen de un incidente.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="118"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="121"/>
         <source>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Open debugging folder&lt;/a&gt;</source>
         <translation>&lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;Abrir carpeta de depuración&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="147"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="150"/>
         <source>Debug level</source>
         <translation>Nivel de depuración</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="156"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="159"/>
         <source>The trace level lets you choose the extent of the debugging information recorded</source>
         <translation>El nivel de seguimiento le permite elegir el alcance de la información de depuración registrada</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="183"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="186"/>
         <source>The extended full log collects a detailed history that can be used for debugging. Enabling it can slow down the kDrive application.</source>
         <translation>El registro completo extendido recopila un historial detallado que se puede utilizar para la depuración. Habilitarlo puede ralentizar la aplicación kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="187"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="190"/>
         <source>Extended Full Log</source>
         <translation>Registro completo extendido</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="210"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="213"/>
         <source>Delete logs older than %1 days</source>
         <translation>Eliminar registros de más de %1 días</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="229"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="232"/>
         <source>Share the debug folder with Infomaniak support.</source>
         <translation>Comparte la carpeta de depuración con el soporte de Infomaniak.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="253"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="256"/>
         <source>The last session is the periode since the last kDrive start.</source>
         <translation>La última sesión es el período desde el último inicio de kDrive.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="257"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="260"/>
         <source>Share only the last kDrive session</source>
         <translation>Comparte solo la última sesión de kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="288"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="291"/>
         <source>  Loading</source>
         <translation>  Cargando</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="297"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="300"/>
         <source>Cancel</source>
         <translation>Cancelar</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="323"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="326"/>
         <source>SAVE</source>
         <translation>GUARDAR</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="330"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="333"/>
         <source>CANCEL</source>
         <translation>CANCELAR</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="473"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="476"/>
         <source>Failed to share</source>
         <translation>No se pudo compartir</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="483"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="486"/>
         <source>1. Check that you are logged in &lt;br&gt;2. Check that you have configured at least one kDrive</source>
         <translation>1. Verifique que haya iniciado sesión &lt;br&gt;2. Comprueba que tienes configurado al menos un kDrive</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="488"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="491"/>
         <source> (Connexion interrupted)</source>
         <translation> (Conexión interrumpida)</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="494"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="497"/>
         <source>Share the folder with SwissTransfer &lt;br&gt;</source>
         <translation>Compartir la carpeta con SwissTransfer &lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="495"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="498"/>
         <source> 1. We automatically compressed your log &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;here&lt;/a&gt;.&lt;br&gt;</source>
         <translation> 1. Comprimimos automáticamente su registro &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;aquí&lt;/a&gt;.&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="497"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="500"/>
         <source> 2. Transfer the archive with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</source>
         <translation> 2. Transfiera el archivo con &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;swisstransfer.com&lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="499"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="502"/>
         <source> 3. Share the link with &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</source>
         <translation> 3. Comparte el enlace con &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt; support@infomaniak.com &lt;/a&gt;&lt;br&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="529"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="532"/>
         <source>Last upload the %1</source>
         <translation>Última carga el %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="556"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="559"/>
         <source>Sharing has been cancelled</source>
         <translation>Compartir ha sido cancelado</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="602"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="605"/>
         <source>%1/%2/%3 at %4h%5m and %6s</source>
         <extracomment>Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second</extracomment>
-        <translation type="unfinished">%2/%1/%3 a las %4:%5 y %6s</translation>
+        <translation>%2/%1/%3 a las %4:%5 y %6s</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="637"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="640"/>
         <source>Do you want to save your modifications?</source>
         <translation>¿Deseas guardar tus cambios?</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="686"/>
-        <location filename="../src/gui/debuggingdialog.cpp" line="692"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="689"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="695"/>
         <source>Unable to open folder %1.</source>
         <translation>No se puede abrir la carpeta %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="699"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="702"/>
         <source>  Share</source>
         <translation>  Compartir</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="709"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="712"/>
         <source>  Sharing | step 1/2 %1%</source>
         <translation>  Compartir | paso 1/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="718"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="721"/>
         <source>  Sharing | step 2/2 %1%</source>
         <translation>  Compartir | paso 2/2 %1%</translation>
     </message>
     <message>
-        <location filename="../src/gui/debuggingdialog.cpp" line="728"/>
+        <location filename="../src/gui/debuggingdialog.cpp" line="731"/>
         <source>  Canceling...</source>
         <translation>  Cancelado...</translation>
     </message>
@@ -1574,39 +1574,39 @@ para privilegios adicionales durante el proceso.</translation>
 <context>
     <name>KDC::ParametersDialog</name>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1094"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1092"/>
         <source>Please confirm the transmission of debugging information to our support.</source>
         <translation>Confirma la transmisión de la información de depuración a nuestro servicio de asistencia.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1200"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1198"/>
         <source>Unable to open folder path %1.</source>
         <translation>No es posible abrir la ruta de la carpeta %1.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1214"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1212"/>
         <source>Transmission done!&lt;br&gt;Please refer to identifier &lt;b&gt;%1&lt;/b&gt; in bug reports.</source>
         <translation>¡Transmisión realizada!&lt;br&gt;Consulta el identificador &lt;b&gt;%1&lt;/b&gt; en informes de fallos.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1215"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1213"/>
         <source>Transmission failed!
 Please, use the following link to send the logs to the support: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</source>
         <translation>¡La transmisión falló!
 Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;%2&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1236"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1234"/>
         <source>No kDrive configured!</source>
         <translation>¡No hay ningún kDrive configurado!</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1237"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1235"/>
         <source>Need help? Generate an application log archive to send to our support team.</source>
         <translation>¿Necesitas ayuda? Genera un archivo de la aplicación para enviarlo a nuestro servicio de asistencia.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1094"/>
         <source>LAST LOG</source>
         <translation>ÚLTIMO REGISTRO</translation>
     </message>
@@ -1924,57 +1924,57 @@ Por favor, utilice el siguiente enlace para enviar los registros al soporte: &lt
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="801"/>
-        <source>The operation performed on item %1 is forbidden.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>La operación realizada en el elemento %1 está prohibida.&lt;br&gt;El archivo/directorio se ha incluido temporalmente en la lista negra.</translation>
+        <source>The operation performed on item is forbidden.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
+        <translation type="unfinished">La operación realizada en el elemento está prohibida.&lt;br&gt;El archivo / directorio ha sido temporalmente incluido en la lista negra.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="807"/>
-        <source>The operation performed on item %1 failed.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
-        <translation>La operación realizada en el elemento %1 falló.&lt;br&gt;El archivo/directorio se ha incluido temporalmente en la lista negra.</translation>
+        <location filename="../src/gui/parametersdialog.cpp" line="806"/>
+        <source>The operation performed on this item failed.&lt;br&gt;The file/directory has been temporarily blacklisted.</source>
+        <translation>La operación realizada en este elemento falló.&lt;br&gt;El archivo/directorio ha sido temporalmente bloqueado.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="812"/>
-        <source>The file &quot;%1&quot; is too large to be uploaded. It has been temporarily blacklisted.</source>
-        <translation>El archivo &quot;%1&quot; es demasiado grande para cargarlo. Ha sido incluido temporalmente en la lista negra.</translation>
+        <location filename="../src/gui/parametersdialog.cpp" line="810"/>
+        <source>The file is too large to be uploaded. It has been temporarily blacklisted.</source>
+        <translation>El archivo es demasiado grande para ser cargado. Ha sido temporalmente bloqueado.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="815"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="816"/>
+        <source>Impossible to download the file.</source>
+        <translation>Imposible descargar el archivo.</translation>
+    </message>
+    <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="813"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Has excedido tu cuota. Aumente su cuota de espacio para volver a habilitar la carga de archivos.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="818"/>
-        <source>Impossible to download file &quot;%1&quot;</source>
-        <translation>Imposible descargar el archivo &quot;%1&quot;</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="821"/>
-        <location filename="../src/gui/parametersdialog.cpp" line="855"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="819"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="853"/>
         <source>Synchronization error.</source>
         <translation>Error de sincronización.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="841"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="839"/>
         <source>Can&apos;t access item %1.&lt;br&gt;Please fix the write permissions and restart the synchronization.</source>
         <translation>No se puede acceder al elemento %1.&lt;br&gt;Corrija los permisos de escritura y reinicie la sincronización.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="847"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="845"/>
         <source>Move to trash failed for item %1</source>
         <translation>No se pudo mover a la papelera el elemento %1</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="862"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="860"/>
         <source>A technical error has occurred.&lt;br&gt;Please empty the history and if the error persists, contact our support team.</source>
         <translation>Se ha producido un error técnico.&lt;br&gt;Vacíe el historial y, si el error persiste, póngase en contacto con nuestro equipo de soporte.</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1097"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1095"/>
         <source>ALL LOGS</source>
         <translation>TODOS LOS REGISTROS</translation>
     </message>
     <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="1098"/>
+        <location filename="../src/gui/parametersdialog.cpp" line="1096"/>
         <source>NO</source>
         <translation>NO</translation>
     </message>
