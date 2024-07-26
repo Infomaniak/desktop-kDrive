@@ -3,11 +3,11 @@ $lupdatePath = "C:\Qt\Tools\QtDesignStudio\qt6_design_studio_reduced_version\bin
 
 # Vérifier de nouveau le chemin fourni par l'utilisateur
 while (-Not (Test-Path $lupdatePath)) {
-    Write-Host "Le chemin fourni n'existe toujours pas."
+    Write-Host "Le chemin fourni n'existe pas."
     $lupdatePath = Read-Host "Veuillez fournir le chemin correct vers lupdate.exe"
 }
 
-# Trouver tous les fichiers .ts dans le dossier actuel
+# Trouver tous les fichiers .ts dans le dossier transalations
 $tsFiles = Get-ChildItem -Path ../ -Filter "*.ts" -Recurse
 
 # Chemin vers le dossier src
