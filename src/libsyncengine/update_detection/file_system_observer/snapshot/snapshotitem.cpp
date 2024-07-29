@@ -43,6 +43,13 @@ SnapshotItem::SnapshotItem(const SnapshotItem &other) {
 }
 
 SnapshotItem &SnapshotItem::operator=(const SnapshotItem &other) {
+    copyExceptChildren(other);
+    _childrenIds = other.childrenIds();
+
+    return *this;
+}
+
+void SnapshotItem::copyExceptChildren(const SnapshotItem &other) {
     // Update all attributes but children list
     _id = other.id();
     _parentId = other.parentId();
@@ -55,8 +62,6 @@ SnapshotItem &SnapshotItem::operator=(const SnapshotItem &other) {
     _contentChecksum = other.contentChecksum();
     _canWrite = other.canWrite();
     _canShare = other.canShare();
-
-    return *this;
 }
 
 void SnapshotItem::addChildren(const NodeId &id) {
