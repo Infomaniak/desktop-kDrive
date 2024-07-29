@@ -55,8 +55,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
         auto dirIt = std::filesystem::recursive_directory_iterator(
             parentPath, std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
-            LOGW_WARN(Log::instance()->getLogger(),
-                      "Error in removePlaceholdersRecursively: " << Utility::formatStdError(ec).c_str());
+            LOGW_WARN(_logger, L"Error in removePlaceholdersRecursively: " << Utility::formatStdError(ec).c_str());
             return false;
         }
 
@@ -73,9 +72,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
 #endif
 
             if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-                LOGW_DEBUG(Log::instance()->getLogger(), L"Ignore path=" << Path2WStr(dirIt->path()).c_str()
-                                                                         << L" because size > "
-                                                                         << CommonUtility::maxPathLength());
+                LOGW_DEBUG(_logger, L"Ignore path=" << Path2WStr(dirIt->path()).c_str() << L" because size > "
+                                                    << CommonUtility::maxPathLength());
                 dirIt.disable_recursion_pending();
                 continue;
             }
@@ -100,7 +98,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
                 continue;
             }
             if (isExcluded) {
-                LOGW_DEBUG(Log::instance()->getLogger(), L"Ignore path=" << Path2WStr(dirIt->path()).c_str());
+                LOGW_DEBUG(_logger, L"Ignore path=" << Path2WStr(dirIt->path()).c_str());
                 dirIt.disable_recursion_pending();
                 continue;
             }
@@ -202,7 +200,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
         auto dirIt = std::filesystem::recursive_directory_iterator(
             _rootPath, std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
-            LOGW_WARN(_logger, "Error in removeDehydratedPlaceholders: " << Utility::formatStdError(ec).c_str());
+            LOGW_WARN(_logger, L"Error in removeDehydratedPlaceholders: " << Utility::formatStdError(ec).c_str());
             return false;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
