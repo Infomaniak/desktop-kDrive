@@ -572,12 +572,12 @@ void SynthesisPopover::initUI() {
 #ifdef Q_OS_LINUX
     // On Linux, the update button is not displayed, the update need to be done manually by the user (download on the website)
     _lockedAppUpdateButton->hide();
-    lockedAppUpdateManualLabel = new QLabel(this);
-    lockedAppUpdateManualLabel->setObjectName("defaultTextLabel");
-    lockedAppUpdateManualLabel->setAlignment(Qt::AlignHCenter);
-    lockedAppUpdateManualLabel->setWordWrap(true);
-    lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    lockedAppVersionVBox->addWidget(lockedAppUpdateManualLabel);
+    _lockedAppUpdateManualLabel = new QLabel(this);
+    _lockedAppUpdateManualLabel->setObjectName("defaultTextLabel");
+    _lockedAppUpdateManualLabel->setAlignment(Qt::AlignHCenter);
+    _lockedAppUpdateManualLabel->setWordWrap(true);
+    _lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    lockedAppVersionVBox->addWidget(_lockedAppUpdateManualLabel);
 #endif  //
 
     // Shadow
