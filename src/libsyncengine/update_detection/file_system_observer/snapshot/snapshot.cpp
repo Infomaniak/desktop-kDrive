@@ -104,7 +104,7 @@ bool Snapshot::updateItem(const SnapshotItem &newItem) {
     }
 
     // Update item
-    _items[newItem.id()] = newItem;
+    _items[newItem.id()].copyExceptChildren(newItem);
 
     if (parentChanged || !isOrphan(newItem.id())) {
         startUpdate();

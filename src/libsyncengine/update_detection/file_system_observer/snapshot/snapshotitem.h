@@ -60,6 +60,7 @@ class SnapshotItem {
         inline void setCanShare(bool canShare) { _canShare = canShare; }
         SnapshotItem &operator=(const SnapshotItem &other);
 
+        void copyExceptChildren(const SnapshotItem &other);
         void addChildren(const NodeId &id);
         void removeChildren(const NodeId &id);
 
