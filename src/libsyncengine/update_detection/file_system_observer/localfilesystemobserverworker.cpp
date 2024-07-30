@@ -622,8 +622,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     }
 
     if (ioError == IoErrorNoSuchFileOrDirectory) {
-        LOGW_WARN(Log::instance()->getLogger(),
-                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, ioError).c_str());
+        LOGW_WARN(_logger, L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, ioError).c_str());
         setExitCause(ExitCauseSyncDirDoesntExist);
         return ExitCodeSystemError;
     }
@@ -636,7 +635,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
     ItemType itemType;
     if (!IoHelper::getItemType(absoluteParentDirPath, itemType)) {
-        LOGW_WARN(Log::instance()->getLogger(),
+        LOGW_WARN(_logger,
                   L"Error in IoHelper::getItemType: " << Utility::formatIoError(absoluteParentDirPath, itemType.ioError).c_str());
         setExitCause(ExitCauseFileAccessError);
         return ExitCodeSystemError;
@@ -666,7 +665,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
         auto dirIt = std::filesystem::recursive_directory_iterator(
             absoluteParentDirPath, std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
-            LOGW_SYNCPAL_DEBUG(_logger, "Error in exploreDir: " << Utility::formatStdError(ec).c_str());
+            LOGW_SYNCPAL_DEBUG(_logger, L"Error in exploreDir: " << Utility::formatStdError(ec).c_str());
             setExitCause(ExitCauseFileAccessError);
             return ExitCodeSystemError;
         }

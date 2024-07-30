@@ -86,7 +86,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
             }
 
             if (item.size() < 0) {
-                LOGW_WARN(_logger, "Error in setSize, got a negative value - str='" << str.c_str() << "'");
+                LOGW_WARN(_logger, L"Error in setSize, got a negative value - str='" << Utility::s2ws(str).c_str() << L"'");
                 return false;
             }
 
@@ -104,7 +104,7 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
             }
 
             if (item.createdAt() < 0) {
-                LOGW_WARN(_logger, "Error in setCreatedAt, got a negative value - str='" << str.c_str() << "'");
+                LOGW_WARN(_logger, L"Error in setCreatedAt, got a negative value - str='" << Utility::s2ws(str).c_str() << L"'");
                 return false;
             }
 
@@ -122,7 +122,8 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
             }
 
             if (item.lastModified() < 0) {
-                LOGW_WARN(_logger, "Error in setLastModified, got a negative value - str='" << str.c_str() << "'");
+                LOGW_WARN(_logger,
+                          L"Error in setLastModified, got a negative value - str='" << Utility::s2ws(str).c_str() << L"'");
                 return false;
             }
 
@@ -317,7 +318,7 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
 
     if (isExtendedLog()) {
         LOGW_DEBUG(_logger,
-                   L"Reply " << jobId() << L" received - length=" << length << " value=" << Utility::s2ws(_ss.str()).c_str());
+                   L"Reply " << jobId() << L" received - length=" << length << L" value=" << Utility::s2ws(_ss.str()).c_str());
     }
 
     return true;
