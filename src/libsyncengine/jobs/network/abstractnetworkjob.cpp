@@ -329,7 +329,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     }
 
     Poco::Net::HTTPRequest req(_httpMethod, path, Poco::Net::HTTPMessage::HTTP_1_1);
-   
+
     // Set headers
     req.set("User-Agent", _userAgent);
     req.setContentType(contentType);
@@ -618,12 +618,10 @@ void AbstractNetworkJob::TimeoutHelper::clearAllEvents() {
 
 void AbstractNetworkJob::TimeoutHelper::deleteOldestEvents() {
     const std::scoped_lock<std::mutex> lock(_mutexEventsQueue);
-    if (!_eventsQueue.empty()) {
-        unsigned int eventTime = static_cast<unsigned int>(time(NULL));
-        while (eventTime - _eventsQueue.front() > PERIOD) {
-            LOG_DEBUG(Log::instance()->getLogger(), "TimeoutHelper - Clear event " << _eventsQueue.front());
-            _eventsQueue.pop();
-        }
+    auto eventTime = static_cast<unsigned int>(time(NULL));
+    while (!_eventsQueue.empty() && eventTime - _eventsQueue.front() > PERIOD) {
+        LOG_DEBUG(Log::instance()->getLogger(), "TimeoutHelper - Clear event " << _eventsQueue.front());
+        _eventsQueue.pop();
     }
 }
 
