@@ -98,7 +98,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
                 continue;
             }
             if (isExcluded) {
-                LOGW_DEBUG(_logger, L"Ignore path=" << Path2WStr(dirIt->path()).c_str());
+                LOGW_DEBUG(_logger, L"Ignore path=" << Path2WStr(dirIt->path()).c_str() << L" because it is excluded");
                 dirIt.disable_recursion_pending();
                 continue;
             }
