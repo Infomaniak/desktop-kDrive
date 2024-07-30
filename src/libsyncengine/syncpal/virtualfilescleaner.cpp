@@ -51,29 +51,14 @@ bool VirtualFilesCleaner::run() {
 bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPath) {
     const SyncName rootPathStr = _rootPath.native();
     try {
-        std::error_code ec;
-        auto dirIt = std::filesystem::recursive_directory_iterator(
-            parentPath, std::filesystem::directory_options::skip_permission_denied, ec);
-        if (ec) {
-            LOGW_WARN(_logger, L"Error in removePlaceholdersRecursively: " << Utility::formatStdError(ec).c_str());
+        std::filesystem::recursive_directory_iterator dirIt;
+        if (!recursiveDirectoryIterator(parentPath, dirIt)) {
+            LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
             return false;
         }
 
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-#ifdef _WIN32
-            // skip_permission_denied doesn't work on Windows
-            try {
-                bool dummy = dirIt->exists();
-                (void)(dummy);
-            } catch (std::filesystem::filesystem_error &) {
-                dirIt.disable_recursion_pending();
-                continue;
-            }
-#endif
-
-            if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-                LOGW_DEBUG(_logger, L"Ignore path=" << Path2WStr(dirIt->path()).c_str() << L" because size > "
-                                                    << CommonUtility::maxPathLength());
+            if (!folderCanBeProcessed(dirIt)) {
                 dirIt.disable_recursion_pending();
                 continue;
             }
@@ -193,31 +178,48 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
     return true;
 }
 
+bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_directory_iterator &dirIt) {
+#ifdef _WIN32
+    // skip_permission_denied doesn't work on Windows
+    try {
+        bool dummy = dirIt->exists();
+        (void)(dummy);
+    } catch (std::filesystem::filesystem_error &) {
+        return false;
+    }
+#endif
+
+    if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
+        LOGW_WARN(_logger,
+                  L"Ignore path=" << Path2WStr(dirIt->path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
+        return false;
+    }
+
+    return true;
+}
+
+bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, std::filesystem::recursive_directory_iterator &dirIt) {
+    std::error_code ec;
+    dirIt =
+        std::filesystem::recursive_directory_iterator(_rootPath, std::filesystem::directory_options::skip_permission_denied, ec);
+    if (ec) {
+        LOGW_WARN(_logger, L"Error in std::filesystem::recursive_directory_iterator: " << Utility::formatStdError(ec).c_str());
+        return false;
+    }
+
+    return true;
+}
+
 bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders) {
     bool ret = true;
     try {
-        std::error_code ec;
-        auto dirIt = std::filesystem::recursive_directory_iterator(
-            _rootPath, std::filesystem::directory_options::skip_permission_denied, ec);
-        if (ec) {
-            LOGW_WARN(_logger, L"Error in removeDehydratedPlaceholders: " << Utility::formatStdError(ec).c_str());
+        std::filesystem::recursive_directory_iterator dirIt;
+        if (!recursiveDirectoryIterator(_rootPath, dirIt)) {
+            LOGW_WARN(_logger, L"Error in VirtualFilesCleaner::recursiveDirectoryIterator");
             return false;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
-#ifdef _WIN32
-            // skip_permission_denied doesn't work on Windows
-            try {
-                bool dummy = dirIt->exists();
-                (void)(dummy);
-            } catch (std::filesystem::filesystem_error &) {
-                dirIt.disable_recursion_pending();
-                continue;
-            }
-#endif
-
-            if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
-                LOGW_WARN(_logger, L"Ignore path=" << Path2WStr(dirIt->path()).c_str() << L" because size > "
-                                                   << CommonUtility::maxPathLength());
+            if (!folderCanBeProcessed(dirIt)) {
                 dirIt.disable_recursion_pending();
                 continue;
             }
