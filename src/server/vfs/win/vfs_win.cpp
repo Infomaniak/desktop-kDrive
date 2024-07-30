@@ -284,13 +284,13 @@ bool VfsWin::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
     if (vfsCreatePlaceHolder(Utility::s2ws(item.remoteNodeId().value()).c_str(),
                              relativeLocalPath.lexically_normal().native().c_str(),
                              _vfsSetupParams._localPath.lexically_normal().native().c_str(), &findData) != S_OK) {
-        LOG4CPLUS_WARN(logger(), L"Error in vfsCreatePlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
+        LOGW_WARN(logger(), L"Error in vfsCreatePlaceHolder: " << Utility::formatSyncPath(fullPath).c_str());
     }
 
     // !!! Creating a placeholder DOESN'T triggers any file system event !!!
     // Setting the pin state triggers an EDIT event and then the insertion into the local snapshot
     if (vfsSetPinState(fullPath.lexically_normal().native().c_str(), VFS_PIN_STATE_UNPINNED) != S_OK) {
-        LOG4CPLUS_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
+        LOGW_WARN(logger(), L"Error in vfsSetPinState: " << Utility::formatSyncPath(fullPath).c_str());
         return false;
     }
 
@@ -591,7 +591,7 @@ bool VfsWin::setPinState(const QString &relativePath, PinState state) {
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
-                  L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath).c_str() << " code=" << errorCode);
+                  L"Error in GetFileAttributesW: " << Utility::formatSyncPath(fullPath).c_str() << L" code=" << errorCode);
         return false;
     }
 

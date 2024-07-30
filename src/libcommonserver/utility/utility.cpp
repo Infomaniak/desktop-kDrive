@@ -745,8 +745,8 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
             DWORD dwError = GetLastError();
             if (dwError != ERROR_INSUFFICIENT_BUFFER) {
                 // Real error, not buffer error
-                LOGW_WARN(_logger, L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
-                                                                  << std::to_wstring(dwError));
+                LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
+                                                                   << std::to_wstring(dwError));
 
 #ifdef NDEBUG
                 sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_FATAL, "Utility::normalizedSyncName",
@@ -763,8 +763,8 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
 
     if (iSizeEstimated <= 0) {
         DWORD dwError = GetLastError();
-        LOGW_WARN(_logger, L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
-                                                          << std::to_wstring(dwError));
+        LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
+                                                           << std::to_wstring(dwError));
 
 #ifdef NDEBUG
         sentry_capture_event(

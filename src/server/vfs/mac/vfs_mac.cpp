@@ -416,7 +416,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
         auto dirIt = std::filesystem::recursive_directory_iterator(
             QStr2Path(dirPath), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
-            LOGW_WARN(logger(), "Error in convertDirContentToPlaceholder: " << Utility::formatStdError(ec).c_str());
+            LOGW_WARN(logger(), L"Error in convertDirContentToPlaceholder: " << Utility::formatStdError(ec).c_str());
             return;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
@@ -726,20 +726,17 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
     } else if (status == SyncFileStatusSyncing) {
         ItemType itemType;
         if (!IoHelper::getItemType(fullPath, itemType)) {
-            LOGW_WARN(KDC::Log::instance()->getLogger(),
-                      L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(fullPath).c_str());
+            LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(fullPath).c_str());
             return false;
         }
 
         if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath).c_str());
+            LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
         if (itemType.ioError == IoErrorAccessDenied) {
-            LOGW_DEBUG(KDC::Log::instance()->getLogger(),
-                       L"Item misses search permission : " << Utility::formatSyncPath(fullPath).c_str());
+            LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
