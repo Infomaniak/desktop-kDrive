@@ -246,10 +246,11 @@ void ParametersDialog::initUI() {
     QVBoxLayout *errorsHeaderVBox = new QVBoxLayout();
     errorsHeaderVBox->setContentsMargins(boxHMargin, boxVTMargin, boxHMargin, boxVBMargin);
     errorsHeaderVBox->setSpacing(boxVSpacing);
-    errorsHeaderWidget->setLayout(errorsHeaderVBox);
+    //errorsHeaderWidget->setLayout(errorsHeaderVBox);
 
     _sendLogsWidget = new ActionWidget(":/client/resources/icons/actions/help.svg", this);
     _sendLogsWidget->setObjectName("sendLogsWidget");
+    _sendLogsWidget->hide();
     errorsHeaderVBox->addWidget(_sendLogsWidget);
 
     // Errors stacked widget
