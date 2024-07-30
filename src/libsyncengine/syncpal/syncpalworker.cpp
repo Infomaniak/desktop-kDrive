@@ -522,7 +522,7 @@ bool SyncPalWorker::resetVfsFilesStatus() {
         auto dirIt = std::filesystem::recursive_directory_iterator(
             _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
-            LOGW_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
             return false;
         }
         for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {

@@ -54,7 +54,7 @@ ExitCode ExcludeListPropagator::checkItems() {
         auto dirIt = std::filesystem::recursive_directory_iterator(
             _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
-            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), "Error in checkItems: " << Utility::formatStdError(ec).c_str());
+            LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Error in checkItems: " << Utility::formatStdError(ec).c_str());
             return ExitCodeSystemError;
         }
 
