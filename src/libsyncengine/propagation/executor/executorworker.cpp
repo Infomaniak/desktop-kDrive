@@ -699,8 +699,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
                         isLiteSyncActivated(), uploadSessionParallelJobs);
                 } catch (std::exception const &e) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession for driveDbId="
-                                                   << _syncPal->_driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
+                    LOGW_SYNCPAL_WARN(_logger,
+                                      L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()).c_str());
                     _executorExitCode = ExitCodeDataError;
                     _executorExitCause = ExitCauseUnknown;
                     return false;
@@ -974,8 +974,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                     syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0, isLiteSyncActivated(),
                     uploadSessionParallelJobs);
             } catch (std::exception const &e) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in DriveUploadSession::DriveUploadSession for driveDbId="
-                                               << _syncPal->_driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()).c_str());
                 _executorExitCode = ExitCodeDataError;
                 _executorExitCause = ExitCauseUnknown;
                 return false;
@@ -2540,19 +2540,20 @@ bool ExecutorWorker::getFileSize(const SyncPath &path, uint64_t &size) {
     }
 
     if (ioError == IoErrorNoSuchFileOrDirectory) {  // The synchronization will be re-started.
-        LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(_logger, L"File doesn't exist: " << Utility::formatSyncPath(path).c_str());
         _executorExitCode = ExitCodeDataError;
         _executorExitCause = ExitCauseUnknown;
         return false;
     }
 
     if (ioError == IoErrorAccessDenied) {  // An action from the user is requested.
-        LOGW_WARN(_logger, L"Item search permission missing: " << Utility::formatSyncPath(path).c_str());
+        LOGW_WARN(_logger, L"File search permission missing: " << Utility::formatSyncPath(path).c_str());
         _executorExitCode = ExitCodeSystemError;
         _executorExitCause = ExitCauseNoSearchPermission;
         return false;
     }
 
+    assert(ioError == IoErrorSuccess);
     if (ioError != IoErrorSuccess) {
         LOGW_WARN(_logger, L"Unable to read file size for " << Utility::formatSyncPath(path).c_str());
         _executorExitCode = ExitCodeSystemError;

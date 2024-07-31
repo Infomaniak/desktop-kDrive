@@ -445,10 +445,9 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
         ioError = stdError2ioError(ec);
 
         if (ioError != IoErrorSuccess) {
-            LOGW_DEBUG(logger(), L"Failed to get file size for " << Utility::formatStdError(path, ec).c_str());
+            LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+            return isExpectedError(ioError);
         }
-
-        return isExpectedError(ioError);
     }
 
     return true;
