@@ -707,6 +707,13 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 return false;
             }
 
+            if (ioError != IoErrorSuccess) {
+                LOGW_WARN(_logger, L"Unable to read file size for path=" << Path2WStr(absoluteLocalFilePath).c_str());
+                _executorExitCode = ExitCodeSystemError;
+                _executorExitCause = ExitCauseUnknown;
+                return false;
+            }
+
             if (filesize > useUploadSessionThreshold) {
                 try {
                     int uploadSessionParallelJobs = ParametersCache::instance()->parameters().uploadSessionParallelJobs();
