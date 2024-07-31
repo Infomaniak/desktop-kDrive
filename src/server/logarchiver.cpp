@@ -336,18 +336,33 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
         if (entry.path().filename().extension() == Str(".gz")) {
             continue;
         }
+
         ItemType itemType;
-        IoHelper::getItemType(entry.path(), itemType);
+        if (!IoHelper::getItemType(entry.path(), itemType)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::getItemType: " << Utility::formatIoError(entry.path(), ioError).c_str());
+            continue;  // Don't process the item
+        }
+        if (itemType.ioError != IoErrorSuccess) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Unable to read item type for " << Utility::formatIoError(entry.path(), itemType.ioError).c_str());
+            continue;  // Don't process the item
+        }
+
         if (itemType.ioError == IoErrorSuccess && itemType.nodeType == NodeTypeFile) {
             uint64_t fileSize = 0;
-            IoHelper::getFileSize(entry.path(), fileSize, ioError);
+            if (!IoHelper::getFileSize(entry.path(), fileSize, ioError)) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in IoHelper::getFileSize for " << Utility::formatIoError(entry.path(), ioError).c_str());
+                continue;  // Don't process the file
+            }
             if (ioError != IoErrorSuccess) {
                 LOGW_WARN(Log::instance()->getLogger(),
-                         L"Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
-                // Do not return, at worst the progress will be wrong
-            } else {
-                totalSize += fileSize;
+                          L"Unable to read file size for " << Utility::formatIoError(entry.path(), ioError).c_str());
+                continue;  // Don't process the file
             }
+
+            totalSize += fileSize;
         }
     }
 
@@ -378,10 +393,17 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
         std::string destPath = entryPathStr + ".gz";
         bool canceled = false;
         uint64_t fileSize = 0;
-        if (!IoHelper::getFileSize(entry.path(), fileSize, ioError) || ioError != IoErrorSuccess) {
+        if (!IoHelper::getFileSize(entry.path(), fileSize, ioError)) {
             LOGW_WARN(Log::instance()->getLogger(),
-                     L"Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
+                      L"Error in IoHelper::getFileSize for " << Utility::formatIoError(entry.path(), ioError).c_str());
+            continue;  // Don't process the file
         }
+        if (ioError != IoErrorSuccess) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Unable to read file size for " << Utility::formatIoError(entry.path(), ioError).c_str());
+            continue;  // Don't process the file
+        }
+
         std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
                                                              &destPath, &totalSize, &fileSize](int progressPercent) {
             auto parametersCacheInstance = ParametersCache::instance();

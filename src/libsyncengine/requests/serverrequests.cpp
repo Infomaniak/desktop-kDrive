@@ -1057,7 +1057,14 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     // Upload archive
-    auto uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
+    std::shared_ptr<LogUploadSession> uploadSessionLog = nullptr;
+    try {
+        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
+    } catch (std::exception const &e) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in LogUploadSession::LogUploadSession for " << Utility::s2ws(e.what()).c_str());
+        return ExitCodeSystemError;
+    };
 
     std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
         [&safeProgressCallback, &uploadSessionLog](UniqueId, int percent) {  // Progress callback
