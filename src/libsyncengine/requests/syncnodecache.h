@@ -26,6 +26,7 @@
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
+#include <mutex>
 
 namespace KDC {
 
@@ -45,6 +46,8 @@ class SYNCENGINE_EXPORT SyncNodeCache {
         static std::shared_ptr<SyncNodeCache> _instance;
         std::unordered_map<int, std::shared_ptr<SyncDb>> _syncDbMap;
         std::unordered_map<int, std::unordered_map<SyncNodeType, std::unordered_set<NodeId>>> _syncNodesMap;
+
+        std::mutex _mutex;
 
         SyncNodeCache();
 };
