@@ -3011,7 +3011,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
         }
         return;
     }
-    
+
     std::string timestampStr;
     if (_crashRecovered) {
         LOG_WARN(_logger, "Server auto restart after a crash.");
@@ -3582,7 +3582,8 @@ ExitCode AppServer::createAndStartVfs(const Sync &sync, ExitCause &exitCause) no
 #endif
         vfsSetupParams._localPath = sync.localPath();
         vfsSetupParams._targetPath = sync.targetPath();
-        vfsSetupParams._executeCommand = std::bind(&SocketApi::executeCommandDirect, _socketApi.data(), std::placeholders::_1);
+        connect(this, &AppServer::socketApiExecuteCommandDirect, _socketApi.data(), &SocketApi::executeCommandDirect);
+        vfsSetupParams._executeCommand = [this](const char *command) { emit socketApiExecuteCommandDirect(QString(command)); };
         vfsSetupParams._logger = _logger;
         QString error;
         _vfsMap[sync.dbId()] = KDC::createVfsFromPlugin(sync.virtualFileMode(), vfsSetupParams, error);
