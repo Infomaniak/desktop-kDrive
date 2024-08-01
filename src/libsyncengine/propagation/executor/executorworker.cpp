@@ -1014,6 +1014,23 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                 return false;
             };
         } else {
+            if (!syncOp->correspondingNode()->id()) {
+                // Should not happen
+                LOGW_SYNCPAL_WARN(_logger, L"Edit operation with empty corresponding node id for "
+                                               << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
+                _executorExitCode = ExitCodeDataError;
+                _executorExitCause = ExitCauseUnknown;
+
+#ifdef NDEBUG
+                std::stringstream ss;
+                ss << "Edit operation with empty corresponding node id (" << _localItemId << "/" << otherNodeId << ")";
+                sentry_capture_event(
+                    sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "ExecutorWorker::generateEditJob", ss.str().c_str()));
+#endif
+
+                return false;
+            }
+
             try {
                 job = std::make_shared<UploadJob>(
                     _syncPal->_driveDbId, absoluteLocalFilePath,
