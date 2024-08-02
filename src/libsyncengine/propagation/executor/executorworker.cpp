@@ -684,26 +684,9 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             }
 
             uint64_t filesize = 0;
-            IoError ioError = IoErrorSuccess;
-            if (!IoHelper::getFileSize(absoluteLocalFilePath, filesize, ioError)) {
+            if (!getFileSize(absoluteLocalFilePath, filesize)) {
                 LOGW_WARN(_logger,
-                          L"Error in IoHelper::getFileSize: " << Utility::formatIoError(absoluteLocalFilePath, ioError).c_str());
-                _executorExitCode = ExitCodeSystemError;
-                _executorExitCause = ExitCauseUnknown;
-                return false;
-            }
-
-            if (ioError == IoErrorNoSuchFileOrDirectory) {  // The synchronization will be re-started.
-                LOGW_WARN(_logger, L"Item doesn't exist for path=" << Path2WStr(absoluteLocalFilePath).c_str());
-                _executorExitCode = ExitCodeDataError;
-                _executorExitCause = ExitCauseUnknown;
-                return false;
-            }
-
-            if (ioError == IoErrorAccessDenied) {  // An action from the user is requested.
-                LOGW_WARN(_logger, L"Item search permission missing for path=" << Path2WStr(absoluteLocalFilePath).c_str());
-                _executorExitCode = ExitCodeSystemError;
-                _executorExitCause = ExitCauseNoSearchPermission;
+                          L"Error in ExecutorWorker::getFileSize for " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
                 return false;
             }
 
@@ -716,8 +699,8 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                         syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0,
                         isLiteSyncActivated(), uploadSessionParallelJobs);
                 } catch (std::exception const &e) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Error in UploadSession::UploadSession for driveDbId="
-                                                   << _syncPal->_driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
+                    LOGW_SYNCPAL_WARN(_logger,
+                                      L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()).c_str());
                     _executorExitCode = ExitCodeDataError;
                     _executorExitCause = ExitCauseUnknown;
                     return false;
@@ -975,25 +958,9 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
         SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
 
         uint64_t filesize;
-        IoError ioError = IoErrorSuccess;
-        if (!IoHelper::getFileSize(absoluteLocalFilePath, filesize, ioError)) {
-            LOGW_WARN(_logger, L"Error in IoHelper::getFileSize: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-            _executorExitCode = ExitCodeSystemError;
-            _executorExitCause = ExitCauseUnknown;
-            return false;
-        }
-
-        if (ioError == IoErrorNoSuchFileOrDirectory) {  // The synchronization will re-started.
-            LOGW_WARN(_logger, L"Item doesn't exist: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-            _executorExitCode = ExitCodeDataError;
-            _executorExitCause = ExitCauseUnknown;
-            return false;
-        }
-
-        if (ioError == IoErrorAccessDenied) {  // An action from the user is requested.
-            LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
-            _executorExitCode = ExitCodeSystemError;
-            _executorExitCause = ExitCauseNoSearchPermission;
+        if (!getFileSize(absoluteLocalFilePath, filesize)) {
+            LOGW_WARN(_logger,
+                      L"Error in ExecutorWorker::getFileSize for " << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
             return false;
         }
 
@@ -1007,8 +974,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                     syncOp->affectedNode()->lastmodified() ? *syncOp->affectedNode()->lastmodified() : 0, isLiteSyncActivated(),
                     uploadSessionParallelJobs);
             } catch (std::exception const &e) {
-                LOGW_SYNCPAL_WARN(_logger, L"Error in UploadSession::UploadSession for driveDbId="
-                                               << _syncPal->_driveDbId << L" : " << Utility::s2ws(e.what()).c_str());
+                LOGW_SYNCPAL_WARN(_logger,
+                                  L"Error in DriveUploadSession::DriveUploadSession: " << Utility::s2ws(e.what()).c_str());
                 _executorExitCode = ExitCodeDataError;
                 _executorExitCause = ExitCauseUnknown;
                 return false;
@@ -2576,6 +2543,40 @@ void ExecutorWorker::increaseErrorCount(SyncOpPtr syncOp) {
             targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
         }
     }
+}
+
+bool ExecutorWorker::getFileSize(const SyncPath &path, uint64_t &size) {
+    IoError ioError = IoErrorUnknown;
+    if (!IoHelper::getFileSize(path, size, ioError)) {
+        LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError).c_str());
+        _executorExitCode = ExitCodeSystemError;
+        _executorExitCause = ExitCauseUnknown;
+        return false;
+    }
+
+    if (ioError == IoErrorNoSuchFileOrDirectory) {  // The synchronization will be re-started.
+        LOGW_WARN(_logger, L"File doesn't exist: " << Utility::formatSyncPath(path).c_str());
+        _executorExitCode = ExitCodeDataError;
+        _executorExitCause = ExitCauseUnknown;
+        return false;
+    }
+
+    if (ioError == IoErrorAccessDenied) {  // An action from the user is requested.
+        LOGW_WARN(_logger, L"File search permission missing: " << Utility::formatSyncPath(path).c_str());
+        _executorExitCode = ExitCodeSystemError;
+        _executorExitCause = ExitCauseNoSearchPermission;
+        return false;
+    }
+
+    assert(ioError == IoErrorSuccess);
+    if (ioError != IoErrorSuccess) {
+        LOGW_WARN(_logger, L"Unable to read file size for " << Utility::formatSyncPath(path).c_str());
+        _executorExitCode = ExitCodeSystemError;
+        _executorExitCause = ExitCauseUnknown;
+        return false;
+    }
+
+    return true;
 }
 
 }  // namespace KDC

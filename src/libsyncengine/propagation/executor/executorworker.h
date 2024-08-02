@@ -134,6 +134,8 @@ class ExecutorWorker : public OperationProcessor {
 
         void increaseErrorCount(SyncOpPtr syncOp);
 
+        bool getFileSize(const SyncPath &path, uint64_t &size);
+
         std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _ongoingJobs;
         TerminatedJobsQueue _terminatedJobs;
         std::unordered_map<UniqueId, SyncOpPtr> _jobToSyncOpMap;
