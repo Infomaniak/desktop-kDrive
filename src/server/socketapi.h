@@ -113,6 +113,8 @@ class SocketApi : public QObject {
         unsigned _nbOngoingDehydration = 0;
         QMutex _dehydrationMutex;
 
+        QMutex _sendMessageMutex;
+
         // Callbacks
         void (*_addError)(const KDC::Error &error);
         KDC::ExitCode (*_getThumbnail)(int driveDbId, KDC::NodeId nodeId, int width, std::string &thumbnail);

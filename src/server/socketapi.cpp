@@ -214,6 +214,7 @@ void SocketApi::slotNewConnection() {
         return;
     }
 
+    QMutexLocker lock(&_sendMessageMutex);
     for (const KDC::Sync &sync : syncList) {
         if (!sync.paused()) {
             QString message = buildRegisterPathMessage(SyncName2QStr(sync.localPath().native()));
@@ -290,6 +291,7 @@ void SocketApi::registerSync(int syncDbId) {
     }
 
     QString message = buildRegisterPathMessage(SyncName2QStr(sync.localPath().native()));
+    QMutexLocker lock(&_sendMessageMutex);
     foreach (auto &listener, _listeners) {
         listener.sendMessage(message);
     }
@@ -321,6 +323,7 @@ void SocketApi::unregisterSync(int syncDbId) {
 }
 
 void SocketApi::broadcastMessage(const QString &msg, bool doWait) {
+    QMutexLocker lock(&_sendMessageMutex);
     foreach (auto &listener, _listeners) {
         listener.sendMessage(msg, doWait);
     }
@@ -352,10 +355,12 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
 
     const QString message =
         buildMessage(QString("STATUS"), fileData._localPath, socketAPIString(status, isPlaceholder, isHydrated, progress));
+    QMutexLocker lock(&_sendMessageMutex);
     listener->sendMessage(message);
 }
 
 void SocketApi::command_VERSION(const QString &, SocketListener *listener) {
+    QMutexLocker lock(&_sendMessageMutex);
     listener->sendMessage(
         QString("VERSION%1%2%1%3").arg(MSG_CDE_SEPARATOR).arg(KDRIVE_VERSION_STRING, KDRIVE_SOCKET_API_VERSION));
 }
@@ -792,6 +797,7 @@ void SocketApi::command_GET_STRINGS(const QString &argument, SocketListener *lis
         {"CONTEXT_MENU_TITLE", KDC::Theme::instance()->appNameGUI()},
         {"COPY_PRIVATE_LINK_MENU_TITLE", tr("Copy private share link")},
     }};
+    QMutexLocker lock(&_sendMessageMutex);
     listener->sendMessage(QString("GET_STRINGS%1BEGIN").arg(MSG_CDE_SEPARATOR));
     for (auto &[key, value] : strings) {
         if (argument.isEmpty() || argument == key) {
@@ -881,6 +887,7 @@ void SocketApi::command_GET_THUMBNAIL(const QString &argument, SocketListener *l
     pixmapBuffer.open(QIODevice::WriteOnly);
     pixmap.save(&pixmapBuffer, "BMP");
 
+    QMutexLocker lock(&_sendMessageMutex);
     listener->sendMessage(
         QString("%1%2%3").arg(QString::number(msgId)).arg(MSG_CDE_SEPARATOR).arg(QString(pixmapBuffer.data().toBase64())));
 }
@@ -976,6 +983,7 @@ void SocketApi::sendSharingContextMenuOptions(const FileData &fileData, SocketLi
 
     // If sharing is globally disabled, do not show any sharing entries.
     // If there is no permission to share for this file, add a disabled entry saying so
+    QMutexLocker lock(&_sendMessageMutex);
     if (isOnTheServer && !canShare) {
         listener->sendMessage(QString("MENU_ITEM%1DISABLED%1d%1%2")
                                   .arg(MSG_CDE_SEPARATOR)
@@ -1046,7 +1054,6 @@ void SocketApi::addSharingContextMenuOptions(const FileData &fileData, QTextStre
 }
 
 void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *listener) {
-    listener->sendMessage(QString("GET_MENU_ITEMS%1BEGIN").arg(MSG_CDE_SEPARATOR));
     const QStringList files = argument.split(MSG_ARG_SEPARATOR);
 
     // Find the common sync
@@ -1098,6 +1105,9 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
         canCancelDehydration = true;
     }
     _dehydrationMutex.unlock();
+
+    QMutexLocker lock(&_sendMessageMutex);
+    listener->sendMessage(QString("GET_MENU_ITEMS%1BEGIN").arg(MSG_CDE_SEPARATOR));
 
     // File availability actions
     if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileModeOff && vfsMapIt->second->socketApiPinStateActionsShown()) {
@@ -1182,6 +1192,7 @@ void SocketApi::manageActionsOnSingleFile(SocketListener *listener, const QStrin
     bool isOnTheServer = !nodeId.empty();
     auto flagString = QString("%1%2%1").arg(MSG_CDE_SEPARATOR).arg(isOnTheServer ? QString() : QString("d"));
 
+    QMutexLocker lock(&_sendMessageMutex);
     if (sync.dbId()) {
         listener->sendMessage(QString("VFS_MODE%1%2").arg(MSG_CDE_SEPARATOR).arg(KDC::Vfs::modeToString(sync.virtualFileMode())));
     }
@@ -1203,6 +1214,8 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
     QString responseStr;
     QTextStream response(&responseStr);
     response << msgId << MSG_CDE_SEPARATOR << KDC::Theme::instance()->appNameGUI();
+
+    QMutexLocker lock(&_sendMessageMutex);
 
     // Find the common sync
     KDC::Sync sync;
