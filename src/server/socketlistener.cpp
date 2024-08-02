@@ -18,7 +18,6 @@
 
 #include "socketlistener.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"
 #include <log4cplus/loggingmacros.h>
 
 namespace KDC {
