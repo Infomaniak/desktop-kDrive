@@ -1022,10 +1022,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                 _executorExitCause = ExitCauseUnknown;
 
 #ifdef NDEBUG
-                std::stringstream ss;
-                ss << "Edit operation with empty corresponding node id (" << _localItemId << "/" << otherNodeId << ")";
-                sentry_capture_event(
-                    sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "ExecutorWorker::generateEditJob", ss.str().c_str()));
+                sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "ExecutorWorker::generateEditJob",
+                                                                    "Edit operation with empty corresponding node id"));
 #endif
 
                 return false;
