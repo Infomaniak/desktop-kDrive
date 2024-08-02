@@ -1057,12 +1057,21 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     // Upload archive
-    auto uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
+    std::shared_ptr<LogUploadSession> uploadSessionLog = nullptr;
+    try {
+        uploadSessionLog = std::make_shared<LogUploadSession>(archivePath);
+    } catch (std::exception const &e) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in LogUploadSession::LogUploadSession: " << Utility::s2ws(e.what()).c_str());
+        return ExitCodeSystemError;
+    };
 
+    bool canceledByUser = false;
     std::function<void(UniqueId, int percent)> progressCallbackUploadingWrapper =
-        [&safeProgressCallback, &uploadSessionLog](UniqueId, int percent) {  // Progress callback
+        [&safeProgressCallback, &uploadSessionLog, &canceledByUser](UniqueId, int percent) {  // Progress callback
             if (!safeProgressCallback(LogUploadState::Uploading, percent)) {
                 uploadSessionLog->abort();
+                canceledByUser = true;
             };
         };
     uploadSessionLog->setProgressPercentCallback(progressCallbackUploadingWrapper);
@@ -1081,7 +1090,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     exitCode = uploadSessionLog->exitCode();
-    if (uploadSessionLog->isAborted()) {
+    if (canceledByUser) {
         exitCause = ExitCauseOperationCanceled;
     } else {
         exitCause = uploadSessionLog->exitCause();

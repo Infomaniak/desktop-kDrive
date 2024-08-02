@@ -336,18 +336,28 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
         if (entry.path().filename().extension() == Str(".gz")) {
             continue;
         }
+
         ItemType itemType;
-        IoHelper::getItemType(entry.path(), itemType);
+        if (!IoHelper::getItemType(entry.path(), itemType)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::getItemType: " << Utility::formatIoError(entry.path(), ioError).c_str());
+            continue;  // Don't process the item
+        }
+        if (itemType.ioError != IoErrorSuccess) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Unable to read item type for " << Utility::formatIoError(entry.path(), itemType.ioError).c_str());
+            continue;  // Don't process the item
+        }
+
         if (itemType.ioError == IoErrorSuccess && itemType.nodeType == NodeTypeFile) {
             uint64_t fileSize = 0;
-            IoHelper::getFileSize(entry.path(), fileSize, ioError);
-            if (ioError != IoErrorSuccess) {
+            if (!getFileSize(entry.path(), fileSize)) {
                 LOGW_WARN(Log::instance()->getLogger(),
-                         L"Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
-                // Do not return, at worst the progress will be wrong
-            } else {
-                totalSize += fileSize;
+                          L"Error in LogArchiver::getFileSize for " << Utility::formatSyncPath(entry.path()).c_str());
+                continue;  // Don't process the file
             }
+
+            totalSize += fileSize;
         }
     }
 
@@ -378,10 +388,12 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, cons
         std::string destPath = entryPathStr + ".gz";
         bool canceled = false;
         uint64_t fileSize = 0;
-        if (!IoHelper::getFileSize(entry.path(), fileSize, ioError) || ioError != IoErrorSuccess) {
+        if (!getFileSize(entry.path(), fileSize)) {
             LOGW_WARN(Log::instance()->getLogger(),
-                     L"Error in IoHelper::getFileSize: " << Utility::formatIoError(entry.path(), ioError).c_str());
+                      L"Error in LogArchiver::getFileSize for " << Utility::formatSyncPath(entry.path()).c_str());
+            continue;  // Don't process the file
         }
+
         std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
                                                              &destPath, &totalSize, &fileSize](int progressPercent) {
             auto parametersCacheInstance = ParametersCache::instance();
@@ -478,4 +490,23 @@ ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath &outputPath, Ex
 
     return ExitCodeOk;
 }
+
+bool LogArchiver::getFileSize(const SyncPath &path, uint64_t &size) {
+    size = 0;
+
+    IoError ioError = IoErrorUnknown;
+    if (!IoHelper::getFileSize(path, size, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError).c_str());
+        return false;
+    }
+    if (ioError != IoErrorSuccess) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Unable to read file size for " << Utility::formatIoError(path, ioError).c_str());
+        return false;
+    }
+
+    return true;
+}
+
 };  // namespace KDC

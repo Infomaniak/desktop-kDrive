@@ -71,7 +71,7 @@ struct IoHelper {
           \return true if no unexpected error occurred, false otherwise.
             See isExpectedError for the definition of an expected error.
         */
-        static bool getItemType(const SyncPath &path, ItemType &itemType) noexcept;
+        [[nodiscard]] static bool getItemType(const SyncPath &path, ItemType &itemType) noexcept;
 
         //! Returns the directory location suitable for temporary files.
         /*!
@@ -183,7 +183,7 @@ struct IoHelper {
           \return true if no unexpected error occurred, false otherwise. If path indicates a directory, the function returns false
           and ioError is set with IoErrorIsADirectory.
         */
-        static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
+        [[nodiscard]] static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
 
         //! Get the size of the directory indicated by `path` expressed in bytes.
         //! This funciton is recursiv.

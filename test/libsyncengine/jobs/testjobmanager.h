@@ -27,6 +27,7 @@
 #include "jobs/abstractjob.h"
 
 #include <mutex>
+#include <unordered_map>
 
 using namespace CppUnit;
 
