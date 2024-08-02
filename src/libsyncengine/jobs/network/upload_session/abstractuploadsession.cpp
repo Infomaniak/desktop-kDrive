@@ -39,13 +39,28 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     : _logger(Log::instance()->getLogger()), _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
     IoError ioError = IoErrorSuccess;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
-        LOGW_WARN(_logger, L"Error in IoHelper::getFileSize for " << Utility::formatIoError(_filePath, ioError).c_str());
+        std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
+        LOGW_WARN(_logger, exceptionMessage.c_str());
+        throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
+    }
 
-        std::string exceptionMessage = "Error while getting the size of item with path ";
-        exceptionMessage += SyncName2Str(_filePath.c_str());
-        exceptionMessage += ": " + IoHelper::ioError2StdString(ioError);
+    if (ioError == IoErrorNoSuchFileOrDirectory) {
+        std::wstring exceptionMessage = L"File doesn't exist: " + Utility::formatSyncPath(_filePath);
+        LOGW_WARN(_logger, exceptionMessage.c_str());
+        throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
+    }
 
-        throw std::runtime_error(exceptionMessage);
+    if (ioError == IoErrorAccessDenied) {
+        std::wstring exceptionMessage = L"File search permission missing: " + Utility::formatSyncPath(_filePath);
+        LOGW_WARN(_logger, exceptionMessage.c_str());
+        throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
+    }
+
+    assert(ioError == IoErrorSuccess);
+    if (ioError != IoErrorSuccess) {
+        std::wstring exceptionMessage = L"Unable to read file size for " + Utility::formatSyncPath(_filePath);
+        LOGW_WARN(_logger, exceptionMessage.c_str());
+        throw std::runtime_error(Utility::ws2s(exceptionMessage).c_str());
     }
 
     _isAsynchrounous = _nbParalleleThread > 1;

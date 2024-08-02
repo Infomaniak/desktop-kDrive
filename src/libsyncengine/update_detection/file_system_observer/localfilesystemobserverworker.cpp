@@ -223,7 +223,10 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (parentPath == _rootFolder) {
             parentNodeId = *_syncPal->_syncDb->rootNode().nodeIdLocal();
         } else {
-            IoHelper::getNodeId(parentPath, parentNodeId);
+            if (!IoHelper::getNodeId(parentPath, parentNodeId)) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(parentPath).c_str());
+                continue;
+            }
         }
 
         if (opTypeFromOS == OperationTypeEdit) {
