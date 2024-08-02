@@ -499,11 +499,13 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
             }
 
             if (ioError != IoErrorSuccess) {
-                LOGW_DEBUG(logger(), L"Failed to get directory size for " << Utility::formatSyncPath(entry.path()).c_str());
                 if (isExpectedError(ioError)) {
                     // Ignore the directory
+                    LOGW_DEBUG(logger(),
+                               L"Failed to get directory size, ignoring " << Utility::formatSyncPath(entry.path()).c_str());
                     continue;
                 } else {
+                    LOGW_WARN(logger(), L"Failed to get directory size for " << Utility::formatSyncPath(entry.path()).c_str());
                     return false;
                 }
             }
@@ -519,11 +521,12 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         }
 
         if (ioError != IoErrorSuccess) {
-            LOGW_DEBUG(logger(), L"Failed to get file size for " << Utility::formatSyncPath(entry.path()).c_str());
             if (isExpectedError(ioError)) {
                 // Ignore the file
+                LOGW_DEBUG(logger(), L"Failed to get file size, ignoring " << Utility::formatSyncPath(entry.path()).c_str());
                 continue;
             } else {
+                LOGW_WARN(logger(), L"Failed to get file size for " << Utility::formatSyncPath(entry.path()).c_str());
                 return false;
             }
         }
