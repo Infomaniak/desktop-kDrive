@@ -465,7 +465,7 @@ void TestJobManager::callback(uint64_t jobId) {
     }
 }
 
-int TestJobManager::ongoingJobsCount() {
+size_t TestJobManager::ongoingJobsCount() {
     const std::scoped_lock lock(_mutex);
 
     return _ongoingJobs.size();
