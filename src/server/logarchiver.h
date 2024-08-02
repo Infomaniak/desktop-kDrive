@@ -72,5 +72,8 @@ class LogArchiver {
          * \return The exit code of the operation.
          */
         static ExitCode generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause);
+
+        [[nodiscard]] static bool getFileSize(const SyncPath &path, uint64_t &size);
 };
+
 }  // namespace KDC

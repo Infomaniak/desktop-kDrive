@@ -408,38 +408,46 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 }
 
 bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError) {
+    size = 0;
+    ioError = IoErrorUnknown;
+
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
     if (!success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path).c_str());
         return false;
     }
 
-    assert(ioError != IoErrorUnknown);
+    if (ioError != IoErrorSuccess) {
+        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+        return isExpectedError(ioError);
+    }
 
     if (itemType.nodeType == NodeTypeDirectory) {
+        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
         ioError = IoErrorIsADirectory;
         return false;
     }
 
     const bool isSymlink = itemType.linkType == LinkTypeSymlink;
     if (isSymlink) {
+        // The size of a symlink file is the target path length
         size = itemType.targetPath.native().length();
     } else {
         if (itemType.nodeType != NodeTypeFile) {
-            assert(ioError != IoErrorSuccess);
-            return ioError != IoErrorUnknown;
+            LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
+            return false;
         }
 
         std::error_code ec;
         size = _fileSize(path, ec);  // The std::filesystem implementation reports the correct size for a MacOSX alias.
         ioError = stdError2ioError(ec);
-        if (ioError != IoErrorUnknown) {
-            return true;
-        }
 
-        LOGW_WARN(logger(), L"Failed to get file size: " << Utility::formatStdError(path, ec).c_str());
-        return false;
+        if (ioError != IoErrorSuccess) {
+            LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+            return isExpectedError(ioError);
+        }
     }
 
     return true;
@@ -450,13 +458,18 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
-    if (!success || ioError != IoErrorSuccess) {
+    if (!success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path).c_str());
+        return false;
+    }
+
+    if (ioError != IoErrorSuccess) {
+        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
         return isExpectedError(ioError);
     }
 
-    assert(ioError != IoErrorUnknown);
-
     if (itemType.nodeType != NodeTypeDirectory) {
+        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
         ioError = IoErrorIsAFile;
         return false;
     }
@@ -464,7 +477,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     IoHelper::DirectoryIterator dir;
     IoHelper::getDirectoryIterator(path, true, ioError, dir);
     if (ioError != IoErrorSuccess) {
-        LOGW_WARN(logger(), L"Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError).c_str());
         return isExpectedError(ioError);
     }
 
@@ -474,31 +487,55 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) {
             if (maxDepth == 0) {
-                LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories: "
+                LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
                                         << Utility::formatSyncPath(path).c_str());
                 ioError = IoErrorMaxDepthExceeded;
                 return isExpectedError(ioError);
             }
             uint64_t entrySize = 0;
             if (!getDirectorySize(entry.path(), entrySize, ioError, maxDepth - 1)) {
+                LOGW_WARN(logger(), L"Error in IoHelper::getDirectorySize for " << Utility::formatSyncPath(entry.path()).c_str());
                 return false;
             }
+
+            if (ioError != IoErrorSuccess) {
+                if (isExpectedError(ioError)) {
+                    // Ignore the directory
+                    LOGW_DEBUG(logger(),
+                               L"Failed to get directory size, ignoring " << Utility::formatSyncPath(entry.path()).c_str());
+                    continue;
+                } else {
+                    LOGW_WARN(logger(), L"Failed to get directory size for " << Utility::formatSyncPath(entry.path()).c_str());
+                    return false;
+                }
+            }
+
             size += entrySize;
             continue;
         }
-        std::error_code ec;
-        uint64_t entrySize = _fileSize(entry.path(), ec);
-        if (!ec) {
-            size += entrySize;
-        } else {
-            LOGW_WARN(logger(), L"Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
-            ioError = stdError2ioError(ec);
-            return isExpectedError(ioError);
+
+        uint64_t entrySize = 0;
+        if (!getFileSize(entry.path(), entrySize, ioError)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(entry.path()).c_str());
+            return false;
         }
+
+        if (ioError != IoErrorSuccess) {
+            if (isExpectedError(ioError)) {
+                // Ignore the file
+                LOGW_DEBUG(logger(), L"Failed to get file size, ignoring " << Utility::formatSyncPath(entry.path()).c_str());
+                continue;
+            } else {
+                LOGW_WARN(logger(), L"Failed to get file size for " << Utility::formatSyncPath(entry.path()).c_str());
+                return false;
+            }
+        }
+
+        size += entrySize;
     }
 
     if (!endOfDirectory) {
-        LOGW_WARN(logger(), L"Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError).c_str());
         return isExpectedError(ioError);
     }
 

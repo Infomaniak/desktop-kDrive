@@ -132,9 +132,8 @@ void TestLogArchiver::testCopyParmsDbTo() {
 
         uint64_t parmsDbSize = 0;
         IoError err = IoErrorSuccess;
-        IoHelper::getFileSize(parmsDbPath, parmsDbSize, err);
-
-
+        bool ret = IoHelper::getFileSize(parmsDbPath, parmsDbSize, err);
+        CPPUNIT_ASSERT(ret);
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, err);
         CPPUNIT_ASSERT(parmsDbSize >= 0);
 
@@ -144,7 +143,6 @@ void TestLogArchiver::testCopyParmsDbTo() {
         CPPUNIT_ASSERT_EQUAL(ExitCodeOk, exitCode);
 
         uint64_t tempDirSize = 0;
-        bool tooDeep = false;
         IoHelper::getDirectorySize(tempDir.path(), tempDirSize, err, 0);
         CPPUNIT_ASSERT(err == IoErrorSuccess || err == IoErrorMaxDepthExceeded);
         CPPUNIT_ASSERT_EQUAL(parmsDbSize, tempDirSize);
