@@ -83,18 +83,20 @@ void DebuggingDialog::initUI() {
     mainLayout->addSpacing(titleBoxVMargin);
 
     // Enable Debug Main Box
-    QVBoxLayout *enableDebuggingMainHBox = new QVBoxLayout();
-    enableDebuggingMainHBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
-    mainLayout->addLayout(enableDebuggingMainHBox);
+    QVBoxLayout *enableDebuggingMainVBox = new QVBoxLayout();
+    enableDebuggingMainVBox->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
+    mainLayout->addLayout(enableDebuggingMainVBox);
 
     // Enable Debug Main Box | Top Box
     QHBoxLayout *enableDebuggingTopHBox = new QHBoxLayout();
-    enableDebuggingMainHBox->addLayout(enableDebuggingTopHBox);
+    enableDebuggingMainVBox->addLayout(enableDebuggingTopHBox);
 
     // Enable Debug Main Box | Top Box | Label (largeNormalBoldTextLabel)
     QLabel *recordDebuggingLabel = new QLabel();
     recordDebuggingLabel->setObjectName("largeNormalBoldTextLabel");
     recordDebuggingLabel->setText(tr("Save debugging information in a folder on my computer (Recommended)"));
+    recordDebuggingLabel->setWordWrap(true);
+    enableDebuggingTopHBox->setStretch(0, 1);
     enableDebuggingTopHBox->addWidget(recordDebuggingLabel);
 
     // Enable Debug Main Box | Top Box | Switch
@@ -107,7 +109,8 @@ void DebuggingDialog::initUI() {
     QLabel *recordDebuggingInfoLabel = new QLabel();
     recordDebuggingInfoLabel->setObjectName("largeNormalTextLabel");
     recordDebuggingInfoLabel->setText(tr("This information enables IT support to determine the origin of an incident."));
-    enableDebuggingMainHBox->addWidget(recordDebuggingInfoLabel);
+    recordDebuggingInfoLabel->setWordWrap(true);
+    enableDebuggingMainVBox->addWidget(recordDebuggingInfoLabel);
 
     // Debug info main box  (Can be hidden when debugging is disabled)
     _debuggingInfoMainWidget = new QWidget();

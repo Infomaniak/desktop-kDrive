@@ -530,22 +530,20 @@ void SynthesisPopover::initUI() {
     lockedAppVersionVBox->addSpacing(defaultPageSpacing);
 
     // Update app label
-    auto *lockedAppupdateAppLabel = new QLabel(tr("Update kDrive App"), this);
-    lockedAppupdateAppLabel->setObjectName("defaultTitleLabel");
-    lockedAppupdateAppLabel->setAlignment(Qt::AlignHCenter);
-    lockedAppVersionVBox->addWidget(lockedAppupdateAppLabel);
+    _lockedAppupdateAppLabel = new QLabel(this);
+    _lockedAppupdateAppLabel->setObjectName("defaultTitleLabel");
+    _lockedAppupdateAppLabel->setAlignment(Qt::AlignHCenter);
+    lockedAppVersionVBox->addWidget(_lockedAppupdateAppLabel);
 
     lockedAppVersionVBox->addSpacing(defaultPageSpacing);
 
     // Locked app label
-    auto *lockedAppLabel = new QLabel(
-        tr("This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."),
-        this);
-    lockedAppLabel->setObjectName("defaultTextLabel");
-    lockedAppLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    lockedAppLabel->setAlignment(Qt::AlignHCenter);
-    lockedAppLabel->setWordWrap(true);
-    lockedAppVersionVBox->addWidget(lockedAppLabel);
+    _lockedAppLabel = new QLabel(this);
+    _lockedAppLabel->setObjectName("defaultTextLabel");
+    _lockedAppLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    _lockedAppLabel->setAlignment(Qt::AlignHCenter);
+    _lockedAppLabel->setWordWrap(true);
+    lockedAppVersionVBox->addWidget(_lockedAppLabel);
 
     lockedAppVersionVBox->addSpacing(defaultPageSpacing);
 
@@ -567,7 +565,6 @@ void SynthesisPopover::initUI() {
     _lockedAppUpdateButton = new QPushButton();
     _lockedAppUpdateButton->setObjectName("KDCdefaultbutton");
     _lockedAppUpdateButton->setFlat(true);
-    _lockedAppUpdateButton->setText(tr("Update"));
     _lockedAppUpdateButton->setEnabled(false);
     lockedAppUpdateButtonHBox->addWidget(_lockedAppUpdateButton);
     lockedAppVersionVBox->addLayout(lockedAppUpdateButtonHBox);
@@ -575,12 +572,12 @@ void SynthesisPopover::initUI() {
 #ifdef Q_OS_LINUX
     // On Linux, the update button is not displayed, the update need to be done manually by the user (download on the website)
     _lockedAppUpdateButton->hide();
-    auto *lockedAppUpdateManualLabel = new QLabel(tr("Please download the latest version on the website."), this);
-    lockedAppUpdateManualLabel->setObjectName("defaultTextLabel");
-    lockedAppUpdateManualLabel->setAlignment(Qt::AlignHCenter);
-    lockedAppUpdateManualLabel->setWordWrap(true);
-    lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
-    lockedAppVersionVBox->addWidget(lockedAppUpdateManualLabel);
+    _lockedAppUpdateManualLabel = new QLabel(this);
+    _lockedAppUpdateManualLabel->setObjectName("defaultTextLabel");
+    _lockedAppUpdateManualLabel->setAlignment(Qt::AlignHCenter);
+    _lockedAppUpdateManualLabel->setWordWrap(true);
+    _lockedAppUpdateManualLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
+    lockedAppVersionVBox->addWidget(_lockedAppUpdateManualLabel);
 #endif  //
 
     // Shadow
@@ -1064,7 +1061,7 @@ void SynthesisPopover::onUpdateSynchronizedListWidget() {
 
 void SynthesisPopover::onUpdateAvailabalityChange() {
     if (!_lockedAppUpdateButton || !_lockedAppUpdateOptionalLabel) return;
-    if(_lockedAppVersionWidget->isHidden()) return;
+    if (_lockedAppVersionWidget->isHidden()) return;
     QString statusString;
     UpdateState updateState = UpdateState::Error;
     try {
@@ -1100,14 +1097,15 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
             _lockedAppUpdateButton->setText(tr("Unavailable"));
             _lockedAppUpdateOptionalLabel->setText(statusString);
             sentry_capture_event(sentry_value_new_message_event(
-                SENTRY_LEVEL_FATAL, // FATAL as the app is not usable
-                "AppLocked", (std::string("406 Error received but unable to fetch an update: ") + statusString.toStdString()).c_str()));
+                SENTRY_LEVEL_FATAL,  // FATAL as the app is not usable
+                "AppLocked",
+                (std::string("406 Error received but unable to fetch an update: ") + statusString.toStdString()).c_str()));
             break;
     }
     connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);
 }
 
-void SynthesisPopover::onStartInstaller() noexcept{
+void SynthesisPopover::onStartInstaller() noexcept {
     try {
         UpdaterClient::instance()->startInstaller();
     } catch (std::exception const &) {
@@ -1549,6 +1547,13 @@ void SynthesisPopover::retranslateUi() {
     _infosButton->setToolTip(tr("Show informations"));
     _menuButton->setToolTip(tr("More actions"));
     _notImplementedLabel->setText(tr("Not implemented!"));
+    _lockedAppupdateAppLabel->setText(tr("Update kDrive App"));
+    _lockedAppLabel->setText(
+        tr("This kDrive app version is not supported anymore. To access the latest features and enhancements, please update."));
+    _lockedAppUpdateButton->setText(tr("Update"));
+#ifdef Q_OS_LINUX
+    _lockedAppUpdateManualLabel->setText(tr("Please download the latest version on the website."));
+#endif  // Q_OS_LINUX
 
     if (_defaultTextLabel) {
         switch (_defaultTextLabelType) {
