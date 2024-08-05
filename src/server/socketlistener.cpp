@@ -40,7 +40,6 @@ SocketListener::SocketListener(QIODevice *socket) : socket(socket) {
 
 void SocketListener::sendMessage(const QString &message, bool doWait) const {
         assert(_threadId != std::this_thread::get_id() && "SocketListener::sendMessage should only be called from the main thread");
-    }
 
     if (!socket) {
         LOGW_INFO(KDC::Log::instance()->getLogger(), L"Not sending message to dead socket: " << message.toStdWString().c_str());
