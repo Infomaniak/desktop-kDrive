@@ -704,7 +704,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                     _executorExitCode = ExitCodeDataError;
                     _executorExitCause = ExitCauseUnknown;
                     return false;
-                };
+                }
             } else {
                 try {
                     job = std::make_shared<UploadJob>(

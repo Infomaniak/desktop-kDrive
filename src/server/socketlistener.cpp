@@ -34,9 +34,15 @@ bool BloomFilter::isHashMaybeStored(uint hash) const {
     return hashBits.testBit((hash & 0xFFFF) % NumBits) && hashBits.testBit((hash >> 16) % NumBits);
 }
 
-SocketListener::SocketListener(QIODevice *socket) : socket(socket) {}
+SocketListener::SocketListener(QIODevice *socket) : socket(socket) {
+    _threadId = std::this_thread::get_id();
+}
 
 void SocketListener::sendMessage(const QString &message, bool doWait) const {
+    if (_threadId != std::this_thread::get_id()) {
+        LOGW_ERROR(KDC::Log::instance()->getLogger(), L"SocketListener::sendMessage should only be called from the main thread");
+    }
+
     if (!socket) {
         LOGW_INFO(KDC::Log::instance()->getLogger(), L"Not sending message to dead socket: " << message.toStdWString().c_str());
         return;

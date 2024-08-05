@@ -126,7 +126,7 @@ void KDC::TestJobManager::tearDown() {
 
 void TestJobManager::testWithoutCallback() {
     // Upload all files in testDir
-    ulong counter = 0;
+    size_t counter = 0;
     for (auto &dirEntry : std::filesystem::directory_iterator(localTestDirPath_manyFiles)) {
         if (dirEntry.path().filename() == ".DS_Store") {
             continue;
@@ -147,7 +147,7 @@ void TestJobManager::testWithoutCallback() {
     CPPUNIT_ASSERT(resObj);
     Poco::JSON::Array::Ptr data = resObj->getArray(dataKey);
     size_t total = data->size();
-    CPPUNIT_ASSERT(counter == total);
+    CPPUNIT_ASSERT_EQUAL(counter, total);
 }
 
 void TestJobManager::testWithCallback() {
