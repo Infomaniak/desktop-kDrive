@@ -95,6 +95,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static size_t maxPathLength();
 #if defined(_WIN32)
+        static size_t _maxPathWin;
         static size_t maxPathLengthFolder();
 #endif
         static bool isSubDir(const SyncPath &path1, const SyncPath &path2);
