@@ -75,7 +75,6 @@ namespace KDC {
 
 const int CommonUtility::logsPurgeRate = 7;               // days
 const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
-size_t CommonUtility::_maxPathWin = 0;
 
 SyncPath CommonUtility::_workingDirPath = "";
 
@@ -620,16 +619,13 @@ QString CommonUtility::getRelativePathFromHome(const QString &dirPath) {
 
 size_t CommonUtility::maxPathLength() {
 #if defined(_WIN32)
-    if (_maxPathWin == 0) {
-        Poco::Util::WinRegistryKey key(R"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem)", true);
-        bool exist = key.exists("LongPathsEnabled");
-        if (exist && key.getInt("LongPathsEnabled")) {
-            _maxPathWin = MAX_PATH_LENGTH_WIN_LONG;
-        } else {
-            _maxPathWin = MAX_PATH_LENGTH_WIN_SHORT;
-        }
+    Poco::Util::WinRegistryKey key(R"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem)", true);
+    bool exist = key.exists("LongPathsEnabled");
+    if (exist && key.getInt("LongPathsEnabled")) {
+        return MAX_PATH_LENGTH_WIN_LONG;
+    } else {
+        return MAX_PATH_LENGTH_WIN_SHORT;
     }
-    return _maxPathWin;
 
 #elif defined(__APPLE__)
     return MAX_PATH_LENGTH_MAC;
@@ -640,9 +636,15 @@ size_t CommonUtility::maxPathLength() {
 
 #if defined(_WIN32)
 size_t CommonUtility::maxPathLengthFolder() {
-    // For folders in short path mode, it is MAX_PATH - 12
-    // (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
-    return maxPathLength() == MAX_PATH_LENGTH_WIN_LONG ? MAX_PATH_LENGTH_WIN_LONG : MAX_PATH_LENGTH_WIN_SHORT - 12;
+    Poco::Util::WinRegistryKey key(R"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem)", true);
+    bool exist = key.exists("LongPathsEnabled");
+    if (exist && key.getInt("LongPathsEnabled")) {
+        return MAX_PATH_LENGTH_WIN_LONG;
+    } else {
+        return MAX_PATH_LENGTH_WIN_SHORT -
+               12;  // For folders in short path mode, it is MAX_PATH - 12
+                    // (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
+    }
 }
 #endif
 
