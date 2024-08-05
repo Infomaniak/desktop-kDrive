@@ -40,7 +40,7 @@ SocketListener::SocketListener(QIODevice *socket) : socket(socket) {
 
 void SocketListener::sendMessage(const QString &message, bool doWait) const {
     if (_threadId != std::this_thread::get_id()) {
-        assert(false && "SocketListener::sendMessage should only be called from the main thread");
+        assert(_threadId != std::this_thread::get_id() && "SocketListener::sendMessage should only be called from the main thread");
     }
 
     if (!socket) {
