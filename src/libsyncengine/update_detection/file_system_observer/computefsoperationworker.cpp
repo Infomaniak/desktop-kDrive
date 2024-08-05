@@ -112,6 +112,213 @@ void ComputeFSOperationWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
 }
 
+ExitCode ComputeFSOperationWorker::computeReplicaOperation(ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
+                                                           const SyncPath &remoteDbPath) {
+    SyncTime dbLastModified = 0;
+    NodeId nodeId;
+    if (side == ReplicaSideLocal) {
+        dbLastModified = dbNode.lastModifiedLocal().has_value() ? dbNode.lastModifiedLocal().value() : 0;
+        nodeId = dbNode.nodeIdLocal().has_value() ? dbNode.nodeIdLocal().value() : "";
+    } else {
+        dbLastModified = dbNode.lastModifiedRemote().has_value() ? dbNode.lastModifiedRemote().value() : 0;
+        nodeId = dbNode.nodeIdRemote().has_value() ? dbNode.nodeIdRemote().value() : "";
+    }
+    if (nodeId.empty()) {
+        LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(side)).c_str()
+                                       << L" node ID empty for for dbId=" << dbNode.nodeId());
+        setExitCause(ExitCauseDbEntryNotFound);
+        return ExitCodeDataError;
+    }
+
+    const std::shared_ptr<Snapshot> snapshot = _syncPal->snapshotCopy(side);
+    std::shared_ptr<FSOperationSet> opSet = _syncPal->operationSet(side);
+
+    NodeId parentId;
+    bool parentFound = false;
+    if (!_syncDb->parent(side, nodeId, parentId, parentFound)) {
+        LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
+        setExitCause(ExitCauseDbAccessError);
+        return ExitCodeDbError;
+    }
+    if (!parentFound) {
+        LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodeId.c_str());
+        setExitCause(ExitCauseDbEntryNotFound);
+        return ExitCodeDataError;
+    }
+
+    bool remoteItemUnsynced = false;
+    bool movedIntoUnsyncedFolder = false;
+    if (side == ReplicaSideRemote) {
+        // In case of a move inside an excluded folder, the item must be removed in this sync
+        if (isInUnsyncedList(nodeId, ReplicaSideRemote)) {
+            remoteItemUnsynced = true;
+            if (parentId != snapshot->parentId(nodeId)) {
+                movedIntoUnsyncedFolder = true;
+            }
+        }
+    } else {
+        if (isInUnsyncedList(nodeId, ReplicaSideLocal)) {
+            return ExitCodeOk;
+        }
+    }
+
+    if (!snapshot->exists(nodeId) || movedIntoUnsyncedFolder) {
+        const SyncPath &dbPath = side == ReplicaSideLocal ? localDbPath : remoteDbPath;
+        if (!pathInDeletedFolder(dbPath)) {
+            // Check that the file/directory really does not exist on replica
+            bool isExcluded = false;
+            if (const ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded); exitCode != ExitCodeOk) {
+                if (exitCode == ExitCodeNoWritePermission) {
+                    // Blacklist node
+                    _syncPal->blacklistTemporarily(nodeId, dbPath, side);
+                    Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, dbPath, ConflictTypeNone, InconsistencyTypeNone,
+                                CancelTypeNone, "", ExitCodeSystemError, ExitCauseFileAccessError);
+                    _syncPal->addError(error);
+
+                    // Update unsynced list cache
+                    updateUnsyncedList();
+                    return ExitCodeOk;
+                } else {
+                    return exitCode;
+                }
+            }
+
+            if (isExcluded) return ExitCodeOk;  // Never generate operation on excluded file
+        }
+
+        if (isInUnsyncedList(snapshot, nodeId, side, true)) {
+            // Ignore operation
+            return ExitCodeOk;
+        }
+
+        bool checkTemplate = side == ReplicaSideRemote;
+        if (side == ReplicaSideLocal) {
+            SyncPath localPath = _syncPal->_localPath / dbPath;
+
+            // Do not propagate delete if path too long
+            size_t pathSize = localPath.native().size();
+            if (PlatformInconsistencyCheckerUtility::instance()->checkPathLength(pathSize, dbNode.type())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Path length too big (" << pathSize << L" characters) for item "
+                                                                    << Path2WStr(localPath).c_str() << L". Item is ignored.");
+                return ExitCodeOk;
+            }
+
+            if (!snapshot->exists(nodeId)) {
+                bool exists = false;
+
+                if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
+                    LOGW_WARN(_logger,
+                              L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(localPath, ioError).c_str());
+                    return ExitCodeSystemError;
+                }
+                checkTemplate = exists;
+            }
+        }
+
+        if (checkTemplate) {
+            IoError ioError = IoErrorSuccess;
+            bool warn = false;
+            bool isExcluded = false;
+            const bool success =
+                ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, dbPath, warn, isExcluded, ioError);
+            if (!success) {
+                LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
+                                       << Utility::formatIoError(dbPath, ioError).c_str());
+                return ExitCodeSystemError;
+            }
+            if (isExcluded) {
+                // The item is excluded
+                return ExitCodeOk;
+            }
+        }
+
+        // Delete operation
+        FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete, nodeId, dbNode.type(),
+                                                     dbNode.created().has_value() ? dbNode.created().value() : 0, dbLastModified,
+                                                     dbNode.size(), dbPath);
+        opSet->insertOp(fsOp);
+        logOperationGeneration(snapshot->side(), fsOp);
+
+        if (dbNode.type() == NodeTypeDirectory) {
+            addFolderToDelete(dbPath);
+        }
+        return ExitCodeOk;
+    }
+
+    if (remoteItemUnsynced) {
+        // Ignore operations on unsynced items
+        return ExitCodeOk;
+    }
+
+    SyncPath snapshotPath;
+    const SyncName dbName = side == ReplicaSideLocal ? dbNode.nameLocal() : dbNode.nameRemote();
+    if (!snapshot->path(nodeId, snapshotPath)) {
+        LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << SyncName2WStr(dbName).c_str() << L" ("
+                                                                                      << Utility::s2ws(nodeId).c_str() << L")");
+        setExitCause(ExitCauseInvalidSnapshot);
+        return ExitCodeDataError;
+    }
+
+    if (side == ReplicaSideLocal && !_testing) {
+        // OS might fail to notify all delete events, therefore we check that the file still exists.
+        SyncPath absolutePath = _syncPal->_localPath / snapshotPath;
+        bool exists = false;
+        if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
+            LOGW_WARN(_logger,
+                      L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(absolutePath, ioError).c_str());
+            return ExitCodeSystemError;
+        }
+        if (!exists) {
+            LOGW_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - path="
+                                    << Path2WStr(absolutePath).c_str());
+            setExitCause(ExitCauseInvalidSnapshot);
+            return ExitCodeDataError;
+        }
+    } else {
+        // Check path length
+        if (isPathTooLong(snapshotPath, nodeId, snapshot->type(nodeId))) {
+            return ExitCodeOk;
+        }
+    }
+
+    const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
+    if (snapshotLastModified != dbLastModified && dbNode.type() == NodeType::NodeTypeFile) {
+        // Edit operation
+        FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeEdit, nodeId, NodeType::NodeTypeFile,
+                                                     snapshot->createdAt(nodeId), snapshotLastModified, snapshot->size(nodeId),
+                                                     snapshotPath);
+        opSet->insertOp(fsOp);
+        logOperationGeneration(snapshot->side(), fsOp);
+    }
+
+    const bool movedOrRenamed = dbName != snapshot->name(nodeId) || parentId != snapshot->parentId(nodeId);
+    if (movedOrRenamed) {
+        FSOpPtr fsOp = nullptr;
+        if (isInUnsyncedList(snapshot, nodeId, side)) {
+            // Delete operation
+            fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete, nodeId, dbNode.type(),
+                                                 snapshot->createdAt(nodeId), snapshotLastModified, snapshot->size(nodeId),
+                                                 remoteDbPath  // We use the remotePath anyway here to display
+                                                 // notifications with the real (remote) name
+                                                 ,
+                                                 snapshotPath);
+        } else {
+            // Move operation
+            fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeMove, nodeId, dbNode.type(),
+                                                 snapshot->createdAt(nodeId), snapshotLastModified, snapshot->size(nodeId),
+                                                 remoteDbPath  // We use the remotePath anyway here to display
+                                                 // notifications with the real (remote) name
+                                                 ,
+                                                 snapshotPath);
+        }
+
+        opSet->insertOp(fsOp);
+        logOperationGeneration(snapshot->side(), fsOp);
+    }
+
+    return ExitCodeOk;
+}
+
 ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &localIdsSet,
                                                  std::unordered_set<NodeId> &remoteIdsSet) {
     bool found = false;
@@ -136,7 +343,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
         while (dbIt != remainingDbIds.end()) {
             DbNodeId dbId = *dbIt;
 
-            if (dbId == _syncPal->_syncDb->rootNode().nodeId()) {
+            if (dbId == _syncPal->syncDb()->rootNode().nodeId()) {
                 // Ignore root folder
                 dbIt = remainingDbIds.erase(dbIt);
                 continue;
@@ -179,7 +386,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
 
             if (checkOnlyDir && dbNode.type() != NodeTypeDirectory) {
                 // In first loop, we check only directory
-                dbIt++;
+                ++dbIt;
                 continue;
             }
 
@@ -199,219 +406,13 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 return ExitCodeDataError;
             }
 
-            for (int j = 0; j <= 1; j++) {
-                ReplicaSide side = j == 0 ? ReplicaSideLocal : ReplicaSideRemote;
-                SyncTime dbLastModified = 0;
-                NodeId nodeId;
-                if (side == ReplicaSideLocal) {
-                    dbLastModified = dbNode.lastModifiedLocal().has_value() ? dbNode.lastModifiedLocal().value() : 0;
-                    nodeId = dbNode.nodeIdLocal().has_value() ? dbNode.nodeIdLocal().value() : "";
-                } else {
-                    dbLastModified = dbNode.lastModifiedRemote().has_value() ? dbNode.lastModifiedRemote().value() : 0;
-                    nodeId = dbNode.nodeIdRemote().has_value() ? dbNode.nodeIdRemote().value() : "";
-                }
-                if (nodeId.empty()) {
-                    LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(side)).c_str()
-                                                   << L" node ID empty for for dbId=" << dbId);
-                    setExitCause(ExitCauseDbEntryNotFound);
-                    return ExitCodeDataError;
-                }
-
-                SyncName dbName = side == ReplicaSideLocal ? dbNode.nameLocal() : dbNode.nameRemote();
-                const SyncPath &dbPath = side == ReplicaSideLocal ? localDbPath : remoteDbPath;
-                const std::shared_ptr<Snapshot> snapshot = _syncPal->snapshot(side, true);
-                std::shared_ptr<FSOperationSet> opSet = _syncPal->operationSet(side);
-
-                NodeId parentId;
-                if (!_syncDb->parent(side, nodeId, parentId, found)) {
-                    LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::parent");
-                    setExitCause(ExitCauseDbAccessError);
-                    return ExitCodeDbError;
-                }
-                if (!found) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Failed to retrieve node for dbId=" << nodeId.c_str());
-                    setExitCause(ExitCauseDbEntryNotFound);
-                    return ExitCodeDataError;
-                }
-
-                bool remoteItemUnsynced = false;
-                bool movedIntoUnsyncedFolder = false;
-                if (side == ReplicaSideRemote) {
-                    // In case of a move inside an excluded folder, the item must be removed in this sync
-                    if (isInUnsyncedList(nodeId, ReplicaSideRemote)) {
-                        remoteItemUnsynced = true;
-                        if (parentId != snapshot->parentId(nodeId)) {
-                            movedIntoUnsyncedFolder = true;
-                        }
-                    }
-                } else {
-                    if (isInUnsyncedList(nodeId, ReplicaSideLocal)) {
-                        continue;
-                    }
-                }
-
-                if (!snapshot->exists(nodeId) || movedIntoUnsyncedFolder) {
-                    if (!pathInDeletedFolder(dbPath)) {
-                        // Check that the file/directory really does not exist on replica
-                        bool isExcluded = false;
-                        if (const ExitCode exitCode = checkIfOkToDelete(side, dbPath, nodeId, isExcluded);
-                            exitCode != ExitCodeOk) {
-                            if (exitCode == ExitCodeNoWritePermission) {
-                                // Blacklist node
-                                _syncPal->blacklistTemporarily(nodeId, dbPath, side);
-                                Error error(_syncPal->_syncDbId, "", "", NodeTypeDirectory, dbPath, ConflictTypeNone,
-                                            InconsistencyTypeNone, CancelTypeNone, "", ExitCodeSystemError,
-                                            ExitCauseFileAccessError);
-                                _syncPal->addError(error);
-
-                                // Update unsynced list cache
-                                updateUnsyncedList();
-                                continue;
-                            } else {
-                                return exitCode;
-                            }
-                        }
-
-                        if (isExcluded) continue;  // Never generate operation on excluded file
-                    }
-
-                    if (isInUnsyncedList(snapshot, nodeId, side, true)) {
-                        // Ignore operation
-                        continue;
-                    }
-
-                    bool checkTemplate = side == ReplicaSideRemote;
-                    if (side == ReplicaSideLocal) {
-                        SyncPath localPath = _syncPal->_localPath / dbPath;
-
-                        // Do not propagate delete if path too long
-                        size_t pathSize = localPath.native().size();
-                        if (PlatformInconsistencyCheckerUtility::instance()->checkPathLength(pathSize, dbNode.type())) {
-                            LOGW_SYNCPAL_WARN(_logger, L"Path length too big (" << pathSize << L" characters) for item "
-                                                                                << Path2WStr(localPath).c_str()
-                                                                                << L". Item is ignored.");
-                            continue;
-                        }
-
-                        if (!snapshot->exists(nodeId)) {
-                            bool exists = false;
-
-                            if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(localPath, exists, ioError)) {
-                                LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                                       << Utility::formatIoError(localPath, ioError).c_str());
-                                return ExitCodeSystemError;
-                            }
-                            checkTemplate = exists;
-                        }
-                    }
-
-                    if (checkTemplate) {
-                        IoError ioError = IoErrorSuccess;
-                        bool warn = false;
-                        bool isExcluded = false;
-                        const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, dbPath,
-                                                                                                   warn, isExcluded, ioError);
-                        if (!success) {
-                            LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
-                                                   << Utility::formatIoError(dbPath, ioError).c_str());
-                            return ExitCodeSystemError;
-                        }
-                        if (isExcluded) {
-                            // The item is excluded
-                            continue;
-                        }
-                    }
-
-                    // Delete operation
-                    FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete, nodeId, dbNode.type(),
-                                                                 dbNode.created().has_value() ? dbNode.created().value() : 0,
-                                                                 dbLastModified, dbNode.size(), dbPath);
-                    opSet->insertOp(fsOp);
-                    logOperationGeneration(snapshot->side(), fsOp);
-
-                    if (dbNode.type() == NodeTypeDirectory) {
-                        addFolderToDelete(dbPath);
-                    }
-                    continue;
-                }
-
-                if (remoteItemUnsynced) {
-                    // Ignore operations on unsynced items
-                    continue;
-                }
-
-                SyncPath snapPath;
-                if (!snapshot->path(nodeId, snapPath)) {
-                    LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
-                                                   << SyncName2WStr(dbName).c_str() << L" (" << Utility::s2ws(nodeId).c_str()
-                                                   << L")");
-                    setExitCause(ExitCauseInvalidSnapshot);
-                    return ExitCodeDataError;
-                }
-
-                if (side == ReplicaSideLocal && !_testing) {
-                    // OS might fail to notify all delete events, therefore we check that the file still exists.
-                    SyncPath absolutePath = _syncPal->_localPath / snapPath;
-                    bool exists = false;
-                    if (IoError ioError = IoErrorSuccess; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
-                        LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                               << Utility::formatIoError(absolutePath, ioError).c_str());
-                        return ExitCodeSystemError;
-                    }
-                    if (!exists) {
-                        LOGW_DEBUG(_logger, L"Item does not exist anymore on local replica. Snapshot will be rebuilt - path="
-                                                << Path2WStr(absolutePath).c_str());
-                        setExitCause(ExitCauseInvalidSnapshot);
-                        return ExitCodeDataError;
-                    }
-                } else {
-                    // Check path length
-                    if (isPathTooLong(snapPath, nodeId, snapshot->type(nodeId))) {
-                        continue;
-                    }
-                }
-
-                const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
-                if (snapshotLastModified != dbLastModified && dbNode.type() == NodeType::NodeTypeFile) {
-                    // Edit operation
-                    FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeEdit, nodeId, NodeType::NodeTypeFile,
-                                                                 snapshot->createdAt(nodeId), snapshotLastModified,
-                                                                 snapshot->size(nodeId), snapPath);
-                    opSet->insertOp(fsOp);
-                    logOperationGeneration(snapshot->side(), fsOp);
-                }
-
-                bool movedOrRenamed = dbName != snapshot->name(nodeId) || parentId != snapshot->parentId(nodeId);
-                if (movedOrRenamed) {
-                    FSOpPtr fsOp = nullptr;
-                    if (isInUnsyncedList(snapshot, nodeId, side)) {
-                        // Delete operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeDelete, nodeId, dbNode.type(),
-                                                             snapshot->createdAt(nodeId), snapshotLastModified,
-                                                             snapshot->size(nodeId),
-                                                             remoteDbPath  // We use the remotePath anyway here to display
-                                                             // notifications with the real (remote) name
-                                                             ,
-                                                             snapPath);
-                    } else {
-                        // Move operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::OperationTypeMove, nodeId, dbNode.type(),
-                                                             snapshot->createdAt(nodeId), snapshotLastModified,
-                                                             snapshot->size(nodeId),
-                                                             remoteDbPath  // We use the remotePath anyway here to display
-                                                             // notifications with the real (remote) name
-                                                             ,
-                                                             snapPath);
-                    }
-
-                    opSet->insertOp(fsOp);
-                    logOperationGeneration(snapshot->side(), fsOp);
+            for (const auto side : std::array<ReplicaSide, 2>{ReplicaSideLocal, ReplicaSideRemote}) {
+                if (auto exitCode = computeReplicaOperation(side, dbNode, localDbPath, remoteDbPath); ExitCodeOk != exitCode) {
+                    return exitCode;
                 }
             }
 
-            // Check file integrity
-            ExitCode fileIntegrityOk = checkFileIntegrity(dbNode);
-            if (fileIntegrityOk != ExitCodeOk) {
+            if (auto fileIntegrityOk = checkFileIntegrity(dbNode); ExitCodeOk != fileIntegrityOk) {
                 return fileIntegrityOk;
             }
         }
@@ -487,8 +488,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 continue;
             }
 
-            SyncPath snapPath;
-            if (!snapshot->path(nodeId, snapPath)) {
+            SyncPath snapshotPath;
+            if (!snapshot->path(nodeId, snapshotPath)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item " << Utility::s2ws(nodeId).c_str());
                 setExitCause(ExitCauseInvalidSnapshot);
                 return ExitCodeDataError;
@@ -496,7 +497,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
 
             // Manage file exclusion
             const int64_t snapshotSize = snapshot->size(nodeId);
-            if (isExcludedFromSync(snapshot, side, nodeId, snapPath, type, snapshotSize)) {
+            if (isExcludedFromSync(snapshot, side, nodeId, snapshotPath, type, snapshotSize)) {
                 continue;
             }
 
@@ -505,7 +506,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 bool isExcluded = false;
                 IoError ioError = IoErrorSuccess;
                 const bool success = ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(
-                    _syncPal->_localPath, snapPath, isExcluded, ioError);
+                    _syncPal->_localPath, snapshotPath, isExcluded, ioError);
                 if (!success || ioError != IoErrorSuccess || isExcluded) {
                     if (_testing && ioError == IoErrorNoSuchFileOrDirectory) {
                         // Files does exist in test, this fine, ignore ioError.
@@ -524,7 +525,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 //                if (type == NodeTypeFile && !isLink) {
                 //                    // On Windows, we receive CREATE event while the file is still being copied
                 //                    // Do not start synchronizing the file while copying is in progress
-                //                    const SyncPath absolutePath = _syncPal->_localPath / snapPath;
+                //                    const SyncPath absolutePath = _syncPal->_localPath / snapshotPath;
                 //                    if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
                 //                        LOG_SYNCPAL_INFO(_logger, L"Item \"" << Path2WStr(absolutePath).c_str()
                 //                                                             << L"\" is not ready. Synchronization postponed.");
@@ -536,7 +537,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
             // Create operation
             FSOpPtr fsOp =
                 std::make_shared<FSOperation>(OperationType::OperationTypeCreate, nodeId, type, snapshot->createdAt(nodeId),
-                                              snapshot->lastModified(nodeId), snapshotSize, snapPath);
+                                              snapshot->lastModified(nodeId), snapshotSize, snapshotPath);
             opSet->insertOp(fsOp);
             logOperationGeneration(snapshot->side(), fsOp);
         }

@@ -45,6 +45,8 @@ class ComputeFSOperationWorker : public ISyncWorker {
         virtual void execute() override;
 
     private:
+        ExitCode computeReplicaOperation(ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
+                                         const SyncPath &remoteDbPath);
         ExitCode exploreDbTree(std::unordered_set<NodeId> &localIdsSet, std::unordered_set<NodeId> &remoteIdsSet);
         ExitCode exploreSnapshotTree(ReplicaSide side, const std::unordered_set<NodeId> &idsSet);
         ExitCode checkFileIntegrity(const DbNode &dbNode);

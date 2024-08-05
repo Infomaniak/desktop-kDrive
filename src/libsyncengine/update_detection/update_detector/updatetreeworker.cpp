@@ -119,7 +119,7 @@ ExitCode UpdateTreeWorker::searchForParentNode(const SyncPath &nodePath, std::sh
     }
 
     if (found && parentNodeId) {
-        if (auto parentNodeIt = _updateTree->nodes().find(*parentNodeId); parentNodeIt != _updateTree->nodes().end()) {
+        if (const auto parentNodeIt = _updateTree->nodes().find(*parentNodeId); parentNodeIt != _updateTree->nodes().cend()) {
             // The parent node exists.
             parentNode = parentNodeIt->second;
         }
@@ -391,8 +391,8 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
             // Transform a Delete and a Create operations into one Edit operation.
             // Some software, such as Excel, keeps the current version into a temporary directory and move it to the destination,
             // replacing the original file. However, this behavior should be applied only on local side.
-            if (auto createFileOpSetIt = _createFileOperationSet.find(deleteOp->path());
-                createFileOpSetIt != _createFileOperationSet.end()) {
+            if (const auto createFileOpSetIt = _createFileOperationSet.find(deleteOp->path());
+                createFileOpSetIt != _createFileOperationSet.cend()) {
                 FSOpPtr tmp = nullptr;
                 if (!_operationSet->findOp(createFileOpSetIt->second->nodeId(), createFileOpSetIt->second->operationType(),
                                            tmp)) {
@@ -406,7 +406,8 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
         }
 
         const OperationType opType = op->operationType() == OperationTypeCreate ? OperationTypeEdit : OperationTypeDelete;
-        if (auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId()); currentNodeIt != _updateTree->nodes().end()) {
+        if (const auto currentNodeIt = _updateTree->nodes().find(deleteOp->nodeId());
+            currentNodeIt != _updateTree->nodes().cend()) {
             // Node is already in the update tree, it can be a Delete or an Edit
             std::shared_ptr<Node> currentNode = currentNodeIt->second;
             updateNodeId(currentNode, op->nodeId());
