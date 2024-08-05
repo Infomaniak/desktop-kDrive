@@ -77,7 +77,9 @@ const int CommonUtility::logsPurgeRate = 7;               // days
 const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
 size_t CommonUtility::_maxPathWin = 0;
 
+#if defined(_WIN32)
 SyncPath CommonUtility::_workingDirPath = "";
+#endif
 
 static const QString englishCode = "en";
 static const QString frenchCode = "fr";
