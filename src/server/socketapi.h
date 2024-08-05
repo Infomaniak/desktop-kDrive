@@ -113,7 +113,7 @@ class SocketApi : public QObject {
         unsigned _nbOngoingDehydration = 0;
         QMutex _dehydrationMutex;
 
-        QMutex _sendMessageMutex;
+        QRecursiveMutex _sendMessageMutex;
 
         // Callbacks
         void (*_addError)(const KDC::Error &error);
