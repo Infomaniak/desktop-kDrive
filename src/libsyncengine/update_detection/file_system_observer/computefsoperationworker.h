@@ -45,8 +45,15 @@ class ComputeFSOperationWorker : public ISyncWorker {
         virtual void execute() override;
 
     private:
-        ExitCode computeReplicaOperation(ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
-                                         const SyncPath &remoteDbPath);
+        ExitCode handleRemovedItem(const ReplicaSide side, const NodeId &nodeId, const DbNode &dbNode, const SyncPath &dbPath,
+                                   SyncTime dbLastModified, bool &skipProcessing);
+        void handleEditedItem(const ReplicaSide side, const NodeId &nodeId, const DbNode &dbNode, const SyncPath &snapshotPath);
+        void handleMovedOrRenamedItem(const ReplicaSide side, const NodeId &nodeId, const DbNode &dbNode,
+                                      const SyncPath &snapshotPath, const SyncPath &remoteDbPath);
+        ExitCode computeNodeOperation(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
+                                      const SyncPath &remoteDbPath, bool &skipComputation);
+        ExitCode computeReplicaOperations(const NodeType nodeType, std::unordered_set<DbNodeId> &remainingDbIds,
+                                          std::unordered_set<NodeId> &localIdsSet, std::unordered_set<NodeId> &remoteIdsSet);
         ExitCode exploreDbTree(std::unordered_set<NodeId> &localIdsSet, std::unordered_set<NodeId> &remoteIdsSet);
         ExitCode exploreSnapshotTree(ReplicaSide side, const std::unordered_set<NodeId> &idsSet);
         ExitCode checkFileIntegrity(const DbNode &dbNode);
@@ -56,6 +63,9 @@ class ComputeFSOperationWorker : public ISyncWorker {
         bool isInUnsyncedList(const NodeId &nodeId, const ReplicaSide side);  // Search parent in DB
         bool isInUnsyncedList(const std::shared_ptr<Snapshot> snapshot, const NodeId &nodeId, const ReplicaSide side,
                               bool tmpListOnly = false);  // Search parent in snapshot
+        bool isInTmpUnsyncedList(const std::shared_ptr<Snapshot> snapshot, const NodeId &nodeId, const ReplicaSide side) {
+            return isInUnsyncedList(snapshot, nodeId, side, true);
+        }
         bool isWhitelisted(const std::shared_ptr<Snapshot> snapshot, const NodeId &nodeId);
         bool isTooBig(const std::shared_ptr<Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
         bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type);

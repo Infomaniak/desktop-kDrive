@@ -112,13 +112,13 @@ ExitCode UpdateTreeWorker::step2MoveFile() {
 ExitCode UpdateTreeWorker::searchForParentNode(const SyncPath &nodePath, std::shared_ptr<Node> &parentNode) {
     parentNode.reset();
     std::optional<NodeId> parentNodeId;
-    bool found = false;
-    if (!_syncDb->id(_side, nodePath.parent_path(), parentNodeId, found)) {
+    bool parentFound = false;
+    if (!_syncDb->id(_side, nodePath.parent_path(), parentNodeId, parentFound)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::id");
         return ExitCodeDbError;
     }
 
-    if (found && parentNodeId) {
+    if (parentFound && parentNodeId) {
         if (const auto parentNodeIt = _updateTree->nodes().find(*parentNodeId); parentNodeIt != _updateTree->nodes().cend()) {
             // The parent node exists.
             parentNode = parentNodeIt->second;
@@ -131,7 +131,7 @@ ExitCode UpdateTreeWorker::searchForParentNode(const SyncPath &nodePath, std::sh
 ExitCode UpdateTreeWorker::step3DeleteDirectory() {
     std::unordered_set<UniqueId> deleteOpsIds = _operationSet->getOpsByType(OperationTypeDelete);
     for (const auto &deleteOpId : deleteOpsIds) {
-        // worker stop or pause
+        // worker stops or pauses
         if (stopAsked()) {
             return ExitCodeOk;
         }
