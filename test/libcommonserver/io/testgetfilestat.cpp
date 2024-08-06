@@ -223,18 +223,18 @@ void TestIo::testGetFileStat() {
 #ifdef _WIN32
         CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.size);
-        CPPUNIT_ASSERT_EQUAL(SyncTime(0u), fileStat.modtime);
-        CPPUNIT_ASSERT_EQUAL(fileStat.creationTime, fileStat.modtime);
-        CPPUNIT_ASSERT_EQUAL(NodeTypeUnknown, fileStat.nodeType);
-        CPPUNIT_ASSERT_EQUAL(IoErrorUnknown, ioError);
+        CPPUNIT_ASSERT(fileStat.size == 0u);
+        CPPUNIT_ASSERT(fileStat.modtime == 0u);
+        CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
+        CPPUNIT_ASSERT(ioError == IoErrorUnknown);
 #else
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
         CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT_EQUAL(fileStat.modtime, fileStat.creationTime);
-        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT(fileStat.modtime == fileStat.creationTime);
+        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
 #endif
     }
 
