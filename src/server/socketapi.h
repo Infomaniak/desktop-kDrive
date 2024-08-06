@@ -91,7 +91,7 @@ class SocketApi : public QObject {
 
         static bool syncForPath(const std::filesystem::path &path, KDC::Sync &sync);
     public slots:
-        void executeCommandDirect(const QString commandLine);
+        void executeCommandDirect(const QString &commandLine);
 
     private slots:
         void slotNewConnection();
