@@ -141,7 +141,7 @@ JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
 
     _cpuUsageThreshold = ParametersCache::instance()->parameters().maxAllowedCpu() / 100.0;
 
-    _thread = std::unique_ptr<std::thread>(new std::thread(run));
+    _thread = std::make_unique<std::thread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
 }
 

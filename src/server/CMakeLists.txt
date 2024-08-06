@@ -51,9 +51,10 @@ set(server_SRCS
 )
 
 set(updater_SRCS
-    updater/kdcupdater.cpp
-    updater/updateinfo.cpp
-    updater/updaterserver.cpp
+    updater/kdcupdater.h updater/kdcupdater.cpp
+    updater/updateinfo.h updater/updateinfo.cpp
+    updater/updaterserver.h updater/updaterserver.cpp
+    updater_v2/abstractupdater.h updater_v2/abstractupdater.cpp
 )
 
 IF( APPLE )
