@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GetAppVersionJob.h"
+#include "getappversionjob.h"
 #include "utility/jsonparserutility.h"
 
 namespace KDC {
@@ -31,6 +31,22 @@ std::string GetAppVersionJob::getSpecificUrl() {
     str += "/com.infomaniak.drive/";
     str += _appId;
     return str;
+}
+
+DistributionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) const {
+    if (val == versionTypeProdKey) {
+        return DistributionChannel::Prod;
+    }
+    if (val == versionTypeNextKey) {
+        return DistributionChannel::Next;
+    }
+    if (val == versionTypeBetaKey) {
+        return DistributionChannel::Beta;
+    }
+    if (val == versionTypeInternalKey) {
+        return DistributionChannel::Internal;
+    }
+    return DistributionChannel::Unknown;
 }
 
 bool GetAppVersionJob::handleResponse(std::istream &is) {
@@ -48,33 +64,33 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
     if (publishedVersions) return false;
 
     for (const auto &versionInfo : *publishedVersions) {
-        const auto obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
+        const auto &obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
         std::string versionType;
         if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) {
             return false;
         }
 
-        // TODO : For now, we only look pour production versions. Other channel to be implemented
-        if (versionType == versionTypeProdKey) {
-            if (!JsonParserUtility::extractValue(obj, tagKey, _tag)) {
-                return false;
-            }
-            if (!JsonParserUtility::extractValue(obj, changeLogKey, _changeLog)) {
-                return false;
-            }
-            if (!JsonParserUtility::extractValue(obj, buildVersionKey, _buildVersion)) {
-                return false;
-            }
-            if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _downloadUrl)) {
-                return false;
-            }
-            break;
+        const DistributionChannel channel = toDistributionChannel(versionType);
+        if (!JsonParserUtility::extractValue(obj, tagKey, _versionInfo[channel].tag)) {
+            return false;
         }
-    }
+        if (!JsonParserUtility::extractValue(obj, changeLogKey, _versionInfo[channel].changeLog)) {
+            return false;
+        }
+        if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionInfo[channel].buildVersion)) {
+            return false;
+        }
+        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionInfo[channel].buildMinOsVersion)) {
+            return false;
+        }
+        if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionInfo[channel].downloadUrl)) {
+            return false;
+        }
 
-    if (_tag.empty() || _changeLog.empty() || _buildVersion == 0 || _downloadUrl.empty()) {
-        LOG_WARN(_logger, "Missing mandatory value.");
-        return false;
+        if (!_versionInfo[channel].isValid()) {
+            LOG_WARN(_logger, "Missing mandatory value.");
+            return false;
+        }
     }
 
     return true;

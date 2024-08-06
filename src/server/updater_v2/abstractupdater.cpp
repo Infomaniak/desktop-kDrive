@@ -19,8 +19,10 @@
 
 #include "abstractupdater.h"
 
+#include "db/parmsdb.h"
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
+#include "log/log.h"
 
 namespace KDC {
 
@@ -34,7 +36,15 @@ AbstractUpdater* AbstractUpdater::instance() {
 }
 
 ExitCode AbstractUpdater::checkUpdateAvailable(bool& available) {
-    GetAppVersionJob job(CommonUtility::platformName().toStdString(), "yolo");
+    AppStateValue appStateValue = LogUploadState::None;
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
+        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
+        return ExitCodeDbError;
+    }
+
+    const auto& appUid = std::get<std::string>(appStateValue);
+    GetAppVersionJob job(CommonUtility::platformName().toStdString(), appUid);
+    job.runSynchronously();
     available = false;
     return ExitCodeOk;
 }
