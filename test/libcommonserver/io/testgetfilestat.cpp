@@ -39,11 +39,11 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size == 408278u);
-        CPPUNIT_ASSERT(fileStat.creationTime > 0);
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(int64_t(408278u), fileStat.size);
+        CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.creationTime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A regular directory
@@ -55,14 +55,14 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(fileStat.size == 0u);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size > 0u);
 #endif
-        CPPUNIT_ASSERT(fileStat.creationTime > 0);
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.creationTime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeDirectory, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A regular symbolic link on a file
@@ -78,13 +78,13 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(fileStat.size == 0u);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
 #endif
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A regular symbolic link on a folder
@@ -100,12 +100,12 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(fileStat.size == 0u);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
 #endif
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeDirectory, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
     // A non-existing file
     {
@@ -115,11 +115,11 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.modtime == 0);
-        CPPUNIT_ASSERT(fileStat.creationTime == 0);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeUnknown, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, ioError);
     }
 
     // A non-existing file with a very long name
@@ -130,14 +130,14 @@ void TestIo::testGetFileStat() {
         IoError ioError = IoErrorSuccess;
         CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.modtime == 0);
-        CPPUNIT_ASSERT(fileStat.creationTime == 0);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeUnknown, fileStat.nodeType);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(ioError == IoErrorInvalidArgument);
+        CPPUNIT_ASSERT_EQUAL(IoErrorInvalidArgument, ioError);
 #else
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT_EQUAL(IoErrorFileNameTooLong, ioError);
 #endif
     }
     // A non-existing file with a very long path
@@ -152,11 +152,11 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(!_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.modtime == 0);
-        CPPUNIT_ASSERT(fileStat.creationTime == 0);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeUnknown, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorFileNameTooLong, ioError);
     }
     // A hidden file
     {
@@ -181,10 +181,10 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
 
         CPPUNIT_ASSERT(fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A hidden directory
@@ -205,9 +205,9 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeDirectory);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeDirectory, fileStat.nodeType);
     }
     // An existing file with dots and colons in its name
     {
@@ -231,7 +231,7 @@ void TestIo::testGetFileStat() {
 #else
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size > 0);
+        CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
         CPPUNIT_ASSERT_EQUAL(fileStat.modtime, fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
         CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
@@ -253,10 +253,10 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A dangling symbolic link
@@ -272,17 +272,18 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(fileStat.size == 0u);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+
 #else
-        CPPUNIT_ASSERT(fileStat.size == static_cast<int64_t>(targetPath.native().length()));
+        CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(targetPath.native().length()), fileStat.size);
 #endif
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
 #else
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeUnknown, fileStat.nodeType);
 #endif
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 #if defined(__APPLE__)
     // A MacOSX Finder alias on a regular file.
@@ -299,10 +300,10 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size > 0);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A MacOSX Finder alias on a regular directory.
@@ -319,10 +320,10 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size > 0);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A dangling MacOSX Finder alias on a non-existing file.
@@ -344,10 +345,10 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size > 0);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A dangling MacOSX Finder alias on a non-existing directory.
@@ -367,10 +368,10 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(_testObj->getFileStat(path, &fileStat, ioError));
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size > 0);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);  // `fileStat.size` is greater than `static_cast<int64_t>(path.native().length())`
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 #endif
     // A regular file missing all permissions (no error expected)
@@ -392,10 +393,10 @@ void TestIo::testGetFileStat() {
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A regular directory missing all permissions (no error expected)
@@ -415,13 +416,13 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(fileStat.size == 0u);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
 #else
         CPPUNIT_ASSERT(fileStat.size > 0u);
 #endif
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeDirectory, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A regular file within a subdirectory that misses owner read permission (no error expected)
@@ -447,10 +448,10 @@ void TestIo::testGetFileStat() {
         std::filesystem::permissions(subdir, std::filesystem::perms::owner_read, std::filesystem::perm_options::add);
 
         CPPUNIT_ASSERT(!fileStat.isHidden);
-        CPPUNIT_ASSERT(fileStat.size > 0);
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT_GREATER(int64_t(0), fileStat.size);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
     }
 
     // A regular file within a subdirectory that misses owner search/exec permission:
@@ -476,16 +477,16 @@ void TestIo::testGetFileStat() {
 
         CPPUNIT_ASSERT(!fileStat.isHidden);
 #ifdef _WIN32
-        CPPUNIT_ASSERT(fileStat.size > 0u);
-        CPPUNIT_ASSERT(fileStat.modtime > 0);
-        CPPUNIT_ASSERT(fileStat.modtime >= fileStat.creationTime);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeFile);
+        CPPUNIT_ASSERT_GREATER(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_GREATER(SyncTime(0), fileStat.modtime);
+        CPPUNIT_ASSERT_GREATEREQUAL(fileStat.creationTime, fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeFile, fileStat.nodeType);
 #else
-        CPPUNIT_ASSERT(fileStat.size == 0u);
-        CPPUNIT_ASSERT(fileStat.modtime == 0);
-        CPPUNIT_ASSERT(fileStat.creationTime == 0);
-        CPPUNIT_ASSERT(fileStat.nodeType == NodeTypeUnknown);
-        CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
+        CPPUNIT_ASSERT_EQUAL(int64_t(0u), fileStat.size);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.modtime);
+        CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
+        CPPUNIT_ASSERT_EQUAL(NodeTypeUnknown, fileStat.nodeType);
+        CPPUNIT_ASSERT_EQUAL(IoErrorAccessDenied, ioError);
 #endif
     }
 }
