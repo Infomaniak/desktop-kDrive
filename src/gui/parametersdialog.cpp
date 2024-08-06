@@ -246,7 +246,7 @@ void ParametersDialog::initUI() {
     QVBoxLayout *errorsHeaderVBox = new QVBoxLayout();
     errorsHeaderVBox->setContentsMargins(boxHMargin, boxVTMargin, boxHMargin, boxVBMargin);
     errorsHeaderVBox->setSpacing(boxVSpacing);
-    //errorsHeaderWidget->setLayout(errorsHeaderVBox);
+    // errorsHeaderWidget->setLayout(errorsHeaderVBox);
 
     _sendLogsWidget = new ActionWidget(":/client/resources/icons/actions/help.svg", this);
     _sendLogsWidget->setObjectName("sendLogsWidget");
@@ -765,26 +765,26 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
                 "It will be restored to its original location.");
         }
         case CancelTypeAlreadyExistRemote: {
-            return tr("\"%1\" already exists on remote kDrive. It is not synced because it has been blacklisted.").arg(path);
+            return tr("This item already exists on remote kDrive. It is not synced because it has been blacklisted.");
         }
         case CancelTypeMoveToBinFailed: {
-            return tr("Failed to move item \"%1\" to bin, it has been blacklisted.").arg(path);
+            return tr("Failed to move this item to bin, it has been blacklisted.");
         }
         case CancelTypeAlreadyExistLocal: {
-            return tr("\"%1\" already exists on local file system. It is not synced.").arg(path);
+            return tr("This item already exists on local file system. It is not synced.");
         }
         case CancelTypeTmpBlacklisted: {
-            return tr("Failed to synchronize item \"%1\". It has been temporarily blacklisted.<br>"
-                      "Another attempt to sync it will be done in one hour or on next application startup.")
-                .arg(path);
+            return tr(
+                "Failed to synchronize this item. It has been temporarily blacklisted.<br>"
+                "Another attempt to sync it will be done in one hour or on next application startup.");
         }
         case CancelTypeExcludedByTemplate: {
-            return tr("The item \"%1\" has been excluded from sync by a custom template.<br>"
-                      "You can disable this type of notification from the Preferences")
-                .arg(path);
+            return tr(
+                "This item has been excluded from sync by a custom template.<br>"
+                "You can disable this type of notification from the Preferences");
         }
         case CancelTypeHardlink: {
-            return tr("The item \"%1\" has been excluded from sync because it's an hard link").arg(path);
+            return tr("This item has been excluded from sync because it's an hard link");
         }
         default: {
             break;
@@ -799,13 +799,15 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
 QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noexcept {
     switch (errorInfo.exitCause()) {
         case ExitCauseHttpErrForbidden: {
-            return tr("The operation performed on item is forbidden.<br>"
-                      "The file/directory has been temporarily blacklisted.");
+            return tr(
+                "The operation performed on item is forbidden.<br>"
+                "The file/directory has been temporarily blacklisted.");
         }
         case ExitCauseApiErr:
         case ExitCauseUploadNotTerminated: {
-            return tr("The operation performed on this item failed.<br>"
-                      "The file/directory has been temporarily blacklisted.");
+            return tr(
+                "The operation performed on this item failed.<br>"
+                "The file/directory has been temporarily blacklisted.");
         }
         case ExitCauseFileTooBig: {
             return tr("The file is too large to be uploaded. It has been temporarily blacklisted.");
@@ -837,13 +839,13 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
     switch (errorInfo.exitCode()) {
         case ExitCodeSystemError: {
             if (errorInfo.exitCause() == ExitCauseFileAccessError) {
-                return tr("Can't access item %1.<br>"
-                          "Please fix the write permissions and restart the synchronization.")
-                    .arg(errorInfo.path());
+                return tr(
+                    "Can't access item.<br>"
+                    "Please fix the write permissions and restart the synchronization.");
             }
 
             if (errorInfo.exitCause() == ExitCauseMoveToTrashFailed) {
-                return tr("Move to trash failed for item %1").arg(errorInfo.path());
+                return tr("Move to trash failed.");
             }
         }
         case ExitCodeBackError: {
