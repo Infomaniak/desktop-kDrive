@@ -36,7 +36,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         typedef enum { ApiDrive, ApiDriveByUser, ApiProfile, ApiNotifyDrive, ApiInfomaniak, ApiDesktop } ApiType;
 
         AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId, bool returnJson = true);
-        AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
+        explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);
         ~AbstractTokenNetworkJob() override = default;
 
         bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr);

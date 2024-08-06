@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -17,34 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "abstractupdater.h"
+#pragma once
 
-#include "jobs/network/getappversionjob.h"
-#include "libcommon/utility/utility.h"
+#include "abstracttokennetworkjob.h"
 
 namespace KDC {
 
-AbstractUpdater* AbstractUpdater::_instance = nullptr;
+class GetAppVersionJob : public AbstractTokenNetworkJob {
+    public:
+        GetAppVersionJob(const std::string &platform, const std::string &appID);
 
-AbstractUpdater* AbstractUpdater::instance() {
-    if (!_instance) {
-        _instance = new AbstractUpdater();
-    }
-    return _instance;
-}
+    protected:
+        bool handleResponse(std::istream &is) override;
 
-ExitCode AbstractUpdater::checkUpdateAvailable(bool& available) {
-    GetAppVersionJob job(CommonUtility::platformName().toStdString(), "yolo");
-    available = false;
-    return ExitCodeOk;
-}
+    private:
+        std::string getSpecificUrl() override;
+        void setQueryParameters(Poco::URI &, bool &canceled) override {}
+        void setData(bool &canceled) override {}
 
-AbstractUpdater::AbstractUpdater() {
-    _thread = std::make_unique<std::thread>(run);
-}
+        const std::string _platform;
+        const std::string _appId;
 
-void AbstractUpdater::run() noexcept {
-    // To be implemented
-}
+        std::string _tag;
+        std::string _changeLog;
+        std::uint64_t _buildVersion = 0;
+        std::string _downloadUrl;
+};
 
 }  // namespace KDC

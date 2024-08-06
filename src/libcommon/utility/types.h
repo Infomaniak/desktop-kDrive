@@ -382,11 +382,12 @@ enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
     LastServerSelfRestartDate,
     LastClientSelfRestartDate,
-    LastSuccessfulLogUploadDate, //Format: "month,day,year,hour,minute,second"
+    LastSuccessfulLogUploadDate,  // Format: "month,day,year,hour,minute,second"
     LastLogUploadArchivePath,
     LogUploadState,
     LogUploadPercent,
     LogUploadToken,
+    AppUid,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
 constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;
@@ -395,6 +396,8 @@ constexpr int64_t SELF_RESTARTER_NO_CRASH_DETECTED = 0;
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
 
 enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
+
+enum class UpdateStateV2 { UpToDate, Available, Downloading, Ready, Error };
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;

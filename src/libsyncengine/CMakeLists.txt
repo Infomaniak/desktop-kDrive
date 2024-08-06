@@ -60,6 +60,7 @@ set(syncengine_SRCS
     jobs/network/getfilelinkjob.h jobs/network/getfilelinkjob.cpp
     jobs/network/getsizejob.h jobs/network/getsizejob.cpp
     jobs/network/login/gettokenfromapppasswordjob.h jobs/network/login/gettokenfromapppasswordjob.cpp
+    jobs/network/GetAppVersionJob.h jobs/network/getappversionjob.cpp
     ## Local jobs
     jobs/local/localmovejob.h jobs/local/localmovejob.cpp
     jobs/local/localcopyjob.h jobs/local/localcopyjob.cpp

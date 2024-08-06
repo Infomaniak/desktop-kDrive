@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include "utility/types.h"
+
+
 #include <log4cplus/logger.h>
 #include <thread>
 
@@ -34,14 +37,16 @@ namespace KDC {
 
 class AbstractUpdater {
     public:
-        static std::unique_ptr<AbstractUpdater>& instance();
+        static AbstractUpdater* instance();
+
+        ExitCode checkUpdateAvailable(bool& available);
 
     private:
         AbstractUpdater();
 
         static void run() noexcept;
 
-        static std::unique_ptr<AbstractUpdater> _instance;
+        static AbstractUpdater* _instance;
         log4cplus::Logger _logger;
         std::unique_ptr<std::thread> _thread;
 };
