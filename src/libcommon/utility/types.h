@@ -398,6 +398,18 @@ enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelR
 enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
 
 enum class UpdateStateV2 { UpToDate, Available, Downloading, Ready, Error };
+enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
+struct VersionInfo {
+        std::string tag;
+        std::string changeLog;
+        std::uint64_t buildVersion = 0;
+        std::uint64_t buildMinOsVersion = 0;
+        std::string downloadUrl;
+
+        [[nodiscard]] bool isValid() const {
+            return !tag.empty() && !changeLog.empty() && buildVersion != 0 && buildMinOsVersion != 0 && !downloadUrl.empty();
+        }
+};
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;

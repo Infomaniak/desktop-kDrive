@@ -76,6 +76,7 @@ static const std::string versionTypeInternalKey = "internal";
 static const std::string tagKey = "tag";
 static const std::string changeLogKey = "version_changelog";
 static const std::string buildVersionKey = "build_version";
+static const std::string buildMinOsVersionKey = "build_min_os_version";
 static const std::string downloadUrlKey = "download_link";
 
 static const std::string changesKey = "changes";

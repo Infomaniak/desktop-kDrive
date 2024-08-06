@@ -26,21 +26,22 @@ class GetAppVersionJob : public AbstractTokenNetworkJob {
     public:
         GetAppVersionJob(const std::string &platform, const std::string &appID);
 
+        inline const VersionInfo& getVersionInfo(DistributionChannel channel) { return _versionInfo[channel]; }
+
     protected:
         bool handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &canceled) override {}
-        void setData(bool &canceled) override {}
+        void setQueryParameters(Poco::URI &, bool &canceled) override {/* no query parameters */}
+        void setData(bool &canceled) override { /* no body parameters */ }
+
+        DistributionChannel toDistributionChannel(const std::string &val) const;
 
         const std::string _platform;
         const std::string _appId;
 
-        std::string _tag;
-        std::string _changeLog;
-        std::uint64_t _buildVersion = 0;
-        std::string _downloadUrl;
+        std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;
 };
 
 }  // namespace KDC
