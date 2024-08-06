@@ -591,23 +591,29 @@ bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioErro
 bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
     exists = false;
     ioError = IoErrorSuccess;
-    std::error_code ec;
 
-    exists = std::filesystem::exists(path, ec);
-    if (exists) return true;
+    ItemType itemType;
+    const bool getItemTypeSuccess = getItemType(path, itemType);
+    ioError = itemType.ioError;
 
-    if (_isSymlink(path, ec) && !_readSymlink(path, ec).empty()) {
-        exists = true;
-        return true;
+    if (!getItemTypeSuccess) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(path, itemType.ioError).c_str());
+        return false;
     }
 
-    ioError = stdError2ioError(ec);
-    if (ioError == IoErrorNoSuchFileOrDirectory) {
-        ioError = IoErrorSuccess;
-        return true;
+    if (itemType.linkType == LinkTypeNone && itemType.ioError != IoErrorSuccess) {
+        exists = ioError != IoErrorNoSuchFileOrDirectory;
+        if (ioError == IoErrorNoSuchFileOrDirectory) {
+            ioError = IoErrorSuccess;
+            return true;
+        }
+        return isExpectedError(ioError);
     }
 
-    return isExpectedError(ioError);
+    ioError = IoErrorSuccess;
+    exists = true;
+
+    return true;
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
