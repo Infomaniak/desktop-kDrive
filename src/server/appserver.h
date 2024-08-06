@@ -251,7 +251,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
 
     signals:
-        void socketApiExecuteCommandDirect(const QString commandLine);
+        void socketApiExecuteCommandDirect(const QString& commandLine);
 };
 
 
