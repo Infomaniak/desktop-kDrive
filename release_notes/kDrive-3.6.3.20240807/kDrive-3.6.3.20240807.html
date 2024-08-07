@@ -1,0 +1,46 @@
+<!--
+  ~ Infomaniak kDrive - Desktop
+  ~ Copyright (C) 2023-2024 Infomaniak Network SA
+  ~
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as published by
+  ~ the Free Software Foundation, either version 3 of the License, or
+  ~ (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  -->
+
+<!DOCTYPE html>
+<html>
+<body>
+<h1>Release notes - kDrive 3.6.3</h1>
+<h2><b>New features</b></h2>
+  <ul>
+    <li>Overhaul of sending logs to support</li>
+  </ul>
+<h2><b>Bug fixes</b></h2>
+  <ul>
+    <li>Fixed a sync issue in step 3 that causes the synchronization to restart</li>
+    <li>Fixed an issue causing sync to abort during the propagation step</li>
+    <li>Fixed issues during massive uploads/downloads</li>
+    <li>Fixed syncing of files whose names contain special characters such as double quotes, backslashes, or newlines</li>
+    <li>Fixed sync issue after renaming a file on the kDrive causing a &ldquo;name clash"</li>
+    <li>Fixed a sync issue with files having a false modification date, which the application systematically tried to re-upload</li>
+    <li>Fixed &ldquo;Move-ParentDelete”'s conflict resolution</li>
+		<li>Fixed a sync issue with ".lnk" files</li>
+		<li>Fixed an issue with links having a long path or special character in the name</li>
+    <li>Fixed a crash on synchronization removal</li>
+    <li>Added protection to prevent the creation of nested synchronizations</li>
+    <li>Fixed archiving of old log files</li>
+    <li>Correction of the style of the progress bar in the sync update wizard</li>
+    <li>Fixed errors' date always in English format</li>
+    <li>Fixed colors in the conflict resolution window if dark theme activated</li>
+  </ul>
+</body>
+</html>

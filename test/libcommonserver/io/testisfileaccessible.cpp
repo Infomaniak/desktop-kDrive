@@ -29,9 +29,9 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestIo::testIsFileAccessible() {
-    const TemporaryDirectory temporaryDirectory;
-    const SyncPath sourcePath = temporaryDirectory.path / "test_big_file.txt";
-    const SyncPath destPath = temporaryDirectory.path / "test_big_file_copy.txt";
+    const LocalTemporaryDirectory temporaryDirectory;
+    const SyncPath sourcePath = temporaryDirectory.path() / "test_big_file.txt";
+    const SyncPath destPath = temporaryDirectory.path() / "test_big_file_copy.txt";
 
     // Create a 100 MB file
     {

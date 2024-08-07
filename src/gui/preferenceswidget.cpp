@@ -711,7 +711,6 @@ void PreferencesWidget::onUpdateInfo() {
                 Qt::UniqueConnection);
         connect(_versionWidget->updateButton(), &QPushButton::clicked, this, &PreferencesWidget::onStartInstaller,
                 Qt::UniqueConnection);
-        connect(_versionWidget->updateButton(), &QPushButton::clicked, qApp, &QApplication::quit, Qt::UniqueConnection);
 
         updateStatus(statusString, downloadCompleted);
     }
@@ -734,7 +733,16 @@ void PreferencesWidget::onUpdateInfo() {
 
 void PreferencesWidget::onStartInstaller() {
     try {
-        UpdaterClient::instance()->startInstaller();
+        switch (UpdaterClient::instance()->updateState()) {
+            case UpdateState::Ready:
+                UpdaterClient::instance()->startInstaller();
+                break;
+            case UpdateState::Skipped:
+                UpdaterClient::instance()->unskipUpdate();
+                break;
+            default:
+                break;
+        }
     } catch (std::exception const &) {
         // Do nothing
     }

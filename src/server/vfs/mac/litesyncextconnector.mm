@@ -1029,7 +1029,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     if (!setXAttrValue(path, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
         const std::wstring ioErrorMessage = Utility::s2ws(IoHelper::ioError2StdString(ioError));
         LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L"Error: " << ioErrorMessage.c_str());
+                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: " << ioErrorMessage.c_str());
         return false;
     }
 

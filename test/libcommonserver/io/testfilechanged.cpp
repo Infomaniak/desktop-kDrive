@@ -57,8 +57,8 @@ void TestIo::testFileChanged() {
     // An unmodified regular symbolic link on a file
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         FileStat fileStat;
@@ -84,8 +84,8 @@ void TestIo::testFileChanged() {
 
     // A file whose content has been modified
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -109,8 +109,8 @@ void TestIo::testFileChanged() {
 
     // A file whose permissions have been modified: no change detected
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -135,8 +135,8 @@ void TestIo::testFileChanged() {
 #if defined(__APPLE__) || defined(WIN32)
     // A file that is set to "hidden" on MacOSX or Windows: no change detected
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "visible_file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "visible_file.txt";
         { std::ofstream ofs(path); }
 
         FileStat fileStat;
@@ -179,8 +179,8 @@ void TestIo::testCheckIfIsHiddenFile() {
 #if defined(__APPLE__) || defined(WIN32)
     // A hidden file on MacOSX and Windows
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "hidden_file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "hidden_file.txt";
         { std::ofstream ofs(path); }
 
         _testObj->setFileHidden(path, true);
@@ -205,8 +205,8 @@ void TestIo::testCheckIfIsHiddenFile() {
 #if !defined(WIN32)
     // A hidden file on MacOSX and Linux
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / ".hidden_file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / ".hidden_file.txt";
         { std::ofstream ofs(path); }
         bool isHidden = false;
         IoError ioError = IoError::Unknown;
@@ -227,8 +227,8 @@ void TestIo::testCheckIfIsHiddenFile() {
 #if defined(__APPLE__) || defined(WIN32)
     // A non-hidden file within a hidden directory
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath hiddenSubdir = temporaryDirectory.path / "hidden";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath hiddenSubdir = temporaryDirectory.path() / "hidden";
         std::filesystem::create_directory(hiddenSubdir);
         const SyncPath path = hiddenSubdir / "visible_file.txt";
         {
@@ -276,8 +276,8 @@ void TestIo::testCheckIfIsHiddenFile() {
 #if !defined(WIN32)
     // A non-hidden file within a hidden directory
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath hiddenSubdir = temporaryDirectory.path / ".hidden";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath hiddenSubdir = temporaryDirectory.path() / ".hidden";
         std::filesystem::create_directory(hiddenSubdir);
         const SyncPath path = hiddenSubdir / "visible_file.txt";
         { std::ofstream ofs(path); }
@@ -326,7 +326,7 @@ void TestIo::testCheckIfIsHiddenFile() {
 #if !defined(WIN32)
     // A non-existing file is hidden if its name starts with a dot
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = ".non_existing_hidden_file.txt";
 
         bool isHidden = false;

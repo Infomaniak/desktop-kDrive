@@ -41,6 +41,8 @@ std::shared_ptr<SyncNodeCache> SyncNodeCache::instance() {
 SyncNodeCache::SyncNodeCache() {}
 
 ExitCode SyncNodeCache::syncNodes(int syncDbId, SyncNodeType type, std::unordered_set<NodeId> &syncNodes) {
+    const std::scoped_lock lock(_mutex);
+
     if (_syncNodesMap.find(syncDbId) == _syncNodesMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncNodes map for syncDbId=" << syncDbId);
         return ExitCode::DataError;
@@ -57,6 +59,8 @@ ExitCode SyncNodeCache::syncNodes(int syncDbId, SyncNodeType type, std::unordere
 }
 
 ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const std::unordered_set<NodeId> &syncNodes) {
+    const std::scoped_lock lock(_mutex);
+
     if (_syncDbMap.find(syncDbId) == _syncDbMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncDb map for syncDbId=" << syncDbId);
         return ExitCode::DataError;
@@ -85,6 +89,8 @@ ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const std::unord
 }
 
 ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) {
+    const std::scoped_lock lock(_mutex);
+
     _syncDbMap[syncDbId] = syncDb;
 
     // Load sync nodes for all sync node types
@@ -102,6 +108,8 @@ ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) 
 }
 
 ExitCode SyncNodeCache::clearCache(int syncDbId) {
+    const std::scoped_lock lock(_mutex);
+
     if (_syncDbMap.find(syncDbId) == _syncDbMap.end()) {
         LOG_WARN(Log::instance()->getLogger(), "Sync not found in syncDb map for syncDbId=" << syncDbId);
         return ExitCode::DataError;

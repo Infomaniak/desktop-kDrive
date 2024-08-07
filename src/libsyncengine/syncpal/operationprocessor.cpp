@@ -123,7 +123,7 @@ std::shared_ptr<Node> OperationProcessor::findCorrespondingNodeFromPath(std::sha
     }
 
     // Find corresponding ancestor node in the other tree
-    std::shared_ptr<UpdateTree> otherTree = _syncPal->getUpdateTree(otherSide(node->side()));
+    std::shared_ptr<UpdateTree> otherTree = _syncPal->updateTree(otherSide(node->side()));
     std::shared_ptr<Node> correspondingParentNode = otherTree->getNodeById(parentNodeId);
     if (correspondingParentNode == nullptr) {
         LOG_SYNCPAL_WARN(_logger, "No corresponding node in the other tree for nodeId = " << parentNodeId.c_str());
@@ -156,7 +156,7 @@ std::shared_ptr<Node> OperationProcessor::correspondingNodeDirect(std::shared_pt
         return nullptr;
     }
 
-    std::shared_ptr<UpdateTree> otherTree = _syncPal->getUpdateTree(otherSide(node->side()));
+    std::shared_ptr<UpdateTree> otherTree = _syncPal->updateTree(otherSide(node->side()));
     NodeId effectiveCorrespondingId = correspondingId;
 
     auto previousIdIt = otherTree->previousIdSet().find(correspondingId);

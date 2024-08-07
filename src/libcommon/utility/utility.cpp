@@ -18,8 +18,6 @@
 
 #include "utility.h"
 #include "config.h"
-#include "common/utility.h"
-#include "libcommonserver/utility/utility.h"
 #include "version.h"
 
 #include <system_error>
@@ -37,6 +35,8 @@
 #ifdef _WIN32
 #include <Poco/Util/WinRegistryKey.h>
 #endif
+
+#include <sentry.h>
 
 #ifdef ZLIB_FOUND
 #include <zlib.h>
@@ -265,7 +265,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
         res = false;
     }
 
-    if (!res){
+    if (!res) {
         sentry_value_t event = sentry_value_new_event();
         std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
         sentry_value_t exc = sentry_value_new_exception("CommonUtility::stringToAppStateValue", message.c_str());
@@ -274,7 +274,7 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
         sentry_capture_event(event);
     }
 
-    return true;
+    return res;
 }
 
 bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom, std::string &stringTo) {
@@ -292,8 +292,42 @@ bool CommonUtility::appStateValueToString(const AppStateValue &appStateValueFrom
     return true;
 }
 
-bool CommonUtility::compressFile(const QString &originalName, const QString &targetName) {
+std::string CommonUtility::appStateKeyToString(const AppStateKey &appStateValue) noexcept {
+    switch (appStateValue) {
+        case AppStateKey::LastServerSelfRestartDate:
+            return "LastServerSelfRestartDate";
+        case AppStateKey::LastClientSelfRestartDate:
+            return "LastClientSelfRestartDate";
+        case AppStateKey::LastSuccessfulLogUploadDate:
+            return "LastSuccessfulLogUploadDate";
+        case AppStateKey::LastLogUploadArchivePath:
+            return "LastLogUploadArchivePath";
+        case AppStateKey::LogUploadState:
+            return "LogUploadState";
+        case AppStateKey::LogUploadPercent:
+            return "LogUploadPercent";
+        case AppStateKey::Unknown:
+            return "Unknown";
+        default:
+            return "AppStateKey not found (" + std::to_string(static_cast<int>(appStateValue)) + ")";
+    }
+}
+
+bool CommonUtility::compressFile(const std::wstring &originalName, const std::wstring &targetName,
+                                 const std::function<bool(int)> &progressCallback) {
+    return compressFile(QString::fromStdWString(originalName), QString::fromStdWString(targetName), progressCallback);
+}
+
+bool CommonUtility::compressFile(const std::string &originalName, const std::string &targetName,
+                                 const std::function<bool(int)> &progressCallback) {
+    return compressFile(QString::fromStdString(originalName), QString::fromStdString(targetName), progressCallback);
+}
+
+bool CommonUtility::compressFile(const QString &originalName, const QString &targetName,
+                                 const std::function<bool(int)> &progressCallback) {
 #ifdef ZLIB_FOUND
+    const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
+
     QFile original(originalName);
     if (!original.open(QIODevice::ReadOnly)) return false;
 
@@ -303,12 +337,17 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
     }
 
     original.seek(0);
+    qint64 compressedSize = 0;
     while (!original.atEnd()) {
         auto data = original.read(1024 * 1024);
-        auto written = gzwrite(compressed, data.data(), data.size());
-        if (written != data.size()) {
+        if (auto written = gzwrite(compressed, data.data(), data.size()); written != data.size()) {
             gzclose(compressed);
             return false;
+        }
+        compressedSize += data.size();
+        if (!safeProgressCallback(static_cast<int>((100 * compressedSize) / original.size()))) {
+            gzclose(compressed);
+            return true;  // User cancelled
         }
     }
     gzclose(compressed);
@@ -479,7 +518,7 @@ QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
     return QString();
 }
 
-const SyncPath CommonUtility::getAppDir() {
+SyncPath CommonUtility::getAppDir() {
     const KDC::SyncPath dirPath(KDC::getAppDir_private());
     return dirPath;
 }
@@ -488,8 +527,8 @@ bool CommonUtility::hasDarkSystray() {
     return KDC::hasDarkSystray_private();
 }
 
-const SyncPath CommonUtility::getAppSupportDir() {
-    SyncPath dirPath(KDC::getAppSupportDir_private());
+SyncPath CommonUtility::getAppSupportDir() {
+    SyncPath dirPath(getAppSupportDir_private());
 
     dirPath.append(APPLICATION_NAME);
     std::error_code ec;
@@ -672,7 +711,7 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
         }
     }
 
-    return true;
+    return false;
 }
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();

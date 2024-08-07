@@ -29,6 +29,7 @@ class TestSyncDb : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSyncDb);
         CPPUNIT_TEST(testNodes);
         CPPUNIT_TEST(testSyncNodes);
+        CPPUNIT_TEST(testCorrespondingNodeId);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -38,6 +39,7 @@ class TestSyncDb : public CppUnit::TestFixture {
     protected:
         void testNodes();
         void testSyncNodes();
+        void testCorrespondingNodeId();
 
     private:
         SyncDb *_testObj;

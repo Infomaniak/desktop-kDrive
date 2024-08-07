@@ -45,7 +45,7 @@ class Snapshot : public SharedObject {
         NodeId itemId(const SyncPath &path);
         NodeId parentId(const NodeId &itemId);
         bool setParentId(const NodeId &itemId, const NodeId &newParentId);
-        bool path(const NodeId &itemId, SyncPath &path);
+        bool path(const NodeId &itemId, SyncPath &path) const noexcept;
         SyncName name(const NodeId &itemId);
         bool setName(const NodeId &itemId, const SyncName &newName);
         SyncTime createdAt(const NodeId &itemId);
@@ -72,9 +72,9 @@ class Snapshot : public SharedObject {
         bool isAncestor(const NodeId &itemId, const NodeId &ancestorItemId);
         bool isOrphan(const NodeId &itemId);
 
-        inline ReplicaSide side() const { return _side; }
+        [[nodiscard]] inline ReplicaSide side() const { return _side; }
 
-        inline NodeId rootFolderId() const { return _rootFolderId; }
+        [[nodiscard]] inline NodeId rootFolderId() const { return _rootFolderId; }
         inline void setRootFolderId(const NodeId &nodeId) { _rootFolderId = nodeId; }
 
         bool isEmpty();
@@ -90,9 +90,8 @@ class Snapshot : public SharedObject {
         NodeId _rootFolderId;
         std::unordered_map<NodeId, SnapshotItem> _items;  // key: id
         bool _isValid = false;
-        std::recursive_mutex _mutex;
+        mutable std::recursive_mutex _mutex;
 
-        friend class TestSnapshot;
 };
 
 }  // namespace KDC

@@ -46,42 +46,44 @@ bool DeleteJob::canRun() {
                   << L", local ID: " << Utility::s2ws(_localItemId).c_str()
                   << L", " << Utility::formatSyncPath(_absoluteLocalFilepath)
                   );
-        _exitCode = ExitCode::DataError;
-        _exitCause = ExitCause::Unknown;
+        _exitCode = ExitCodeDataError;
+        _exitCause = ExitCauseUnknown;
         return false;
     }
 
     // The item must be absent on local replica for the job to run
-    bool exists = false;
-    IoError ioError = IoError::Success;
-    if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _localItemId, exists, ioError)) {
+    bool existsWithSameId = false;
+    NodeId otherNodeId;
+    IoError ioError = IoErrorSuccess;
+    if (!IoHelper::checkIfPathExistsWithSameNodeId(_absoluteLocalFilepath, _localItemId, existsWithSameId, otherNodeId,
+                                                   ioError)) {
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
-        _exitCode = ExitCode::SystemError;
-        _exitCause = ExitCause::FileAccessError;
+        _exitCode = ExitCodeSystemError;
+        _exitCause = ExitCauseFileAccessError;
         return false;
     }
 
-    if (exists) {
+    if (existsWithSameId) {
         FileStat filestat;
-        ioError = IoError::Success;
+        ioError = IoErrorSuccess;
         if (!IoHelper::getFileStat(_absoluteLocalFilepath, &filestat, ioError)) {
             LOGW_WARN(_logger,
                       L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_absoluteLocalFilepath, ioError).c_str());
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
+            _exitCode = ExitCodeSystemError;
+            _exitCause = ExitCauseFileAccessError;
             return false;
         }
 
-        if (ioError == IoError::NoSuchFileOrDirectory) {
+        if (ioError == IoErrorNoSuchFileOrDirectory) {
             LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
-            _exitCode = ExitCode::DataError;
-            _exitCause = ExitCause::InvalidSnapshot;
+            _exitCode = ExitCodeDataError;
+            _exitCause = ExitCauseInvalidSnapshot;
             return false;
-        } else if (ioError == IoError::AccessDenied) {
+        } else if (ioError == IoErrorAccessDenied) {
             LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str());
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::NoSearchPermission;
+            _exitCode = ExitCodeSystemError;
+            _exitCause = ExitCauseNoSearchPermission;
             return false;
         }
 
@@ -92,9 +94,20 @@ bool DeleteJob::canRun() {
 
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
                                       << L" still exist on local replica. Aborting current sync and restart.");
-        _exitCode = ExitCode::DataError;  // Data error so the snapshots will be re-created
-        _exitCause = ExitCause::UnexpectedFileSystemEvent;
+        _exitCode = ExitCodeDataError;  // Data error so the snapshots will be re-created
+        _exitCause = ExitCauseUnexpectedFileSystemEvent;
         return false;
+    } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
+        LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
+                                      << L" exists on local replica with another ID (" << Utility::s2ws(_localItemId).c_str()
+                                      << L"/" << Utility::s2ws(otherNodeId).c_str() << L")");
+
+#ifdef NDEBUG
+        std::stringstream ss;
+        ss << "File exists with another ID (" << _localItemId << "/" << otherNodeId << ")";
+        sentry_capture_event(
+            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "IoHelper::checkIfPathExistsWithSameNodeId", ss.str().c_str()));
+#endif
     }
 
     return true;

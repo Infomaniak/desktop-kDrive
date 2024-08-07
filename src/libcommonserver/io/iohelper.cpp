@@ -56,24 +56,24 @@ std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)
 IoError IoHelper::stdError2ioError(int error) noexcept {
     switch (error) {
         case 0:
-            return IoError::Success;
+            return IoErrorSuccess;
         case static_cast<int>(std::errc::file_exists):
-            return IoError::FileExists;
+            return IoErrorFileExists;
         case static_cast<int>(std::errc::filename_too_long):
-            return IoError::FileNameTooLong;
+            return IoErrorFileNameTooLong;
         case static_cast<int>(std::errc::invalid_argument):
-            return IoError::InvalidArgument;
+            return IoErrorInvalidArgument;
         case static_cast<int>(std::errc::is_a_directory):
-            return IoError::IsADirectory;
+            return IoErrorIsADirectory;
         case static_cast<int>(std::errc::no_such_file_or_directory):
         case static_cast<int>(std::errc::not_a_directory):  // Occurs in particular when converting a bundle into a single file
-            return IoError::NoSuchFileOrDirectory;
+            return IoErrorNoSuchFileOrDirectory;
         case static_cast<int>(std::errc::no_space_on_device):
-            return IoError::DiskFull;
+            return IoErrorDiskFull;
         case static_cast<int>(std::errc::permission_denied):
-            return IoError::AccessDenied;
+            return IoErrorAccessDenied;
         default:
-            return IoError::Unknown;
+            return IoErrorUnknown;
     }
 }
 #endif
@@ -87,66 +87,66 @@ IoError IoHelper::stdError2ioError(const std::error_code &ec) noexcept {
 IoError IoHelper::posixError2ioError(int error) noexcept {
     switch (error) {
         case 0:
-            return IoError::Success;
+            return IoErrorSuccess;
         case EACCES:
-            return IoError::AccessDenied;
+            return IoErrorAccessDenied;
         case EEXIST:
-            return IoError::FileExists;
+            return IoErrorFileExists;
         case EISDIR:
-            return IoError::IsADirectory;
+            return IoErrorIsADirectory;
         case EINVAL:
-            return IoError::InvalidArgument;
+            return IoErrorInvalidArgument;
         case ENAMETOOLONG:
-            return IoError::FileNameTooLong;
+            return IoErrorFileNameTooLong;
 #ifdef _WIN32
         case ESRCH:
 #endif
         case ENOENT:
-            return IoError::NoSuchFileOrDirectory;
+            return IoErrorNoSuchFileOrDirectory;
 #ifdef __APPLE__
         case ENOATTR:
-            return IoError::AttrNotFound;
+            return IoErrorAttrNotFound;
 #endif
         case ENOSPC:
-            return IoError::DiskFull;
+            return IoErrorDiskFull;
         case ERANGE:
-            return IoError::ResultOutOfRange;
+            return IoErrorResultOutOfRange;
         default:
-            return IoError::Unknown;
+            return IoErrorUnknown;
     }
 }
 
 std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
     switch (ioError) {
-        case IoError::AccessDenied:
+        case IoErrorAccessDenied:
             return "Access denied";
-        case IoError::AttrNotFound:
+        case IoErrorAttrNotFound:
             return "Attribute not found";
-        case IoError::DiskFull:
+        case IoErrorDiskFull:
             return "Disk full";
-        case IoError::FileExists:
+        case IoErrorFileExists:
             return "File exists";
-        case IoError::FileNameTooLong:
+        case IoErrorFileNameTooLong:
             return "File name too long";
-        case IoError::InvalidArgument:
+        case IoErrorInvalidArgument:
             return "Invalid argument";
-        case IoError::IsADirectory:
+        case IoErrorIsADirectory:
             return "Is a directory";
-        case IoError::NoSuchFileOrDirectory:
+        case IoErrorNoSuchFileOrDirectory:
             return "No such file or directory";
-        case IoError::ResultOutOfRange:
+        case IoErrorResultOutOfRange:
             return "Result out of range";
-        case IoError::Success:
+        case IoErrorSuccess:
             return "Success";
-        case IoError::InvalidDirectoryIterator:
+        case IoErrorInvalidDirectoryIterator:
             return "Invalid directory iterator";
         default:
             return "Unknown error";
     }
 }
 
-bool IoHelper::_isExpectedError(IoError ioError) noexcept {
-    return (ioError == IoError::NoSuchFileOrDirectory) || (ioError == IoError::AccessDenied);
+bool IoHelper::isExpectedError(IoError ioError) noexcept {
+    return (ioError == IoErrorNoSuchFileOrDirectory) || (ioError == IoErrorAccessDenied);
 }
 //! Set the target type of a link item.
 /*!
@@ -156,7 +156,7 @@ bool IoHelper::_isExpectedError(IoError ioError) noexcept {
 */
 bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
     if (itemType.targetPath.empty()) {
-        itemType.targetType = NodeType::Unknown;
+        itemType.targetType = NodeTypeUnknown;
         return true;
     }
 
@@ -164,8 +164,8 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
     const bool isDir = _isDirectory(itemType.targetPath, ec);
     IoError ioError = stdError2ioError(ec);
 
-    if (ioError != IoError::Success) {
-        const bool expected = _isExpectedError(ioError);
+    if (ioError != IoErrorSuccess) {
+        const bool expected = isExpectedError(ioError);
         if (!expected) {
             itemType.ioError = ioError;
             LOGW_WARN(logger(), L"Failed to check if the item is a directory: "
@@ -174,7 +174,7 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
         return expected;
     }
 
-    itemType.targetType = isDir ? NodeType::Directory : NodeType::File;
+    itemType.targetType = isDir ? NodeTypeDirectory : NodeTypeFile;
 
     return true;
 }
@@ -200,13 +200,13 @@ bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) 
 }
 
 bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+    ioError = IoErrorSuccess;
 
     struct stat sb;
 
     if (lstat(path.string().c_str(), &sb) < 0) {
         ioError = posixError2ioError(errno);
-        return _isExpectedError(ioError);
+        return isExpectedError(ioError);
     }
 
 #if defined(__APPLE__)
@@ -233,19 +233,19 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
         struct stat sbTarget;
         if (stat(path.string().c_str(), &sbTarget) < 0) {
             // Cannot access target => undetermined
-            buf->nodeType = NodeType::Unknown;
+            buf->nodeType = NodeTypeUnknown;
         } else {
-            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeType::Directory : NodeType::File;
+            buf->nodeType = S_ISDIR(sbTarget.st_mode) ? NodeTypeDirectory : NodeTypeFile;
         }
     } else {
-        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeType::Directory : NodeType::File;
+        buf->nodeType = S_ISDIR(sb.st_mode) ? NodeTypeDirectory : NodeTypeFile;
     }
 
     return true;
 }
 
 bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+    ioError = IoErrorSuccess;
 
     isHidden = path.filename().string()[0] == '.';
     if (isHidden) {
@@ -267,8 +267,8 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
         return false;
     }
 
-    if (ioError != IoError::Success) {
-        return _isExpectedError(ioError);
+    if (ioError != IoErrorSuccess) {
+        return isExpectedError(ioError);
     }
 
     isHidden = filestat.isHidden;
@@ -285,10 +285,10 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
     itemType.ioError = stdError2ioError(ec);
     const bool fsSupportsSymlinks =
-        itemType.ioError != IoError::InvalidArgument;  // If true, we assume that the file system in use does support symlinks.
+        itemType.ioError != IoErrorInvalidArgument;  // If true, we assume that the file system in use does support symlinks.
 
-    if (!isSymlink && itemType.ioError != IoError::Success && fsSupportsSymlinks) {
-        if (_isExpectedError(itemType.ioError)) {
+    if (!isSymlink && itemType.ioError != IoErrorSuccess && fsSupportsSymlinks) {
+        if (isExpectedError(itemType.ioError)) {
             return true;
         }
         LOGW_WARN(logger(), L"Failed to check if the item is a symlink: " << Utility::formatStdError(path, ec).c_str());
@@ -298,16 +298,16 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     if (isSymlink) {
         itemType.targetPath = _readSymlink(path, ec);
         itemType.ioError = IoHelper::stdError2ioError(ec);
-        if (itemType.ioError != IoError::Success) {
-            const bool success = _isExpectedError(itemType.ioError);
+        if (itemType.ioError != IoErrorSuccess) {
+            const bool success = isExpectedError(itemType.ioError);
             if (!success) {
                 LOGW_WARN(logger(), L"Failed to read symlink: " << Utility::formatStdError(path, ec).c_str());
             }
             return success;
         }
 
-        itemType.nodeType = NodeType::File;
-        itemType.linkType = LinkType::Symlink;
+        itemType.nodeType = NodeTypeFile;
+        itemType.linkType = LinkTypeSymlink;
 
         // Get target type
         FileStat filestat;
@@ -316,8 +316,8 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
             return false;
         }
 
-        if (itemType.ioError != IoError::Success) {
-            return _isExpectedError(itemType.ioError);
+        if (itemType.ioError != IoErrorSuccess) {
+            return isExpectedError(itemType.ioError);
         }
 
         itemType.targetType = filestat.nodeType;
@@ -333,13 +333,13 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         return false;
     }
 
-    if (itemType.ioError != IoError::Success) {
-        return _isExpectedError(itemType.ioError);
+    if (itemType.ioError != IoErrorSuccess) {
+        return isExpectedError(itemType.ioError);
     }
 
     if (isAlias) {
         // !!! isAlias is true for a symlink and for a Finder alias !!!
-        IoError aliasReadError = IoError::Success;
+        IoError aliasReadError = IoErrorSuccess;
         if (!_readAlias(path, itemType.targetPath, aliasReadError)) {
             LOGW_WARN(logger(), L"Failed to read an item first identified as an alias: "
                                     << Utility::formatIoError(path, itemType.ioError).c_str());
@@ -348,11 +348,11 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
             return false;
         }
 
-        itemType.nodeType = NodeType::File;
-        itemType.linkType = LinkType::FinderAlias;
+        itemType.nodeType = NodeTypeFile;
+        itemType.linkType = LinkTypeFinderAlias;
 
-        if (itemType.ioError != IoError::Success) {
-            return _isExpectedError(itemType.ioError);
+        if (itemType.ioError != IoErrorSuccess) {
+            return isExpectedError(itemType.ioError);
         }
 
         return _setTargetType(itemType);
@@ -370,14 +370,14 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
             return false;
         }
 
-        if (itemType.ioError != IoError::Success) {
-            return _isExpectedError(itemType.ioError);
+        if (itemType.ioError != IoErrorSuccess) {
+            return isExpectedError(itemType.ioError);
         }
 
         if (isJunction) {
-            itemType.nodeType = NodeType::File;
-            itemType.linkType = LinkType::Junction;
-            itemType.targetType = NodeType::Directory;
+            itemType.nodeType = NodeTypeFile;
+            itemType.linkType = LinkTypeJunction;
+            itemType.targetType = NodeTypeDirectory;
 
             std::string data;
             if (!IoHelper::readJunction(path, data, itemType.targetPath, itemType.ioError)) {
@@ -394,52 +394,60 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // The remaining case: a file or a directory which is not a link
     const bool isDir = _isDirectory(path, ec);
     itemType.ioError = stdError2ioError(ec);
-    if (itemType.ioError != IoError::Success) {
-        const bool success = _isExpectedError(itemType.ioError);
+    if (itemType.ioError != IoErrorSuccess) {
+        const bool success = isExpectedError(itemType.ioError);
         if (!success) {
             LOGW_WARN(logger(), L"Failed to check that item is a directory: " << Utility::formatStdError(path, ec).c_str());
         }
         return success;
     }
 
-    itemType.nodeType = isDir ? NodeType::Directory : NodeType::File;
+    itemType.nodeType = isDir ? NodeTypeDirectory : NodeTypeFile;
 
     return true;
 }
 
 bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError) {
+    size = 0;
+    ioError = IoErrorUnknown;
+
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
     if (!success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path).c_str());
         return false;
     }
 
-    assert(ioError != IoError::Unknown);
+    if (ioError != IoErrorSuccess) {
+        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+        return isExpectedError(ioError);
+    }
 
-    if (itemType.nodeType == NodeType::Directory) {
-        ioError = IoError::IsADirectory;
+    if (itemType.nodeType == NodeTypeDirectory) {
+        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
+        ioError = IoErrorIsADirectory;
         return false;
     }
 
-    const bool isSymlink = itemType.linkType == LinkType::Symlink;
+    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
     if (isSymlink) {
+        // The size of a symlink file is the target path length
         size = itemType.targetPath.native().length();
     } else {
-        if (itemType.nodeType != NodeType::File) {
-            assert(ioError != IoError::Success);
-            return ioError != IoError::Unknown;
+        if (itemType.nodeType != NodeTypeFile) {
+            LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
+            return false;
         }
 
         std::error_code ec;
         size = _fileSize(path, ec);  // The std::filesystem implementation reports the correct size for a MacOSX alias.
         ioError = stdError2ioError(ec);
-        if (ioError != IoError::Unknown) {
-            return true;
-        }
 
-        LOGW_WARN(logger(), L"Failed to get file size: " << Utility::formatStdError(path, ec).c_str());
-        return false;
+        if (ioError != IoErrorSuccess) {
+            LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+            return isExpectedError(ioError);
+        }
     }
 
     return true;
@@ -450,56 +458,85 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
     ItemType itemType;
     const bool success = getItemType(path, itemType);
     ioError = itemType.ioError;
-    if (!success || ioError != IoError::Success) {
-        return _isExpectedError(ioError);
+    if (!success) {
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType for " << Utility::formatSyncPath(path).c_str());
+        return false;
     }
 
-    assert(ioError != IoError::Unknown);
+    if (ioError != IoErrorSuccess) {
+        LOGW_DEBUG(logger(), L"Failed to get item type for " << Utility::formatSyncPath(path).c_str());
+        return isExpectedError(ioError);
+    }
 
-    if (itemType.nodeType != NodeType::Directory) {
-        ioError = IoError::IsAFile;
+    if (itemType.nodeType != NodeTypeDirectory) {
+        LOGW_WARN(logger(), L"Logic error for " << Utility::formatSyncPath(path).c_str());
+        ioError = IoErrorIsAFile;
         return false;
     }
 
     IoHelper::DirectoryIterator dir;
     IoHelper::getDirectoryIterator(path, true, ioError, dir);
-    if (ioError != IoError::Success) {
-        LOGW_WARN(logger(), L"Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
-        return _isExpectedError(ioError);
+    if (ioError != IoErrorSuccess) {
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError).c_str());
+        return isExpectedError(ioError);
     }
 
     DirectoryEntry entry;
-    ioError = IoError::Success;
+    ioError = IoErrorSuccess;
     bool endOfDirectory = false;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         if (entry.is_directory()) {
             if (maxDepth == 0) {
-                LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories: "
+                LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
                                         << Utility::formatSyncPath(path).c_str());
-                ioError = IoError::MaxDepthExceeded;
-                return _isExpectedError(ioError);
+                ioError = IoErrorMaxDepthExceeded;
+                return isExpectedError(ioError);
             }
             uint64_t entrySize = 0;
             if (!getDirectorySize(entry.path(), entrySize, ioError, maxDepth - 1)) {
+                LOGW_WARN(logger(), L"Error in IoHelper::getDirectorySize for " << Utility::formatSyncPath(entry.path()).c_str());
                 return false;
             }
+
+            if (ioError != IoErrorSuccess) {
+                if (isExpectedError(ioError)) {
+                    // Ignore the directory
+                    LOGW_DEBUG(logger(),
+                               L"Failed to get directory size, ignoring " << Utility::formatSyncPath(entry.path()).c_str());
+                    continue;
+                } else {
+                    LOGW_WARN(logger(), L"Failed to get directory size for " << Utility::formatSyncPath(entry.path()).c_str());
+                    return false;
+                }
+            }
+
             size += entrySize;
             continue;
         }
-        std::error_code ec;
-        uint64_t entrySize = _fileSize(entry.path(), ec);
-        if (!ec) {
-            size += entrySize;
-        } else {
-            LOGW_WARN(logger(), L"Error in file_size: " << Utility::formatStdError(entry.path(), ec).c_str());
-            ioError = stdError2ioError(ec);
-            return _isExpectedError(ioError);
+
+        uint64_t entrySize = 0;
+        if (!getFileSize(entry.path(), entrySize, ioError)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getFileSize for " << Utility::formatSyncPath(entry.path()).c_str());
+            return false;
         }
+
+        if (ioError != IoErrorSuccess) {
+            if (isExpectedError(ioError)) {
+                // Ignore the file
+                LOGW_DEBUG(logger(), L"Failed to get file size, ignoring " << Utility::formatSyncPath(entry.path()).c_str());
+                continue;
+            } else {
+                LOGW_WARN(logger(), L"Failed to get file size for " << Utility::formatSyncPath(entry.path()).c_str());
+                return false;
+            }
+        }
+
+        size += entrySize;
     }
 
     if (!endOfDirectory) {
-        LOGW_WARN(logger(), L"Error in DirectoryIterator: " << Utility::formatIoError(path, ioError).c_str());
-        return _isExpectedError(ioError);
+        LOGW_WARN(logger(), L"Error in DirectoryIterator for " << Utility::formatIoError(path, ioError).c_str());
+        return isExpectedError(ioError);
     }
 
     return true;
@@ -510,10 +547,24 @@ bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noex
     directoryPath = _tempDirectoryPath(ec);  // The std::filesystem implementation returns an empty path on error.
     ioError = stdError2ioError(ec);
 
-    return ioError == IoError::Success;
+    return ioError == IoError::IoErrorSuccess;
 }
 
 bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
+    //!\ Don't use IoHelper::logger() here, as Log::_instance may not be initialized yet. /!\_
+    try {
+        if (directoryPath = Log::instance()->getLogFilePath().parent_path(); !directoryPath.empty()) {
+            return true;
+        } else {
+            throw std::runtime_error("Log directory path is empty.");
+        }
+    } catch (const std::exception &e) {
+        if (Log::isSet()) {
+            LOGW_WARN(logger(), L"Error in IoHelper::logDirectoryPath: " << e.what());
+        }
+        // We can't log the error, so we just generate the path for the logger to initialize.
+    }
+
     if (!tempDirectoryPath(directoryPath, ioError)) {
         return false;
     }
@@ -522,13 +573,13 @@ bool IoHelper::logDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexc
     const SyncName logDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName(LOGDIR_SUFFIX));
     directoryPath /= logDirName;
 
-    return ioError == IoError::Success;
+    return ioError == IoError::IoErrorSuccess;
 }
 
 bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     SyncPath tempDir;
     tempDirectoryPath(tempDir, ioError);
-    if (ioError != IoError::Success) {
+    if (ioError != IoErrorSuccess) {
         return false;
     }
     const SyncName logArchiverDirName = SyncName(Str2SyncName(APPLICATION_NAME)) + SyncName(Str2SyncName("-logarchiverdir/"));
@@ -539,7 +590,7 @@ bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioErro
 
 bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
     exists = false;
-    ioError = IoError::Success;
+    ioError = IoErrorSuccess;
 
     ItemType itemType;
     const bool getItemTypeSuccess = getItemType(path, itemType);
@@ -550,42 +601,48 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
         return false;
     }
 
-    if (itemType.linkType == LinkType::None && itemType.ioError != IoError::Success) {
-        exists = ioError != IoError::NoSuchFileOrDirectory;
-        return _isExpectedError(ioError);
+    if (itemType.linkType == LinkTypeNone && itemType.ioError != IoErrorSuccess) {
+        exists = ioError != IoErrorNoSuchFileOrDirectory;
+        if (ioError == IoErrorNoSuchFileOrDirectory) {
+            ioError = IoErrorSuccess;
+            return true;
+        }
+        return isExpectedError(ioError);
     }
 
-    ioError = IoError::Success;
+    ioError = IoErrorSuccess;
     exists = true;
 
     return true;
 }
 
-bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &exists,
-                                               IoError &ioError) noexcept {
-    exists = false;
-    ioError = IoError::Success;
+bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
+                                               NodeId &otherNodeId, IoError &ioError) noexcept {
+    existsWithSameId = false;
+    otherNodeId.clear();
+    ioError = IoErrorSuccess;
 
+    bool exists = false;
     if (!checkIfPathExists(path, exists, ioError)) {
         return false;
     }
 
     if (exists) {
         // Check nodeId
-        NodeId tmpNodeId;
-        if (!getNodeId(path, tmpNodeId)) {
-            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for path=" << Path2WStr(path).c_str());
+        if (!getNodeId(path, otherNodeId)) {
+            LOGW_WARN(logger(), L"Error in IoHelper::getNodeId for " << Utility::formatSyncPath(path).c_str());
         }
-        exists = (nodeId == tmpNodeId);
+
+        existsWithSameId = (nodeId == otherNodeId);
     }
 
     return true;
 }
 
 void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
-    IoError ioError = IoError::Success;
+    IoError ioError = IoErrorSuccess;
     if (!getFileStat(path, buf, ioError)) {
-        exists = (ioError != IoError::NoSuchFileOrDirectory);
+        exists = (ioError != IoErrorNoSuchFileOrDirectory);
         std::string message = ioError2StdString(ioError);
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
@@ -602,8 +659,8 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, ti
         return false;
     }
 
-    if (ioError != IoError::Success) {
-        return _isExpectedError(ioError);
+    if (ioError != IoErrorSuccess) {
+        return isExpectedError(ioError);
     }
 
     changed = (previousSize != fileStat.size) || (previousMtime != fileStat.modtime);
@@ -612,7 +669,7 @@ bool IoHelper::checkIfFileChanged(const SyncPath &path, int64_t previousSize, ti
 }
 
 bool IoHelper::checkIfIsHiddenFile(const SyncPath &path, bool checkAncestors, bool &isHidden, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+    ioError = IoErrorSuccess;
     isHidden = false;
 
     if (!checkAncestors) {
@@ -654,7 +711,7 @@ bool IoHelper::checkIfIsDirectory(const SyncPath &path, bool &isDirectory, IoErr
         return false;
     }
 
-    isDirectory = itemType.nodeType == NodeType::Directory;
+    isDirectory = itemType.nodeType == NodeTypeDirectory;
 
     return true;
 }
@@ -664,10 +721,10 @@ bool IoHelper::createDirectory(const SyncPath &path, IoError &ioError) noexcept 
     const bool creationSuccess = std::filesystem::create_directory(path, ec);
     ioError = stdError2ioError(ec);
 
-    if (!creationSuccess && ioError == IoError::Success) {
+    if (!creationSuccess && ioError == IoErrorSuccess) {
         // The directory wasn't created because it already existed,
         // see https://en.cppreference.com/w/cpp/filesystem/create_directory
-        ioError = IoError::DirectoryExists;
+        ioError = IoErrorDirectoryExists;
     }
 
     return creationSuccess;
@@ -677,7 +734,7 @@ bool IoHelper::deleteDirectory(const SyncPath &path, IoError &ioError) noexcept 
     std::error_code ec;
     std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
-    return ioError == IoError::Success;
+    return ioError == IoErrorSuccess;
 }
 
 bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
@@ -685,26 +742,26 @@ bool IoHelper::copyFileOrDirectory(const SyncPath &sourcePath, const SyncPath &d
     std::filesystem::copy(sourcePath, destinationPath, std::filesystem::copy_options::recursive, ec);
     ioError = IoHelper::stdError2ioError(ec);
 
-    return ioError == IoError::Success;
+    return ioError == IoErrorSuccess;
 }
 
 bool IoHelper::getDirectoryIterator(const SyncPath &path, bool recursive, IoError &ioError,
                                     DirectoryIterator &iterator) noexcept {
     iterator = DirectoryIterator(path, recursive, ioError);
-    return ioError == IoError::Success;
+    return ioError == IoErrorSuccess;
 }
 
 bool IoHelper::getDirectoryEntry(const SyncPath &path, IoError &ioError, DirectoryEntry &entry) noexcept {
     std::error_code ec;
     entry = std::filesystem::directory_entry(path, ec);
     ioError = stdError2ioError(ec);
-    return ioError == IoError::Success;
+    return ioError == IoErrorSuccess;
 }
 
 bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, bool isFolder, IoError &ioError) noexcept {
     if (targetPath == path) {
         LOGW_DEBUG(logger(), L"Cannot create symlink on itself: " << Utility::formatSyncPath(path).c_str());
-        ioError = IoError::InvalidArgument;
+        ioError = IoErrorInvalidArgument;
         return false;
     }
 
@@ -721,7 +778,7 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 
     ioError = stdError2ioError(ec);
 
-    return ioError == IoError::Success;
+    return ioError == IoErrorSuccess;
 }
 
 // DirectoryIterator
@@ -741,18 +798,18 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     endOfDirectory = false;
 
     if (_invalid) {
-        ioError = IoError::InvalidDirectoryIterator;
+        ioError = IoErrorInvalidDirectoryIterator;
         return true;
     }
 
     if (_directoryPath == "") {
-        ioError = IoError::InvalidArgument;
+        ioError = IoErrorInvalidArgument;
         return false;
     }
 
     if (_dirIterator == std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
         endOfDirectory = true;
-        ioError = IoError::Success;
+        ioError = IoErrorSuccess;
         return true;
     }
 
@@ -764,7 +821,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         _dirIterator.increment(ec);
         ioError = IoHelper::stdError2ioError(ec);
 
-        if (ioError != IoError::Success) {
+        if (ioError != IoErrorSuccess) {
             _invalid = true;
             return true;
         }
@@ -776,7 +833,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
     if (_dirIterator != std::filesystem::end(std::filesystem::recursive_directory_iterator(_directoryPath, ec))) {
         ioError = IoHelper::stdError2ioError(ec);
 
-        if (ioError != IoError::Success) {
+        if (ioError != IoErrorSuccess) {
             _invalid = true;
             return true;
         }
@@ -797,7 +854,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         nextEntry = *_dirIterator;
         return true;
     } else {
-        ioError = IoError::Success;
+        ioError = IoErrorSuccess;
         endOfDirectory = true;
         return true;
     }
@@ -815,7 +872,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
 #endif
 
 bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept {
-    ioError = IoError::Success;
+    ioError = IoErrorSuccess;
     std::filesystem::perms perms = std::filesystem::perms::none;
     if (read) {
         perms |= std::filesystem::perms::owner_read;
@@ -831,7 +888,7 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
     std::filesystem::permissions(path, perms, ec);
     if (ec) {
         ioError = posixError2ioError(ec.value());
-        return _isExpectedError(ioError);
+        return isExpectedError(ioError);
     }
 
     return true;

@@ -53,8 +53,8 @@ void TestIo::testGetXAttrValue() {
     // A regular symbolic link on a file without any extended attributes
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
@@ -87,8 +87,8 @@ void TestIo::testGetXAttrValue() {
 
     // A regular file missing owner read permission and without extended attribute: access denied expected
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -106,8 +106,8 @@ void TestIo::testGetXAttrValue() {
 
     // An existing file with an extended attribute
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -125,8 +125,8 @@ void TestIo::testGetXAttrValue() {
 
     // An existing directory with an extended attribute
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path;
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "super-dry", ioError));
@@ -141,8 +141,8 @@ void TestIo::testGetXAttrValue() {
     // A regular symbolic link on a file, with an extended attribute set for the link
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
@@ -162,8 +162,8 @@ void TestIo::testGetXAttrValue() {
     // A regular symbolic link on a folder, with an extended attribute for the link
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
@@ -182,9 +182,9 @@ void TestIo::testGetXAttrValue() {
 
     // A dangling symbolic link on a file, with an extended attribute set for the link
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
@@ -199,9 +199,9 @@ void TestIo::testGetXAttrValue() {
 
     // A MacOSX Finder alias on a regular file, with an extended attribute set for the alias.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -222,8 +222,8 @@ void TestIo::testGetXAttrValue() {
 
     // An existing file with an extended attribute
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -241,8 +241,8 @@ void TestIo::testGetXAttrValue() {
 
     // An existing directory with an extended attribute
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path;
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, "status", "super-dry", ioError));
@@ -257,8 +257,8 @@ void TestIo::testGetXAttrValue() {
     // A regular symbolic link on a file, with an extended attribute set for the link
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
@@ -278,8 +278,8 @@ void TestIo::testGetXAttrValue() {
     // A regular symbolic link on a folder, with an extended attribute for the link
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
@@ -298,9 +298,9 @@ void TestIo::testGetXAttrValue() {
 
     // A dangling symbolic link on a file, with an extended attribute set for the link
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
@@ -315,9 +315,9 @@ void TestIo::testGetXAttrValue() {
 
     // A MacOSX Finder alias on a regular file, with an extended attribute set for the alias.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
@@ -377,8 +377,8 @@ void TestIo::testGetXAttrValue() {
     // A regular symbolic link on a file without any extended attributes
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
@@ -411,8 +411,8 @@ void TestIo::testGetXAttrValue() {
 
     // A regular file missing owner read permission and without extended attribute: no error expected
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
         { std::ofstream ofs(path); }
         std::filesystem::permissions(path, std::filesystem::perms::owner_read, std::filesystem::perm_options::remove);
 
@@ -427,8 +427,8 @@ void TestIo::testGetXAttrValue() {
 
     // An existing file with an extended attribute
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Unknown;
@@ -444,8 +444,8 @@ void TestIo::testGetXAttrValue() {
 
     // An existing directory with an extended attribute
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path;
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path();
 
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->setXAttrValue(path, FILE_ATTRIBUTE_OFFLINE, ioError));
@@ -460,8 +460,8 @@ void TestIo::testGetXAttrValue() {
     // A regular symbolic link on a file, with an extended attribute set for the link
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Success;
@@ -485,8 +485,8 @@ void TestIo::testGetXAttrValue() {
     // A regular symbolic link on a folder, with an extended attribute for the link
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Unknown;
@@ -510,9 +510,9 @@ void TestIo::testGetXAttrValue() {
 
     // A dangling symbolic link on a file, with an extended attribute set for the link
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         IoError ioError = IoError::Unknown;

@@ -81,6 +81,7 @@ ClientGui::ClientGui(AppClient *parent) : QObject(), _app(parent) {
     connect(_app, &AppClient::fixConflictingFilesCompleted, this, &ClientGui::onFixConflictingFilesCompleted);
 
     connect(this, &ClientGui::refreshStatusNeeded, this, &ClientGui::onRefreshStatusNeeded);
+    connect(this, &ClientGui::appVersionLocked, this, &ClientGui::onAppVersionLocked);
 
     connect(&_refreshErrorListTimer, &QTimer::timeout, this, &ClientGui::onRefreshErrorList);
 
@@ -302,6 +303,7 @@ void ClientGui::showSynthesisDialog() {
             _synthesisPopover->setPosition(trayIconRect);
             raiseDialog(_synthesisPopover.get());
         }
+        _synthesisPopover->onUpdateAvailabalityChange();
     }
 }
 
@@ -434,6 +436,7 @@ void ClientGui::setupSynthesisPopover() {
     connect(this, &ClientGui::itemCompleted, _synthesisPopover.get(), &SynthesisPopover::onItemCompleted);
     connect(this, &ClientGui::errorAdded, _synthesisPopover.get(), &SynthesisPopover::onRefreshErrorList);
     connect(this, &ClientGui::errorsCleared, _synthesisPopover.get(), &SynthesisPopover::onRefreshErrorList);
+    connect(this, &ClientGui::appVersionLocked, _synthesisPopover.get(), &SynthesisPopover::onAppVersionLocked);
     connect(this, &ClientGui::refreshStatusNeeded, _synthesisPopover.get(), &SynthesisPopover::onRefreshStatusNeeded);
 
     // This is an old compound flag that people might still depend on
@@ -504,7 +507,7 @@ void ClientGui::updateSystrayNeeded() {
     return;
 }
 
-void ClientGui::resetSystray() {
+void ClientGui::resetSystray(bool currentVersionLocked) {
     _tray.reset(new Systray());
     _tray->setParent(this);
 
@@ -515,19 +518,17 @@ void ClientGui::resetSystray() {
     if (_tray->geometry().width() == 0) {
         _tray->setContextMenu(new QMenu());
 #ifdef Q_OS_LINUX
-        QString type;
-        QString version;
-        if (KDC::GuiUtility::getLinuxDesktopType(type, version)) {
-            if (type.contains("GNOME") && version.toDouble() >= 40) {
-                _actionSynthesis =
-                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
+        if (osRequireMenuTray()) {
+            _actionSynthesis =
+                _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/information.svg"), QString());
+            if (!currentVersionLocked) {
                 _actionPreferences =
                     _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/parameters.svg"), QString());
-                _tray->contextMenu()->addSeparator();
-                _actionQuit =
-                    _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
             }
+            _tray->contextMenu()->addSeparator();
+            _actionQuit = _tray->contextMenu()->addAction(QIcon(":/client/resources/icons/actions/error-sync.svg"), QString());
         }
+
 #endif
     }
 
@@ -535,11 +536,13 @@ void ClientGui::resetSystray() {
         connect(_tray.get(), &QSystemTrayIcon::activated, this, &ClientGui::onTrayClicked);
     }
 #ifdef Q_OS_LINUX
-    else if (_actionSynthesis && _actionPreferences && _actionQuit) {
+    else {
         connect(_tray->contextMenu(), &QMenu::aboutToShow, this, &ClientGui::retranslateUi);
-        connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
-        connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
-        connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
+
+        if (_actionSynthesis) connect(_actionSynthesis, &QAction::triggered, this, &ClientGui::onActionSynthesisTriggered);
+        if (_actionQuit) connect(_actionQuit, &QAction::triggered, _app, &AppClient::onQuit);
+        if (_actionPreferences && !currentVersionLocked)
+            connect(_actionPreferences, &QAction::triggered, this, &ClientGui::onActionPreferencesTriggered);
     }
 #endif
 
@@ -893,6 +896,7 @@ void ClientGui::onRefreshErrorList() {
         emit refreshStatusNeeded();
     }
 
+    bool versionLocked = false;
     // Server level errors.
     if (_driveWithNewErrorSet.contains(0)) {
         _errorInfoMap[0].clear();
@@ -900,8 +904,12 @@ void ClientGui::onRefreshErrorList() {
             return;
         }
 
-        _generalErrorsCounter = _errorInfoMap[0].count();
+        _generalErrorsCounter = (int)_errorInfoMap[0].count();
         emit errorAdded(0);
+        for (const auto &errorInfo : _errorInfoMap[0]) {
+            versionLocked = versionLocked || errorInfo.exitCode() == ExitCodeUpdateRequired;
+        }
+
         _driveWithNewErrorSet.remove(0);
     }
 
@@ -926,6 +934,8 @@ void ClientGui::onRefreshErrorList() {
         int unresolvedErrorsCount = 0;
         int autoresolvedErrorsCount = 0;
         for (const auto &errorInfo : _errorInfoMap[driveDbId]) {
+            versionLocked = versionLocked || errorInfo.exitCode() == ExitCodeUpdateRequired;
+
             if (errorInfo.autoResolved()) {
                 ++autoresolvedErrorsCount;
             } else {
@@ -938,6 +948,28 @@ void ClientGui::onRefreshErrorList() {
 
         it = _driveWithNewErrorSet.erase(it);
     }
+
+    if (versionLocked) emit appVersionLocked(versionLocked);
+}
+
+void ClientGui::closeAllExcept(const QWidget *exceptWidget) {
+    std::vector<QDialog *> dialogs;
+    dialogs.push_back(_synthesisPopover.get());
+    dialogs.push_back(_parametersDialog.get());
+    dialogs.push_back(_addDriveWizard.get());
+    dialogs.push_back(_loginDialog.get());
+
+    for (auto &dialog : dialogs) {
+        if (dialog && exceptWidget != dialog) {
+            dialog->hide();
+        }
+    }
+}
+
+void ClientGui::onAppVersionLocked(bool currentVersionLocked) {
+#ifdef Q_OS_LINUX
+    resetSystray(currentVersionLocked);
+#endif
 }
 
 void ClientGui::onUserAdded(const UserInfo &userInfo) {
@@ -1317,11 +1349,9 @@ void ClientGui::onRefreshStatusNeeded() {
 
 void ClientGui::retranslateUi() {
 #ifdef Q_OS_LINUX
-    if (_actionSynthesis && _actionPreferences && _actionQuit) {
-        _actionSynthesis->setText(QString(tr("Synthesis")));
-        _actionPreferences->setText(QString(tr("Preferences")));
-        _actionQuit->setText(QString(tr("Quit")));
-    }
+    if (_actionSynthesis) _actionSynthesis->setText(QString(tr("Synthesis")));
+    if (_actionPreferences) _actionPreferences->setText(QString(tr("Preferences")));
+    if (_actionQuit) _actionQuit->setText(QString(tr("Quit")));
 #endif
 }
 
@@ -1359,6 +1389,18 @@ void ClientGui::onShutdown() {
 
     // those do delete on close
     if (!_parametersDialog.isNull()) _parametersDialog->close();
+}
+
+bool ClientGui::osRequireMenuTray() const {
+#ifdef Q_OS_LINUX
+    QString type;
+    if (QString version; KDC::GuiUtility::getLinuxDesktopType(type, version)) {
+        if (type.contains("GNOME") && version.toDouble() >= 40) {
+            return true;
+        }
+    }
+#endif
+    return false;
 }
 
 void ClientGui::raiseDialog(QWidget *raiseWidget) {

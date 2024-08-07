@@ -45,8 +45,8 @@ void TestIo::testCheckIfFileIsDehydrated() {
 #if defined(__APPLE__)
     // A dehydrated file
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "dehydrated_file";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "dehydrated_file";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -61,8 +61,8 @@ void TestIo::testCheckIfFileIsDehydrated() {
     }
     // A hydrated file
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "hydrated_file";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "hydrated_file";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -80,8 +80,8 @@ void TestIo::testCheckIfFileIsDehydrated() {
 #if defined(_WIN32)
     // A dehydrated file
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "dehydrated_file";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "dehydrated_file";
         { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Success;
@@ -93,8 +93,8 @@ void TestIo::testCheckIfFileIsDehydrated() {
     }
     // A hydrated file
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "hydrated_file";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "hydrated_file";
         { std::ofstream ofs(path); }
 
         IoError ioError = IoError::Success;
@@ -106,8 +106,8 @@ void TestIo::testCheckIfFileIsDehydrated() {
 #endif
     // A non-existing file
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "non_existing_file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "non_existing_file.txt";
 
         IoError ioError = IoError::Success;
         bool isDehydrated = true;
@@ -122,8 +122,8 @@ void TestIo::testCheckIfFileIsDehydrated() {
 
     // A file missing owner read permission
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";

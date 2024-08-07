@@ -91,6 +91,7 @@ using ExecuteCommand = std::function<void(const char *)>;
 enum class ReplicaSide { Unknown, Local, Remote };
 
 inline ReplicaSide otherSide(ReplicaSide side) {
+    if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
     return side == ReplicaSide::Local ? ReplicaSide::Remote : ReplicaSide::Local;
 }
 
@@ -113,7 +114,7 @@ enum class ExitCode {
     Unknown,
     Ok,
     NeedRestart,  // A propagation job cannot be executed because the situation that led to its creation is no longer
-                  // verified
+                          // verified
     NetworkError,
     InvalidToken,
     DataError,    // Corruption of data
@@ -121,13 +122,16 @@ enum class ExitCode {
     BackError,    // Error in an API call
     SystemError,  // IO error etc.
     FatalError,   // SyncPal fatal error
-    InconsistencyError,
+    LogicError,   // Consequence of faulty logic within the program such as violating logical preconditions or class
+                          // invariants and may be preventable
     TokenRefreshed,
     NoWritePermission,
     RateLimited,
     InvalidSync,  // The sync configuration is not valid
+    InvalidOperation,
     OperationCanceled,
-    InvalidOperation
+    UpdateRequired,
+    LogUploadFailed
 };
 
 enum class ExitCause {
@@ -167,8 +171,10 @@ enum class ExitCause {
     SocketsDefuncted,  // macOS: sockets defuncted by kernel
     NoSearchPermission,
     NotFound,
-    QuotaExceeded
-};
+    QuotaExceeded,
+    FullListParsingError,
+    OperationCanceled
+} ;
 
 // Conflict types ordered by priority
 enum class ConflictType {
@@ -221,23 +227,13 @@ enum class CancelType {
 
 enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed };
 
-enum class SyncStatus {
-    Undefined,
-    Starting,
-    Running,
-    Idle,
-    PauseAsked,
-    Paused,
-    StopAsked,
-    Stopped,
-    Error,
-};
+enum class UploadSessionType { Unknown, Standard, LogUpload };
 
 enum class SyncNodeType {
     Undefined = 0,
     BlackList,           // Nodes that are excluded from sync
     WhiteList,           // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
-                         // nodes in none of those lists are implicitly whitelisted
+                            // nodes in none of those lists are implicitly whitelisted
     UndecidedList,       // Considered as blacklisted until user action
     TmpRemoteBlacklist,  // Blacklisted temporarily
     TmpLocalBlacklist    // Blacklisted temporarily
@@ -326,14 +322,19 @@ enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
     LastServerSelfRestartDate,
     LastClientSelfRestartDate,
-    LastSuccessfulLogUploadDate,
+    LastSuccessfulLogUploadDate, //Format: "month,day,year,hour,minute,second"
     LastLogUploadArchivePath,
     LogUploadState,
     LogUploadPercent,
+    LogUploadToken,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
+constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;
+constexpr int64_t SELF_RESTARTER_NO_CRASH_DETECTED = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
+
+enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;

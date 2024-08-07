@@ -37,7 +37,17 @@ static const int hSpacing = 10;
 static const int vSpacing = 10;
 static const int expandButtonVMargin = 5;
 static const int statusIconSize = 20;
-
+#ifdef _MACOS
+static const QString liteSyncActivatedQstr =
+    QObject::tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
+static const QString liteSyncDeactivatedQstr =
+    QObject::tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.");
+#else
+static const QString liteSyncActivatedQstr =
+    QObject::tr("Lite sync is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
+static const QString liteSyncDeactivatedQstr =
+    QObject::tr("Lite sync is disabled. The kDrive files use the storage space of your computer.");
+#endif
 Q_LOGGING_CATEGORY(lcFolderItemWidget, "gui.folderitemwidget", QtInfoMsg)
 
 enum class MenuAction : char { LiteSyncOn, LiteSyncOff, Pause, Remove, Resume };
@@ -222,13 +232,7 @@ void FolderItemWidget::setLiteSyncActivated(bool value) {
         KDC::GuiUtility::getIconWithColor(menuIconPath(MenuAction::LiteSyncOff), QColor(159, 159, 159)).pixmap(QSize(18, 18));
 
     _liteSyncIconLabel->setPixmap(value ? liteSynOnPixmap : liteSynOffPixmap);
-
-    static const QString liteSyncActivated =
-        tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your computer's storage space.");
-    static const QString liteSyncDeactivated =
-        tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer.");
-
-    _liteSyncIconLabel->setToolTip(value ? liteSyncActivated : liteSyncDeactivated);
+    _liteSyncIconLabel->setToolTip(value ? liteSyncActivatedQstr : liteSyncDeactivatedQstr);
 }
 
 void FolderItemWidget::showEvent(QShowEvent *) {
@@ -440,9 +444,8 @@ void FolderItemWidget::setToolTipsEnabled(bool enabled) noexcept {
     if (enabled) {
         _menuButton->setToolTip(tr("More actions"));
         _liteSyncIconLabel->setToolTip(
-            _liteSyncActivated ? tr("Lite sync (Beta) is enabled. Files from kDrive remain in the Cloud and do not use your "
-                                    "computer's storage space.")
-                               : tr("Lite sync (Beta) is disabled. The kDrive files use the storage space of your computer."));
+            _liteSyncActivated ? liteSyncActivatedQstr
+                               : liteSyncDeactivatedQstr);
     } else {
         _menuButton->setToolTip("");
         _liteSyncIconLabel->setToolTip("");

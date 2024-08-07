@@ -175,8 +175,8 @@ class COMMONSERVER_EXPORT Log {
 
     private:
         friend class TestLog;
-        Log(const log4cplus::tstring &filePath);
-
+        friend class TestIo;
+        explicit Log(const log4cplus::tstring &filePath);
         static std::shared_ptr<Log> _instance;
         log4cplus::Logger _logger;
         SyncPath _filePath;

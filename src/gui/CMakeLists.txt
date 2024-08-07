@@ -2,7 +2,7 @@ project(gui)
 
 find_package(Qt6 REQUIRED COMPONENTS Network Sql Widgets SvgWidgets WebEngineWidgets)
 find_package(Qt6LinguistTools)
-find_package(Poco 1.12.5 REQUIRED Foundation Net)
+find_package(Poco 1.13.3 REQUIRED Foundation Net)
 
 add_definitions(-DUNICODE)
 add_definitions(-D_UNICODE)
@@ -230,9 +230,16 @@ else()
     install(CODE "file(MAKE_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/Resources/en.lproj)")
 endif()
 
-set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
-)
+if (APPLE)
+    set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+        INSTALL_RPATH "@executable_path/../Frameworks"
+    )
+else()
+    set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
+    )
+endif()
 
 # Includes
 if (WIN32)
@@ -300,9 +307,12 @@ endif()
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     get_target_property (QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 
+    set(ENV_QTDIR $ENV{QTDIR})
+    set(ENV_DESTDIR $ENV{DESTDIR})
+
     install(CODE "
-        message(STATUS \"Deploying (Qt) dependencies and fixing library paths for kdrive_client...\")
-        execute_process(COMMAND \"install_name_tool\" -add_rpath @executable_path/. -add_rpath @executable_path/../Frameworks \$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
+        message(STATUS \"Deploying (Qt) dependencies for kdrive_client...\")
+        execute_process(COMMAND ${ENV_QTDIR}/bin/macdeployqt ${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE} -libpath=/usr/local/lib -no-strip -executable=${ENV_DESTDIR}${CMAKE_INSTALL_PREFIX}/${KDRIVE_OSX_BUNDLE}/Contents/MacOS/${APPLICATION_CLIENT_EXECUTABLE})
         " COMPONENT RUNTIME)
 endif()
 

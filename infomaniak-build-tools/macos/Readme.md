@@ -16,7 +16,11 @@
 	- [Packages](#packages)
 	- [Notarytool](#notarytool)
 - [Build in Debug](#build-in-debug)
-	- [Qt Creator](#using-qt-creator)
+	- [Using CLion](#using-clion)
+        - [CMake Parameters](#cmake-parameters)
+		- [Run CMake install](#run-cmake-install)
+		- [Sign package](#sign-package)
+	- [Using Qt Creator](#using-qt-creator)
 		- [Qt Configuration](#qt-configuration)
 - [Build in Release](#build-in-release)
 	- [Requirements](#requirements)
@@ -99,22 +103,35 @@ cmake .. -DUNICODE=1 -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOY
 sudo cmake --build . --target install
 ```
 
+If an error occurs with the the include of `catch.hpp`, you need to change branch inside the `catch` directory:
+
+```bash
+cd ../catch
+git checkout v2.x
+```
+
 ## CPPUnit
 
 Download and build CPPUnit :
 
+You will probably need to install `automake` and `libtool`:
+```
+brew install automake
+brew install libtool
+```
+
+CPPUnit must be build in single architecture. Replace with `x86_64` or `arm64` in the following command:
 ```bash
 cd ~/Projects
 git clone git://anongit.freedesktop.org/git/libreoffice/cppunit
 cd cppunit
 ./autogen.sh
-# If needed, run :
-	# brew install automake
-	# brew install libtool
-./configure CXXFLAGS="-arch x86_64 -arch arm64 -mmacosx-version-min=10.15"
+./configure CXXFLAGS="-arch <your_arch> -mmacosx-version-min=10.15"
 make
 sudo make install
 ```
+
+If the server does not reply to the `git clone` command, you can download the source from https://dev-www.libreoffice.org/src/.
 
 ## OpenSSL
 
@@ -124,9 +141,9 @@ Configure x86_64 :
 
 ```bash
 cd ~/Projects
-git clone git://git.openssl.org/openssl.git
+git clone https://github.com/openssl/openssl.git
 cd openssl
-git checkout tags/openssl_3.2.1
+git checkout tags/openssl-3.2.1
 cd ..
 mv openssl openssl.x86_64
 cp -Rf openssl.x86_64 openssl.arm64
@@ -152,7 +169,7 @@ If you have an ARM architecture, run `sudo make install` then continue
 cd ~/Projects
 lipo -arch arm64 openssl.arm64/libcrypto.3.dylib -arch x86_64 openssl.x86_64/libcrypto.3.dylib -output openssl.multi/libcrypto.3.dylib -create
 lipo -arch arm64 openssl.arm64/libssl.3.dylib -arch x86_64 openssl.x86_64/libssl.3.dylib -output openssl.multi/libssl.3.dylib -create
-lipo -arch arm64 openssl.arm64/libcrypto.a -arch x86_64 openssl.x86_64/libcrypto.a -output openssl.multi/libcrypto.a -create   
+lipo -arch arm64 openssl.arm64/libcrypto.a -arch x86_64 openssl.x86_64/libcrypto.a -output openssl.multi/libcrypto.a -create
 lipo -arch arm64 openssl.arm64/libssl.a -arch x86_64 openssl.x86_64/libssl.a -output openssl.multi/libssl.a -create
 sudo cp openssl.multi/* /usr/local/lib/
 ```
@@ -167,7 +184,7 @@ Download and build Poco :
 cd ~/Projects
 git clone https://github.com/pocoproject/poco.git
 cd poco
-git checkout tags/poco-1.13.2-release
+git checkout tags/poco-1.13.3-release
 mkdir build
 cd build
 cmake .. -DCMAKE_OSX_ARCHITECTURES="x86_64;arm64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -DOPENSSL_ROOT_DIR=/usr/local/ -DOPENSSL_INCLUDE_DIR=/usr/local/include/ -DOPENSSL_CRYPTO_LIBRARY=/usr/local/lib/libcrypto.dylib -DOPENSSL_SSL_LIBRARY=/usr/local/lib/libssl.dylib -DENABLE_DATA_ODBC=OFF 
@@ -200,7 +217,7 @@ cd ~/Projects
 curl -o zstd-1.5.6.tar.gz -L https://github.com/facebook/zstd/archive/v1.5.6.tar.gz
 tar xzf zstd-1.5.6.tar.gz
 mkdir -p zstd-1.5.6/build/cmake/build && cd zstd-1.5.6/build/cmake/build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ..
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" ..
 cmake --build . --config Release
 sudo cmake --build . --config Release --target install
 ```
@@ -212,7 +229,7 @@ git clone https://github.com/nih-at/libzip.git
 cd libzip
 git checkout tags/v1.10.1
 mkdir build && cd build
-cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -Dzstd_SHARED_LIBRARY="/usr/local/lib/libzstd.1.5.6.dylib" -Dzstd_INCLUDE_DIR="/usr/local/include" ..
+cmake -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET="10.15" -Dzstd_SHARED_LIBRARY="/usr/local/lib/libzstd.1.5.6.dylib" -Dzstd_INCLUDE_DIR="/usr/local/include" ..
 make
 sudo make install
 ```
@@ -243,6 +260,42 @@ xcrun notarytool store-credentials "notarytool" --apple-id <email address> --tea
 In order for CMake to be able to find all dependencies, you might need to define `DYLD_LIBRARY_PATH=/usr/local/lib` in your environment variables.
 Either add `export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/lib` in your personal `.zshrc` file or add the environment variable in your IDE.
 
+## Using CLion
+
+### CMake Parameters
+
+CMake options:
+
+```
+-DCMAKE_BUILD_TYPE:STRING=Debug
+-DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
+-DKDRIVE_THEME_DIR=/Users/<user_name>/Projects/desktop-kDrive/infomaniak
+-DCMAKE_INSTALL_PREFIX=/Users/clementkunz/Projects/CLion-build-debug/install
+-DBUILD_UNIT_TESTS:BOOL=ON
+-DCMAKE_PREFIX_PATH:STRING=/Users/<user_name>/Qt/6.2.3/macos
+-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
+```
+
+### Run CMake install
+
+Edit the `kDrive` profile:
+
+![alt text](edit_profile.png)
+
+Add `CMake install` in the `Before launch` steps:
+
+![alt text](cmake_install.png)
+
+### Sign package
+
+Add a `Run external tool` in the `Before launch` steps:
+
+![alt text](run_ext_tool.png)
+
+Create the external tool to run `sign_app_debug.sh`:
+
+![alt text](sign_package.png)
+
 ## Using Qt Creator
 
 ### Qt Configuration
@@ -266,14 +319,10 @@ In the project build settings, paste the following lines in the Initial Configur
 %{CMAKE_OSX_ARCHITECTURES:DefaultFlag}
 ```
 
-Build - Build Steps - Build :  
+Build - Build Steps - Build :  
 `cmake --build . --target all install`
 
-Build - Build Steps - Custom Process Step 1 :  
-`Command	: %{Qt:QT_INSTALL_BINS}/macdeployqt`  
-`Arguments	: %{buildDir}/bin/kDrive.app -no-strip -executable=%{buildDir}/bin/kDrive.app/Contents/MacOS/kDrive_client`
-
-Build - Build Steps - Custom Process Step 2 :  
+Build - Build Steps - Custom Process Step 1 :  
 `Command	: /Users/<user name>/Projects/kdrive/admin/osx/sign_app_debug.sh`  
 `Arguments	: %{ActiveProject:RunConfig:Executable:FileName} %{buildDir}/bin/kDrive.app "Developer ID Application: Infomaniak Network SA (864VDCS2QY)" "864VDCS2QY" "com.infomaniak.drive.desktopclient" 2>&1 1>/dev/null`
 

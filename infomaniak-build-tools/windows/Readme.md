@@ -17,7 +17,9 @@
     - [IcoTool](#icotool)
 - [Certificate Configuration](#certificate-configuration)
 - [Build in Debug](#build-in-debug)
-    - [Qt Creator](#using-qt-creator)
+    - [Using CLion](#using-clion)
+        - [CMake Parameters](#cmake-parameters)
+    - [Using Qt Creator](#using-qt-creator)
         - [Additionnal Requirements](#additionnal-requirements)
         - [CMake Parameters](#cmake-parameters)
     - [VS2019](#using-Visual-Studio-2019)
@@ -137,13 +139,11 @@ Clone and build `Poco`:
 cd F:\Projects
 git clone https://github.com/pocoproject/poco.git
 cd poco
-git checkout tags/poco-1.12.5-release
-mkdir cmake-build
-cd cmake-build
+git checkout tags/poco-1.13.3-release
+mkdir build
+cd build
 cmake -G "Visual Studio 16 2019" .. -DOPENSSL_ROOT_DIR="C:\Program Files\OpenSSL" -DOPENSSL_INCLUDE_DIR="C:\Program Files\OpenSSL\include" -DOPENSSL_CRYPTO_LIBRARY=libcrypto.lib -DOPENSSL_SSL_LIBRARY=libssl.lib
 ```
-
-Note: As far as we know, with version higher to 1.12.5 up to 1.13.2, there is a crash in the XML parser in debug mode. For this reason, we choose to remain in version 1.12.5 on Windows for now.
 
 Open the `poco.sln` solution in Visual Studio 2019 and add `C:\Program Files\OpenSSL-Win64\lib` to the `Additional Library Directories` for the following projects:
 - Crypto
@@ -280,6 +280,39 @@ C:\Program Files (x86)\log4cplus\bin
 C:\Program Files (x86)\cppunit\bin
 C:\Program Files\OpenSSL\bin
 ```
+
+## Prerequisites
+Add all the necessary libraries to your path environment variable:
+```bash
+C:\Program Files (x86)\Poco\bin;
+C:\Program Files (x86)\libzip\bin;
+C:\Program Files (x86)\zlib-1.2.11\bin;
+C:\Program Files (x86)\xxHash\bin;
+C:\Program Files (x86)\Sentry-Native\bin;
+C:\Program Files (x86)\log4cplus\bin;
+C:\Program Files (x86)\cppunit\bin;
+C:\Program Files\OpenSSL\bin;
+```
+
+## Using CLion
+
+### CMake Parameters
+
+Copy the following list of `CMake` variables in the CMake options field:
+```bash
+-DCMAKE_BUILD_TYPE:STRING=Debug
+-DAPPLICATION_CLIENT_EXECUTABLE=kdrive_client
+-DKDRIVE_THEME_DIR=F:/Projects/desktop-kDrive/infomaniak
+-DCMAKE_INSTALL_PREFIX=F:/Projects/cmake-build-release_CLion
+-DBUILD_UNIT_TESTS:BOOL=ON
+-DCMAKE_PREFIX_PATH:STRING=C:/Qt/6.2.3/msvc2019_64
+-DSOCKETAPI_TEAM_IDENTIFIER_PREFIX:STRING=864VDCS2QY
+-DZLIB_INCLUDE_DIR:PATH=F:/Projects/zlib-1.2.11/include
+-DZLIB_LIBRARY_RELEASE:FILEPATH=F:/Projects/zlib-1.2.11/lib/zlib.lib
+-DVFS_STATIC_LIBRARY:FILEPATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Debug/Vfs.lib
+-DVFS_DIRECTORY:PATH=F:\Projects\desktop-kDrive\extensions\windows\cfapi\x64\Release
+```
+![alt text](CLion_cmake_options-1.png)
 
 ## Using Qt Creator
 

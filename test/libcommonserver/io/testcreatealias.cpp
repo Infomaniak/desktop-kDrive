@@ -30,122 +30,122 @@ void TestIo::testCreateAlias() {
 
     // A MacOSX Finder alias on a regular file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
-        IoError aliasError = IoError::Unknown;
+        IoError aliasError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoError::Success);
+        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkType::FinderAlias, NodeType::File);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // A MacOSX Finder alias on a regular directory.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
-        IoError aliasError = IoError::Unknown;
+        IoError aliasError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoError::Success);
+        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkType::FinderAlias, NodeType::Directory);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeDirectory);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // The target file does not exist: failure
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
-        const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
-        IoError aliasError = IoError::Success;
+        IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoError::NoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(aliasError == IoErrorNoSuchFileOrDirectory);
         CPPUNIT_ASSERT(!std::filesystem::exists(path));
     }
 
     // The alias path is the path of an existing file: overwriting
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         { std::ofstream ofs(path); }
 
-        IoError aliasError = IoError::Unknown;
+        IoError aliasError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoError::Success);
+        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkType::FinderAlias, NodeType::File);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // The alias path is the path of an existing directory: failure
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path;
+        const SyncPath path = temporaryDirectory.path();
 
-        IoError aliasError = IoError::Success;
+        IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoError::Unknown);
+        CPPUNIT_ASSERT(aliasError == IoErrorUnknown);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoError::Success);
-        CPPUNIT_ASSERT(itemType.nodeType == NodeType::Directory);
-        CPPUNIT_ASSERT(itemType.linkType == LinkType::None);
-        CPPUNIT_ASSERT(itemType.targetType == NodeType::Unknown);
+        CPPUNIT_ASSERT(itemType.ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(itemType.nodeType == NodeTypeDirectory);
+        CPPUNIT_ASSERT(itemType.linkType == LinkTypeNone);
+        CPPUNIT_ASSERT(itemType.targetType == NodeTypeUnknown);
     }
 
     // The alias path is the target path (of an existing file): no error!
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "file.txt";
         { std::ofstream ofs(path); }
         const SyncPath targetPath = path;
 
-        IoError aliasError = IoError::Unknown;
+        IoError aliasError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoError::Success);
+        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto privateTargetPath =
-            SyncPath{"/private" + std::string(targetPath.c_str())};  // Simple concatenation doesn't append the `/private` prefix.
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, privateTargetPath, LinkType::FinderAlias, NodeType::File);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
     // The alias file name is very long: failure
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
+        const std::string veryLongfileName(1000,
+                                           'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
-        IoError aliasError = IoError::Success;
+        IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, aliasError);
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, aliasError);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 
     // The target file name is very long: failure
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "alias.txt";  // This file doesn't exist.
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "alias.txt";  // This file doesn't exist.
 
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
+        const std::string veryLongfileName(1000,
+                                           'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath targetPath = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
 
-        IoError aliasError = IoError::Success;
+        IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoError::NoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(aliasError == IoErrorNoSuchFileOrDirectory);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because of a filesystem error.
     }
 
@@ -155,9 +155,9 @@ void TestIo::testCreateAlias() {
         const SyncPath path = makeVeryLonPath(_localTestDirPath);
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
-        IoError aliasError = IoError::Success;
+        IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT_EQUAL(IoError::NoSuchFileOrDirectory, aliasError);
+        CPPUNIT_ASSERT_EQUAL(IoErrorNoSuchFileOrDirectory, aliasError);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 
@@ -166,27 +166,27 @@ void TestIo::testCreateAlias() {
         const std::string pathSegment(50, 'a');
         const SyncPath targetPath = makeVeryLonPath(_localTestDirPath);
 
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "alias.txt";  // This file doesn't exist.
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "alias.txt";  // This file doesn't exist.
 
-        IoError aliasError = IoError::Success;
+        IoError aliasError = IoErrorSuccess;
         CPPUNIT_ASSERT(!IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoError::NoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(aliasError == IoErrorNoSuchFileOrDirectory);
         // The test CPPUNIT_ASSERT(!std::filesystem::exists(path)) throws because a filesystem error.
     }
 
     // The alias file name contains emojis: success
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / makeFileNameWithEmojis();
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / makeFileNameWithEmojis();
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
-        IoError aliasError = IoError::Unknown;
+        IoError aliasError = IoErrorUnknown;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoError::Success);
+        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
-        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkType::FinderAlias, NodeType::File);
+        const auto result = checker.checkSuccessfulLinkRetrieval(path, targetPath, LinkTypeFinderAlias, NodeTypeFile);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 }

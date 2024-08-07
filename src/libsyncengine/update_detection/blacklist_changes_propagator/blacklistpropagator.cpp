@@ -44,52 +44,52 @@ void BlacklistPropagator::runJob() {
     bool found = true;
     if (!ParmsDb::instance()->selectSync(_syncPal->syncDbId(), _sync, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in ParmsDb::selectSync");
-        _exitCode = ExitCode::DbError;
+        _exitCode = ExitCodeDbError;
         return;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Sync not found");
-        _exitCode = ExitCode::DataError;
+        _exitCode = ExitCodeDataError;
         return;
     }
 
     ExitCode exitCode = checkNodes();
-    if (exitCode != ExitCode::Ok) {
+    if (exitCode != ExitCodeOk) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in BlacklistPropagator::checkNodes");
         _exitCode = exitCode;
         return;
     }
 
     LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "BlacklistPropagator ended");
-    _exitCode = ExitCode::Ok;
+    _exitCode = ExitCodeOk;
 }
 
 ExitCode BlacklistPropagator::checkNodes() {
-    ExitCode exitCode(ExitCode::Unknown);
+    ExitCode exitCode(ExitCodeUnknown);
 
     _syncPal->_syncHasFullyCompleted = false;
 
     std::unordered_set<NodeId> blackList;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeTypeBlackList, blackList);
 
     if (blackList.empty()) {
         LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "Blacklist is empty");
-        return ExitCode::Ok;
+        return ExitCodeOk;
     }
 
     bool noItemToRemoveFound = true;
     for (auto &remoteNodeId : blackList) {
         if (isAborted()) {
             LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "BlacklistPropagator aborted " << jobId());
-            return ExitCode::Ok;
+            return ExitCodeOk;
         }
 
         // Check if item still exist
         DbNodeId dbId;
         bool found = false;
-        if (!_syncPal->_syncDb->dbId(ReplicaSide::Remote, remoteNodeId, dbId, found)) {
+        if (!_syncPal->_syncDb->dbId(ReplicaSideRemote, remoteNodeId, dbId, found)) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::dbId");
-            exitCode = ExitCode::DbError;
+            exitCode = ExitCodeDbError;
             break;
         }
 
@@ -97,27 +97,27 @@ ExitCode BlacklistPropagator::checkNodes() {
             noItemToRemoveFound = false;
 
             NodeId localNodeId;
-            if (!_syncPal->_syncDb->correspondingNodeId(ReplicaSide::Remote, remoteNodeId, localNodeId, found)) {
+            if (!_syncPal->_syncDb->correspondingNodeId(ReplicaSideRemote, remoteNodeId, localNodeId, found)) {
                 LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::correspondingNodeId");
-                exitCode = ExitCode::DbError;
+                exitCode = ExitCodeDbError;
                 break;
             }
             if (!found) {
                 LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                                  "Corresponding node ID not found for remote ID = " << remoteNodeId.c_str());
-                exitCode = ExitCode::DataError;
+                exitCode = ExitCodeDataError;
                 break;
             }
 
             exitCode = removeItem(localNodeId, remoteNodeId, dbId);
-            if (exitCode != ExitCode::Ok) {
+            if (exitCode != ExitCodeOk) {
                 break;
             }
         }
     }
 
     if (noItemToRemoveFound) {
-        exitCode = ExitCode::Ok;
+        exitCode = ExitCodeOk;
     }
 
     return exitCode;
@@ -130,17 +130,17 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     bool found = false;
     if (!_syncPal->_syncDb->path(dbId, localPath, remotePath, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::path");
-        return ExitCode::DbError;
+        return ExitCodeDbError;
     }
     if (!found) {
         LOG_SYNCPAL_INFO(Log::instance()->getLogger(), "Node not found for id = " << dbId);
-        return ExitCode::DataError;
+        return ExitCodeDataError;
     }
 
     SyncPath absolutePath = _sync.localPath() / localPath;
 
     // Cancel hydration
-    const bool liteSyncActivated = _syncPal->_vfsMode != VirtualFileMode::Off;
+    const bool liteSyncActivated = _syncPal->_vfsMode != VirtualFileModeOff;
     if (liteSyncActivated) {
         try {
             std::error_code ec;
@@ -148,12 +148,12 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                 absolutePath, std::filesystem::directory_options::skip_permission_denied, ec);
             if (ec) {
                 LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
-                                  "Error in BlacklistPropagator::removeItem :" << Utility::formatStdError(ec).c_str());
-                return ExitCode::SystemError;
+                                  L"Error in BlacklistPropagator::removeItem :" << Utility::formatStdError(ec).c_str());
+                return ExitCodeSystemError;
             }
             for (; dirIt != std::filesystem::recursive_directory_iterator(); ++dirIt) {
                 if (isAborted()) {
-                    return ExitCode::Ok;
+                    return ExitCodeOk;
                 }
 
 #ifdef _WIN32
@@ -172,7 +172,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                 // Check if the directory entry is managed
                 bool isManaged = true;
                 bool isLink = false;
-                IoError ioError = IoError::Success;
+                IoError ioError = IoErrorSuccess;
                 if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                     LOGW_SYNCPAL_WARN(Log::instance()->getLogger(),
                                       L"Error in Utility::checkIfDirEntryIsManaged - path=" << Path2WStr(absolutePath).c_str());
@@ -180,14 +180,14 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                     continue;
                 }
 
-                if (ioError == IoError::NoSuchFileOrDirectory) {
+                if (ioError == IoErrorNoSuchFileOrDirectory) {
                     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
                                        L"Directory entry does not exist anymore - path=" << Path2WStr(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 }
 
-                if (ioError == IoError::AccessDenied) {
+                if (ioError == IoErrorAccessDenied) {
                     LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(),
                                        L"Directory misses search permission: " << Utility::formatSyncPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
@@ -208,10 +208,10 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         } catch (std::filesystem::filesystem_error &e) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(),
                              "Error caught in BlacklistPropagator::removeItem: " << e.code() << " - " << e.what());
-            return ExitCode::SystemError;
+            return ExitCodeSystemError;
         } catch (...) {
             LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error caught in BlacklistPropagator::removeItem");
-            return ExitCode::SystemError;
+            return ExitCodeSystemError;
         }
 
         LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Cancel hydration: " << Utility::formatSyncPath(absolutePath).c_str());
@@ -220,11 +220,11 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
 
     // Remove item from filesystem
     bool exists = false;
-    IoError ioError = IoError::Success;
+    IoError ioError = IoErrorSuccess;
     if (!IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::checkIfPathExists for path=" << Utility::formatIoError(absolutePath, ioError).c_str());
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
 
     if (exists) {
@@ -238,7 +238,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
         LocalDeleteJob job(_syncPal->driveDbId(), _syncPal->_localPath, localPath, liteSyncActivated, remoteNodeId);
         job.setBypassCheck(true);
         job.runSynchronously();
-        if (job.exitCode() != ExitCode::Ok) {
+        if (job.exitCode() != ExitCodeOk) {
             LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Failed to remove item with "
                                                                 << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                                 << Utility::s2ws(localNodeId).c_str()
@@ -248,8 +248,8 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
             PlatformInconsistencyCheckerUtility::renameLocalFile(
                 absolutePath, PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted, &destPath);
 
-            Error err(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictType::None, InconsistencyType::None,
-                      CancelType::MoveToBinFailed, destPath);
+            Error err(_syncPal->syncDbId(), "", "", NodeTypeDirectory, absolutePath, ConflictTypeNone, InconsistencyTypeNone,
+                      CancelTypeMoveToBinFailed, destPath);
             _syncPal->addError(err);
         } else {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Item with " << Utility::formatSyncPath(absolutePath).c_str()
@@ -261,14 +261,14 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     // Remove node (and children by cascade) from DB
     if (!_syncPal->_syncDb->deleteNode(dbId, found)) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncDb::deleteNode");
-        return ExitCode::DbError;
+        return ExitCodeDbError;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Node not found in node table for dbId=" << dbId);
-        return ExitCode::DataError;
+        return ExitCodeDataError;
     }
 
-    return ExitCode::Ok;
+    return ExitCodeOk;
 }
 
 }  // namespace KDC

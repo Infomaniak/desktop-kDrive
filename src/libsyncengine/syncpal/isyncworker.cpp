@@ -17,7 +17,6 @@
  */
 
 #include "isyncworker.h"
-#include "libparms/db/parmsdb.h"
 
 #include <log4cplus/loggingmacros.h>
 

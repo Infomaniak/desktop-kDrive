@@ -19,6 +19,7 @@
 #include "customrollingfileappender.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/io/filestat.h"
 #include "libcommonserver/utility/utility.h"
 
 #include <QString>
@@ -26,6 +27,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDateTime>
+#include "config.h"
 
 /*****************************************/
 /********** namespace log4cplus **********/
@@ -261,7 +263,7 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
         log4cplus::tstring ztarget = target + LOG4CPLUS_TEXT(".gz");
 
         bool exists;
-        IoError ioError = IoError::Success;
+        IoError ioError = IoErrorSuccess;
         const bool success = IoHelper::checkIfPathExists(ztarget, exists, ioError);
         if (!success) {
             loglog.debug(filename + LOG4CPLUS_TEXT(" failed to check if path exists"));
@@ -271,7 +273,7 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
             log4cplus::file_remove(ztarget);
         }
 
-        if (success && CommonUtility::compressFile(QString::fromStdWString(target), QString::fromStdWString(ztarget))) {
+        if (success && CommonUtility::compressFile(target, ztarget)) {
             log4cplus::file_remove(target);
         } else {
             log4cplus::file_remove(ztarget);
@@ -286,30 +288,44 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
 }
 
 void CustomRollingFileAppender::checkForExpiredFiles() {
-    // Delete expired files
-    if (_expire > 0) {
-        _lastExpireCheck = std::chrono::system_clock::now();
-        QDateTime now = QDateTime::currentDateTime();
-
-        IoError ioError = IoError::Success;
-        SyncPath logDirPath;
-        if (!IoHelper::logDirectoryPath(logDirPath, ioError)) {
-            throw std::runtime_error("Error in CustomRollingFileAppender: failed to get the log directory path.");
+    _lastExpireCheck = std::chrono::system_clock::now();
+    // Archive previous log files and delete expired files
+    IoError ioError = IoErrorSuccess;
+    SyncPath logDirPath;
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoErrorSuccess) {
+        return;
+    }
+    IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
+    bool endOfDir = false;
+    DirectoryEntry entry;
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoErrorSuccess) {
+        FileStat fileStat;
+        IoHelper::getFileStat(entry.path(), &fileStat, ioError);
+        if (ioError != IoErrorSuccess || fileStat.nodeType != NodeTypeFile) {
+            continue;
         }
 
-        QDir logDir(SyncName2QStr(logDirPath.native()));
-        QStringList filters;
-        filters << SyncName2QStr(Str("*") + Utility::logFileName() + Str("*"));
-        QStringList logFileNameList = logDir.entryList(filters, QDir::Files);
-        for (const QString &logFileName : logFileNameList) {
-            QFileInfo fileInfo(logDir, logFileName);
-            QDateTime expireDateTime = fileInfo.lastModified().addSecs(_expire * 3600);
+        // Delete expired files
+        if (_expire > 0 && entry.path().string().find(APPLICATION_NAME) != std::string::npos) {
+            const auto now = std::chrono::system_clock::now();
+            auto lastModified = std::chrono::system_clock::from_time_t(fileStat.modtime);
+            auto expireDateTime = lastModified + std::chrono::seconds(_expire);
             if (expireDateTime < now) {
-                log4cplus::file_remove(fileInfo.filePath().toStdWString());
+                log4cplus::file_remove(Utility::s2ws(entry.path().string()));
                 continue;
+            }
+        }
+
+        // Compress previous log sessions
+        if (const SyncPath currentLogName = DirectoryEntry(filename).path().filename().replace_extension("");
+            entry.path().filename().string().find(".gz") == std::string::npos &&
+            entry.path().string().find(currentLogName.string()) == std::string::npos) {
+            if (CommonUtility::compressFile(entry.path().string(), entry.path().string() + ".gz")) {
+                log4cplus::file_remove(Utility::s2ws(entry.path().string()));
+            } else {
+                log4cplus::file_remove(Utility::s2ws(entry.path().string()) + LOG4CPLUS_TEXT(".gz"));
             }
         }
     }
 }
-
 }  // namespace KDC

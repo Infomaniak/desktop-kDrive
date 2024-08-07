@@ -42,6 +42,8 @@ class VirtualFilesCleaner {
 
     private:
         bool removePlaceholdersRecursivly(const SyncPath &parentPath);
+        bool recursiveDirectoryIterator(const SyncPath &path, std::filesystem::recursive_directory_iterator &dirIt);
+        bool folderCanBeProcessed(std::filesystem::recursive_directory_iterator &dirIt);
 
         log4cplus::Logger _logger;
 

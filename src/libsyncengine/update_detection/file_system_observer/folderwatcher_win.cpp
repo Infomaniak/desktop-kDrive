@@ -130,9 +130,9 @@ void FolderWatcher_win::watchChanges() {
             break;
         }
 
-        bool ok = GetOverlappedResult(_directoryHandle, &overlapped, &dwBytesReturned, false);
+        const bool ok = GetOverlappedResult(_directoryHandle, &overlapped, &dwBytesReturned, false);
         if (!ok) {
-            DWORD errorCode = GetLastError();
+            const DWORD errorCode = GetLastError();
             if (errorCode == ERROR_NOTIFY_ENUM_DIR) {
                 LOG_DEBUG(_logger, "The buffer for changes overflowed! Fallback to static sync");
                 changesLost();
@@ -149,7 +149,7 @@ void FolderWatcher_win::watchChanges() {
             SyncPath filepath = (_folder / wPathName).lexically_normal();
 
             bool skip = false;
-            OperationType opType = operationFromAction(notifInfo->Action);
+            const OperationType opType = operationFromAction(notifInfo->Action);
 
             if (notifInfo->Action == FILE_ACTION_MODIFIED) {
                 bool isDirectory = false;

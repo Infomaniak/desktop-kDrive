@@ -31,13 +31,13 @@ class CsvFullFileListWithCursorJob;
 class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
     public:
         RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName);
-        ~RemoteFileSystemObserverWorker();
+        ~RemoteFileSystemObserverWorker() override;
 
     private:
-        virtual void execute() override;
-        virtual ExitCode generateInitialSnapshot() override;
-        virtual ExitCode processEvents() override;
-        virtual ReplicaSide getSnapshotType() const override { return ReplicaSide::Remote; }
+        void execute() override;
+        ExitCode generateInitialSnapshot() override;
+        ExitCode processEvents() override;
+        [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::ReplicaSideRemote; }
 
         ExitCode initWithCursor();
         ExitCode exploreDirectory(const NodeId &nodeId);
@@ -46,25 +46,27 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         ExitCode sendLongPoll(bool &changes);
 
         struct ActionInfo {
-            ActionCode actionCode {ActionCode::actionCodeUnknown};
-            NodeId nodeId;
-            NodeId parentNodeId;
-            SyncName name;
-            SyncName path;
-            SyncName destName;
-            SyncTime createdAt {0};
-            SyncTime modtime {0};
-            NodeType type {NodeType::Unknown};
-            int64_t size {0};
-            bool canWrite {true};
+                ActionCode actionCode{ActionCode::actionCodeUnknown};
+                NodeId nodeId;
+                NodeId parentNodeId;
+                SyncName name;
+                SyncName path;
+                SyncName destName;
+                SyncTime createdAt{0};
+                SyncTime modtime{0};
+                NodeType type{NodeTypeUnknown};
+                int64_t size{0};
+                bool canWrite{true};
         };
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
         ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
-        ExitCode processAction(const SyncName &usedName, const ActionInfo &actionInfo, std::set<NodeId, std::equal_to<>> &movedItems);
+        ExitCode processAction(const SyncName &usedName, const ActionInfo &actionInfo, std::set<NodeId, std::less<>> &movedItems);
 
         ExitCode checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
 
         bool hasUnsupportedCharacters(const SyncName &name, const NodeId &nodeId, NodeType type);
+
+        void countListingRequests();
 
         int _driveDbId = -1;
         std::string _cursor;

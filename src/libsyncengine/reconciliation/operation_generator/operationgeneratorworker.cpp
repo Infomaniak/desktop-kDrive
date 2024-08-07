@@ -28,7 +28,7 @@ OperationGeneratorWorker::OperationGeneratorWorker(std::shared_ptr<SyncPal> sync
     : OperationProcessor(syncPal, name, shortName) {}
 
 void OperationGeneratorWorker::execute() {
-    ExitCode exitCode(ExitCode::Unknown);
+    ExitCode exitCode(ExitCodeUnknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
@@ -37,19 +37,19 @@ void OperationGeneratorWorker::execute() {
     _bytesToDownload = 0;
 
     // Mark all nodes "Unprocessed"
-    _syncPal->updateTree(ReplicaSide::Local)->markAllNodesUnprocessed();
-    _syncPal->updateTree(ReplicaSide::Remote)->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSideLocal)->markAllNodesUnprocessed();
+    _syncPal->updateTree(ReplicaSideRemote)->markAllNodesUnprocessed();
 
     _deletedNodes.clear();
 
     // Initiate breadth-first search with root nodes from both update trees
-    _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    _queuedToExplore.push(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideLocal)->rootNode());
+    _queuedToExplore.push(_syncPal->updateTree(ReplicaSideRemote)->rootNode());
 
     // Explore both update trees
     while (!_queuedToExplore.empty()) {
         if (stopAsked()) {
-            exitCode = ExitCode::Ok;
+            exitCode = ExitCodeOk;
             break;
         }
 
@@ -77,40 +77,40 @@ void OperationGeneratorWorker::execute() {
             _queuedToExplore.push(child.second);
         }
 
-        if (currentNode->status() == NodeStatus::Processed) {
+        if (currentNode->status() == NodeStatusProcessed) {
             continue;
         }
 
         std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(currentNode);
-        if (!correspondingNode && !currentNode->hasChangeEvent(OperationType::Create) &&
-            (currentNode->hasChangeEvent(OperationType::Delete) || currentNode->hasChangeEvent(OperationType::Edit) ||
-             currentNode->hasChangeEvent(OperationType::Move))) {
+        if (!correspondingNode && !currentNode->hasChangeEvent(OperationTypeCreate) &&
+            (currentNode->hasChangeEvent(OperationTypeDelete) || currentNode->hasChangeEvent(OperationTypeEdit) ||
+             currentNode->hasChangeEvent(OperationTypeMove))) {
             LOGW_SYNCPAL_WARN(_logger, L"Failed to get corresponding node: " << SyncName2WStr(currentNode->name()).c_str());
-            exitCode = ExitCode::DataError;
+            exitCode = ExitCodeDataError;
             break;
         }
 
-        if (currentNode->hasChangeEvent(OperationType::Create)) {
-            if (!(currentNode->side() == ReplicaSide::Local && currentNode->isSharedFolder())) {
+        if (currentNode->hasChangeEvent(OperationTypeCreate)) {
+            if (!(currentNode->side() == ReplicaSideLocal && currentNode->isSharedFolder())) {
                 generateCreateOperation(currentNode, correspondingNode);
             }
         }
 
-        if (currentNode->hasChangeEvent(OperationType::Delete)) {
+        if (currentNode->hasChangeEvent(OperationTypeDelete)) {
             generateDeleteOperation(currentNode, correspondingNode);
         }
 
-        if (currentNode->hasChangeEvent(OperationType::Edit)) {
+        if (currentNode->hasChangeEvent(OperationTypeEdit)) {
             generateEditOperation(currentNode, correspondingNode);
         }
 
-        if (currentNode->hasChangeEvent(OperationType::Move)) {
+        if (currentNode->hasChangeEvent(OperationTypeMove)) {
             generateMoveOperation(currentNode, correspondingNode);
         }
     }
 
-    if (exitCode == ExitCode::Unknown && _queuedToExplore.empty()) {
-        exitCode = ExitCode::Ok;
+    if (exitCode == ExitCodeUnknown && _queuedToExplore.empty()) {
+        exitCode = ExitCodeOk;
     }
 
     if (_bytesToDownload > 0) {
@@ -120,8 +120,8 @@ void OperationGeneratorWorker::execute() {
                 LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only "
                                                << freeBytes << L" B available at path " << Path2WStr(_syncPal->_localPath).c_str()
                                                << L", " << _bytesToDownload << L" B to download. Synchronization canceled.");
-                exitCode = ExitCode::SystemError;
-                setExitCause(ExitCause::NotEnoughDiskSpace);
+                exitCode = ExitCodeSystemError;
+                setExitCause(ExitCauseNotEnoughDiskSpace);
             }
         } else {
             LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at" << Path2WStr(_syncPal->_localPath).c_str());
@@ -140,18 +140,17 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
     if (correspondingNode && isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
         op->setCorrespondingNode(correspondingNode);
-        correspondingNode->setStatus(NodeStatus::Processed);
+        correspondingNode->setStatus(NodeStatusProcessed);
     }
 
-    op->setType(OperationType::Create);
+    op->setType(OperationTypeCreate);
     op->setAffectedNode(currentNode);
     ReplicaSide targetSide = otherSide(currentNode->side());
     op->setTargetSide(targetSide);
-    // We do not set parent node here since it might has been just created as well. In that case, parent node does not exist yet
+    // We do not set parent node here since it might have been just created as well. In that case, parent node does not exist yet
     // in update tree.
-    op->setNewName(targetSide == ReplicaSide::Local ? currentNode->finalLocalName()
-                                                  : currentNode->name());  // Use validName only on local replica
-    currentNode->setStatus(NodeStatus::Processed);
+    op->setNewName(currentNode->name());
+    currentNode->setStatus(NodeStatusProcessed);
     _syncPal->_syncOps->pushOp(op);
 
     if (op->omit()) {
@@ -169,8 +168,8 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
                              << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
-            currentNode->type() == NodeType::File) {
+        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSideLocal &&
+            currentNode->type() == NodeTypeFile) {
             _bytesToDownload += currentNode->size();
         }
     }
@@ -184,17 +183,17 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
     // Check for Edit-Edit pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
-        correspondingNode->setStatus(NodeStatus::Processed);
+        correspondingNode->setStatus(NodeStatusProcessed);
     }
 
-    op->setType(OperationType::Edit);
+    op->setType(OperationTypeEdit);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
-    if (currentNode->hasChangeEvent(OperationType::Move) && currentNode->status() == NodeStatus::Unprocessed) {
-        currentNode->setStatus(NodeStatus::PartiallyProcessed);
+    if (currentNode->hasChangeEvent(OperationTypeMove) && currentNode->status() == NodeStatusUnprocessed) {
+        currentNode->setStatus(NodeStatusPartiallyProcessed);
     } else {
-        currentNode->setStatus(NodeStatus::Processed);
+        currentNode->setStatus(NodeStatusProcessed);
     }
     _syncPal->_syncOps->pushOp(op);
 
@@ -214,8 +213,8 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
                                             << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
-            currentNode->type() == NodeType::File) {
+        if (_syncPal->_vfsMode == VirtualFileModeOff && op->targetSide() == ReplicaSideLocal &&
+            currentNode->type() == NodeTypeFile) {
             // Keep only the difference between remote size and local size
             int64_t diffSize = currentNode->size() - correspondingNode->size();
 
@@ -232,32 +231,31 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
     // Check for Move-Move (Source) pseudo conflict
     if (isPseudoConflict(currentNode, correspondingNode)) {
         op->setOmit(true);
-        correspondingNode->setStatus(NodeStatus::Processed);
+        correspondingNode->setStatus(NodeStatusProcessed);
     }
 
     /*
      * Special case:
-     * 1 - The file name contained à special character, for exemple: "test:1.png" and was rename locally "test%3a1.png".
-     * 2 - The file is rename "test%3a2.png" on local side. Since the "%3a" was not removed, the name is uploaded as it is on
+     * 1 - The file name contained à special character, for example: "test:1.png" and was renamed locally "test%3a1.png".
+     * 2 - The file is renamed "test%3a2.png" on local side. Since the "%3a" was not removed, the name is uploaded as it is on
      * local replica and appears now "test%3a2.png" on remote. 3 - The file is renamed "test:2.png" on remote replica. We then try
      * to rename the local file "test%3a2.png" but fail since it already exist
      */
-    if (currentNode->side() == ReplicaSide::Remote && correspondingNode->validLocalName().empty() &&
-        currentNode->validLocalName() == correspondingNode->name()) {
+    if (currentNode->side() == ReplicaSideRemote && correspondingNode->name().empty() &&
+        currentNode->name() == correspondingNode->name()) {
         // Only update DB and tree
         op->setOmit(true);
     }
 
-    op->setType(OperationType::Move);
+    op->setType(OperationTypeMove);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
-    op->setNewName(op->targetSide() == ReplicaSide::Local ? currentNode->finalLocalName()
-                                                        : currentNode->name());  // Use validName only on local replica
-    if (currentNode->hasChangeEvent(OperationType::Edit) && currentNode->status() == NodeStatus::Unprocessed) {
-        currentNode->setStatus(NodeStatus::PartiallyProcessed);
+    op->setNewName(currentNode->name());
+    if (currentNode->hasChangeEvent(OperationTypeEdit) && currentNode->status() == NodeStatusUnprocessed) {
+        currentNode->setStatus(NodeStatusPartiallyProcessed);
     } else {
-        currentNode->setStatus(NodeStatus::Processed);
+        currentNode->setStatus(NodeStatusProcessed);
     }
     _syncPal->_syncOps->pushOp(op);
 
@@ -282,30 +280,30 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
 
 void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> currentNode,
                                                        std::shared_ptr<Node> correspondingNode) {
-    SyncOpPtr op = std::make_shared<SyncOperation>();
+    auto op = std::make_shared<SyncOperation>();
 
-    assert(correspondingNode);  // Node must exists on both replica (except for create operations)
+    assert(correspondingNode);  // Node must exist on both replica (except for create operations)
 
     // Do not generate delete operation if parent already deleted
-    if (_deletedNodes.find(*currentNode->parentNode()->id()) != _deletedNodes.end()) {
+    if (_deletedNodes.contains(*currentNode->parentNode()->id())) {
         return;
     }
 
     // Check if corresponding node has been also deleted
-    if (correspondingNode->hasChangeEvent(OperationType::Delete)) {
+    if (correspondingNode->hasChangeEvent(OperationTypeDelete)) {
         op->setOmit(true);
     }
 
-    op->setType(OperationType::Delete);
+    op->setType(OperationTypeDelete);
     findAndMarkAllChildNodes(currentNode);
-    currentNode->setStatus(NodeStatus::Processed);
+    currentNode->setStatus(NodeStatusProcessed);
     op->setAffectedNode(currentNode);
     op->setCorrespondingNode(correspondingNode);
     op->setTargetSide(correspondingNode->side());
 
     // Also mark all corresponding nodes as Processed
     findAndMarkAllChildNodes(correspondingNode);
-    correspondingNode->setStatus(NodeStatus::Processed);
+    correspondingNode->setStatus(NodeStatusProcessed);
 
     _syncPal->_syncOps->pushOp(op);
 
@@ -317,7 +315,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                             << SyncName2WStr(currentNode->name()).c_str());
         }
         _syncPal->_restart =
-            true;  // In certains cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
+            true;  // In certain cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
                    // of next sync because nothing has changed but create events are not propagated
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
@@ -334,10 +332,10 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
 
 void OperationGeneratorWorker::findAndMarkAllChildNodes(std::shared_ptr<Node> parentNode) {
     for (auto &childNode : parentNode->children()) {
-        if (childNode.second->type() == NodeType::Directory) {
+        if (childNode.second->type() == NodeTypeDirectory) {
             findAndMarkAllChildNodes(childNode.second);
         }
-        childNode.second->setStatus(NodeStatus::Processed);
+        childNode.second->setStatus(NodeStatusProcessed);
     }
 }
 

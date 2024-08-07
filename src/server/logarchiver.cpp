@@ -30,6 +30,8 @@
 #include "libparms/db/parmsdb.h"
 #include "libparms/db/drive.h"
 
+#include "requests/parameterscache.h"
+
 #include <fstream>
 
 #include <zip.h>
@@ -41,7 +43,9 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
     bool result = false;
     for (int i = 0; i < 2; i++) {  // Retry once in case a log file is archived/created during the first iteration
         result = IoHelper::getDirectorySize(logPath, size, ioError);
-        if (ioError == IoError::Success) {
+        if (ioError == IoErrorSuccess) {
+            size *= 0.8;  // The compressed logs will be smaller than the original ones. We estimate at worst 80% of the
+                                  // original size.
             return true;
         }
     }
@@ -52,14 +56,16 @@ bool LogArchiver::getLogDirEstimatedSize(uint64_t &size, IoError &ioError) {
 }
 
 ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const SyncPath &outputPath,
-                                                 std::function<bool(int)> progressCallback, SyncPath &archivePath,
+                                                 const std::function<bool(int)> &progressCallback, SyncPath &archivePath,
                                                  ExitCause &exitCause, bool test) {
+    const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
+
     // Get the log directory path
     const SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
     const SyncPath tempLogArchiveDir =
         logPath / "temp_support_archive_generator" / ("tempLogArchive_" + CommonUtility::generateRandomStringAlphaNum(10));
-    exitCause = ExitCause::Unknown;
-    IoError ioError = IoError::Success;
+    exitCause = ExitCauseUnknown;
+    IoError ioError = IoErrorSuccess;
 
     // Generate archive name: <drive id 1>-<drive id 2>...-<drive id N>-yyyyMMdd-HHmmss.zip
     std::string archiveName;
@@ -72,8 +78,8 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
                     !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
                     LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
                 }
-                exitCause = ExitCause::DbAccessError;
-                return ExitCode::DbError;
+                exitCause = ExitCauseDbAccessError;
+                return ExitCodeDbError;
             }
 
             if (driveList.empty()) {
@@ -82,13 +88,13 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
                     !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, LogUploadState::Failed, found) || !found) {
                     LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
                 }
-                exitCause = ExitCause::LoginError;
-                return ExitCode::InvalidToken;  // Currently, we can't send logs if no drive is found
+                exitCause = ExitCauseLoginError;
+                return ExitCodeInvalidToken;  // Currently, we can't send logs if no drive is found
             }
         } catch (const std::runtime_error &e) {
             LOG_WARN(Log::instance()->getLogger(), "Error in generateLogsSupportArchive: " << e.what());
-            exitCause = ExitCause::DbAccessError;
-            return ExitCode::DbError;
+            exitCause = ExitCauseDbAccessError;
+            return ExitCodeDbError;
         }
 
         for (const auto &drive : driveList) {
@@ -106,57 +112,63 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
     archivePath = outputPath / archiveName;
 
     // Create temp folder
-    if (!IoHelper::createDirectory(tempLogArchiveDir.parent_path(), ioError) && ioError != IoError::DirectoryExists) {
+    if (!IoHelper::createDirectory(tempLogArchiveDir.parent_path(), ioError) && ioError != IoErrorDirectoryExists) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::createDirectory: "
                                                     << Utility::formatIoError(tempLogArchiveDir.parent_path(), ioError).c_str());
-        if (ioError == IoError::DiskFull) {
-            exitCause = ExitCause::NotEnoughDiskSpace;
+        if (ioError == IoErrorDiskFull) {
+            exitCause = ExitCauseNotEnoughDiskSpace;
         } else {
-            exitCause = ExitCause::Unknown;
+            exitCause = ExitCauseUnknown;
         }
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
 
     if (!IoHelper::createDirectory(tempLogArchiveDir, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::createDirectory: " << Utility::formatIoError(tempLogArchiveDir, ioError).c_str());
-        IoError ignoreError = IoError::Success;
+        IoError ignoreError = IoErrorSuccess;
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ignoreError);
-        if (ioError == IoError::DiskFull) {
-            exitCause = ExitCause::NotEnoughDiskSpace;
+        if (ioError == IoErrorDiskFull) {
+            exitCause = ExitCauseNotEnoughDiskSpace;
         } else {
-            exitCause = ExitCause::Unknown;
+            exitCause = ExitCauseUnknown;
         }
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
 
     ExitCode exitCode = copyLogsTo(tempLogArchiveDir, includeArchivedLogs, exitCause);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Unable to copy logs to temp folder: " << enumClassToInt(exitCause));
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to copy logs to temp folder: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
         return exitCode;
     }
 
     // Copy .parmsdb to temp folder
     exitCode = copyParmsDbTo(tempLogArchiveDir / ".parms.db", exitCause);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Unable to copy .parms.db to temp folder: " << enumClassToInt(exitCause));
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to copy .parms.db to temp folder: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
         return exitCode;
     }
 
     // Generate user description file
-    exitCode = generateUserDescriptionFile(tempLogArchiveDir, exitCause);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Unable to generate user description file: " << enumClassToInt(exitCause));
+    exitCode = generateUserDescriptionFile(tempLogArchiveDir / "user_description.txt", exitCause);
+    if (exitCode != ExitCodeOk) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to generate user description file: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
         return exitCode;
     }
 
     // compress all the files in the folder
-    exitCode = compressLogFiles(tempLogArchiveDir, progressCallback, exitCause);
-    if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Unable to compress logs: " << enumClassToInt(exitCause));
+    std::function<bool(int)> compressLogFilesProgressCallback = [&safeProgressCallback](int progressPercent) {
+        return safeProgressCallback((progressPercent * 95) / 100);  // The last 5% is for the archive generation
+    };
+    exitCode = compressLogFiles(tempLogArchiveDir, compressLogFilesProgressCallback, exitCause);
+    if (exitCause == ExitCauseOperationCanceled) {
+        IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
+        return ExitCodeOk;
+    } else if (exitCode != ExitCodeOk) {
+        LOG_WARN(Log::instance()->getLogger(), "Unable to compress logs: " << exitCause);
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
         return exitCode;
     }
@@ -168,8 +180,8 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         LOG_WARN(Log::instance()->getLogger(), "Error in zip_open: " << zip_strerror(archive));
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
 
-        exitCause = ExitCause::Unknown;
-        return ExitCode::SystemError;
+        exitCause = ExitCauseUnknown;
+        return ExitCodeSystemError;
     }
 
     IoHelper::DirectoryIterator dir;
@@ -178,8 +190,8 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
                   L"Error in DirectoryIterator: " << Utility::formatIoError(tempLogArchiveDir, ioError).c_str());
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
 
-        exitCause = ExitCause::Unknown;
-        return ExitCode::Unknown;
+        exitCause = ExitCauseUnknown;
+        return ExitCodeUnknown;
     }
 
     bool endOfDirectory = false;
@@ -190,18 +202,16 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         if (source == nullptr) {
             LOG_WARN(Log::instance()->getLogger(), "Error in zip_source_file: " << zip_strerror(archive));
             IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
-
-            exitCause = ExitCause::Unknown;
-            return ExitCode::Unknown;
+            exitCause = ExitCauseUnknown;
+            return ExitCodeUnknown;
         }
 
         const std::string entryName = entry.path().filename().string();
         if (zip_file_add(archive, entryName.c_str(), source, ZIP_FL_OVERWRITE) < 0) {
             LOG_WARN(Log::instance()->getLogger(), "Error in zip_file_add: " << zip_strerror(archive));
             IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
-
-            exitCause = ExitCause::Unknown;
-            return ExitCode::Unknown;
+            exitCause = ExitCauseUnknown;
+            return ExitCodeUnknown;
         }
     }
 
@@ -209,18 +219,16 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(tempLogArchiveDir, ioError).c_str());
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
-
-        exitCause = ExitCause::Unknown;
-        return ExitCode::Unknown;
+        exitCause = ExitCauseUnknown;
+        return ExitCodeUnknown;
     }
 
     // Close the archive
     if (zip_close(archive) < 0) {
         LOG_WARN(Log::instance()->getLogger(), "Error in zip_close: " << zip_strerror(archive));
         IoHelper::deleteDirectory(tempLogArchiveDir.parent_path(), ioError);
-
-        exitCause = ExitCause::Unknown;
-        return ExitCode::Unknown;
+        exitCause = ExitCauseUnknown;
+        return ExitCodeUnknown;
     }
 
     // Delete the temp folder
@@ -228,21 +236,21 @@ ExitCode LogArchiver::generateLogsSupportArchive(bool includeArchivedLogs, const
         LOGW_WARN(Log::instance()->getLogger(), L"Error in IoHelper::deleteDirectory: "
                                                     << Utility::formatIoError(tempLogArchiveDir.parent_path(), ioError).c_str());
     }
-
-    exitCause = ExitCause::Unknown;
-    return ExitCode::Ok;
+    safeProgressCallback(100);
+    exitCause = ExitCauseUnknown;
+    return ExitCodeOk;
 }
 
 ExitCode LogArchiver::copyLogsTo(const SyncPath &outputPath, bool includeArchivedLogs, ExitCause &exitCause) {
-    exitCause = ExitCause::Unknown;
+    exitCause = ExitCauseUnknown;
     SyncPath logPath = Log::instance()->getLogFilePath().parent_path();
 
-    IoError ioError = IoError::Success;
+    IoError ioError = IoErrorSuccess;
     IoHelper::DirectoryIterator dir;
     if (!IoHelper::getDirectoryIterator(logPath, false, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(logPath, ioError).c_str());
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
 
     DirectoryEntry entry;
@@ -261,87 +269,108 @@ ExitCode LogArchiver::copyLogsTo(const SyncPath &outputPath, bool includeArchive
         if (!IoHelper::copyFileOrDirectory(entry.path(), outputPath / entry.path().filename(), ioError)) {
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
-            if (ioError == IoError::DiskFull) {
-                exitCause = ExitCause::NotEnoughDiskSpace;
+            if (ioError == IoErrorDiskFull) {
+                exitCause = ExitCauseNotEnoughDiskSpace;
             }
-            return ExitCode::SystemError;
+            return ExitCodeSystemError;
         }
     }
 
     if (!endOfDirectory) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(logPath, ioError).c_str());
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
 
-    return ExitCode::Ok;
+    return ExitCodeOk;
 }
 
 ExitCode LogArchiver::copyParmsDbTo(const SyncPath &outputPath, ExitCause &exitCause) {
     const SyncPath parmsDbName = ".parms.db";
     const SyncPath parmsDbPath = CommonUtility::getAppSupportDir() / parmsDbName;
     DirectoryEntry entryParmsDb;
-    IoError ioError = IoError::Unknown;
-    exitCause = ExitCause::Unknown;
+    IoError ioError = IoErrorUnknown;
+    exitCause = ExitCauseUnknown;
 
     if (!IoHelper::getDirectoryEntry(parmsDbPath, ioError, entryParmsDb)) {
         LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Creating ");
 
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::getDirectoryEntry: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
-        if (ioError == IoError::NoSuchFileOrDirectory) {
-            exitCause = ExitCause::FileAccessError;
+        if (ioError == IoErrorNoSuchFileOrDirectory) {
+            exitCause = ExitCauseFileAccessError;
         }
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
 
     if (!IoHelper::copyFileOrDirectory(parmsDbPath, outputPath, ioError)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in IoHelper::copyFileOrDirectory: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
 
-        if (ioError == IoError::DiskFull) {
-            exitCause = ExitCause::NotEnoughDiskSpace;
+        if (ioError == IoErrorDiskFull) {
+            exitCause = ExitCauseNotEnoughDiskSpace;
         }
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
-    return ExitCode::Ok;
+    return ExitCodeOk;
 }
 
-ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std::function<bool(int)> progressCallback,
+ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, const std::function<bool(int)> &progressCallback,
                                        ExitCause &exitCause) {
+    const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
     IoHelper::DirectoryIterator dir;
-    IoError ioError = IoError::Unknown;
-    exitCause = ExitCause::Unknown;
-
+    IoError ioError = IoErrorUnknown;
+    exitCause = ExitCauseUnknown;
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
 
-    std::function<bool(int)> safeProgressCallback = progressCallback != nullptr ? progressCallback : [](int) { return true; };
-    int nbFiles = 0;
+    // Count the size of the files to compress
+    uint64_t totalSize = 1;  // Avoid division by zero
     DirectoryEntry entry;
-
-    if (!safeProgressCallback(0)) {
-        LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
-        return ExitCode::OperationCanceled;
-    }
-
     bool endOfDirectory = false;
-    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        nbFiles++;
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {  // cannot use IoHelper::getDirectorySize because it
+                                                                           // will count the size of the already compressed files
+        if (entry.path().filename().extension() == Str(".gz")) {
+            continue;
+        }
+
+        ItemType itemType;
+        if (!IoHelper::getItemType(entry.path(), itemType)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in IoHelper::getItemType: " << Utility::formatIoError(entry.path(), ioError).c_str());
+            continue;  // Don't process the item
+        }
+        if (itemType.ioError != IoErrorSuccess) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Unable to read item type for " << Utility::formatIoError(entry.path(), itemType.ioError).c_str());
+            continue;  // Don't process the item
+        }
+
+        if (itemType.ioError == IoErrorSuccess && itemType.nodeType == NodeTypeFile) {
+            uint64_t fileSize = 0;
+            if (!getFileSize(entry.path(), fileSize)) {
+                LOGW_WARN(Log::instance()->getLogger(),
+                          L"Error in LogArchiver::getFileSize for " << Utility::formatSyncPath(entry.path()).c_str());
+                continue;  // Don't process the file
+            }
+
+            totalSize += fileSize;
+        }
     }
+
     if (!IoHelper::getDirectoryIterator(directoryToCompress, true, ioError, dir)) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
 
-
-    int progress = 0;
+    // Compress the files
+    uint64_t compressedFilesSize = 0;
     while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        if (entry.path().filename().extension() == Str(".gz")) {
+        if (entry.path().filename().extension() == Str(".gz") || !entry.is_regular_file()) {
             continue;
         }
 
@@ -349,45 +378,66 @@ ExitCode LogArchiver::compressLogFiles(const SyncPath &directoryToCompress, std:
         const bool success = IoHelper::getItemType(entry.path(), itemType);
         ioError = itemType.ioError;
         if (!success) {
-            return ExitCode::SystemError;
+            return ExitCodeSystemError;
         }
 
-        if (itemType.nodeType != NodeType::File) {
+        if (itemType.nodeType != NodeTypeFile) {
             continue;
         }
         const std::string entryPathStr = entry.path().string();
-        QString destPath = QString::fromStdString(entryPathStr + ".gz");
-        if (!CommonUtility::compressFile(QString::fromStdString(entryPathStr), destPath)) {
+        std::string destPath = entryPathStr + ".gz";
+        bool canceled = false;
+        uint64_t fileSize = 0;
+        if (!getFileSize(entry.path(), fileSize)) {
+            LOGW_WARN(Log::instance()->getLogger(),
+                      L"Error in LogArchiver::getFileSize for " << Utility::formatSyncPath(entry.path()).c_str());
+            continue;  // Don't process the file
+        }
+
+        std::function<bool(int)> compressProgressCallback = [&safeProgressCallback, &canceled, &compressedFilesSize, &entry,
+                                                             &destPath, &totalSize, &fileSize](int progressPercent) {
+            auto parametersCacheInstance = ParametersCache::instance();
+            if (parametersCacheInstance && parametersCacheInstance->parameters().extendedLog()) {
+                LOG_DEBUG(Log::instance()->getLogger(),
+                          "File compression: -path: " << destPath.c_str() << " - sub percent: " << progressPercent
+                                                      << " - total compression step percent: "
+                                                      << (compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
+            }
+            canceled = !safeProgressCallback((compressedFilesSize * 100 + progressPercent * fileSize) / totalSize);
+            return !canceled;
+        };
+
+        if (!CommonUtility::compressFile(entryPathStr, destPath, compressProgressCallback)) {
             LOG_WARN(Log::instance()->getLogger(),
-                     "Error in compressFile for " << entryPathStr.c_str() << " to " << destPath.toStdString().c_str());
-            return ExitCode::SystemError;
+                     "Error in compressFile for " << entryPathStr.c_str() << " to " << destPath.c_str());
+            return ExitCodeSystemError;
+        }
+
+        if (canceled) {
+            LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
+            exitCause = ExitCauseOperationCanceled;
+            return ExitCodeOk;
         }
 
         if (!IoHelper::deleteDirectory(entry.path(), ioError)) {  // Delete the original file
             LOGW_WARN(Log::instance()->getLogger(),
                       L"Error in IoHelper::deleteDirectory: " << Utility::formatIoError(entry.path(), ioError).c_str());
-            return ExitCode::SystemError;
+            return ExitCodeSystemError;
         }
-
-        progress++;
-        const int progressPercent = 100.0 * (double)progress / (double)nbFiles;
-        if (!safeProgressCallback(progressPercent)) {
-            LOG_INFO(Log::instance()->getLogger(), "Log compression canceled");
-            return ExitCode::OperationCanceled;
-        }
+        compressedFilesSize += fileSize;
     }
 
     if (!endOfDirectory) {
         LOGW_WARN(Log::instance()->getLogger(),
                   L"Error in DirectoryIterator: " << Utility::formatIoError(directoryToCompress, ioError).c_str());
-        return ExitCode::SystemError;
+        return ExitCodeSystemError;
     }
 
-    return ExitCode::Ok;
+    return ExitCodeOk;
 }
 
 ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath &outputPath, ExitCause &exitCause) {
-    exitCause = ExitCause::Unknown;
+    exitCause = ExitCauseUnknown;
 
     std::string osName = CommonUtility::platformName().toStdString();
     std::string osArch = CommonUtility::platformArch().toStdString();
@@ -396,7 +446,7 @@ ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath &outputPath, Ex
     std::ofstream file(outputPath.string());
     if (!file.is_open()) {
         LOGW_WARN(Log::instance()->getLogger(), L"Error in creating file: " << Utility::formatSyncPath(outputPath).c_str());
-        return ExitCode::Ok;
+        return ExitCodeOk;
     }
     file << "OS Name: " << osName << std::endl;
     file << "OS Architecture: " << osArch << std::endl;
@@ -434,10 +484,29 @@ ExitCode LogArchiver::generateUserDescriptionFile(const SyncPath &outputPath, Ex
 
     file.close();
     if (file.bad()) {
-        exitCause = ExitCause::NotEnoughDiskSpace;
-        return ExitCode::SystemError;
+        exitCause = ExitCauseNotEnoughDiskSpace;
+        return ExitCodeSystemError;
     }
 
-    return ExitCode::Ok;
+    return ExitCodeOk;
 }
+
+bool LogArchiver::getFileSize(const SyncPath &path, uint64_t &size) {
+    size = 0;
+
+    IoError ioError = IoErrorUnknown;
+    if (!IoHelper::getFileSize(path, size, ioError)) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Error in IoHelper::getFileSize for " << Utility::formatIoError(path, ioError).c_str());
+        return false;
+    }
+    if (ioError != IoErrorSuccess) {
+        LOGW_WARN(Log::instance()->getLogger(),
+                  L"Unable to read file size for " << Utility::formatIoError(path, ioError).c_str());
+        return false;
+    }
+
+    return true;
+}
+
 };  // namespace KDC

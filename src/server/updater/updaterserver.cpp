@@ -1,3 +1,4 @@
+#include "updaterserver.h"
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -129,6 +130,7 @@ void UpdaterServer::startInstaller() const {
     }
 #endif
 }
+
 
 QUrlQuery UpdaterServer::getQueryParams() {
     QUrlQuery query;

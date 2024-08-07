@@ -16,16 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string>
-#include <filesystem>
-#include <sstream> 
+#include "testincludes.h"
+
+#include "api_token/testapitoken.h"
+#include "utility/testutility.h"
+#include "utility/testtypes.h"
 
 namespace KDC {
-
-struct TemporaryDirectory {
-        std::filesystem::path path;
-        TemporaryDirectory(const std::string& testType = "undef");
-        ~TemporaryDirectory();
-};
-
+CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestTypes);
 }  // namespace KDC
+
+int main(int, char **) {
+    return runTestSuite("_kDriveTestCommon.log");
+}

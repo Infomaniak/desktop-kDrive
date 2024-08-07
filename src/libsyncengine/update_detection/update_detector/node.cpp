@@ -30,29 +30,26 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
     : _idb(idb),
       _side(side),
       _name(Utility::normalizedSyncName(name)),
-      _validLocalName(SyncName()),
-      _inconsistencyType(InconsistencyType::None),
+      _inconsistencyType(InconsistencyTypeNone),
       _type(type),
       _id(id),
       _previousId(std::nullopt),
       _createdAt(createdAt),
       _lastModified(lastmodified),
       _size(size),
-      _status(NodeStatus::Unprocessed),
+      _status(NodeStatusUnprocessed),
       _parentNode(nullptr),
       _moveOrigin(std::nullopt),
       _moveOriginParentDbId(std::nullopt),
       _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
 
-Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
-           OperationType changeEvents,
+Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type, int changeEvents,
            const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size,
            std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId)
     : _idb(idb),
       _side(side),
       _name(Utility::normalizedSyncName(name)),
-      _validLocalName(SyncName()),
-      _inconsistencyType(InconsistencyType::None),
+      _inconsistencyType(InconsistencyTypeNone),
       _type(type),
       _changeEvents(changeEvents),
       _id(id),
@@ -60,7 +57,7 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
       _createdAt(createdAt),
       _lastModified(lastmodified),
       _size(size),
-      _status(NodeStatus::Unprocessed),
+      _status(NodeStatusUnprocessed),
       _parentNode(parentNode),
       _moveOrigin(moveOrigin),
       _moveOriginParentDbId(moveOriginParentDbId),
@@ -73,14 +70,13 @@ Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::sh
 
 Node::Node()
     : _idb(std::nullopt),
-      _side(ReplicaSide::Unknown),
+      _side(ReplicaSide::ReplicaSideUnknown),
       _name(SyncName()),
-      _validLocalName(SyncName()),
-      _inconsistencyType(InconsistencyType::None),
-      _type(NodeType::Unknown),
+      _inconsistencyType(InconsistencyTypeNone),
+      _type(NodeTypeUnknown),
       _id(std::string()),
       _previousId(std::nullopt),
-      _status(NodeStatus::Unprocessed),
+      _status(NodeStatusUnprocessed),
       _parentNode(nullptr),
       _moveOrigin(std::nullopt),
       _moveOriginParentDbId(std::nullopt),
@@ -144,8 +140,8 @@ size_t Node::deleteChildren(const NodeId &childId) {
     return _childrenById.erase(childId);
 }
 
-bool Node::isEditFromDeleteCreate() {
-    if (hasChangeEvent(OperationType::Edit) && _previousId.has_value()) {
+bool Node::isEditFromDeleteCreate() const {
+    if (hasChangeEvent(OperationTypeEdit) && _previousId.has_value()) {
         return true;
     }
     return false;
@@ -172,20 +168,19 @@ bool Node::isSharedFolder() const {
     return false;
 }
 
-SyncPath Node::getPath(bool localName /*= false*/) {
+SyncPath Node::getPath() const {
     std::vector<SyncName> names;
-    names.push_back(localName ? finalLocalName() : name());
+    names.push_back(name());
 
-    std::shared_ptr<Node> tmpNode = parentNode();
-    if (tmpNode) {
+    if (std::shared_ptr<Node> tmpNode = parentNode(); tmpNode) {
         while (tmpNode->parentNode() != nullptr) {
-            names.push_back(localName ? tmpNode->finalLocalName() : tmpNode->name());
+            names.push_back(tmpNode->name());
             tmpNode = tmpNode->parentNode();
         }
     }
 
     SyncPath path;
-    for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
+    for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         path /= *nameIt;
     }
 

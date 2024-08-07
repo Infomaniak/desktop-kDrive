@@ -226,7 +226,7 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
 
             std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(moveNode);
             if (correspondingNode) {
-                if (correspondingNode->finalLocalName() == createOp->affectedNode()->finalLocalName()) {
+                if (correspondingNode->name() == createOp->affectedNode()->name()) {
                     moveFirstAfterSecond(createOp, moveOp);
                     continue;
                 }
@@ -405,7 +405,7 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
             if (createNode->parentNode() != nullptr) {
                 std::optional<NodeId> createParentId = createNode->parentNode()->id();
                 if (deleteParentId == createParentId) {
-                    if (createNode->finalLocalName() == deleteNode->finalLocalName()) {
+                    if (createNode->name() == deleteNode->name()) {
                         // move only if createOp is before op
                         moveFirstAfterSecond(createOp, deleteOp);
                     }
@@ -624,7 +624,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     // impossible move if dest = source + "/"
     SyncPath source = (o1->affectedNode()->moveOrigin().has_value() ? o1->affectedNode()->moveOrigin().value() : "");
     SyncPath dest = o1->affectedNode()->getPath();
-    if (!Utility::startsWith(dest.native(), source.native() + Str("/"))) {
+    if (!Utility::startsWith(dest.lexically_normal(), SyncPath(source.native() + Str("/")).lexically_normal())) {
         return std::nullopt;
     }
 

@@ -706,7 +706,8 @@ SyncName Utility::logFileNameWithTime() {
 
 std::string Utility::toUpper(const std::string &str) {
     std::string upperStr(str);
-    std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
+    // std::ranges::transform(str, upperStr.begin(), [](unsigned char c) { return std::toupper(c); });   // Needs gcc-11
+    std::transform(str.begin(), str.end(), upperStr.begin(), [](unsigned char c) { return std::toupper(c); });
     return upperStr;
 }
 
@@ -748,8 +749,8 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
             DWORD dwError = GetLastError();
             if (dwError != ERROR_INSUFFICIENT_BUFFER) {
                 // Real error, not buffer error
-                LOGW_WARN(_logger, L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
-                                                                  << std::to_wstring(dwError));
+                LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
+                                                                   << std::to_wstring(dwError));
 
 #ifdef NDEBUG
                 sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_FATAL, "Utility::normalizedSyncName",
@@ -766,8 +767,8 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
 
     if (iSizeEstimated <= 0) {
         DWORD dwError = GetLastError();
-        LOGW_WARN(_logger, L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
-                                                          << std::to_wstring(dwError));
+        LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
+                                                           << std::to_wstring(dwError));
 
 #ifdef NDEBUG
         sentry_capture_event(
@@ -799,13 +800,13 @@ SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
     if (segmentIt == path.end()) return {};
 
     auto segment = *segmentIt;
-    if (segmentIt->native() != Str("/")) segment = normalizedSyncName(segment);
+    if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) segment = normalizedSyncName(segment);
 
     SyncPath result{segment};
     ++segmentIt;
 
     for (; segmentIt != path.end(); ++segmentIt) {
-        if (segmentIt->native() != Str("/")) {
+        if (segmentIt->lexically_normal() != SyncPath(Str("/")).lexically_normal()) {
             result /= normalizedSyncName(*segmentIt);
         }
     }

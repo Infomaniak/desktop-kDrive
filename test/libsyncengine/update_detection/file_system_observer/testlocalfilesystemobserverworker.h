@@ -19,6 +19,7 @@
 #pragma once
 
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
 
 #include "db/parmsdb.h"
 #include "syncpal/syncpal.h"
@@ -33,7 +34,11 @@ class LocalFileSystemObserverWorker;
 
 class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
-        CPPUNIT_TEST(testFolderWatcher);
+        CPPUNIT_TEST(testFolderWatcherWithInitialSnapshot);
+        CPPUNIT_TEST(testFolderWatcherWithFiles);
+        CPPUNIT_TEST(testFolderWatcherDeleteDir);
+        CPPUNIT_TEST(testFolderWatcherWithDirs);
+        CPPUNIT_TEST(testFolderWatcherWithSpecialCases);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -46,6 +51,19 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
     private:
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
+
+        static const SyncPath _testFolderPath;
+        static const SyncPath _testPicturesFolderName;
+        static const uint64_t _nbFileInTestDir;
+
+        LocalTemporaryDirectory _tempDir;
+        SyncPath _testRootFolderPath;
+
+        void testFolderWatcherWithInitialSnapshot();
+        void testFolderWatcherWithFiles();
+        void testFolderWatcherWithDirs();
+        void testFolderWatcherDeleteDir();
+        void testFolderWatcherWithSpecialCases();
 };
 
 }  // namespace KDC

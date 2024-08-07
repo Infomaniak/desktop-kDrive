@@ -34,7 +34,7 @@ bool isLocked(const SyncPath &path);
 
 namespace {
 inline bool _isXAttrValueExpectedError(IoError error) {
-    return (error == IoError::NoSuchFileOrDirectory) || (error == IoError::AttrNotFound) || (error == IoError::AccessDenied);
+    return (error == IoErrorNoSuchFileOrDirectory) || (error == IoErrorAttrNotFound) || (error == IoErrorAccessDenied);
 }
 }  // namespace
 
@@ -48,15 +48,15 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
     }
 
     // The item indicated by `path` doesn't exist.
-    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::NoSuchFileOrDirectory;
+    if (itemType.linkType == LinkTypeNone && itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+        ioError = IoErrorNoSuchFileOrDirectory;
         return true;
     }
 
-    const bool isSymlink = itemType.linkType == LinkType::Symlink;
+    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
 
     for (;;) {
-        const long bufferLength = getxattr(path.native().c_str(), attrName.c_str(), nullptr, 0, 0, isSymlink ? XATTR_NOFOLLOW : 0);
+        const long bufferLength = getxattr(path.native().c_str(), attrName.c_str(), NULL, 0, 0, isSymlink ? XATTR_NOFOLLOW : 0);
         if (bufferLength == -1) {
             ioError = posixError2ioError(errno);
             return _isXAttrValueExpectedError(ioError);
@@ -66,7 +66,7 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
         if (getxattr(path.native().c_str(), attrName.c_str(), value.data(), bufferLength, 0, isSymlink ? XATTR_NOFOLLOW : 0) !=
             bufferLength) {
             ioError = posixError2ioError(errno);
-            if (ioError == IoError::ResultOutOfRange) {
+            if (ioError == IoErrorResultOutOfRange) {
                 // XAttr length has changed, retry
                 continue;
             }
@@ -74,7 +74,7 @@ bool IoHelper::getXAttrValue(const SyncPath &path, const std::string &attrName, 
         }
 
         // XAttr has been read
-        ioError = IoError::Success;
+        ioError = IoErrorSuccess;
         return true;
     }
 }
@@ -89,12 +89,12 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
     }
 
     // The item indicated by `path` doesn't exist.
-    if (itemType.linkType == LinkType::None && itemType.ioError == IoError::NoSuchFileOrDirectory) {
-        ioError = IoError::NoSuchFileOrDirectory;
+    if (itemType.linkType == LinkTypeNone && itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+        ioError = IoErrorNoSuchFileOrDirectory;
         return true;
     }
 
-    const bool isSymlink = itemType.linkType == LinkType::Symlink;
+    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
 
     if (setxattr(path.native().c_str(), attrName.c_str(), value.data(), value.size(), 0, isSymlink ? XATTR_NOFOLLOW : 0) == -1) {
         ioError = posixError2ioError(errno);
@@ -102,13 +102,13 @@ bool IoHelper::setXAttrValue(const SyncPath &path, const std::string &attrName, 
     }
 
     // XAttr has been set
-    ioError = IoError::Success;
+    ioError = IoErrorSuccess;
     return true;
 }
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
     isDehydrated = false;
-    ioError = IoError::Success;
+    ioError = IoErrorSuccess;
 
     static const std::string EXT_ATTR_STATUS = "com.infomaniak.drive.desktopclient.litesync.status";
 
@@ -137,10 +137,10 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         return false;
     }
     ioError = itemType.ioError;
-    if (ioError != IoError::Success) {
-        return _isExpectedError(ioError);
+    if (ioError != IoErrorSuccess) {
+        return isExpectedError(ioError);
     }
-    const bool isSymlink = itemType.linkType == LinkType::Symlink;
+    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
 
     std::error_code ec;
     std::filesystem::perms perms =
@@ -149,10 +149,10 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
        const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
         ioError = stdError2ioError(ec);
         if (!exists) {
-            ioError = IoError::NoSuchFileOrDirectory;
+            ioError = IoErrorNoSuchFileOrDirectory;
         }
         LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
-        return _isExpectedError(ioError);
+        return isExpectedError(ioError);
     }
 
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);

@@ -499,7 +499,7 @@ KDC--CustomDialog QPushButton#nondefaultbutton
     font-size: 14px;
 }
 
-KDC--CustomDialog QPushButton#defaultbutton
+QDialog QPushButton#KDCdefaultbutton, KDC--CustomDialog QPushButton#defaultbutton
 {
     background-color: #0098FF;
     border: 0px;
@@ -514,7 +514,7 @@ KDC--CustomDialog QPushButton#defaultbutton
     font-size: 14px;
 }
 
-KDC--CustomDialog QPushButton#defaultbutton:disabled
+QDialog QPushButton#KDCdefaultbutton:disabled, KDC--CustomDialog QPushButton#defaultbutton:disabled
 {
     background-color: rgba(0, 152, 255, 122); /* #0098FF with alpha 50% */
 }
@@ -660,6 +660,18 @@ KDC--CustomDialog QToolButton:hover
 {
     background-color: transparent;
     border: none;
+}
+
+KDC--CustomDialog QScrollArea
+{
+    background-color: #2D3034;
+    border: 0px;
+}
+
+
+KDC--CustomDialog QWidget#debugDialogScrollable
+{
+    background-color: #2D3034;
 }
 
 /**************************/
@@ -1885,17 +1897,17 @@ KDC--ConfirmSynchronizationDialog QLabel#foldername
 }
 
 /********************************/
-/* KDC--AddDriveSmartSyncWidget */
+/* KDC--AddDriveLiteSyncWidget */
 /********************************/
 
-KDC--AddDriveSmartSyncWidget
+KDC--AddDriveLiteSyncWidget
 {
     qproperty-info_icon_color: #9F9F9F;
     qproperty-info_icon_size: 20px;
     qproperty-logo_color: #FFFFFF;
 }
 
-KDC--AddDriveSmartSyncWidget QProgressBar
+KDC--AddDriveLiteSyncWidget QProgressBar
 {
     background-color: #C0C0C0;
     min-height: 5px;
@@ -1905,7 +1917,7 @@ KDC--AddDriveSmartSyncWidget QProgressBar
     padding: 0px;
 }
 
-KDC--AddDriveSmartSyncWidget QProgressBar::chunk
+KDC--AddDriveLiteSyncWidget QProgressBar::chunk
 {
     background-color: #0098FF;
     border: 0px;

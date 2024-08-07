@@ -21,6 +21,7 @@
 #include <QBitArray>
 #include <QIODevice>
 #include <QPointer>
+#include <thread>
 
 namespace KDC {
 
@@ -54,6 +55,7 @@ class SocketListener {
 
     private:
         BloomFilter _monitoredDirectoriesBloomFilter;
+        std::thread::id _threadId;
 };
 
 }  // namespace KDC

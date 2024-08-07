@@ -21,28 +21,26 @@
 
 namespace KDC {
 
-UploadSessionStartJob::UploadSessionStartJob(int driveDbId, const SyncName &filename, uint64_t size,
+UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const SyncName &filename, uint64_t size,
                                              const NodeId &remoteParentDirId, uint64_t totalChunks)
-    : AbstractUploadSessionJob(driveDbId),
+    : AbstractUploadSessionJob(uploadType, driveDbId),
       _filename(filename),
       _totalSize(size),
       _remoteParentDirId(remoteParentDirId),
-      _totalChunks(totalChunks) {
+      _totalChunks(totalChunks),
+      _uploadType(uploadType) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
-UploadSessionStartJob::UploadSessionStartJob(int driveDbId, const NodeId &fileId, uint64_t size, uint64_t totalChunks)
-    : UploadSessionStartJob(driveDbId, SyncName(), size, "", totalChunks) {
+UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const NodeId &fileId, uint64_t size,
+                                             uint64_t totalChunks)
+    : UploadSessionStartJob(uploadType, driveDbId, SyncName(), size, "", totalChunks) {
     _fileId = fileId;
 }
 
-UploadSessionStartJob::~UploadSessionStartJob() {
-    if (_vfsForceStatus) {
-        if (!_vfsForceStatus(_filePath, true, 0, true)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus for path=" << Path2WStr(_filePath).c_str());
-        }
-    }
-}
+UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, const SyncName &filename, uint64_t size,
+                                             uint64_t totalChunks)
+    : UploadSessionStartJob(uploadType, 0, filename, size, "", totalChunks) {}
 
 std::string UploadSessionStartJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
@@ -52,13 +50,28 @@ std::string UploadSessionStartJob::getSpecificUrl() {
 
 void UploadSessionStartJob::setData(bool &canceled) {
     Poco::JSON::Object json;
-    if (_fileId.empty()) {
-        json.set("file_name", _filename);
-        json.set("directory_id", _remoteParentDirId);
-        json.set("conflict", "version");
-    } else {
-        json.set("file_id", _fileId);
+    using namespace std::chrono;
+    auto timestamp = duration_cast<seconds>(time_point_cast<seconds>(system_clock::now()).time_since_epoch());
+
+    switch (_uploadType) {
+        case UploadSessionType::Standard:
+            if (_fileId.empty()) {
+                json.set("file_name", _filename);
+                json.set("directory_id", _remoteParentDirId);
+                json.set("conflict", "version");
+            } else {
+                json.set("file_id", _fileId);
+            }
+            break;
+        case UploadSessionType::LogUpload:
+            json.set("last_modified_at", timestamp.count());
+            json.set("file_name", _filename);
+            break;
+        default:
+            LOGW_FATAL(_logger, L"Unknown upload type");
+            break;
     }
+
     json.set("total_size", std::to_string(_totalSize));
     json.set("total_chunks", std::to_string(_totalChunks));
 

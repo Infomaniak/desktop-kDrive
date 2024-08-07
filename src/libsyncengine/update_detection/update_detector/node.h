@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <vector>
 #include <optional>
-#include <unordered_set>
 #include <unordered_map>
 
 namespace KDC {
@@ -37,10 +36,10 @@ class Node {
              const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
              int64_t size);
 
-        Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
-             OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
-             std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
-             std::optional<SyncPath> moveOrigin = std::nullopt, std::optional<DbNodeId> moveOriginParentDbId = std::nullopt);
+        Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type, int changeEvents,
+             const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
+             int64_t size, std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin = std::nullopt,
+             std::optional<DbNodeId> moveOriginParentDbId = std::nullopt);
 
         /**
          * @brief Node
@@ -64,14 +63,8 @@ class Node {
         inline ReplicaSide side() const { return _side; }
         inline SyncName name() const { return _name; }
         inline NodeType type() const { return _type; }
-        inline SyncName validLocalName() const {
-            return _validLocalName;
-        }  // TODO : to be removed, local and remote names are always the same
-        inline SyncName finalLocalName() const {
-            return _validLocalName.empty() ? _name : _validLocalName;
-        }  // TODO : to be removed, local and remote names are always the same
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
-        inline OperationType changeEvents() const { return _changeEvents; }
+        inline int changeEvents() const { return _changeEvents; }
         inline std::optional<SyncTime> createdAt() const { return _createdAt; }
         inline std::optional<SyncTime> lastmodified() const { return _lastModified; }
         inline int64_t size() { return _size; }
@@ -88,9 +81,6 @@ class Node {
 
         inline void setIdb(const std::optional<DbNodeId> &idb) { _idb = idb; }
         inline void setName(const SyncName &name) { _name = Utility::normalizedSyncName(name); }
-        inline void setValidLocalName(const SyncName &validLocalName) {
-            _validLocalName = Utility::normalizedSyncName(validLocalName);
-        }
         inline void setInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType = newInconsistencyType; }
         inline void addInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType |= newInconsistencyType; }
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
@@ -113,41 +103,40 @@ class Node {
         size_t deleteChildren(const NodeId &childId);
         std::shared_ptr<Node> getChildExcept(SyncName name, OperationType except);
 
-        inline void setChangeEvents(const OperationType ops) { _changeEvents = ops; }
+        inline void setChangeEvents(const int ops) { _changeEvents = ops; }
         inline void insertChangeEvent(const OperationType &op) { _changeEvents |= op; }
         inline void deleteChangeEvent(const OperationType &op) { _changeEvents ^= op; }
-        inline void clearChangeEvents() { _changeEvents = OperationType::None; }
-        inline bool hasChangeEvent() { return _changeEvents != OperationType::None; }
-        inline bool hasChangeEvent(const OperationType op) { return (_changeEvents & op) == op; }
+        inline void clearChangeEvents() { _changeEvents = OperationTypeNone; }
+        inline bool hasChangeEvent() const { return _changeEvents != OperationTypeNone; }
+        inline bool hasChangeEvent(const int op) const { return _changeEvents & op; }
 
         inline void insertConflictAlreadyConsidered(const ConflictType &conf) { _conflictsAlreadyConsidered.push_back(conf); }
         inline void clearConflictAlreadyConsidered() { _conflictsAlreadyConsidered.clear(); }
 
-        bool isEditFromDeleteCreate();
+        bool isEditFromDeleteCreate() const;
 
-        bool isRoot() const;
-        bool isCommonDocumentsFolder() const;
-        bool isSharedFolder() const;
+        [[nodiscard]] bool isRoot() const;
+        [[nodiscard]] bool isCommonDocumentsFolder() const;
+        [[nodiscard]] bool isSharedFolder() const;
 
-        SyncPath getPath(bool localName = false);
+        [[nodiscard]] SyncPath getPath() const;
 
-        inline bool isTmp() const { return _isTmp; }
+        [[nodiscard]] inline bool isTmp() const { return _isTmp; }
         inline void setIsTmp(bool newIsTmp) { _isTmp = newIsTmp; }
 
     private:
         std::optional<DbNodeId> _idb = std::nullopt;
-        ReplicaSide _side = ReplicaSide::Unknown;
+        ReplicaSide _side = ReplicaSideUnknown;
         SyncName _name;
-        SyncName _validLocalName;
-        InconsistencyType _inconsistencyType = InconsistencyType::None;
-        NodeType _type = NodeType::Unknown;
-        OperationType _changeEvents = OperationType::None;
+        InconsistencyType _inconsistencyType = InconsistencyTypeNone;
+        NodeType _type = NodeTypeUnknown;
+        int _changeEvents = OperationTypeNone;
         std::optional<NodeId> _id = std::nullopt;
         std::optional<NodeId> _previousId = std::nullopt;
         std::optional<SyncTime> _createdAt = std::nullopt;
         std::optional<SyncTime> _lastModified = std::nullopt;
         int64_t _size = 0;
-        NodeStatus _status = NodeStatus::Unprocessed;  // node was already processed during reconciliation
+        NodeStatus _status = NodeStatusUnprocessed;  // node was already processed during reconciliation
         std::unordered_map<NodeId, std::shared_ptr<Node>> _childrenById;
         std::shared_ptr<Node> _parentNode = nullptr;
         // For moved items

@@ -39,8 +39,8 @@ void TestIo::testGetFileSizeSimpleCases() {
 
     // Getting the size of a regular file missing all permissions: no error expected
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "permission_less_file.txt";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "permission_less_file.txt";
         {
             std::ofstream ofs(path);
             ofs << "Some content.\n";
@@ -74,8 +74,8 @@ void TestIo::testGetFileSizeSimpleCases() {
     // Getting the size of regular symbolic link on a file
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_file_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         uint64_t fileSize = 0u;
@@ -90,8 +90,8 @@ void TestIo::testGetFileSizeSimpleCases() {
     // Getting the size of a regular symbolic link on a folder
     {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath path = temporaryDirectory.path / "regular_dir_symbolic_link";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
         uint64_t fileSize = 0u;
@@ -105,9 +105,9 @@ void TestIo::testGetFileSizeSimpleCases() {
         // Getting the size of a dangling symbolic link: `getFileSize` returns `true` but `itemType.ioError`
         // is set with `IoError::NoSuchFileOrDirectory`.
         {
-            const TemporaryDirectory temporaryDirectory;
-            const SyncPath targetPath = temporaryDirectory.path / "non_existing_test_file.txt";  // This file does not exist.
-            const SyncPath path = temporaryDirectory.path / "dangling_symbolic_link";
+            const LocalTemporaryDirectory temporaryDirectory;
+            const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+            const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
             std::filesystem::create_symlink(targetPath, path);
 
             uint64_t fileSize = 0u;
@@ -122,9 +122,9 @@ void TestIo::testGetFileSizeSimpleCases() {
 #if defined(__APPLE__)
     // Getting the size of a MacOSX Finder alias on a regular file.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path / "regular_file_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
@@ -140,9 +140,9 @@ void TestIo::testGetFileSizeSimpleCases() {
 
     // Getting the size of a MacOSX Finder alias on a regular directory.
     {
-        const TemporaryDirectory temporaryDirectory;
+        const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        const SyncPath path = temporaryDirectory.path / "regular_dir_alias";
+        const SyncPath path = temporaryDirectory.path() / "regular_dir_alias";
 
         IoError aliasError;
         CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
@@ -158,9 +158,9 @@ void TestIo::testGetFileSizeSimpleCases() {
 
     // Getting the size of a dangling MacOSX Finder alias on a non-existing file.
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path / "file_to_be_deleted.png";  // This file will be deleted.
-        const SyncPath path = temporaryDirectory.path / "dangling_file_alias";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         {
             std::ofstream ofs(targetPath);
             ofs << "Some content.\n";
@@ -187,8 +187,8 @@ void TestIo::testGetFileSizeSimpleCases() {
 void TestIo::testGetFileSizeAllBranches() {
     // Access denied for a regular file after `getItemType` was called successfully.
     {
-        const TemporaryDirectory temporaryDirectory;
-        const SyncPath subdir = temporaryDirectory.path / "permission_less_subdirectory";
+        const LocalTemporaryDirectory temporaryDirectory;
+        const SyncPath subdir = temporaryDirectory.path() / "permission_less_subdirectory";
         std::filesystem::create_directory(subdir);
         const SyncPath path = subdir / "file.txt";
         { std::ofstream ofs(path); }

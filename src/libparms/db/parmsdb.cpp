@@ -581,7 +581,7 @@ bool ParmsDb::insertDefaultParameters() {
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 23, parameters.autoUpdateAttempted()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 24, parameters.seenVersion()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 25, parameters.dialogGeometry()));
-    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 26, static_cast<int>(parameters.extendedLog())));
+    ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 26, static_cast<int>(_test ? true : parameters.extendedLog())));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 27, parameters.maxAllowedCpu()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 28, parameters.uploadSessionParallelJobs()));
     ASSERT(queryBindValue(INSERT_PARAMETERS_REQUEST_ID, 29, parameters.jobPoolCapacityFactor()));
@@ -876,7 +876,7 @@ bool ParmsDb::create(bool &retry) {
         return sqlFail(CREATE_ERROR_TABLE_ID, error);
     }
     queryFree(CREATE_ERROR_TABLE_ID);
-    
+
     // app state
     if (!createAppState()) {
         LOG_WARN(_logger, "Error in createAppState");
@@ -1237,7 +1237,7 @@ bool ParmsDb::prepare() {
         queryFree(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID);
         return sqlFail(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, error);
     }
-    
+
     // App state
     if (!prepareAppState()) {
         LOG_WARN(_logger, "Error in prepareAppState");
@@ -1320,8 +1320,8 @@ bool ParmsDb::upgrade(const std::string &fromVersion, const std::string & /*toVe
         queryFree(UPDATE_PARAMETERS_JOB_REQUEST_ID);
     }
 
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.1")) {
-        LOG_DEBUG(_logger, "Upgrade < 3.6.1 DB");
+    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.3")) {
+        LOG_DEBUG(_logger, "Upgrade < 3.6.3 DB");
         if (!createAppState()) {
             LOG_WARN(_logger, "Error in createAppState");
             return false;

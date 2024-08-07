@@ -86,11 +86,12 @@ class SocketApi : public QObject {
             _getPublicLinkUrl = getPublicLinkUrl;
         }
 
-        void executeCommandDirect(const char *commandLine);
         void unregisterSync(int syncDbId);
         void registerSync(int syncDbId);
 
         static bool syncForPath(const std::filesystem::path &path, KDC::Sync &sync);
+    public slots:
+        void executeCommandDirect(const QString &commandLine);
 
     private slots:
         void slotNewConnection();

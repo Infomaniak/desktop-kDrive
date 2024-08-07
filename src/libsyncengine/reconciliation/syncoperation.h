@@ -90,15 +90,15 @@ class SyncOperationList : public SharedObject {
         void setOpList(const std::list<SyncOpPtr> &opList);
 
         SyncOpPtr getOp(UniqueId id);
-        inline const std::list<UniqueId> &opSortedList() { return _opSortedList; }
+        inline const std::list<UniqueId> &opSortedList() const { return _opSortedList; }
         inline const std::unordered_set<UniqueId> &opListIdByType(OperationType type) { return _opListByType[type]; }
         inline const std::list<UniqueId> &getOpIdsFromNodeId(const NodeId &nodeId) { return _node2op[nodeId]; }
 
         void pushOp(SyncOpPtr op);
         void insertOp(std::list<UniqueId>::const_iterator pos, SyncOpPtr op);
         void deleteOp(std::list<UniqueId>::const_iterator it);
-        inline int64_t size() const { return _allOps.size(); }
-        inline int isEmpty() const { return _allOps.size() == 0; }
+        [[nodiscard]] inline size_t size() const { return _allOps.size(); }
+        [[nodiscard]] inline int isEmpty() const { return _allOps.empty(); }
         void clear();
         void operator=(SyncOperationList const &other);
 

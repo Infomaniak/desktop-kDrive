@@ -56,21 +56,21 @@ void TestIo::testCheckDirectoryIteratorNonExistingPath() {
 }
 
 void TestIo::testCheckDirectoryIteratorExistingPath() {
-    TemporaryDirectory tempDir;
+    LocalTemporaryDirectory tempDir;
 
     // Create test empty directory
-    const SyncPath emptyDir = tempDir.path / "chekDirIt/empty_dir";
+    const SyncPath emptyDir = tempDir.path() / "chekDirIt/empty_dir";
     std::filesystem::create_directories(emptyDir);
 
     // Create test directory with one file
-    SyncPath oneFileDir = tempDir.path / "chekDirIt/oneFile_dir";
+    SyncPath oneFileDir = tempDir.path() / "chekDirIt/oneFile_dir";
     std::filesystem::create_directories(oneFileDir);
     std::ofstream file(oneFileDir / "oneFile.txt");
     file << "oneFile";
     file.close();
 
     // Create test directory with one directory
-    std::filesystem::create_directories(tempDir.path / "chekDirIt/oneDir_dir/testDir1");
+    std::filesystem::create_directories(tempDir.path() / "chekDirIt/oneDir_dir/testDir1");
 
     // Check that the directory iterator is valid when the path is an empty directory and return EOF
     {
@@ -87,7 +87,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 
     // Check that the directory iterator is valid when the path is a directory with one file and return the file on first call
     {
-        const SyncPath directoryWithOneFile = tempDir.path / "chekDirIt/oneFile_dir";
+        const SyncPath directoryWithOneFile = tempDir.path() / "chekDirIt/oneFile_dir";
 
         IoError error;
         IoHelper::DirectoryIterator it(directoryWithOneFile, false, error);
@@ -106,7 +106,7 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 
     // Check that the directory iterator is valid when the path is a directory with one child directory
     {
-        const SyncPath directoryWithOneChildDirectory = tempDir.path / "chekDirIt/oneDir_dir";
+        const SyncPath directoryWithOneChildDirectory = tempDir.path() / "chekDirIt/oneDir_dir";
 
         IoError error;
         IoHelper::DirectoryIterator it(directoryWithOneChildDirectory, false, error);
@@ -122,10 +122,10 @@ void TestIo::testCheckDirectoryIteratorExistingPath() {
 }
 
 void TestIo::testCheckDirectoryRecursive(void) {
-    TemporaryDirectory tempDir;
+    LocalTemporaryDirectory tempDir;
 
     // Create test directory with 4 directories with 1 file each
-    SyncPath recursiveDir = tempDir.path / "chekDirIt/recursive_dir";
+    SyncPath recursiveDir = tempDir.path() / "chekDirIt/recursive_dir";
     for (int i = 0; i < 4; ++i) {
         SyncPath childDir = recursiveDir / ("childDir_" + std::to_string(i));
         std::filesystem::create_directories(childDir);
@@ -173,8 +173,8 @@ void TestIo::testCheckDirectoryRecursive(void) {
 
 void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
     // Create test directory with one file
-    TemporaryDirectory tempDir;
-    SyncPath oneFileDir = tempDir.path / "chekDirIt/oneFile_dir";
+    LocalTemporaryDirectory tempDir;
+    SyncPath oneFileDir = tempDir.path() / "chekDirIt/oneFile_dir";
     std::filesystem::create_directories(oneFileDir);
     std::ofstream file(oneFileDir / "oneFile.txt");
     file << "oneFile";
@@ -204,8 +204,8 @@ void TestIo::testCheckDirectoryIteratotNextAfterEndOfDir() {
 void TestIo::testCheckDirectoryIteratorPermission() {
     {
         // Check that the directory iterator skips each directory with no permission
-        TemporaryDirectory tempDir;
-        const SyncPath noPermissionDir = tempDir.path / "chekDirIt/noPermission";
+        LocalTemporaryDirectory tempDir;
+        const SyncPath noPermissionDir = tempDir.path() / "chekDirIt/noPermission";
         const SyncPath noPermissionFile = noPermissionDir / "file.txt";
 
         IoError ioError = IoError::Success;
@@ -242,10 +242,10 @@ void TestIo::testCheckDirectoryIteratorPermission() {
 }
 
 void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
-    TemporaryDirectory tempDir;
+    LocalTemporaryDirectory tempDir;
 
     // Create test directory with 5 subdirectories
-    const SyncPath path = tempDir.path.string() + "\\chekDirIt\\IteratorUnexpectedDelete";
+    const SyncPath path = tempDir.path().string() + "\\chekDirIt\\IteratorUnexpectedDelete";
     std::string subDir = path.string();
 
     for (int i = 0; i < 5; i++) {
@@ -275,9 +275,9 @@ void TestIo::testCheckDirectoryIteratorUnexpectedDelete() {
     }
 }
 
-void TestIo::testCheckDirectoryPermissionLost(void) {
-    const TemporaryDirectory temporaryDirectory;
-    const SyncPath chekDirItDir = temporaryDirectory.path / "chekDirIt";
+void TestIo::testCheckDirectoryPermissionLost() {
+    const LocalTemporaryDirectory temporaryDirectory;
+    const SyncPath chekDirItDir = temporaryDirectory.path() / "chekDirIt";
     const SyncPath permLostRoot = chekDirItDir / "permissionLost";
     const SyncPath subDir = permLostRoot / "subDir1";
     const SyncPath filePath = subDir / "file.txt";

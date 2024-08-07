@@ -69,9 +69,9 @@ struct IoHelper {
           \param path is the file system path of the inspected item.
           \param itemType is the type of the item indicated by `path`.
           \return true if no unexpected error occurred, false otherwise.
-            See _isExpectedError for the definition of an expected error.
+            See isExpectedError for the definition of an expected error.
         */
-        static bool getItemType(const SyncPath &path, ItemType &itemType) noexcept;
+        [[nodiscard]] static bool getItemType(const SyncPath &path, ItemType &itemType) noexcept;
 
         //! Returns the directory location suitable for temporary files.
         /*!
@@ -115,9 +115,6 @@ struct IoHelper {
          \return true if no unexpected error occurred, false otherwise.
          */
         static bool getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept;
-#if defined(__APPLE__) || defined(__unix__)
-        static bool getFileStatUnix(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept;
-#endif
 
         // The following prototype throws a std::runtime_error if some unexpected error is encountered when trying to retrieve the
         // file status. This is a convenience function to be used in tests only.
@@ -175,8 +172,8 @@ struct IoHelper {
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &exists,
-                                                    IoError &ioError) noexcept;
+        static bool checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
+                                                    NodeId &otherNodeId, IoError &ioError) noexcept;
 
         //! Get the size of the file indicated by `path`, in bytes.
         /*!
@@ -186,7 +183,7 @@ struct IoHelper {
           \return true if no unexpected error occurred, false otherwise. If path indicates a directory, the function returns false
           and ioError is set with IoError::IsADirectory.
         */
-        static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
+        [[nodiscard]] static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
 
         //! Get the size of the directory indicated by `path` expressed in bytes.
         //! This funciton is recursiv.
@@ -369,6 +366,9 @@ struct IoHelper {
                    (linkType == LinkType::Junction && OldUtility::isWindows());
         }
 
+        // The most common and expected errors during IO operations
+        static bool isExpectedError(IoError ioError) noexcept;
+
     protected:
         friend class DirectoryIterator;
         friend class TestIo;
@@ -390,8 +390,6 @@ struct IoHelper {
         static log4cplus::Logger _logger;
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 
-        // The most common and expected errors during IO operations
-        static bool _isExpectedError(IoError ioError) noexcept;
 #ifdef __APPLE__
         static bool _checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept;
 #endif

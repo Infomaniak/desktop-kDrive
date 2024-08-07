@@ -3,73 +3,10 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(client)
 
-function(INSTALL_SHARED_LIBS TARGET_DIR)
-    message(STATUS "Installing shared libraries ...")
-
-    # Sentry
-    find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
-    message(STATUS "sentry: ${SENTRY_SHARED_LIBRARY}")
-    install(FILES ${SENTRY_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # xxHash
-    find_library(XXHASH_SHARED_LIBRARY NAMES xxHash.0.8.2 NO_CACHE)
-    message(STATUS "xxHash: ${XXHASH_SHARED_LIBRARY}")
-    install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoNet
-    find_library(POCONET_SHARED_LIBRARY NAMES PocoNet.95 NO_CACHE)
-    message(STATUS "PocoNet: ${POCONET_SHARED_LIBRARY}")
-    install(FILES ${POCONET_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoCrypto
-    find_library(POCOCRYPTO_SHARED_LIBRARY NAMES PocoCrypto.95 NO_CACHE)
-    message(STATUS "PocoCrypto: ${POCOCRYPTO_SHARED_LIBRARY}")
-    install(FILES ${POCOCRYPTO_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoFoundation
-    find_library(POCOFOUNDATION_SHARED_LIBRARY NAMES PocoFoundation.95 NO_CACHE)
-    message(STATUS "PocoFoundation: ${POCOFOUNDATION_SHARED_LIBRARY}")
-    install(FILES ${POCOFOUNDATION_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoJSON
-    find_library(POCOJSON_SHARED_LIBRARY NAMES PocoJSON.95 NO_CACHE)
-    message(STATUS "PocoJSON dll found in ${POCOJSON_SHARED_LIBRARY}")
-    install(FILES ${POCOJSON_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoNetSSL
-    find_library(POCONETSSL_SHARED_LIBRARY NAMES PocoNetSSL.95 NO_CACHE)
-    message(STATUS "PocoNetSSL: ${POCONETSSL_SHARED_LIBRARY}")
-    install(FILES ${POCONETSSL_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoUtil
-    find_library(POCOUTIL_SHARED_LIBRARY NAMES PocoUtil.95 NO_CACHE)
-    message(STATUS "PocoUtil: ${POCOUTIL_SHARED_LIBRARY}")
-    install(FILES ${POCOUTIL_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # PocoXML
-    find_library(POCOXML_SHARED_LIBRARY NAMES PocoXML.95 NO_CACHE)
-    message(STATUS "PocoXML: ${POCOXML_SHARED_LIBRARY}")
-    install(FILES ${POCOXML_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # log4cplus
-    find_library(LOG4CPLUS_SHARED_LIBRARY NAMES log4cplusU.9 NO_CACHE)
-    message(STATUS "log4cplusU: ${LOG4CPLUS_SHARED_LIBRARY}")
-    install(FILES ${LOG4CPLUS_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # libzip
-    find_library(ZIP_SHARED_LIBRARY NAMES zip.5.5 NO_CACHE)
-    message(STATUS "libzip: ${ZIP_SHARED_LIBRARY}")
-    install(FILES ${ZIP_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    # libzstd
-    find_library(ZSTD_SHARED_LIBRARY NAMES zstd.1.5.6 NO_CACHE)
-    message(STATUS "libzstd: ${ZSTD_SHARED_LIBRARY}")
-    install(FILES ${ZSTD_SHARED_LIBRARY} DESTINATION ${TARGET_DIR})
-
-    message(STATUS "Shared libraries installed.")
-
-endfunction()
-
+if (WIN32 AND CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    # Use fallback library types for imported dependencies
+    set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
+endif ()
 
 IF(APPLE)
     IF(NOT BUILD_UNIT_TESTS AND CMAKE_BUILD_TYPE MATCHES "Release")
@@ -82,7 +19,6 @@ IF(APPLE)
     message(STATUS "CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}")
 ENDIF(APPLE)
 
-set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO "RelWithDebInfo;Release;")
 set(BIN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 set(INSTALL_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/install")
 set(BUILD_SHARED_LIBS FALSE)
@@ -91,11 +27,11 @@ include("${CMAKE_CURRENT_LIST_DIR}/THEME.cmake")
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-IF(UNIX AND NOT APPLE)
+IF (UNIX AND NOT APPLE)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
-        "/usr/local/lib"
+            "/usr/local/lib"
     )
-ELSEIF(WIN32)
+ELSEIF (WIN32)
     SET(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH}
         "C:/Program Files/OpenSSL"
         "C:/Program Files (x86)/Poco"
@@ -104,7 +40,7 @@ ELSEIF(WIN32)
         "C:/Program Files (x86)/xxHash"
         "C:/Program Files (x86)/libzip"
     )
-ENDIF()
+ENDIF ()
 
 set(libcommon_NAME "${APPLICATION_NAME}common")
 set(libcommonserver_NAME "${APPLICATION_NAME}commonserver")
@@ -120,59 +56,59 @@ set(ENABLE_JSON TRUE)
 include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 # Allows includes based on src/ like #include "common/utility.h"
 include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-    ${CMAKE_CURRENT_BINARY_DIR}/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/test
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_BINARY_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/test
 )
 
 include(GNUInstallDirs)
 include(GenerateExportHeader)
 
 add_definitions(
-    -DQT_USE_QSTRINGBUILDER
-    -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
-    -DQT_DEPRECATED_WARNINGS
+        -DQT_USE_QSTRINGBUILDER
+        -DQT_MESSAGELOGCONTEXT #enable function name and line number in debug output
+        -DQT_DEPRECATED_WARNINGS
 )
 
 if (APPLE)
     set(DATADIR ${DATA_INSTALL_DIR})
-else()
+else ()
     set(DATADIR "share")
-endif()
+endif ()
 
 set(SHAREDIR ${DATADIR})
 
 if (NOT APPLE)
     set(PLUGINDIR "${CMAKE_INSTALL_FULL_LIBDIR}/${APPLICATION_SHORTNAME}/plugins" CACHE STRING "Extra path to look for Qt plugins like for VFS. May be relative to binary.")
-else()
+else ()
     # Inside the .app bundle
     set(PLUGINDIR "../PlugIns" CACHE STRING "Extra path to look for Qt plugins like for VFS. May be relative to binary.")
-endif()
+endif ()
 
 #####
 ## handle BUILD_KDRIVE_OSX_BUNDLE
 # BUILD_KDRIVE_OSX_BUNDLE was not initialized OR set to true on OSX
-if(APPLE AND (NOT DEFINED BUILD_KDRIVE_OSX_BUNDLE OR BUILD_KDRIVE_OSX_BUNDLE))
+if (APPLE AND (NOT DEFINED BUILD_KDRIVE_OSX_BUNDLE OR BUILD_KDRIVE_OSX_BUNDLE))
     set(BUILD_KDRIVE_OSX_BUNDLE ON)
     set(KDRIVE_OSX_BUNDLE "${APPLICATION_NAME}.app")
 
     set(LIB_INSTALL_DIR "${APPLICATION_NAME}.app/Contents/MacOS")
     set(BIN_INSTALL_DIR "${APPLICATION_NAME}.app/Contents/MacOS")
 
-# BUILD_KDRIVE_OSX_BUNDLE was disabled on OSX
-elseif(APPLE AND NOT BUILD_KDRIVE_OSX_BUNDLE)
+    # BUILD_KDRIVE_OSX_BUNDLE was disabled on OSX
+elseif (APPLE AND NOT BUILD_KDRIVE_OSX_BUNDLE)
     message(FATAL_ERROR "Building in non-bundle mode on OSX is currently not supported. Comment this error out if you want to work on it.")
 
-# any other platform
-else()
+    # any other platform
+else ()
     set(BUILD_KDRIVE_OSX_BUNDLE OFF)
-endif()
+endif ()
 #####
 
 option(NO_MSG_HANDLER "Don't redirect QDebug outputs to the log window/file" OFF)
-if(NO_MSG_HANDLER)
-   add_definitions(-DNO_MSG_HANDLER=1)
-endif()
+if (NO_MSG_HANDLER)
+    add_definitions(-DNO_MSG_HANDLER=1)
+endif ()
 
 # this option builds the shell integration
 option(BUILD_EXTENSIONS "BUILD_EXTENSIONS" ON)
@@ -195,26 +131,26 @@ option(BUILD_GUI "BUILD_GUI" ON)
 # build the tests
 option(BUILD_UNIT_TESTS "BUILD_UNIT_TESTS" OFF)
 
-if(APPLE)
+if (APPLE)
     # build uninstaller
     option(BUILD_UNINSTALLER "BUILD_UNINSTALLER" ON)
-endif(APPLE)
+endif (APPLE)
 
-if(APPLE)
-  set( SOCKETAPI_TEAM_IDENTIFIER_PREFIX "" CACHE STRING "SocketApi prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit" )
-endif()
+if (APPLE)
+    set(SOCKETAPI_TEAM_IDENTIFIER_PREFIX "" CACHE STRING "SocketApi prefix (including a following dot) that must match the codesign key's TeamIdentifier/Organizational Unit")
+endif ()
 
-if(BUILD_CLIENT)
-    if(APPLE)
+if (BUILD_CLIENT)
+    if (APPLE)
         find_package(Sparkle)
-    endif(APPLE)
+    endif (APPLE)
 
-   find_package(ZLIB REQUIRED)
-endif()
+    find_package(ZLIB REQUIRED)
+endif ()
 
 if (NOT DEFINED APPLICATION_ICON_NAME)
     set(APPLICATION_ICON_NAME "${APPLICATION_SHORTNAME}")
-endif()
+endif ()
 
 if (WIN32)
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
@@ -224,7 +160,7 @@ if (WIN32)
     add_definitions(-D_WIN32_WINNT=0x0600)
     add_definitions(-DWINVER=0x0600)
     add_definitions(-DNTDDI_VERSION=0x0A000003)
-endif(WIN32)
+endif (WIN32)
 
 if (UNIX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
@@ -234,48 +170,48 @@ if (UNIX)
 endif()
 
 # Handle Translations, pick all client_* files from trans directory.
-file( GLOB TRANS_FILES ${CMAKE_SOURCE_DIR}/translations/client_*.ts)
+file(GLOB TRANS_FILES ${CMAKE_SOURCE_DIR}/translations/client_*.ts)
 set(TRANSLATIONS ${TRANS_FILES})
 
-if(BUILD_CLIENT)
+if (BUILD_CLIENT)
     add_subdirectory(src)
-    if(NOT BUILD_LIBRARIES_ONLY)
-        if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
+    if (NOT BUILD_LIBRARIES_ONLY)
+        if (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
             add_subdirectory(admin)
-        endif(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
-    endif(NOT BUILD_LIBRARIES_ONLY)
-endif()
+        endif (IS_DIRECTORY ${CMAKE_SOURCE_DIR}/admin)
+    endif (NOT BUILD_LIBRARIES_ONLY)
+endif ()
 
-if(BUILD_DOCS)
+if (BUILD_DOCS)
     add_subdirectory(docs)
-endif()
+endif ()
 
-if(BUILD_EXTENSIONS)
+if (BUILD_EXTENSIONS)
     add_subdirectory(extensions)
-endif()
+endif ()
 
-if(BUILD_UNINSTALLER)
+if (BUILD_UNINSTALLER)
     add_subdirectory(uninstaller)
-endif()
+endif ()
 
 # Tests
-if(BUILD_UNIT_TESTS)
+if (BUILD_UNIT_TESTS)
     add_subdirectory("test")
-endif()
+endif ()
 
 # utf8proc
 if (UNIX)
     add_subdirectory(src/3rdparty/utf8proc)
-endif()
+endif ()
 
 # keychain
 add_subdirectory(src/3rdparty/keychain)
 
-message( STATUS "Configure files" )
+message(STATUS "Configure files")
 configure_file(config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
-if(BUILD_KDRIVE_OSX_BUNDLE)
+if (BUILD_KDRIVE_OSX_BUNDLE)
     # Provision profile
     install(FILES embedded.provisionprofile DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/)
 
@@ -289,11 +225,6 @@ if(BUILD_KDRIVE_OSX_BUNDLE)
     find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
     message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
     install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${KDRIVE_OSX_BUNDLE}/Contents/MacOS/)
-
-    # Shared libraries
-    if (CMAKE_BUILD_TYPE STREQUAL "Release")
-        install_shared_libs(${KDRIVE_OSX_BUNDLE}/Contents/Frameworks/)
-    endif()
 elseif(BUILD_CLIENT)
     if (WIN32)
         # NSIS
@@ -324,13 +255,13 @@ elseif(BUILD_CLIENT)
         find_library(XXHASH_SHARED_LIBRARY NAMES xxHash PATH_SUFFIXES "bin" NO_CACHE)
         message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
         install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${CMAKE_INSTALL_BINDIR})
-    else()
+    else ()
         # Default sync exclude list
         if (CMAKE_BUILD_TYPE STREQUAL "Debug")
             file(COPY sync-exclude-linux.lst DESTINATION ${CMAKE_INSTALL_PREFIX}/sync-exclude.lst)
         else()
             install(FILES sync-exclude-linux.lst DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME} RENAME sync-exclude.lst)
-        endif()
+        endif ()
 
         # Sentry
         find_library(SENTRY_SHARED_LIBRARY NAMES sentry NO_CACHE)
@@ -341,5 +272,5 @@ elseif(BUILD_CLIENT)
         find_library(XXHASH_SHARED_LIBRARY NAMES xxhash NO_CACHE)
         message(STATUS "xxHash dll found in ${XXHASH_SHARED_LIBRARY}")
         install(FILES ${XXHASH_SHARED_LIBRARY} DESTINATION ${SYSCONFDIR}/${APPLICATION_SHORTNAME})
-    endif()
-endif()
+    endif ()
+endif ()

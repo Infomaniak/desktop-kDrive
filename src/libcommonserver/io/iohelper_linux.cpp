@@ -50,7 +50,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         if (!exists) {
             ioError = IoError::NoSuchFileOrDirectory;
         }
-        return _isExpectedError(ioError);
+        return isExpectedError(ioError);
     }
 
     read = ((perms & std::filesystem::perms::owner_read) != std::filesystem::perms::none);

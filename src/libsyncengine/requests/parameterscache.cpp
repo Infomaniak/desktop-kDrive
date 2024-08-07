@@ -92,4 +92,24 @@ ExitCode ParametersCache::save() {
     return ExitCode::Ok;
 }
 
+void ParametersCache::setUploadSessionParallelThreads(int count) {
+    _parameters.setUploadSessionParallelJobs(count);
+    save();
+}
+
+void ParametersCache::decreaseUploadSessionParallelThreads() {
+    if (const int uploadSessionParallelJobs = _parameters.uploadSessionParallelJobs(); uploadSessionParallelJobs > 1) {
+        const int newUploadSessionParallelJobs = uploadSessionParallelJobs - 1;
+        _parameters.setUploadSessionParallelJobs(newUploadSessionParallelJobs);
+        save();
+        LOG_DEBUG(Log::instance()->getLogger(),
+                  "Upload session max parallel threads parameters set to " << newUploadSessionParallelJobs);
+    } else {
+#ifdef NDEBUG
+        sentry_capture_event(sentry_value_new_message_event(
+            SENTRY_LEVEL_WARNING, "AppServer::addError", "Upload session max parallel threads parameters cannot be decreased"));
+#endif
+    }
+}
+
 }  // namespace KDC

@@ -214,11 +214,19 @@ FunctionEnd
    StrCmp $R0 0 ${gotoWhenFound} ${gotoWhenNotFound}
 !macroend
 
+Var kill_counter
+
 !macro EndProcess processName
-   DetailPrint $ConfirmEndProcess_KILLING_PROCESSES_TEXT
-   ${nsProcess::KillProcess} ${processName} $R0
+   ; Kill the process in loop until it is not found (max 5 times). This is to ensure that the app does not self-restart.
+   StrCpy $kill_counter "0"
+   process_${processName}_restated:
+   IntOp $kill_counter $kill_counter + 1
+   IntCmp $kill_counter 5 process_${processName}_failed_to_end
+   ${nsProcess::KillProcess} ${processName} $R1 ; kill the process
    Sleep 1500
-   StrCmp $R0 "1" process_${processName}_ended
+   !insertmacro CheckForProcess ${processName} process_${processName}_restated process_${processName}_ended
+
+   process_${processName}_failed_to_end:
    DetailPrint $ConfirmEndProcess_KILL_NOT_FOUND_TEXT
    
    process_${processName}_ended:

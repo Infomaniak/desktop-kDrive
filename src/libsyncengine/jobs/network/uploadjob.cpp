@@ -38,7 +38,7 @@ UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &fi
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
-    _progress = 0;
+    setProgress(0);
 }
 
 UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const NodeId &fileId, SyncTime modtime)
@@ -86,16 +86,6 @@ bool UploadJob::canRun() {
     return true;
 }
 
-void UploadJob::runJob() noexcept {
-    if (_vfsForceStatus) {
-        if (!_vfsForceStatus(_filePath, true, 0, true)) {
-            LOGW_WARN(_logger, L"Error in vfsForceStatus - path=" << Path2WStr(_filePath).c_str());
-        }
-    }
-
-    AbstractTokenNetworkJob::runJob();
-}
-
 bool UploadJob::handleResponse(std::istream &is) {
     if (!AbstractTokenNetworkJob::handleResponse(is)) {
         return false;
@@ -137,7 +127,8 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     uri.addQueryParameter(lastModifiedAtKey, std::to_string(_modtimeIn));
 
     if (IoHelper::isLink(_linkType)) {
-        uri.addQueryParameter(symbolicLinkKey, Path2Str(_linkTarget));
+        auto str2HtmlStr = [](const std::string &str) { return str.empty() ? "%02%03" : str; };
+        uri.addQueryParameter(symbolicLinkKey, str2HtmlStr(Path2Str(_linkTarget)));
     }
 
     canceled = false;

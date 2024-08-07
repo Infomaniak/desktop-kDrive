@@ -145,16 +145,13 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
             const auto dirIt = std::filesystem::recursive_directory_iterator(
                 dir, std::filesystem::directory_options::skip_permission_denied, ec);
             if (ec) {
-                LOG4CPLUS_WARN(_logger, "Error in findSubFolders: " << Utility::formatStdError(ec).c_str());
+                LOG4CPLUS_WARN(_logger, L"Error in findSubFolders: " << Utility::formatStdError(ec).c_str());
                 return false;
             }
 
-            if (dirIt != std::filesystem::recursive_directory_iterator() &&
-                (dirIt->is_symlink() || !dirIt->is_directory())) {  // TODO : check for hidden files
-                return ok;
+            for (const auto &dirEntry : dirIt) {
+                if (dirEntry.is_directory()) fullList.push_back(dirEntry.path());
             }
-
-            fullList.push_back(dirIt->path());
 
         } catch (std::filesystem::filesystem_error &e) {
             LOG4CPLUS_WARN(_logger, L"Error caught in findSubFolders: " << e.code() << " - " << e.what());

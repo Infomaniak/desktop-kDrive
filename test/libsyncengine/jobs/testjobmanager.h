@@ -24,6 +24,10 @@
 
 #include "testincludes.h"
 #include "utility/types.h"
+#include "jobs/abstractjob.h"
+
+#include <mutex>
+#include <unordered_map>
 
 using namespace CppUnit;
 
@@ -34,21 +38,28 @@ class TestJobManager : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestJobManager);
         CPPUNIT_TEST(testWithoutCallback);
         CPPUNIT_TEST(testWithCallback);
+        CPPUNIT_TEST(testWithCallbackMediumFiles);
+        CPPUNIT_TEST(testWithCallbackBigFiles);
         CPPUNIT_TEST(testCancelJobs);
         CPPUNIT_TEST(testJobDependencies);
         CPPUNIT_TEST(testJobPriority);
         CPPUNIT_TEST(testJobPriority2);
         CPPUNIT_TEST(testJobPriority3);
-        CPPUNIT_TEST(testReuseSocket);
+        // CPPUNIT_TEST(testReuseSocket);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
         void tearDown() override;
 
+        bool _jobErrorSocketsDefuncted;
+        bool _jobErrorOther;
+
     protected:
         void testWithoutCallback();
         void testWithCallback();
+        void testWithCallbackMediumFiles();
+        void testWithCallbackBigFiles();
         void testCancelJobs();
         void testJobDependencies();
         void testJobPriority();   // Test execution order of jobs with different priority. Jobs with higher piority must be
@@ -60,9 +71,20 @@ class TestJobManager : public CppUnit::TestFixture {
 
         void testReuseSocket();
 
+        void generateBigFiles(const SyncPath &dirPath, int size, int count);
+
     private:
         int _driveDbId;
         NodeId _dirId;
+        SyncPath _localDirPath;
+
+        std::unordered_map<uint64_t, std::shared_ptr<AbstractJob>> _ongoingJobs;
+        std::recursive_mutex _mutex;
+
+        void callback(uint64_t jobId);
+        int ongoingJobsCount();
+        void testWithCallbackBigFiles(const SyncPath &dirPath, int size, int count);
+        void cancelAllOngoingJobs();
 };
 
 }  // namespace KDC

@@ -79,7 +79,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
         SyncPal(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted);
         SyncPal(int syncDbId, const std::string &version);
-        ~SyncPal();
+        virtual ~SyncPal();
 
         ExitCode setTargetNodeId(const std::string &targetNodeId);
 
@@ -122,9 +122,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline void setVfsForceStatusCallback(bool (*vfsForceStatus)(int, const SyncPath &, bool, int, bool)) {
             _vfsForceStatus = vfsForceStatus;
         }
-        inline void setVfsCleanUpStatusesCallback(bool (*vfsCleanUpStatuses)(int)) {
-            _vfsCleanUpStatuses = vfsCleanUpStatuses;
-        }
+        inline void setVfsCleanUpStatusesCallback(bool (*vfsCleanUpStatuses)(int)) { _vfsCleanUpStatuses = vfsCleanUpStatuses; }
         inline void setVfsClearFileAttributesCallback(bool (*vfsClearFileAttributes)(int, const SyncPath &)) {
             _vfsClearFileAttributes = vfsClearFileAttributes;
         }
@@ -132,6 +130,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _vfsCancelHydrate = vfsCancelHydrate;
         }
 
+        [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
         inline int syncDbId() const { return _syncDbId; }
         inline int driveDbId() const { return _driveDbId; }
         inline int driveId() const { return _driveId; }
@@ -210,23 +209,20 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         inline bool syncHasFullyCompleted() const { return _syncHasFullyCompleted; }
 
-#ifdef __APPLE__
-        static void fixFileNamesWithColon(std::shared_ptr<SyncDb> syncDb, const SyncPath &localPath);
-#endif
         void fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const SyncPath &path);
 
         void fixNodeTableDeleteItemsWithNullParentNodeId();
 
-        void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
-        int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
-        void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
-        void refreshTmpBlacklist();
-        void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
-
-		std::shared_ptr<UpdateTree> getUpdateTree(ReplicaSide side) { return side == ReplicaSide::Local ? _localUpdateTree : _remoteUpdateTree; }
-
+        virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
+        virtual int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
+        virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
+        virtual void refreshTmpBlacklist();
+        virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
+
+        SyncPath getLocalPath() const { return _localPath; };
+        void setLocalPath(const SyncPath &path) { _localPath = path; };
 
     private:
         log4cplus::Logger _logger;
@@ -239,7 +235,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::string _driveName;
         SyncPath _localPath;
         SyncPath _targetPath;
-        VirtualFileMode _vfsMode{VirtualFileMode::Off};
+        VirtualFileMode _vfsMode{VirtualFileModeOff};
         bool _restart{false};
         bool _isPaused{false};
         bool _syncHasFullyCompleted;
@@ -253,27 +249,28 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::mutex _directDownloadJobsMapMutex;
 
         // Callbacks
-        void (*_addError)(const Error &error);
-        void (*_addCompletedItem)(int syncDbId, const SyncFileItem &item, bool notify);
-        void (*_sendSignal)(int sigId, int syncDbId, const SigValueType &val);
+        void (*_addError)(const Error &error){nullptr};
+        void (*_addCompletedItem)(int syncDbId, const SyncFileItem &item, bool notify){nullptr};
+        void (*_sendSignal)(int sigId, int syncDbId, const SigValueType &val){nullptr};
 
-        bool (*_vfsIsExcluded)(int syncDbId, const SyncPath &itemPath, bool &isExcluded);
-        bool (*_vfsExclude)(int syncDbId, const SyncPath &itemPath);
-        bool (*_vfsPinState)(int syncDbId, const SyncPath &itemPath, PinState &pinState);
-        bool (*_vfsSetPinState)(int syncDbId, const SyncPath &itemPath, PinState pinState);
+        bool (*_vfsIsExcluded)(int syncDbId, const SyncPath &itemPath, bool &isExcluded){nullptr};
+        bool (*_vfsExclude)(int syncDbId, const SyncPath &itemPath){nullptr};
+        bool (*_vfsPinState)(int syncDbId, const SyncPath &itemPath, PinState &pinState){nullptr};
+        bool (*_vfsSetPinState)(int syncDbId, const SyncPath &itemPath, PinState pinState){nullptr};
         bool (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                           int &progress);
-        bool (*_vfsCreatePlaceholder)(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item);
-        bool (*_vfsConvertToPlaceholder)(int syncDbId, const SyncPath &path, const SyncFileItem &item, bool &needRestart);
+                           int &progress){nullptr};
+        bool (*_vfsCreatePlaceholder)(int syncDbId, const SyncPath &relativeLocalPath, const SyncFileItem &item){nullptr};
+        bool (*_vfsConvertToPlaceholder)(int syncDbId, const SyncPath &path, const SyncFileItem &item,
+                                         bool &needRestart){nullptr};
         bool (*_vfsUpdateMetadata)(int syncDbId, const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime,
-                                   const int64_t size, const NodeId &id, std::string &error);
+                                   const int64_t size, const NodeId &id, std::string &error){nullptr};
         bool (*_vfsUpdateFetchStatus)(int syncDbId, const SyncPath &tmpPath, const SyncPath &path, int64_t received,
-                                      bool &canceled, bool &finished);
-        bool (*_vfsFileStatusChanged)(int syncDbId, const SyncPath &path, SyncFileStatus status);
-        bool (*_vfsForceStatus)(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated);
-        bool (*_vfsCleanUpStatuses)(int syncDbId);
-        bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &path);
-        bool (*_vfsCancelHydrate)(int syncDbId, const SyncPath &path);
+                                      bool &canceled, bool &finished){nullptr};
+        bool (*_vfsFileStatusChanged)(int syncDbId, const SyncPath &path, SyncFileStatus status){nullptr};
+        bool (*_vfsForceStatus)(int syncDbId, const SyncPath &path, bool isSyncing, int progress, bool isHydrated){nullptr};
+        bool (*_vfsCleanUpStatuses)(int syncDbId){nullptr};
+        bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &path){nullptr};
+        bool (*_vfsCancelHydrate)(int syncDbId, const SyncPath &path){nullptr};
 
         // DB
         std::shared_ptr<SyncDb> _syncDb{nullptr};
