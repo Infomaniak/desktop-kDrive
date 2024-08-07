@@ -34,120 +34,125 @@
 #endif
 
 namespace KDC {
-
 struct COMMON_EXPORT CommonUtility {
-        enum IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
+    enum IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
 
-        static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
+    static inline const QString linkStyle = QString("color:#0098FF; font-weight:450; text-decoration:none;");
 
-        static const int logsPurgeRate;  // Delay after which the logs are purged, expressed in days
-        static const int logMaxSize;
+    static const int logsPurgeRate; // Delay after which the logs are purged, expressed in days
+    static const int logMaxSize;
 
-        static QString getIconPath(IconType iconType);
-        static SyncPath _workingDirPath;
+    static QString getIconPath(IconType iconType);
+    static SyncPath _workingDirPath;
 
-        static bool hasDarkSystray();
-        static bool setFolderCustomIcon(const QString &folderPath, IconType iconType);
+    static bool hasDarkSystray();
+    static bool setFolderCustomIcon(const QString &folderPath, IconType iconType);
 
-        static std::string generateRandomStringAlphaNum(const int length = 10);
-        static std::string userAgentString();
-        static std::string generateRandomStringPKCE(const int length = 10);
+    static std::string generateRandomStringAlphaNum(const int length = 10);
+    static std::string userAgentString();
+    static std::string generateRandomStringPKCE(const int length = 10);
 
-        // static const KDC::SyncPath Utility::getAppDir();
+    // static const KDC::SyncPath Utility::getAppDir();
 
-        static QString fileSystemName(const QString &dirPath);
+    static QString fileSystemName(const QString &dirPath);
 
-        static qint64 freeDiskSpace(const QString &path);
-        static void crash();
-        static QString platformName();
-        static QString platformArch();
-        static QByteArray IntToArray(qint32 source);
-        static int ArrayToInt(QByteArray source);
-        static QString escape(const QString &in);
-        static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
-        static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);
-        static std::string appStateKeyToString(const AppStateKey &appStateValue) noexcept;
+    static qint64 freeDiskSpace(const QString &path);
+    static void crash();
+    static QString platformName();
+    static Platform platform();
+    static QString platformArch();
+    static QByteArray intToArray(qint32 source);
+    static int arrayToInt(QByteArray source);
+    static QString escape(const QString &in);
+    static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
+    static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);
+    static std::string appStateKeyToString(const AppStateKey &appStateValue) noexcept;
 
-        static bool compressFile(const std::wstring &originalName, const std::wstring &targetName,
-                                 const std::function<bool(int)> &progressCallback = nullptr);
-        static bool compressFile(const std::string &originalName, const std::string &targetName,
-                                 const std::function<bool(int)> &progressCallback = nullptr);
-        static bool compressFile(const QString &originalName, const QString &targetName,
-                                 const std::function<bool(int)> &progressCallback = nullptr);
+    static bool compressFile(const std::wstring &originalName, const std::wstring &targetName,
+                             const std::function<bool(int)> &progressCallback = nullptr);
+    static bool compressFile(const std::string &originalName, const std::string &targetName,
+                             const std::function<bool(int)> &progressCallback = nullptr);
+    static bool compressFile(const QString &originalName, const QString &targetName,
+                             const std::function<bool(int)> &progressCallback = nullptr);
 
-        static QString languageCode(::KDC::Language enforcedLocale);
-        static QStringList languageCodeList(::KDC::Language enforcedLocale);
-        static void setupTranslations(QCoreApplication *app, ::KDC::Language enforcedLocale);
-        static bool languageCodeIsEnglish(const QString &languageCode);
+    static QString languageCode(::KDC::Language enforcedLocale);
+    static QStringList languageCodeList(::KDC::Language enforcedLocale);
+    static void setupTranslations(QCoreApplication *app, ::KDC::Language enforcedLocale);
+    static bool languageCodeIsEnglish(const QString &languageCode);
 
-        // Color threshold check
-        static bool colorThresholdCheck(int red, int green, int blue);
+    // Color threshold check
+    static bool colorThresholdCheck(int red, int green, int blue);
 
-        static SyncPath relativePath(const SyncPath &rootPath, const SyncPath &path);
+    static SyncPath relativePath(const SyncPath &rootPath, const SyncPath &path);
 
-        static SyncPath getAppDir();
-        static SyncPath getAppSupportDir();
-        static SyncPath getAppWorkingDir();
+    static SyncPath getAppDir();
+    static SyncPath getAppSupportDir();
+    static SyncPath getAppWorkingDir();
 
-        static QString getFileIconPathFromFileName(const QString &fileName, NodeType type);
+    static QString getFileIconPathFromFileName(const QString &fileName, NodeType type);
 
-        static QString getRelativePathFromHome(const QString &dirPath);
+    static QString getRelativePathFromHome(const QString &dirPath);
 
-        static size_t maxPathLength();
+    static size_t maxPathLength();
 #if defined(_WIN32)
         static size_t maxPathLengthFolder();
 #endif
-        static bool isSubDir(const SyncPath &path1, const SyncPath &path2);
+    static bool isSubDir(const SyncPath &path1, const SyncPath &path2);
 
-        static const std::string dbVersionNumber(const std::string &dbVersion);
-        static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);
+    static const std::string dbVersionNumber(const std::string &dbVersion);
+    static bool isVersionLower(const std::string &currentVersion, const std::string &targetVersion);
 
-        static bool dirNameIsValid(const SyncName &name);
-        static bool fileNameIsValid(const SyncName &name);
+    static bool dirNameIsValid(const SyncName &name);
+    static bool fileNameIsValid(const SyncName &name);
 
 #ifdef Q_OS_MAC
-        static bool isLiteSyncExtEnabled();
-        static bool isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr);
+    static bool isLiteSyncExtEnabled();
+    static bool isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr);
 #endif
 
-        static std::string envVarValue(const std::string &name);
+    static std::string envVarValue(const std::string &name);
 
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
 };
 
 struct ArgsReader {
-        template <class... Args>
-        explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
-            read(args...);
-        }
-        template <class T>
-        void read(const T p) {
-            stream << p;
-        }
-        template <class T, class... Args>
-        void read(const T p, Args... args) {
-            stream << p;
-            read(args...);
-        }
-        explicit operator QByteArray() const { return params; }
-        QByteArray params;
-        QDataStream stream;
+    template<class... Args>
+    explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
+        read(args...);
+    }
+
+    template<class T>
+    void read(const T p) {
+        stream << p;
+    }
+
+    template<class T, class... Args>
+    void read(const T p, Args... args) {
+        stream << p;
+        read(args...);
+    }
+
+    explicit operator QByteArray() const { return params; }
+    QByteArray params;
+    QDataStream stream;
 };
 
 struct ArgsWriter {
-        explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
-        template <class T>
-        void write(T &r) {
-            stream >> r;
-        }
-        template <class T, class... Args>
-        void write(T &r, Args &...args) {
-            stream >> r;
-            write(args...);
-        }
-        QDataStream stream;
+    explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {
+    };
+
+    template<class T>
+    void write(T &r) {
+        stream >> r;
+    }
+
+    template<class T, class... Args>
+    void write(T &r, Args &... args) {
+        stream >> r;
+        write(args...);
+    }
+
+    QDataStream stream;
 };
-
-
-}  // namespace KDC
+} // namespace KDC

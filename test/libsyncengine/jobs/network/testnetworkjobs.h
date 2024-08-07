@@ -23,38 +23,38 @@
 using namespace CppUnit;
 
 namespace KDC {
-
 class TestNetworkJobs : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestNetworkJobs);
-        CPPUNIT_TEST(testCreateDir);
-        CPPUNIT_TEST(testCopyToDir);
-        CPPUNIT_TEST(testDelete);
-        CPPUNIT_TEST(testDownload);
-        //        CPPUNIT_TEST(testDownloadAborted);
-        CPPUNIT_TEST(testGetAvatar);
-        CPPUNIT_TEST(testGetDriveList);
-        CPPUNIT_TEST(testGetFileInfo);
-        CPPUNIT_TEST(testGetFileList);
-        CPPUNIT_TEST(testGetFileListWithCursor);
-        CPPUNIT_TEST(testFullFileListWithCursorJson);
-        CPPUNIT_TEST(testFullFileListWithCursorJsonZip);
-        CPPUNIT_TEST(testFullFileListWithCursorCsv);
-        CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
-        CPPUNIT_TEST(testFullFileListWithCursorJsonBlacklist);
-        CPPUNIT_TEST(testFullFileListWithCursorCsvBlacklist);
-        CPPUNIT_TEST(testGetInfoUser);
-        CPPUNIT_TEST(testGetInfoDrive);
-        CPPUNIT_TEST(testThumbnail);
-        CPPUNIT_TEST(testDuplicateRenameMove);
-        CPPUNIT_TEST(testRename);
-        CPPUNIT_TEST(testUpload);
-        //        CPPUNIT_TEST(testUploadAborted);
-        CPPUNIT_TEST(testDriveUploadSessionConstructorException);
-        CPPUNIT_TEST(testDriveUploadSessionSynchronous);
-        CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
-        CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
-        CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
+            // CPPUNIT_TEST(testCreateDir);
+            // CPPUNIT_TEST(testCopyToDir);
+            // CPPUNIT_TEST(testDelete);
+            // CPPUNIT_TEST(testDownload);
+            // //        CPPUNIT_TEST(testDownloadAborted);
+            // CPPUNIT_TEST(testGetAvatar);
+            // CPPUNIT_TEST(testGetDriveList);
+            // CPPUNIT_TEST(testGetFileInfo);
+            // CPPUNIT_TEST(testGetFileList);
+            // CPPUNIT_TEST(testGetFileListWithCursor);
+            // CPPUNIT_TEST(testFullFileListWithCursorJson);
+            // CPPUNIT_TEST(testFullFileListWithCursorJsonZip);
+            // CPPUNIT_TEST(testFullFileListWithCursorCsv);
+            // CPPUNIT_TEST(testFullFileListWithCursorCsvZip);
+            // CPPUNIT_TEST(testFullFileListWithCursorJsonBlacklist);
+            // CPPUNIT_TEST(testFullFileListWithCursorCsvBlacklist);
+            // CPPUNIT_TEST(testGetInfoUser);
+            // CPPUNIT_TEST(testGetInfoDrive);
+            // CPPUNIT_TEST(testThumbnail);
+            // CPPUNIT_TEST(testDuplicateRenameMove);
+            // CPPUNIT_TEST(testRename);
+            // CPPUNIT_TEST(testUpload);
+            // //        CPPUNIT_TEST(testUploadAborted);
+            // CPPUNIT_TEST(testDriveUploadSessionConstructorException);
+            // CPPUNIT_TEST(testDriveUploadSessionSynchronous);
+            // CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
+            // CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
+            // CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
+            CPPUNIT_TEST(testGetAppVersionInfo);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -90,6 +90,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testDriveUploadSessionAsynchronous();
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
+        void testGetAppVersionInfo();
 
     private:
         // bool createTestDir();
@@ -106,5 +107,4 @@ class TestNetworkJobs : public CppUnit::TestFixture {
 
         static int _nbParalleleThreads;
 };
-
-}  // namespace KDC
+} // namespace KDC

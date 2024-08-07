@@ -25,27 +25,26 @@
 #include "log/log.h"
 
 namespace KDC {
+AbstractUpdater *AbstractUpdater::_instance = nullptr;
 
-AbstractUpdater* AbstractUpdater::_instance = nullptr;
-
-AbstractUpdater* AbstractUpdater::instance() {
+AbstractUpdater *AbstractUpdater::instance() {
     if (!_instance) {
         _instance = new AbstractUpdater();
     }
     return _instance;
 }
 
-ExitCode AbstractUpdater::checkUpdateAvailable(bool& available) {
+ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
     AppStateValue appStateValue = LogUploadState::None;
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
         return ExitCodeDbError;
     }
 
-    const auto& appUid = std::get<std::string>(appStateValue);
-    GetAppVersionJob job(CommonUtility::platformName().toStdString(), appUid);
+    const auto &appUid = std::get<std::string>(appStateValue);
+    GetAppVersionJob job(CommonUtility::platform(), appUid);
     job.runSynchronously();
-    available = false;
+    available = false; // TODO : to be changed
     return ExitCodeOk;
 }
 
@@ -56,5 +55,4 @@ AbstractUpdater::AbstractUpdater() {
 void AbstractUpdater::run() noexcept {
     // To be implemented
 }
-
-}  // namespace KDC
+} // namespace KDC

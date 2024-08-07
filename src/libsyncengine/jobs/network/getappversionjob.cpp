@@ -20,14 +20,30 @@
 #include "utility/jsonparserutility.h"
 
 namespace KDC {
+GetAppVersionJob::GetAppVersionJob(Platform platform, const std::string &appID)
+    : AbstractTokenNetworkJob(AbstractTokenNetworkJob::ApiInfomaniak), _platform(platform), _appId(appID) {
+    _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
+}
 
-GetAppVersionJob::GetAppVersionJob(const std::string &platform, const std::string &appID)
-    : AbstractTokenNetworkJob(ApiInfomaniak), _platform(platform), _appId(appID) {}
+std::string platformToStr(Platform platform) {
+    switch (platform) {
+        case Platform::MacOS:
+            return platformMacOsKey;
+        case Platform::Windows:
+            return platformWindowsKey;
+        case Platform::LinuxAMD:
+            return platformLinuxAmdKey;
+        case Platform::LinuxARM:
+            return platformLinuxArmKey;
+        default:
+            return "unknown";
+    }
+}
 
 std::string GetAppVersionJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
     str += "/kstore-update/";
-    str += _platform;
+    str += platformToStr(_platform);
     str += "/com.infomaniak.drive/";
     str += _appId;
     return str;
@@ -58,12 +74,13 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
     if (!dataObj) return false;
 
     const Poco::JSON::Object::Ptr applicationObj = JsonParserUtility::extractJsonObject(dataObj, applicationKey);
-    if (applicationObj) return false;
+    if (!applicationObj) return false;
 
-    const Poco::JSON::Array::Ptr publishedVersions = JsonParserUtility::extractArrayObject(applicationObj, publishedVersionsKey);
-    if (publishedVersions) return false;
+    const Poco::JSON::Array::Ptr publishedVersions = JsonParserUtility::extractArrayObject(
+        applicationObj, publishedVersionsKey);
+    if (!publishedVersions) return false;
 
-    for (const auto &versionInfo : *publishedVersions) {
+    for (const auto &versionInfo: *publishedVersions) {
         const auto &obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
         std::string versionType;
         if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) {
@@ -95,5 +112,4 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
 
     return true;
 }
-
-}  // namespace KDC
+} // namespace KDC

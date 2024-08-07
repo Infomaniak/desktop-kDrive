@@ -21,27 +21,31 @@
 #include "abstracttokennetworkjob.h"
 
 namespace KDC {
-
 class GetAppVersionJob : public AbstractTokenNetworkJob {
     public:
-        GetAppVersionJob(const std::string &platform, const std::string &appID);
+        GetAppVersionJob(Platform platform, const std::string &appID);
 
-        inline const VersionInfo& getVersionInfo(DistributionChannel channel) { return _versionInfo[channel]; }
+        inline const VersionInfo &getVersionInfo(DistributionChannel channel) { return _versionInfo[channel]; }
 
     protected:
         bool handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;
-        void setQueryParameters(Poco::URI &, bool &canceled) override {/* no query parameters */}
-        void setData(bool &canceled) override { /* no body parameters */ }
 
-        DistributionChannel toDistributionChannel(const std::string &val) const;
+        void setQueryParameters(Poco::URI &, bool &canceled) override {
+            /* no query parameters */
+        }
 
-        const std::string _platform;
+        void setData(bool &canceled) override {
+            /* no body parameters */
+        }
+
+        [[nodiscard]] DistributionChannel toDistributionChannel(const std::string &val) const;
+
+        const Platform _platform;
         const std::string _appId;
 
         std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;
 };
-
-}  // namespace KDC
+} // namespace KDC

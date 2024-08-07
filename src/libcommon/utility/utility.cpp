@@ -72,9 +72,8 @@
 #define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
 
 namespace KDC {
-
-const int CommonUtility::logsPurgeRate = 7;               // days
-const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
+const int CommonUtility::logsPurgeRate = 7; // days
+const int CommonUtility::logMaxSize = 500 * 1024 * 1024; // MB
 
 SyncPath CommonUtility::_workingDirPath = "";
 
@@ -89,12 +88,12 @@ static std::default_random_engine gen(rd());
 
 std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*/) {
     static const char alphanum[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
 
     static std::uniform_int_distribution<int> distrib(
-        0, sizeof(alphanum) - 2);  // -2 in order to avoid the null terminating character
+        0, sizeof(alphanum) - 2); // -2 in order to avoid the null terminating character
 
     std::string tmp;
     tmp.reserve(length);
@@ -106,12 +105,25 @@ std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*
 }
 
 void CommonUtility::crash() {
-    volatile int *a = (int *)(NULL);
+    volatile int *a = (int*) (NULL);
     *a = 1;
 }
 
 QString CommonUtility::platformName() {
     return QSysInfo::prettyProductName();
+}
+
+Platform CommonUtility::platform() {
+    const QString name = platformName();
+    if (name.contains("macos", Qt::CaseInsensitive))
+        return Platform::MacOS;
+    if (name.contains("windows", Qt::CaseInsensitive))
+        return Platform::Windows;
+    // Otherwise we consider the OS to be Linux based
+    if (platformArch().contains("arm", Qt::CaseInsensitive))
+        return Platform::LinuxARM;
+
+    return Platform::LinuxAMD;
 }
 
 QString CommonUtility::platformArch() {
@@ -142,7 +154,7 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
 QString CommonUtility::getIconPath(IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
-            return "../Resources/kdrive-mac.icns";  // TODO : To be changed to a specific incs file
+            return "../Resources/kdrive-mac.icns"; // TODO : To be changed to a specific incs file
             break;
         case KDC::CommonUtility::COMMON_DOCUMENT_ICON:
             // return path to common_document_folder.icns;   // Not implemented yet
@@ -177,13 +189,13 @@ bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType icon
 
 std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
     static const char charArray[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz"
-        "-._~";
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz"
+            "-._~";
 
     static std::uniform_int_distribution<int> distrib(
-        0, sizeof(charArray) - 2);  // -2 in order to avoid the null terminating character
+        0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
 
     std::string tmp;
     tmp.reserve(length);
@@ -198,7 +210,7 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
 #if defined(Q_OS_MAC) || defined(Q_OS_FREEBSD) || defined(Q_OS_FREEBSD_KERNEL) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
     struct statvfs stat;
     if (statvfs(path.toLocal8Bit().data(), &stat) == 0) {
-        return (qint64)stat.f_bavail * stat.f_frsize;
+        return (qint64) stat.f_bavail * stat.f_frsize;
     }
 #elif defined(Q_OS_UNIX)
     struct statvfs64 stat;
@@ -215,7 +227,7 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
     return -1;
 }
 
-QByteArray CommonUtility::IntToArray(qint32 source) {
+QByteArray CommonUtility::intToArray(qint32 source) {
     // Avoid use of cast, this is the Qt way to serialize objects
     QByteArray temp;
     QDataStream data(&temp, QIODevice::ReadWrite);
@@ -223,7 +235,7 @@ QByteArray CommonUtility::IntToArray(qint32 source) {
     return temp;
 }
 
-int CommonUtility::ArrayToInt(QByteArray source) {
+int CommonUtility::arrayToInt(QByteArray source) {
     int temp;
     QDataStream data(&source, QIODevice::ReadWrite);
     data >> temp;
@@ -267,7 +279,8 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
 
     if (!res) {
         sentry_value_t event = sentry_value_new_event();
-        std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
+        std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " +
+                              appStateValueType + ".";
         sentry_value_t exc = sentry_value_new_exception("CommonUtility::stringToAppStateValue", message.c_str());
         sentry_value_set_stacktrace(exc, NULL, 0);
         sentry_event_add_exception(event, exc);
@@ -326,7 +339,8 @@ bool CommonUtility::compressFile(const std::string &originalName, const std::str
 bool CommonUtility::compressFile(const QString &originalName, const QString &targetName,
                                  const std::function<bool(int)> &progressCallback) {
 #ifdef ZLIB_FOUND
-    const std::function<bool(int)> safeProgressCallback = progressCallback ? progressCallback : [](int) { return true; };
+    const std::function<bool(int)> safeProgressCallback =
+            progressCallback ? progressCallback : [](int) { return true; };
 
     QFile original(originalName);
     if (!original.open(QIODevice::ReadOnly)) return false;
@@ -347,7 +361,7 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
         compressedSize += data.size();
         if (!safeProgressCallback(static_cast<int>((100 * compressedSize) / original.size()))) {
             gzclose(compressed);
-            return true;  // User cancelled
+            return true; // User cancelled
         }
     }
     gzclose(compressed);
@@ -417,8 +431,8 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
     }
     qtTranslator = new QTranslator(app);
 
-    foreach (QString lang, uiLanguages) {
-        lang.replace(QLatin1Char('-'), QLatin1Char('_'));  // work around QTBUG-25973
+    foreach(QString lang, uiLanguages) {
+        lang.replace(QLatin1Char('-'), QLatin1Char('_')); // work around QTBUG-25973
         lang = substLang(lang);
         const QString trPath = applicationTrPath();
         const QString trFile = QLatin1String("client_") + lang;
@@ -436,8 +450,9 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
                 if (!qtTranslator->load(qtTrFile, trPath)) {
                     if (!qtTranslator->load(qtBaseTrFile, qtTrPath)) {
                         static_cast<void>(
-                            qtTranslator->load(qtBaseTrFile, trPath));  // static_cast<void>() explicitly discard warning on
-                                                                        // function declared with 'nodiscard' attribute
+                            qtTranslator->load(qtBaseTrFile, trPath));
+                        // static_cast<void>() explicitly discard warning on
+                        // function declared with 'nodiscard' attribute
                     }
                 }
             }
@@ -462,13 +477,13 @@ SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &p
     }
 
     std::vector<SyncName> rootPathElts;
-    for (const auto &dir : rootPathNormal) {
+    for (const auto &dir: rootPathNormal) {
         rootPathElts.push_back(dir.native());
     }
 
     size_t index = 0;
     std::filesystem::path relativePath;
-    for (const auto &dir : pathNormal) {
+    for (const auto &dir: pathNormal) {
         if (index >= rootPathElts.size()) {
             relativePath /= dir;
         } else if (dir != rootPathElts[index]) {
@@ -495,7 +510,9 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
     switch (enforcedLocale) {
         case KDC::LanguageDefault: {
-            return QLocale::system().uiLanguages().isEmpty() ? QString() : QLocale::system().uiLanguages().first().left(2);
+            return QLocale::system().uiLanguages().isEmpty()
+                       ? QString()
+                       : QLocale::system().uiLanguages().first().left(2);
             break;
         }
         case KDC::LanguageEnglish:
@@ -582,13 +599,14 @@ QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, Node
                    mime.name().startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml") ||
                    mime.inherits("application/vnd.oasis.opendocument.spreadsheet")) {
             return QString(":/client/resources/icons/document types/file-sheets.svg");
-        } else if (mime.inherits("application/zip") || mime.inherits("application/gzip") || mime.inherits("application/tar") ||
+        } else if (mime.inherits("application/zip") || mime.inherits("application/gzip") || mime.inherits(
+                       "application/tar") ||
                    mime.inherits("application/rar") || mime.inherits("application/x-bzip2")) {
             return QString(":/client/resources/icons/document types/file-zip.svg");
         } else if (mime.inherits("text/x-csrc") || mime.inherits("text/x-c++src") || mime.inherits("text/x-java") ||
                    mime.inherits("text/x-objcsrc") || mime.inherits("text/x-python") || mime.inherits("text/asp") ||
-                   mime.inherits("text/html") || mime.inherits("text/javascript") || mime.inherits("application/x-php") ||
-                   mime.inherits("application/x-perl")) {
+                   mime.inherits("text/html") || mime.inherits("text/javascript") || mime.inherits("application/x-php")
+                   || mime.inherits("application/x-perl")) {
             return QString(":/client/resources/icons/document types/file-code.svg");
         } else if (mime.inherits("text/plain") || mime.inherits("text/xml")) {
             return QString(":/client/resources/icons/document types/file-text.svg");
@@ -664,7 +682,7 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #if defined(NDEBUG)
-// Release mode
+    // Release mode
 #if defined(__APPLE__) || defined(_WIN32)
     // Version format = "X.Y.Z (build yyyymmdd)"
     size_t sepPosition = dbVersion.find(" ");
@@ -792,8 +810,8 @@ bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
     process->start(
         "bash",
-        QStringList() << "-c"
-                      << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(LITE_SYNC_EXT_BUNDLE_ID));
+        QStringList() << "-c" << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(
+            LITE_SYNC_EXT_BUNDLE_ID));
     process->waitForStarted();
     process->waitForFinished();
     QByteArray result = process->readAll();
@@ -810,18 +828,18 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
         QSqlQuery query(db);
         if (QOperatingSystemVersion::current() < QOperatingSystemVersion::MacOSBigSur) {
             query.prepare(QString("SELECT allowed FROM access"
-                                  " WHERE service = \"%1\""
-                                  " and client = \"%2\""
-                                  " and client_type = 0")
-                              .arg(serviceStr)
-                              .arg(LITE_SYNC_EXT_BUNDLE_ID));
+                    " WHERE service = \"%1\""
+                    " and client = \"%2\""
+                    " and client_type = 0")
+                .arg(serviceStr)
+                .arg(LITE_SYNC_EXT_BUNDLE_ID));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
-                                  " WHERE service = \"%1\""
-                                  " and client = \"%2\""
-                                  " and client_type = 0")
-                              .arg(serviceStr)
-                              .arg(LITE_SYNC_EXT_BUNDLE_ID));
+                    " WHERE service = \"%1\""
+                    " and client = \"%2\""
+                    " and client_type = 0")
+                .arg(serviceStr)
+                .arg(LITE_SYNC_EXT_BUNDLE_ID));
         }
 
         query.exec();
@@ -851,5 +869,4 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
     return false;
 }
 #endif
-
-}  // namespace KDC
+} // namespace KDC
