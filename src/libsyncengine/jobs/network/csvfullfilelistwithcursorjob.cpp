@@ -68,9 +68,9 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
         }
         case CsvIndexType: {
             if (str == "dir") {
-                item.setType(NodeTypeDirectory);
+                item.setType(NodeType::Directory);
             } else {
-                item.setType(NodeTypeFile);
+                item.setType(NodeType::File);
             }
             break;
         }

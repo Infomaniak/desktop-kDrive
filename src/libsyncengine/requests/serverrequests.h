@@ -134,7 +134,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                                              ExclusionTemplate &exclusionTemplate);
         static void exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo);
         static void exclusionAppInfoToExclusionApp(const ExclusionAppInfo &exclusionAppInfo, ExclusionApp &exclusionApp);
-        static ExitCode loadOldSelectiveSyncTable(const SyncPath &syncDbPath, QList<QPair<QString, int>> &list);
+        static ExitCode loadOldSelectiveSyncTable(const SyncPath &syncDbPath, QList<QPair<QString, SyncNodeType>> &list);
         static ExitCode migrateSelectiveSync(int syncDbId, std::pair<SyncPath, SyncName> &syncToMigrate);
         static bool isDisplayableError(const Error &error);
         static bool isAutoResolvedError(const Error &error);

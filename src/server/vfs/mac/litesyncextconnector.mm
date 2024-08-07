@@ -493,7 +493,7 @@ enum LogMode : bool { Debug = true, Warn = false };
   \param debug is an optional boolean value indicating whether the logging mode is DEBUG or WARN. Defaults to true, i.e., DEBUG
   mode. \return true if the IO error pertains to the existence of the folder or to its permissions, false otherwise.
 */
-bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, const QString &path, log4cplus::Logger &logger,
+bool checkIoError::AndLogIfNeeded(IoError ioError, const std::string &itemType, const QString &path, log4cplus::Logger &logger,
                                 LogMode mode = LogMode::Debug) {
     if (ioError != IoError::NoSuchFileOrDirectory && ioError != IoError::AccessDenied) {
         return false;
@@ -538,32 +538,32 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
         return false;
     }
 
-    if (checkIoErrorAndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
+    if (checkIoError::AndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
         return false;
     }
 
     if (value.isEmpty()) {
         // Set default folder status
         if (!setXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
-            const std::wstring ioErrorMessage = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+            const std::wstring IoError::Message = Utility::s2ws(IoHelper::IoError2StdString(ioError));
             LOGW_WARN(_logger, L"Error in setXAttrValue - path=" << QStr2Path(folderPath).c_str() << L" Error: "
-                                                                 << ioErrorMessage.c_str());
+                                                                 << IoError::Message.c_str());
             return false;
         }
 
-        if (checkIoErrorAndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
+        if (checkIoError::AndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
             return false;
         }
 
         // Set default folder pin state
         if (!setXAttrValue(folderPath, [EXT_ATTR_PIN_STATE UTF8String], EXT_ATTR_PIN_STATE_UNPINNED, ioError)) {
-            const std::wstring ioErrorMessage = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+            const std::wstring IoError::Message = Utility::s2ws(IoHelper::IoError2StdString(ioError));
             LOGW_WARN(_logger, L"Error in setXAttrValue - path=" << QStr2Path(folderPath).c_str() << L" Error: "
-                                                                 << ioErrorMessage.c_str());
+                                                                 << IoError::Message.c_str());
             return false;
         }
 
-        if (checkIoErrorAndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
+        if (checkIoError::AndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
             return false;
         }
     }
@@ -789,7 +789,7 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
         return false;
     }
 
-    if (checkIoErrorAndLogIfNeeded(ioError, "File", filePath, _logger)) {
+    if (checkIoError::AndLogIfNeeded(ioError, "File", filePath, _logger)) {
         return false;
     }
 
@@ -820,7 +820,7 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
         return false;
     }
 
-    if (checkIoErrorAndLogIfNeeded(ioError, "File", absoluteFilepath, _logger)) {
+    if (checkIoError::AndLogIfNeeded(ioError, "File", absoluteFilepath, _logger)) {
         return false;
     }
 
@@ -896,7 +896,7 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &lo
         return false;
     }
 
-    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
+    if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
         return false;
     }
 
@@ -943,7 +943,7 @@ bool LiteSyncExtConnector::vfsGetPinState(const QString &path, QString &pinState
         return false;
     }
 
-    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
+    if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
         return false;
     }
 
@@ -962,26 +962,26 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
     QString status = (isHydrated ? EXT_ATTR_STATUS_OFFLINE : EXT_ATTR_STATUS_ONLINE);
     IoError ioError = IoError::Success;
     if (!setXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], status, ioError)) {
-        const std::wstring ioErrorMessage = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+        const std::wstring IoError::Message = Utility::s2ws(IoHelper::IoError2StdString(ioError));
         LOGW_WARN(_logger, L"Call to setXAttrValue failed - path=" << QStr2WStr(filePath).c_str() << L" Error: "
-                                                                   << ioErrorMessage.c_str());
+                                                                   << IoError::Message.c_str());
         return false;
     }
 
-    if (checkIoErrorAndLogIfNeeded(ioError, "Item", filePath, _logger)) {
+    if (checkIoError::AndLogIfNeeded(ioError, "Item", filePath, _logger)) {
         return false;
     }
 
     // Set pin state
     QString pinState = (isHydrated ? EXT_ATTR_PIN_STATE_PINNED : EXT_ATTR_PIN_STATE_UNPINNED);
     if (!setXAttrValue(filePath, [EXT_ATTR_PIN_STATE UTF8String], pinState, ioError)) {
-        const std::wstring ioErrorMessage = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+        const std::wstring IoError::Message = Utility::s2ws(IoHelper::IoError2StdString(ioError));
         LOGW_WARN(_logger, L"Call to setXAttrValue failed - path=" << QStr2WStr(filePath).c_str() << L" Error: "
-                                                                   << ioErrorMessage.c_str());
+                                                                   << IoError::Message.c_str());
         return false;
     }
 
-    if (checkIoErrorAndLogIfNeeded(ioError, "Item", filePath, _logger)) {
+    if (checkIoError::AndLogIfNeeded(ioError, "Item", filePath, _logger)) {
         return false;
     }
 
@@ -1027,25 +1027,25 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     // Set status
     IoError ioError = IoError::Success;
     if (!setXAttrValue(path, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
-        const std::wstring ioErrorMessage = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+        const std::wstring IoError::Message = Utility::s2ws(IoHelper::IoError2StdString(ioError));
         LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: " << ioErrorMessage.c_str());
+                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: " << IoError::Message.c_str());
         return false;
     }
 
-    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
+    if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
         return false;
     }
 
     // Set pin state
     if (!setXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], EXT_ATTR_PIN_STATE_UNPINNED, ioError)) {
-        const std::wstring ioErrorMessage = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+        const std::wstring IoError::Message = Utility::s2ws(IoHelper::IoError2StdString(ioError));
         LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: " << ioErrorMessage.c_str());
+                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: " << IoError::Message.c_str());
         return false;
     }
 
-    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
+    if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
         return false;
     }
 
@@ -1355,7 +1355,7 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
             return false;
         }
 
-        if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
+        if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
             return false;
         }
 

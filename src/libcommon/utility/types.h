@@ -101,20 +101,13 @@ enum class NodeType {
     Directory,
 };
 
-enum class OperationType {  // Can't be easily converted to enum class because of the numerous bitwise operations
-    None = 0x00,
-    Create = 0x01,
-    Move = 0x02,
-    Edit = 0x04,
-    Delete = 0x08,
-    Rights = 0x10
-};
+enum class OperationType { None = 0x00, Create = 0x01, Move = 0x02, Edit = 0x04, Delete = 0x08, Rights = 0x10 };
 
 enum class ExitCode {
     Unknown,
     Ok,
     NeedRestart,  // A propagation job cannot be executed because the situation that led to its creation is no longer
-                          // verified
+                  // verified
     NetworkError,
     InvalidToken,
     DataError,    // Corruption of data
@@ -123,7 +116,7 @@ enum class ExitCode {
     SystemError,  // IO error etc.
     FatalError,   // SyncPal fatal error
     LogicError,   // Consequence of faulty logic within the program such as violating logical preconditions or class
-                          // invariants and may be preventable
+                  // invariants and may be preventable
     TokenRefreshed,
     NoWritePermission,
     RateLimited,
@@ -174,7 +167,7 @@ enum class ExitCause {
     QuotaExceeded,
     FullListParsingError,
     OperationCanceled
-} ;
+};
 
 // Conflict types ordered by priority
 enum class ConflictType {
@@ -227,13 +220,25 @@ enum class CancelType {
 
 enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed };
 
+enum class SyncStatus {
+    Undefined,
+    Starting,
+    Running,
+    Idle,
+    PauseAsked,
+    Paused,
+    StopAsked,
+    Stopped,
+    Error,
+};
+
 enum class UploadSessionType { Unknown, Standard, LogUpload };
 
 enum class SyncNodeType {
     Undefined = 0,
     BlackList,           // Nodes that are excluded from sync
     WhiteList,           // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
-                            // nodes in none of those lists are implicitly whitelisted
+                         // nodes in none of those lists are implicitly whitelisted
     UndecidedList,       // Considered as blacklisted until user action
     TmpRemoteBlacklist,  // Blacklisted temporarily
     TmpLocalBlacklist    // Blacklisted temporarily
@@ -322,7 +327,7 @@ enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
     LastServerSelfRestartDate,
     LastClientSelfRestartDate,
-    LastSuccessfulLogUploadDate, //Format: "month,day,year,hour,minute,second"
+    LastSuccessfulLogUploadDate,  // Format: "month,day,year,hour,minute,second"
     LastLogUploadArchivePath,
     LogUploadState,
     LogUploadPercent,
@@ -392,4 +397,10 @@ template <AllowBitWiseOpEnum C>
 inline C operator^(const C a, const C b) {
     return intToEnumClass<C>(enumClassToInt(a) ^ enumClassToInt(b));
 }
+
+template <AllowBitWiseOpEnum C>
+inline bool bitWiseEnumToBool(const C a) {
+    return enumClassToInt(a) != 0;
+}
+
 }  // namespace KDC

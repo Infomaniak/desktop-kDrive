@@ -286,14 +286,14 @@ void TestUtility::testToUpper() {
 }
 
 void TestUtility::testErrId() {
-    // The macro ERRID expands to Utility::errId(__FILE__, __LINE__) (see types.h)
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), ERRID);
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), _testObj->errId(__FILE__, __LINE__));
+    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), _testObj->errId());
+#if defined(__unix__)
     CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/defgh", 10));
     CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d", 10));
     CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d.r", 10));
     CPPUNIT_ASSERT_EQUAL(std::string("DE:10"), _testObj->errId("abc/de.r", 10));
     CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/def.r", 10));
+#endif
 }
 
 void TestUtility::isSubDir() {
@@ -318,14 +318,14 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
 
     bool isManaged = false;
     bool isLink = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     std::filesystem::recursive_directory_iterator entry(tempDir.path());
 
     // Check with an existing file (managed)
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    CPPUNIT_ASSERT(ioError == IoError::Success);
 
     // Check with a simlink (managed)
     const SyncPath simLinkDir = tempDir.path() / "simLinkDir";
@@ -335,14 +335,14 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(isLink);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    CPPUNIT_ASSERT(ioError == IoError::Success);
 
     // Check with a directory
     entry = std::filesystem::recursive_directory_iterator(tempDir.path());
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    CPPUNIT_ASSERT(ioError == IoError::Success);
 }
 
 void TestUtility::testFormatStdError() {
@@ -362,7 +362,7 @@ void TestUtility::testFormatStdError() {
 }
 
 void TestUtility::testFormatIoError() {
-    const IoError ioError = IoErrorSuccess;
+    const IoError ioError = IoError::Success;
     const SyncPath path = "A/AA";
     const std::wstring result = _testObj->formatIoError(path, ioError);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''", result.find(L"err='Success'") != std::wstring::npos);

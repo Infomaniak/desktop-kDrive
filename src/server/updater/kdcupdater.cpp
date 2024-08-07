@@ -512,7 +512,7 @@ void NSISUpdater::slotUnsetSeenVersion() {
     }
     ParametersCache::instance()->parameters().setSeenVersion(std::string());
     ExitCode exitCode = ParametersCache::instance()->save();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
         return;
     }

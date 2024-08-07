@@ -29,22 +29,22 @@ void TestIo::testCheckIfIsDirectory() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         bool isDirectory = true;
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     // A regular directory
     {
         const SyncPath path = _localTestDirPath / "test_pictures";
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         bool isDirectory = false;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     // A regular symbolic link on a file
@@ -54,12 +54,12 @@ void TestIo::testCheckIfIsDirectory() {
         const SyncPath path = temporaryDirectory.path() / "regular_file_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         bool isDirectory = false;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     }
 
     // A regular symbolic link on a symlink
@@ -71,12 +71,12 @@ void TestIo::testCheckIfIsDirectory() {
         const SyncPath path = temporaryDirectory.path() / "symbolic_link_link";
         std::filesystem::create_symlink(path_, path);
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         bool isDirectory = false;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     // A regular symbolic link on a folder
@@ -86,13 +86,13 @@ void TestIo::testCheckIfIsDirectory() {
         const SyncPath path = temporaryDirectory.path() / "regular_dir_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         bool isDirectory = false;
 
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
         /* For comparison with the standard implementation, the following test passes:
         // std::error_code ec;
@@ -104,12 +104,12 @@ void TestIo::testCheckIfIsDirectory() {
     // A non-existing folder
     {
         const SyncPath path = _localTestDirPath / "non_existing";
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         bool isDirectory = true;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
     }
 
     // A dangling symbolic link
@@ -119,12 +119,12 @@ void TestIo::testCheckIfIsDirectory() {
         const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         bool isDirectory = true;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);  // Although the target path is invalid.
+        CPPUNIT_ASSERT(ioError == IoError::Success);  // Although the target path is invalid.
     }
 
     // A regular directory missing all permissions: no error expected
@@ -135,32 +135,32 @@ void TestIo::testCheckIfIsDirectory() {
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         bool isDirectory = false;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
     }
 
     // A non-existing file with a very long name
-    // - IoErrorNoSuchFileOrDirectory on Windows (expected error).
-    // - IoErrorFileNameTooLong error for MacOSX and Linux (unexpected error).
+    // - IoError::NoSuchFileOrDirectory on Windows (expected error).
+    // - IoError::FileNameTooLong error for MacOSX and Linux (unexpected error).
     {
         const std::string veryLongfileName(1000,
                                            'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         bool isDirectory = true;
 #ifdef _WIN32
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #else
         CPPUNIT_ASSERT(!_testObj->checkIfIsDirectory(path, isDirectory, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);
 #endif
         CPPUNIT_ASSERT(!isDirectory);
     }
@@ -176,15 +176,15 @@ void TestIo::testCheckIfIsDirectory() {
         std::filesystem::permissions(temporaryDirectory.path(), std::filesystem::perms::owner_exec,
                                      std::filesystem::perm_options::remove);
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         bool isDirectory = true;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
 #ifdef _WIN32
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
         CPPUNIT_ASSERT(isDirectory);
 #else
-        CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
+        CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
         CPPUNIT_ASSERT(!isDirectory);
 #endif
         // Restore permission to allow subdir removal
@@ -202,12 +202,12 @@ void TestIo::testCheckIfIsDirectory() {
         IoError aliasError;
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         bool isDirectory = true;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     // A MacOSX Finder alias on a regular folder.
@@ -219,12 +219,12 @@ void TestIo::testCheckIfIsDirectory() {
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         bool isDirectory = true;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     // A dangling MacOSX Finder alias on a non-existing directory.
@@ -239,12 +239,12 @@ void TestIo::testCheckIfIsDirectory() {
         IoHelper::createAliasFromPath(targetPath, path, aliasError);
         std::filesystem::remove_all(targetPath);
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         bool isDirectory = true;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 #endif
 }
@@ -255,16 +255,16 @@ void TestIo::testCreateDirectory() {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path() / "regular_directory";
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
-        ioError = IoErrorUnknown;
+        ioError = IoError::Unknown;
         bool isDirectory = false;
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(isDirectory);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     // Fails to create a directory because the dir path indicates an existing directory
@@ -272,9 +272,9 @@ void TestIo::testCreateDirectory() {
         const LocalTemporaryDirectory temporaryDirectory;
         const SyncPath path = temporaryDirectory.path();
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorDirectoryExists);
+        CPPUNIT_ASSERT(ioError == IoError::DirectoryExists);
     }
 
     // Fails to create a directory because the dir path indicates an existing file
@@ -283,9 +283,9 @@ void TestIo::testCreateDirectory() {
         const SyncPath path = temporaryDirectory.path() / "file.txt";
         { std::ofstream ofs(path); }
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorFileExists);
+        CPPUNIT_ASSERT(ioError == IoError::FileExists);
     }
 
     // Fails to create a directory within a subdirectory that misses owner exec permission.
@@ -298,13 +298,13 @@ void TestIo::testCreateDirectory() {
         std::filesystem::permissions(temporaryDirectory.path(), std::filesystem::perms::owner_exec,
                                      std::filesystem::perm_options::remove);
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 #ifdef _WIN32
         CPPUNIT_ASSERT(_testObj->createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 #else
         CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
+        CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
 #endif
         // Restore permission to allow subdir removal
         std::filesystem::permissions(temporaryDirectory.path(), std::filesystem::perms::owner_exec,
@@ -317,13 +317,13 @@ void TestIo::testCreateDirectory() {
                                           'a');  // Exceeds the max allowed name length on every file system of interest.
         const SyncPath path = _localTestDirPath / veryLongDirName;  // This directory doesn't exist.
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 #ifdef _WIN32
         CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
 #else
         CPPUNIT_ASSERT(!_testObj->createDirectory(path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorFileNameTooLong);
+        CPPUNIT_ASSERT(ioError == IoError::FileNameTooLong);
 #endif
     }
 }

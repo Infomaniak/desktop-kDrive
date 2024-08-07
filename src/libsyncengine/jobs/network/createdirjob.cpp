@@ -37,7 +37,7 @@ CreateDirJob::CreateDirJob(int driveDbId, const NodeId &parentId, const SyncName
 
 CreateDirJob::~CreateDirJob() {
     if (_vfsSetPinState && _vfsForceStatus && !_filePath.empty()) {
-        if (!_vfsSetPinState(_filePath, PinStateAlwaysLocal)) {
+        if (!_vfsSetPinState(_filePath, PinState::AlwaysLocal)) {
             LOGW_WARN(_logger, L"Error in CreateDirJob::vfsSetPinState for " << Utility::formatSyncPath(_filePath).c_str());
         }
         if (!_vfsForceStatus(_filePath, false, 0, true)) {

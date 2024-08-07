@@ -110,8 +110,8 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring conflictType2WStr(ConflictType conflictType);
         static std::string side2Str(ReplicaSide side);
         static std::wstring side2WStr(ReplicaSide side);
-        static std::string nodeType2Str(NodeType type);
-        static std::wstring nodeType2WStr(NodeType type);
+        static std::string NodeType2Str(NodeType type);
+        static std::wstring NodeType2WStr(NodeType type);
         static std::string logLevel2Str(LogLevel level);
         static std::wstring logLevel2WStr(LogLevel level);
         static std::string syncFileStatus2Str(SyncFileStatus status);
@@ -141,11 +141,14 @@ struct COMMONSERVER_EXPORT Utility {
          * see: https://github.com/llvm/llvm-project/issues/68108
          * The issue is fixed in Clang 16 but not yet propagated in Xcode
          */
-#ifndef __APPLE__ // TODO: remove this when the issue is fixed in Xcode
+#ifdef _WIN32  
         static std::string errId(std::source_location location = std::source_location::current());
-#else
+#elif __APPLE__ // TODO: Remove this special case when the issue with std::source_location is fixed in Xcode
         static std::string _errId(std::source_location location);
 #define errId() _errId(std::source_location::current())
+#else  // linux
+        static std::string _errId(const char *file, int line);
+#define errId() _errId(__FILE__, __LINE__)
 #endif
 
 

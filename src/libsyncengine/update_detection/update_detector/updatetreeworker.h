@@ -124,7 +124,7 @@ class UpdateTreeWorker : public ISyncWorker {
          * Search for the parent of the node with path `nodePath` in the update tree through its database ID.
          \param nodePath: the path of the node whose parent is queried
          \param parentNode: it is set with a pointer to the parent node if it exists, with `nullptr` otherwise.
-         \return : ExitCodeOk if no unexpected error occurred.
+         \return : ExitCode::Ok if no unexpected error occurred.
          */
         ExitCode searchForParentNode(const SyncPath &nodePath, std::shared_ptr<Node> &parentNode);
 

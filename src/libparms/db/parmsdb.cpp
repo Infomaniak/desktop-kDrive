@@ -3160,7 +3160,7 @@ bool ParmsDb::insertMigrationSelectiveSync(const MigrationSelectiveSync &migrati
     ASSERT(queryResetAndClearBindings(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID));
     ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 1, migrationSelectiveSync.syncDbId()));
     ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 2, migrationSelectiveSync.path().native()));
-    ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 3, migrationSelectiveSync.type()));
+    ASSERT(queryBindValue(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, 3, enumClassToInt(migrationSelectiveSync.type())));
     if (!queryExec(INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << INSERT_MIGRATION_SELECTIVESYNC_REQUEST_ID);
         return false;
@@ -3194,7 +3194,8 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
         int type;
         ASSERT(queryIntValue(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, 2, type));
 
-        migrationSelectiveSyncList.push_back(MigrationSelectiveSync(syncDbId, SyncPath(path), type));
+        migrationSelectiveSyncList.push_back(
+            MigrationSelectiveSync(syncDbId, SyncPath(path), intToEnumClass<SyncNodeType>(type)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
 

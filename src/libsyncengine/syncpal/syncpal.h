@@ -235,7 +235,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::string _driveName;
         SyncPath _localPath;
         SyncPath _targetPath;
-        VirtualFileMode _vfsMode{VirtualFileModeOff};
+        VirtualFileMode _vfsMode{VirtualFileMode::Off};
         bool _restart{false};
         bool _isPaused{false};
         bool _syncHasFullyCompleted;

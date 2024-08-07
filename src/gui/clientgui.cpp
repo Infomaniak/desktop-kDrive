@@ -907,7 +907,7 @@ void ClientGui::onRefreshErrorList() {
         _generalErrorsCounter = (int)_errorInfoMap[0].count();
         emit errorAdded(0);
         for (const auto &errorInfo : _errorInfoMap[0]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCodeUpdateRequired;
+            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
         }
 
         _driveWithNewErrorSet.remove(0);
@@ -934,7 +934,7 @@ void ClientGui::onRefreshErrorList() {
         int unresolvedErrorsCount = 0;
         int autoresolvedErrorsCount = 0;
         for (const auto &errorInfo : _errorInfoMap[driveDbId]) {
-            versionLocked = versionLocked || errorInfo.exitCode() == ExitCodeUpdateRequired;
+            versionLocked = versionLocked || errorInfo.exitCode() == ExitCode::UpdateRequired;
 
             if (errorInfo.autoResolved()) {
                 ++autoresolvedErrorsCount;

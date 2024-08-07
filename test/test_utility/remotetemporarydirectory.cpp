@@ -38,7 +38,7 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
 
     // Create remote test dir
     CreateDirJob job(_driveDbId, parentId, _dirName);
-    CPPUNIT_ASSERT(job.runSynchronously());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously());
 
     // Extract file ID
     CPPUNIT_ASSERT(job.jsonRes());
@@ -49,6 +49,6 @@ RemoteTemporaryDirectory::RemoteTemporaryDirectory(int driveDbId, const NodeId& 
 RemoteTemporaryDirectory::~RemoteTemporaryDirectory() {
     DeleteJob job(_driveDbId, _dirId, "", "");
     job.setBypassCheck(true);
-    CPPUNIT_ASSERT(job.runSynchronously());
+    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously());
 }
 }  // namespace KDC

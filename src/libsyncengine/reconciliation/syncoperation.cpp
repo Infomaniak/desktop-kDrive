@@ -96,7 +96,7 @@ void SyncOperationList::operator=(const SyncOperationList &other) {
 }
 
 void SyncOperationList::getMapIndexToOp(std::unordered_map<UniqueId, int> &map,
-                                        OperationType typeFilter /*= OperationTypeUnknown*/) {
+                                        OperationType typeFilter /*= OperationType::Unknown*/) {
     int index = 0;
     for (const auto &opId : _opSortedList) {
         SyncOpPtr syncOp = getOp(opId);
