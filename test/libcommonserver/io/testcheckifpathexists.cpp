@@ -99,10 +99,18 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
 
     // A regular file withour read/write permission
     {
-        const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
-        IoError ioError = IoErrorUnknown;
-        IoHelper::setRights(path, false, false, false, ioError);
+        LocalTemporaryDirectory temporaryDirectory("TestIo");
+        const SyncPath path = temporaryDirectory.path() / "test.txt";
+        std::ofstream ofs(path);
+        ofs << "Some content.\n";
+        ofs.close();
 
+        IoError ioError = IoErrorUnknown;
+        bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
+        if (!setRightResults) {
+            IoHelper::setRights(path, true, true, true, ioError);
+            CPPUNIT_FAIL("Failed to set rights on the file");
+        }
         bool exists = false;
         bool checkIfPathExistsResult = _testObj->checkIfPathExists(path, exists, ioError);
         IoHelper::setRights(path, true, true, true, ioError);
@@ -332,14 +340,24 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
 
     // A regular file without read/write permission
     {
-        const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
+        LocalTemporaryDirectory temporaryDirectory("TestIo");
+        const SyncPath path = temporaryDirectory.path() / "test.txt";
+        std::ofstream ofs(path);
+        ofs << "Some content.\n";
+        ofs.close();
+
+        IoError ioError = IoErrorUnknown;
         bool existsWithSameId = false;
         NodeId otherNodeId;
-        IoError ioError = IoErrorUnknown;
         NodeId nodeId;
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
-        IoHelper::setRights(path, false, false, false, ioError);
+
+        bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
+        if (!setRightResults) {
+            IoHelper::setRights(path, true, true, true, ioError);
+            CPPUNIT_FAIL("Failed to set rights on the file");
+        }
         bool checkIfPathExistsResult =
             _testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError);
         IoHelper::setRights(path, true, true, true, ioError);
