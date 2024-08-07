@@ -19,36 +19,24 @@
 
 #pragma once
 
+#include "testincludes.h"
 #include "utility/types.h"
-
-
-#include <log4cplus/logger.h>
-#include <thread>
+using namespace CppUnit;
 
 namespace KDC {
-/**
- * @brief Checks for new updates and manage installation.
- * @ingroup gui
- *
- * This class schedules regular update checks.
- * It also trigger automatic update and installation of the new version.
- */
-
-class AbstractUpdater {
+class TestAbstractUpdater : public CppUnit::TestFixture {
     public:
-        static AbstractUpdater *instance();
+        CPPUNIT_TEST_SUITE(TestAbstractUpdater);
+            CPPUNIT_TEST(testCurrentVersion);
+        CPPUNIT_TEST_SUITE_END();
 
-        ExitCode checkUpdateAvailable(bool &available);
+    public:
+        void setUp() override;
+        void tearDown() override;
 
-        static std::string currentVersion();
+    protected:
+        void testCurrentVersion();
 
     private:
-        AbstractUpdater();
-
-        static void run() noexcept;
-
-        static AbstractUpdater *_instance;
-        log4cplus::Logger _logger;
-        std::unique_ptr<std::thread> _thread;
 };
-} // namespace KDC
+} // KDC

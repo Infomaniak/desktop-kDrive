@@ -19,6 +19,8 @@
 
 #include "abstractupdater.h"
 
+#include <version.h>
+
 #include "db/parmsdb.h"
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
@@ -44,7 +46,35 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
     const auto &appUid = std::get<std::string>(appStateValue);
     GetAppVersionJob job(CommonUtility::platform(), appUid);
     job.runSynchronously();
-    available = false; // TODO : to be changed
+
+    std::string errorCode;
+    std::string errorDescr;
+    if (job.hasErrorApi(&errorCode, &errorDescr)) {
+        std::stringstream ss;
+        ss << errorCode.c_str() << " - " << errorDescr;
+#ifdef NDEBUG
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING,
+                                                            "AbstractUpdater::checkUpdateAvailable",
+                                                            ss.str().c_str()));
+#endif
+        LOG_ERROR(_logger, ss.str().c_str());
+        return ExitCodeUpdateFailed;
+    }
+    // TODO : for now we support only Prod updates
+    VersionInfo versionInfo = job.getVersionInfo(DistributionChannel::Prod);
+    if (!versionInfo.isValid()) {
+        std::string error = "Invalid version info!";
+#ifdef NDEBUG
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING,
+                                                            "AbstractUpdater::checkUpdateAvailable",
+                                                            error.c_str()));
+#endif
+        LOG_ERROR(_logger, error.c_str());
+        return ExitCodeUpdateFailed;
+    }
+
+    available = CommonUtility::isVersionLower(currentVersion(),
+                                              versionInfo.fullVersion());
     return ExitCodeOk;
 }
 
@@ -54,5 +84,11 @@ AbstractUpdater::AbstractUpdater() {
 
 void AbstractUpdater::run() noexcept {
     // To be implemented
+}
+
+std::string AbstractUpdater::currentVersion() {
+    static std::string currentVersion = std::format("{}.{}.{}.{}", KDRIVE_VERSION_MAJOR, KDRIVE_VERSION_MINOR,
+                                                    KDRIVE_VERSION_PATCH, KDRIVE_VERSION_BUILD);
+    return currentVersion;
 }
 } // namespace KDC

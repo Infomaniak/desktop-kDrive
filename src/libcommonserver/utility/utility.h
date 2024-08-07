@@ -44,7 +44,6 @@ class URI;
 }
 
 namespace KDC {
-
 struct COMMONSERVER_EXPORT Utility {
         inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
 
@@ -73,7 +72,8 @@ struct COMMONSERVER_EXPORT Utility {
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
-        static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
+        static std::string formatGenericServerError(std::istream &inputStream,
+                                                    const Poco::Net::HTTPResponse &httpResponse);
         static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
                                           std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
@@ -144,14 +144,16 @@ struct COMMONSERVER_EXPORT Utility {
         static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
 #endif
-        static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
+        static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
+                                             bool &isLink,
                                              IoError &ioError);
 
         /* Resources analyser */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode);
-        static bool cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
+        static bool cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys,
+                             uint64_t &lastTotalIdle,
                              double &percent);
         static bool cpuUsage(uint64_t &previousTotalTicks, uint64_t &_previousIdleTicks, double &percent);
         static bool cpuUsageByProcess(double &percent);
@@ -159,10 +161,11 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath commonDocumentsFolderName();
         static SyncPath sharedFolderName();
 
-    private:
-        static log4cplus::Logger _logger;
+        private:
+                static log4cplus::Logger _logger;
 
-        inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
+                inline static log4cplus::Logger logger() {
+                        return Log::isSet() ? Log::instance()->getLogger() : _logger;
+                }
 };
-
-}  // namespace KDC
+} // namespace KDC

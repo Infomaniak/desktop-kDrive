@@ -67,7 +67,6 @@
 #define SHARED_FOLDER "Shared"
 
 namespace KDC {
-
 static const SyncName excludedTemplateFileName(Str("sync-exclude.lst"));
 
 #if defined(__APPLE__)
@@ -88,13 +87,13 @@ static const std::string NTFS("NTFS");
 #endif
 
 struct VariantPrinter {
-        std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }
-        std::wstring operator()(int value) { return std::to_wstring(value); }
-        std::wstring operator()(int64_t value) { return std::to_wstring(value); }
-        std::wstring operator()(double value) { return std::to_wstring(value); }
-        std::wstring operator()(const std::string &value) { return Utility::s2ws(value); }
-        std::wstring operator()(const std::wstring &value) { return value; }
-        std::wstring operator()(std::shared_ptr<std::vector<char>>) { return std::wstring(); }
+    std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }
+    std::wstring operator()(int value) { return std::to_wstring(value); }
+    std::wstring operator()(int64_t value) { return std::to_wstring(value); }
+    std::wstring operator()(double value) { return std::to_wstring(value); }
+    std::wstring operator()(const std::string &value) { return Utility::s2ws(value); }
+    std::wstring operator()(const std::wstring &value) { return value; }
+    std::wstring operator()(std::shared_ptr<std::vector<char> >) { return std::wstring(); }
 };
 
 log4cplus::Logger Utility::_logger;
@@ -103,7 +102,7 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 #if defined(__APPLE__)
     struct statvfs stat;
     if (statvfs(path.c_str(), &stat) == 0) {
-        return (int64_t)stat.f_bavail * stat.f_frsize;
+        return (int64_t) stat.f_bavail * stat.f_frsize;
     }
 #elif defined(__unix__)
     struct statvfs64 stat;
@@ -121,7 +120,7 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 }
 
 int64_t Utility::freeDiskSpaceLimit() {
-    static int64_t limit = 250 * 1000 * 1000LL;  // 250MB
+    static int64_t limit = 250 * 1000 * 1000LL; // 250MB
     return limit;
 }
 
@@ -149,7 +148,9 @@ bool Utility::findNodeValue(const Poco::XML::Document &doc, const std::string &n
 bool Utility::setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                            std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
     if (!setFileDates_private(filePath,
-                              creationDate.has_value() && isCreationDateValid(creationDate.value()) ? creationDate : std::nullopt,
+                              creationDate.has_value() && isCreationDateValid(creationDate.value())
+                                  ? creationDate
+                                  : std::nullopt,
                               modificationDate, symlink, exists)) {
         return false;
     }
@@ -181,14 +182,18 @@ std::string Utility::ws2s(const std::wstring &wstr) {
 
 std::string Utility::ltrim(const std::string &s) {
     std::string sout(s);
-    auto it = std::find_if(sout.begin(), sout.end(), [](char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    auto it = std::find_if(sout.begin(), sout.end(), [](char c) {
+        return !std::isspace<char>(c, std::locale::classic());
+    });
     sout.erase(sout.begin(), it);
     return sout;
 }
 
 std::string Utility::rtrim(const std::string &s) {
     std::string sout(s);
-    auto it = std::find_if(sout.rbegin(), sout.rend(), [](char c) { return !std::isspace<char>(c, std::locale::classic()); });
+    auto it = std::find_if(sout.rbegin(), sout.rend(), [](char c) {
+        return !std::isspace<char>(c, std::locale::classic());
+    });
     sout.erase(it.base(), sout.end());
     return sout;
 }
@@ -265,10 +270,11 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
         errorStream << ", encoding: " << encoding.c_str();
     }
 
-    return errorStream.str();  // str() return a copy of the underlying string
+    return errorStream.str(); // str() return a copy of the underlying string
 }
 
-void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
+void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
+                                    std::istream &inputStream,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
 #ifdef NDEBUG
@@ -330,12 +336,13 @@ bool Utility::startsWith(const std::string &str, const std::string &prefix) {
 
 bool Utility::startsWithInsensitive(const std::string &str, const std::string &prefix) {
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) {
-               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
-           });
+        return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
+    });
 }
 
 bool Utility::endsWith(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
+    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(),
+                                                     suffix.begin(),
                                                      [](char c1, char c2) { return c1 == c2; });
 }
 
@@ -669,13 +676,16 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 
 #if defined(__APPLE__)
 SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
-    return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
+    return (test
+                ? excludedAppFileName
+                : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
 }
 #endif
 
 SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
-    return (test ? excludedTemplateFileName
-                 : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
+    return (test
+                ? excludedTemplateFileName
+                : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
 }
 
 SyncPath Utility::binRelativePath() {
@@ -713,7 +723,8 @@ std::string Utility::toUpper(const std::string &str) {
 
 std::string Utility::errId(const char *file, int line) {
     std::string err =
-        Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
+            Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" +
+            std::to_string(line);
     return err;
 }
 
@@ -798,7 +809,7 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
     }
 
     SyncName syncName(str);
-    std::free((void *)str);
+    std::free((void*) str);
     return syncName;
 #endif
 }
@@ -822,7 +833,8 @@ SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
     return result;
 }
 
-bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
+bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
+                                       bool &isLink,
                                        IoError &ioError) {
     isManaged = true;
     isLink = false;
@@ -832,7 +844,8 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
     bool result = IoHelper::getItemType(dirIt->path(), itemType);
     ioError = itemType.ioError;
     if (!result) {
-        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirIt->path(), ioError).c_str());
+        LOGW_WARN(logger(),
+                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirIt->path(), ioError).c_str());
         return false;
     }
 
@@ -844,14 +857,15 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
     isLink = itemType.linkType != LinkTypeNone;
     if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
         LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
-                                       << L" because it's not a directory, a regular file or a symlink");
+                  << L" because it's not a directory, a regular file or a symlink");
         isManaged = false;
         return true;
     }
 
     if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(),
-                  L"Ignore " << formatSyncPath(dirIt->path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
+                  L"Ignore " << formatSyncPath(dirIt->path()).c_str() << L" because size > " << CommonUtility::
+                  maxPathLength());
         isManaged = false;
         return true;
     }
@@ -940,16 +954,17 @@ bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
 }
 
 
-bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
+bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys,
+                       uint64_t &lastTotalIdle,
                        double &percent) {
 #ifdef __unix__
     return cpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle, percent);
 #else
-    (void)(lastTotalUser);
-    (void)(lastTotalUserLow);
-    (void)(lastTotalSys);
-    (void)(lastTotalIdle);
-    (void)(percent);
+    (void) (lastTotalUser);
+    (void) (lastTotalUserLow);
+    (void) (lastTotalSys);
+    (void) (lastTotalIdle);
+    (void) (percent);
 #endif
     return false;
 }
@@ -976,5 +991,4 @@ SyncPath Utility::commonDocumentsFolderName() {
 SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
-
-}  // namespace KDC
+} // namespace KDC

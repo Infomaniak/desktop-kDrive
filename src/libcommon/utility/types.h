@@ -24,6 +24,7 @@
 #include <optional>
 #include <unordered_set>
 #include <variant>
+#include <__format/format_functions.h>
 
 namespace KDC {
 #define ERRID Utility::errId(__FILE__, __LINE__)
@@ -134,7 +135,8 @@ typedef enum {
     ExitCodeInvalidOperation,
     ExitCodeOperationCanceled,
     ExitCodeUpdateRequired,
-    ExitCodeLogUploadFailed
+    ExitCodeLogUploadFailed,
+    ExitCodeUpdateFailed
 } ExitCode;
 
 typedef enum {
@@ -423,6 +425,10 @@ struct VersionInfo {
     [[nodiscard]] bool isValid() const {
         return !tag.empty() && !changeLog.empty() && buildVersion != 0 && buildMinOsVersion != 0 && !downloadUrl.
                empty();
+    }
+
+    [[nodiscard]] std::string fullVersion() const {
+        return std::format("{}.{}", tag, buildVersion);
     }
 };
 
