@@ -50,7 +50,8 @@ ParametersCache::ParametersCache() {
 }
 
 bool ParametersCache::saveParametersInfo(bool displayMessageBoxOnError) {
-    if (const ExitCode exitCode = GuiRequests::updateParameters(_parametersInfo); exitCode != ExitCode::Ok) {
+    const ExitCode exitCode = GuiRequests::updateParameters(_parametersInfo);
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcAppParameters()) << "Error in Requests::updateParameters";
         if (displayMessageBoxOnError) {
             CustomMessageBox msgBox(QMessageBox::Warning,

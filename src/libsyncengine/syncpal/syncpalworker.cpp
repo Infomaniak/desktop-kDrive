@@ -221,38 +221,37 @@ std::string SyncPalWorker::stepName(SyncStep step) {
     name = "<";
 
     switch (step) {
-        using enum KDC::SyncStep;
-        case None:
+        case SyncStep::None:
             name += "None";
             break;
-        case Idle:
+        case SyncStep::Idle:
             name += "Idle";
             break;
-        case UpdateDetection1:
+        case SyncStep::UpdateDetection1:
             name += "Compute FS operations";
             break;
-        case UpdateDetection2:
+        case SyncStep::UpdateDetection2:
             name += "Update Trees";
             break;
-        case Reconciliation1:
+        case SyncStep::Reconciliation1:
             name += "Platform Inconsistency Checker";
             break;
-        case Reconciliation2:
+        case SyncStep::Reconciliation2:
             name += "Conflict Finder";
             break;
-        case Reconciliation3:
+        case SyncStep::Reconciliation3:
             name += "Conflict Resolver";
             break;
-        case Reconciliation4:
+        case SyncStep::Reconciliation4:
             name += "Operation Generator";
             break;
-        case Propagation1:
+        case SyncStep::Propagation1:
             name += "Sorter";
             break;
-        case Propagation2:
+        case SyncStep::Propagation2:
             name += "Executor";
             break;
-        case Done:
+        case SyncStep::Done:
             name += "Done";
             break;
     }
@@ -267,8 +266,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
     _step = step;
 
     switch (step) {
-        using enum SyncStep;
-        case Idle:
+        case SyncStep::Idle:
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
@@ -276,7 +274,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->resetEstimateUpdates();
             _syncPal->refreshTmpBlacklist();
             break;
-        case UpdateDetection1:
+        case SyncStep::UpdateDetection1:
             workers[0] = _syncPal->_computeFSOperationsWorker;
             workers[1] = nullptr;
             _syncPal->copySnapshots();
@@ -284,50 +282,50 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[1] = _syncPal->snapshot(ReplicaSide::Remote, true);
             _syncPal->_restart = false;
             break;
-        case UpdateDetection2:
+        case SyncStep::UpdateDetection2:
             workers[0] = _syncPal->_localUpdateTreeWorker;
             workers[1] = _syncPal->_remoteUpdateTreeWorker;
             inputSharedObject[0] = _syncPal->operationSet(ReplicaSide::Local);
             inputSharedObject[1] = _syncPal->operationSet(ReplicaSide::Remote);
             break;
-        case Reconciliation1:
+        case SyncStep::Reconciliation1:
             workers[0] = _syncPal->_platformInconsistencyCheckerWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = _syncPal->_remoteUpdateTree;
             inputSharedObject[1] = nullptr;
             break;
-        case Reconciliation2:
+        case SyncStep::Reconciliation2:
             workers[0] = _syncPal->_conflictFinderWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case Reconciliation3:
+        case SyncStep::Reconciliation3:
             workers[0] = _syncPal->_conflictResolverWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case Reconciliation4:
+        case SyncStep::Reconciliation4:
             workers[0] = _syncPal->_operationsGeneratorWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case Propagation1:
+        case SyncStep::Propagation1:
             workers[0] = _syncPal->_operationsSorterWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->startEstimateUpdates();
             break;
-        case Propagation2:
+        case SyncStep::Propagation2:
             workers[0] = _syncPal->_executorWorker;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             break;
-        case Done:
+        case SyncStep::Done:
             workers[0] = nullptr;
             workers[1] = nullptr;
             inputSharedObject[0] = nullptr;
@@ -592,7 +590,6 @@ bool SyncPalWorker::resetVfsFilesStatus() {
             }
 
             if (isPlaceholder) {
-                using enum PinState;
                 if (isSyncing) {
                     // Force status to dehydrated
                     if (!_syncPal->vfsForceStatus(dirIt->path(), false, 0, false)) {
@@ -605,8 +602,8 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                 }
 
                 // Fix pinstate if needed
-                if (isHydrated && pinState != AlwaysLocal) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), AlwaysLocal)) {
+                if (isHydrated && pinState != PinState::AlwaysLocal) {
+                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::AlwaysLocal)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;
@@ -621,9 +618,8 @@ bool SyncPalWorker::resetVfsFilesStatus() {
                     }
                 }
             } else {
-                using enum PinState;
-                if (pinState == AlwaysLocal || pinState == OnlineOnly) {
-                    if (!_syncPal->vfsSetPinState(dirIt->path(), Unspecified)) {
+                if (pinState == PinState::AlwaysLocal || pinState == PinState::OnlineOnly) {
+                    if (!_syncPal->vfsSetPinState(dirIt->path(), PinState::Unspecified)) {
                         LOGW_SYNCPAL_WARN(_logger,
                                           L"Error in vfsSetPinState : " << Utility::formatSyncPath(dirIt->path()).c_str());
                         ok = false;

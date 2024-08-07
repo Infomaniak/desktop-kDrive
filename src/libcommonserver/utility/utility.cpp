@@ -437,16 +437,15 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
 
 std::string Utility::opType2Str(OperationType opType) {
     switch (opType) {
-        using enum KDC::OperationType;
-        case Create:
+        case OperationType::Create:
             return "CREATE";
-        case Delete:
+        case OperationType::Delete:
             return "DELETE";
-        case Edit:
+        case OperationType::Edit:
             return "EDIT";
-        case Move:
+        case OperationType::Move:
             return "MOVE";
-        case Rights:
+        case OperationType::Rights:
             return "RIGHTS";
         default:
             return "UNKNOWN";
@@ -459,35 +458,34 @@ std::wstring Utility::opType2WStr(OperationType opType) {
 
 std::string Utility::conflictType2Str(ConflictType conflictType) {
     switch (conflictType) {
-        using enum KDC::ConflictType;
-        case MoveParentDelete: {
+        case ConflictType::MoveParentDelete: {
             return "Move-ParentDelete";
         }
-        case MoveDelete: {
+        case ConflictType::MoveDelete: {
             return "Move-Delete";
         }
-        case CreateParentDelete: {
+        case ConflictType::CreateParentDelete: {
             return "Create-ParentDelete";
         }
-        case MoveMoveSource: {
+        case ConflictType::MoveMoveSource: {
             return "Move-Move(Source)";
         }
-        case MoveMoveDest: {
+        case ConflictType::MoveMoveDest: {
             return "Move-Move(Dest)";
         }
-        case MoveCreate: {
+        case ConflictType::MoveCreate: {
             return "Move-Create";
         }
-        case EditDelete: {
+        case ConflictType::EditDelete: {
             return "Edit-Delete";
         }
-        case CreateCreate: {
+        case ConflictType::CreateCreate: {
             return "Create-Create";
         }
-        case EditEdit: {
+        case ConflictType::EditEdit: {
             return "Edit-Edit";
         }
-        case MoveMoveCycle: {
+        case ConflictType::MoveMoveCycle: {
             return "Move-Move(Cycle)";
         }
         default: {
@@ -538,20 +536,19 @@ std::wstring Utility::nodeType2WStr(NodeType type) {
 
 std::string Utility::logLevel2Str(LogLevel level) {
     switch (level) {
-        using enum KDC::LogLevel;
-        case Debug: {
+        case LogLevel::Debug: {
             return "debug";
         }
-        case Info: {
+        case LogLevel::Info: {
             return "info";
         }
-        case Warning: {
+        case LogLevel::Warning: {
             return "warning";
         }
-        case Error: {
+        case LogLevel::Error: {
             return "error";
         }
-        case Fatal: {
+        case LogLevel::Fatal: {
             return "fatal";
         }
         default:

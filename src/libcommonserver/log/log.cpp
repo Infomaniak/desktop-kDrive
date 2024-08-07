@@ -55,20 +55,19 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
     if (useLog) {
         // Set log level
         switch (logLevel) {
-            using enum KDC::LogLevel;
-            case Debug:
+            case LogLevel::Debug:
                 _logger.setLogLevel(log4cplus::DEBUG_LOG_LEVEL);
                 break;
-            case Info:
+            case LogLevel::Info:
                 _logger.setLogLevel(log4cplus::INFO_LOG_LEVEL);
                 break;
-            case Warning:
+            case LogLevel::Warning:
                 _logger.setLogLevel(log4cplus::WARN_LOG_LEVEL);
                 break;
-            case Error:
+            case LogLevel::Error:
                 _logger.setLogLevel(log4cplus::ERROR_LOG_LEVEL);
                 break;
-            case Fatal:
+            case LogLevel::Fatal:
                 _logger.setLogLevel(log4cplus::FATAL_LOG_LEVEL);
                 break;
         }

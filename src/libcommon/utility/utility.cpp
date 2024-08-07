@@ -455,24 +455,23 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 
 QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
     switch (enforcedLocale) {
-        using enum KDC::Language;
-        case Default: {
+        case KDC::Language::Default: {
             return QLocale::system().uiLanguages().isEmpty() ? QString() : QLocale::system().uiLanguages().first().left(2);
             break;
         }
-        case English:
+        case KDC::Language::English:
             return englishCode;
             break;
-        case French:
+        case KDC::Language::French:
             return frenchCode;
             break;
-        case German:
+        case KDC::Language::German:
             return germanCode;
             break;
-        case Italian:
+        case KDC::Language::Italian:
             return italianCode;
             break;
-        case Spanish:
+        case KDC::Language::Spanish:
             return spanishCode;
             break;
     }

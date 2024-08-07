@@ -562,22 +562,22 @@ QString ClientGui::shortGuiLocalPath(const QString &path) {
 }
 
 void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedConflicts) {
-    using enum KDC::SyncStatus;
-    status = Undefined;
+    status = SyncStatus::Undefined;
     unresolvedConflicts = false;
 
     // if one folder: show the state of the one folder.
     // if more folders:
     // if one of them has an error -> show error
     // if one is paused, but others ok, show ok
-    if (size_t cnt = _syncInfoMap.size(); cnt == 1) {
+    size_t cnt = _syncInfoMap.size();
+    if (cnt == 1) {
         const auto &syncInfoMapIt = _syncInfoMap.begin();
         if (syncInfoMapIt->second.paused()) {
-            status = Paused;
+            status = SyncStatus::Paused;
         } else {
             status = syncInfoMapIt->second.status();
-            if (status == Undefined) {
-                status = Error;
+            if (status == SyncStatus::Undefined) {
+                status = SyncStatus::Error;
             }
         }
         unresolvedConflicts = syncInfoMapIt->second.unresolvedConflicts();
@@ -588,28 +588,29 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
         unsigned int runSeen = 0;
         unsigned int various = 0;  // TODO: not used ?
 
+
         for (const auto &syncInfoMapIt : _syncInfoMap) {
             if (syncInfoMapIt.second.paused()) {
                 abortOrPausedSeen++;
             } else {
                 switch (syncInfoMapIt.second.status()) {
-                    case Undefined:
-                    case Starting:
+                    case SyncStatus::Undefined:
+                    case SyncStatus::Starting:
                         various++;
                         break;
-                    case Running:
+                    case SyncStatus::Running:
                         runSeen++;
                         break;
-                    case Idle:
+                    case SyncStatus::Idle:
                         idleSeen++;
                         break;
-                    case Error:
+                    case SyncStatus::Error:
                         errorsSeen++;
                         break;
-                    case PauseAsked:
-                    case Paused:
-                    case StopAsked:
-                    case Stopped:
+                    case SyncStatus::PauseAsked:
+                    case SyncStatus::Paused:
+                    case SyncStatus::StopAsked:
+                    case SyncStatus::Stopped:
                         abortOrPausedSeen++;
                 }
             }
@@ -618,49 +619,48 @@ void ClientGui::computeTrayOverallStatus(SyncStatus &status, bool &unresolvedCon
             }
         }
         if (errorsSeen > 0) {
-            status = Error;
+            status = SyncStatus::Error;
         } else if (abortOrPausedSeen > 0 && abortOrPausedSeen == cnt) {
             // only if all folders are paused
-            status = Paused;
+            status = SyncStatus::Paused;
         } else if (runSeen > 0) {
-            status = Running;
+            status = SyncStatus::Running;
         } else if (idleSeen > 0) {
-            status = Idle;
+            status = SyncStatus::Idle;
         }
     }
     if (_generalErrorsCounter) {
-        status = Error;
+        status = SyncStatus::Error;
     }
 }
 
 QString ClientGui::trayTooltipStatusString(SyncStatus status, bool unresolvedConflicts, bool paused) {
     QString statusString;
     switch (status) {
-        using enum KDC::SyncStatus;
-        case Undefined:
+        case SyncStatus::Undefined:
             statusString = tr("Undefined State.");
             break;
-        case Starting:
+        case SyncStatus::Starting:
             statusString = tr("Waiting to start syncing.");
             break;
-        case Running:
+        case SyncStatus::Running:
             statusString = tr("Sync is running.");
             break;
-        case Idle:
+        case SyncStatus::Idle:
             if (unresolvedConflicts) {
                 statusString = tr("Sync was successful, unresolved conflicts.");
             } else {
                 statusString = tr("Last Sync was successful.");
             }
             break;
-        case Error:
+        case SyncStatus::Error:
             break;
-        case StopAsked:
-        case Stopped:
+        case SyncStatus::StopAsked:
+        case SyncStatus::Stopped:
             statusString = tr("User Abort.");
             break;
-        case PauseAsked:
-        case Paused:
+        case SyncStatus::PauseAsked:
+        case SyncStatus::Paused:
             statusString = tr("Sync is paused.");
             break;
             // no default case on purpose, check compiler warnings
@@ -682,11 +682,10 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
     auto currentStatus = syncInfoMapIt->second.status();
     ExitCode exitCode;
     switch (type) {
-        using enum KDC::SyncStatus;
         case ActionType::Stop:
-            if (currentStatus == Undefined || currentStatus == PauseAsked ||
-                currentStatus == Paused || currentStatus == StopAsked || currentStatus == Stopped ||
-                currentStatus == Error) {
+            if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::PauseAsked ||
+                currentStatus == SyncStatus::Paused || currentStatus == SyncStatus::StopAsked || currentStatus == SyncStatus::Stopped ||
+                currentStatus == SyncStatus::Error) {
                 return;
             }
             exitCode = GuiRequests::syncStop(syncDbId);
@@ -694,11 +693,11 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
                 qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : " << enumClassToInt(exitCode);
                 return;
             }
-            syncInfoMapIt->second.setStatus(PauseAsked);
+            syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
             break;
         case ActionType::Start:
-            if (currentStatus == Undefined || currentStatus == Idle || currentStatus == Running ||
-                currentStatus == Starting) {
+            if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::Idle || currentStatus == SyncStatus::Running ||
+                currentStatus == SyncStatus::Starting) {
                 return;
             }
             exitCode = GuiRequests::syncStart(syncDbId);
@@ -706,7 +705,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
                 qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : " << enumClassToInt(exitCode);
                 return;
             }
-            syncInfoMapIt->second.setStatus(Starting);
+            syncInfoMapIt->second.setStatus(SyncStatus::Starting);
             break;
     }
 

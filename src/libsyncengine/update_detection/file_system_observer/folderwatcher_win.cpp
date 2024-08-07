@@ -232,26 +232,25 @@ void FolderWatcher_win::closeHandle() {
 }
 
 OperationType FolderWatcher_win::operationFromAction(DWORD action) {
-    using enum KDC::OperationType;
     switch (action) {
         case FILE_ACTION_RENAMED_OLD_NAME:
-            return Move;
+            return OperationType::Move;
             break;
         case FILE_ACTION_RENAMED_NEW_NAME:
-            return Move;
+            return OperationType::Move;
             break;
         case FILE_ACTION_ADDED:
-            return Create;
+            return OperationType::Create;
             break;
         case FILE_ACTION_REMOVED:
-            return Delete;
+            return OperationType::Delete;
             break;
         case FILE_ACTION_MODIFIED:
-            return Edit;
+            return OperationType::Edit;
             break;
     }
 
-    return None;
+    return OperationType::None;
 }
 
 }  // namespace KDC

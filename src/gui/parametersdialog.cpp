@@ -336,13 +336,12 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(enumClassToInt(exitCode)).arg(enumClassToInt(exitCause));
     // TODO: USELESS CODE : this switch should be simplified !!!!
     switch (exitCode) {
-        using enum KDC::ExitCode;
-        case Unknown:
+        case ExitCode::Unknown:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case NetworkError:
+        case ExitCode::NetworkError:
             if (exitCause == ExitCause::NetworkTimeout) {
                 return tr("It seems that your network connection is configured with too low a timeout for the application to "
                           "work correctly (error %1).<br>"
@@ -354,27 +353,33 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                     .arg(err);
             }
             break;
-        case InvalidToken:
+        case ExitCode::InvalidToken:
             return tr("A login problem has occurred (error %1).<br>"
                       "Please log in again and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case DataError:
+        case ExitCode::DataError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case DbError:
+        case ExitCode::DbError:
+            if (exitCause == ExitCause::DbAccessError) {
+                return tr("A technical error has occurred (error %1).<br>"
+                          "Please empty the history and if the error persists, contact our support team.")
+                    .arg(err);
+            } else {
+                return tr("A technical error has occurred (error %1).<br>"
+                          "Please empty the history and if the error persists, contact our support team.")
+                    .arg(err);
+            }
+            break;
+        case ExitCode::BackError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case BackError:
-            return tr("A technical error has occurred (error %1).<br>"
-                      "Please empty the history and if the error persists, contact our support team.")
-                .arg(err);
-            break;
-        case SystemError:
+        case ExitCode::SystemError:
             if (exitCause == ExitCause::MigrationError) {
                 return tr(
                     "Old synchronisation database doesn't exist or is not accessible.<br>"
@@ -385,20 +390,18 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
                     .arg(err);
             }
             break;
-        case FatalError:
+        case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case Ok:
-        case NeedRestart:
-        case InconsistencyError:
-        case NoWritePermission:
-        case TokenRefreshed:
-        case RateLimited:
-        case InvalidSync:
-        case OperationCanceled:
-        case InvalidOperation:
+        case ExitCode::Ok:
+        case ExitCode::NeedRestart:
+        case ExitCode::InconsistencyError:
+        case ExitCode::NoWritePermission:
+        case ExitCode::TokenRefreshed:
+        case ExitCode::RateLimited:
+        case ExitCode::InvalidSync:
             break;
     }
 
@@ -504,13 +507,12 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(enumClassToInt(exitCode)).arg(enumClassToInt(exitCause));
 
     switch (exitCode) {
-        using enum KDC::ExitCode;
-        case Unknown:
+        case ExitCode::Unknown:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case NetworkError:
+        case ExitCode::NetworkError:
             if (exitCause == ExitCause::SocketsDefuncted) {
                 return tr("The network connections have been dropped by the kernel (error %1).<br>"
                           "Please empty the history and if the error persists, contact our support team.")
@@ -521,7 +523,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
                     .arg(err);
             }
             break;
-        case DataError:
+        case ExitCode::DataError:
             if (exitCause == ExitCause::MigrationError) {
                 return tr(
                     "Unfortunately your old configuration could not be migrated.<br>"
@@ -538,7 +540,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
                     .arg(err);
             }
             break;
-        case DbError:
+        case ExitCode::DbError:
             if (exitCause == ExitCause::DbAccessError) {
                 return tr("A technical error has occurred (error %1).<br>"
                           "Please empty the history and if the error persists, contact our support team.")
@@ -549,36 +551,34 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
                     .arg(err);
             }
             break;
-        case BackError:
+        case ExitCode::BackError:
             return getSyncPalBackErrorText(err, exitCause, userIsAdmin);
-        case SystemError:
+        case ExitCode::SystemError:
             return getSyncPalSystemErrorText(err, exitCause);
-        case FatalError:
+        case ExitCode::FatalError:
             return tr("A technical error has occurred (error %1).<br>"
                       "Please empty the history and if the error persists, contact our support team.")
                 .arg(err);
             break;
-        case InvalidToken:
+        case ExitCode::InvalidToken:
             return tr("A login problem has occurred (error %1).<br>"
                       "Token invalid or revoked.")
                 .arg(err);
             break;
-        case InvalidSync:
+        case ExitCode::InvalidSync:
             return tr("Nested synchronizations are prohibited (error %1).<br>"
                       "You should only keep synchronizations whose folders are not nested.")
                 .arg(err);
-        case NoWritePermission:
+        case ExitCode::NoWritePermission:
             return tr(
                 "The app does not have write rights to the synchronization folder.<br>"
                 "The synchronization has been stopped.");
             break;
-        case Ok:
-        case NeedRestart:
-        case InconsistencyError:
-        case TokenRefreshed:
-        case RateLimited:
-        case OperationCanceled:
-        case InvalidOperation:
+        case ExitCode::Ok:
+        case ExitCode::NeedRestart:
+        case ExitCode::InconsistencyError:
+        case ExitCode::TokenRefreshed:
+        case ExitCode::RateLimited:
             break;
     }
 
@@ -589,40 +589,39 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
 
 QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const noexcept {
     switch (conflictType) {
-        using enum KDC::ConflictType;
-        case None:
+        case ConflictType::None:
             break;
-        case MoveParentDelete:
+        case ConflictType::MoveParentDelete:
             return tr(
                 "An element was moved to a deleted folder.<br>"
                 "The move has been canceled.");
             break;
-        case MoveDelete:
+        case ConflictType::MoveDelete:
             return tr(
                 "This element was moved by another user.<br>"
                 "The deletion has been canceled.");
             break;
-        case CreateParentDelete:
+        case ConflictType::CreateParentDelete:
             return tr(
                 "An element was created in this folder while it was being deleted.<br>"
                 "The delete operation has been propagated anyway.");
             break;
-        case MoveMoveSource:
+        case ConflictType::MoveMoveSource:
             return tr(
                 "This element has been moved somewhere else.<br>"
                 "The local operation has been canceled.");
             break;
-        case MoveMoveDest:
+        case ConflictType::MoveMoveDest:
             return tr(
                 "An element with the same name already exists in this location.<br>"
                 "The local element has been renamed.");
             break;
-        case MoveCreate:
+        case ConflictType::MoveCreate:
             return tr(
                 "An element with the same name already exists in this location.<br>"
                 "The local operation has been canceled.");
             break;
-        case EditDelete:
+        case ConflictType::EditDelete:
             if (resolution == ConflictTypeResolution::DeleteCanceled) {
                 return tr(
                     "The content of the file was modified while it was being deleted.<br>"
@@ -639,17 +638,17 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
                     "has been deleted.<br>");
             }
             break;
-        case CreateCreate:
+        case ConflictType::CreateCreate:
             return tr(
                 "An element with the same name already exists in this location.<br>"
                 "The local element has been renamed.");
             break;
-        case EditEdit:
+        case ConflictType::EditEdit:
             return tr(
                 "The file was modified at the same time by another user.<br>"
                 "Your modifications have been saved in a copy.");
             break;
-        case MoveMoveCycle:
+        case ConflictType::MoveMoveCycle:
             return tr(
                 "Another user has moved a parent folder of the destination.<br>"
                 "The local operation has been canceled.");
@@ -711,18 +710,17 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
 QString ParametersDialog::getCancelText(CancelType cancelType, const QString &path,
                                         const QString &destinationPath /*= ""*/) const noexcept {
     switch (cancelType) {
-        using enum KDC::CancelType;
-        case Create: {
+        case CancelType::Create: {
             return tr(
                 "You are not allowed to create item.<br>"
                 "The item has been excluded from synchronization.");
         }
-        case Edit: {
+        case CancelType::Edit: {
             return tr(
                 "You are not allowed to edit item.<br>"
                 "The file containing your modifications has been renamed and excluded from synchronization.");
         }
-        case Move: {
+        case CancelType::Move: {
             QFileInfo fileInfo(path);
             QFileInfo destFileInfo(destinationPath);
             if (fileInfo.dir() == destFileInfo.dir()) {
@@ -737,31 +735,31 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
                     .arg(destinationPath);
             }
         }
-        case Delete: {
+        case CancelType::Delete: {
             return tr(
                 "You are not allowed to delete item.<br>"
                 "It will be restored to its original location.");
         }
-        case AlreadyExistRemote: {
+        case CancelType::AlreadyExistRemote: {
             return tr("\"%1\" already exists on remote kDrive. It is not synced because it has been blacklisted.").arg(path);
         }
-        case MoveToBinFailed: {
+        case CancelType::MoveToBinFailed: {
             return tr("Failed to move item \"%1\" to bin, it has been blacklisted.").arg(path);
         }
-        case AlreadyExistLocal: {
+        case CancelType::AlreadyExistLocal: {
             return tr("\"%1\" already exists on local file system. It is not synced.").arg(path);
         }
-        case TmpBlacklisted: {
+        case CancelType::TmpBlacklisted: {
             return tr("Failed to synchronize item \"%1\". It has been temporarily blacklisted.<br>"
                       "Another attempt to sync it will be done in one hour or on next application startup.")
                 .arg(path);
         }
-        case ExcludedByTemplate: {
+        case CancelType::ExcludedByTemplate: {
             return tr("The item \"%1\" has been excluded from sync by a custom template.<br>"
                       "You can disable this type of notification from the Preferences")
                 .arg(path);
         }
-        case Hardlink: {
+        case CancelType::Hardlink: {
             return tr("The item \"%1\" has been excluded from sync because it's an hard link").arg(path);
         }
         default: {
@@ -776,25 +774,24 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
 
 QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noexcept {
     switch (errorInfo.exitCause()) {
-        using enum KDC::ExitCause;
-        case HttpErrForbidden: {
+        case ExitCause::HttpErrForbidden: {
             return tr("The operation performed on item %1 is forbidden.<br>"
                       "The file/directory has been temporarily blacklisted.")
                 .arg(errorInfo.path());
         }
-        case ApiErr:
-        case UploadNotTerminated: {
+        case ExitCause::ApiErr:
+        case ExitCause::UploadNotTerminated: {
             return tr("The operation performed on item %1 failed.<br>"
                       "The file/directory has been temporarily blacklisted.")
                 .arg(errorInfo.path());
         }
-        case FileTooBig: {
+        case ExitCause::FileTooBig: {
             return tr("The file \"%1\" is too large to be uploaded. It has been temporarily blacklisted.").arg(errorInfo.path());
         }
-        case QuotaExceeded: {
+        case ExitCause::QuotaExceeded: {
             return tr("You have exceeded your quota. Increase your space quota to re-enable file upload.");
         }
-        case NotFound: {
+        case ExitCause::NotFound: {
             return tr("Impossible to download file \"%1\"").arg(errorInfo.path());
         }
         default:
@@ -963,8 +960,8 @@ void ParametersDialog::onRefreshStatusNeeded() {
 }
 
 void ParametersDialog::onItemCompleted(int syncDbId, const SyncFileItemInfo &itemInfo) {
-    using enum KDC::SyncFileStatus;
-    if (itemInfo.status() != Error && itemInfo.status() != Conflict && itemInfo.status() != Inconsistency) {
+    if (itemInfo.status() != SyncFileStatus::Error && itemInfo.status() != SyncFileStatus::Conflict &&
+        itemInfo.status() != SyncFileStatus::Inconsistency) {
         return;
     }
 

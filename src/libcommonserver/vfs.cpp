@@ -40,14 +40,13 @@ Vfs::~Vfs() {}
 QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     // Note: Strings are used for config and must be stable
     switch (virtualFileMode) {
-        using enum VirtualFileMode;
-        case Off:
+        case KDC::VirtualFileMode::Off:
             return QStringLiteral("off");
-        case Suffix:
+        case KDC::VirtualFileMode::Suffix:
             return QStringLiteral("suffix");
-        case Win:
+        case KDC::VirtualFileMode::Win:
             return QStringLiteral("wincfapi");
-        case Mac:
+        case KDC::VirtualFileMode::Mac:
             return QStringLiteral("mac");
     }
     return QStringLiteral("off");
@@ -55,16 +54,14 @@ QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
 
 KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {
     // Note: Strings are used for config and must be stable
-    using enum VirtualFileMode;
-
     if (str == "off") {
-        return Off;
+        return KDC::VirtualFileMode::Off;
     } else if (str == "suffix") {
-        return Suffix;
+        return KDC::VirtualFileMode::Suffix;
     } else if (str == "wincfapi") {
-        return Win;
+        return KDC::VirtualFileMode::Win;
     } else if (str == "mac") {
-        return Mac;
+        return KDC::VirtualFileMode::Mac;
     }
 
     return {};
@@ -117,10 +114,9 @@ bool VfsOff::startImpl(bool &, bool &, bool &) {
 }
 
 static QString modeToPluginName(KDC::VirtualFileMode virtualFileMode) {
-    using enum VirtualFileMode;
-    if (virtualFileMode == Suffix) return "suffix";
-    if (virtualFileMode == Win) return "win";
-    if (virtualFileMode == Mac) return "mac";
+    if (virtualFileMode == KDC::VirtualFileMode::Suffix) return "suffix";
+    if (virtualFileMode == KDC::VirtualFileMode::Win) return "win";
+    if (virtualFileMode == KDC::VirtualFileMode::Mac) return "mac";
     return QString();
 }
 
@@ -186,16 +182,15 @@ bool KDC::isVfsPluginAvailable(KDC::VirtualFileMode virtualFileMode, QString &er
 }
 
 KDC::VirtualFileMode KDC::bestAvailableVfsMode() {
-    using enum VirtualFileMode;
     QString error;
-    if (isVfsPluginAvailable(Win, error)) {
-        return Win;
-    } else if (isVfsPluginAvailable(Mac, error)) {
-        return Mac;
-    } else if (isVfsPluginAvailable(Suffix, error)) {
-        return Suffix;
+    if (isVfsPluginAvailable(KDC::VirtualFileMode::Win, error)) {
+        return KDC::VirtualFileMode::Win;
+    } else if (isVfsPluginAvailable(KDC::VirtualFileMode::Mac, error)) {
+        return KDC::VirtualFileMode::Mac;
+    } else if (isVfsPluginAvailable(KDC::VirtualFileMode::Suffix, error)) {
+        return KDC::VirtualFileMode::Suffix;
     }
-    return Off;
+    return KDC::VirtualFileMode::Off;
 }
 
 std::unique_ptr<Vfs> KDC::createVfsFromPlugin(KDC::VirtualFileMode virtualFileMode, VfsSetupParams &vfsSetupParams,

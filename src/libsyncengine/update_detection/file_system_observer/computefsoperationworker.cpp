@@ -904,15 +904,14 @@ void ComputeFSOperationWorker::deleteChildOpRecursively(const std::shared_ptr<Sn
 }
 
 void ComputeFSOperationWorker::updateUnsyncedList() {
-    using enum KDC::SyncNodeType;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), UndecidedList, _remoteUnsyncedList);
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::UndecidedList, _remoteUnsyncedList);
     std::unordered_set<NodeId> tmp;
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), BlackList, tmp);
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, tmp);
     _remoteUnsyncedList.merge(tmp);
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), TmpRemoteBlacklist, _remoteTmpUnsyncedList);
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpRemoteBlacklist, _remoteTmpUnsyncedList);
     _remoteUnsyncedList.merge(_remoteTmpUnsyncedList);
 
-    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), TmpLocalBlacklist,
+    SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::TmpLocalBlacklist,
                                          _localTmpUnsyncedList);  // Only tmp list on local side
 }
 

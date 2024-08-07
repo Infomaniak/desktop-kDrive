@@ -73,16 +73,15 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
         SyncPath path1;
         SyncPath path2;
         switch (c1.type()) {
-            using enum KDC::ConflictType;
-            case MoveParentDelete:
-            case CreateParentDelete:
-            case MoveDelete:
-            case EditDelete:
+            case ConflictType::MoveParentDelete:
+            case ConflictType::CreateParentDelete:
+            case ConflictType::MoveDelete:
+            case ConflictType::EditDelete:
                 // Path of deleted node
                 path1 = pathOfEvent(c1, OperationType::Delete);
                 path2 = pathOfEvent(c2, OperationType::Delete);
                 break;
-            case MoveMoveSource:
+            case ConflictType::MoveMoveSource:
                 // Move origin path of the local node
                 localNode = c1.localNode();
                 if (localNode && localNode->moveOrigin().has_value()) {
@@ -93,10 +92,10 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
                     path2 = *c2.correspondingNode()->moveOrigin();
                 }
                 break;
-            case MoveMoveDest:
-            case MoveMoveCycle:
-            case CreateCreate:
-            case EditEdit:
+            case ConflictType::MoveMoveDest:
+            case ConflictType::MoveMoveCycle:
+            case ConflictType::CreateCreate:
+            case ConflictType::EditEdit:
                 // Path of local node
                 localNode = c1.localNode();
                 if (localNode) {
@@ -107,7 +106,7 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
                     path2 = localNode->getPath();
                 }
                 break;
-            case MoveCreate:
+            case ConflictType::MoveCreate:
                 // Path of the created node
                 path1 = pathOfEvent(c1, OperationType::Create);
                 path2 = pathOfEvent(c2, OperationType::Create);

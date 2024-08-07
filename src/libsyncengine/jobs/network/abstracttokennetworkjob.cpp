@@ -81,15 +81,14 @@ bool AbstractTokenNetworkJob::hasErrorApi(std::string *errorCode, std::string *e
 }
 
 ExitCause AbstractTokenNetworkJob::getExitCause() {
-    using enum KDC::ExitCause;
-    if (_exitCause == Unknown) {
+    if (_exitCause == ExitCause::Unknown) {
         if (!_errorCode.empty()) {
-            return ApiErr;
+            return ExitCause::ApiErr;
         } else {
             if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN) {
-                return HttpErrForbidden;
+                return ExitCause::HttpErrForbidden;
             } else {
-                return HttpErr;
+                return ExitCause::HttpErr;
             }
         }
     } else {

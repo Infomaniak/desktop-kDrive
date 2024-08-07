@@ -252,22 +252,21 @@ void GuiUtility::setStyle(QApplication *app, bool isDarkTheme) {
 QString GuiUtility::getFileStatusIconPath(::KDC::SyncFileStatus status) {
     QString path;
     switch (status) {
-        using enum KDC::SyncFileStatus;
-        case Unknown:
+        case ::KDC::SyncFileStatus::Unknown:
             path = QString();
             break;
-        case Error:
+        case ::KDC::SyncFileStatus::Error:
             path = QString(":/client/resources/icons/statuts/error-sync.svg");
             break;
-        case Success:
-        case Inconsistency:
+        case ::KDC::SyncFileStatus::Success:
+        case ::KDC::SyncFileStatus::Inconsistency:
             path = QString(":/client/resources/icons/statuts/success.svg");
             break;
-        case Conflict:
-        case Ignored:
+        case ::KDC::SyncFileStatus::Conflict:
+        case ::KDC::SyncFileStatus::Ignored:
             path = QString(":/client/resources/icons/statuts/warning.svg");
             break;
-        case Syncing:
+        case ::KDC::SyncFileStatus::Syncing:
             path = QString(":/client/resources/icons/statuts/sync.svg");
             break;
     }
@@ -282,24 +281,23 @@ QString GuiUtility::getSyncStatusIconPath(StatusInfo &statusInfo) {
         path = QString(":/client/resources/icons/statuts/pause.svg");
     } else {
         switch (statusInfo._status) {
-            using enum KDC::SyncStatus;
-            case Undefined:
+            case KDC::SyncStatus::Undefined:
                 path = QString(":/client/resources/icons/statuts/warning.svg");
                 break;
-            case Starting:
-            case Running:
+            case KDC::SyncStatus::Starting:
+            case KDC::SyncStatus::Running:
                 path = QString(":/client/resources/icons/statuts/sync.svg");
                 break;
-            case Idle:
+            case KDC::SyncStatus::Idle:
                 path = QString(":/client/resources/icons/statuts/success.svg");
                 break;
-            case Error:
+            case KDC::SyncStatus::Error:
                 path = QString(":/client/resources/icons/statuts/error-sync.svg");
                 break;
-            case PauseAsked:
-            case Paused:
-            case StopAsked:
-            case Stopped:
+            case KDC::SyncStatus::PauseAsked:
+            case KDC::SyncStatus::Paused:
+            case KDC::SyncStatus::StopAsked:
+            case KDC::SyncStatus::Stopped:
                 path = QString(":/client/resources/icons/statuts/pause.svg");
                 break;
             default:
@@ -318,13 +316,12 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                    .arg(loginLink);
     } else {
         switch (statusInfo._status) {
-            using enum KDC::SyncStatus;
-            case Undefined:
+            case KDC::SyncStatus::Undefined:
                 text =
                     QCoreApplication::translate("utility", "No folder to synchronize\nYou can add one from the kDrive settings.");
                 break;
-            case Starting:
-            case Running:
+            case KDC::SyncStatus::Starting:
+            case KDC::SyncStatus::Running:
                 if (statusInfo._totalFiles > 0) {
                     if (statusInfo._liteSyncActivated) {
                         text = QCoreApplication::translate("utility", "Sync in progress (%1 of %2)")
@@ -340,31 +337,31 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                     text = QCoreApplication::translate("utility", "Sync in progress (Step %1/%2).")
                                .arg(enumClassToInt(statusInfo._syncStep))
                                .arg(enumClassToInt(KDC::SyncStep::Done));
-                } else if (statusInfo._status == Starting) {
+                } else if (statusInfo._status == KDC::SyncStatus::Starting) {
                     text = QCoreApplication::translate("utility", "Synchronization starting");
                 } else {
                     text = QCoreApplication::translate("utility", "Sync in progress.");
                 }
                 break;
-            case Idle:
+            case KDC::SyncStatus::Idle:
                 if (statusInfo._unresolvedConflicts) {
                     text = QCoreApplication::translate("utility", "You are up to date, unresolved conflicts.");
                 } else {
                     text = QCoreApplication::translate("utility", "You are up to date!");
                 }
                 break;
-            case Error:
+            case KDC::SyncStatus::Error:
                 text = QCoreApplication::translate(
                            "utility", "Some files couldn't be synchronized. <a style=\"%1\" href=\"%2\">Learn more</a>")
                            .arg(KDC::CommonUtility::linkStyle)
                            .arg(learnMoreLink);
                 break;
-            case PauseAsked:
-            case StopAsked:
+            case KDC::SyncStatus::PauseAsked:
+            case KDC::SyncStatus::StopAsked:
                 text = QCoreApplication::translate("utility", "Synchronization pausing ...");
                 break;
-            case Paused:
-            case Stopped:
+            case KDC::SyncStatus::Paused:
+            case KDC::SyncStatus::Stopped:
                 text = QCoreApplication::translate("utility", "Synchronization paused.");
                 break;
             default:
@@ -380,9 +377,8 @@ QString GuiUtility::getDriveStatusIconPath(StatusInfo &statusInfo) {
 }
 
 bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
-    using enum KDC::SyncStatus;
-    if (status == PauseAsked || status == Paused || status == StopAsked ||
-        status == Stopped || status == Error) {
+    if (status == KDC::SyncStatus::PauseAsked || status == KDC::SyncStatus::Paused || status == KDC::SyncStatus::StopAsked ||
+        status == KDC::SyncStatus::Stopped || status == KDC::SyncStatus::Error) {
         // Pause
         return false;
     } else {
@@ -391,9 +387,8 @@ bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
 }
 
 bool GuiUtility::getResumeActionAvailable(KDC::SyncStatus status) {
-    using enum KDC::SyncStatus;
-    if (status == PauseAsked || status == Paused || status == StopAsked ||
-        status == Stopped || status == Error) {
+    if (status == KDC::SyncStatus::PauseAsked || status == KDC::SyncStatus::Paused || status == KDC::SyncStatus::StopAsked ||
+        status == KDC::SyncStatus::Stopped || status == KDC::SyncStatus::Error) {
         // Pause
         return true;
     }

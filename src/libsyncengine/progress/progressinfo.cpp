@@ -45,11 +45,11 @@ void ProgressInfo::reset() {
 }
 
 static bool shouldCountProgress(const SyncFileItem &item) {
-    using enum KDC::SyncFileInstruction;
+    const auto instruction = item.instruction();
 
     // Skip any ignored, error or non-propagated files and directories.
-    if (const auto instruction = item.instruction();
-        instruction == None || instruction == UpdateMetadata || instruction == Ignore) {
+    if (instruction == SyncFileInstruction::None || instruction == SyncFileInstruction::UpdateMetadata ||
+        instruction == SyncFileInstruction::Ignore) {
         return false;
     }
 
@@ -141,10 +141,9 @@ void ProgressInfo::setProgressComplete(const SyncPath &path, SyncFileStatus stat
 }
 
 bool ProgressInfo::isSizeDependent(const SyncFileItem &item) const {
-    using enum KDC::SyncFileInstruction;
     return !item.isDirectory() &&
-           (item.instruction() == Update || item.instruction() == Get ||
-            item.instruction() == Put) &&
+           (item.instruction() == SyncFileInstruction::Update || item.instruction() == SyncFileInstruction::Get ||
+            item.instruction() == SyncFileInstruction::Put) &&
            !item.dehydrated();
 }
 

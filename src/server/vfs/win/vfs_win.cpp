@@ -597,17 +597,16 @@ bool VfsWin::setPinState(const QString &relativePath, PinState state) {
 
     VfsPinState vfsState;
     switch (state) {
-        using enum KDC::PinState;
-        case Inherited:
+        case PinState::Inherited:
             vfsState = VFS_PIN_STATE_INHERIT;
             break;
-        case AlwaysLocal:
+        case PinState::AlwaysLocal:
             vfsState = VFS_PIN_STATE_PINNED;
             break;
-        case OnlineOnly:
+        case PinState::OnlineOnly:
             vfsState = VFS_PIN_STATE_UNPINNED;
             break;
-        case Unspecified:
+        case PinState::Unspecified:
             vfsState = VFS_PIN_STATE_UNSPECIFIED;
             break;
     }
@@ -623,7 +622,6 @@ bool VfsWin::setPinState(const QString &relativePath, PinState state) {
 PinState VfsWin::pinState(const QString &relativePath) {
     //TODO: Use vfsGetPinState instead of reading attributes (GetFileAttributesW). In this case return unspecified in case of VFS_PIN_STATE_INHERIT.
     // Read pin state from file attributes
-    using enum KDC::PinState;
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     DWORD dwAttrs = GetFileAttributesW(fullPath.lexically_normal().native().c_str());
 
@@ -631,13 +629,13 @@ PinState VfsWin::pinState(const QString &relativePath) {
         LOGW_WARN(logger(), L"Invalid attributes for item: " << Utility::formatSyncPath(fullPath).c_str());
     } else {
         if (dwAttrs & FILE_ATTRIBUTE_PINNED) {
-            return AlwaysLocal;
+            return PinState::AlwaysLocal;
         } else if (dwAttrs & FILE_ATTRIBUTE_UNPINNED) {
-            return OnlineOnly;
+            return PinState::OnlineOnly;
         }
     }
 
-    return Unspecified;
+    return PinState::Unspecified;
 }
 
 bool VfsWin::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &) {

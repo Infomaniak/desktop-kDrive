@@ -50,46 +50,44 @@ namespace KDC {
 namespace {
 IoError dWordError2ioError(DWORD error) noexcept {
     switch (error) {
-        using enum KDC::IoError;
         case ERROR_SUCCESS:
-            return Success;
+            return IoError::Success;
         case ERROR_ACCESS_DENIED:
-            return AccessDenied;
+            return IoError::AccessDenied;
         case ERROR_DISK_FULL:
-            return DiskFull;
+            return IoError::DiskFull;
         case ERROR_ALREADY_EXISTS:
-            return FileExists;
+            return IoError::FileExists;
         case ERROR_INVALID_PARAMETER:
-            return InvalidArgument;
+            return IoError::InvalidArgument;
         case ERROR_FILENAME_EXCED_RANGE:
-            return FileNameTooLong;
+            return IoError::FileNameTooLong;
         case ERROR_FILE_NOT_FOUND:
         case ERROR_INVALID_DRIVE:
         case ERROR_PATH_NOT_FOUND:
         case ERROR_INVALID_NAME:
-            return NoSuchFileOrDirectory;
+            return IoError::NoSuchFileOrDirectory;
         default:
             LOG_WARN(Log::instance()->getLogger(), "Unknown IO error - error=" << error);
-            return Unknown;
+            return IoError::Unknown;
     }
 }
 
 IoError ntStatus2ioError(NTSTATUS status) noexcept {
     switch (status) {
-        using enum KDC::IoError;
         case STATUS_SUCCESS:
-            return Success;
+            return IoError::Success;
         case STATUS_ACCESS_DENIED:
-            return AccessDenied;
+            return IoError::AccessDenied;
         case STATUS_DISK_FULL:
-            return DiskFull;
+            return IoError::DiskFull;
         case STATUS_INVALID_PARAMETER:
-            return InvalidArgument;
+            return IoError::InvalidArgument;
         case STATUS_NO_SUCH_FILE:
         case STATUS_NO_SUCH_DEVICE:
-            return NoSuchFileOrDirectory;
+            return IoError::NoSuchFileOrDirectory;
         default:
-            return Unknown;
+            return IoError::Unknown;
     }
 }
 

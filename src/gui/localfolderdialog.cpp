@@ -192,18 +192,18 @@ void LocalFolderDialog::updateUI() {
     _folderSelectedWidget->setVisible(ok);
 
     if (_liteSync) {
-        using enum KDC::VirtualFileMode;
         VirtualFileMode virtualFileMode;
-        if (ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode); exitCode != ExitCode::Ok) {
+        ExitCode exitCode = GuiRequests::bestAvailableVfsMode(virtualFileMode);
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcLocalFolderDialog) << "Error in Requests::bestAvailableVfsMode";
             return;
         }
 
-        if (virtualFileMode == Win || virtualFileMode == Mac) {
+        if (virtualFileMode == VirtualFileMode::Win || virtualFileMode == VirtualFileMode::Mac) {
             // Check file system
             QString fsName(KDC::CommonUtility::fileSystemName(_localFolderPath));
-            _folderCompatibleWithLiteSync = ((virtualFileMode == Win && fsName == "NTFS") ||
-                                             (virtualFileMode == Mac && fsName == "apfs"));
+            _folderCompatibleWithLiteSync = ((virtualFileMode == VirtualFileMode::Win && fsName == "NTFS") ||
+                                             (virtualFileMode == VirtualFileMode::Mac && fsName == "apfs"));
             if (!_folderCompatibleWithLiteSync) {
                 _warningLabel->setText(tr("This folder is not compatible with Lite Sync."
                                           " Please select another folder or if you continue Lite Sync will be disabled."
