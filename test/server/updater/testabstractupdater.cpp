@@ -17,38 +17,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "testabstractupdater.h"
 
-#include "utility/types.h"
+#include <regex>
 
-
-#include <log4cplus/logger.h>
-#include <thread>
+#include "server/updater_v2/abstractupdater.h"
 
 namespace KDC {
-/**
- * @brief Checks for new updates and manage installation.
- * @ingroup gui
- *
- * This class schedules regular update checks.
- * It also trigger automatic update and installation of the new version.
- */
+void TestAbstractUpdater::setUp() {
+}
 
-class AbstractUpdater {
-    public:
-        static AbstractUpdater *instance();
+void TestAbstractUpdater::tearDown() {
+}
 
-        ExitCode checkUpdateAvailable(bool &available);
-
-        static std::string currentVersion();
-
-    private:
-        AbstractUpdater();
-
-        static void run() noexcept;
-
-        static AbstractUpdater *_instance;
-        log4cplus::Logger _logger;
-        std::unique_ptr<std::thread> _thread;
-};
-} // namespace KDC
+void TestAbstractUpdater::testCurrentVersion() {
+    std::string test = AbstractUpdater::currentVersion();
+#ifdef NDEBUG
+    CPPUNIT_ASSERT(
+            std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]\d{8}$)")));
+#else
+    CPPUNIT_ASSERT(
+        std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]0$)")));
+#endif
+}
+} // KDC

@@ -11,22 +11,17 @@ set(server_srcs_path ${CMAKE_SOURCE_DIR}/src/server)
 set(testserver_SRCS
     ../test.cpp
     ../test_utility/localtemporarydirectory.cpp
-    ../../src/server/logarchiver.h
-    ../../src/server/logarchiver.cpp
+    ../../src/server/logarchiver.h ../../src/server/logarchiver.cpp
     ${CMAKE_SOURCE_DIR}/src/libcommon/updater.h ${CMAKE_SOURCE_DIR}/src/libcommon/updater.cpp
-    ${server_srcs_path}/logarchiver.h
-    ${server_srcs_path}/logarchiver.cpp
-    ${server_srcs_path}/updater/kdcupdater.h
-    ${server_srcs_path}/updater/kdcupdater.cpp
-    ${server_srcs_path}/updater/updateinfo.h
-    ${server_srcs_path}/updater/updateinfo.cpp
-    ${server_srcs_path}/updater/updaterserver.h
-    ${server_srcs_path}/updater/updaterserver.cpp
+    ${server_srcs_path}/logarchiver.h ${server_srcs_path}/logarchiver.cpp
+    ${server_srcs_path}/updater/kdcupdater.h ${server_srcs_path}/updater/kdcupdater.cpp
+    ${server_srcs_path}/updater/updateinfo.h ${server_srcs_path}/updater/updateinfo.cpp
+    ${server_srcs_path}/updater/updaterserver.h ${server_srcs_path}/updater/updaterserver.cpp
+    ${server_srcs_path}/updater_v2/abstractupdater.h ${server_srcs_path}/updater_v2/abstractupdater.cpp
     test.cpp
-    logarchiver/testlogarchiver.h
-    logarchiver/testlogarchiver.cpp
-    updater/testupdater.h
-    updater/testupdater.cpp
+    logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
+    updater/testupdater.h updater/testupdater.cpp
+        updater/TestAbstractUpdater.h updater/TestAbstractUpdater.cpp
 )
 
 if(APPLE)
