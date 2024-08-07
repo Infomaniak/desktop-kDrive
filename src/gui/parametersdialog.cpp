@@ -601,6 +601,8 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
         case ExitCode::RateLimited:
         case ExitCode::OperationCanceled:
         case ExitCode::InvalidOperation:
+        case ExitCode::UpdateRequired:
+        case ExitCode::LogUploadFailed:
             break;
     }
 
