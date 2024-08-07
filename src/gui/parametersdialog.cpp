@@ -801,7 +801,7 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noe
         case ExitCauseHttpErrForbidden: {
             return tr(
                 "The operation performed on item is forbidden.<br>"
-                "The file/directory has been temporarily blacklisted.");
+                "The item has been temporarily blacklisted.");
         }
         case ExitCauseApiErr:
         case ExitCauseUploadNotTerminated: {
