@@ -807,7 +807,7 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noe
         case ExitCauseUploadNotTerminated: {
             return tr(
                 "The operation performed on this item failed.<br>"
-                "The file/directory has been temporarily blacklisted.");
+                "The item has been temporarily blacklisted.");
         }
         case ExitCauseFileTooBig: {
             return tr("The file is too large to be uploaded. It has been temporarily blacklisted.");
