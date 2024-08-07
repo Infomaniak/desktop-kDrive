@@ -784,7 +784,7 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
                 "You can disable this type of notification from the Preferences");
         }
         case CancelTypeHardlink: {
-            return tr("This item has been excluded from sync because it's an hard link");
+            return tr("This item has been excluded from sync because it is an hard link");
         }
         default: {
             break;
