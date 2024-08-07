@@ -108,16 +108,15 @@ std::string Error::errorString() const {
     std::ostringstream errStream;
 
     switch (_level) {
-        using enum KDC::ErrorLevel;
-        case Server:
+        case ErrorLevel::Server:
             errStream << "Level: Server - function: " << _functionName << " - exitCode: " << enumClassToInt(_exitCode)
                       << " - exitCause: " << enumClassToInt(_exitCause);
             break;
-        case SyncPal:
+        case ErrorLevel::SyncPal:
             errStream << "Level: SyncPal - worker: " << _workerName << " - exitCode: " << enumClassToInt(_exitCode)
                       << " - exitCause: " << enumClassToInt(_exitCause);
             break;
-        case Node:
+        case ErrorLevel::Node:
             errStream << "Level: SyncPal - conflictType: " << enumClassToInt(_conflictType)
                       << " - inconsistencyType: " << enumClassToInt(_inconsistencyType)
                       << " - cancelType: " << enumClassToInt(_cancelType);

@@ -91,8 +91,7 @@ using ExecuteCommand = std::function<void(const char *)>;
 enum class ReplicaSide { Unknown, Local, Remote };
 
 inline ReplicaSide otherSide(ReplicaSide side) {
-    using enum KDC::ReplicaSide;
-    return side == Local ? Remote : Local;
+    return side == ReplicaSide::Local ? ReplicaSide::Remote : ReplicaSide::Local;
 }
 
 enum class NodeType {

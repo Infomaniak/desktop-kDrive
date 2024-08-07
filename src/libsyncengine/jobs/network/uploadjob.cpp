@@ -181,14 +181,13 @@ void UploadJob::setData(bool &canceled) {
 std::string UploadJob::getContentType(bool &canceled) {
     canceled = false;
     switch (_linkType) {
-        using enum KDC::LinkType;
-        case Symlink:
+        case LinkType::Symlink:
             return _targetType == NodeType::File ? mimeTypeSymlink : mimeTypeSymlinkFolder;
-        case Hardlink:
+        case LinkType::Hardlink:
             return mimeTypeHardlink;
-        case FinderAlias:
+        case LinkType::FinderAlias:
             return mimeTypeFinderAlias;
-        case Junction:
+        case LinkType::Junction:
             return mimeTypeJunction;
         default:
             return AbstractTokenNetworkJob::getContentType(canceled);
