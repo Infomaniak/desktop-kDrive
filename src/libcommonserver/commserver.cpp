@@ -160,7 +160,7 @@ void CommServer::onReadyRead() {
                 break;
             }
 
-            int size = CommonUtility::ArrayToInt(_buffer.mid(0, (qint32)sizeof(qint32)));
+            int size = CommonUtility::arrayToInt(_buffer.mid(0, (qint32)sizeof(qint32)));
 
             // Read data
             if (_buffer.count() < (int)sizeof(qint32) + size) {
@@ -246,7 +246,7 @@ void CommServer::onSendReply(int id, const QByteArray &result) {
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd rpl " << id);
 
-        _tcpSocket->write(KDC::CommonUtility::IntToArray(reply.count()));
+        _tcpSocket->write(KDC::CommonUtility::intToArray(reply.count()));
         _tcpSocket->write(reply);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();
@@ -280,7 +280,7 @@ void CommServer::onSendSignal(int id, int num, const QByteArray &params) {
     try {
         LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << num);
 
-        _tcpSocket->write(KDC::CommonUtility::IntToArray(signal.count()));
+        _tcpSocket->write(KDC::CommonUtility::intToArray(signal.count()));
         _tcpSocket->write(signal);
 #ifdef Q_OS_WIN
         _tcpSocket->flush();

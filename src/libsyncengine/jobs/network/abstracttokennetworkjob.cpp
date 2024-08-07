@@ -39,23 +39,23 @@ constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG[] = "Failed to create Abstr
 constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN[] = "Invalid Token";
 constexpr char ABSTRACTTOKENNETWORKJOB_EXEC_ERROR_MSG[] = "Failed to execute AbstractTokenNetworkJob!";
 
-constexpr int TOKEN_LIFETIME = 7200;  // 2 hours
+constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 
 namespace KDC {
-
-std::unordered_map<int, std::pair<std::shared_ptr<Login>, int>> AbstractTokenNetworkJob::_userToApiKeyMap;
-std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToApiKeyMap;
+std::unordered_map<int, std::pair<std::shared_ptr<Login>, int> > AbstractTokenNetworkJob::_userToApiKeyMap;
+std::unordered_map<int, std::pair<int, int> > AbstractTokenNetworkJob::_driveToApiKeyMap;
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId,
                                                  bool returnJson /*= true*/)
-    : _apiType(apiType), _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
+    : _apiType(apiType), _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId),
+      _returnJson(returnJson) {
     if (!ParmsDb::instance()) {
         LOG_WARN(_logger, "ParmsDb must be initialized!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
 
-    if (((_apiType == ApiDrive || _apiType == ApiNotifyDrive) && _driveDbId == 0 && (_userDbId == 0 || _driveId == 0)) ||
-        ((_apiType == ApiProfile || _apiType == ApiDriveByUser) && _userDbId == 0)) {
+    if (((_apiType == ApiDrive || _apiType == ApiNotifyDrive) && _driveDbId == 0 && (_userDbId == 0 || _driveId == 0))
+        || ((_apiType == ApiProfile || _apiType == ApiDriveByUser) && _userDbId == 0)) {
         LOG_WARN(_logger, "Invalid parameters!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
@@ -66,7 +66,8 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
 }
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, bool returnJson /*= true*/)
-    : AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, false) {}
+    : AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, returnJson) {
+}
 
 bool AbstractTokenNetworkJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) {
     if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
@@ -130,7 +131,7 @@ std::string AbstractTokenNetworkJob::getSpecificUrl() {
             break;
         case ApiInfomaniak:
             str += API_PREFIX_APP_INFO;
-			break;
+            break;
         case ApiDesktop:
             str += API_PREFIX_DESKTOP;
             break;
@@ -176,13 +177,17 @@ bool AbstractTokenNetworkJob::handleUnauthorizedResponse() {
 bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri) {
     static const std::map<NetworkErrorCode, AbstractTokenNetworkJob::ExitHandler> errorCodeHandlingMap = {
         {NetworkErrorCode::validationFailed, ExitHandler{ExitCauseInvalidName, "Invalid file or directory name"}},
-        {NetworkErrorCode::uploadNotTerminatedError, ExitHandler{ExitCauseUploadNotTerminated, "Upload not terminated"}},
+        {
+            NetworkErrorCode::uploadNotTerminatedError,
+            ExitHandler{ExitCauseUploadNotTerminated, "Upload not terminated"}
+        },
         {NetworkErrorCode::uploadError, ExitHandler{ExitCauseApiErr, "Upload failed"}},
         {NetworkErrorCode::destinationAlreadyExists, ExitHandler{ExitCauseFileAlreadyExist, "Operation refused"}},
         {NetworkErrorCode::conflictError, ExitHandler{ExitCauseFileAlreadyExist, "Operation refused"}},
         {NetworkErrorCode::accessDenied, ExitHandler{ExitCauseHttpErrForbidden, "Access denied"}},
         {NetworkErrorCode::fileTooBigError, ExitHandler{ExitCauseFileTooBig, "File too big"}},
-        {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCauseQuotaExceeded, "Quota exceeded"}}};
+        {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCauseQuotaExceeded, "Quota exceeded"}}
+    };
 
     const auto &errorHandling = errorCodeHandlingMap.find(errorCode);
     if (errorHandling == errorCodeHandlingMap.cend()) {
@@ -233,7 +238,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
         _error = Poco::JSON::Parser{}.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
     } catch (const Poco::Exception &exc) {
         LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON error: "
-                                     << Utility::s2ws(exc.displayText()).c_str());
+                  << Utility::s2ws(exc.displayText()).c_str());
         Utility::logGenericServerError(_logger, "Request error", ss, _resHttp);
         _exitCause = ExitCauseApiErr;
 
@@ -259,7 +264,7 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
         case KDC::NetworkErrorCode::notAuthorized: {
             if (!_accessTokenAlreadyRefreshed) {
                 LOG_DEBUG(_logger, "Request failed: " << Utility::formatRequest(uri, _errorCode, _errorDescr).c_str()
-                                                      << ". Refreshing access token.");
+                          << ". Refreshing access token.");
 
                 if (!refreshToken()) {
                     LOG_WARN(_logger, "Refresh token failed");
@@ -325,7 +330,8 @@ bool AbstractTokenNetworkJob::handleJsonResponse(std::istream &is) {
         _jsonRes = Poco::JSON::Parser().parse(is).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
         LOG_DEBUG(_logger,
-                  "Reply " << jobId() << " received doesn't contain a valid JSON payload: " << exc.displayText().c_str());
+                  "Reply " << jobId() << " received doesn't contain a valid JSON payload: " << exc.displayText().c_str(
+                  ));
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseApiErr;
         return false;
@@ -364,7 +370,8 @@ bool AbstractTokenNetworkJob::handleJsonResponse(std::string &str) {
     try {
         _jsonRes = jsonParser.parse(str).extract<Poco::JSON::Object::Ptr>();
     } catch (Poco::Exception &exc) {
-        LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+        LOG_DEBUG(_logger,
+                  "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
 
         _exitCode = ExitCodeBackError;
         _exitCause = ExitCauseApiErr;
@@ -387,7 +394,8 @@ bool AbstractTokenNetworkJob::handleOctetStreamResponse(std::istream &is) {
 
 std::string AbstractTokenNetworkJob::loadToken() {
     std::string token;
-    if (_apiType == ApiDesktop) {  // Fetch the drive identifier of the first available sync.
+    if (_apiType == ApiDesktop) {
+        // Fetch the drive identifier of the first available sync.
         std::vector<Sync> syncList;
         if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
@@ -479,8 +487,7 @@ std::string AbstractTokenNetworkJob::loadToken() {
             break;
         }
         case ApiProfile:
-        case ApiDriveByUser:
-        case ApiInfomaniak: {
+        case ApiDriveByUser: {
             auto it = _userToApiKeyMap.find(_userDbId);
             if (it != _userToApiKeyMap.end()) {
                 // userDbId found in User cache
@@ -513,6 +520,9 @@ std::string AbstractTokenNetworkJob::loadToken() {
             }
             break;
         }
+        default:
+            // No token required
+            break;
     }
 
     return token;
@@ -533,7 +543,7 @@ bool AbstractTokenNetworkJob::refreshToken() {
         ExitCode exitCode = login->refreshToken();
         if (exitCode != ExitCodeOk) {
             LOG_WARN(_logger, "Failed to refresh token : " << exitCode << " - " << login->error().c_str() << " - "
-                                                           << login->errorDescr().c_str());
+                     << login->errorDescr().c_str());
             _exitCause = ExitCauseLoginError;
             _exitCode = exitCode;
 
@@ -551,7 +561,7 @@ bool AbstractTokenNetworkJob::refreshToken() {
 
             KeyChainManager::instance()->deleteToken(user.keychainKey());
 
-            user.setKeychainKey("");  // Clear the keychainKey
+            user.setKeychainKey(""); // Clear the keychainKey
             ParmsDb::instance()->updateUser(user, found);
             if (!found) {
                 LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
@@ -585,5 +595,4 @@ long AbstractTokenNetworkJob::tokenUpdateDurationFromNow() {
         return 0;
     }
 }
-
-}  // namespace KDC
+} // namespace KDC
