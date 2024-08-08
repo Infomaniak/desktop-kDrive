@@ -110,7 +110,7 @@ bool CommClient::sendRequest(int id, RequestNum num, const QByteArray &params) {
     }
 
     QJsonObject requestObj;
-    requestObj[MSG_TYPE] = MsgType::REQUEST;
+    requestObj[MSG_TYPE] = enumClassToInt(MsgType::REQUEST);
     requestObj[MSG_REQUEST_ID] = id;
     requestObj[MSG_REQUEST_NUM] = enumClassToInt(num);
     requestObj[MSG_REQUEST_PARAMS] = QString(params.toBase64());
@@ -176,13 +176,13 @@ void CommClient::onReadyRead() {
             }
 
             QJsonObject msgObj = msgDoc.object();
-            if (msgObj[MSG_TYPE].toInt() == MsgType::REPLY) {
+            if (msgObj[MSG_TYPE].toInt() == enumClassToInt(MsgType::REPLY)) {
                 const int id(msgObj[MSG_REPLY_ID].toInt());
                 const QByteArray result(QByteArray::fromBase64(msgObj[MSG_REPLY_RESULT].toString().toUtf8()));
 
                 // Add reply to worker queue
                 _requestWorker->addReply(id, result);
-            } else if (msgObj[MSG_TYPE].toInt() == MsgType::SIGNAL) {
+            } else if (msgObj[MSG_TYPE].toInt() == enumClassToInt(MsgType::SIGNAL)) {
                 const int id(msgObj[MSG_SIGNAL_ID].toInt());
                 const SignalNum num(static_cast<SignalNum>(msgObj[MSG_SIGNAL_NUM].toInt()));
                 const QByteArray params(QByteArray::fromBase64(msgObj[MSG_SIGNAL_PARAMS].toString().toUtf8()));

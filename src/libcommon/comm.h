@@ -37,7 +37,7 @@
 
 #define EXECUTE_ERROR_MSG "C/S function call timeout or error!"
 
-typedef enum { REQUEST = 0, REPLY, SIGNAL } MsgType;
+enum class MsgType { REQUEST = 0, REPLY, SIGNAL };
 
 enum class RequestNum {
     LOGIN_REQUESTTOKEN = 1,
