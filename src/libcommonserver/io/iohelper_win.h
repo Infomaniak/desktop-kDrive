@@ -188,7 +188,7 @@ typedef NTSTATUS(WINAPI *PZW_QUERY_DIRECTORY_FILE)(HANDLE FileHandle, HANDLE Eve
 // Definitions for zwQueryDirectoryFile - End
 
 // Definitions for DeviceIoControl - Begin
-typedef struct _REPARSE_DATA_BUFFER {
+using REPARSE_DATA_BUFFER = struct _REPARSE_DATA_BUFFER {
         DWORD ReparseTag;
         WORD ReparseDataLength;
         WORD Reserved;
@@ -214,7 +214,7 @@ typedef struct _REPARSE_DATA_BUFFER {
                         BYTE DataBuffer[1];
                 } GenericReparseBuffer;
         };
-} REPARSE_DATA_BUFFER;
+};
 
 #define REPARSE_DATA_BUFFER_HEADER_SIZE FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
 #define REPARSE_MOUNTPOINT_HEADER_SIZE 8
