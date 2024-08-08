@@ -18,6 +18,7 @@
 
 #include "testsyncdb.h"
 #include "libcommonserver/utility/asserts.h"
+#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
 
 #include <time.h>
@@ -48,7 +49,7 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->exists());
     CPPUNIT_ASSERT(_testObj->clearNodes());
 
-    // Insert nodes
+    // Insert node
     time_t tLoc = std::time(0);
     time_t tDrive = std::time(0);
 
@@ -76,6 +77,7 @@ void TestSyncDb::testNodes() {
                      tDrive, NodeType::NodeTypeFile, 0, "cs 1.4");
     DbNode nodeFile5(0, dbNodeIdDir1, Str("File loc 1.5"), Str("File drive 1.5"), "id loc 1.5", "id drive 1.5", tLoc, tLoc,
                      tDrive, NodeType::NodeTypeFile, 0, "cs 1.5");
+
     DbNodeId dbNodeIdFile1;
     DbNodeId dbNodeIdFile2;
     DbNodeId dbNodeIdFile3;
@@ -92,6 +94,23 @@ void TestSyncDb::testNodes() {
     DbNodeId dbNodeIdFile6;
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile6, dbNodeIdFile6, constraintError));
 
+    // Insert node with non normalized name (NFD)
+    SyncName nfdEncodedName(Utility::normalizedSyncName("éééé", true));
+    DbNode nodeFile7(0, dbNodeIdDir1, nfdEncodedName, nfdEncodedName, "id loc 2.2", "id drive 2.2", tLoc, tLoc, tDrive,
+                     NodeType::NodeTypeFile, 0, "cs 2.2");
+    DbNodeId dbNodeIdFile7;
+    CPPUNIT_ASSERT(_testObj->insertNode(nodeFile7, dbNodeIdFile7, constraintError));
+
+    SyncName localName;
+    SyncName remoteName;
+    bool found;
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideLocal, nodeFile7.nodeIdLocal().value(), localName, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideRemote, nodeFile7.nodeIdRemote().value(), remoteName, found) && found);
+
+    SyncName nfcEncodedName(Utility::normalizedSyncName("éééé"));
+    CPPUNIT_ASSERT(localName == nfcEncodedName);
+    CPPUNIT_ASSERT(remoteName == nfcEncodedName);
+
     // Update node
     nodeFile6.setNodeId(dbNodeIdFile6);
     nodeFile6.setNameLocal(nodeFile6.nameLocal() + Str("new"));
@@ -99,7 +118,6 @@ void TestSyncDb::testNodes() {
     nodeFile6.setLastModifiedLocal(nodeFile6.lastModifiedLocal().value() + 10);
     nodeFile6.setLastModifiedRemote(nodeFile6.lastModifiedRemote().value() + 100);
     nodeFile6.setChecksum(nodeFile6.checksum().value() + "new");
-    bool found;
     CPPUNIT_ASSERT(_testObj->updateNode(nodeFile6, found) && found);
 
     SyncName name;
@@ -116,6 +134,20 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT_EQUAL(nodeFile6.lastModifiedRemote().value(), time.value());
     CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::ReplicaSideLocal, nodeFile6.nodeIdLocal().value(), cs, found) && found);
     CPPUNIT_ASSERT_EQUAL(nodeFile6.checksum().value(), cs.value());
+
+    // Update node with non normalized name (NFD)
+    SyncName nfdEncodedNameNew(Utility::normalizedSyncName("èèèè", true));
+    nodeFile7.setNodeId(dbNodeIdFile7);
+    nodeFile7.setNameLocal(nfdEncodedNameNew);
+    nodeFile7.setNameRemote(nfdEncodedNameNew);
+    CPPUNIT_ASSERT(_testObj->updateNode(nodeFile7, found) && found);
+
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideLocal, nodeFile7.nodeIdLocal().value(), localName, found) && found);
+    CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideRemote, nodeFile7.nodeIdRemote().value(), remoteName, found) && found);
+
+    SyncName nfcEncodedNameNew(Utility::normalizedSyncName("èèèè"));
+    CPPUNIT_ASSERT(localName == nfcEncodedNameNew);
+    CPPUNIT_ASSERT(remoteName == nfcEncodedNameNew);
 
     // Delete node
     CPPUNIT_ASSERT(_testObj->deleteNode(dbNodeIdFile6, found) && found);
@@ -234,12 +266,12 @@ void TestSyncDb::testNodes() {
     // ids
     std::vector<NodeId> ids;
     CPPUNIT_ASSERT(_testObj->ids(ReplicaSide::ReplicaSideLocal, ids, found) && found);
-    CPPUNIT_ASSERT_EQUAL(size_t(9), ids.size());
+    CPPUNIT_ASSERT_EQUAL(size_t(10), ids.size());
     CPPUNIT_ASSERT(ids[0] == _testObj->rootNode().nodeIdLocal());
     CPPUNIT_ASSERT(ids[8] == nodeFile5.nodeIdLocal());
     ids.clear();
     CPPUNIT_ASSERT(_testObj->ids(ReplicaSide::ReplicaSideRemote, ids, found) && found);
-    CPPUNIT_ASSERT_EQUAL(size_t(9), ids.size());
+    CPPUNIT_ASSERT_EQUAL(size_t(10), ids.size());
     CPPUNIT_ASSERT(ids[0] == _testObj->rootNode().nodeIdRemote());
     CPPUNIT_ASSERT(ids[8] == nodeFile5.nodeIdRemote());
 
@@ -359,7 +391,7 @@ void TestSyncDb::testNodes() {
     {
         std::unordered_set<DbNodeId> dbIds;
         CPPUNIT_ASSERT(_testObj->dbIds(dbIds, found) && found);
-        CPPUNIT_ASSERT_EQUAL(size_t(9), dbIds.size());
+        CPPUNIT_ASSERT_EQUAL(size_t(10), dbIds.size());
         CPPUNIT_ASSERT(dbIds.contains(dbNodeIdDir1));
         CPPUNIT_ASSERT(dbIds.contains(dbNodeIdFile3));
     }
