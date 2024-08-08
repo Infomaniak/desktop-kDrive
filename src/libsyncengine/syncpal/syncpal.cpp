@@ -931,8 +931,8 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
-        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? snapshot(ReplicaSideLocal, true)->exists(*nodeIdIt)
-                                                                      : snapshot(ReplicaSideRemote, true)->exists(*nodeIdIt);
+        const bool ok = syncNodeType == SyncNodeTypeTmpLocalBlacklist ? snapshotCopy(ReplicaSideLocal)->exists(*nodeIdIt)
+                                                                      : snapshotCopy(ReplicaSideRemote)->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
@@ -970,9 +970,9 @@ std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
     }
     if (copy) {
         return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshotCopy : _remoteSnapshotCopy);
-    } else {
-        return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshot : _remoteSnapshot);
     }
+
+    return (side == ReplicaSide::ReplicaSideLocal ? _localSnapshot : _remoteSnapshot);
 }
 
 std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) {
@@ -1282,7 +1282,8 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
 
     for (auto &uploadSessionToken : uploadSessionTokenList) {
         try {
-            auto job = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
+            auto job =
+                std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCodeOk) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
