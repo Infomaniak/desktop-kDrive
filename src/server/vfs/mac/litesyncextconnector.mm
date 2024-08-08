@@ -545,7 +545,7 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
     if (value.isEmpty()) {
         // Set default folder status
         if (!setXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
-            const std::wstring IoError:Message = Utility::s2ws(IoHelper::IoError2StdString(ioError));
+            const std::wstring IoErrorMessage = Utility::s2ws(IoHelper::IoError2StdString(ioError));
             LOGW_WARN(_logger, L"Error in setXAttrValue - path=" << QStr2Path(folderPath).c_str() << L" Error: "
                                                                  << IoErrorMessage.c_str());
             return false;
