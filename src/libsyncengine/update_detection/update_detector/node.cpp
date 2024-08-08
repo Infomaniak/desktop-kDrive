@@ -86,6 +86,10 @@ bool Node::operator==(const Node &n) const {
     return n._idb == _idb && n._name == _name;
 }
 
+void Node::setName(const SyncName &name) {
+    _name = Utility::normalizedSyncName(name);
+}
+
 std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) {
     for (auto &child : this->children()) {
         // return only non excluded type

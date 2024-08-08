@@ -719,7 +719,7 @@ std::string Utility::errId(const char *file, int line) {
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-SyncName Utility::normalizedSyncName(const SyncName &name) {
+SyncName Utility::normalizedSyncName(const SyncName &name, bool formD) {
 #ifdef _WIN32
     if (name.empty()) {
         return name;
@@ -729,13 +729,13 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
     LPWSTR strResult = NULL;
     HANDLE hHeap = GetProcessHeap();
 
-    int iSizeEstimated = NormalizeString(NormalizationC, name.c_str(), -1, NULL, 0);
+    int iSizeEstimated = NormalizeString(formD ? NormalizationD : NormalizationC, name.c_str(), -1, NULL, 0);
     for (int i = 0; i < maxIterations; i++) {
         if (strResult) {
             HeapFree(hHeap, 0, strResult);
         }
         strResult = (LPWSTR)HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
-        iSizeEstimated = NormalizeString(NormalizationC, name.c_str(), -1, strResult, iSizeEstimated);
+        iSizeEstimated = NormalizeString(formD ? NormalizationD : NormalizationC, name.c_str(), -1, strResult, iSizeEstimated);
 
         if (iSizeEstimated > 0) {
             break;  // success
@@ -778,7 +778,13 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
     HeapFree(hHeap, 0, strResult);
     return syncName;
 #else
-    const char *str = reinterpret_cast<const char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+    char *str = nullptr;
+    if (formD) {
+        str = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
+    } else {
+        str = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+    }
+
     if (!str) {  // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion has
                  // failed. e.g.: Linux can sometime send filesystem events with strange charater in the path
         return "";  // TODO : we should return a boolean value to explicitly say that the conversion has failed. Output value
