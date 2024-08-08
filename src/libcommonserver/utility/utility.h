@@ -43,6 +43,11 @@ namespace Poco {
 class URI;
 }
 
+/* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
+ *  static std::string errId(std::source_location location = std::source_location::current());
+ */
+#define errId() Utility::_errId(__FILE__, __LINE__)
+
 namespace KDC {
 
 struct COMMONSERVER_EXPORT Utility {
@@ -139,8 +144,6 @@ struct COMMONSERVER_EXPORT Utility {
         *  static std::string errId(std::source_location location = std::source_location::current());
         */
         static std::string _errId(const char *file, int line);
-#define errId() _errId(__FILE__, __LINE__)
-
 
 
         static SyncName normalizedSyncName(const SyncName &name);

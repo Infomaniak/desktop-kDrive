@@ -320,7 +320,7 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
     if (jobPtr) {
         if (jobPtr->exitCode() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in PropagatorJob");
-            addError(Error(_syncDbId, Utility::errId(), jobPtr->exitCode(), ExitCause::Unknown));
+            addError(Error(_syncDbId, errId(), jobPtr->exitCode(), ExitCause::Unknown));
             return;
         }
 
@@ -482,7 +482,7 @@ bool SyncPal::wipeVirtualFiles() {
     VirtualFilesCleaner virtualFileCleaner(_localPath, _syncDbId, _syncDb, _vfsStatus, _vfsClearFileAttributes);
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
-        addError(Error(_syncDbId, Utility::errId(), virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+        addError(Error(_syncDbId, errId(), virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
         return false;
     }
     return true;
@@ -775,7 +775,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         job->setAffectedFilePath(localPath);
     } catch (std::exception const &) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob");
-        addError(Error(_syncDbId, Utility::errId(), ExitCode::Unknown, ExitCause::Unknown));
+        addError(Error(_syncDbId, errId(), ExitCode::Unknown, ExitCause::Unknown));
         return ExitCode::Unknown;
     }
 
@@ -1148,12 +1148,12 @@ void SyncPal::start() {
     bool found;
     if (!ParmsDb::instance()->selectSync(_syncDbId, sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        addError(Error(_syncDbId, Utility::errId(), ExitCode::DbError, ExitCause::Unknown));
+        addError(Error(_syncDbId, errId(), ExitCode::DbError, ExitCause::Unknown));
         return;
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found in sync table for syncDbId=" << _syncDbId);
-        addError(Error(_syncDbId, Utility::errId(), ExitCode::DataError, ExitCause::Unknown));
+        addError(Error(_syncDbId, errId(), ExitCode::DataError, ExitCause::Unknown));
         return;
     }
     _vfsMode = sync.virtualFileMode();
@@ -1175,14 +1175,14 @@ void SyncPal::start() {
     ExitCode exitCode = setSyncPaused(false);
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::setSyncPaused");
-        addError(Error(_syncDbId, Utility::errId(), exitCode, ExitCause::Unknown));
+        addError(Error(_syncDbId, errId(), exitCode, ExitCause::Unknown));
         return;
     }
 
     exitCode = cleanOldUploadSessionTokens();
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::cleanOldUploadSessionTokens");
-        addError(Error(_syncDbId, Utility::errId(), exitCode, ExitCause::Unknown));
+        addError(Error(_syncDbId, errId(), exitCode, ExitCause::Unknown));
     }
 
     // Start main worker
@@ -1215,7 +1215,7 @@ void SyncPal::unpause() {
         ExitCode exitCode = cleanOldUploadSessionTokens();
         if (exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::cleanOldUploadSessionTokens");
-            addError(Error(_syncDbId, Utility::errId(), exitCode, ExitCause::Unknown));
+            addError(Error(_syncDbId, errId(), exitCode, ExitCause::Unknown));
         }
 
         // Unpause main worker
@@ -1242,7 +1242,7 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
         ExitCode exitCode = setSyncPaused(true);
         if (exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::setSyncPaused");
-            addError(Error(_syncDbId, Utility::errId(), exitCode, ExitCause::Unknown));
+            addError(Error(_syncDbId, errId(), exitCode, ExitCause::Unknown));
         }
     }
 
