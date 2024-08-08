@@ -2269,42 +2269,6 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
     return true;
 }
 
-/*
-bool SyncDb::normalizeLocalAndRemoteNames() {
-    const std::lock_guard<std::mutex> lock(_mutex);
-
-
-    std::string requestId = SELECT_ALL_RENAMED_COLON_NODES_REQUEST_ID;
-
-    ASSERT(queryResetAndClearBindings(requestId));
-
-    for (;;) {
-        bool found = false;
-        if (!queryNext(requestId, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << requestId.c_str());
-            return false;
-        }
-        if (!found) {
-            break;
-        }
-
-        SyncName nameLocal;
-        ASSERT(querySyncNameValue(requestId, 2, nameLocal));
-
-        const SyncName normalizedLocalName = Utility::normalizedSyncName(nameLocal);
-        if (normalizedLocalName != nameLocal) {
-        }
-
-        SyncName nameRemote;
-        ASSERT(querySyncNameValue(requestId, 3, nameRemote));
-    }
-
-    ASSERT(queryResetAndClearBindings(requestId));
-
-    return true;
-}
-*/
-
 bool SyncDb::deleteNodesWithNullParentNodeId() {
     const std::lock_guard<std::mutex> lock(_mutex);
 
