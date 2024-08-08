@@ -38,7 +38,6 @@
 #include <windows.h>
 #include <Accctrl.h>
 #endif
-#include <source_location>
 
 namespace Poco {
 class URI;
