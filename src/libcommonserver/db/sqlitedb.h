@@ -65,7 +65,7 @@ class SqliteDb {
         int extendedErrorCode() const;
         inline void setAutoDelete(bool value) { _autoDelete = value; }
 
-        std::shared_ptr<sqlite3> db() { return _sqlite3Db; };
+        int createNormalizeSyncNameFunc();
 
     private:
         enum class CheckDbResult {

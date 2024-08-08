@@ -256,28 +256,6 @@
 
 namespace KDC {
 
-SyncName makeSyncName(const unsigned char *text) {
-#ifdef _WIN32
-    wchar_t *value = (wchar_t *)text;
-    return (value ? reinterpret_cast<const wchar_t *>(value) : SyncName());
-#else
-    return SyncName(reinterpret_cast<const char *>(text));
-#endif
-}
-
-static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value **argv) {
-    if (argc == 1) {
-        const unsigned char *text = sqlite3_value_text(argv[0]);
-        if (text) {
-            SyncName normalizedName = Utility::normalizedSyncName(makeSyncName(text));
-            sqlite3_result_text(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
-            return;
-        }
-    }
-    sqlite3_result_null(context);
-}
-
-
 DbNode SyncDb::_driveRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
                               NodeTypeDirectory, 0, std::nullopt);
 
@@ -586,7 +564,9 @@ bool SyncDb::normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber
 
     LOG_DEBUG(_logger, "Upgrade 3.6.3 DB");
 
-    sqlite3_create_function(_sqliteDb->db().get(), "normalizeSyncName", 1, SQLITE_UTF8, NULL, &normalizeSyncName, NULL, NULL);
+    if (_sqliteDb->createNormalizeSyncNameFunc() != SQLITE_OK) {
+        return false;
+    }
 
     int errId = 0;
     std::string error;
