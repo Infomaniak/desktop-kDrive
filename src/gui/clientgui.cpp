@@ -798,7 +798,7 @@ void ClientGui::onAddDriveAccepted() {
             onShowParametersDialog(_addDriveWizard->syncDbId());
             break;
         case KDC::GuiUtility::WizardAction::AddDrive:
-            QTimer::singleShot(100, [=]() { onNewDriveWizard(); });
+            QTimer::singleShot(100, [this]() { onNewDriveWizard(); });
             break;
     }
 }

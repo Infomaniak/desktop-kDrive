@@ -711,24 +711,11 @@ std::string Utility::toUpper(const std::string &str) {
     return upperStr;
 }
 
-#ifndef __UNIX__
-#ifdef _WIN32
-std::string Utility::errId(std::source_location location) {
-#elif __APPLE__
-std::string Utility::_errId(std::source_location location) {
-#endif
-    std::string err = Utility::toUpper(std::filesystem::path(location.file_name()).filename().stem().string().substr(0, 3)) +
-                      ":" + std::to_string(location.line());
-    return err;
-}
-
-#else  // __unix__
-std::string Utility::errId(const char *file, int line) {
+std::string Utility::_errId(const char *file, int line) {
     std::string err =
         Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
     return err;
 }
-#endif
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
