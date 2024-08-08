@@ -120,13 +120,6 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
                 logError(L"setLastModified", L"out_of_range", str, exc);
                 return false;
             }
-
-            if (item.lastModified() < 0) {
-                LOGW_WARN(_logger,
-                          L"Error in setLastModified, got a negative value - str='" << Utility::s2ws(str).c_str() << L"'");
-                return false;
-            }
-
             break;
         }
         case CsvIndexCanWrite: {
