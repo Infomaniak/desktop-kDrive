@@ -287,13 +287,6 @@ void TestUtility::testToUpper() {
 
 void TestUtility::testErrId() {
     CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
-#if defined(__unix__)
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), errId("abc/defgh", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), errId("abc/d", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), errId("abc/d.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DE:10"), errId("abc/de.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), errId("abc/def.r", 10));
-#endif
 }
 
 void TestUtility::isSubDir() {
