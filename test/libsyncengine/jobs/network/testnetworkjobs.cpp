@@ -220,7 +220,7 @@ void TestNetworkJobs::testDelete() {
     }
     CPPUNIT_ASSERT(!newFileFound);
 
-    const RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDelete");
+    RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _remoteDirId, "testDelete");
     const LocalTemporaryDirectory localTmpDir("testDelete");
 
     // Delete directory - Empty local id & path provided => canRun == false
@@ -256,6 +256,7 @@ void TestNetworkJobs::testDelete() {
         }
     }
     CPPUNIT_ASSERT(!newDirFound);
+    remoteTmpDir.setDeleted();
 }
 
 void TestNetworkJobs::testDownload() {
