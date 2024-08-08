@@ -31,12 +31,12 @@ namespace KDC {
 
 class DriveInfoClient : public DriveInfo {
     public:
-        typedef enum {
-            SynthesisStackedWidgetSynchronized = 0,
-            SynthesisStackedWidgetFavorites,
-            SynthesisStackedWidgetActivity,
-            SynthesisStackedWidgetFirstAdded
-        } SynthesisStackedWidget;
+        enum class SynthesisStackedWidget {
+            Synchronized = 0,
+            Favorites,
+            Activity, 
+            FirstAdded
+        };
 
         typedef enum { ParametersStackedWidgetGeneral = 0, ParametersStackedWidgetFirstAdded } ParametersStackedWidget;
 
@@ -102,7 +102,7 @@ class DriveInfoClient : public DriveInfo {
         bool _isBeingDeleted{false};
 
         // Synthesispopover attributes
-        SynthesisStackedWidget _stackedWidgetIndex{SynthesisStackedWidgetSynchronized};
+        SynthesisStackedWidget _stackedWidgetIndex{SynthesisStackedWidget::Synchronized};
         QListWidget *_synchronizedListWidget{nullptr};
         QVector<SynchronizedItem> _synchronizedItemList;
         int _synchronizedListStackPosition{0};
