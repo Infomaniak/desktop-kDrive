@@ -317,7 +317,7 @@ struct IoHelper {
 
 #ifdef _WIN32
 #ifndef _WINDEF_
-        typedef unsigned long DWORD;
+        using DWORD = unsigned long;
 #endif
         static bool getXAttrValue(const SyncPath &path, DWORD attrCode, bool &value, IoError &ioError) noexcept;
         static bool setXAttrValue(const SyncPath &path, DWORD attrCode, IoError &ioError) noexcept;
