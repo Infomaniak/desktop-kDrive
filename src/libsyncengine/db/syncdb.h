@@ -104,6 +104,9 @@ class SyncDb : public Db {
 
         bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
         bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
+
+        // Fixes an issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node
+        bool normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber);
 };
 
 }  // namespace KDC
