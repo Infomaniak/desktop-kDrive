@@ -45,6 +45,42 @@ void TestSyncDb::tearDown() {
     delete _testObj;
 }
 
+void TestSyncDb::testUpgrade_3_6_3() {
+    time_t tLoc = std::time(0);
+    time_t tDrive = std::time(0);
+    // Insert node with non normalized name (NFD)
+    SyncName nfdEncodedName(Utility::normalizedSyncName("ééé", true));
+    SyncName nfcEncodedName(Utility::normalizedSyncName("ééé"));
+    const auto rootId = _testObj->rootNode().nodeId();
+    DbNode nodeFile1(0, rootId, nfdEncodedName, nfdEncodedName, "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
+                     NodeType::NodeTypeFile, 0, "cs 2.2");
+    DbNode nodeFile2(0, rootId, nfcEncodedName, nfdEncodedName, "id loc 2", "id drive 2", tLoc, tLoc, tDrive,
+                     NodeType::NodeTypeFile, 0, "cs 2.2");
+    DbNode nodeFile3(0, rootId, nfcEncodedName, nfcEncodedName, "id loc 3", "id drive 3", tLoc, tLoc, tDrive,
+                     NodeType::NodeTypeFile, 0, "cs 2.2");
+    bool constraintError = false;
+    DbNodeId dbNodeId;
+    _testObj->insertNode(nodeFile1, dbNodeId, constraintError);
+    _testObj->insertNode(nodeFile2, dbNodeId, constraintError);
+    _testObj->insertNode(nodeFile3, dbNodeId, constraintError);
+
+    _testObj->upgrade("3.6.3", "3.6.4");
+
+    // All DB sync names should now be NFC encoded (normalized)
+    SyncName localName;
+    SyncName remoteName;
+    bool found = false;
+    for (int i = 1; i <= 3; ++i) {
+        CPPUNIT_ASSERT(
+            _testObj->name(ReplicaSide::ReplicaSideLocal, std::string("id loc ") + std::to_string(i), localName, found) && found);
+        CPPUNIT_ASSERT(localName == nfcEncodedName);
+        CPPUNIT_ASSERT(
+            _testObj->name(ReplicaSide::ReplicaSideRemote, std::string("id drive ") + std::to_string(i), remoteName, found) &&
+            found);
+        CPPUNIT_ASSERT(remoteName == nfcEncodedName);
+    }
+}
+
 void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->exists());
     CPPUNIT_ASSERT(_testObj->clearNodes());
@@ -532,6 +568,5 @@ void TestSyncDb::testCorrespondingNodeId() {
     // Unknow side case
     CPPUNIT_ASSERT(!_testObj->correspondingNodeId(ReplicaSideUnknown, "id dir loc 1", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
-
 }
 }  // namespace KDC
