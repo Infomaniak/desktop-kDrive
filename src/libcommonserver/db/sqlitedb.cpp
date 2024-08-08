@@ -409,21 +409,25 @@ SqliteDb::CheckDbResult SqliteDb::checkDb() {
 
 namespace details {
 
-SyncName makeSyncName(const unsigned char *text) {
+SyncName makeSyncName(sqlite3_value *value) {
 #ifdef _WIN32
-    wchar_t *value = (wchar_t *)text;
-    return (value ? reinterpret_cast<const wchar_t *>(value) : SyncName());
+    wchar_t *wvalue = (wchar_t *)sqlite3_value_text16(value);
+    return wvalue ? reinterpret_cast<const wchar_t *>(wvalue) : SyncName();
 #else
-    return SyncName(reinterpret_cast<const char *>(text));
+    const char *charValue = reinterpret_cast<const char *>(sqlite3_value_text(value));
+    return charValue ? SyncName(charValue) : SyncName();
 #endif
 }
 
 static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value **argv) {
     if (argc == 1) {
-        const unsigned char *text = sqlite3_value_text(argv[0]);
-        if (text) {
-            SyncName normalizedName = Utility::normalizedSyncName(makeSyncName(text));
+        SyncName normalizedName = Utility::normalizedSyncName(makeSyncName(argv[0]));
+        if (!normalizedName.empty()) {
+#ifdef _WIN32
+            sqlite3_result_text16(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
+#else
             sqlite3_result_text(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
+#endif
             return;
         }
     }
