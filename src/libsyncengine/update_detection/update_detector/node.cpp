@@ -91,6 +91,21 @@ void Node::setName(const SyncName &name) {
     _name = Utility::normalizedSyncName(name);
 }
 
+bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
+    // Check that the parent is not a descendant
+    if (!isParentValid(parentNode)) {
+        assert(false);
+#ifdef NDEBUG
+        sentry_capture_event(
+            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Node::setParentNode", "Parent is a descendant"));
+#endif
+        return false;
+    }
+
+    _parentNode = parentNode;
+    return true;
+}
+
 std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) {
     for (auto &child : this->children()) {
         // return only non excluded type
@@ -130,7 +145,25 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
     if (!child->id().has_value()) {
         return false;
     }
+
+    // Check that the child is not an ancestor
+    if (std::shared_ptr<Node> tmpNode = parentNode(); tmpNode) {
+        while (tmpNode->parentNode() != nullptr) {
+            if (child == tmpNode) {
+                assert(false);
+#ifdef NDEBUG
+                sentry_capture_event(
+                    sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Node::insertChildren", "Child is an ancestor"));
+#endif
+                return false;
+            }
+
+            tmpNode = tmpNode->parentNode();
+        }
+    }
+
     _childrenById[*child->id()] = child;
+
     return true;
 }
 
@@ -190,6 +223,20 @@ SyncPath Node::getPath() const {
     }
 
     return path;
+}
+
+bool Node::isParentValid(const std::shared_ptr<Node> parentNode) const {
+    for (auto &child : _childrenById) {
+        if (child.second == parentNode) {
+            return false;
+        }
+
+        if (!child.second->isParentValid(parentNode)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 }  // namespace KDC

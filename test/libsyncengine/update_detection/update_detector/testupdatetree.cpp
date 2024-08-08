@@ -112,17 +112,17 @@ void TestUpdateTree::testAll() {
     std::shared_ptr<Node> node4111 = std::shared_ptr<Node>(new Node(
         std::nullopt, _myTree->side(), Str("File 4.1.1.1"), NodeType::File, OperationType::None, "4111", 0, 0, 12345, node411));
 
-    _myTree->rootNode()->insertChildren(node1);
-    _myTree->rootNode()->insertChildren(node2);
-    _myTree->rootNode()->insertChildren(node3);
-    _myTree->rootNode()->insertChildren(node4);
-    node1->insertChildren(node11);
-    node11->insertChildren(node111);
-    node111->insertChildren(node1111);
-    node3->insertChildren(node31);
-    node4->insertChildren(node41);
-    node41->insertChildren(node411);
-    node411->insertChildren(node4111);
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node1));
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node2));
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node3));
+    CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node4));
+    CPPUNIT_ASSERT(node1->insertChildren(node11));
+    CPPUNIT_ASSERT(node11->insertChildren(node111));
+    CPPUNIT_ASSERT(node111->insertChildren(node1111));
+    CPPUNIT_ASSERT(node3->insertChildren(node31));
+    CPPUNIT_ASSERT(node4->insertChildren(node41));
+    CPPUNIT_ASSERT(node41->insertChildren(node411));
+    CPPUNIT_ASSERT(node411->insertChildren(node4111));
 
     _myTree->insertNode(node1111);
     _myTree->insertNode(node111);

@@ -545,10 +545,10 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     std::shared_ptr<Node> rNode5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 5"), NodeType::Directory,
                                           OperationType::None, "r5", createdAt, lastmodified, size, rrootNode));
 
-    rootNode->insertChildren(node1);
-    node1->insertChildren(node11);
-    node11->insertChildren(node111);
-    node111->insertChildren(node1111);
+    CPPUNIT_ASSERT(rootNode->insertChildren(node1));
+    CPPUNIT_ASSERT(node1->insertChildren(node11));
+    CPPUNIT_ASSERT(node11->insertChildren(node111));
+    CPPUNIT_ASSERT(node111->insertChildren(node1111));
 
     SyncOpPtr op1 = std::make_shared<SyncOperation>();
     SyncOpPtr op2 = std::make_shared<SyncOperation>();
@@ -604,7 +604,7 @@ void TestOperationSorterWorker::testFixCreateBeforeMoveBis() {
                                           OperationType::None, "rdA", createdAt, lastmodified, size, rrootNode));
 
 
-    rootNode->insertChildren(nodeA);
+    CPPUNIT_ASSERT(rootNode->insertChildren(nodeA));
 
     // Rename Dir A -> Dir B
     nodeA->setMoveOrigin("Dir A");
@@ -806,17 +806,17 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
 
     node11->setMoveOrigin("Dir 1/Dir 1.1");
     node11->setMoveOriginParentDbId(dbNodeIdDir1);
-    node11->setParentNode(node2);
-    node2->insertChildren(node11);
+    CPPUNIT_ASSERT(node11->setParentNode(node2));
+    CPPUNIT_ASSERT(node2->insertChildren(node11));
     node1->deleteChildren(node11);
     node11->insertChangeEvent(OperationType::Move);
 
     node3->insertChangeEvent(OperationType::Move);
-    node3->setParentNode(node1);
+    CPPUNIT_ASSERT(node3->setParentNode(node1));
     node3->setName(Str("Dir 1.1"));
     node3->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
     node3->setMoveOrigin("Dir 3");
-    node1->insertChildren(node3);
+    CPPUNIT_ASSERT(node1->insertChildren(node3));
     rootNode->deleteChildren(node3);
 
     SyncOpPtr op1 = std::make_shared<SyncOperation>();
@@ -1096,14 +1096,14 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFilp() {
                                           OperationType::None, "r3", createdAt, lastmodified, size, rrootNode));
 
     rootNode->deleteChildren(node1);
-    node11->insertChildren(node1);
-    node1->setParentNode(node11);
+    CPPUNIT_ASSERT(node11->insertChildren(node1));
+    CPPUNIT_ASSERT(node1->setParentNode(node11));
     node1->deleteChildren(node11);
     node1->insertChangeEvent(OperationType::Move);
     node1->setMoveOrigin("Dir 1");
     node1->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
-    rootNode->insertChildren(node11);
-    node11->setParentNode(rootNode);
+    CPPUNIT_ASSERT(rootNode->insertChildren(node11));
+    CPPUNIT_ASSERT(node11->setParentNode(rootNode));
     node11->insertChangeEvent(OperationType::Move);
     node11->setMoveOrigin("Dir 1/Dir 1.1");
     node11->setMoveOriginParentDbId(dbNodeIdDir1);
@@ -1208,19 +1208,19 @@ void TestOperationSorterWorker::testFixImpossibleFirstMoveOp() {
     nodeE->setName(Str("n"));
     nodeE->setMoveOrigin("t/q/e");
     nodeE->setMoveOriginParentDbId(dbNodeIdDirq);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeE);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeE));
     _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(nodeN);
-    nodeE->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    nodeE->insertChildren(nodeN);
+    CPPUNIT_ASSERT(nodeE->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    CPPUNIT_ASSERT(nodeE->insertChildren(nodeN));
     nodeN->insertChangeEvent(OperationType::Move);
-    nodeN->setParentNode(nodeE);
+    CPPUNIT_ASSERT(nodeN->setParentNode(nodeE));
     nodeN->setName(Str("g"));
     nodeN->setMoveOrigin("n");
     nodeN->setMoveOriginParentDbId(dbNodeIdDirn);
 
     // remote changes
-    rNodeT->setParentNode(rNodeN);
-    rNodeN->insertChildren(rNodeT);
+    CPPUNIT_ASSERT(rNodeT->setParentNode(rNodeN));
+    CPPUNIT_ASSERT(rNodeN->insertChildren(rNodeT));
     _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeT);
     rNodeT->insertChangeEvent(OperationType::Move);
 
@@ -1348,8 +1348,8 @@ void TestOperationSorterWorker::testBreakCycleEx1() {
     std::shared_ptr<Node> nodeNewA(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"), NodeType::Directory,
                                             OperationType::None, "newA", createdAt, lastmodified, size,
                                             _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
-    nodeNewA->insertChildren(nodeA);
-    nodeA->setParentNode(nodeNewA);
+    CPPUNIT_ASSERT(nodeNewA->insertChildren(nodeA));
+    CPPUNIT_ASSERT(nodeA->setParentNode(nodeNewA));
     nodeA->setName(Str("subpath"));
     nodeA->setMoveOriginParentDbId(_syncPal->syncDb()->rootNode().nodeId());
     nodeA->setMoveOrigin("A");
@@ -1411,12 +1411,12 @@ void TestOperationSorterWorker::testBreakCycleEx2() {
     std::shared_ptr<Node> rNodeB(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"), NodeType::Directory,
                                           OperationType::None, "rB", createdAt, lastmodified, size, rNodeA));
 
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA);
-    nodeA->insertChildren(nodeB);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
+    CPPUNIT_ASSERT(nodeA->insertChildren(nodeB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeB);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA);
-    rNodeA->insertChildren(rNodeB);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
+    CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeB));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeB);
 
@@ -1424,7 +1424,7 @@ void TestOperationSorterWorker::testBreakCycleEx2() {
     nodeA->deleteChildren(nodeB);
     nodeB->insertChangeEvent(OperationType::Move);
     nodeB->setName(Str("A"));
-    nodeB->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    CPPUNIT_ASSERT(nodeB->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
     nodeB->setMoveOrigin("A/B");
     nodeB->setMoveOriginParentDbId(dbNodeIdDirA);
 
