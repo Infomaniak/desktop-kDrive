@@ -99,16 +99,16 @@ VfsWin::~VfsWin() {
 
 void VfsWin::debugCbk(TraceLevel level, const wchar_t *msg) {
     switch (level) {
-        case TRACE_LEVEL_INFO:
+        case TraceLevel::INFO:
             LOGW_INFO(logger(), msg);
             break;
-        case TRACE_LEVEL_DEBUG:
+        case TraceLevel::DEBUG:
             LOGW_DEBUG(logger(), msg);
             break;
-        case TRACE_LEVEL_WARNING:
+        case TraceLevel::WARNING:
             LOGW_WARN(logger(), msg);
             break;
-        case TRACE_LEVEL_ERROR:
+        case TraceLevel::_ERROR:
             LOGW_WARN(logger(), msg);
             break;
     }
