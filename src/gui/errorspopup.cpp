@@ -233,7 +233,7 @@ void ErrorsPopup::setArrowIcon() {
 void ErrorsPopup::onActionButtonClicked() {
     QString accountIdStr = qvariant_cast<QString>(sender()->property(ActionTypeProperty.c_str()));
     int accountId = accountIdStr.toInt();
-    QTimer::singleShot(0, this, [=]() { emit accountSelected(accountId); });
+    QTimer::singleShot(0, this, [this, accountId]() { emit accountSelected(accountId); });
     done(QDialog::Accepted);
 }
 

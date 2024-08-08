@@ -217,7 +217,7 @@ void CommClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
 }
 
 void CommClient::onSendRequest(int id, /*RequestNum*/ int num, const QByteArray &params) {
-    QTimer::singleShot(0, this, [this, &id, &num,&params]() {
+    QTimer::singleShot(0, this, [this, id, num,&params]() {
         if (!sendRequest(id, (RequestNum)num, params)) {
             emit sendError(id);
         }
@@ -225,7 +225,7 @@ void CommClient::onSendRequest(int id, /*RequestNum*/ int num, const QByteArray 
 }
 
 void CommClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params) {
-    QTimer::singleShot(0, this, [this, &id, &num, &params]() { emit signalReceived(id, num, params); });
+    QTimer::singleShot(0, this, [this, id, num, &params]() { emit signalReceived(id, num, params); });
 }
 
 CommClient::~CommClient() {
