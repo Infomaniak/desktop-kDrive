@@ -157,6 +157,12 @@
 #define SELECT_NODE_BY_REPLICAID_STATUS 9
 #define SELECT_NODE_BY_REPLICAID_SYNCING 10
 
+
+#define NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID "normalize_local_and_remote_names"
+#define NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST \
+    "UPDATE node "                               \
+    "SET nameLocal = normalizeSyncName(nameLocal), nameDrive = normalizeSyncName(nameDrive);"
+
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID "select_node5"
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST    \
     "SELECT nodeId, nodeIdLocal, status, syncing FROM node " \
@@ -249,6 +255,28 @@
 #define DELETE_ALL_UPLOAD_SESSION_TOKEN_REQUEST "DELETE FROM upload_session_token;"
 
 namespace KDC {
+
+SyncName makeSyncName(const unsigned char *text) {
+#ifdef _WIN32
+    wchar_t *value = (wchar_t *)text;
+    return (value ? reinterpret_cast<const wchar_t *>(value) : SyncName());
+#else
+    return SyncName(reinterpret_cast<const char *>(text));
+#endif
+}
+
+static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value **argv) {
+    if (argc == 1) {
+        const unsigned char *text = sqlite3_value_text(argv[0]);
+        if (text) {
+            SyncName normalizedName = Utility::normalizedSyncName(makeSyncName(text));
+            sqlite3_result_text(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
+            return;
+        }
+    }
+    sqlite3_result_null(context);
+}
+
 
 DbNode SyncDb::_driveRootNode(0, std::nullopt, SyncName(), SyncName(), "1", "1", std::nullopt, std::nullopt, std::nullopt,
                               NodeTypeDirectory, 0, std::nullopt);
@@ -553,11 +581,39 @@ bool SyncDb::prepare() {
     return true;
 }
 
+bool SyncDb::normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber) {
+    if (dbFromVersionNumber != "3.6.3") return true;
+
+    LOG_DEBUG(_logger, "Upgrade 3.6.3 DB");
+
+    sqlite3_create_function(_sqliteDb->db().get(), "normalizeSyncName", 1, SQLITE_UTF8, NULL, &normalizeSyncName, NULL, NULL);
+
+    int errId = 0;
+    std::string error;
+
+    ASSERT(queryCreate(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID));
+    if (!queryPrepare(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST, false, errId,
+                      error)) {
+        queryFree(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID);
+        return sqlFail(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, error);
+    }
+    if (!queryExec(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, errId, error)) {
+        queryFree(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID);
+        return sqlFail(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, error);
+    }
+    queryFree(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID);
+
+    return true;
+}
+
 bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVersion*/) {
+    const std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
+
+    if (!normalizeLocalAndRemoteNames(dbFromVersionNumber)) return false;
+
     int errId;
     std::string error;
 
-    std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
     if (dbFromVersionNumber == "3.4.0") {
         LOG_DEBUG(_logger, "Upgrade 3.4.0 DB");
 
@@ -2232,6 +2288,42 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
 
     return true;
 }
+
+/*
+bool SyncDb::normalizeLocalAndRemoteNames() {
+    const std::lock_guard<std::mutex> lock(_mutex);
+
+
+    std::string requestId = SELECT_ALL_RENAMED_COLON_NODES_REQUEST_ID;
+
+    ASSERT(queryResetAndClearBindings(requestId));
+
+    for (;;) {
+        bool found = false;
+        if (!queryNext(requestId, found)) {
+            LOGW_WARN(_logger, L"Error getting query result: " << requestId.c_str());
+            return false;
+        }
+        if (!found) {
+            break;
+        }
+
+        SyncName nameLocal;
+        ASSERT(querySyncNameValue(requestId, 2, nameLocal));
+
+        const SyncName normalizedLocalName = Utility::normalizedSyncName(nameLocal);
+        if (normalizedLocalName != nameLocal) {
+        }
+
+        SyncName nameRemote;
+        ASSERT(querySyncNameValue(requestId, 3, nameRemote));
+    }
+
+    ASSERT(queryResetAndClearBindings(requestId));
+
+    return true;
+}
+*/
 
 bool SyncDb::deleteNodesWithNullParentNodeId() {
     const std::lock_guard<std::mutex> lock(_mutex);
