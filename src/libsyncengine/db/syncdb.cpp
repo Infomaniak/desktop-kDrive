@@ -691,8 +691,8 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
     ASSERT(queryResetAndClearBindings(UPDATE_NODE_REQUEST_ID));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, node.nameLocal()));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, node.nameRemote()));
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, Utility::normalizedSyncName(node.nameLocal())));
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
     ASSERT(
         queryBindValue(UPDATE_NODE_REQUEST_ID, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 5,
