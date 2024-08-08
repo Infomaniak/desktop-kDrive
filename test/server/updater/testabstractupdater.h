@@ -20,6 +20,7 @@
 #pragma once
 
 #include "testincludes.h"
+#include "server/updater_v2/abstractupdater.h"
 #include "utility/types.h"
 using namespace CppUnit;
 
@@ -27,7 +28,8 @@ namespace KDC {
 class TestAbstractUpdater : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestAbstractUpdater);
-            CPPUNIT_TEST(testCurrentVersion);
+        CPPUNIT_TEST(testCheckUpdateAvailable);
+        CPPUNIT_TEST(testCurrentVersion);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -35,8 +37,7 @@ class TestAbstractUpdater : public CppUnit::TestFixture {
         void tearDown() override;
 
     protected:
+        void testCheckUpdateAvailable();
         void testCurrentVersion();
-
-    private:
 };
-} // KDC
+}  // namespace KDC
