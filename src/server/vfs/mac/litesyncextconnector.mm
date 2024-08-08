@@ -493,7 +493,7 @@ enum LogMode : bool { Debug = true, Warn = false };
   \param debug is an optional boolean value indicating whether the logging mode is DEBUG or WARN. Defaults to true, i.e., DEBUG
   mode. \return true if the IO error pertains to the existence of the folder or to its permissions, false otherwise.
 */
-bool checkIoError::AndLogIfNeeded(IoError ioError, const std::string &itemType, const QString &path, log4cplus::Logger &logger,
+bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, const QString &path, log4cplus::Logger &logger,
                                 LogMode mode = LogMode::Debug) {
     if (ioError != IoError::NoSuchFileOrDirectory && ioError != IoError::AccessDenied) {
         return false;
@@ -538,7 +538,7 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
         return false;
     }
 
-    if (checkIoError::AndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
+    if (checkIoErrorAndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
         return false;
     }
 
@@ -551,7 +551,7 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
             return false;
         }
 
-        if (checkIoError::AndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
+        if (checkIoErrorAndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
             return false;
         }
 
@@ -563,7 +563,7 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
             return false;
         }
 
-        if (checkIoError::AndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
+        if (checkIoErrorAndLogIfNeeded(ioError, "Sync folder", folderPath, _logger, LogMode::Warn)) {
             return false;
         }
     }
@@ -789,7 +789,7 @@ bool LiteSyncExtConnector::vfsHydratePlaceHolder(const QString &filePath) {
         return false;
     }
 
-    if (checkIoError::AndLogIfNeeded(ioError, "File", filePath, _logger)) {
+    if (checkIoErrorAndLogIfNeeded(ioError, "File", filePath, _logger)) {
         return false;
     }
 
@@ -820,7 +820,7 @@ bool LiteSyncExtConnector::vfsDehydratePlaceHolder(const QString &absoluteFilepa
         return false;
     }
 
-    if (checkIoError::AndLogIfNeeded(ioError, "File", absoluteFilepath, _logger)) {
+    if (checkIoErrorAndLogIfNeeded(ioError, "File", absoluteFilepath, _logger)) {
         return false;
     }
 
@@ -896,7 +896,7 @@ bool LiteSyncExtConnector::vfsSetPinState(const QString &path, const QString &lo
         return false;
     }
 
-    if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
+    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
         return false;
     }
 
@@ -943,7 +943,7 @@ bool LiteSyncExtConnector::vfsGetPinState(const QString &path, QString &pinState
         return false;
     }
 
-    if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
+    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
         return false;
     }
 
@@ -968,7 +968,7 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
         return false;
     }
 
-    if (checkIoError::AndLogIfNeeded(ioError, "Item", filePath, _logger)) {
+    if (checkIoErrorAndLogIfNeeded(ioError, "Item", filePath, _logger)) {
         return false;
     }
 
@@ -981,7 +981,7 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
         return false;
     }
 
-    if (checkIoError::AndLogIfNeeded(ioError, "Item", filePath, _logger)) {
+    if (checkIoErrorAndLogIfNeeded(ioError, "Item", filePath, _logger)) {
         return false;
     }
 
@@ -1033,7 +1033,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
         return false;
     }
 
-    if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
+    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
         return false;
     }
 
@@ -1045,7 +1045,7 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
         return false;
     }
 
-    if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
+    if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
         return false;
     }
 
@@ -1355,7 +1355,7 @@ bool LiteSyncExtConnector::vfsSetStatus(const QString &path, const QString &loca
             return false;
         }
 
-        if (checkIoError::AndLogIfNeeded(ioError, "Item", path, _logger)) {
+        if (checkIoErrorAndLogIfNeeded(ioError, "Item", path, _logger)) {
             return false;
         }
 
