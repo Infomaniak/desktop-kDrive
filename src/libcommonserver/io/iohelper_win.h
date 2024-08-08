@@ -24,31 +24,32 @@
 // Definitions for zwQueryDirectoryFile - Begin
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 
-typedef LONG NTSTATUS;
+using NTSTATUS = LONG;
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 #define NT_STATUS(x) ((NTSTATUS){x})
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
 #define STATUS_NO_MORE_FILES ((NTSTATUS)0x80000006L)
 #define STATUS_INVALID_INFO_CLASS ((NTSTATUS)0xC0000003L)
 
-typedef struct _UNICODE_STRING {
+using UNICODE_STRING = struct {
         USHORT Length;
         USHORT MaximumLength;
         PWSTR Buffer;
-} UNICODE_STRING, *PUNICODE_STRING;
+};
+using PUNICODE_STRING = UNICODE_STRING *;
 
-typedef struct _IO_STATUS_BLOCK {
+using IO_STATUS_BLOCK = struct {
         union {
                 NTSTATUS Status;
                 PVOID Pointer;
         } DUMMYUNIONNAME;
-
         ULONG_PTR Information;
-} IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
+};
+using PIO_STATUS_BLOCK = IO_STATUS_BLOCK *;
 
 typedef VOID(NTAPI *PIO_APC_ROUTINE)(PVOID ApcContext, PIO_STATUS_BLOCK IoStatusBlock, ULONG Reserved);
 
-typedef enum _FILE_INFORMATION_CLASS {
+using FILE_INFORMATION_CLASS = enum _FILE_INFORMATION_CLASS {
     FileDirectoryInformation = 1,
     FileFullDirectoryInformation,             // 2
     FileBothDirectoryInformation,             // 3
@@ -105,8 +106,8 @@ typedef enum _FILE_INFORMATION_CLASS {
     FileStandardLinkInformation,              // 54
     FileRemoteProtocolInformation,            // 55
     FileMaximumInformation
-} FILE_INFORMATION_CLASS,
-    *PFILE_INFORMATION_CLASS;
+};
+using PFILE_INFORMATION_CLASS = FILE_INFORMATION_CLASS *;
 
 typedef struct _FILE_ID_FULL_DIR_INFORMATION {
         ULONG NextEntryOffset;
