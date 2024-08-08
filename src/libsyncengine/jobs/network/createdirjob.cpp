@@ -24,7 +24,7 @@ namespace KDC {
 
 CreateDirJob::CreateDirJob(int driveDbId, const SyncPath &filepath, const NodeId &parentId, const SyncName &name,
                            const std::string &color /*= ""*/)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0),
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
       _filePath(filepath),
       _parentDirId(parentId),
       _name(name),

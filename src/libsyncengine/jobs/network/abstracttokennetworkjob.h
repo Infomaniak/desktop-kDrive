@@ -33,7 +33,7 @@ class AbstractTokenNetworkJob : public AbstractNetworkJob {
         };
 
     public:
-        typedef enum { ApiDrive, ApiDriveByUser, ApiProfile, ApiNotifyDrive, ApiDesktop } ApiType;
+        enum class ApiType { Drive, DriveByUser, Profile, NotifyDrive, Desktop };
 
         AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId, bool returnJson = true);
         AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);

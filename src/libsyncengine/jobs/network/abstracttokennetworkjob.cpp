@@ -53,8 +53,8 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
 
-    if (((_apiType == ApiDrive || _apiType == ApiNotifyDrive) && _driveDbId == 0 && (_userDbId == 0 || _driveId == 0)) ||
-        ((_apiType == ApiProfile || _apiType == ApiDriveByUser) && _userDbId == 0)) {
+    if (((_apiType == ApiType::Drive || _apiType == ApiType::NotifyDrive) && _driveDbId == 0 && (_userDbId == 0 || _driveId == 0)) ||
+        ((_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) && _userDbId == 0)) {
         LOG_WARN(_logger, "Invalid parameters!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
@@ -113,21 +113,21 @@ void AbstractTokenNetworkJob::updateLoginByUserDbId(const Login &login, int user
 std::string AbstractTokenNetworkJob::getSpecificUrl() {
     std::string str;
     switch (_apiType) {
-        case ApiDrive:
-        case ApiNotifyDrive:
+        case ApiType::Drive:
+        case ApiType::NotifyDrive:
             str += API_PREFIX_DRIVE;
             if (_driveId) {
                 str += "/";
                 str += std::to_string(_driveId);
             }
             break;
-        case ApiDriveByUser:
+        case ApiType::DriveByUser:
             str += API_PREFIX_DRIVE;
             break;
-        case ApiProfile:
+        case ApiType::Profile:
             str += API_PREFIX_PROFILE;
             break;
-        case ApiDesktop:
+        case ApiType::Desktop:
             str += API_PREFIX_DESKTOP;
             break;
     }
@@ -293,15 +293,15 @@ bool AbstractTokenNetworkJob::handleError(std::istream &is, const Poco::URI &uri
 std::string AbstractTokenNetworkJob::getUrl() {
     std::string apiUrl;
     switch (_apiType) {
-        case ApiDrive:
-        case ApiDriveByUser:
-        case ApiDesktop:
+        case ApiType::Drive:
+        case ApiType::DriveByUser:
+        case ApiType::Desktop:
             apiUrl = KDRIVE_API_V2_URL;
             break;
-        case ApiNotifyDrive:
+        case ApiType::NotifyDrive:
             apiUrl = NOTIFY_KDRIVE_V2_URL;
             break;
-        case ApiProfile:
+        case ApiType::Profile:
             apiUrl = GLOBAL_API_V2_URL;
             break;
     }
@@ -381,7 +381,7 @@ bool AbstractTokenNetworkJob::handleOctetStreamResponse(std::istream &is) {
 
 std::string AbstractTokenNetworkJob::loadToken() {
     std::string token;
-    if (_apiType == ApiDesktop) {  // Fetch the drive identifier of the first available sync.
+    if (_apiType == ApiType::Desktop) {  // Fetch the drive identifier of the first available sync.
         std::vector<Sync> syncList;
         if (!ParmsDb::instance()->selectAllSyncs(syncList)) {
             LOG_WARN(_logger, "Error in ParmsDb::selectAllSyncs");
@@ -397,9 +397,9 @@ std::string AbstractTokenNetworkJob::loadToken() {
     }
 
     switch (_apiType) {
-        case ApiDrive:
-        case ApiDesktop:
-        case ApiNotifyDrive: {
+        case ApiType::Drive:
+        case ApiType::Desktop:
+        case ApiType::NotifyDrive: {
             if (_driveDbId) {
                 auto it = _driveToApiKeyMap.find(_driveDbId);
                 if (it != _driveToApiKeyMap.end()) {
@@ -472,8 +472,8 @@ std::string AbstractTokenNetworkJob::loadToken() {
             }
             break;
         }
-        case ApiProfile:
-        case ApiDriveByUser: {
+        case ApiType::Profile:
+        case ApiType::DriveByUser: {
             auto it = _userToApiKeyMap.find(_userDbId);
             if (it != _userToApiKeyMap.end()) {
                 // userDbId found in User cache

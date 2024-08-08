@@ -26,7 +26,7 @@
 namespace KDC {
 
 DeleteJob::DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0)
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0)
       , _remoteItemId(remoteItemId)
       , _localItemId(localItemId)
       , _absoluteLocalFilepath(absoluteLocalFilepath) {

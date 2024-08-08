@@ -43,7 +43,7 @@ namespace KDC {
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
                          SyncTime creationTime, SyncTime modtime, bool isCreate)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0, false),
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
       _remoteFileId(remoteFileId),
       _localpath(localpath),
       _expectedSize(expectedSize),
@@ -56,7 +56,7 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 }
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0, false),
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
       _remoteFileId(remoteFileId),
       _localpath(localpath),
       _expectedSize(expectedSize),
