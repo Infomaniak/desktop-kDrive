@@ -646,8 +646,8 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
     ASSERT(queryResetAndClearBindings(INSERT_NODE_REQUEST_ID));
     ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 2, node.nameLocal()));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 3, node.nameRemote()));
+    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 2, Utility::normalizedSyncName(node.nameLocal())));
+    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
     ASSERT(
         queryBindValue(INSERT_NODE_REQUEST_ID, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
     ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 5,
