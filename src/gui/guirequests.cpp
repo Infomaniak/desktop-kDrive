@@ -28,7 +28,7 @@ bool GuiRequests::isConnnected() {
 
 ExitCode GuiRequests::getUserDbIdList(QList<int> &list) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_USER_DBIDLIST, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::USER_DBIDLIST, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -42,7 +42,7 @@ ExitCode GuiRequests::getUserDbIdList(QList<int> &list) {
 
 ExitCode GuiRequests::getUserInfoList(QList<UserInfo> &list) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_USER_INFOLIST, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::USER_INFOLIST, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -60,7 +60,7 @@ ExitCode GuiRequests::getUserIdFromUserDbId(int userDbId, int &userId) {
     paramsStream << userDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_USER_ID_FROM_USERDBID, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::USER_ID_FROM_USERDBID, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -80,7 +80,7 @@ ExitCode GuiRequests::getErrorInfoList(ErrorLevel level, int syncDbId, int limit
     paramsStream << limit;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_ERROR_INFOLIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_INFOLIST, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -99,7 +99,7 @@ ExitCode GuiRequests::getConflictList(int driveDbId, QList<ConflictType> filter,
     paramsStream << filter;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_ERROR_GET_CONFLICTS, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_GET_CONFLICTS, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -113,7 +113,7 @@ ExitCode GuiRequests::getConflictList(int driveDbId, QList<ConflictType> filter,
 
 ExitCode GuiRequests::deleteErrorsServer() {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_ERROR_DELETE_SERVER, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_DELETE_SERVER, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -131,7 +131,7 @@ ExitCode GuiRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
     paramsStream << autoResolved;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_ERROR_DELETE_SYNC, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_DELETE_SYNC, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -144,7 +144,7 @@ ExitCode GuiRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
 
 ExitCode GuiRequests::deleteInvalidTokenErrors() {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_ERROR_DELETE_INVALIDTOKEN, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_DELETE_INVALIDTOKEN, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -162,7 +162,7 @@ ExitCode GuiRequests::resolveConflictErrors(int driveDbId, bool keepLocalVersion
     paramsStream << keepLocalVersion;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_ERROR_RESOLVE_CONFLICTS, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_CONFLICTS, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -179,7 +179,7 @@ ExitCode GuiRequests::resolveUnsupportedCharErrors(int driveDbId) {
     paramsStream << driveDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_ERROR_RESOLVE_UNSUPPORTED_CHAR, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -197,7 +197,7 @@ ExitCode GuiRequests::setSupportsVirtualFiles(int syncDbId, bool value) {
     paramsStream << value;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_SETSUPPORTSVIRTUALFILES, params, results, COMM_LONG_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_SETSUPPORTSVIRTUALFILES, params, results, COMM_LONG_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -215,7 +215,7 @@ ExitCode GuiRequests::setRootPinState(int syncDbId, PinState pinState) {
     paramsStream << pinState;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_SETROOTPINSTATE, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_SETROOTPINSTATE, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -232,7 +232,7 @@ ExitCode GuiRequests::deleteUser(int userDbId) {
     paramsStream << userDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_USER_DELETE, params, results, COMM_LONG_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::USER_DELETE, params, results, COMM_LONG_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -245,7 +245,7 @@ ExitCode GuiRequests::deleteUser(int userDbId) {
 
 ExitCode GuiRequests::getAccountInfoList(QList<AccountInfo> &list) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_ACCOUNT_INFOLIST, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::ACCOUNT_INFOLIST, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -259,7 +259,7 @@ ExitCode GuiRequests::getAccountInfoList(QList<AccountInfo> &list) {
 
 ExitCode GuiRequests::getDriveInfoList(QList<DriveInfo> &list) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_DRIVE_INFOLIST, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_INFOLIST, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -277,7 +277,7 @@ ExitCode GuiRequests::getDriveIdFromDriveDbId(int driveDbId, int &driveId) {
     paramsStream << driveDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_DRIVE_ID_FROM_DRIVEDBID, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_ID_FROM_DRIVEDBID, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -295,7 +295,7 @@ ExitCode GuiRequests::getDriveIdFromSyncDbId(int syncDbId, int &driveId) {
     paramsStream << syncDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_DRIVE_ID_FROM_SYNCDBID, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_ID_FROM_SYNCDBID, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -309,7 +309,7 @@ ExitCode GuiRequests::getDriveIdFromSyncDbId(int syncDbId, int &driveId) {
 
 ExitCode GuiRequests::getDriveDefaultColor(QColor &color) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_DRIVE_DEFAULTCOLOR, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_DEFAULTCOLOR, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -327,7 +327,7 @@ ExitCode GuiRequests::updateDrive(const DriveInfo &driveInfo) {
     paramsStream << driveInfo;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_DRIVE_UPDATE, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_UPDATE, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -344,7 +344,7 @@ ExitCode GuiRequests::deleteDrive(int driveDbId) {
     paramsStream << driveDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_DRIVE_DELETE, params, results, COMM_LONG_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::DRIVE_DELETE, params, results, COMM_LONG_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -357,7 +357,7 @@ ExitCode GuiRequests::deleteDrive(int driveDbId) {
 
 ExitCode GuiRequests::getSyncInfoList(QList<SyncInfo> &list) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_INFOLIST, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_INFOLIST, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -375,7 +375,7 @@ ExitCode GuiRequests::syncStart(int syncDbId) {
     paramsStream << syncDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_START, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_START, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -392,7 +392,7 @@ ExitCode GuiRequests::syncStop(int syncDbId) {
     paramsStream << syncDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_STOP, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_STOP, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -409,7 +409,7 @@ ExitCode GuiRequests::getSyncStatus(int syncDbId, SyncStatus &status) {
     paramsStream << syncDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_STATUS, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_STATUS, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -427,7 +427,7 @@ ExitCode GuiRequests::getSyncIsRunning(int syncDbId, bool &running) {
     paramsStream << syncDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_ISRUNNING, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_ISRUNNING, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -446,7 +446,7 @@ ExitCode GuiRequests::getSyncIdSet(int syncDbId, SyncNodeType type, QSet<QString
     paramsStream << type;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNCNODE_LIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNCNODE_LIST, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -466,7 +466,7 @@ ExitCode GuiRequests::setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<Q
     paramsStream << syncIdSet;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNCNODE_SETLIST, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNCNODE_SETLIST, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -479,7 +479,7 @@ ExitCode GuiRequests::setSyncIdSet(int syncDbId, SyncNodeType type, const QSet<Q
 
 ExitCode GuiRequests::getParameters(ParametersInfo &parametersInfo) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_PARAMETERS_INFO, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::PARAMETERS_INFO, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -497,7 +497,7 @@ ExitCode GuiRequests::updateParameters(const ParametersInfo &parametersInfo) {
     paramsStream << parametersInfo;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_PARAMETERS_UPDATE, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::PARAMETERS_UPDATE, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -515,7 +515,7 @@ ExitCode GuiRequests::getNodePath(int syncDbId, QString nodeId, QString &path) {
     paramsStream << nodeId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_NODE_PATH, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_PATH, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -534,7 +534,7 @@ ExitCode GuiRequests::findGoodPathForNewSync(int driveDbId, const QString &baseP
     paramsStream << basePath;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_FINDGOODPATHFORNEWSYNC, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -550,7 +550,7 @@ ExitCode GuiRequests::findGoodPathForNewSync(int driveDbId, const QString &baseP
 #ifdef Q_OS_WIN
 ExitCode GuiRequests::showInExplorerNavigationPane(bool &show) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SHOWSHORTCUT, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_SHOWSHORTCUT, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -568,7 +568,7 @@ ExitCode GuiRequests::setShowInExplorerNavigationPane(const bool &show) {
     paramsStream << show;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SETSHOWSHORTCUT, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_SETSHOWSHORTCUT, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -588,7 +588,7 @@ ExitCode GuiRequests::requestToken(const QString &code, const QString &codeVerif
     paramsStream << codeVerifier;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_LOGIN_REQUESTTOKEN, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::LOGIN_REQUESTTOKEN, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -615,7 +615,7 @@ ExitCode GuiRequests::getNodeInfo(int userDbId, int driveId, const QString &node
     paramsStream << withPath;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_NODE_INFO, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_INFO, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -633,7 +633,7 @@ ExitCode GuiRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAvail
     paramsStream << userDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_USER_AVAILABLEDRIVES, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::USER_AVAILABLEDRIVES, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -661,7 +661,7 @@ ExitCode GuiRequests::addSync(int userDbId, int accountId, int driveId, const QS
     paramsStream << whiteList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_ADD, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_ADD, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -689,7 +689,7 @@ ExitCode GuiRequests::addSync(int driveDbId, const QString &localFolderPath, con
     paramsStream << whiteList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_ADD2, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_ADD2, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -709,7 +709,7 @@ ExitCode GuiRequests::startSyncs(int userDbId) {
     paramsStream << userDbId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_START_AFTER_LOGIN, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_START_AFTER_LOGIN, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -724,7 +724,7 @@ ExitCode GuiRequests::deleteSync(int syncDbId) {
     const auto params = QByteArray(ArgsReader(syncDbId));
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_DELETE, params, results, COMM_LONG_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_DELETE, params, results, COMM_LONG_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -741,7 +741,7 @@ ExitCode GuiRequests::propagateSyncListChange(int syncDbId, bool restartSync) {
     paramsStream << restartSync;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_PROPAGATE_SYNCLIST_CHANGE, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -754,7 +754,7 @@ ExitCode GuiRequests::propagateSyncListChange(int syncDbId, bool restartSync) {
 
 ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_BESTVFSAVAILABLEMODE, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_BESTVFSAVAILABLEMODE, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -768,7 +768,7 @@ ExitCode GuiRequests::bestAvailableVfsMode(VirtualFileMode &mode) {
 
 ExitCode GuiRequests::propagateExcludeListChange() {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_EXCLTEMPL_PROPAGATE_CHANGE, QByteArray(), results, COMM_LONG_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_PROPAGATE_CHANGE, QByteArray(), results, COMM_LONG_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -781,7 +781,7 @@ ExitCode GuiRequests::propagateExcludeListChange() {
 
 ExitCode GuiRequests::hasSystemLaunchOnStartup(bool &enabled) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_HASSYSTEMLAUNCHONSTARTUP, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -795,7 +795,7 @@ ExitCode GuiRequests::hasSystemLaunchOnStartup(bool &enabled) {
 
 ExitCode GuiRequests::hasLaunchOnStartup(bool &enabled) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_HASLAUNCHONSTARTUP, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_HASLAUNCHONSTARTUP, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -813,7 +813,7 @@ ExitCode GuiRequests::setLaunchOnStartup(bool enabled) {
     paramsStream << enabled;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SETLAUNCHONSTARTUP, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_SETLAUNCHONSTARTUP, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -830,7 +830,7 @@ ExitCode GuiRequests::getAppState(AppStateKey key, AppStateValue &value) {
     paramsStream << key;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_APPSTATE, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_GET_APPSTATE, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -861,7 +861,7 @@ ExitCode GuiRequests::updateAppState(AppStateKey key, const AppStateValue &value
     paramsStream << QString::fromStdString(valueStr);
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SET_APPSTATE, params, results)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_SET_APPSTATE, params, results)) {
         return ExitCode::SystemError;
     }
 
@@ -874,7 +874,7 @@ ExitCode GuiRequests::updateAppState(AppStateKey key, const AppStateValue &value
 
 ExitCode GuiRequests::getLogDirEstimatedSize(uint64_t &size) {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE, QByteArray(), results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -894,7 +894,7 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
     paramsStream << sendArchivedLogs;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_SEND_LOG_TO_SUPPORT, params, results,
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_SEND_LOG_TO_SUPPORT, params, results,
                                          COMM_SHORT_TIMEOUT)) {  // Short timeout because the operation is asynchronous
         return ExitCode::SystemError;
     }
@@ -908,7 +908,7 @@ ExitCode GuiRequests::sendLogToSupport(bool sendArchivedLogs) {
 
 ExitCode GuiRequests::cancelLogUploadToSupport() {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT, QByteArray(), results,
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT, QByteArray(), results,
                                          COMM_SHORT_TIMEOUT)) {  // Short timeout because the operation is asynchronous
         return ExitCode::SystemError;
     }
@@ -930,7 +930,7 @@ ExitCode GuiRequests::getSubFolders(int userDbId, int driveId, const QString &no
     paramsStream << withPath;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_NODE_SUBFOLDERS, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_SUBFOLDERS, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -950,7 +950,7 @@ ExitCode GuiRequests::getSubFolders(int driveDbId, const QString &nodeId, QList<
     paramsStream << withPath;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_NODE_SUBFOLDERS2, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_SUBFOLDERS2, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -970,7 +970,7 @@ ExitCode GuiRequests::createMissingFolders(int driveDbId, const QList<QPair<QStr
     paramsStream << serverFolderList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_NODE_CREATEMISSINGFOLDERS, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_CREATEMISSINGFOLDERS, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -989,7 +989,7 @@ ExitCode GuiRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, QSt
     paramsStream << fileId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_GETPUBLICLINKURL, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_GETPUBLICLINKURL, params, results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1009,7 +1009,7 @@ ExitCode GuiRequests::getFolderSize(int userDbId, int driveId, const QString &no
     paramsStream << nodeId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_NODE_FOLDER_SIZE, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::NODE_FOLDER_SIZE, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1027,7 +1027,7 @@ ExitCode GuiRequests::getPrivateLinkUrl(int driveDbId, const QString &fileId, QS
     paramsStream << fileId;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_GETPRIVATELINKURL, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_GETPRIVATELINKURL, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1045,7 +1045,7 @@ ExitCode GuiRequests::getNameExcluded(const QString &name, bool excluded) {
     paramsStream << name;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_EXCLTEMPL_GETEXCLUDED, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_GETEXCLUDED, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1063,7 +1063,7 @@ ExitCode GuiRequests::getExclusionTemplateList(bool def, QList<ExclusionTemplate
     paramsStream << def;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_EXCLTEMPL_GETLIST, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_GETLIST, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1082,7 +1082,7 @@ ExitCode GuiRequests::setExclusionTemplateList(bool def, const QList<ExclusionTe
     paramsStream << templateList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_EXCLTEMPL_SETLIST, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLTEMPL_SETLIST, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1100,7 +1100,7 @@ ExitCode GuiRequests::getExclusionAppList(bool def, QList<ExclusionAppInfo> &app
     paramsStream << def;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_EXCLAPP_GETLIST, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLAPP_GETLIST, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1119,7 +1119,7 @@ ExitCode GuiRequests::setExclusionAppList(bool def, const QList<ExclusionAppInfo
     paramsStream << appList;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_EXCLAPP_SETLIST, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::EXCLAPP_SETLIST, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1134,7 +1134,7 @@ ExitCode GuiRequests::getFetchingAppList(QHash<QString, QString> &appTable) {
     QByteArray params;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_GET_FETCHING_APP_LIST, params, results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::GET_FETCHING_APP_LIST, params, results, COMM_AVERAGE_TIMEOUT)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
@@ -1153,7 +1153,7 @@ ExitCode GuiRequests::activateLoadInfo(bool activate) {
     paramsStream << activate;
 
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_ACTIVATELOADINFO, params, results, COMM_SHORT_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_ACTIVATELOADINFO, params, results, COMM_SHORT_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 
@@ -1166,7 +1166,7 @@ ExitCode GuiRequests::activateLoadInfo(bool activate) {
 
 ExitCode GuiRequests::askForStatus() {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_SYNC_ASKFORSTATUS, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::SYNC_ASKFORSTATUS, QByteArray(), results)) {
         return ExitCode::SystemError;
     }
 
@@ -1179,7 +1179,7 @@ ExitCode GuiRequests::askForStatus() {
 
 ExitCode GuiRequests::checkCommStatus() {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_CHECKCOMMSTATUS, QByteArray(), results, COMM_AVERAGE_TIMEOUT)) {
+    if (!CommClient::instance()->execute(RequestNum::UTILITY_CHECKCOMMSTATUS, QByteArray(), results, COMM_AVERAGE_TIMEOUT)) {
         return ExitCode::SystemError;
     }
 

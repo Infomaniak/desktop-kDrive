@@ -205,27 +205,27 @@ void AppClient::showSynthesisDialog() {
     _gui->showSynthesisDialog();
 }
 
-void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params) {
+void AppClient::onSignalReceived(int id, /*SignalNum*/ SignalNum num, const QByteArray &params) {
     QDataStream paramsStream(params);
 
-    qCDebug(lcAppClient) << "Sgnl rcvd" << id << num;
+    qCDebug(lcAppClient) << "Sgnl rcvd" << id << enumClassToInt(num);
 
     switch (num) {
-        case SIGNAL_NUM_USER_ADDED: {
+        case SignalNum::USER_ADDED: {
             UserInfo userInfo;
             paramsStream >> userInfo;
 
             emit userAdded(userInfo);
             break;
         }
-        case SIGNAL_NUM_USER_UPDATED: {
+        case SignalNum::USER_UPDATED: {
             UserInfo userInfo;
             paramsStream >> userInfo;
 
             emit userUpdated(userInfo);
             break;
         }
-        case SIGNAL_NUM_USER_STATUSCHANGED: {
+        case SignalNum::USER_STATUSCHANGED: {
             int userDbId;
             bool connected;
             QString connexionError;
@@ -236,49 +236,49 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit userStatusChanged(userDbId, connected, connexionError);
             break;
         }
-        case SIGNAL_NUM_USER_REMOVED: {
+        case SignalNum::USER_REMOVED: {
             int userDbId;
             paramsStream >> userDbId;
 
             emit userRemoved(userDbId);
             break;
         }
-        case SIGNAL_NUM_ACCOUNT_ADDED: {
+        case SignalNum::ACCOUNT_ADDED: {
             AccountInfo accountInfo;
             paramsStream >> accountInfo;
 
             emit accountAdded(accountInfo);
             break;
         }
-        case SIGNAL_NUM_ACCOUNT_UPDATED: {
+        case SignalNum::ACCOUNT_UPDATED: {
             AccountInfo accountInfo;
             paramsStream >> accountInfo;
 
             emit accountUpdated(accountInfo);
             break;
         }
-        case SIGNAL_NUM_ACCOUNT_REMOVED: {
+        case SignalNum::ACCOUNT_REMOVED: {
             int accountDbId;
             paramsStream >> accountDbId;
 
             emit accountRemoved(accountDbId);
             break;
         }
-        case SIGNAL_NUM_DRIVE_ADDED: {
+        case SignalNum::DRIVE_ADDED: {
             DriveInfo driveInfo;
             paramsStream >> driveInfo;
 
             emit driveAdded(driveInfo);
             break;
         }
-        case SIGNAL_NUM_DRIVE_UPDATED: {
+        case SignalNum::DRIVE_UPDATED: {
             DriveInfo driveInfo;
             paramsStream >> driveInfo;
 
             emit driveUpdated(driveInfo);
             break;
         }
-        case SIGNAL_NUM_DRIVE_QUOTAUPDATED: {
+        case SignalNum::DRIVE_QUOTAUPDATED: {
             int driveDbId;
             qint64 total;
             qint64 used;
@@ -289,42 +289,42 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit driveQuotaUpdated(driveDbId, total, used);
             break;
         }
-        case SIGNAL_NUM_DRIVE_REMOVED: {
+        case SignalNum::DRIVE_REMOVED: {
             int driveDbId;
             paramsStream >> driveDbId;
 
             emit driveRemoved(driveDbId);
             break;
         }
-        case SIGNAL_NUM_DRIVE_DELETE_FAILED: {
+        case SignalNum::DRIVE_DELETE_FAILED: {
             int driveDbId;
             paramsStream >> driveDbId;
 
             emit driveDeletionFailed(driveDbId);
             break;
         }
-        case SIGNAL_NUM_SYNC_ADDED: {
+        case SignalNum::SYNC_ADDED: {
             SyncInfo syncInfo;
             paramsStream >> syncInfo;
 
             emit syncAdded(syncInfo);
             break;
         }
-        case SIGNAL_NUM_SYNC_UPDATED: {
+        case SignalNum::SYNC_UPDATED: {
             SyncInfo syncInfo;
             paramsStream >> syncInfo;
 
             emit syncUpdated(syncInfo);
             break;
         }
-        case SIGNAL_NUM_SYNC_REMOVED: {
+        case SignalNum::SYNC_REMOVED: {
             int syncDbId;
             paramsStream >> syncDbId;
 
             emit syncRemoved(syncDbId);
             break;
         }
-        case SIGNAL_NUM_SYNC_PROGRESSINFO: {
+        case SignalNum::SYNC_PROGRESSINFO: {
             int syncDbId;
             SyncStatus status;
             SyncStep step;
@@ -346,7 +346,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
                                   estimatedRemainingTime);
             break;
         }
-        case SIGNAL_NUM_SYNC_COMPLETEDITEM: {
+        case SignalNum::SYNC_COMPLETEDITEM: {
             int syncDbId;
             SyncFileItemInfo itemInfo;
             paramsStream >> syncDbId;
@@ -355,21 +355,21 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit itemCompleted(syncDbId, itemInfo);
             break;
         }
-        case SIGNAL_NUM_SYNC_VFS_CONVERSION_COMPLETED: {
+        case SignalNum::SYNC_VFS_CONVERSION_COMPLETED: {
             int syncDbId;
             paramsStream >> syncDbId;
 
             emit vfsConversionCompleted(syncDbId);
             break;
         }
-        case SIGNAL_NUM_SYNC_DELETE_FAILED: {
+        case SignalNum::SYNC_DELETE_FAILED: {
             int syncDbId;
             paramsStream >> syncDbId;
 
             emit syncDeletionFailed(syncDbId);
             break;
         }
-        case SIGNAL_NUM_NODE_FOLDER_SIZE_COMPLETED: {
+        case SignalNum::NODE_FOLDER_SIZE_COMPLETED: {
             QString nodeId;
             qint64 size;
             paramsStream >> nodeId;
@@ -378,7 +378,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit folderSizeCompleted(nodeId, size);
             break;
         }
-        case SIGNAL_NUM_NODE_FIX_CONFLICTED_FILES_COMPLETED: {
+        case SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED: {
             int syncDbId = 0;
             QVariant var;
             paramsStream >> syncDbId;
@@ -389,7 +389,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit fixConflictingFilesCompleted(syncDbId, nbErrors);
             break;
         }
-        case SIGNAL_NUM_UTILITY_SHOW_NOTIFICATION: {
+        case SignalNum::UTILITY_SHOW_NOTIFICATION: {
             QString title;
             QString message;
             paramsStream >> title;
@@ -398,7 +398,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit showNotification(title, message);
             break;
         }
-        case SIGNAL_NUM_UTILITY_NEW_BIG_FOLDER: {
+        case SignalNum::UTILITY_NEW_BIG_FOLDER: {
             int syncDbId;
             QString path;
             paramsStream >> syncDbId;
@@ -407,7 +407,7 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit newBigFolder(syncDbId, path);
             break;
         }
-        case SIGNAL_NUM_UTILITY_ERROR_ADDED: {
+        case SignalNum::UTILITY_ERROR_ADDED: {
             bool serverLevel;
             ExitCode exitCode;
             int syncDbId;
@@ -418,14 +418,14 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             emit errorAdded(serverLevel, exitCode, syncDbId);
             break;
         }
-        case SIGNAL_NUM_UTILITY_ERRORS_CLEARED: {
+        case SignalNum::UTILITY_ERRORS_CLEARED: {
             int syncDbId;
             paramsStream >> syncDbId;
 
             emit errorsCleared(syncDbId);
             break;
         }
-        case SIGNAL_NUM_UPDATER_SHOW_DIALOG: {
+        case SignalNum::UPDATER_SHOW_DIALOG: {
             QString targetVersion;
             QString targetVersionString;
             QString clientVersion;
@@ -437,15 +437,15 @@ void AppClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray
             });
             break;
         }
-        case SIGNAL_NUM_UTILITY_SHOW_SETTINGS: {
+        case SignalNum::UTILITY_SHOW_SETTINGS: {
             showParametersDialog();
             break;
         }
-        case SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS: {
+        case SignalNum::UTILITY_SHOW_SYNTHESIS: {
             showSynthesisDialog();
             break;
         }
-        case SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
+        case SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
             LogUploadState status;
             int progress;  // Progress in percentage
             paramsStream >> status;
@@ -470,7 +470,7 @@ void AppClient::onQuit() {
     _quitInProcess = true;
     if (CommClient::isConnected()) {
         QByteArray results;
-        if (!CommClient::instance()->execute(REQUEST_NUM_UTILITY_QUIT, QByteArray(), results)) {
+        if (!CommClient::instance()->execute(RequestNum::UTILITY_QUIT, QByteArray(), results)) {
             // Do nothing
         }
     }

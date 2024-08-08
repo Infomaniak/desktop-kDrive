@@ -91,9 +91,9 @@ void CommServer::sendReply(int id, const QByteArray &result) {
     }
 }
 
-bool CommServer::sendSignal(int num, const QByteArray &params, int &id) {
+bool CommServer::sendSignal(SignalNum num, const QByteArray &params, int &id) {
     if (_tcpSocket && _tcpSocket->isOpen()) {
-        _requestWorker->addSignal((SignalNum)num, params, id);
+        _requestWorker->addSignal(num, params, id);
         return true;
     }
     return false;
@@ -191,7 +191,7 @@ void CommServer::onReadyRead() {
                 const QByteArray params(QByteArray::fromBase64(msgObj[MSG_REQUEST_PARAMS].toString().toUtf8()));
 
                 // Request received
-                LOG_DEBUG(Log::instance()->getLogger(), "Rqst rcvd " << id << " " << num);
+                LOG_DEBUG(Log::instance()->getLogger(), "Rqst rcvd " << id << " " << enumClassToInt(num));
                 _requestWorker->addRequest(id, num, params);
             } else {
                 LOG_WARN(Log::instance()->getLogger(), "Bad message received!");
@@ -220,7 +220,7 @@ void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     }
 }
 
-void CommServer::onRequestReceived(int id, int num, const QByteArray &params) {
+void CommServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QTimer::singleShot(0, this, [=]() { emit requestReceived(id, (RequestNum)num, params); });
 }
 
@@ -257,7 +257,7 @@ void CommServer::onSendReply(int id, const QByteArray &result) {
     }
 }
 
-void CommServer::onSendSignal(int id, int num, const QByteArray &params) {
+void CommServer::onSendSignal(int id, SignalNum num, const QByteArray &params) {
     if (!_tcpSocket) {
         // LOG_WARN(Log::instance()->getLogger(), "Not connected!");
         return;
@@ -271,14 +271,14 @@ void CommServer::onSendSignal(int id, int num, const QByteArray &params) {
     QJsonObject signalObj;
     signalObj[MSG_TYPE] = MsgType::SIGNAL;
     signalObj[MSG_SIGNAL_ID] = id;
-    signalObj[MSG_SIGNAL_NUM] = num;
+    signalObj[MSG_SIGNAL_NUM] = enumClassToInt(num);
     signalObj[MSG_SIGNAL_PARAMS] = QString(params.toBase64());
 
     QJsonDocument signalDoc(signalObj);
     QByteArray signal(signalDoc.toJson(QJsonDocument::Compact));
 
     try {
-        LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << num);
+        LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << enumClassToInt(num));
 
         _tcpSocket->write(KDC::CommonUtility::IntToArray(signal.count()));
         _tcpSocket->write(signal);

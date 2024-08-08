@@ -340,7 +340,7 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
         } else if (std::dynamic_pointer_cast<ExcludeListPropagator>(jobPtr)) {
             _excludeListPropagator = nullptr;
         } else if (std::dynamic_pointer_cast<ConflictingFilesCorrector>(jobPtr)) {
-            _sendSignal(SIGNAL_NUM_NODE_FIX_CONFLICTED_FILES_COMPLETED, _syncDbId, _conflictingFilesCorrector->nbErrors());
+            _sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, _syncDbId, _conflictingFilesCorrector->nbErrors());
             _conflictingFilesCorrector = nullptr;
         }
     }

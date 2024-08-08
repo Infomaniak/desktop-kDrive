@@ -112,14 +112,14 @@ bool CommClient::sendRequest(int id, RequestNum num, const QByteArray &params) {
     QJsonObject requestObj;
     requestObj[MSG_TYPE] = MsgType::REQUEST;
     requestObj[MSG_REQUEST_ID] = id;
-    requestObj[MSG_REQUEST_NUM] = num;
+    requestObj[MSG_REQUEST_NUM] = enumClassToInt(num);
     requestObj[MSG_REQUEST_PARAMS] = QString(params.toBase64());
 
     QJsonDocument requestDoc(requestObj);
     QByteArray request(requestDoc.toJson(QJsonDocument::Compact));
 
     try {
-        qCDebug(lcCommClient()) << "Snd rqst" << id << num;
+        qCDebug(lcCommClient()) << "Snd rqst" << id << enumClassToInt(num);
 
         _tcpConnection->write(KDC::CommonUtility::IntToArray(request.size()));
         _tcpConnection->write(request);
@@ -216,15 +216,15 @@ void CommClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     }
 }
 
-void CommClient::onSendRequest(int id, /*RequestNum*/ int num, const QByteArray &params) {
+void CommClient::onSendRequest(int id, /*RequestNum*/ RequestNum num, const QByteArray &params) {
     QTimer::singleShot(0, this, [this, id, num,&params]() {
-        if (!sendRequest(id, (RequestNum)num, params)) {
+        if (!sendRequest(id, num, params)) {
             emit sendError(id);
         }
     });
 }
 
-void CommClient::onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params) {
+void CommClient::onSignalReceived(int id, /*SignalNum*/ SignalNum num, const QByteArray &params) {
     QTimer::singleShot(0, this, [this, id, num, &params]() { emit signalReceived(id, num, params); });
 }
 

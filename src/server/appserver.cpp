@@ -473,7 +473,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
     QDataStream resultStream(&results, QIODevice::WriteOnly);
 
     switch (num) {
-        case REQUEST_NUM_LOGIN_REQUESTTOKEN: {
+        case RequestNum::LOGIN_REQUESTTOKEN: {
             QString code, codeVerifier;
             QDataStream paramsStream(params);
             paramsStream >> code;
@@ -504,7 +504,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
             break;
         }
-        case REQUEST_NUM_USER_DBIDLIST: {
+        case RequestNum::USER_DBIDLIST: {
             QList<int> list;
             ExitCode exitCode = ServerRequests::getUserDbIdList(list);
             if (exitCode != ExitCode::Ok) {
@@ -516,7 +516,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_USER_INFOLIST: {
+        case RequestNum::USER_INFOLIST: {
             QList<UserInfo> list;
             ExitCode exitCode = ServerRequests::getUserInfoList(list);
             if (exitCode != ExitCode::Ok) {
@@ -528,7 +528,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_USER_DELETE: {
+        case RequestNum::USER_DELETE: {
             // As the actual deletion task is post-poned via a timer,
             // this request returns immediately with `ExitCode::Ok`.
             // Errors are reported via the addError method.
@@ -562,7 +562,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case REQUEST_NUM_ERROR_INFOLIST: {
+        case RequestNum::ERROR_INFOLIST: {
             ErrorLevel level{ErrorLevel::Unknown};
             int syncDbId{0};
             int limit{100};
@@ -579,7 +579,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_ERROR_GET_CONFLICTS: {
+        case RequestNum::ERROR_GET_CONFLICTS: {
             int driveDbId;
             QList<ConflictType> filter;
             QDataStream paramsStream(params);
@@ -614,7 +614,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_ERROR_DELETE_SERVER: {
+        case RequestNum::ERROR_DELETE_SERVER: {
             ExitCode exitCode = clearErrors(0, false);
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in AppServer::clearErrors : " << enumClassToInt(exitCode));
@@ -624,7 +624,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_ERROR_DELETE_SYNC: {
+        case RequestNum::ERROR_DELETE_SYNC: {
             int syncDbId = 0;
             bool autoResolved;
 
@@ -641,7 +641,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_ERROR_DELETE_INVALIDTOKEN: {
+        case RequestNum::ERROR_DELETE_INVALIDTOKEN: {
             ExitCode exitCode = ServerRequests::deleteInvalidTokenErrors();
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::userLoggedIn : " << enumClassToInt(exitCode));
@@ -652,7 +652,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case REQUEST_NUM_ERROR_RESOLVE_CONFLICTS: {
+        case RequestNum::ERROR_RESOLVE_CONFLICTS: {
             int driveDbId = 0;
             bool keepLocalVersion = false;
 
@@ -687,7 +687,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_ERROR_RESOLVE_UNSUPPORTED_CHAR: {
+        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR: {
             int driveId = 0;
 
             QDataStream paramsStream(params);
@@ -698,7 +698,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case REQUEST_NUM_USER_AVAILABLEDRIVES: {
+        case RequestNum::USER_AVAILABLEDRIVES: {
             int userDbId;
             QDataStream paramsStream(params);
             paramsStream >> userDbId;
@@ -714,7 +714,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_USER_ID_FROM_USERDBID: {
+        case RequestNum::USER_ID_FROM_USERDBID: {
             int userDbId;
             QDataStream paramsStream(params);
             paramsStream >> userDbId;
@@ -730,7 +730,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << userId;
             break;
         }
-        case REQUEST_NUM_ACCOUNT_INFOLIST: {
+        case RequestNum::ACCOUNT_INFOLIST: {
             QList<AccountInfo> list;
             ExitCode exitCode = ServerRequests::getAccountInfoList(list);
             if (exitCode != ExitCode::Ok) {
@@ -742,7 +742,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_DRIVE_INFOLIST: {
+        case RequestNum::DRIVE_INFOLIST: {
             QList<DriveInfo> list;
             ExitCode exitCode = ServerRequests::getDriveInfoList(list);
             if (exitCode != ExitCode::Ok) {
@@ -754,7 +754,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_DRIVE_INFO: {
+        case RequestNum::DRIVE_INFO: {
             int driveDbId;
             QDataStream paramsStream(params);
             paramsStream >> driveDbId;
@@ -770,7 +770,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << driveInfo;
             break;
         }
-        case REQUEST_NUM_DRIVE_ID_FROM_DRIVEDBID: {
+        case RequestNum::DRIVE_ID_FROM_DRIVEDBID: {
             int driveDbId;
             QDataStream paramsStream(params);
             paramsStream >> driveDbId;
@@ -786,7 +786,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << driveId;
             break;
         }
-        case REQUEST_NUM_DRIVE_ID_FROM_SYNCDBID: {
+        case RequestNum::DRIVE_ID_FROM_SYNCDBID: {
             int syncDbId;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
@@ -802,14 +802,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << driveId;
             break;
         }
-        case REQUEST_NUM_DRIVE_DEFAULTCOLOR: {
+        case RequestNum::DRIVE_DEFAULTCOLOR: {
             static const QColor driveDefaultColor(0x9F9F9F);
 
             resultStream << ExitCode::Ok;
             resultStream << driveDefaultColor;
             break;
         }
-        case REQUEST_NUM_DRIVE_UPDATE: {
+        case RequestNum::DRIVE_UPDATE: {
             DriveInfo driveInfo;
             QDataStream paramsStream(params);
             paramsStream >> driveInfo;
@@ -823,7 +823,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_DRIVE_DELETE: {
+        case RequestNum::DRIVE_DELETE: {
             // As the actual deletion task is post-poned via a timer,
             // this request returns immediately with `ExitCode::Ok`.
             // Errors are reported via the addError method.
@@ -851,7 +851,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case REQUEST_NUM_SYNC_INFOLIST: {
+        case RequestNum::SYNC_INFOLIST: {
             QList<SyncInfo> list;
             ExitCode exitCode;
             exitCode = ServerRequests::getSyncInfoList(list);
@@ -864,7 +864,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_SYNC_START: {
+        case RequestNum::SYNC_START: {
             int syncDbId;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
@@ -905,7 +905,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_SYNC_STOP: {
+        case RequestNum::SYNC_STOP: {
             int syncDbId;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
@@ -925,7 +925,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case REQUEST_NUM_SYNC_STATUS: {
+        case RequestNum::SYNC_STATUS: {
             int syncDbId;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
@@ -943,7 +943,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << status;
             break;
         }
-        case REQUEST_NUM_SYNC_ISRUNNING: {
+        case RequestNum::SYNC_ISRUNNING: {
             int syncDbId;
             QDataStream paramsStream(params);
             paramsStream >> syncDbId;
@@ -961,7 +961,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << isRunning;
             break;
         }
-        case REQUEST_NUM_SYNC_ADD: {
+        case RequestNum::SYNC_ADD: {
             int userDbId = 0;
             int accountId = 0;
             int driveId = 0;
@@ -1068,7 +1068,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             });
             break;
         }
-        case REQUEST_NUM_SYNC_ADD2: {
+        case RequestNum::SYNC_ADD2: {
             int driveDbId = 0;
             QString localFolderPath;
             QString serverFolderPath;
@@ -1127,7 +1127,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             });
             break;
         }
-        case REQUEST_NUM_SYNC_START_AFTER_LOGIN: {
+        case RequestNum::SYNC_START_AFTER_LOGIN: {
             int userDbId;
             QDataStream paramsStream(params);
             paramsStream >> userDbId;
@@ -1154,7 +1154,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_SYNC_DELETE: {
+        case RequestNum::SYNC_DELETE: {
             // Although the return code is always `ExitCode::Ok` because of fake asynchronicity via QTimer,
             // the post-poned task records errors through calls to `addError` and use a dedicated client-server signal
             // for deletion failure.
@@ -1182,7 +1182,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
 
             break;
         }
-        case REQUEST_NUM_SYNC_GETPUBLICLINKURL: {
+        case RequestNum::SYNC_GETPUBLICLINKURL: {
             int driveDbId;
             QString nodeId;
             QDataStream paramsStream(params);
@@ -1200,7 +1200,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << linkUrl;
             break;
         }
-        case REQUEST_NUM_SYNC_GETPRIVATELINKURL: {
+        case RequestNum::SYNC_GETPRIVATELINKURL: {
             int driveDbId;
             QString fileId;
             QDataStream paramsStream(params);
@@ -1218,13 +1218,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << linkUrl;
             break;
         }
-        case REQUEST_NUM_SYNC_ASKFORSTATUS: {
+        case RequestNum::SYNC_ASKFORSTATUS: {
             _syncCacheMap.clear();
 
             resultStream << ExitCode::Ok;
             break;
         }
-        case REQUEST_NUM_SYNCNODE_LIST: {
+        case RequestNum::SYNCNODE_LIST: {
             int syncDbId;
             SyncNodeType type;
             QDataStream paramsStream(params);
@@ -1254,7 +1254,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << nodeIdSet2;
             break;
         }
-        case REQUEST_NUM_SYNCNODE_SETLIST: {
+        case RequestNum::SYNCNODE_SETLIST: {
             int syncDbId;
             SyncNodeType type;
             QSet<QString> nodeIdSet;
@@ -1283,7 +1283,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_NODE_PATH: {
+        case RequestNum::NODE_PATH: {
             int syncDbId;
             QString nodeId;
             QDataStream paramsStream(params);
@@ -1309,7 +1309,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << path;
             break;
         }
-        case REQUEST_NUM_NODE_INFO: {
+        case RequestNum::NODE_INFO: {
             int userDbId;
             int driveId;
             QString nodeId;
@@ -1331,7 +1331,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << nodeInfo;
             break;
         }
-        case REQUEST_NUM_NODE_SUBFOLDERS: {
+        case RequestNum::NODE_SUBFOLDERS: {
             int userDbId;
             int driveId;
             QString nodeId;
@@ -1353,7 +1353,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << subfoldersList;
             break;
         }
-        case REQUEST_NUM_NODE_SUBFOLDERS2: {
+        case RequestNum::NODE_SUBFOLDERS2: {
             int driveDbId;
             QString nodeId;
             bool withPath = false;
@@ -1373,7 +1373,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << subfoldersList;
             break;
         }
-        case REQUEST_NUM_NODE_FOLDER_SIZE: {
+        case RequestNum::NODE_FOLDER_SIZE: {
             int userDbId;
             int driveId;
             QString nodeId;
@@ -1390,7 +1390,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case REQUEST_NUM_NODE_CREATEMISSINGFOLDERS: {
+        case RequestNum::NODE_CREATEMISSINGFOLDERS: {
             int driveDbId;
             QList<QPair<QString, QString>> folderList;
             QDataStream paramsStream(params);
@@ -1465,7 +1465,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << parentNodeId;
             break;
         }
-        case REQUEST_NUM_EXCLTEMPL_GETEXCLUDED: {
+        case RequestNum::EXCLTEMPL_GETEXCLUDED: {
             QString name;
             QDataStream paramsStream(params);
             paramsStream >> name;
@@ -1476,7 +1476,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExclusionTemplateCache::instance()->isExcludedByTemplate(name.toStdString(), isWarning);
             break;
         }
-        case REQUEST_NUM_EXCLTEMPL_GETLIST: {
+        case RequestNum::EXCLTEMPL_GETLIST: {
             bool def;
             QDataStream paramsStream(params);
             paramsStream >> def;
@@ -1492,7 +1492,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_EXCLTEMPL_SETLIST: {
+        case RequestNum::EXCLTEMPL_SETLIST: {
             bool def;
             QList<ExclusionTemplateInfo> list;
             QDataStream paramsStream(params);
@@ -1510,7 +1510,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_EXCLTEMPL_PROPAGATE_CHANGE: {
+        case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE: {
             resultStream << ExitCode::Ok;
 
             QTimer::singleShot(100, [=]() {
@@ -1530,7 +1530,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
 #ifdef Q_OS_MAC
-        case REQUEST_NUM_EXCLAPP_GETLIST: {
+        case RequestNum::EXCLAPP_GETLIST: {
             bool def;
             QDataStream paramsStream(params);
             paramsStream >> def;
@@ -1546,7 +1546,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << list;
             break;
         }
-        case REQUEST_NUM_EXCLAPP_SETLIST: {
+        case RequestNum::EXCLAPP_SETLIST: {
             bool def;
             QList<ExclusionAppInfo> list;
             QDataStream paramsStream(params);
@@ -1575,7 +1575,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_GET_FETCHING_APP_LIST: {
+        case RequestNum::GET_FETCHING_APP_LIST: {
             ExitCode exitCode = ExitCode::Ok;
             QHash<QString, QString> appTable;
             for (const auto &vfsMapElt : _vfsMap) {
@@ -1594,7 +1594,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
 #endif
-        case REQUEST_NUM_PARAMETERS_INFO: {
+        case RequestNum::PARAMETERS_INFO: {
             ParametersInfo parametersInfo;
             ExitCode exitCode = ServerRequests::getParameters(parametersInfo);
             if (exitCode != ExitCode::Ok) {
@@ -1606,7 +1606,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << parametersInfo;
             break;
         }
-        case REQUEST_NUM_PARAMETERS_UPDATE: {
+        case RequestNum::PARAMETERS_UPDATE: {
             ParametersInfo parametersInfo;
             QDataStream paramsStream(params);
             paramsStream >> parametersInfo;
@@ -1658,7 +1658,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_UTILITY_FINDGOODPATHFORNEWSYNC: {
+        case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
             int driveDbId;
             QString basePath;
             QDataStream paramsStream(params);
@@ -1678,7 +1678,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << error;
             break;
         }
-        case REQUEST_NUM_UTILITY_BESTVFSAVAILABLEMODE: {
+        case RequestNum::UTILITY_BESTVFSAVAILABLEMODE: {
             VirtualFileMode mode = KDC::bestAvailableVfsMode();
 
             resultStream << ExitCode::Ok;
@@ -1686,14 +1686,14 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
 #ifdef Q_OS_WIN
-        case REQUEST_NUM_UTILITY_SHOWSHORTCUT: {
+        case RequestNum::UTILITY_SHOWSHORTCUT: {
             bool show = _navigationPaneHelper->showInExplorerNavigationPane();
 
             resultStream << ExitCode::Ok;
             resultStream << show;
             break;
         }
-        case REQUEST_NUM_UTILITY_SETSHOWSHORTCUT: {
+        case RequestNum::UTILITY_SETSHOWSHORTCUT: {
             bool show;
             QDataStream paramsStream(params);
             paramsStream >> show;
@@ -1704,7 +1704,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
 #endif
-        case REQUEST_NUM_UTILITY_ACTIVATELOADINFO: {
+        case RequestNum::UTILITY_ACTIVATELOADINFO: {
             bool value;
             QDataStream paramsStream(params);
             paramsStream >> value;
@@ -1719,25 +1719,25 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case REQUEST_NUM_UTILITY_CHECKCOMMSTATUS: {
+        case RequestNum::UTILITY_CHECKCOMMSTATUS: {
             resultStream << ExitCode::Ok;
             break;
         }
-        case REQUEST_NUM_UTILITY_HASSYSTEMLAUNCHONSTARTUP: {
+        case RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP: {
             bool enabled = OldUtility::hasSystemLaunchOnStartup(Theme::instance()->appName(), _logger);
 
             resultStream << ExitCode::Ok;
             resultStream << enabled;
             break;
         }
-        case REQUEST_NUM_UTILITY_HASLAUNCHONSTARTUP: {
+        case RequestNum::UTILITY_HASLAUNCHONSTARTUP: {
             bool enabled = OldUtility::hasLaunchOnStartup(Theme::instance()->appName(), _logger);
 
             resultStream << ExitCode::Ok;
             resultStream << enabled;
             break;
         }
-        case REQUEST_NUM_UTILITY_SETLAUNCHONSTARTUP: {
+        case RequestNum::UTILITY_SETLAUNCHONSTARTUP: {
             bool enabled;
             QDataStream paramsStream(params);
             paramsStream >> enabled;
@@ -1748,7 +1748,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case REQUEST_NUM_UTILITY_SET_APPSTATE: {
+        case RequestNum::UTILITY_SET_APPSTATE: {
             AppStateKey key = AppStateKey::Unknown;
             QString value;
             QDataStream paramsStream(params);
@@ -1765,7 +1765,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case REQUEST_NUM_UTILITY_GET_APPSTATE: {
+        case RequestNum::UTILITY_GET_APPSTATE: {
             AppStateKey key = AppStateKey::Unknown;
             QString defaultValue;
             QDataStream paramsStream(params);
@@ -1783,7 +1783,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << QString::fromStdString(appStateValueStr);
             break;
         }
-        case REQUEST_NUM_UTILITY_GET_LOG_ESTIMATED_SIZE: {
+        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE: {
             uint64_t logSize = 0;
             IoError ioError = IoError::Success;
             bool res = LogArchiver::getLogDirEstimatedSize(logSize, ioError);
@@ -1800,7 +1800,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
             break;
         }
-        case REQUEST_NUM_UTILITY_SEND_LOG_TO_SUPPORT: {
+        case RequestNum::UTILITY_SEND_LOG_TO_SUPPORT: {
             bool includeArchivedLogs = false;
             QDataStream paramsStream(params);
             paramsStream >> includeArchivedLogs;
@@ -1810,12 +1810,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             uploadLogThread.detach();
             break;
         }
-        case REQUEST_NUM_UTILITY_CANCEL_LOG_TO_SUPPORT: {
+        case RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT: {
             resultStream << ExitCode::Ok;  // Return immediately, progress and error will be report via addError and signal
             QTimer::singleShot(100, [this]() { cancelLogUpload(); });
             break;
         }
-        case REQUEST_NUM_SYNC_SETSUPPORTSVIRTUALFILES: {
+        case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES: {
             int syncDbId = 0;
             bool value = false;
             ArgsWriter(params).write(syncDbId, value);
@@ -1828,7 +1828,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << enumClassToInt(exitCode);
             break;
         }
-        case REQUEST_NUM_SYNC_SETROOTPINSTATE: {
+        case RequestNum::SYNC_SETROOTPINSTATE: {
             int syncDbId;
             PinState state;
             QDataStream paramsStream(params);
@@ -1850,7 +1850,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case REQUEST_NUM_SYNC_PROPAGATE_SYNCLIST_CHANGE: {
+        case RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE: {
             int syncDbId;
             bool restartSync;
             QDataStream paramsStream(params);
@@ -1868,52 +1868,52 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << ExitCode::Ok;
             break;
         }
-        case REQUEST_NUM_UPDATER_VERSION: {
+        case RequestNum::UPDATER_VERSION: {
             QString version = UpdaterServer::instance()->version();
 
             resultStream << version;
             break;
         }
-        case REQUEST_NUM_UPDATER_ISKDCUPDATER: {
+        case RequestNum::UPDATER_ISKDCUPDATER: {
             bool ret = UpdaterServer::instance()->isKDCUpdater();
 
             resultStream << ret;
             break;
         }
-        case REQUEST_NUM_UPDATER_ISSPARKLEUPDATER: {
+        case RequestNum::UPDATER_ISSPARKLEUPDATER: {
             bool ret = UpdaterServer::instance()->isSparkleUpdater();
 
             resultStream << ret;
             break;
         }
-        case REQUEST_NUM_UPDATER_STATUSSTRING: {
+        case RequestNum::UPDATER_STATUSSTRING: {
             QString status = UpdaterServer::instance()->statusString();
 
             resultStream << status;
             break;
         }
-        case REQUEST_NUM_UPDATER_STATUS: {
+        case RequestNum::UPDATER_STATUS: {
             UpdateState status = UpdaterServer::instance()->updateState();
             resultStream << status;
             break;
         }
-        case REQUEST_NUM_UPDATER_DOWNLOADCOMPLETED: {
+        case RequestNum::UPDATER_DOWNLOADCOMPLETED: {
             bool ret = UpdaterServer::instance()->downloadCompleted();
 
             resultStream << ret;
             break;
         }
-        case REQUEST_NUM_UPDATER_UPDATEFOUND: {
+        case RequestNum::UPDATER_UPDATEFOUND: {
             bool ret = UpdaterServer::instance()->updateFound();
 
             resultStream << ret;
             break;
         }
-        case REQUEST_NUM_UPDATER_STARTINSTALLER: {
+        case RequestNum::UPDATER_STARTINSTALLER: {
             UpdaterServer::instance()->startInstaller();
             break;
         }
-        case REQUEST_NUM_UPDATER_UPDATE_DIALOG_RESULT: {
+        case RequestNum::UPDATER_UPDATE_DIALOG_RESULT: {
             bool skip;
             QDataStream paramsStream(params);
             paramsStream >> skip;
@@ -1927,12 +1927,12 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
             break;
         }
-        case REQUEST_NUM_RECONSIDER_SKIPPED_UPDATE: {
+        case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
             NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
             updater->slotUnsetSeenVersion();
             break;
         }
-        case REQUEST_NUM_UTILITY_QUIT: {
+        case RequestNum::UTILITY_QUIT: {
             CommServer::instance()->setHasQuittedProperly(true);
             QTimer::singleShot(QUIT_DELAY, []() { quit(); });
             break;
@@ -1990,7 +1990,7 @@ void AppServer::sendErrorsCleared(int syncDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_ERRORS_CLEARED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
 }
 
 void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
@@ -2000,7 +2000,7 @@ void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << status;
     paramsStream << percent;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED, params, id);
 
     if (bool found = false; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadState, status, found) || !found) {
         LOG_WARN(_logger, "Error in ParmsDb::updateAppState with key=" << static_cast<int>(AppStateKey::LogUploadState));
@@ -2145,7 +2145,7 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
                 paramsStream << targetVersion;
                 paramsStream << targetVersionString;
                 paramsStream << clientVersion;
-                CommServer::instance()->sendSignal(SIGNAL_NUM_UPDATER_SHOW_DIALOG, params, id);
+                CommServer::instance()->sendSignal(SignalNum::UPDATER_SHOW_DIALOG, params, id);
             }
         }
     }
@@ -2202,7 +2202,7 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << title;
     paramsStream << message;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_SHOW_NOTIFICATION, params, id);
+    CommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_NOTIFICATION, params, id);
 }
 
 void AppServer::sendNewBigFolder(int syncDbId, const QString &path) {
@@ -2212,7 +2212,7 @@ void AppServer::sendNewBigFolder(int syncDbId, const QString &path) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
     paramsStream << path;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_NEW_BIG_FOLDER, params, id);
+    CommServer::instance()->sendSignal(SignalNum::UTILITY_NEW_BIG_FOLDER, params, id);
 }
 
 void AppServer::sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) {
@@ -2223,7 +2223,7 @@ void AppServer::sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId
     paramsStream << serverLevel;
     paramsStream << enumClassToInt(exitCode);
     paramsStream << syncDbId;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_ERROR_ADDED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED, params, id);
 }
 
 void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify) {
@@ -2243,14 +2243,14 @@ void AppServer::addCompletedItem(int syncDbId, const SyncFileItem &item, bool no
     }
 }
 
-void AppServer::sendSignal(int sigId, int syncDbId, const SigValueType &val) {
+void AppServer::sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val) {
     int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
     paramsStream << QVariant::fromStdVariant(val);
-    CommServer::instance()->sendSignal(sigId, params, id);
+    CommServer::instance()->sendSignal(sigNum, params, id);
 }
 
 bool AppServer::vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded) {
@@ -3175,12 +3175,12 @@ void AppServer::sendShowSynthesisMsg() {
 
 void AppServer::showSettings() {
     int id = 0;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_SHOW_SETTINGS, QByteArray(), id);
+    CommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SETTINGS, QByteArray(), id);
 }
 
 void AppServer::showSynthesis() {
     int id = 0;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_UTILITY_SHOW_SYNTHESIS, QByteArray(), id);
+    CommServer::instance()->sendSignal(SignalNum::UTILITY_SHOW_SYNTHESIS, QByteArray(), id);
 }
 
 void AppServer::clearKeychainKeys() {
@@ -3902,7 +3902,7 @@ void AppServer::sendUserAdded(const UserInfo &userInfo) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userInfo;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_USER_ADDED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::USER_ADDED, params, id);
 }
 
 void AppServer::sendUserUpdated(const UserInfo &userInfo) {
@@ -3912,7 +3912,7 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userInfo;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_USER_UPDATED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::USER_UPDATED, params, id);
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
@@ -3924,7 +3924,7 @@ void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString conn
     paramsStream << connected;
     paramsStream << connexionError;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_USER_STATUSCHANGED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::USER_STATUSCHANGED, params, id);
 }
 
 void AppServer::sendUserRemoved(int userDbId) {
@@ -3934,7 +3934,7 @@ void AppServer::sendUserRemoved(int userDbId) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << userDbId;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_USER_REMOVED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::USER_REMOVED, params, id);
 }
 
 void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
@@ -3944,7 +3944,7 @@ void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << accountInfo;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_ACCOUNT_ADDED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::ACCOUNT_ADDED, params, id);
 }
 
 void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
@@ -3954,7 +3954,7 @@ void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << accountInfo;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_ACCOUNT_UPDATED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::ACCOUNT_UPDATED, params, id);
 }
 
 void AppServer::sendAccountRemoved(int accountDbId) {
@@ -3964,7 +3964,7 @@ void AppServer::sendAccountRemoved(int accountDbId) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << accountDbId;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_ACCOUNT_REMOVED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::ACCOUNT_REMOVED, params, id);
 }
 
 void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
@@ -3974,7 +3974,7 @@ void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveInfo;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_DRIVE_ADDED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::DRIVE_ADDED, params, id);
 }
 
 void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
@@ -3984,7 +3984,7 @@ void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveInfo;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_DRIVE_UPDATED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::DRIVE_UPDATED, params, id);
 }
 
 void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {
@@ -3996,7 +3996,7 @@ void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) 
     paramsStream << total;
     paramsStream << used;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_DRIVE_QUOTAUPDATED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::DRIVE_QUOTAUPDATED, params, id);
 }
 
 void AppServer::sendDriveRemoved(int driveDbId) {
@@ -4006,7 +4006,7 @@ void AppServer::sendDriveRemoved(int driveDbId) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << driveDbId;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_DRIVE_REMOVED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::DRIVE_REMOVED, params, id);
 }
 
 void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
@@ -4016,7 +4016,7 @@ void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncInfo;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_UPDATED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::SYNC_UPDATED, params, id);
 }
 
 void AppServer::sendSyncRemoved(int syncDbId) {
@@ -4026,14 +4026,14 @@ void AppServer::sendSyncRemoved(int syncDbId) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_REMOVED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::SYNC_REMOVED, params, id);
 }
 
 void AppServer::sendSyncDeletionFailed(int syncDbId) {
     int id = 0;
     const auto params = QByteArray(ArgsReader(syncDbId));
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_DELETE_FAILED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::SYNC_DELETE_FAILED, params, id);
 }
 
 
@@ -4041,7 +4041,7 @@ void AppServer::sendDriveDeletionFailed(int driveDbId) {
     int id = 0;
     const auto params = QByteArray(ArgsReader(driveDbId));
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_DRIVE_DELETE_FAILED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::DRIVE_DELETE_FAILED, params, id);
 }
 
 
@@ -4053,7 +4053,7 @@ void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
     paramsStream << nodeId;
     paramsStream << size;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_NODE_FOLDER_SIZE_COMPLETED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::NODE_FOLDER_SIZE_COMPLETED, params, id);
 }
 
 void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
@@ -4070,7 +4070,7 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
     paramsStream << static_cast<qint64>(completedSize);
     paramsStream << static_cast<qint64>(totalSize);
     paramsStream << static_cast<qint64>(estimatedRemainingTime);
-    CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_PROGRESSINFO, params, id);
+    CommServer::instance()->sendSignal(SignalNum::SYNC_PROGRESSINFO, params, id);
 }
 
 void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) {
@@ -4080,7 +4080,7 @@ void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
     paramsStream << itemInfo;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_COMPLETEDITEM, params, id);
+    CommServer::instance()->sendSignal(SignalNum::SYNC_COMPLETEDITEM, params, id);
 }
 
 void AppServer::sendVfsConversionCompleted(int syncDbId) {
@@ -4089,7 +4089,7 @@ void AppServer::sendVfsConversionCompleted(int syncDbId) {
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
-    CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_VFS_CONVERSION_COMPLETED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::SYNC_VFS_CONVERSION_COMPLETED, params, id);
 }
 
 void AppServer::sendSyncAdded(const SyncInfo &syncInfo) {
@@ -4099,7 +4099,7 @@ void AppServer::sendSyncAdded(const SyncInfo &syncInfo) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncInfo;
 
-    CommServer::instance()->sendSignal(SIGNAL_NUM_SYNC_ADDED, params, id);
+    CommServer::instance()->sendSignal(SignalNum::SYNC_ADDED, params, id);
 }
 
 void AppServer::onLoadInfo() {
