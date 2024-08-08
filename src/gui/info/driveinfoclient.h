@@ -38,7 +38,10 @@ class DriveInfoClient : public DriveInfo {
             FirstAdded
         };
 
-        typedef enum { ParametersStackedWidgetGeneral = 0, ParametersStackedWidgetFirstAdded } ParametersStackedWidget;
+        enum class ParametersStackedWidget {
+            General = 0,
+            FirstAdded
+        };
 
         DriveInfoClient();
         DriveInfoClient(const DriveInfo &driveInfo);

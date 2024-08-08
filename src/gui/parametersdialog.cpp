@@ -262,7 +262,7 @@ void ParametersDialog::initUI() {
 
     // Create General level errors list
     _errorTabWidgetStackPosition =
-        _errorsStackedWidget->addWidget(new ErrorTabWidget(DriveInfoClient::ParametersStackedWidgetGeneral, true, this));
+        _errorsStackedWidget->addWidget(new ErrorTabWidget(enumClassToInt(DriveInfoClient::ParametersStackedWidget::General), true, this));
     refreshErrorList(0);
 
     // Init labels and setup connection for on the fly translation
@@ -323,7 +323,7 @@ void ParametersDialog::reset() {
     _drivePreferencesWidget->reset();
 
     // Clear errorsStackedWidget
-    int index = DriveInfoClient::ParametersStackedWidgetFirstAdded;
+    int index = enumClassToInt(DriveInfoClient::ParametersStackedWidget::FirstAdded);
     while (index < _errorsStackedWidget->count()) {
         _errorsStackedWidget->removeWidget(_errorsStackedWidget->widget(index));
         index++;
@@ -911,7 +911,7 @@ void ParametersDialog::onConfigRefreshed() {
     }
 
     // Clear unused Drive level (SyncPal or Node) errors list
-    for (int widgetIndex = DriveInfoClient::ParametersStackedWidgetFirstAdded; widgetIndex < _errorsStackedWidget->count();) {
+    for (int widgetIndex = enumClassToInt(DriveInfoClient::ParametersStackedWidget::FirstAdded); widgetIndex < _errorsStackedWidget->count();) {
         QWidget *widget = _errorsStackedWidget->widget(widgetIndex);
         bool driveIsFound = false;
         bool driveHasSyncs = false;
@@ -1073,7 +1073,7 @@ void ParametersDialog::onBackButtonClicked() {
     }
 
     if (_pageStackedWidget->currentIndex() == Page::Errors) {
-        if (_errorsStackedWidget->currentIndex() == DriveInfoClient::ParametersStackedWidgetGeneral) {
+        if (_errorsStackedWidget->currentIndex() == enumClassToInt(DriveInfoClient::ParametersStackedWidget::General)) {
             onDisplayPreferences();
         } else {
             onDisplayDriveParameters();
@@ -1259,7 +1259,7 @@ void ParametersDialog::onClearErrors(int driveDbId, bool autoResolved) {
     QListWidget *listWidgetToClear = nullptr;
 
     if (driveDbId == 0) {
-        ASSERT(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidgetGeneral));
+        ASSERT(_errorsStackedWidget->currentIndex() == static_cast<int>(DriveInfoClient::ParametersStackedWidget::General));
 
         errorTabWidget = static_cast<ErrorTabWidget *>(_errorsStackedWidget->widget(_errorTabWidgetStackPosition));
 
