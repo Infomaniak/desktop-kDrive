@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include "jobs/network/getappversionjob.h"
 #include "utility/types.h"
 
 
@@ -40,15 +41,20 @@ class AbstractUpdater {
 
         ExitCode checkUpdateAvailable(bool &available);
 
+        void setGetAppVersion(GetAppVersionJob *getAppVersionJob) { _getAppVersionJob = getAppVersionJob; }
+
         static std::string currentVersion();
 
     private:
         AbstractUpdater();
+        ~AbstractUpdater();
 
         static void run() noexcept;
 
         static AbstractUpdater *_instance;
         log4cplus::Logger _logger;
         std::unique_ptr<std::thread> _thread;
+
+        GetAppVersionJob *_getAppVersionJob{nullptr};
 };
-} // namespace KDC
+}  // namespace KDC

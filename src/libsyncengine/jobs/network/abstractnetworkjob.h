@@ -42,13 +42,13 @@ class AbstractNetworkJob : public AbstractJob {
         ~AbstractNetworkJob() override;
 
         bool hasHttpError();
-        inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
-        virtual void abort() override;
+        [[nodiscard]] inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
+        void abort() override;
 
-        inline bool isDownloadImpossible() const { return _downloadImpossible; }
+        [[nodiscard]] inline bool isDownloadImpossible() const { return _downloadImpossible; }
 
     protected:
-        virtual void runJob() noexcept override;
+        void runJob() noexcept override;
         virtual void addRawHeader(const std::string &key, const std::string &value) final;
 
         virtual bool handleResponse(std::istream &inputStream) = 0;
@@ -125,7 +125,7 @@ class AbstractNetworkJob : public AbstractJob {
 
         std::unordered_map<std::string, std::string> _rawHeaders;
 
-        bool _downloadImpossible {false};
+        bool _downloadImpossible{false};
 };
 
 }  // namespace KDC

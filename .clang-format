@@ -49,5 +49,3 @@ KeepEmptyLinesAtTheStartOfBlocks: false
 
 IndentCaseLabels: true
 IndentAccessModifiers: true
-
-RAS_Pointer
