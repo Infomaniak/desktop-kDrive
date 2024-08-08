@@ -30,11 +30,11 @@ void TestIo::testGetFileSizeSimpleCases() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg";
         uint64_t fileSize = 0u;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == 408278u);
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     // Getting the size of a regular file missing all permissions: no error expected
@@ -50,12 +50,12 @@ void TestIo::testGetFileSizeSimpleCases() {
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::remove);
 
         uint64_t fileSize = 0u;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
         std::filesystem::permissions(path, std::filesystem::perms::all, std::filesystem::perm_options::add);
 
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
     }
 
@@ -64,11 +64,11 @@ void TestIo::testGetFileSizeSimpleCases() {
     {
         const SyncPath path = _localTestDirPath / "test_pictures";
         uint64_t fileSize = 0u;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(!_testObj->getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == 0u);
-        CPPUNIT_ASSERT(ioError == IoErrorIsADirectory);
+        CPPUNIT_ASSERT(ioError == IoError::IsADirectory);
     }
 
     // Getting the size of regular symbolic link on a file
@@ -79,12 +79,12 @@ void TestIo::testGetFileSizeSimpleCases() {
         std::filesystem::create_symlink(targetPath, path);
 
         uint64_t fileSize = 0u;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == targetPath.native().size());
 
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     // Getting the size of a regular symbolic link on a folder
@@ -95,15 +95,15 @@ void TestIo::testGetFileSizeSimpleCases() {
         std::filesystem::create_symlink(targetPath, path);
 
         uint64_t fileSize = 0u;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == targetPath.native().size());
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
 
         // Getting the size of a dangling symbolic link: `getFileSize` returns `true` but `itemType.ioError`
-        // is set with `IoErrorNoSuchFileOrDirectory`.
+        // is set with `IoError::NoSuchFileOrDirectory`.
         {
             const LocalTemporaryDirectory temporaryDirectory;
             const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
@@ -111,11 +111,11 @@ void TestIo::testGetFileSizeSimpleCases() {
             std::filesystem::create_symlink(targetPath, path);
 
             uint64_t fileSize = 0u;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
 
             CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
             CPPUNIT_ASSERT(fileSize == targetPath.native().size());
-            CPPUNIT_ASSERT(ioError == IoErrorSuccess);  // Although the target path is invalid.
+            CPPUNIT_ASSERT(ioError == IoError::Success);  // Although the target path is invalid.
         }
     }
 
@@ -128,13 +128,13 @@ void TestIo::testGetFileSizeSimpleCases() {
 
         IoError aliasError;
         CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
+        CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         uint64_t fileSize = 0u;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
     }
 
@@ -146,14 +146,14 @@ void TestIo::testGetFileSizeSimpleCases() {
 
         IoError aliasError;
         CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
+        CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         uint64_t fileSize = 0u;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     // Getting the size of a dangling MacOSX Finder alias on a non-existing file.
@@ -169,17 +169,17 @@ void TestIo::testGetFileSizeSimpleCases() {
 
         IoError aliasError;
         CPPUNIT_ASSERT(_testObj->createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
+        CPPUNIT_ASSERT(aliasError == IoError::Success);
 
         std::filesystem::remove(targetPath);
         CPPUNIT_ASSERT(!std::filesystem::exists(targetPath));
 
         uint64_t fileSize = 0u;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
 
         CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
         CPPUNIT_ASSERT(fileSize == std::filesystem::file_size(path));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 #endif
 }
@@ -199,7 +199,7 @@ void TestIo::testGetFileSizeAllBranches() {
         });
 
         uint64_t fileSize = 0u;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         CPPUNIT_ASSERT(_testObj->getFileSize(path, fileSize, ioError));
 
         // Restore permission to allow subdir removal
@@ -208,9 +208,9 @@ void TestIo::testGetFileSizeAllBranches() {
 
         // Remark: the test CPPUNIT_ASSERT(fileSize == 0u) fails on MacOSX.
 #ifdef _WIN32
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 #else
-        CPPUNIT_ASSERT(ioError == IoErrorAccessDenied);
+        CPPUNIT_ASSERT(ioError == IoError::AccessDenied);
 #endif
     }
 }

@@ -403,7 +403,7 @@ void CustomExtensionSetupWidget::initUI() {
 
 QString CustomExtensionSetupWidget::picturePath(bool fullDiskAccess) {
     bool macOs13orLater = QSysInfo::productVersion().toDouble() >= 13.0;
-    bool useFrench = ParametersCache::instance()->parametersInfo().language() == LanguageFrench;
+    bool useFrench = ParametersCache::instance()->parametersInfo().language() == Language::French;
 
     if (fullDiskAccess) {
         if (macOs13orLater) {

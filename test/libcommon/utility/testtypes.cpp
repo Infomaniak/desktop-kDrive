@@ -24,8 +24,8 @@
 namespace KDC {
 
 void KDC::TestTypes::testOtherSide() {
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, otherSide(ReplicaSideRemote));
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, otherSide(ReplicaSideLocal));
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideUnknown, otherSide(ReplicaSideUnknown));
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, otherSide(ReplicaSide::Remote));
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, otherSide(ReplicaSide::Local));
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Unknown, otherSide(ReplicaSide::Unknown));
 }
 }  // namespace KDC

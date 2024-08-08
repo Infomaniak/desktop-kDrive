@@ -21,7 +21,7 @@
 namespace KDC {
 
 GetThumbnailJob::GetThumbnailJob(int driveDbId, NodeId nodeId, unsigned width)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0, false), _nodeId(nodeId), _width(width) {
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _nodeId(nodeId), _width(width) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 

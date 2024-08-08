@@ -82,7 +82,7 @@ QString longWinPath(const QString &inpath);
  *
  * It behaves as QFile::rename() but handles .lnk files correctly on Windows.
  */
-bool rename(const QString &originFileName, const QString &destinationFileName, QString *errorString = NULL);
+bool rename(const QString &originFileName, const QString &destinationFileName, QString *errorString = nullptr);
 
 /**
  * Removes a file.

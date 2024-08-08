@@ -28,7 +28,7 @@ Sync::Sync()
       _targetNodeId(NodeId()),
       _paused(false),
       _supportVfs(false),
-      _virtualFileMode(VirtualFileModeOff),
+      _virtualFileMode(VirtualFileMode::Off),
       _notificationsDisabled(false),
       _dbPath(std::filesystem::path()),
       _hasFullyCompleted(false),

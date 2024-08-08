@@ -83,9 +83,9 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
 #ifdef __APPLE__
     // Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
-    opPtr->setTargetSide(ReplicaSideRemote);
+    opPtr->setTargetSide(ReplicaSide::Remote);
     const auto node =
-        std::make_shared<Node>(1, ReplicaSideLocal, "test_file.txt", NodeTypeFile, "1234", defaultTime, defaultTime, 123);
+        std::make_shared<Node>(1, ReplicaSide::Local, "test_file.txt", NodeType::File, "1234", defaultTime, defaultTime, 123);
     opPtr->setAffectedNode(node);
 
     // A hydrated placeholder.
@@ -173,7 +173,7 @@ void TestExecutorWorker::testFixModificationDate() {
     // Update DB
     DbNode dbNode(0, _syncPal->syncDb()->rootNode().nodeId(), filename, filename, "lid", "rid", defaultTime, defaultTime,
                   defaultTime,
-                  NodeTypeFile,
+                  NodeType::File,
                   defaultSize,
                   "cs");
     DbNodeId dbNodeId;
@@ -182,9 +182,9 @@ void TestExecutorWorker::testFixModificationDate() {
 
     // Generate sync operation
     std::shared_ptr<Node> node =
-        std::make_shared<Node>(dbNodeId, ReplicaSideLocal, filename, NodeTypeFile, "lid", defaultTime, 12345, defaultSize);
+        std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, "lid", defaultTime, 12345, defaultSize);
     std::shared_ptr<Node> correspondingNode =
-        std::make_shared<Node>(dbNodeId, ReplicaSideLocal, filename, NodeTypeFile,
+        std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File,
                                                                      "rid", defaultTime, defaultTime, defaultSize);
     SyncOpPtr op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
@@ -193,38 +193,38 @@ void TestExecutorWorker::testFixModificationDate() {
     CPPUNIT_ASSERT(_syncPal->_executorWorker->fixModificationDate(op, path));
 
     FileStat filestat;
-    IoError ioError = IoErrorUnknown;
+    IoError ioError = IoError::Unknown;
     IoHelper::getFileStat(path, &filestat, ioError);
 
-    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT_EQUAL(defaultTime, filestat.modtime);
 }
 
 void TestExecutorWorker::testAffectedUpdateTree() {
     // Normal cases
     auto syncOp = std::make_shared<SyncOperation>();
-    syncOp->setTargetSide(ReplicaSideLocal);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _syncPal->_executorWorker->affectedUpdateTree(syncOp)->side());
+    syncOp->setTargetSide(ReplicaSide::Local);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, _syncPal->_executorWorker->affectedUpdateTree(syncOp)->side());
 
-    syncOp->setTargetSide(ReplicaSideRemote);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _syncPal->_executorWorker->affectedUpdateTree(syncOp)->side());
+    syncOp->setTargetSide(ReplicaSide::Remote);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, _syncPal->_executorWorker->affectedUpdateTree(syncOp)->side());
 
-    // ReplicaSideUnknown case
-    syncOp->setTargetSide(ReplicaSideUnknown);
+    // ReplicaSide::Unknown case
+    syncOp->setTargetSide(ReplicaSide::Unknown);
     CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _syncPal->_executorWorker->affectedUpdateTree(syncOp));
 }
 
 void TestExecutorWorker::testTargetUpdateTree() {
     // Normal cases
     auto syncOp = std::make_shared<SyncOperation>();
-    syncOp->setTargetSide(ReplicaSideLocal);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideLocal, _syncPal->_executorWorker->targetUpdateTree(syncOp)->side());
+    syncOp->setTargetSide(ReplicaSide::Local);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, _syncPal->_executorWorker->targetUpdateTree(syncOp)->side());
 
-    syncOp->setTargetSide(ReplicaSideRemote);
-    CPPUNIT_ASSERT_EQUAL(ReplicaSideRemote, _syncPal->_executorWorker->targetUpdateTree(syncOp)->side());
+    syncOp->setTargetSide(ReplicaSide::Remote);
+    CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, _syncPal->_executorWorker->targetUpdateTree(syncOp)->side());
 
-    // ReplicaSideUnknown case
-    syncOp->setTargetSide(ReplicaSideUnknown);
+    // ReplicaSide::Unknown case
+    syncOp->setTargetSide(ReplicaSide::Unknown);
     CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _syncPal->_executorWorker->targetUpdateTree(syncOp));
 }
 }  // namespace KDC

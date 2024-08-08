@@ -171,24 +171,24 @@ QIcon Theme::syncStateIcon(KDC::SyncStatus status, bool sysTray, bool sysTrayMen
     QString statusIcon;
 
     switch (status) {
-        case KDC::SyncStatus::SyncStatusUndefined:
+        case KDC::SyncStatus::Undefined:
             // this can happen if no sync connections are configured.
             statusIcon = QLatin1String("state-information");
             break;
-        case KDC::SyncStatus::SyncStatusStarting:
-        case KDC::SyncStatus::SyncStatusRunning:
+        case KDC::SyncStatus::Starting:
+        case KDC::SyncStatus::Running:
             statusIcon = QLatin1String("state-sync");
             break;
-        case KDC::SyncStatus::SyncStatusIdle:
+        case KDC::SyncStatus::Idle:
             statusIcon = QLatin1String("state-ok");
             break;
-        case KDC::SyncStatus::SyncStatusPauseAsked:
-        case KDC::SyncStatus::SyncStatusPaused:
-        case KDC::SyncStatus::SyncStatusStopAsked:
-        case KDC::SyncStatus::SyncStatusStoped:
+        case KDC::SyncStatus::PauseAsked:
+        case KDC::SyncStatus::Paused:
+        case KDC::SyncStatus::StopAsked:
+        case KDC::SyncStatus::Stopped:
             statusIcon = QLatin1String("state-pause");
             break;
-        case KDC::SyncStatus::SyncStatusError:
+        case KDC::SyncStatus::Error:
             statusIcon = QLatin1String("state-error");
             break;
         default:

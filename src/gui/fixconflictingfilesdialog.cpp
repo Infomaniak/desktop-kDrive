@@ -47,7 +47,7 @@ FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *par
     setModal(true);
     setResizable(true);
     GuiRequests::getConflictList(
-        _driveDbId, {ConflictTypeCreateCreate, ConflictTypeEditEdit, ConflictTypeMoveCreate, ConflictTypeMoveMoveDest},
+        _driveDbId, {ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest},
         _conflictList);
     initUi();
 }

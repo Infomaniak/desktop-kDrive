@@ -53,18 +53,18 @@ class ProxyServerDialog : public CustomDialog {
         };
 
         ProxyConfigInfo _proxyConfigInfo;
-        CustomRadioButton *_noProxyButton;
-        CustomRadioButton *_systemProxyButton;
-        CustomRadioButton *_manualProxyButton;
-        QWidget *_manualProxyWidget;
-        CustomComboBox *_proxyTypeComboBox;
-        QLineEdit *_portLineEdit;
-        QLineEdit *_addressLineEdit;
-        CustomCheckBox *_authenticationCheckBox;
-        QWidget *_authenticationWidget;
-        QLineEdit *_loginLineEdit;
-        QLineEdit *_pwdLineEdit;
-        QPushButton *_saveButton;
+        CustomRadioButton *_noProxyButton = nullptr;
+        CustomRadioButton *_systemProxyButton = nullptr;
+        CustomRadioButton *_manualProxyButton = nullptr;
+        QWidget *_manualProxyWidget = nullptr;
+        CustomComboBox *_proxyTypeComboBox = nullptr;
+        QLineEdit *_portLineEdit = nullptr;
+        QLineEdit *_addressLineEdit = nullptr;
+        CustomCheckBox *_authenticationCheckBox = nullptr;
+        QWidget *_authenticationWidget = nullptr;
+        QLineEdit *_loginLineEdit = nullptr;
+        QLineEdit *_pwdLineEdit = nullptr;
+        QPushButton *_saveButton = nullptr;
         bool _needToSave;
         PortValidator *_portValidator;
 

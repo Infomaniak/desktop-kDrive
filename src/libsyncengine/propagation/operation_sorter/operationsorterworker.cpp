@@ -29,7 +29,7 @@ OperationSorterWorker::OperationSorterWorker(std::shared_ptr<SyncPal> syncPal, c
     : OperationProcessor(syncPal, name, shortName), _hasOrderChanged(false) {}
 
 void OperationSorterWorker::execute() {
-    ExitCode exitCode(ExitCodeUnknown);
+    ExitCode exitCode(ExitCode::Unknown);
 
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
 
@@ -52,7 +52,7 @@ ExitCode OperationSorterWorker::sortOperations() {
     std::list<SyncOperationList> completeCycles;
     while (true) {
         if (stopAsked()) {
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
         while (pauseAsked() || isPaused()) {
             if (!isPaused()) {
@@ -91,7 +91,7 @@ ExitCode OperationSorterWorker::sortOperations() {
             // If a cycle is discover, the sync must be restarted after the execution of the operation in _syncOrderedOps
             _syncPal->_restart = true;
 
-            return ExitCodeOk;
+            return ExitCode::Ok;
         }
     }
 
@@ -103,7 +103,7 @@ ExitCode OperationSorterWorker::sortOperations() {
         _syncPal->_restart = true;
     }
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 /**
@@ -114,8 +114,8 @@ ExitCode OperationSorterWorker::sortOperations() {
  */
 void OperationSorterWorker::fixDeleteBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeMove");
-    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationTypeDelete);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
+    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
     for (const auto &deleteOpId : deleteOps) {
         SyncOpPtr deleteOp = _unsortedList.getOp(deleteOpId);
 
@@ -181,8 +181,8 @@ void OperationSorterWorker::fixDeleteBeforeMove() {
  */
 void OperationSorterWorker::fixMoveBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeCreate");
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
-    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationTypeCreate);
+    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
+    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
     for (const auto &moveOpId : moveOps) {
         SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
 
@@ -247,11 +247,11 @@ void OperationSorterWorker::fixMoveBeforeCreate() {
  */
 void OperationSorterWorker::fixMoveBeforeDelete() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeDelete");
-    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationTypeDelete);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
+    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
     for (const auto &deleteOpId : deleteOps) {
         SyncOpPtr deleteOp = _unsortedList.getOp(deleteOpId);
-        if (deleteOp->affectedNode()->type() != NodeTypeDirectory) {
+        if (deleteOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
@@ -304,11 +304,11 @@ void OperationSorterWorker::fixMoveBeforeDelete() {
  */
 void OperationSorterWorker::fixCreateBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixCreateBeforeMove");
-    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationTypeCreate);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
+    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
+    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
     for (const auto &createOpId : createOps) {
         SyncOpPtr createOp = _unsortedList.getOp(createOpId);
-        if (createOp->affectedNode()->type() != NodeTypeDirectory) {
+        if (createOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
@@ -346,8 +346,8 @@ void OperationSorterWorker::fixCreateBeforeMove() {
  */
 void OperationSorterWorker::fixDeleteBeforeCreate() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixDeleteBeforeCreate");
-    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationTypeDelete);
-    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationTypeCreate);
+    const std::unordered_set<UniqueId> deleteOps = _unsortedList.opListIdByType(OperationType::Delete);
+    const std::unordered_set<UniqueId> createOps = _unsortedList.opListIdByType(OperationType::Create);
     for (const auto &deleteOpId : deleteOps) {
         SyncOpPtr deleteOp = _unsortedList.getOp(deleteOpId);
 
@@ -424,7 +424,7 @@ void OperationSorterWorker::fixDeleteBeforeCreate() {
  */
 void OperationSorterWorker::fixMoveBeforeMoveOccupied() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveOccupied");
-    std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
+    std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
     std::unordered_set<UniqueId> moveOps2 = moveOps;
     for (const auto &moveOpId : moveOps) {
         SyncOpPtr moveOp = _unsortedList.getOp(moveOpId);
@@ -487,7 +487,7 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
         opsToMove;
 
     std::unordered_map<UniqueId, int> indexMap;
-    _syncPal->_syncOps->getMapIndexToOp(indexMap, OperationTypeCreate);
+    _syncPal->_syncOps->getMapIndexToOp(indexMap, OperationType::Create);
 
     for (const auto &opId : _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr createOp = _syncPal->_syncOps->getOp(opId);
@@ -509,8 +509,8 @@ void OperationSorterWorker::fixCreateBeforeCreate() {
 
 void OperationSorterWorker::fixEditBeforeMove() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixEditBeforeMove");
-    const std::unordered_set<UniqueId> editOps = _unsortedList.opListIdByType(OperationTypeEdit);
-    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
+    const std::unordered_set<UniqueId> editOps = _unsortedList.opListIdByType(OperationType::Edit);
+    const std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
     for (const auto &editOpId : editOps) {
         SyncOpPtr editOp = _unsortedList.getOp(editOpId);
 
@@ -544,7 +544,7 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
     for (const auto &parentOpId : parentOpList) {
         SyncOpPtr parentOp = _syncPal->_syncOps->getOp(parentOpId);
         // Check that parent has been just created
-        if (parentOp->type() == OperationTypeCreate) {
+        if (parentOp->type() == OperationType::Create) {
             // Check that index of parentOp is lower than index of createOp
             int parentOpIndex = indexMap.at(parentOpId);
             if (parentOpIndex > createOpIndex) {
@@ -567,10 +567,10 @@ bool OperationSorterWorker::hasParentWithHigherIndex(const std::unordered_map<Un
 
 void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
     LOG_SYNCPAL_DEBUG(_logger, "Start fixMoveBeforeMoveHierarchyFlip");
-    std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationTypeMove);
+    std::unordered_set<UniqueId> moveOps = _unsortedList.opListIdByType(OperationType::Move);
     for (const auto &xOpId : moveOps) {
         SyncOpPtr xOp = _unsortedList.getOp(xOpId);
-        if (xOp->affectedNode()->type() != NodeTypeDirectory) {
+        if (xOp->affectedNode()->type() != NodeType::Directory) {
             continue;
         }
 
@@ -583,7 +583,7 @@ void OperationSorterWorker::fixMoveBeforeMoveHierarchyFlip() {
 
         for (const auto &yOpId : moveOps) {
             SyncOpPtr yOp = _unsortedList.getOp(yOpId);
-            if (yOp->affectedNode()->type() != NodeTypeDirectory || xOp == yOp || xOp->targetSide() != yOp->targetSide()) {
+            if (yOp->affectedNode()->type() != NodeType::Directory || xOp == yOp || xOp->targetSide() != yOp->targetSide()) {
                 continue;
             }
 
@@ -616,7 +616,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     UniqueId opId1 = _syncPal->_syncOps->opSortedList().front();
     SyncOpPtr o1 = _syncPal->_syncOps->getOp(opId1);
     // check if o1 is move-directory operation
-    if (o1->type() != OperationTypeMove && o1->affectedNode()->type() != NodeTypeDirectory) {
+    if (o1->type() != OperationType::Move && o1->affectedNode()->type() != NodeType::Directory) {
         return std::nullopt;
     }
 
@@ -640,7 +640,7 @@ std::optional<SyncOperationList> OperationSorterWorker::fixImpossibleFirstMoveOp
     while (tmpNode->parentNode() != nullptr && tmpNode != correspondingDestinationParentNode) {
         tmpNode = tmpNode->parentNode();
         // storing all move-directory nodes
-        if (tmpNode->type() == NodeTypeDirectory && tmpNode->hasChangeEvent(OperationTypeMove)) {
+        if (tmpNode->type() == NodeType::Directory && tmpNode->hasChangeEvent(OperationType::Move)) {
             moveDirectoryList.push_back(tmpNode);
         }
     }
@@ -720,7 +720,7 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renam
     bool matchFound = false;
     SyncOpPtr matchOp;
     // look for delete op in the cycle
-    const std::unordered_set<UniqueId> deleteOps = cycle.opListIdByType(OperationTypeDelete);
+    const std::unordered_set<UniqueId> deleteOps = cycle.opListIdByType(OperationType::Delete);
     for (const auto &opId : deleteOps) {
         SyncOpPtr op = cycle.getOp(opId);
         matchFound = true;
@@ -731,7 +731,7 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renam
     // if there is no delete
     // look for move op in the cycle
     if (!matchFound) {
-        const std::unordered_set<UniqueId> moveOps = cycle.opListIdByType(OperationTypeMove);
+        const std::unordered_set<UniqueId> moveOps = cycle.opListIdByType(OperationType::Move);
         for (const auto &opId : moveOps) {
             SyncOpPtr op = cycle.getOp(opId);
             matchFound = true;
@@ -742,7 +742,7 @@ bool OperationSorterWorker::breakCycle(SyncOperationList &cycle, SyncOpPtr renam
 
     // A cycle must contain a Delete or a Move Op
     // we generate Or a rename resolution operation
-    renameResolutionOp->setType(OperationTypeMove);
+    renameResolutionOp->setType(OperationType::Move);
     renameResolutionOp->setOmit(matchOp->omit());
     // we find corresponding node nY of the matchOp's node
     std::shared_ptr<Node> correspondingNode = correspondingNodeInOtherTree(matchOp->affectedNode());

@@ -20,9 +20,6 @@
 
 namespace KDC {
 
-ProxyConfigInfo::ProxyConfigInfo()
-    : _type(ProxyTypeNone), _hostName(QString()), _port(0), _needsAuth(false), _user(QString()), _pwd(QString()) {}
-
 ProxyConfigInfo::ProxyConfigInfo(ProxyType type, const QString &hostName, int port, bool needsAuth, const QString &user,
                                  const QString &pwd)
     : _type(type), _hostName(hostName), _port(port), _needsAuth(needsAuth), _user(user), _pwd(pwd) {}

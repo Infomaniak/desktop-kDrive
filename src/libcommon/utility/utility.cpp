@@ -494,23 +494,23 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
 
 QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
     switch (enforcedLocale) {
-        case KDC::LanguageDefault: {
+        case KDC::Language::Default: {
             return QLocale::system().uiLanguages().isEmpty() ? QString() : QLocale::system().uiLanguages().first().left(2);
             break;
         }
-        case KDC::LanguageEnglish:
+        case KDC::Language::English:
             return englishCode;
             break;
-        case KDC::LanguageFrench:
+        case KDC::Language::French:
             return frenchCode;
             break;
-        case KDC::LanguageGerman:
+        case KDC::Language::German:
             return germanCode;
             break;
-        case KDC::LanguageItalian:
+        case KDC::Language::Italian:
             return italianCode;
             break;
-        case KDC::LanguageSpanish:
+        case KDC::Language::Spanish:
             return spanishCode;
             break;
     }
@@ -561,9 +561,9 @@ SyncPath CommonUtility::getAppWorkingDir() {
 }
 
 QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, NodeType type) {
-    if (type == NodeTypeDirectory) {
+    if (type == NodeType::Directory) {
         return QString(":/client/resources/icons/document types/folder.svg");
-    } else if (type == NodeTypeFile) {
+    } else if (type == NodeType::File) {
         QMimeDatabase db;
         QMimeType mime = db.mimeTypeForFile(fileName, QMimeDatabase::MatchExtension);
         if (mime.name().startsWith("image/")) {

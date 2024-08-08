@@ -191,7 +191,7 @@ void KDCUpdater::slotStartInstaller() {
 
     ParametersCache::instance()->parameters().setAutoUpdateAttempted(true);
     ExitCode exitCode = ParametersCache::instance()->save();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
         return;
     }
@@ -294,7 +294,7 @@ void NSISUpdater::wipeUpdateData() {
     ParametersCache::instance()->parameters().setUpdateTargetVersionString(std::string());
     ParametersCache::instance()->parameters().setAutoUpdateAttempted(false);
     ExitCode exitCode = ParametersCache::instance()->save();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
         return;
     }
@@ -336,7 +336,7 @@ void NSISUpdater::slotDownloadFinished() {
     ParametersCache::instance()->parameters().setUpdateTargetVersionString(updateInfo().versionString().toStdString());
     ParametersCache::instance()->parameters().setUpdateFileAvailable(_targetFile.toStdString());
     ExitCode exitCode = ParametersCache::instance()->save();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
         return;
     }
@@ -499,7 +499,7 @@ void NSISUpdater::slotSetSeenVersion() {
     ParametersCache::instance()->parameters().setSeenVersion(updateInfo().version().toStdString());
     setDownloadState(LastVersionSkipped);
     ExitCode exitCode = ParametersCache::instance()->save();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
         return;
     }
@@ -512,7 +512,7 @@ void NSISUpdater::slotUnsetSeenVersion() {
     }
     ParametersCache::instance()->parameters().setSeenVersion(std::string());
     ExitCode exitCode = ParametersCache::instance()->save();
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParametersCache::saveParameters");
         return;
     }

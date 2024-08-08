@@ -96,12 +96,12 @@ void SyncOperationList::operator=(const SyncOperationList &other) {
 }
 
 void SyncOperationList::getMapIndexToOp(std::unordered_map<UniqueId, int> &map,
-                                        OperationType typeFilter /*= OperationTypeUnknown*/) {
+                                        OperationType typeFilter /*= OperationType::Unknown*/) {
     int index = 0;
     for (const auto &opId : _opSortedList) {
         SyncOpPtr syncOp = getOp(opId);
         if (syncOp != nullptr) {
-            if (typeFilter == OperationTypeNone) {
+            if (typeFilter == OperationType::None) {
                 map.insert({syncOp->id(), index++});
             } else {
                 if (syncOp->type() == typeFilter) {

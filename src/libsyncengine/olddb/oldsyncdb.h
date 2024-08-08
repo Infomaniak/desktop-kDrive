@@ -35,7 +35,7 @@ class OldSyncDb : public Db {
         bool prepare() override;
         bool upgrade(const std::string &fromVersion, const std::string &toVersion) override;
 
-        bool selectAllSelectiveSync(std::list<std::pair<std::string, int>> &selectiveSyncList);
+        bool selectAllSelectiveSync(std::list<std::pair<std::string, SyncNodeType>> &selectiveSyncList);
 };
 
 }  // namespace KDC

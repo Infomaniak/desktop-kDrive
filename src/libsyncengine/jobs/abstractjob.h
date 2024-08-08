@@ -101,8 +101,8 @@ class AbstractJob : public Poco::Runnable {
         virtual bool canRun() { return true; }
 
         log4cplus::Logger _logger;
-        ExitCode _exitCode = ExitCodeUnknown;
-        ExitCause _exitCause = ExitCauseUnknown;
+        ExitCode _exitCode = ExitCode::Unknown;
+        ExitCause _exitCause = ExitCause::Unknown;
 
         std::function<bool(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled, bool &finished)>
             _vfsUpdateFetchStatus = nullptr;

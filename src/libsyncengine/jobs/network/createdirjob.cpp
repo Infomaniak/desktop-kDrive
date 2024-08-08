@@ -24,7 +24,7 @@ namespace KDC {
 
 CreateDirJob::CreateDirJob(int driveDbId, const SyncPath &filepath, const NodeId &parentId, const SyncName &name,
                            const std::string &color /*= ""*/)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0),
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
       _filePath(filepath),
       _parentDirId(parentId),
       _name(name),
@@ -37,7 +37,7 @@ CreateDirJob::CreateDirJob(int driveDbId, const NodeId &parentId, const SyncName
 
 CreateDirJob::~CreateDirJob() {
     if (_vfsSetPinState && _vfsForceStatus && !_filePath.empty()) {
-        if (!_vfsSetPinState(_filePath, PinStateAlwaysLocal)) {
+        if (!_vfsSetPinState(_filePath, PinState::AlwaysLocal)) {
             LOGW_WARN(_logger, L"Error in CreateDirJob::vfsSetPinState for " << Utility::formatSyncPath(_filePath).c_str());
         }
         if (!_vfsForceStatus(_filePath, false, 0, true)) {

@@ -13519,7 +13519,7 @@ namespace Catch {
         }
         int exitCode = runInternal();
         if( ( m_configData.waitForKeypress & WaitForKeypress::BeforeExit ) != 0 ) {
-            Catch::cout() << "...waiting for enter/ return before exiting, with code: " << exitCode << std::endl;
+            Catch::cout() << "...waiting for enter/ return before exiting, with code: " << enumClassToInt(exitCode) << std::endl;
             static_cast<void>(std::getchar());
         }
         return exitCode;

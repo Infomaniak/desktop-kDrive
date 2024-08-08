@@ -123,7 +123,7 @@ class ExecutorWorker : public OperationProcessor {
 
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
-        inline bool isLiteSyncActivated() { return _syncPal->_vfsMode != VirtualFileModeOff; }
+        inline bool isLiteSyncActivated() { return _syncPal->_vfsMode != VirtualFileMode::Off; }
 
         inline std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) {
             return _syncPal->updateTree(otherSide(syncOp->targetSide()));
@@ -142,8 +142,8 @@ class ExecutorWorker : public OperationProcessor {
         std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
         std::list<UniqueId> _opList;
 
-        ExitCode _executorExitCode = ExitCodeUnknown;
-        ExitCause _executorExitCause = ExitCauseUnknown;
+        ExitCode _executorExitCode = ExitCode::Unknown;
+        ExitCause _executorExitCause = ExitCause::Unknown;
 
         std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
 

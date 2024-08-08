@@ -92,7 +92,7 @@ class ExplorerCommandHandlerEnumerator : public IEnumExplorerCommand {
         IFACEMETHODIMP Skip(ULONG celt);
         IFACEMETHODIMP Reset();
         IFACEMETHODIMP Clone(IEnumExplorerCommand **ppenum) {
-            *ppenum = NULL;
+            *ppenum = nullptr;
             return E_NOTIMPL;
         }
 

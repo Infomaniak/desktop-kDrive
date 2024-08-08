@@ -25,6 +25,6 @@
 
 namespace KDC {
 
-typedef std::variant<std::monostate, int, int64_t, double, std::string, std::wstring, std::shared_ptr<std::vector<char>>> dbtype;
+using dbtype = std::variant<std::monostate, int, int64_t, double, std::string, std::wstring, std::shared_ptr<std::vector<char>>>;
 
-}
+} // namespace KDC

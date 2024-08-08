@@ -33,6 +33,7 @@
 
 #include <memory>
 #include <filesystem>
+#include <comm.h>
 
 namespace KDC {
 
@@ -87,7 +88,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline void setAddCompletedItemCallback(void (*addCompletedItem)(int, const SyncFileItem &, bool)) {
             _addCompletedItem = addCompletedItem;
         }
-        inline void setSendSignalCallback(void (*sendSignal)(int, int, const SigValueType &)) { _sendSignal = sendSignal; }
+        inline void setSendSignalCallback(void (*sendSignal)(SignalNum, int, const SigValueType &)) { _sendSignal = sendSignal; }
 
         inline void setVfsIsExcludedCallback(bool (*vfsIsExcluded)(int, const SyncPath &, bool &)) {
             _vfsIsExcluded = vfsIsExcluded;
@@ -235,7 +236,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::string _driveName;
         SyncPath _localPath;
         SyncPath _targetPath;
-        VirtualFileMode _vfsMode{VirtualFileModeOff};
+        VirtualFileMode _vfsMode{VirtualFileMode::Off};
         bool _restart{false};
         bool _isPaused{false};
         bool _syncHasFullyCompleted;
@@ -251,7 +252,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         // Callbacks
         void (*_addError)(const Error &error){nullptr};
         void (*_addCompletedItem)(int syncDbId, const SyncFileItem &item, bool notify){nullptr};
-        void (*_sendSignal)(int sigId, int syncDbId, const SigValueType &val){nullptr};
+        void (*_sendSignal)(SignalNum sigId, int syncDbId, const SigValueType &val){nullptr};
 
         bool (*_vfsIsExcluded)(int syncDbId, const SyncPath &itemPath, bool &isExcluded){nullptr};
         bool (*_vfsExclude)(int syncDbId, const SyncPath &itemPath){nullptr};

@@ -88,7 +88,7 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
 
     /// Insert node in blacklist
-    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeTypeBlackList, {testBlackListedDirId});
+    SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {testBlackListedDirId});
 
     _syncPal->_remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
         new RemoteFileSystemObserverWorker(_syncPal, "Remote File System Observer", "RFSO"));

@@ -112,7 +112,7 @@ void TestVfsMac::testStatus() {
             ofs.close();
         }
         // Simulate a partially hydrated placeholder by setting the status to `H30` (i.g. 30% completed)
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         IoHelper::setXAttrValue(path, "com.infomaniak.drive.desktopclient.litesync.status", "H30", ioError);
 
         bool isPlaceholder = false;

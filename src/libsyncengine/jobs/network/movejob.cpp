@@ -25,7 +25,7 @@ namespace KDC {
 
 MoveJob::MoveJob(int driveDbId, const SyncPath &destFilepath, const NodeId &fileId, const NodeId &destDirId,
                  const SyncName &name /*= ""*/)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0),
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
       _destFilepath(destFilepath),
       _fileId(fileId),
       _destDirId(destDirId),
@@ -57,11 +57,11 @@ bool MoveJob::canRun() {
 
     // Check that we still have to move the folder
     bool exists;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_destFilepath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_destFilepath, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
@@ -69,8 +69,8 @@ bool MoveJob::canRun() {
         LOGW_DEBUG(_logger, L"File " << Path2WStr(_destFilepath).c_str()
 
                                      << L" is not in its destination folder. Aborting current sync and restart.");
-        _exitCode = ExitCodeDataError;  // Data error so the snapshots will be re-created
-        _exitCause = ExitCauseUnexpectedFileSystemEvent;
+        _exitCode = ExitCode::DataError;  // Data error so the snapshots will be re-created
+        _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
 

@@ -24,31 +24,32 @@
 // Definitions for zwQueryDirectoryFile - Begin
 #define MAX_PATH_LENGTH_WIN_LONG 32767
 
-typedef LONG NTSTATUS;
+using NTSTATUS = LONG;
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 #define NT_STATUS(x) ((NTSTATUS){x})
 #define STATUS_SUCCESS ((NTSTATUS)0x00000000L)
 #define STATUS_NO_MORE_FILES ((NTSTATUS)0x80000006L)
 #define STATUS_INVALID_INFO_CLASS ((NTSTATUS)0xC0000003L)
 
-typedef struct _UNICODE_STRING {
+using UNICODE_STRING = struct {
         USHORT Length;
         USHORT MaximumLength;
         PWSTR Buffer;
-} UNICODE_STRING, *PUNICODE_STRING;
+};
+using PUNICODE_STRING = UNICODE_STRING *;
 
-typedef struct _IO_STATUS_BLOCK {
+using IO_STATUS_BLOCK = struct {
         union {
                 NTSTATUS Status;
                 PVOID Pointer;
         } DUMMYUNIONNAME;
-
         ULONG_PTR Information;
-} IO_STATUS_BLOCK, *PIO_STATUS_BLOCK;
+};
+using PIO_STATUS_BLOCK = IO_STATUS_BLOCK *;
 
 typedef VOID(NTAPI *PIO_APC_ROUTINE)(PVOID ApcContext, PIO_STATUS_BLOCK IoStatusBlock, ULONG Reserved);
 
-typedef enum _FILE_INFORMATION_CLASS {
+using FILE_INFORMATION_CLASS = enum _FILE_INFORMATION_CLASS {
     FileDirectoryInformation = 1,
     FileFullDirectoryInformation,             // 2
     FileBothDirectoryInformation,             // 3
@@ -105,10 +106,10 @@ typedef enum _FILE_INFORMATION_CLASS {
     FileStandardLinkInformation,              // 54
     FileRemoteProtocolInformation,            // 55
     FileMaximumInformation
-} FILE_INFORMATION_CLASS,
-    *PFILE_INFORMATION_CLASS;
+};
+using PFILE_INFORMATION_CLASS = FILE_INFORMATION_CLASS *;
 
-typedef struct _FILE_ID_FULL_DIR_INFORMATION {
+using FILE_ID_FULL_DIR_INFORMATION = struct _FILE_ID_FULL_DIR_INFORMATION {
         ULONG NextEntryOffset;
         ULONG FileIndex;
         LARGE_INTEGER CreationTime;
@@ -122,9 +123,10 @@ typedef struct _FILE_ID_FULL_DIR_INFORMATION {
         ULONG EaSize;
         LARGE_INTEGER FileId;
         WCHAR FileName[1];
-} FILE_ID_FULL_DIR_INFORMATION, *PFILE_ID_FULL_DIR_INFORMATION;
+};
+using PFILE_ID_FULL_DIR_INFORMATION = FILE_ID_FULL_DIR_INFORMATION *;
 
-typedef struct _FILE_ID_BOTH_DIR_INFORMATION {
+using FILE_ID_BOTH_DIR_INFORMATION = struct _FILE_ID_BOTH_DIR_INFORMATION {
         ULONG NextEntryOffset;
         ULONG FileIndex;
         LARGE_INTEGER CreationTime;
@@ -140,9 +142,10 @@ typedef struct _FILE_ID_BOTH_DIR_INFORMATION {
         WCHAR ShortName[12];
         LARGE_INTEGER FileId;
         WCHAR FileName[1];
-} FILE_ID_BOTH_DIR_INFORMATION, *PFILE_ID_BOTH_DIR_INFORMATION;
+};
+using PFILE_ID_BOTH_DIR_INFORMATION = FILE_ID_BOTH_DIR_INFORMATION *;
 
-typedef struct _FILE_ID_GLOBAL_TX_DIR_INFORMATION {
+using FILE_ID_GLOBAL_TX_DIR_INFORMATION = struct _FILE_ID_GLOBAL_TX_DIR_INFORMATION {
         ULONG NextEntryOffset;
         ULONG FileIndex;
         LARGE_INTEGER CreationTime;
@@ -157,13 +160,14 @@ typedef struct _FILE_ID_GLOBAL_TX_DIR_INFORMATION {
         GUID LockingTransactionId;
         ULONG TxInfoFlags;
         WCHAR FileName[1];
-} FILE_ID_GLOBAL_TX_DIR_INFORMATION, *PFILE_ID_GLOBAL_TX_DIR_INFORMATION;
+};
+using PFILE_ID_GLOBAL_TX_DIR_INFORMATION = FILE_ID_GLOBAL_TX_DIR_INFORMATION *;
 
 #define FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_WRITELOCKED 0x00000001
 #define FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_VISIBLE_TO_TX 0x00000002
 #define FILE_ID_GLOBAL_TX_DIR_INFO_FLAG_VISIBLE_OUTSIDE_TX 0x00000004
 
-typedef struct _FILE_OBJECTID_INFORMATION {
+using FILE_OBJECTID_INFORMATION = struct _FILE_OBJECTID_INFORMATION {
         LONGLONG FileReference;
         UCHAR ObjectId[16];
         union {
@@ -174,7 +178,8 @@ typedef struct _FILE_OBJECTID_INFORMATION {
                 } DUMMYSTRUCTNAME;
                 UCHAR ExtendedInfo[48];
         } DUMMYUNIONNAME;
-} FILE_OBJECTID_INFORMATION, *PFILE_OBJECTID_INFORMATION;
+};
+using PFILE_OBJECTID_INFORMATION = FILE_OBJECTID_INFORMATION *;
 
 typedef NTSTATUS(WINAPI *PZW_QUERY_DIRECTORY_FILE)(HANDLE FileHandle, HANDLE Event, PIO_APC_ROUTINE ApcRoutine, PVOID ApcContext,
                                                    PIO_STATUS_BLOCK IoStatusBlock, PVOID FileInformation, ULONG Length,
@@ -183,7 +188,7 @@ typedef NTSTATUS(WINAPI *PZW_QUERY_DIRECTORY_FILE)(HANDLE FileHandle, HANDLE Eve
 // Definitions for zwQueryDirectoryFile - End
 
 // Definitions for DeviceIoControl - Begin
-typedef struct _REPARSE_DATA_BUFFER {
+using REPARSE_DATA_BUFFER = struct _REPARSE_DATA_BUFFER {
         DWORD ReparseTag;
         WORD ReparseDataLength;
         WORD Reserved;
@@ -209,8 +214,8 @@ typedef struct _REPARSE_DATA_BUFFER {
                         BYTE DataBuffer[1];
                 } GenericReparseBuffer;
         };
-} REPARSE_DATA_BUFFER;
+};
 
 #define REPARSE_DATA_BUFFER_HEADER_SIZE FIELD_OFFSET(REPARSE_DATA_BUFFER, GenericReparseBuffer)
-#define REPARSE_MOUNTPOINT_HEADER_SIZE 8
+constexpr auto REPARSE_MOUNTPOINT_HEADER_SIZE = 8;
 // Definitions for DeviceIoControl - End

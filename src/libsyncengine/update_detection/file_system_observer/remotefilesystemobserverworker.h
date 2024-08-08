@@ -37,7 +37,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         void execute() override;
         ExitCode generateInitialSnapshot() override;
         ExitCode processEvents() override;
-        [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::ReplicaSideRemote; }
+        [[nodiscard]] ReplicaSide getSnapshotType() const override { return ReplicaSide::Remote; }
 
         ExitCode initWithCursor();
         ExitCode exploreDirectory(const NodeId &nodeId);
@@ -54,7 +54,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                 SyncName destName;
                 SyncTime createdAt{0};
                 SyncTime modtime{0};
-                NodeType type{NodeTypeUnknown};
+                NodeType type{NodeType::Unknown};
                 int64_t size{0};
                 bool canWrite{true};
         };

@@ -137,18 +137,18 @@ ExitCode ExclusionTemplateCache::update(bool def, const std::vector<ExclusionTem
     // Update exclusion templates
     if (!ParmsDb::instance()->updateAllExclusionTemplates(def, def ? _defExclusionTemplates : _userExclusionTemplates)) {
         LOG_WARN(Log::instance()->getLogger(), "Error in ParmsDb::updateAllExclusionTemplates");
-        return ExitCodeDbError;
+        return ExitCode::DbError;
     }
 
     populateUndeletedExclusionTemplates();
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const SyncPath &relativePath, bool &isWarning,
                                                bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     if (!checkIfIsExcludedBecauseHidden(basePath, relativePath, isExcluded, ioError)) {
         return false;
@@ -166,7 +166,7 @@ bool ExclusionTemplateCache::checkIfIsExcluded(const SyncPath &basePath, const S
 bool ExclusionTemplateCache::checkIfIsExcludedBecauseHidden(const SyncPath &basePath, const SyncPath &relativePath,
                                                             bool &isExcluded, IoError &ioError) noexcept {
     isExcluded = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     if (!basePath.empty() && !ParametersCache::instance()->parameters().syncHiddenFiles()) {
         // Call from local FS observer
@@ -200,7 +200,7 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
         isWarning = pattern.second.warning();
 
         switch (pattern.second.complexity()) {
-            case ExclusionTemplateComplexitySimplest: {
+            case ExclusionTemplateComplexity::Simplest: {
                 if (fileName == patternStr) {
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_INFO(Log::instance()->getLogger(),
@@ -211,7 +211,7 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
                 }
                 break;
             }
-            case ExclusionTemplateComplexitySimple: {
+            case ExclusionTemplateComplexity::Simple: {
                 std::string tmpStr = patternStr;
                 bool atBegining = tmpStr[0] == '*';
                 bool atEnd = tmpStr[tmpStr.length() - 1] == '*';
@@ -243,7 +243,7 @@ bool ExclusionTemplateCache::isExcludedByTemplate(const SyncPath &relativePath, 
                 }
                 break;
             }
-            case ExclusionTemplateComplexityComplex:
+            case ExclusionTemplateComplexity::Complex:
             default: {
                 if (std::regex_match(fileName, pattern.first)) {
                     if (ParametersCache::isExtendedLogEnabled()) {

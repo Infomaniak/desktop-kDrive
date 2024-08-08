@@ -35,7 +35,7 @@ std::shared_ptr<FileExclude> FileExclude::instance() {
 
 bool FileExclude::isExcluded(const SyncPath &relativePath, bool syncHiddenFiles) {
     bool isHidden = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
 
     if (!syncHiddenFiles && IoHelper::checkIfIsHiddenFile(relativePath, isHidden, ioError) && isHidden) {
         return true;

@@ -31,9 +31,9 @@ void TestIo::testCreateJunction() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
         const SyncPath path = temporaryDirectory.path() / "regular_dir_junction";
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
         bool isJunction = false;
         CPPUNIT_ASSERT(_testObj->checkIfIsJunction(path, isJunction, ioError));
@@ -45,7 +45,7 @@ void TestIo::testCreateJunction() {
 
         ItemType itemType;
         CPPUNIT_ASSERT(_testObj->getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.linkType == LinkTypeJunction);
+        CPPUNIT_ASSERT(itemType.linkType == LinkType::Junction);
     }
 
     // A Windows junction on a non-existing target directory: no error expected
@@ -54,9 +54,9 @@ void TestIo::testCreateJunction() {
         const SyncPath targetPath = _localTestDirPath / "non_existing_dir";  // It doesn't exist.
         const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
         bool isJunction = false;
         CPPUNIT_ASSERT(_testObj->checkIfIsJunction(path, isJunction, ioError));
@@ -69,9 +69,9 @@ void TestIo::testCreateJunction() {
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
         const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+        CPPUNIT_ASSERT(ioError == IoError::Success);
 
         bool isJunction = false;
         CPPUNIT_ASSERT(_testObj->checkIfIsJunction(path, isJunction, ioError));
@@ -84,9 +84,9 @@ void TestIo::testCreateJunction() {
         const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
 
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(!_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
     }
 
     // The junction path is very long: failure with ad hoc error
@@ -97,10 +97,10 @@ void TestIo::testCreateJunction() {
             path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
         }
         const SyncPath targetPath = _localTestDirPath / "test_pictures";
-        IoError ioError = IoErrorUnknown;
+        IoError ioError = IoError::Unknown;
 
         CPPUNIT_ASSERT(!_testObj->createJunctionFromPath(targetPath, path, ioError));
-        CPPUNIT_ASSERT(ioError == IoErrorNoSuchFileOrDirectory);
+        CPPUNIT_ASSERT(ioError == IoError::NoSuchFileOrDirectory);
     }
 }
 

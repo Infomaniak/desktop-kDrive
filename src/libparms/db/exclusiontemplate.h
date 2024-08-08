@@ -47,7 +47,7 @@ class ExclusionTemplate {
         bool _warning{false};
         bool _def{false};
         bool _deleted{false};
-        ExclusionTemplateComplexity _complexity = ExclusionTemplateComplexityComplex;
+        ExclusionTemplateComplexity _complexity = ExclusionTemplateComplexity::Complex;
 
         void evaluateComplexity();
 };

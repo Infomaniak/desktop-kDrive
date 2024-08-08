@@ -91,7 +91,7 @@ BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncI
         for (const QString &nodeId : syncUndecidedListIt.second.second) {
             QString nodePath;
             ExitCode exitCode = GuiRequests::getNodePath(syncDbId, nodeId, nodePath);
-            if (exitCode != ExitCodeOk) {
+            if (exitCode != ExitCode::Ok) {
                 qCWarning(lcBigFoldersDialog()) << "Error in Requests::getNodePath";
                 continue;
             }

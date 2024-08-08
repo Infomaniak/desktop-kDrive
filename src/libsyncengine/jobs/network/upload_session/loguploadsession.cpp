@@ -61,8 +61,8 @@ bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionS
 
     if (const std::string logUploadToken = std::get<std::string>(appStateValue); !logUploadToken.empty()) {
         UploadSessionCancelJob cancelJob(UploadSessionType::LogUpload, logUploadToken);
-        if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCodeOk) {
-            LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
+        if (const ExitCode exitCode = cancelJob.runSynchronously(); exitCode != ExitCode::Ok) {
+            LOG_WARN(getLogger(), "Error in UploadSessionCancelJob::runSynchronously : " << enumClassToInt(exitCode));
         } else {
             LOG_INFO(getLogger(), "Previous Log upload api call cancelled");
             if (bool found = true;

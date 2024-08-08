@@ -21,33 +21,32 @@
 #include <string>
 #include <filesystem>
 #include <functional>
+#include <cctype>
 #include <optional>
 #include <unordered_set>
 #include <variant>
 
 namespace KDC {
 
-#define ERRID Utility::errId(__FILE__, __LINE__)
+using SyncTime = int64_t;
+using DbNodeId = int64_t;
+using UniqueId = int64_t;
+using NodeId = std::string;
+using SyncPath = std::filesystem::path;
+using SyncName = std::filesystem::path::string_type;
+using SyncChar = std::filesystem::path::value_type;
+using DirectoryEntry = std::filesystem::directory_entry;
+using DirectoryOptions = std::filesystem::directory_options;
 
-typedef int64_t SyncTime;
-typedef int64_t DbNodeId;
-typedef int64_t UniqueId;
-typedef std::string NodeId;
-typedef std::filesystem::path SyncPath;
-typedef std::filesystem::path::string_type SyncName;
-typedef std::filesystem::path::value_type SyncChar;
-typedef std::filesystem::directory_entry DirectoryEntry;
-typedef std::filesystem::directory_options DirectoryOptions;
-
-typedef std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring> SigValueType;
+using SigValueType = std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring>;
 
 struct hashPathFunction {
         std::size_t operator()(const std::optional<SyncPath> &path) const { return path ? hash_value(path.value()) : 0; }
 };
 
 #ifdef _WIN32
-typedef std::wstringstream StringStream;
-typedef std::wostringstream OStringStream;
+using StringStream = std::wstringstream;
+using OStringStream = std::wostringstream;
 #define Str(s) L##s
 #define SyncName2QStr(s) QString::fromStdWString(s)
 #define QStr2SyncName(s) s.toStdWString()
@@ -56,8 +55,8 @@ typedef std::wostringstream OStringStream;
 #define WStr2SyncName(s) s
 #define SyncName2WStr(s) s
 #else
-typedef std::stringstream StringStream;
-typedef std::ostringstream OStringStream;
+using StringStream = std::stringstream;
+using OStringStream = std::ostringstream;
 #define Str(s) s
 #define SyncName2QStr(s) QString::fromStdString(s)
 #define QStr2SyncName(s) s.toStdString()
@@ -88,301 +87,247 @@ typedef std::ostringstream OStringStream;
 #define Str2Path(s) std::filesystem::path(KDC::Utility::s2ws(s))
 #endif
 
-typedef std::function<void(const char *)> ExecuteCommand;
-
-typedef enum { ReplicaSideUnknown, ReplicaSideLocal, ReplicaSideRemote } ReplicaSide;
+using ExecuteCommand = std::function<void(const char *)>;
+enum class ReplicaSide { Unknown, Local, Remote };
 
 inline ReplicaSide otherSide(ReplicaSide side) {
-    if (side == ReplicaSideUnknown) return ReplicaSideUnknown;
-    return side == ReplicaSideLocal ? ReplicaSideRemote : ReplicaSideLocal;
+    if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
+    return side == ReplicaSide::Local ? ReplicaSide::Remote : ReplicaSide::Local;
 }
 
-typedef enum {
-    NodeTypeUnknown,
-    NodeTypeFile,  // File or symlink
-    NodeTypeDirectory
-} NodeType;
+enum class NodeType {
+    Unknown,
+    File,  // File or symlink
+    Directory,
+};
 
-typedef enum {
-    OperationTypeNone = 0x00,
-    OperationTypeCreate = 0x01,
-    OperationTypeMove = 0x02,
-    OperationTypeEdit = 0x04,
-    OperationTypeDelete = 0x08,
-    OperationTypeRights = 0x10
-} OperationType;
+enum class OperationType { None = 0x00, Create = 0x01, Move = 0x02, Edit = 0x04, Delete = 0x08, Rights = 0x10 };
 
-typedef enum {
-    ExitCodeUnknown,
-    ExitCodeOk,
-    ExitCodeNeedRestart,  // A propagation job cannot be executed because the situation that led to its creation is no longer
-                          // verified
-    ExitCodeNetworkError,
-    ExitCodeInvalidToken,
-    ExitCodeDataError,    // Corruption of data
-    ExitCodeDbError,      // Error in a DB function
-    ExitCodeBackError,    // Error in an API call
-    ExitCodeSystemError,  // IO error etc.
-    ExitCodeFatalError,   // SyncPal fatal error
-    ExitCodeLogicError,   // Consequence of faulty logic within the program such as violating logical preconditions or class
-                          // invariants and may be preventable
-    ExitCodeTokenRefreshed,
-    ExitCodeNoWritePermission,
-    ExitCodeRateLimited,
-    ExitCodeInvalidSync,  // The sync configuration is not valid
-    ExitCodeInvalidOperation,
-    ExitCodeOperationCanceled,
-    ExitCodeUpdateRequired,
-    ExitCodeLogUploadFailed
-} ExitCode;
+enum class ExitCode {
+    Unknown,
+    Ok,
+    NeedRestart,  // A propagation job cannot be executed because the situation that led to its creation is no longer
+                  // verified
+    NetworkError,
+    InvalidToken,
+    DataError,    // Corruption of data
+    DbError,      // Error in a DB function
+    BackError,    // Error in an API call
+    SystemError,  // IO error etc.
+    FatalError,   // SyncPal fatal error
+    LogicError,   // Consequence of faulty logic within the program such as violating logical preconditions or class
+                  // invariants and may be preventable
+    TokenRefreshed,
+    NoWritePermission,
+    RateLimited,
+    InvalidSync,  // The sync configuration is not valid
+    InvalidOperation,
+    OperationCanceled,
+    UpdateRequired,
+    LogUploadFailed
+};
 
-typedef enum {
-    ExitCauseUnknown,
-    ExitCauseWorkerExited,  // The SyncPal worker exits because a sub worker has exited
-    ExitCauseDbAccessError,
-    ExitCauseDbEntryNotFound,
-    ExitCauseInvalidSnapshot,
-    ExitCauseSyncDirDoesntExist,
-    ExitCauseSyncDirReadError,
-    ExitCauseSyncDirWriteError,
-    ExitCauseHttpErr,
-    ExitCauseHttpErrForbidden,
-    ExitCauseRedirectionError,
-    ExitCauseApiErr,
-    ExitCauseInvalidSize,
-    ExitCauseFileAlreadyExist,
-    ExitCauseFileAccessError,
-    ExitCauseUnexpectedFileSystemEvent,
-    ExitCauseNotEnoughDiskSpace,
-    ExitCauseDriveAccessError,
-    ExitCauseLoginError,
-    ExitCauseDriveMaintenance,
-    ExitCauseDriveNotRenew,
-    ExitCauseMigrationError,
-    ExitCauseMigrationProxyNotImplemented,
-    ExitCauseInconsistentPinState,
-    ExitCauseFileSizeMismatch,
-    ExitCauseUploadNotTerminated,
-    ExitCauseUnableToCreateVfs,
-    ExitCauseNotEnoughtMemory,
-    ExitCauseFileTooBig,
-    ExitCauseMoveToTrashFailed,
-    ExitCauseInvalidName,
-    ExitCauseLiteSyncNotAllowed,
-    ExitCauseNetworkTimeout,
-    ExitCauseSocketsDefuncted,  // macOS: sockets defuncted by kernel
-    ExitCauseNoSearchPermission,
-    ExitCauseNotFound,
-    ExitCauseQuotaExceeded,
-    ExitCauseFullListParsingError,
-    ExitCauseOperationCanceled
-} ExitCause;
+enum class ExitCause {
+    Unknown,
+    WorkerExited,  // The SyncPal worker exits because a sub worker has exited
+    DbAccessError,
+    DbEntryNotFound,
+    InvalidSnapshot,
+    SyncDirDoesntExist,
+    SyncDirReadError,
+    SyncDirWriteError,
+    HttpErr,
+    HttpErrForbidden,
+    RedirectionError,
+    ApiErr,
+    InvalidSize,
+    FileAlreadyExist,
+    FileAccessError,
+    UnexpectedFileSystemEvent,
+    NotEnoughDiskSpace,
+    DriveAccessError,
+    LoginError,
+    DriveMaintenance,
+    DriveNotRenew,
+    MigrationError,
+    MigrationProxyNotImplemented,
+    InconsistentPinState,
+    FileSizeMismatch,
+    UploadNotTerminated,
+    UnableToCreateVfs,
+    NotEnoughtMemory,
+    FileTooBig,
+    MoveToTrashFailed,
+    InvalidName,
+    LiteSyncNotAllowed,
+    NetworkTimeout,
+    SocketsDefuncted,  // macOS: sockets defuncted by kernel
+    NoSearchPermission,
+    NotFound,
+    QuotaExceeded,
+    FullListParsingError,
+    OperationCanceled
+};
 
 // Conflict types ordered by priority
-typedef enum {
-    ConflictTypeNone,
-    ConflictTypeMoveParentDelete,
-    ConflictTypeMoveDelete,
-    ConflictTypeCreateParentDelete,
-    ConflictTypeMoveMoveSource,
-    ConflictTypeMoveMoveDest,
-    ConflictTypeMoveCreate,
-    ConflictTypeEditDelete,
-    ConflictTypeCreateCreate,
-    ConflictTypeEditEdit,
-    ConflictTypeMoveMoveCycle
-} ConflictType;
+enum class ConflictType {
+    None,
+    MoveParentDelete,
+    MoveDelete,
+    CreateParentDelete,
+    MoveMoveSource,
+    MoveMoveDest,
+    MoveCreate,
+    EditDelete,
+    CreateCreate,
+    EditEdit,
+    MoveMoveCycle
+};
 
 static const std::unordered_set<ConflictType> conflictsWithLocalRename = {  // All conflicts that rename the local file
-    ConflictTypeCreateCreate, ConflictTypeEditEdit, ConflictTypeMoveCreate, ConflictTypeMoveMoveDest};
+    ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
+
 inline bool isConflictsWithLocalRename(ConflictType type) {
-    return conflictsWithLocalRename.find(type) != conflictsWithLocalRename.end();
+    return conflictsWithLocalRename.contains(type);
 }
 
-typedef enum {
-    ConflictTypeResolutionNone,
-    ConflictTypeResolutionDeleteCanceled,
-    ConflictTypeResolutionFileMovedToRoot
-} ConflictTypeResolution;
+enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
 
-typedef enum {
-    InconsistencyTypeNone = 0x00,
-    InconsistencyTypeCase = 0x01,
-    InconsistencyTypeForbiddenChar = 0x02,  // Char unsupported by OS
-    InconsistencyTypeReservedName = 0x04,
-    InconsistencyTypeNameLength = 0x08,
-    InconsistencyTypePathLength = 0x10,
-    InconsistencyTypeNotYetSupportedChar =
-        0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-    InconsistencyTypeDuplicateNames =
-        0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
-} InconsistencyType;
+enum class InconsistencyType {
+    None = 0x00,
+    Case = 0x01,
+    ForbiddenChar = 0x02,  // Char unsupported by OS
+    ReservedName = 0x04,
+    NameLength = 0x08,
+    PathLength = 0x10,
+    NotYetSupportedChar = 0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+    DuplicateNames = 0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+};
 
-inline InconsistencyType operator|(InconsistencyType a, InconsistencyType b) {
-    return static_cast<InconsistencyType>(static_cast<int>(a) | static_cast<int>(b));
-}
-inline InconsistencyType operator|=(InconsistencyType &a, InconsistencyType b) {
-    return a = a | b;
-}
-inline InconsistencyType operator&(InconsistencyType a, InconsistencyType b) {
-    return static_cast<InconsistencyType>(static_cast<int>(a) & static_cast<int>(b));
-}
-inline InconsistencyType operator&=(InconsistencyType &a, InconsistencyType b) {
-    return a = a & b;
-}
+enum class CancelType {
+    None,
+    Create,
+    Edit,
+    Move,
+    Delete,
+    AlreadyExistRemote,
+    MoveToBinFailed,
+    AlreadyExistLocal,
+    TmpBlacklisted,
+    ExcludedByTemplate,
+    Hardlink
+};
 
-typedef enum {
-    CancelTypeNone,
-    CancelTypeCreate,
-    CancelTypeEdit,
-    CancelTypeMove,
-    CancelTypeDelete,
-    CancelTypeAlreadyExistRemote,
-    CancelTypeMoveToBinFailed,
-    CancelTypeAlreadyExistLocal,
-    CancelTypeTmpBlacklisted,
-    CancelTypeExcludedByTemplate,
-    CancelTypeHardlink
-} CancelType;
+enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed };
+
+enum class SyncStatus {
+    Undefined,
+    Starting,
+    Running,
+    Idle,
+    PauseAsked,
+    Paused,
+    StopAsked,
+    Stopped,
+    Error,
+};
 
 enum class UploadSessionType { Unknown, Standard, LogUpload };
 
-typedef enum { NodeStatusUnknown = 0, NodeStatusUnprocessed, NodeStatusPartiallyProcessed, NodeStatusProcessed } NodeStatus;
+enum class SyncNodeType {
+    Undefined = 0,
+    BlackList,           // Nodes that are excluded from sync
+    WhiteList,           // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
+                         // nodes in none of those lists are implicitly whitelisted
+    UndecidedList,       // Considered as blacklisted until user action
+    TmpRemoteBlacklist,  // Blacklisted temporarily
+    TmpLocalBlacklist    // Blacklisted temporarily
+};
 
-typedef enum {
-    SyncStatusUndefined,
-    SyncStatusStarting,
-    SyncStatusRunning,
-    SyncStatusIdle,
-    SyncStatusPauseAsked,
-    SyncStatusPaused,
-    SyncStatusStopAsked,
-    SyncStatusStoped,
-    SyncStatusError,
-} SyncStatus;
+enum class SyncDirection { Unknown = 0, Up, Down };
 
-typedef enum {
-    SyncNodeTypeUndefined = 0,
-    SyncNodeTypeBlackList,  // Nodes that are excluded from sync
-    SyncNodeTypeWhiteList,  // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
-                            // nodes in none of those lists are implicitly whitelisted
-    SyncNodeTypeUndecidedList,       // Considered as blacklisted until user action
-    SyncNodeTypeTmpRemoteBlacklist,  // Blacklisted temporarily
-    SyncNodeTypeTmpLocalBlacklist    // Blacklisted temporarily
-} SyncNodeType;
+enum class SyncFileStatus { Unknown = 0, Error, Success, Conflict, Inconsistency, Ignored, Syncing };
 
-typedef enum { SyncDirectionUnknown = 0, SyncDirectionUp, SyncDirectionDown } SyncDirection;
+enum class SyncFileInstruction { None = 0, Update, UpdateMetadata, Remove, Move, Get, Put, Ignore };
 
-typedef enum {
-    SyncFileStatusUnknown = 0,
-    SyncFileStatusError,
-    SyncFileStatusSuccess,
-    SyncFileStatusConflict,
-    SyncFileStatusInconsistency,
-    SyncFileStatusIgnored,
-    SyncFileStatusSyncing
-} SyncFileStatus;
+enum class SyncStep {
+    None = 0,
+    Idle,
+    UpdateDetection1,  // Compute operations
+    UpdateDetection2,  // Update Trees
+    Reconciliation1,   // Platform Inconstistency Checker
+    Reconciliation2,   // Conflict Finder
+    Reconciliation3,   // Conflict Resolver
+    Reconciliation4,   // Operation Generator
+    Propagation1,      // Sorter
+    Propagation2,      // Executor
+    Done
+};
 
-typedef enum {
-    SyncFileInstructionNone = 0,
-    SyncFileInstructionUpdate,
-    SyncFileInstructionUpdateMetadata,
-    SyncFileInstructionRemove,
-    SyncFileInstructionMove,
-    SyncFileInstructionGet,
-    SyncFileInstructionPut,
-    SyncFileInstructionIgnore
-} SyncFileInstruction;
+enum class ActionType { Stop = 0, Start };
 
-typedef enum {
-    SyncStepNone = 0,
-    SyncStepIdle,
-    SyncStepUpdateDetection1,  // Compute operations
-    SyncStepUpdateDetection2,  // Update Trees
-    SyncStepReconciliation1,   // Platform Inconstistency Checker
-    SyncStepReconciliation2,   // Conflict Finder
-    SyncStepReconciliation3,   // Conflict Resolver
-    SyncStepReconciliation4,   // Operation Generator
-    SyncStepPropagation1,      // Sorter
-    SyncStepPropagation2,      // Executor
-    SyncStepDone
-} SyncStep;
+enum class ActionTarget { Drive = 0, Sync, AllDrives };
 
-typedef enum { ActionTypeStop = 0, ActionTypeStart } ActionType;
+enum class ErrorLevel { Unknown = 0, Server, SyncPal, Node };
 
-typedef enum { ActionTargetDrive = 0, ActionTargetSync, ActionTargetAllDrives } ActionTarget;
+enum class Language { Default = 0, English, French, German, Spanish, Italian };
 
-typedef enum { ErrorLevelUnknown = 0, ErrorLevelServer, ErrorLevelSyncPal, ErrorLevelNode } ErrorLevel;
+enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal };
 
-typedef enum { LanguageDefault = 0, LanguageEnglish, LanguageFrench, LanguageGerman, LanguageSpanish, LanguageItalian } Language;
+enum class NotificationsDisabled { Never, OneHour, UntilTomorrow, TreeDays, OneWeek, Always };
 
-typedef enum { LogLevelDebug = 0, LogLevelInfo, LogLevelWarning, LogLevelError, LogLevelFatal } LogLevel;
+enum class VirtualFileMode { Off, Win, Mac, Suffix };
 
-typedef enum {
-    NotificationsDisabledNever,
-    NotificationsDisabledOneHour,
-    NotificationsDisabledUntilTomorrow,
-    NotificationsDisabledTreeDays,
-    NotificationsDisabledOneWeek,
-    NotificationsDisabledAlways
-} NotificationsDisabled;
+enum class PinState { Inherited, AlwaysLocal, OnlineOnly, Unspecified };
 
-typedef enum { VirtualFileModeOff, VirtualFileModeWin, VirtualFileModeMac, VirtualFileModeSuffix } VirtualFileMode;
+enum class ProxyType {
+    Undefined = 0,
+    None,
+    System,
+    HTTP,
+    Socks5  // Don't use, not implemented in Poco library
+};
 
-typedef enum { PinStateInherited, PinStateAlwaysLocal, PinStateOnlineOnly, PinStateUnspecified } PinState;
+enum class ExclusionTemplateComplexity { Simplest = 0, Simple, Complex };
 
-typedef enum {
-    ProxyTypeUndefined = 0,
-    ProxyTypeNone,
-    ProxyTypeSystem,
-    ProxyTypeHTTP,
-    ProxyTypeSocks5  // Don't use, not implemented in Poco library
-} ProxyType;
+enum class LinkType { None = 0, Symlink, Hardlink, FinderAlias, Junction };
 
-typedef enum {
-    ExclusionTemplateComplexitySimplest = 0,
-    ExclusionTemplateComplexitySimple,
-    ExclusionTemplateComplexityComplex
-} ExclusionTemplateComplexity;
-
-typedef enum { LinkTypeNone = 0, LinkTypeSymlink, LinkTypeHardlink, LinkTypeFinderAlias, LinkTypeJunction } LinkType;
-
-typedef enum {
-    IoErrorSuccess = 0,
-    IoErrorAccessDenied,
-    IoErrorAttrNotFound,
-    IoErrorDirectoryExists,
-    IoErrorDiskFull,
-    IoErrorFileExists,
-    IoErrorFileNameTooLong,
-    IoErrorInvalidArgument,
-    IoErrorInvalidDirectoryIterator,
-    IoErrorInvalidFileName,
-    IoErrorIsADirectory,
-    IoErrorIsAFile,
-    IoErrorMaxDepthExceeded,
-    IoErrorNoSuchFileOrDirectory,
-    IoErrorResultOutOfRange,
-    IoErrorUnknown
-} IoError;
+enum class IoError {
+    Success = 0,
+    AccessDenied,
+    AttrNotFound,
+    DirectoryExists,
+    DiskFull,
+    FileExists,
+    FileNameTooLong,
+    InvalidArgument,
+    InvalidDirectoryIterator,
+    InvalidFileName,
+    IsADirectory,
+    IsAFile,
+    MaxDepthExceeded,
+    NoSuchFileOrDirectory,
+    ResultOutOfRange,
+    Unknown
+};
 
 struct ItemType {
-        NodeType nodeType{NodeTypeUnknown};  // The type of a link is `NodeTypeFile`.
-        LinkType linkType{LinkTypeNone};
-        NodeType targetType{NodeTypeUnknown};  // The type of the target item when `linkType` is not `LinkTypeNone`.
+        NodeType nodeType{NodeType::Unknown};  // The type of a link is `NodeType::File`.
+        LinkType linkType{LinkType::None};
+        NodeType targetType{NodeType::Unknown};  // The type of the target item when `linkType` is not `LinkType::None`.
         SyncPath targetPath;
-        // The value of the data member `ioError` is `IoErrorNoSuchFileOrDirectory` if
+        // The value of the data member `ioError` is `IoError::NoSuchFileOrDirectory` if
         // - the file or directory indicated by `path` doesn't exist
         // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
-        // `LinkTypeUnknown`) and its target doesn't exist.
-        IoError ioError{IoErrorSuccess};
+        // `LinkType::Unknown`) and its target doesn't exist.
+        IoError ioError{IoError::Success};
 };
 
 enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
     LastServerSelfRestartDate,
     LastClientSelfRestartDate,
-    LastSuccessfulLogUploadDate, //Format: "month,day,year,hour,minute,second"
+    LastSuccessfulLogUploadDate,  // Format: "month,day,year,hour,minute,second"
     LastLogUploadArchivePath,
     LogUploadState,
     LogUploadPercent,
@@ -398,5 +343,64 @@ enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, 
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
+
+
+/*
+ * Define operator and converter for enum class
+ */
+
+// Concepts
+template <class C>  // Any enum class that can be converted to (and from) int
+concept IntableEnum = std::is_enum_v<C> && std::is_convertible_v<std::underlying_type_t<C>, int>;
+
+template <class C>  // Any enum class we want to allow bitwise operations (OperationType & InconsistencyType)
+concept AllowBitWiseOpEnum = IntableEnum<C> && (std::is_same_v<C, OperationType> || std::is_same_v<C, InconsistencyType>);
+
+// Converters
+template <IntableEnum C>
+inline int enumClassToInt(C e) {
+    return static_cast<int>(e);
+}
+
+template <IntableEnum C>
+inline C intToEnumClass(int e) {
+    return static_cast<C>(e);
+}
+
+// Operators
+template <AllowBitWiseOpEnum C>
+inline C operator|=(C &a, const C b) {
+    return a = intToEnumClass<C>(enumClassToInt(a) | enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator&=(C &a, const C b) {
+    return a = intToEnumClass<C>(enumClassToInt(a) & enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator^=(C &a, const C b) {
+    return a = intToEnumClass<C>(enumClassToInt(a) ^ enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator|(const C a, const C b) {
+    return intToEnumClass<C>(enumClassToInt(a) | enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator&(const C a, const C b) {
+    return intToEnumClass<C>(enumClassToInt(a) & enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline C operator^(const C a, const C b) {
+    return intToEnumClass<C>(enumClassToInt(a) ^ enumClassToInt(b));
+}
+
+template <AllowBitWiseOpEnum C>
+inline bool bitWiseEnumToBool(const C a) {
+    return enumClassToInt(a) != 0;
+}
 
 }  // namespace KDC

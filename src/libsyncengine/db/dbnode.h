@@ -31,7 +31,7 @@ class DbNode {
                const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
                std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
                std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
-               const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatusUnknown, bool syncing = false);
+               const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatus::Unknown, bool syncing = false);
 
         DbNode();
 

@@ -67,7 +67,7 @@ void BaseFolderTreeItemWidget::loadSubFolders() {
     ExitCode exitCode;
     QList<NodeInfo> nodeInfoList;
     exitCode = GuiRequests::getSubFolders(_driveDbId, QString(), nodeInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcBaseFolderTreeItemWidget()) << "Error in Requests::getSubFolders";
         return;
     }
@@ -241,7 +241,7 @@ void BaseFolderTreeItemWidget::updateDirectories(QTreeWidgetItem *item, QList<No
     while (it.hasNext()) {
         bool excluded = false;
         ExitCode exitCode = GuiRequests::getNameExcluded(it.next().name(), excluded);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcBaseFolderTreeItemWidget()) << "Error in Requests::getNameExcluded";
             return;
         }
@@ -267,7 +267,7 @@ void BaseFolderTreeItemWidget::onItemExpanded(QTreeWidgetItem *item) {
     ExitCode exitCode;
     QList<NodeInfo> nodeInfoList;
     exitCode = GuiRequests::getSubFolders(_driveDbId, nodeId, nodeInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcBaseFolderTreeItemWidget()) << "Error in Requests::getSubFolders";
         return;
     }

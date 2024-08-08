@@ -72,7 +72,7 @@ IFACEMETHODIMP KDOverlay::QueryInterface(REFIID riid, void **ppv) {
         *ppv = static_cast<IShellIconOverlayIdentifier *>(this);
     } else {
         hr = E_NOINTERFACE;
-        *ppv = NULL;
+        *ppv = nullptr;
     }
 
     if (*ppv) {

@@ -151,7 +151,7 @@ void TestIo::testGetNodeId() {
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
+        CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         NodeId nodeId;
@@ -167,7 +167,7 @@ void TestIo::testGetNodeId() {
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
+        CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         NodeId nodeId;
@@ -188,7 +188,7 @@ void TestIo::testGetNodeId() {
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
+        CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         std::filesystem::remove(targetPath);
@@ -209,7 +209,7 @@ void TestIo::testGetNodeId() {
 
         IoError aliasError;
         CPPUNIT_ASSERT(IoHelper::createAliasFromPath(targetPath, path, aliasError));
-        CPPUNIT_ASSERT(aliasError == IoErrorSuccess);
+        CPPUNIT_ASSERT(aliasError == IoError::Success);
         CPPUNIT_ASSERT(std::filesystem::exists(path));
 
         std::filesystem::remove_all(targetPath);

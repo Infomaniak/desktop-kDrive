@@ -123,7 +123,7 @@ QSize AbstractFileItemWidget::sizeHint() const {
     return {width(), height};
 }
 
-void AbstractFileItemWidget::setFilePath(const QString &filePath, NodeType type /*= NodeTypeFile*/) {
+void AbstractFileItemWidget::setFilePath(const QString &filePath, NodeType type /*= NodeType::File*/) {
     setFileName(filePath, type);
     setPath(filePath);
 }

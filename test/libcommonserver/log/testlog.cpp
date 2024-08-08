@@ -91,14 +91,14 @@ void TestLog::testExpiredLogFiles(void) {
 
 int TestLog::countFilesInDirectory(const SyncPath& directory) const {
     bool endOfDirectory = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt(directory, false, ioError);
-    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
 
     int count = 0;
     DirectoryEntry entry;
     while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
-        CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
         count++;
     }
     CPPUNIT_ASSERT(endOfDirectory);
@@ -107,18 +107,18 @@ int TestLog::countFilesInDirectory(const SyncPath& directory) const {
 
 void TestLog::clearLogDirectory(void) const {
     // Clear the log directory
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     IoHelper::DirectoryIterator dirIt(_logDir, false, ioError);
 
     bool endOfDirectory = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoErrorSuccess) {
+    while (dirIt.next(entry, endOfDirectory, ioError) && !endOfDirectory && ioError == IoError::Success) {
         if (entry.path().filename().string() == Log::instance()->getLogFilePath().filename().string()) {
             continue;
         }
         IoHelper::deleteDirectory(entry.path(), ioError);
     }
-    CPPUNIT_ASSERT_EQUAL(IoErrorSuccess, ioError);
+    CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(endOfDirectory);
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
 }

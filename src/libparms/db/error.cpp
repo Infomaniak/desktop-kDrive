@@ -26,50 +26,50 @@ namespace KDC {
 Error::Error()
     : _dbId(0),
       _time(std::time(0)),
-      _level(ErrorLevelUnknown),
+      _level(ErrorLevel::Unknown),
       _syncDbId(0),
-      _exitCode(ExitCodeUnknown),
-      _exitCause(ExitCauseUnknown),
-      _nodeType(NodeTypeUnknown),
-      _conflictType(ConflictTypeNone),
-      _inconsistencyType(InconsistencyTypeNone),
-      _cancelType(CancelTypeNone) {}
+      _exitCode(ExitCode::Unknown),
+      _exitCause(ExitCause::Unknown),
+      _nodeType(NodeType::Unknown),
+      _conflictType(ConflictType::None),
+      _inconsistencyType(InconsistencyType::None),
+      _cancelType(CancelType::None) {}
 
 Error::Error(const std::string &functionName, ExitCode exitCode, ExitCause exitCause)
     : _dbId(0),
       _time(std::time(0)),
-      _level(ErrorLevelServer),
+      _level(ErrorLevel::Server),
       _functionName(functionName),
       _syncDbId(0),
       _workerName(std::string()),
       _exitCode(exitCode),
       _exitCause(exitCause),
-      _nodeType(NodeTypeUnknown),
-      _conflictType(ConflictTypeNone),
-      _inconsistencyType(InconsistencyTypeNone),
-      _cancelType(CancelTypeNone) {}
+      _nodeType(NodeType::Unknown),
+      _conflictType(ConflictType::None),
+      _inconsistencyType(InconsistencyType::None),
+      _cancelType(CancelType::None) {}
 
 Error::Error(int syncDbId, const std::string &workerName, ExitCode exitCode, ExitCause exitCause)
     : _dbId(0),
       _time(std::time(0)),
-      _level(ErrorLevelSyncPal),
+      _level(ErrorLevel::SyncPal),
       _syncDbId(syncDbId),
       _workerName(workerName),
       _exitCode(exitCode),
       _exitCause(exitCause),
-      _nodeType(NodeTypeUnknown),
-      _conflictType(ConflictTypeNone),
-      _inconsistencyType(InconsistencyTypeNone),
-      _cancelType(CancelTypeNone) {}
+      _nodeType(NodeType::Unknown),
+      _conflictType(ConflictType::None),
+      _inconsistencyType(InconsistencyType::None),
+      _cancelType(CancelType::None) {}
 
 Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
-             ConflictType conflictType, InconsistencyType inconsistencyType /*= InconsistencyTypeNone */,
-             CancelType cancelType /*= CancelTypeNone*/, const SyncPath &destinationPath /*= ""*/
+             ConflictType conflictType, InconsistencyType inconsistencyType /*= InconsistencyType::None */,
+             CancelType cancelType /*= CancelType::None*/, const SyncPath &destinationPath /*= ""*/
              ,
-             ExitCode exitCode /*= ExitCodeUnknown*/, ExitCause exitCause /*= ExitCauseUnknown*/)
+             ExitCode exitCode /*= ExitCode::Unknown*/, ExitCause exitCause /*= ExitCause::Unknown*/)
     : _dbId(0),
       _time(std::time(0)),
-      _level(ErrorLevelNode),
+      _level(ErrorLevel::Node),
       _syncDbId(syncDbId),
       _exitCode(exitCode),
       _exitCause(exitCause),
@@ -85,7 +85,7 @@ Error::Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId
 Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &functionName, int syncDbId,
              const std::string &workerName, ExitCode exitCode, ExitCause exitCause, const NodeId &localNodeId,
              const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path, ConflictType conflictType,
-             InconsistencyType inconsistencyType, CancelType cancelType /*= CancelTypeNone*/,
+             InconsistencyType inconsistencyType, CancelType cancelType /*= CancelType::None*/,
              const SyncPath &destinationPath /*= ""*/)
     : _dbId(dbId),
       _time(time),
@@ -107,14 +107,23 @@ Error::Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &fu
 std::string Error::errorString() const {
     std::ostringstream errStream;
 
-    if (_level == ErrorLevelServer) {
-        errStream << "Level: Server - function: " << _functionName << " - exitCode: " << _exitCode
-                  << " - exitCause: " << _exitCause;
-    } else if (_level == ErrorLevelSyncPal) {
-        errStream << "Level: SyncPal - worker: " << _workerName << " - exitCode: " << _exitCode << " - exitCause: " << _exitCause;
-    } else if (_level == ErrorLevelNode) {
-        errStream << "Level: SyncPal - conflictType: " << _conflictType << " - inconsistencyType: " << _inconsistencyType
-                  << " - cancelType: " << _cancelType;
+    switch (_level) {
+        case ErrorLevel::Server:
+            errStream << "Level: Server - function: " << _functionName << " - exitCode: " << enumClassToInt(_exitCode)
+                      << " - exitCause: " << enumClassToInt(_exitCause);
+            break;
+        case ErrorLevel::SyncPal:
+            errStream << "Level: SyncPal - worker: " << _workerName << " - exitCode: " << enumClassToInt(_exitCode)
+                      << " - exitCause: " << enumClassToInt(_exitCause);
+            break;
+        case ErrorLevel::Node:
+            errStream << "Level: SyncPal - conflictType: " << enumClassToInt(_conflictType)
+                      << " - inconsistencyType: " << enumClassToInt(_inconsistencyType)
+                      << " - cancelType: " << enumClassToInt(_cancelType);
+            break;
+        default:
+            errStream << "Level: Unknown";
+            break;
     }
 
     return errStream.str();
@@ -122,14 +131,14 @@ std::string Error::errorString() const {
 
 bool Error::isSimilarTo(const Error &other) const {
     switch (_level) {
-        case ErrorLevelServer: {
+        case ErrorLevel::Server: {
             return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) &&
                    (_functionName == other.functionName());
         }
-        case ErrorLevelSyncPal: {
+        case ErrorLevel::SyncPal: {
             return (_exitCode == other.exitCode()) && (_exitCause == other.exitCause()) && (_workerName == other.workerName());
         }
-        case ErrorLevelNode: {
+        case ErrorLevel::Node: {
             return (_conflictType == other.conflictType()) && (_inconsistencyType == other.inconsistencyType()) &&
                    (_cancelType == other.cancelType()) && (_path == other.path() && _destinationPath == other.destinationPath());
         }
