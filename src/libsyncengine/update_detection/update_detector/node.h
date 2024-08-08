@@ -88,7 +88,7 @@ class Node {
         inline void setSize(int64_t size) { _size = size; }
         inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
-        inline void setParentNode(const std::shared_ptr<Node> &parentNode) { _parentNode = parentNode; }
+        [[nodiscard]] bool setParentNode(const std::shared_ptr<Node> &parentNode);
         inline void setMoveOrigin(const std::optional<SyncPath> &moveOrigin) { _moveOrigin = moveOrigin; }
         inline void setMoveOriginParentDbId(const std::optional<DbNodeId> &moveOriginParentDbId) {
             _moveOriginParentDbId = moveOriginParentDbId;
@@ -98,7 +98,7 @@ class Node {
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &children() { return _childrenById; }
         std::shared_ptr<Node> findChildren(const SyncName &name, const NodeId &nodeId = "");
         std::shared_ptr<Node> findChildrenById(const NodeId &nodeId);
-        bool insertChildren(std::shared_ptr<Node> child);
+        [[nodiscard]] bool insertChildren(std::shared_ptr<Node> child);
         size_t deleteChildren(std::shared_ptr<Node> child);
         size_t deleteChildren(const NodeId &childId);
         std::shared_ptr<Node> getChildExcept(SyncName name, OperationType except);
@@ -146,6 +146,8 @@ class Node {
         std::vector<ConflictType> _conflictsAlreadyConsidered;
 
         bool _isTmp = false;
+
+        [[nodiscard]] bool isParentValid(const std::shared_ptr<Node> parentNode) const;
 };
 
 }  // namespace KDC

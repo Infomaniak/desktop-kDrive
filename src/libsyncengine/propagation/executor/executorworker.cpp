@@ -289,8 +289,19 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
                                                                  PlatformInconsistencyCheckerUtility::SuffixTypeBlacklisted);
 
             // Remove from update tree
-            affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
-            targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
+            if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                               << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+                hasError = true;
+                return;
+            }
+
+            if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                               << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
+                hasError = true;
+                return;
+            }
 
             return;
         }
@@ -358,7 +369,14 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
 
                 _syncPal->setProgressComplete(relativeLocalFilePath, SyncFileStatusIgnored);
                 std::shared_ptr<UpdateTree> sourceUpdateTree = affectedUpdateTree(syncOp);
-                sourceUpdateTree->deleteNode(syncOp->affectedNode());
+                if (!sourceUpdateTree->deleteNode(syncOp->affectedNode())) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                                   << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+                    _executorExitCode = ExitCodeDataError;
+                    _executorExitCause = ExitCauseUnknown;
+                    hasError = true;
+                    return;
+                }
             }
 
             return;
@@ -653,7 +671,12 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
                 _executorExitCode = needRestart ? ExitCodeOk : ExitCodeSystemError;
                 _executorExitCause = ExitCauseUnknown;
                 _syncPal->_restart = true;
-                _syncPal->updateTree(ReplicaSideLocal)->deleteNode(syncOp->affectedNode());
+
+                if (!_syncPal->updateTree(ReplicaSideLocal)->deleteNode(syncOp->affectedNode())) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                                   << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+                }
+
                 return false;
             }
 
@@ -1649,7 +1672,7 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
     if (jobExitCause == ExitCauseNotFound && !downloadImpossible) {
         // The operation failed because the destination does not exist anymore
         _executorExitCode = ExitCodeDataError;
-        LOG_DEBUG(_logger, "Destination does not exist anymore, restarting sync.");
+        LOG_SYNCPAL_DEBUG(_logger, "Destination does not exist anymore, restarting sync.");
         return false;
     }
 
@@ -1661,9 +1684,18 @@ bool ExecutorWorker::handleManagedBackError(ExitCause jobExitCause, SyncOpPtr sy
                                        syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()));
     }
 
-    affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
+    if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
+        LOGW_SYNCPAL_WARN(
+            _logger, L"Error in UpdateTree::deleteNode: node name=" << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+        return false;
+    }
+
     if (syncOp->correspondingNode()) {
-        targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
+        if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                           << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
+            return false;
+        }
     }
 
     NodeId locaNodeId;
@@ -1743,9 +1775,22 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
                         ConflictTypeNone, InconsistencyTypeNone, CancelTypeNone, "", job->exitCode(), job->exitCause());
             _syncPal->addError(error);
 
-            affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
+            if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                               << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+                _executorExitCode = ExitCodeDataError;
+                _executorExitCause = ExitCauseUnknown;
+                return false;
+            }
+
             if (syncOp->correspondingNode()) {
-                targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
+                if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                                   << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
+                    _executorExitCode = ExitCodeDataError;
+                    _executorExitCause = ExitCauseUnknown;
+                    return false;
+                }
             }
         } else {
             // Cancel all queued jobs
@@ -1914,8 +1959,15 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
             }
 
             // Remove node from update tree
-            _syncPal->updateTree(ReplicaSideLocal)->deleteNode(syncOp->conflict().localNode());
-            _syncPal->updateTree(ReplicaSideRemote)->deleteNode(syncOp->conflict().remoteNode());
+            if (!_syncPal->updateTree(ReplicaSideLocal)->deleteNode(syncOp->conflict().localNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                               << SyncName2WStr(syncOp->conflict().localNode()->name()).c_str());
+            }
+
+            if (!_syncPal->updateTree(ReplicaSideRemote)->deleteNode(syncOp->conflict().remoteNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                               << SyncName2WStr(syncOp->conflict().remoteNode()->name()).c_str());
+            }
 
             propagateChange = false;
             break;
@@ -1935,7 +1987,10 @@ bool ExecutorWorker::propagateConflictToDbAndTree(SyncOpPtr syncOp, bool &propag
         {
             // Remove node from update tree
             std::shared_ptr<UpdateTree> updateTree = affectedUpdateTree(syncOp);
-            updateTree->deleteNode(syncOp->affectedNode());
+            if (!updateTree->deleteNode(syncOp->affectedNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                               << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+            }
 
             // Do not propagate changes to the DB
             // The created node has been moved and will be discovered as new on next sync
@@ -2152,7 +2207,12 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
         std::shared_ptr<UpdateTree> updateTree = targetUpdateTree(syncOp);
         updateTree->insertNode(node);
 
-        newCorrespondingParentNode->insertChildren(node);
+        if (!newCorrespondingParentNode->insertChildren(node)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
+                                           << SyncName2WStr(node->name()).c_str()
+                                           << " parent node name=" << SyncName2WStr(newCorrespondingParentNode->name()).c_str());
+            return false;
+        }
 
         // Affected node does not have a valid DB ID yet, update it
         syncOp->affectedNode()->setIdb(newDbNodeId);
@@ -2349,8 +2409,20 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
         prevParent->deleteChildren(correspondingNode);
 
         correspondingNode->setName(remoteName);
-        correspondingNode->setParentNode(parentNode);
-        correspondingNode->parentNode()->insertChildren(correspondingNode);
+
+        if (!correspondingNode->setParentNode(parentNode)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
+                                           << SyncName2WStr(parentNode->name()).c_str()
+                                           << " parent node name=" << SyncName2WStr(correspondingNode->name()).c_str());
+            return false;
+        }
+
+        if (!correspondingNode->parentNode()->insertChildren(correspondingNode)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
+                                           << SyncName2WStr(correspondingNode->name()).c_str() << " parent node name="
+                                           << SyncName2WStr(correspondingNode->parentNode()->name()).c_str());
+            return false;
+        }
     }
 
     return true;
@@ -2364,8 +2436,17 @@ bool ExecutorWorker::propagateDeleteToDbAndTree(SyncOpPtr syncOp) {
     }
 
     // 3. Remove nX and nY from the update tree structures.
-    affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
-    targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
+    if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
+        LOGW_SYNCPAL_WARN(
+            _logger, L"Error in UpdateTree::deleteNode: node name=" << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+        return false;
+    }
+
+    if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
+        LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                       << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
+        return false;
+    }
 
     return true;
 }
@@ -2422,9 +2503,18 @@ bool ExecutorWorker::runCreateDirJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                         InconsistencyTypeNone, CancelTypeNone, "", ExitCodeBackError, ExitCauseHttpErrForbidden);
             _syncPal->addError(error);
 
-            affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
+            if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                               << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+                return false;
+            }
+
             if (syncOp->correspondingNode()) {
-                targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
+                if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
+                    LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                                   << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
+                    return false;
+                }
             }
             return true;
         }
@@ -2538,9 +2628,16 @@ void ExecutorWorker::increaseErrorCount(SyncOpPtr syncOp) {
         _syncPal->increaseErrorCount(*syncOp->affectedNode()->id(), syncOp->affectedNode()->type(),
                                      syncOp->affectedNode()->getPath(), otherSide(syncOp->targetSide()));
 
-        affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode());
+        if (!affectedUpdateTree(syncOp)->deleteNode(syncOp->affectedNode())) {
+            LOGW_SYNCPAL_WARN(
+                _logger, L"Error in UpdateTree::deleteNode: node name=" << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
+        }
+
         if (syncOp->correspondingNode() && syncOp->correspondingNode()->id().has_value()) {
-            targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode());
+            if (!targetUpdateTree(syncOp)->deleteNode(syncOp->correspondingNode())) {
+                LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node name="
+                                               << SyncName2WStr(syncOp->correspondingNode()->name()).c_str());
+            }
         }
     }
 }

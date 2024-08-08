@@ -224,20 +224,20 @@ void TestUpdateTreeWorker::setUpUpdateTree() {
 
     _updateTree->init();
 
-    _updateTree->rootNode()->insertChildren(node1);
-    _updateTree->rootNode()->insertChildren(node2);
-    _updateTree->rootNode()->insertChildren(node3);
-    _updateTree->rootNode()->insertChildren(node4);
-    _updateTree->rootNode()->insertChildren(node6);
-    _updateTree->rootNode()->insertChildren(node6a);
+    CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node1));
+    CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node2));
+    CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node3));
+    CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node4));
+    CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node6));
+    CPPUNIT_ASSERT(_updateTree->rootNode()->insertChildren(node6a));
 
-    node1->insertChildren(node11);
-    node11->insertChildren(node111);
-    node111->insertChildren(node1111);
-    node3->insertChildren(node31);
-    node4->insertChildren(node41);
-    node41->insertChildren(node411);
-    node411->insertChildren(node4111);
+    CPPUNIT_ASSERT(node1->insertChildren(node11));
+    CPPUNIT_ASSERT(node11->insertChildren(node111));
+    CPPUNIT_ASSERT(node111->insertChildren(node1111));
+    CPPUNIT_ASSERT(node3->insertChildren(node31));
+    CPPUNIT_ASSERT(node4->insertChildren(node41));
+    CPPUNIT_ASSERT(node41->insertChildren(node411));
+    CPPUNIT_ASSERT(node411->insertChildren(node4111));
 
     _updateTree->insertNode(node1111);
     _updateTree->insertNode(node111);
@@ -288,7 +288,7 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
         CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
         CPPUNIT_ASSERT(newNode->isTmp());
 
-        _updateTreeWorker->updateTmpFileNode(newNode, createOp, deleteOp, OperationTypeEdit);
+        CPPUNIT_ASSERT(_updateTreeWorker->updateTmpFileNode(newNode, createOp, deleteOp, OperationTypeEdit));
         CPPUNIT_ASSERT_EQUAL(NodeId("id51"), *newNode->id());
         CPPUNIT_ASSERT_EQUAL(*newNode->createdAt(), createOp->createdAt());
         CPPUNIT_ASSERT_EQUAL(*newNode->lastmodified(), createOp->lastModified());
@@ -299,14 +299,14 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
         CPPUNIT_ASSERT(_updateTree->nodes()[createOp->nodeId()] == newNode);
     }
 
-    _updateTree->deleteNode(NodeId("id51"));
+    CPPUNIT_ASSERT(_updateTree->deleteNode(NodeId("id51")));
 
     {
         auto newNode = _updateTreeWorker->getOrCreateNodeFromExistingPath("Dir 5/File 5.1");
         CPPUNIT_ASSERT(newNode->id()->substr(0, 4) == "tmp_");
         CPPUNIT_ASSERT(newNode->isTmp());
 
-        _updateTreeWorker->updateTmpFileNode(newNode, deleteOp, deleteOp, OperationTypeDelete);
+        CPPUNIT_ASSERT(_updateTreeWorker->updateTmpFileNode(newNode, deleteOp, deleteOp, OperationTypeDelete));
         CPPUNIT_ASSERT_EQUAL(NodeId("id51bis"), *newNode->id());
         CPPUNIT_ASSERT_EQUAL(*newNode->createdAt(), deleteOp->createdAt());
         CPPUNIT_ASSERT_EQUAL(*newNode->lastmodified(), deleteOp->lastModified());
@@ -647,7 +647,7 @@ void TestUpdateTreeWorker::testGetOriginPath() {
 
     // Test with move operation on the child
     node->insertChangeEvent(OperationTypeMove);
-    node->setParentNode(_updateTree->getNodeById("id4"));  // Move node 4111 under parent 4
+    CPPUNIT_ASSERT(node->setParentNode(_updateTree->getNodeById("id4")));  // Move node 4111 under parent 4
     node->setName(Str("File 4.1.1.1 renamed"));            // Rename node
     node->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     node->setMoveOriginParentDbId(_dbnodeIdDir411);
@@ -662,7 +662,7 @@ void TestUpdateTreeWorker::testGetOriginPath2() {
     // Test with move operation on some parents
     std::shared_ptr<Node> node = _updateTree->getNodeById("id411");
     node->insertChangeEvent(OperationTypeMove);
-    node->setParentNode(_updateTree->getNodeById("id4"));  // Move node 411 under parent 4
+    CPPUNIT_ASSERT(node->setParentNode(_updateTree->getNodeById("id4")));  // Move node 411 under parent 4
     node->setName(Str("Dir 4.1.1 renamed"));               // Rename node
     node->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1");
     node->setMoveOriginParentDbId(_dbnodeIdDir41);
@@ -690,7 +690,7 @@ void TestUpdateTreeWorker::testGetOriginPath3() {
 
     std::shared_ptr<Node> node411 = _updateTree->getNodeById("id411");
     node411->insertChangeEvent(OperationTypeMove);
-    node411->setParentNode(_updateTree->getNodeById("id4"));  // Move node 411 under parent 4
+    CPPUNIT_ASSERT(node411->setParentNode(_updateTree->getNodeById("id4")));  // Move node 411 under parent 4
     node411->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1");
     node411->setMoveOriginParentDbId(_dbnodeIdDir41);
 
@@ -706,7 +706,7 @@ void TestUpdateTreeWorker::testGetOriginPath4() {
     // Test with move operation on parent AND child (move parent THEN rename children)
     std::shared_ptr<Node> node411 = _updateTree->getNodeById("id411");
     node411->insertChangeEvent(OperationTypeMove);
-    node411->setParentNode(_updateTree->getNodeById("id4"));  // Move node 411 under parent 4
+    CPPUNIT_ASSERT(node411->setParentNode(_updateTree->getNodeById("id4")));  // Move node 411 under parent 4
     node411->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1");
     node411->setMoveOriginParentDbId(_dbnodeIdDir41);
 
