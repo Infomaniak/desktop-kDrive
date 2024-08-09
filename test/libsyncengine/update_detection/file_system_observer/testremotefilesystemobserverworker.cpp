@@ -30,6 +30,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/remotetemporarydirectory.h"
 #include "requests/syncnodecache.h"
 
 using namespace CppUnit;
@@ -132,14 +133,14 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     SyncPath testFilePath = temporaryDirectory.path() / testFileName;
     std::string testCallStr = R"(echo "File creation" > )" + testFilePath.make_preferred().string();
     std::system(testCallStr.c_str());
-
+    RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _testFolderId, "test_remote_FSO");
     {
         LOG_DEBUG(_logger, "***** test create file *****");
 
         // Upload in Common document sub directory
         {
             const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-            UploadJob job(_driveDbId, testFilePath, testFileName, testRemoteFsoDirId, time);
+            UploadJob job(_driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
             job.runSynchronously();
 
             // Extract file ID
@@ -168,7 +169,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         Utility::msleep(1000);
 
         const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        UploadJob job(_driveDbId, testFilePath, testFileName, testRemoteFsoDirId, time);
+        UploadJob job(_driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
         job.runSynchronously();
 
         // Get activity from the server
