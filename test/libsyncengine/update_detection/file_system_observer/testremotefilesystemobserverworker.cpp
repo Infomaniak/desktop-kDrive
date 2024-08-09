@@ -134,6 +134,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     std::string testCallStr = R"(echo "File creation" > )" + testFilePath.make_preferred().string();
     std::system(testCallStr.c_str());
     RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _testFolderId, "test_remote_FSO");
+    RemoteTemporaryDirectory remoteTmpDirNested(_driveDbId, remoteTmpDir.id(), "test_remote_FSO_nested");
+
     {
         LOG_DEBUG(_logger, "***** test create file *****");
 
@@ -181,13 +183,13 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test move file *****");
 
-        MoveJob job(_driveDbId, localTestDirPath, _testFileId, _testFolderId);
+        MoveJob job(_driveDbId, localTestDirPath, _testFileId, remoteTmpDirNested.id());
         job.runSynchronously();
 
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT_EQUAL(_testFolderId, _syncPal->_remoteFSObserverWorker->_snapshot->parentId(_testFileId));
+        CPPUNIT_ASSERT_EQUAL(remoteTmpDirNested.id(), _syncPal->_remoteFSObserverWorker->_snapshot->parentId(_testFileId));
     }
 
     {
