@@ -382,8 +382,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 }
 
                 const bool movedOrRenamed =
-                    Utility::normalizedSyncName(dbName) != Utility::normalizedSyncName(snapshot->name(nodeId)) ||
-                    parentId != snapshot->parentId(nodeId);
+                    dbName != Utility::normalizedSyncName(snapshot->name(nodeId)) || parentId != snapshot->parentId(nodeId);
                 if (movedOrRenamed) {
                     FSOpPtr fsOp = nullptr;
                     if (isInUnsyncedList(snapshot, nodeId, side)) {
