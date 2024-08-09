@@ -65,6 +65,8 @@ class SqliteDb {
         int extendedErrorCode() const;
         inline void setAutoDelete(bool value) { _autoDelete = value; }
 
+        int createNormalizeSyncNameFunc();
+
     private:
         enum class CheckDbResult {
             Ok,

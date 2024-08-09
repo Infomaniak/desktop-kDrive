@@ -71,6 +71,8 @@ class COMMONSERVER_EXPORT Db {
 
         inline const std::string &fromVersion() const { return _fromVersion; }
 
+        inline int createNormalizeSyncNameFunc() { return _sqliteDb->createNormalizeSyncNameFunc(); };
+
     protected:
         void startTransaction();
         void commitTransaction();

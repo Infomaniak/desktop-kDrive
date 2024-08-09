@@ -18,6 +18,7 @@
 
 #include "testupdatetree.h"
 
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -28,6 +29,59 @@ void TestUpdateTree::setUp() {
 
 void TestUpdateTree::tearDown() {
     delete _myTree;
+}
+
+void TestUpdateTree::testConstructors() {
+#ifdef _WIN32
+    const SyncName nfdName = Utility::normalizedSyncName(L"éàè", Utility::UnicodeNormalization::NFD);
+    const SyncName nfcName = Utility::normalizedSyncName(L"éàè");
+#else
+    const SyncName nfdName = Utility::normalizedSyncName("éàè", Utility::UnicodeNormalization::NFD);
+    const SyncName nfcName = Utility::normalizedSyncName("éàè");
+#endif
+
+    {
+        Node node(std::nullopt, ReplicaSideRemote, nfcName, NodeTypeDirectory, "1", 0, 0, 0);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node(std::nullopt, ReplicaSideRemote, nfdName, NodeTypeDirectory, "1", 0, 0, 0);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+
+    {
+        Node node(std::nullopt, ReplicaSideRemote, nfcName, NodeTypeDirectory, OperationTypeNone, "1", 0, 0, 123, nullptr);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node(std::nullopt, ReplicaSideRemote, nfdName, NodeTypeDirectory, OperationTypeNone, "1", 0, 0, 123, nullptr);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node(ReplicaSideRemote, nfcName, NodeTypeDirectory, nullptr);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node(ReplicaSideRemote, nfdName, NodeTypeDirectory, nullptr);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node;
+        node.setName(nfdName);
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
 }
 
 void TestUpdateTree::testAll() {
