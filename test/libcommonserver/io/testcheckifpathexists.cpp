@@ -453,7 +453,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     // A Windows junction on a regular target file.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
+        const SyncPath targetPath = _localTestDirPath / "test_pictures" / "picture-1.jpg";
         const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
         IoError ioError = IoErrorUnknown;
