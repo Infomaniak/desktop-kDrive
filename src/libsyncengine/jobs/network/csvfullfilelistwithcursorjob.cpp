@@ -140,6 +140,17 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
 
 void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state) {
     for (char c : line) {
+        if (state.readingDoubleQuotedValue && state.prevCharDoubleQuotes) {
+            if (c != ',' && c != '"') {
+                // After a closing '"', we must have a ',' or another '"'. Itherwise, ignore the line.
+                state.index = CsvIndexId;                // Make sure that state is not equal to CsvIndexEnd
+                state.readingDoubleQuotedValue = false;  // Make sure that we are not stuck inside "readingDoubleQuotedValue"
+                LOG_WARN(_logger, "Item '" << line.c_str()
+                                           << "' ignored because a '\"' character must be followed by ',' or another '\"'");
+                return;
+            }
+        }
+
         if (c == ',' && (!state.readingDoubleQuotedValue || state.prevCharDoubleQuotes)) {
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;
@@ -151,6 +162,12 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
             state.tmp.clear();
             incrementCsvIndex(state.index);
         } else if (c == '"') {
+            if (state.index != CsvIndexName) {
+                // " could appears in name only
+                LOG_WARN(_logger, "Item '" << line.c_str() << "' ignored because a '\"' character could appears in name only");
+                return;
+            }
+
             ++state.doubleQuoteCount;
             if (!state.readingDoubleQuotedValue) {
                 state.readingDoubleQuotedValue = true;
@@ -198,30 +215,17 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
         readSnapshotItemFields(item, line, error, state);
         if (error) return true;
 
-        // if (state.doubleQuoteCount > 2) {
-        //     LOGW_WARN(_logger, L"Item name contains double quote, ignoring it.");
-        //     ignore = true;
-        //     return true;
-        // }
-
         // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
         if (state.readingDoubleQuotedValue) {
             state.tmp.push_back('\n');
             state.readNextLine = true;
             const std::string lastParsedLine = line;
             std::getline(ss, line);
-            // if (line.empty()) {
-            //     LOGW_WARN(_logger, L"CSV full listing parsing error. Invalid line='"
-            //                            << Utility::s2ws(lastParsedLine).c_str()
-            //                            << L"'. Check double quote balance and line return characters.");
-            //     error = true;
-            //     return true;
-            // }
         }
     }
 
     if (state.index < CsvIndexEnd - 1) {
-        LOGW_WARN(_logger, L"Invalid item");
+        LOG_WARN(_logger, "Invalid item");
         ignore = true;
         return true;
     }
