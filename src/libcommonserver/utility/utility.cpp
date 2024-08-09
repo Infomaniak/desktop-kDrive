@@ -719,7 +719,7 @@ std::string Utility::errId(const char *file, int line) {
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-SyncName Utility::normalizedSyncName(const SyncName &name, bool formD) {
+SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization normalization) {
 #ifdef _WIN32
     if (name.empty()) {
         return name;
@@ -729,13 +729,15 @@ SyncName Utility::normalizedSyncName(const SyncName &name, bool formD) {
     LPWSTR strResult = NULL;
     HANDLE hHeap = GetProcessHeap();
 
-    int iSizeEstimated = NormalizeString(formD ? NormalizationD : NormalizationC, name.c_str(), -1, NULL, 0);
+    int iSizeEstimated =
+        NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC, name.c_str(), -1, NULL, 0);
     for (int i = 0; i < maxIterations; i++) {
         if (strResult) {
             HeapFree(hHeap, 0, strResult);
         }
         strResult = (LPWSTR)HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
-        iSizeEstimated = NormalizeString(formD ? NormalizationD : NormalizationC, name.c_str(), -1, strResult, iSizeEstimated);
+        iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
+                                         name.c_str(), -1, strResult, iSizeEstimated);
 
         if (iSizeEstimated > 0) {
             break;  // success
@@ -779,7 +781,7 @@ SyncName Utility::normalizedSyncName(const SyncName &name, bool formD) {
     return syncName;
 #else
     char *str = nullptr;
-    if (formD) {
+    if (normalization == UnicodeNormalization::NFD) {
         str = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
     } else {
         str = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
