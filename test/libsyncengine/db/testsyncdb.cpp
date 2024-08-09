@@ -45,14 +45,32 @@ void TestSyncDb::tearDown() {
     delete _testObj;
 }
 
+namespace helpers {
+SyncName makeNfdSyncName() {
+#ifdef _WIN32
+    return Utility::normalizedSyncName(L"ééé", Utility::UnicodeNormalization::NFD);
+#else
+    return Utility::normalizedSyncName("ééé", Utility::UnicodeNormalization::NFD);
+#endif
+}
+
+SyncName makeNfcSyncName() {
+#ifdef _WIN32
+    return Utility::normalizedSyncName(L"ééé);
+#else
+    return Utility::normalizedSyncName("ééé");
+#endif
+}
+}  // namespace helpers
+
 void TestSyncDb::testUpgrade_3_6_3() {
-    time_t tLoc = std::time(0);
-    time_t tDrive = std::time(0);
+    const time_t tLoc = std::time(0);
+    const time_t tDrive = std::time(0);
     const auto rootId = _testObj->rootNode().nodeId();
 
     // Insert nodes with NFD-normalized names
-    SyncName nfdEncodedName(Utility::normalizedSyncName("ééé", Utility::UnicodeNormalization::NFD));
-    SyncName nfcEncodedName(Utility::normalizedSyncName("ééé"));
+    const SyncName nfdEncodedName = helpers::makeNfdSyncName();
+    const SyncName nfcEncodedName = helpers::makeNfcSyncName();
 
     DbNode nodeFile1(0, rootId, nfdEncodedName, nfdEncodedName, "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeFile, 0, "cs 2.2");
@@ -135,7 +153,7 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile6, dbNodeIdFile6, constraintError));
 
     // Insert node with non normalized name (NFD)
-    SyncName nfdEncodedName(Utility::normalizedSyncName("éééé", Utility::UnicodeNormalization::NFD));
+    const SyncName nfdEncodedName = helpers::makeNfdSyncName();
     DbNode nodeFile7(0, dbNodeIdDir1, nfdEncodedName, nfdEncodedName, "id loc 2.2", "id drive 2.2", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeFile, 0, "cs 2.2");
     DbNodeId dbNodeIdFile7;
@@ -147,7 +165,7 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideLocal, nodeFile7.nodeIdLocal().value(), localName, found) && found);
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideRemote, nodeFile7.nodeIdRemote().value(), remoteName, found) && found);
 
-    SyncName nfcEncodedName(Utility::normalizedSyncName("éééé"));
+    const SyncName nfcEncodedName = helpers::makeNfcSyncName();
     CPPUNIT_ASSERT(localName == nfcEncodedName);
     CPPUNIT_ASSERT(remoteName == nfcEncodedName);
 
@@ -176,18 +194,16 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT_EQUAL(nodeFile6.checksum().value(), cs.value());
 
     // Update node with non normalized name (NFD)
-    SyncName nfdEncodedNameNew(Utility::normalizedSyncName("èèèè", Utility::UnicodeNormalization::NFD));
     nodeFile7.setNodeId(dbNodeIdFile7);
-    nodeFile7.setNameLocal(nfdEncodedNameNew);
-    nodeFile7.setNameRemote(nfdEncodedNameNew);
+    nodeFile7.setNameLocal(nfdEncodedName);
+    nodeFile7.setNameRemote(nfdEncodedName);
     CPPUNIT_ASSERT(_testObj->updateNode(nodeFile7, found) && found);
 
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideLocal, nodeFile7.nodeIdLocal().value(), localName, found) && found);
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideRemote, nodeFile7.nodeIdRemote().value(), remoteName, found) && found);
 
-    SyncName nfcEncodedNameNew(Utility::normalizedSyncName("èèèè"));
-    CPPUNIT_ASSERT(localName == nfcEncodedNameNew);
-    CPPUNIT_ASSERT(remoteName == nfcEncodedNameNew);
+    CPPUNIT_ASSERT(localName == nfcEncodedName);
+    CPPUNIT_ASSERT(remoteName == nfcEncodedName);
 
     // Delete node
     CPPUNIT_ASSERT(_testObj->deleteNode(dbNodeIdFile6, found) && found);
