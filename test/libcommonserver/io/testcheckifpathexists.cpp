@@ -103,7 +103,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         const SyncPath path = temporaryDirectory.path() / "test.txt";
         { std::ofstream ofs(path); }
         IoError ioError = IoErrorUnknown;
-        bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
+        const bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
         if (!setRightResults) {
             IoHelper::setRights(path, true, true, true, ioError);
             CPPUNIT_FAIL("Failed to set rights on the file");
