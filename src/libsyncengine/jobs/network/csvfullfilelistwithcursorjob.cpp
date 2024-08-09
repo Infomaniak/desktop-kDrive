@@ -32,7 +32,7 @@
 
 namespace KDC {
 
-SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger) {};
+SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger){};
 
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                                    const std::exception &exc) {
@@ -156,7 +156,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
                 state.readingDoubleQuotedValue = true;
             } else {
                 if (state.prevCharDoubleQuotes) {
-                    // Replace 2 successive double quotes by one
+                    // Replace 2 successive double quotes by one (because in back reply " are replaced by "")
                     state.prevCharDoubleQuotes = false;
                     state.tmp.push_back('"');
                 } else {
@@ -198,11 +198,11 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
         readSnapshotItemFields(item, line, error, state);
         if (error) return true;
 
-        if (state.doubleQuoteCount > 2) {
-            LOGW_WARN(_logger, L"Item name contains double quote, ignoring it.");
-            ignore = true;
-            return true;
-        }
+        // if (state.doubleQuoteCount > 2) {
+        //     LOGW_WARN(_logger, L"Item name contains double quote, ignoring it.");
+        //     ignore = true;
+        //     return true;
+        // }
 
         // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
         if (state.readingDoubleQuotedValue) {
@@ -210,13 +210,13 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
             state.readNextLine = true;
             const std::string lastParsedLine = line;
             std::getline(ss, line);
-            if (line.empty()) {
-                LOGW_WARN(_logger, L"CSV full listing parsing error. Invalid line='"
-                                       << Utility::s2ws(lastParsedLine).c_str()
-                                       << L"'. Check double quote balance and line return characters.");
-                error = true;
-                return true;
-            }
+            // if (line.empty()) {
+            //     LOGW_WARN(_logger, L"CSV full listing parsing error. Invalid line='"
+            //                            << Utility::s2ws(lastParsedLine).c_str()
+            //                            << L"'. Check double quote balance and line return characters.");
+            //     error = true;
+            //     return true;
+            // }
         }
     }
 
