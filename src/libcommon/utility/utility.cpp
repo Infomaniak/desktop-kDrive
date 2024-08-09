@@ -75,9 +75,6 @@ namespace KDC {
 
 const int CommonUtility::logsPurgeRate = 7;               // days
 const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
-#if defined(_WIN32)
-size_t CommonUtility::_maxPathWin = 0;
-#endif
 
 SyncPath CommonUtility::_workingDirPath = "";
 
@@ -622,6 +619,7 @@ QString CommonUtility::getRelativePathFromHome(const QString &dirPath) {
 
 size_t CommonUtility::maxPathLength() {
 #if defined(_WIN32)
+    static size_t _maxPathWin = 0;
     if (_maxPathWin == 0) {
         Poco::Util::WinRegistryKey key(R"(HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem)", true);
         bool exist = key.exists("LongPathsEnabled");
