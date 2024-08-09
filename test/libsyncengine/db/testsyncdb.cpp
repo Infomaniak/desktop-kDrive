@@ -49,7 +49,7 @@ void TestSyncDb::testUpgrade_3_6_3() {
     time_t tLoc = std::time(0);
     time_t tDrive = std::time(0);
     // Insert node with non normalized name (NFD)
-    SyncName nfdEncodedName(Utility::normalizedSyncName("ééé", true));
+    SyncName nfdEncodedName(Utility::normalizedSyncName("ééé", Utility::UnicodeNormalization::NFD));
     SyncName nfcEncodedName(Utility::normalizedSyncName("ééé"));
     const auto rootId = _testObj->rootNode().nodeId();
     DbNode nodeFile1(0, rootId, nfdEncodedName, nfdEncodedName, "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
@@ -131,7 +131,7 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile6, dbNodeIdFile6, constraintError));
 
     // Insert node with non normalized name (NFD)
-    SyncName nfdEncodedName(Utility::normalizedSyncName("éééé", true));
+    SyncName nfdEncodedName(Utility::normalizedSyncName("éééé", Utility::UnicodeNormalization::NFD));
     DbNode nodeFile7(0, dbNodeIdDir1, nfdEncodedName, nfdEncodedName, "id loc 2.2", "id drive 2.2", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeFile, 0, "cs 2.2");
     DbNodeId dbNodeIdFile7;
@@ -172,7 +172,7 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT_EQUAL(nodeFile6.checksum().value(), cs.value());
 
     // Update node with non normalized name (NFD)
-    SyncName nfdEncodedNameNew(Utility::normalizedSyncName("èèèè", true));
+    SyncName nfdEncodedNameNew(Utility::normalizedSyncName("èèèè", Utility::UnicodeNormalization::NFD));
     nodeFile7.setNodeId(dbNodeIdFile7);
     nodeFile7.setNameLocal(nfdEncodedNameNew);
     nodeFile7.setNameRemote(nfdEncodedNameNew);
