@@ -153,8 +153,8 @@ void TestPlatformInconsistencyCheckerWorker::testNameClash() {
     const auto nodeUpper = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("A"), NodeTypeFile,
                                                   OperationTypeCreate, "A", 0, 0, 12345, parentNode);
 
-    parentNode->insertChildren(nodeLower);
-    parentNode->insertChildren(nodeUpper);
+    CPPUNIT_ASSERT(parentNode->insertChildren(nodeLower));
+    CPPUNIT_ASSERT(parentNode->insertChildren(nodeUpper));
 
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(parentNode);
 
@@ -193,8 +193,8 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
         std::make_shared<Node>(dbNodeIdUpper, ReplicaSideRemote, Str("A"), NodeTypeFile, OperationTypeNone, "rA", 0, 0, 12345,
                                _syncPal->updateTree(ReplicaSideRemote)->rootNode());
 
-    remoteParentNode->insertChildren(remoteNodeLower);
-    remoteParentNode->insertChildren(remoteNodeUpper);
+    CPPUNIT_ASSERT(remoteParentNode->insertChildren(remoteNodeLower));
+    CPPUNIT_ASSERT(remoteParentNode->insertChildren(remoteNodeUpper));
 
     _syncPal->updateTree(ReplicaSideRemote)->insertNode(remoteNodeLower);
     _syncPal->updateTree(ReplicaSideRemote)->insertNode(remoteNodeUpper);
@@ -206,8 +206,8 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     const auto localNodeUpper = std::make_shared<Node>(dbNodeIdUpper, ReplicaSideLocal, Str("A"), NodeTypeFile, OperationTypeNone,
                                                        "lA", 0, 0, 12345, localParentNode);
 
-    localParentNode->insertChildren(localNodeLower);
-    localParentNode->insertChildren(localNodeUpper);
+    CPPUNIT_ASSERT(localParentNode->insertChildren(localNodeLower));
+    CPPUNIT_ASSERT(localParentNode->insertChildren(localNodeUpper));
 
     _syncPal->updateTree(ReplicaSideLocal)->insertNode(localNodeLower);
     _syncPal->updateTree(ReplicaSideLocal)->insertNode(localNodeUpper);
@@ -248,9 +248,9 @@ void TestPlatformInconsistencyCheckerWorker::testExecute() {
     const auto nodeUpper = std::make_shared<Node>(std::nullopt, ReplicaSideRemote, Str("A"), NodeTypeFile, OperationTypeCreate,
                                                   "A", 0, 0, 12345, parentNode);
 
-    _syncPal->updateTree(ReplicaSideRemote)->rootNode()->insertChildren(parentNode);
-    parentNode->insertChildren(nodeLower);
-    parentNode->insertChildren(nodeUpper);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSideRemote)->rootNode()->insertChildren(parentNode));
+    CPPUNIT_ASSERT(parentNode->insertChildren(nodeLower));
+    CPPUNIT_ASSERT(parentNode->insertChildren(nodeUpper));
 
     _syncPal->updateTree(ReplicaSideRemote)->insertNode(parentNode);
     _syncPal->updateTree(ReplicaSideRemote)->insertNode(nodeLower);

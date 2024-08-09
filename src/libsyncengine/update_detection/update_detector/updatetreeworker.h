@@ -108,7 +108,7 @@ class UpdateTreeWorker : public ISyncWorker {
 
         ExitCode createMoveNodes(const NodeType &nodeType);
 
-        void updateNodeId(std::shared_ptr<Node> node, const NodeId &newId);
+        [[nodiscard]] bool updateNodeId(std::shared_ptr<Node> node, const NodeId &newId);
 
         ExitCode getNewPathAfterMove(const SyncPath &path, SyncPath &newPath);
         ExitCode updateNodeWithDb(const std::shared_ptr<Node> parentNode);
@@ -119,7 +119,8 @@ class UpdateTreeWorker : public ISyncWorker {
         // Log update information if extended logging is on.
         void logUpdate(const std::shared_ptr<Node> node, const OperationType opType,
                        const std::shared_ptr<Node> parentNode = nullptr);
-        void updateTmpFileNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp, OperationType opType);
+        [[nodiscard]] bool updateTmpFileNode(const std::shared_ptr<Node> node, FSOpPtr op, FSOpPtr deleteOp,
+                                             OperationType opType);
         /**
          * Search for the parent of the node with path `nodePath` in the update tree through its database ID.
          \param nodePath: the path of the node whose parent is queried
@@ -145,7 +146,7 @@ class UpdateTreeWorker : public ISyncWorker {
             return getOrCreateNodeFromPath(path, false);
         }
         std::shared_ptr<Node> getOrCreateNodeFromDeletedPath(const SyncPath &path) { return getOrCreateNodeFromPath(path, true); }
-        void mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
+        bool mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, std::shared_ptr<Node> realNode);
 
         /**
          * Check that there is no temporary node remaining in the update tree

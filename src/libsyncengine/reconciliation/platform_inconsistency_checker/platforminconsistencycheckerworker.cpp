@@ -39,8 +39,12 @@ void PlatformInconsistencyCheckerWorker::execute() {
     ExitCode exitCode = checkTree(_syncPal->updateTree(ReplicaSideRemote)->rootNode(), _syncPal->updateTree(ReplicaSideRemote)->rootNode()->name());
 
     for (const auto &idItem : _idsToBeRemoved) {
-        _syncPal->updateTree(ReplicaSideRemote)->deleteNode(idItem.remoteId);
-        _syncPal->updateTree(ReplicaSideLocal)->deleteNode(idItem.localId);
+        if (!_syncPal->updateTree(ReplicaSideRemote)->deleteNode(idItem.remoteId)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << idItem.remoteId.c_str());
+        }
+        if (!_syncPal->updateTree(ReplicaSideLocal)->deleteNode(idItem.localId)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << idItem.localId.c_str());
+        }
     }
 
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
