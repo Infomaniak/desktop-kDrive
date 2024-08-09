@@ -106,7 +106,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         ofs.close();
 
         IoError ioError = IoErrorUnknown;
-        bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
+        const bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
         if (!setRightResults) {
             IoHelper::setRights(path, true, true, true, ioError);
             CPPUNIT_FAIL("Failed to set rights on the file");
