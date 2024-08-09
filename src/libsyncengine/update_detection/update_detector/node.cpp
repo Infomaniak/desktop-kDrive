@@ -64,7 +64,7 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
       _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode)
-    : _side(side), _name(name), _type(type), _parentNode(parentNode), _isTmp(true) {
+    : _side(side), _name(Utility::normalizedSyncName(name)), _type(type), _parentNode(parentNode), _isTmp(true) {
     _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
 }
 

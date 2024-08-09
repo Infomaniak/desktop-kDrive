@@ -127,7 +127,7 @@ class Node {
     private:
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSideUnknown;
-        SyncName _name;
+        SyncName _name;  // This name is NFC-normalized by constructors and setters.
         InconsistencyType _inconsistencyType = InconsistencyTypeNone;
         NodeType _type = NodeTypeUnknown;
         int _changeEvents = OperationTypeNone;

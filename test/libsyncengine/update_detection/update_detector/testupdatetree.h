@@ -27,6 +27,7 @@ namespace KDC {
 
 class TestUpdateTree : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUpdateTree);
+        CPPUNIT_TEST(testConstructors);
         CPPUNIT_TEST(testAll);
         CPPUNIT_TEST(testChangeEvents);
         CPPUNIT_TEST_SUITE_END();
@@ -36,6 +37,7 @@ class TestUpdateTree : public CppUnit::TestFixture {
         void tearDown() override;
 
     protected:
+        void testConstructors();
         void testAll();
         void testChangeEvents();
 
