@@ -452,7 +452,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath targetPath = _localTestDirPath / "test_pictures" / "picture-1.jpg";
-        const SyncPath path = temporaryDirectory.path() / "dir_junction";
+        const SyncPath path = temporaryDirectory.path() / "regular_file_junction.jpg";
 
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->createJunctionFromPath(targetPath, path, ioError));
