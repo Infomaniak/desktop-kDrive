@@ -112,7 +112,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
             CPPUNIT_FAIL("Failed to set rights on the file");
         }
         bool exists = false;
-        bool checkIfPathExistsResult = _testObj->checkIfPathExists(path, exists, ioError);
+        const bool checkIfPathExistsResult = _testObj->checkIfPathExists(path, exists, ioError);
         IoHelper::setRights(path, true, true, true, ioError);
 
         CPPUNIT_ASSERT(checkIfPathExistsResult);
