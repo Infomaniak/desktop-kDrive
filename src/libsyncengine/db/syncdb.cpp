@@ -32,6 +32,9 @@
 //
 // node
 //
+
+// /!\ nameLocal & nameDrive must be in NFC form
+
 #define CREATE_NODE_TABLE_ID "create_node"
 #define CREATE_NODE_TABLE              \
     "CREATE TABLE IF NOT EXISTS node(" \

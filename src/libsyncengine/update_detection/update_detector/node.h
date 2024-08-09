@@ -127,7 +127,7 @@ class Node {
     private:
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSideUnknown;
-        SyncName _name;
+        SyncName _name;  // /!\ Must be in NFC form
         InconsistencyType _inconsistencyType = InconsistencyTypeNone;
         NodeType _type = NodeTypeUnknown;
         int _changeEvents = OperationTypeNone;
