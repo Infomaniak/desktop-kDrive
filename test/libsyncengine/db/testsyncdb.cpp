@@ -56,7 +56,7 @@ SyncName makeNfdSyncName() {
 
 SyncName makeNfcSyncName() {
 #ifdef _WIN32
-    return Utility::normalizedSyncName(L"ééé);
+    return Utility::normalizedSyncName(L"ééé");
 #else
     return Utility::normalizedSyncName("ééé");
 #endif
