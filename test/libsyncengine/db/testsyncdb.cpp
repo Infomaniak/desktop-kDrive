@@ -48,25 +48,29 @@ void TestSyncDb::tearDown() {
 void TestSyncDb::testUpgrade_3_6_3() {
     time_t tLoc = std::time(0);
     time_t tDrive = std::time(0);
-    // Insert node with non normalized name (NFD)
+    const auto rootId = _testObj->rootNode().nodeId();
+
+    // Insert nodes with NFD-normalized names
     SyncName nfdEncodedName(Utility::normalizedSyncName("ééé", Utility::UnicodeNormalization::NFD));
     SyncName nfcEncodedName(Utility::normalizedSyncName("ééé"));
-    const auto rootId = _testObj->rootNode().nodeId();
+
     DbNode nodeFile1(0, rootId, nfdEncodedName, nfdEncodedName, "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeFile, 0, "cs 2.2");
     DbNode nodeFile2(0, rootId, nfcEncodedName, nfdEncodedName, "id loc 2", "id drive 2", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeFile, 0, "cs 2.2");
     DbNode nodeFile3(0, rootId, nfcEncodedName, nfcEncodedName, "id loc 3", "id drive 3", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeFile, 0, "cs 2.2");
+
     bool constraintError = false;
     DbNodeId dbNodeId;
+
     _testObj->insertNode(nodeFile1, dbNodeId, constraintError);
     _testObj->insertNode(nodeFile2, dbNodeId, constraintError);
     _testObj->insertNode(nodeFile3, dbNodeId, constraintError);
 
     _testObj->upgrade("3.6.3", "3.6.4");
 
-    // All DB sync names should now be NFC encoded (normalized)
+    // All DB sync names should now be NFC-normalized.
     SyncName localName;
     SyncName remoteName;
     bool found = false;
