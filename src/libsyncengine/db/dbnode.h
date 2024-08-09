@@ -52,8 +52,8 @@ class DbNode {
 
         inline void setNodeId(DbNodeId nodeId) { _nodeId = nodeId; }
         inline void setParentNodeId(std::optional<DbNodeId> parentNodeId) { _parentNodeId = parentNodeId; }
-        void setNameLocal(const SyncName &name);
-        void setNameRemote(const SyncName &name);
+        virtual void setNameLocal(const SyncName &name);
+        virtual void setNameRemote(const SyncName &name);
         inline void setNodeIdLocal(std::optional<NodeId> newNodeIdLocal) { _nodeIdLocal = newNodeIdLocal; }
         inline void setNodeIdRemote(std::optional<NodeId> newNodeIdDrive) { _nodeIdRemote = newNodeIdDrive; }
         inline void setCreated(std::optional<SyncTime> newCreated) { _created = newCreated; }
@@ -69,7 +69,7 @@ class DbNode {
         inline void setStatus(SyncFileStatus status) { _status = status; }
         inline void setSyncing(bool syncing) { _syncing = syncing; }
 
-    private:
+    protected:
         DbNodeId _nodeId;
         std::optional<DbNodeId> _parentNodeId;
         SyncName _nameLocal;   // /!\ Must be in NFC form

@@ -27,6 +27,38 @@ using namespace CppUnit;
 
 namespace KDC {
 
+class DbNodeTest : public DbNode {
+    public:
+        DbNodeTest(DbNodeId nodeId, std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
+                   const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
+                   std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
+                   std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
+                   const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatusUnknown,
+                   bool syncing = false) {
+            _nodeId = nodeId;
+            _parentNodeId = parentNodeId;
+            _nameLocal = nameLocal;    // Don't check normalization
+            _nameRemote = nameRemote;  // Don't check normalization
+            _nodeIdLocal = nodeIdLocal;
+            _nodeIdRemote = nodeIdRemote;
+            _created = created;
+            _lastModifiedLocal = lastModifiedLocal;
+            _lastModifiedRemote = lastModifiedRemote;
+            _type = type;
+            _size = size;
+            _checksum = checksum;
+            _status = status;
+            _syncing = syncing;
+        }
+
+        inline void setNameLocal(const SyncName &name) override {
+            _nameLocal = name;  // Don't check normalization
+        }
+        inline void setNameRemote(const SyncName &name) override {
+            _nameRemote = name;  // Don't check normalization
+        }
+};
+
 void TestSyncDb::setUp() {
     bool alreadyExists;
     std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
@@ -72,10 +104,10 @@ void TestSyncDb::testUpgrade_3_6_3() {
     const SyncName nfdEncodedName = helpers::makeNfdSyncName();
     const SyncName nfcEncodedName = helpers::makeNfcSyncName();
 
-    DbNode nodeFile1(0, rootId, nfdEncodedName, nfdEncodedName, "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
-                     NodeType::NodeTypeFile, 0, "cs 2.2");
-    DbNode nodeFile2(0, rootId, nfcEncodedName, nfdEncodedName, "id loc 2", "id drive 2", tLoc, tLoc, tDrive,
-                     NodeType::NodeTypeFile, 0, "cs 2.2");
+    DbNodeTest nodeFile1(0, rootId, nfdEncodedName, nfdEncodedName, "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
+                         NodeType::NodeTypeFile, 0, "cs 2.2");
+    DbNodeTest nodeFile2(0, rootId, nfcEncodedName, nfdEncodedName, "id loc 2", "id drive 2", tLoc, tLoc, tDrive,
+                         NodeType::NodeTypeFile, 0, "cs 2.2");
     DbNode nodeFile3(0, rootId, nfcEncodedName, nfcEncodedName, "id loc 3", "id drive 3", tLoc, tLoc, tDrive,
                      NodeType::NodeTypeFile, 0, "cs 2.2");
 
@@ -152,10 +184,10 @@ void TestSyncDb::testNodes() {
     DbNodeId dbNodeIdFile6;
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile6, dbNodeIdFile6, constraintError));
 
-    // Insert node with non normalized name (NFD)
+    // Insert node with NFD-normalized name
     const SyncName nfdEncodedName = helpers::makeNfdSyncName();
-    DbNode nodeFile7(0, dbNodeIdDir1, nfdEncodedName, nfdEncodedName, "id loc 2.2", "id drive 2.2", tLoc, tLoc, tDrive,
-                     NodeType::NodeTypeFile, 0, "cs 2.2");
+    DbNodeTest nodeFile7(0, dbNodeIdDir1, nfdEncodedName, nfdEncodedName, "id loc 2.2", "id drive 2.2", tLoc, tLoc, tDrive,
+                         NodeType::NodeTypeFile, 0, "cs 2.2");
     DbNodeId dbNodeIdFile7;
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile7, dbNodeIdFile7, constraintError));
 
@@ -193,7 +225,7 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->checksum(ReplicaSide::ReplicaSideLocal, nodeFile6.nodeIdLocal().value(), cs, found) && found);
     CPPUNIT_ASSERT_EQUAL(nodeFile6.checksum().value(), cs.value());
 
-    // Update node with non normalized name (NFD)
+    // Update node with NFD-normalized name
     nodeFile7.setNodeId(dbNodeIdFile7);
     nodeFile7.setNameLocal(nfdEncodedName);
     nodeFile7.setNameRemote(nfdEncodedName);
