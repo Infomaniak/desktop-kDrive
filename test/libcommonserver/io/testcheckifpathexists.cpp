@@ -97,19 +97,19 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
-    // A regular file withour read/write permission
+    // A regular file without read/write permission
     {
         LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
         { std::ofstream ofs(path); }
         IoError ioError = IoErrorUnknown;
-        bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
+        const bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
         if (!setRightResults) {
             IoHelper::setRights(path, true, true, true, ioError);
             CPPUNIT_FAIL("Failed to set rights on the file");
         }
         bool exists = false;
-        bool checkIfPathExistsResult = _testObj->checkIfPathExists(path, exists, ioError);
+        const bool checkIfPathExistsResult = _testObj->checkIfPathExists(path, exists, ioError);
         IoHelper::setRights(path, true, true, true, ioError);
 
         CPPUNIT_ASSERT(checkIfPathExistsResult);
@@ -120,7 +120,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     // Checking existence of a subdirectory inside a directory that have been deleted and replaced with a file with the same name
     // ex: conversion of a bundle into a single file (macOS)
     {
-        const SyncPath path = _localTestDirPath / "test_pictures/picture-1.jpg/A";
+        const SyncPath path = _localTestDirPath / "test_pictures" / "picture-1.jpg" / "A";
         bool exists = false;
         IoError ioError = IoErrorUnknown;
         CPPUNIT_ASSERT(_testObj->checkIfPathExists(path, exists, ioError));
@@ -350,7 +350,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
 
         CPPUNIT_ASSERT(_testObj->getNodeId(path, nodeId));
 
-        bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
+        const bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
         if (!setRightResults) {
             IoHelper::setRights(path, true, true, true, ioError);
             CPPUNIT_FAIL("Failed to set rights on the file");
@@ -453,7 +453,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     // A Windows junction on a regular target file.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
+        const SyncPath targetPath = _localTestDirPath / "test_pictures" / "picture-1.jpg";
         const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
         IoError ioError = IoErrorUnknown;

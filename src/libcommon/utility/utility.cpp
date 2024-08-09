@@ -642,7 +642,7 @@ size_t CommonUtility::maxPathLength() {
 size_t CommonUtility::maxPathLengthFolder() {
     // For folders in short path mode, it is MAX_PATH - 12
     // (https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
-    return maxPathLength() == MAX_PATH_LENGTH_WIN_LONG ? MAX_PATH_LENGTH_WIN_LONG : MAX_PATH_LENGTH_WIN_SHORT - 12;
+    return (maxPathLength() == MAX_PATH_LENGTH_WIN_LONG) ? MAX_PATH_LENGTH_WIN_LONG : MAX_PATH_LENGTH_WIN_SHORT - 12;
 }
 #endif
 
