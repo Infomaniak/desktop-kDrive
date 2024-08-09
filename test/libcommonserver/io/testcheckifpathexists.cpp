@@ -101,10 +101,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     {
         LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
-        std::ofstream ofs(path);
-        ofs << "Some content.\n";
-        ofs.close();
-
+        { std::ofstream ofs(path); }
         IoError ioError = IoErrorUnknown;
         bool setRightResults = IoHelper::setRights(path, false, false, false, ioError) && ioError == IoErrorSuccess;
         if (!setRightResults) {
