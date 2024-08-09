@@ -726,11 +726,11 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
     }
 
     static const int maxIterations = 10;
-    LPWSTR strResult = NULL;
+    LPWSTR strResult = nullptr;
     HANDLE hHeap = GetProcessHeap();
 
-    int iSizeEstimated =
-        NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC, name.c_str(), -1, NULL, 0);
+    int iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
+                                         name.c_str(), -1, nullptr, 0);
     for (int i = 0; i < maxIterations; i++) {
         if (strResult) {
             HeapFree(hHeap, 0, strResult);

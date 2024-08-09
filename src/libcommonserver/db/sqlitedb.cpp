@@ -411,10 +411,10 @@ namespace details {
 
 SyncName makeSyncName(sqlite3_value *value) {
 #ifdef _WIN32
-    wchar_t *wvalue = (wchar_t *)sqlite3_value_text16(value);
+    auto wvalue = (wchar_t *)sqlite3_value_text16(value);
     return wvalue ? reinterpret_cast<const wchar_t *>(wvalue) : SyncName();
 #else
-    const char *charValue = reinterpret_cast<const char *>(sqlite3_value_text(value));
+    auto charValue = reinterpret_cast<const char *>(sqlite3_value_text(value));
     return charValue ? SyncName(charValue) : SyncName();
 #endif
 }
@@ -436,8 +436,8 @@ static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value 
 }  // namespace details
 
 int SqliteDb::createNormalizeSyncNameFunc() {
-    return sqlite3_create_function(_sqlite3Db.get(), "normalizeSyncName", 1, SQLITE_UTF8, NULL, &details::normalizeSyncName, NULL,
-                                   NULL);
+    return sqlite3_create_function(_sqlite3Db.get(), "normalizeSyncName", 1, SQLITE_UTF8, nullptr, &details::normalizeSyncName,
+                                   nullptr, nullptr);
 }
 
 }  // namespace KDC
