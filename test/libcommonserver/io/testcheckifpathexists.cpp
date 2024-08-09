@@ -97,7 +97,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(ioError == IoErrorSuccess);
     }
 
-    // A regular file withour read/write permission
+    // A regular file without read/write permission
     {
         LocalTemporaryDirectory temporaryDirectory("TestIo");
         const SyncPath path = temporaryDirectory.path() / "test.txt";
