@@ -1725,7 +1725,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
     if (const bool isInconsistencyIssue = job->exitCause() == ExitCauseInvalidName;
         job->exitCode() == ExitCodeBackError && details::isManagedBackError(job->exitCause())) {
-        return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue, networkJob->isDownloadImpossible());
+        return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue,
+                                      networkJob && networkJob->isDownloadImpossible());
     }
 
     if (job->exitCode() != ExitCodeOk) {

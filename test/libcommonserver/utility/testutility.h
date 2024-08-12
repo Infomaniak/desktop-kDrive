@@ -56,6 +56,7 @@ class TestUtility : public CppUnit::TestFixture {
         CPPUNIT_TEST(testErrId);
         CPPUNIT_TEST(testcheckIfDirEntryIsManaged);
         CPPUNIT_TEST(isSubDir);
+        CPPUNIT_TEST(testNormalizedSyncName);
         CPPUNIT_TEST(testNormalizedSyncPath);
         CPPUNIT_TEST_SUITE_END();
 
@@ -97,6 +98,7 @@ class TestUtility : public CppUnit::TestFixture {
         void testErrId(void);
         void isSubDir(void);
         void testcheckIfDirEntryIsManaged(void);
+        void testNormalizedSyncName();
         void testNormalizedSyncPath(void);
 
     private:

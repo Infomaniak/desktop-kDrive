@@ -32,6 +32,9 @@
 //
 // node
 //
+
+// /!\ nameLocal & nameDrive must be in NFC form
+
 #define CREATE_NODE_TABLE_ID "create_node"
 #define CREATE_NODE_TABLE              \
     "CREATE TABLE IF NOT EXISTS node(" \
@@ -156,6 +159,12 @@
 #define SELECT_NODE_BY_REPLICAID_CHECKSUM 8
 #define SELECT_NODE_BY_REPLICAID_STATUS 9
 #define SELECT_NODE_BY_REPLICAID_SYNCING 10
+
+
+#define NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID "normalize_local_and_remote_names"
+#define NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST \
+    "UPDATE node "                               \
+    "SET nameLocal = normalizeSyncName(nameLocal), nameDrive = normalizeSyncName(nameDrive);"
 
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID "select_node5"
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST    \
@@ -553,11 +562,41 @@ bool SyncDb::prepare() {
     return true;
 }
 
+bool SyncDb::normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber) {
+    if (dbFromVersionNumber != "3.6.3") return true;
+
+    LOG_DEBUG(_logger, "Upgrade 3.6.3 DB");
+
+    if (_sqliteDb->createNormalizeSyncNameFunc() != SQLITE_OK) {
+        return false;
+    }
+
+    int errId = 0;
+    std::string error;
+
+    ASSERT(queryCreate(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID));
+    if (!queryPrepare(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST, false, errId,
+                      error)) {
+        queryFree(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID);
+        return sqlFail(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, error);
+    }
+    if (!queryExec(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, errId, error)) {
+        queryFree(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID);
+        return sqlFail(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, error);
+    }
+    queryFree(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID);
+
+    return true;
+}
+
 bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVersion*/) {
+    const std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
+
+    if (!normalizeLocalAndRemoteNames(dbFromVersionNumber)) return false;
+
     int errId;
     std::string error;
 
-    std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
     if (dbFromVersionNumber == "3.4.0") {
         LOG_DEBUG(_logger, "Upgrade 3.4.0 DB");
 
@@ -646,8 +685,8 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
     ASSERT(queryResetAndClearBindings(INSERT_NODE_REQUEST_ID));
     ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 2, node.nameLocal()));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 3, node.nameRemote()));
+    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 2, Utility::normalizedSyncName(node.nameLocal())));
+    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
     ASSERT(
         queryBindValue(INSERT_NODE_REQUEST_ID, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
     ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 5,
@@ -691,8 +730,8 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
     ASSERT(queryResetAndClearBindings(UPDATE_NODE_REQUEST_ID));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, node.nameLocal()));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, node.nameRemote()));
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, Utility::normalizedSyncName(node.nameLocal())));
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
     ASSERT(
         queryBindValue(UPDATE_NODE_REQUEST_ID, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 5,
