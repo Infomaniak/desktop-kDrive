@@ -32,7 +32,7 @@
 
 namespace KDC {
 
-SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger){};
+SnapshotItemHandler::SnapshotItemHandler(log4cplus::Logger logger) : _logger(logger) {};
 
 void SnapshotItemHandler::logError(const std::wstring &methodName, const std::wstring &stdErrorType, const std::string &str,
                                    const std::exception &exc) {
@@ -148,6 +148,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
                 LOG_WARN(_logger, "Item '" << line.c_str()
                                            << "' ignored because a closing double quote character must be followed by a comma or "
                                               "another double quote");
+
                 return;
             }
         }
