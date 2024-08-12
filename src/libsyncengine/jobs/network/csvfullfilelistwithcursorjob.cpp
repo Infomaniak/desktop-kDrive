@@ -145,9 +145,9 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
                 // After a closing double quote, we must have a comma or another double quote. Otherwise, ignore the line.
                 state.index = CsvIndexId;                // Make sure that `state` is not equal to `CsvIndexEnd`.
                 state.readingDoubleQuotedValue = false;  // Exit the `readingDoubleQuotedValue` mode.
-                LOG_WARN(_logger,
-                         "Item '" << line.c_str()
-                                  << "' ignored because a closing '\"' character must be followed by ',' or another '\"'");
+                LOG_WARN(_logger, "Item '" << line.c_str()
+                                           << "' ignored because a closing double quote character must be followed by a comma or "
+                                              "another double quote");
                 return;
             }
         }
