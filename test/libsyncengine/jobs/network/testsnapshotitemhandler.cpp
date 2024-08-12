@@ -84,7 +84,8 @@ void TestSnapshotItemHandler::testUpdateItem() {
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("124", SnapshotItemHandler::CsvIndexModtime, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(124), item.lastModified());
-        CPPUNIT_ASSERT(handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexModtime, item)); // We can have negative values! (for dates before 1970)
+        CPPUNIT_ASSERT(handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexModtime,
+                                                  item));  // We can have negative values! (for dates before 1970)
         CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.lastModified());
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("1", SnapshotItemHandler::CsvIndexCanWrite, item));
@@ -148,6 +149,35 @@ void TestSnapshotItemHandler::testUpdateItem() {
     }
 }
 
+// Reference : https://www.ietf.org/rfc/rfc4180.txt
+std::string toCsvString(const std::string &name) {
+    std::stringstream ss;
+    bool encloseInDoubleQuotes = false;
+    bool prevCharBackslash = false;
+
+    for (char c : name) {
+        if (c == '"') {
+            if (!prevCharBackslash) {  // If " is preceded by \, do not insert 2 double quotes
+                encloseInDoubleQuotes = true;
+                ss << '"';  // Insert 2 double quotes instead of one
+            }
+        }
+
+        if (c == ',' || c == '\n') {
+            encloseInDoubleQuotes = true;
+        }
+
+        ss << c;
+        prevCharBackslash = c == '\\';
+    }
+
+    std::string output;
+    if (encloseInDoubleQuotes) output += '"';
+    output += ss.str();
+    if (encloseInDoubleQuotes) output += '"';
+    return output;
+}
+
 void TestSnapshotItemHandler::testGetItem() {
     // A single line to define an item: failure
     {
@@ -169,7 +199,7 @@ void TestSnapshotItemHandler::testGetItem() {
         bool error = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
-           << "0,1,kDrive2,dir,1000,123,124,0,1";
+           << "0,1," << toCsvString("kDrive2") << ",dir,1000,123,124,0,1";
         SnapshotItemHandler handler(Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
         CPPUNIT_ASSERT(!ignore);
@@ -189,30 +219,30 @@ void TestSnapshotItemHandler::testGetItem() {
         bool error = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
-           << R"(0,1,"kDrive2",dir,1000,123,124,0,1,)";
+           << "0,1," << toCsvString(R"("kDrive2")") << ",dir,1000,123,124,0,1,";
         SnapshotItemHandler handler(Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
         CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
 
-        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string("kDrive2")), SyncTime(123),
+        const SnapshotItem expectedItem(NodeId("0"), NodeId("1"), Str2SyncName(std::string(R"("kDrive2")")), SyncTime(123),
                                         SyncTime(124), NodeTypeDirectory, int64_t(1000), true, false);
 
         const auto result = snapshotitem_checker::compare(expectedItem, item);
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
-    // Two pairs of double quotes within the snapshot item name: success, but the item will be ignored
+    // Two pairs of double quotes within the snapshot item name: success
     {
         SnapshotItem item;
         bool ignore = false;
         bool error = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
-           << R"(0,1,""kDrive2"",dir,1000,123,124,0,1)";
+           << "0,1," << toCsvString(R"(""kDrive2"")") << ",dir,1000,123,124,0,1";
         SnapshotItemHandler handler(Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
-        CPPUNIT_ASSERT(ignore);
+        CPPUNIT_ASSERT(!ignore);
         CPPUNIT_ASSERT(!error);
     }
 
@@ -223,8 +253,8 @@ void TestSnapshotItemHandler::testGetItem() {
         bool error = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
-           << R"(0,1,"kDrive
-2",dir,1000,123,124,1,0,)";
+           << "0,1," << toCsvString(R"(kDrive
+2)") << ",dir,1000,123,124,1,0,";
         SnapshotItemHandler handler(Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
         CPPUNIT_ASSERT(!ignore);
@@ -237,7 +267,6 @@ void TestSnapshotItemHandler::testGetItem() {
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }
 
-
     // Harmful line return within the item name: error
     {
         SnapshotItem item;
@@ -245,8 +274,8 @@ void TestSnapshotItemHandler::testGetItem() {
         bool error = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
-           << R"(0,1,"kDrive
-)";
+           << "0,1," << toCsvString(R"("kDrive
+    )");
         SnapshotItemHandler handler(Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
         CPPUNIT_ASSERT(!ignore);
@@ -260,13 +289,80 @@ void TestSnapshotItemHandler::testGetItem() {
         bool error = false;
         std::stringstream ss;
         ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
-           << "0,1,kDrive2,dir,1000,123,124,";
+           << "0,1," << toCsvString(R"(kDrive2)") << ",dir,1000,123,124,";
         SnapshotItemHandler handler(Log::instance()->getLogger());
         CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
         CPPUNIT_ASSERT(ignore);
         CPPUNIT_ASSERT(!error);
     }
-}
 
+    // Double quotes within the snapshot item name: success
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "0,1," << toCsvString(R"("test"test")") << ",dir,1000,123,124,0,1";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+    }
+
+    // A pair of double quotes within the snapshot item name: success
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "0,1," << toCsvString(R"("kDrive2")") << ",dir,1000,123,124,0,1";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(!ignore);
+        CPPUNIT_ASSERT(!error);
+    }
+
+    // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "0,1," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(ignore);
+        CPPUNIT_ASSERT(!error);
+    }
+
+    // Escaped double quotes within the snapshot item name: no error, but the item will be ignored
+    {
+        SnapshotItem item;
+        bool ignore = false;
+        bool error = false;
+        std::stringstream ss;
+        ss << "id,parent_id,name,type,size,created_at,last_modified_at,can_write,is_link\n"
+           << "0,1," << toCsvString(R"(test\"test)") << ",dir,1000,123,124,0,1\n"
+           << "0,1," << toCsvString(R"("coucou")") << ",dir,1000,123,124,0,1\n"
+           << "0,1,coucou2,dir,1000,123,124,0,1";
+        SnapshotItemHandler handler(Log::instance()->getLogger());
+
+        // First line should be ignored because of parsing issue
+        CPPUNIT_ASSERT(handler.getItem(item, ss, error, ignore));
+        CPPUNIT_ASSERT(ignore);
+        CPPUNIT_ASSERT(!error);
+        // The other ones should be correctly parsed
+        int counter = 0;
+        while (handler.getItem(item, ss, error, ignore)) {
+            counter++;
+            CPPUNIT_ASSERT(!ignore);
+            CPPUNIT_ASSERT(!error);
+        }
+        CPPUNIT_ASSERT_EQUAL(2, counter);  // There should be 2 valid items
+    }
+}
 
 }  // namespace KDC
