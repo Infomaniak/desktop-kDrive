@@ -19,8 +19,6 @@
 #include "testincludes.h"
 #include "db/syncdb.h"
 
-#include <filesystem>
-
 using namespace CppUnit;
 
 namespace KDC {
@@ -30,6 +28,7 @@ class TestSyncDb : public CppUnit::TestFixture {
         CPPUNIT_TEST(testNodes);
         CPPUNIT_TEST(testSyncNodes);
         CPPUNIT_TEST(testCorrespondingNodeId);
+        CPPUNIT_TEST(testUpgrade_3_6_3);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -40,6 +39,7 @@ class TestSyncDb : public CppUnit::TestFixture {
         void testNodes();
         void testSyncNodes();
         void testCorrespondingNodeId();
+        void testUpgrade_3_6_3();
 
     private:
         SyncDb *_testObj;

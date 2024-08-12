@@ -136,7 +136,9 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string toUpper(const std::string &str);
         static std::string errId(const char *file, int line);
 
-        static SyncName normalizedSyncName(const SyncName &name);
+        enum class UnicodeNormalization { NFC, NFD };
+        static SyncName normalizedSyncName(const SyncName &name, UnicodeNormalization normalization = UnicodeNormalization::NFC);
+
         static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;
 #ifdef _WIN32
         static bool fileExists(DWORD dwordError) noexcept;

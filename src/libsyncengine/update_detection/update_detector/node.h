@@ -80,7 +80,7 @@ class Node {
         }
 
         inline void setIdb(const std::optional<DbNodeId> &idb) { _idb = idb; }
-        inline void setName(const SyncName &name) { _name = Utility::normalizedSyncName(name); }
+        void setName(const SyncName &name);
         inline void setInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType = newInconsistencyType; }
         inline void addInconsistencyType(InconsistencyType newInconsistencyType) { _inconsistencyType |= newInconsistencyType; }
         inline void setCreatedAt(const std::optional<SyncTime> &createdAt) { _createdAt = createdAt; }
@@ -127,7 +127,7 @@ class Node {
     private:
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSideUnknown;
-        SyncName _name;
+        SyncName _name;  // This name is NFC-normalized by constructors and setters.
         InconsistencyType _inconsistencyType = InconsistencyTypeNone;
         NodeType _type = NodeTypeUnknown;
         int _changeEvents = OperationTypeNone;
