@@ -145,8 +145,9 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
                 // After a closing '"', we must have a ',' or another '"'. Itherwise, ignore the line.
                 state.index = CsvIndexId;                // Make sure that state is not equal to CsvIndexEnd
                 state.readingDoubleQuotedValue = false;  // Make sure that we are not stuck inside "readingDoubleQuotedValue"
-                LOG_WARN(_logger, "Item '" << line.c_str()
-                                           << "' ignored because a '\"' character must be followed by ',' or another '\"'");
+                LOG_WARN(_logger,
+                         "Item '" << line.c_str()
+                                  << "' ignored because a closing '\"' character must be followed by ',' or another '\"'");
                 return;
             }
         }
@@ -212,14 +213,26 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
     while (state.readNextLine) {
         state.readNextLine = false;
 
+        // Ignore the lines containing escaped double quotes
+        if (line.find(R"(\")") != std::string::npos) {
+            LOGW_WARN(_logger, L"Line containing escaped double quotes ignored - line=" << Utility::s2ws(line).c_str());
+            ignore = true;
+            return true;
+        }
+
         readSnapshotItemFields(item, line, error, state);
         if (error) return true;
 
         // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
         if (state.readingDoubleQuotedValue) {
+            if (ss.eof()) {
+                LOG_WARN(_logger, "EOF file reached prematurely");
+                error = true;
+                return true;
+            }
+
             state.tmp.push_back('\n');
             state.readNextLine = true;
-            const std::string lastParsedLine = line;
             std::getline(ss, line);
         }
     }
