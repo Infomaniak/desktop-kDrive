@@ -157,7 +157,7 @@ std::string toCsvString(const std::string &name) {
 
     for (char c : name) {
         if (c == '"') {
-            if (!prevCharBackslash) {  // If " is preceded by \, do not insert 2 double quotes
+            if (!prevCharBackslash) {  // If a double quote is preceded by a comma, do not insert a second double quote.
                 encloseInDoubleQuotes = true;
                 ss << '"';  // Insert 2 double quotes instead of one
             }

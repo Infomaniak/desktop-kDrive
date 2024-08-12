@@ -142,9 +142,9 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
     for (char c : line) {
         if (state.readingDoubleQuotedValue && state.prevCharDoubleQuotes) {
             if (c != ',' && c != '"') {
-                // After a closing '"', we must have a ',' or another '"'. Itherwise, ignore the line.
-                state.index = CsvIndexId;                // Make sure that state is not equal to CsvIndexEnd
-                state.readingDoubleQuotedValue = false;  // Make sure that we are not stuck inside "readingDoubleQuotedValue"
+                // After a closing double quote, we must have a comma or another double quote. Otherwise, ignore the line.
+                state.index = CsvIndexId;                // Make sure that `state` is not equal to `CsvIndexEnd`.
+                state.readingDoubleQuotedValue = false;  // Exit the `readingDoubleQuotedValue` mode.
                 LOG_WARN(_logger,
                          "Item '" << line.c_str()
                                   << "' ignored because a closing '\"' character must be followed by ',' or another '\"'");
@@ -164,8 +164,8 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
             incrementCsvIndex(state.index);
         } else if (c == '"') {
             if (state.index != CsvIndexName) {
-                // " could appears in name only
-                LOG_WARN(_logger, "Item '" << line.c_str() << "' ignored because a '\"' character could appears in name only");
+                // Double quotes are only allowed within file and directory names.
+                LOG_WARN(_logger, "Item '" << line.c_str() << "' ignored because the '\"' character is only allowed in the name field");
                 return;
             }
 
@@ -215,7 +215,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
         // Ignore the lines containing escaped double quotes
         if (line.find(R"(\")") != std::string::npos) {
-            LOGW_WARN(_logger, L"Line containing escaped double quotes ignored - line=" << Utility::s2ws(line).c_str());
+            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << Utility::s2ws(line).c_str());
             ignore = true;
             return true;
         }

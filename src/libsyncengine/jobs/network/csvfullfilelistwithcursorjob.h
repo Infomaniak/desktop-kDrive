@@ -53,12 +53,12 @@ class SnapshotItemHandler {
 
         bool updateSnapshotItem(const std::string &str, CsvIndex index, SnapshotItem &item);
         /**
-         * @brief Read one line of the CSV and parse it.
+         * @brief Extract one snapshot item from the full listing CSV file. An item can spread on several lines.
          * @param item output value
          * @param ss stringstream containg the CSV file
-         * @param error 'true' if parsing fail
-         * @param ignore 'true' if line is ignored due to non critical parsing issue
-         * @return 'true' while there is more lines to be read
+         * @param error `true` if parsing fails
+         * @param ignore `true` if a line is ignored due to a non critical parsing issue
+         * @return `true` if there are more lines to be read
          */
         bool getItem(SnapshotItem &item, std::stringstream &ss, bool &error, bool &ignore);
 
