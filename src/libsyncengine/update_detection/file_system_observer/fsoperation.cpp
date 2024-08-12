@@ -18,18 +18,14 @@
 
 #include "fsoperation.h"
 
+#include "utility/utility.h"
+
 namespace KDC {
 
 UniqueId FSOperation::_nextId = 0;
 
-FSOperation::FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType, SyncTime createdAt /*= 0*/
-                         ,
-                         SyncTime lastModified /*= 0*/
-                         ,
-                         int64_t size /*= 0*/
-                         ,
-                         const SyncPath &path /*= ""*/
-                         ,
+FSOperation::FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType, SyncTime createdAt /*= 0*/,
+                         SyncTime lastModified /*= 0*/, int64_t size /*= 0*/, const SyncPath &path /*= ""*/,
                          const SyncPath &destinationPath /*= ""*/)
     : _id(_nextId++),
       _operationType(operationType),
@@ -38,7 +34,7 @@ FSOperation::FSOperation(OperationType operationType, const NodeId &nodeId, Node
       _createdAt(createdAt),
       _lastModified(lastModified),
       _size(size),
-      _path(path),
+      _path(Utility::normalizedSyncPath(path)),
       _destinationPath(destinationPath) {}
 
 }  // namespace KDC
