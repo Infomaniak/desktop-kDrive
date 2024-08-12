@@ -149,6 +149,7 @@ void TestSnapshotItemHandler::testUpdateItem() {
     }
 }
 
+// Turn the name string into the form that is returned from the backend.
 // Reference : https://www.ietf.org/rfc/rfc4180.txt
 std::string toCsvString(const std::string &name) {
     std::stringstream ss;
@@ -176,6 +177,38 @@ std::string toCsvString(const std::string &name) {
     output += ss.str();
     if (encloseInDoubleQuotes) output += '"';
     return output;
+}
+
+void TestSnapshotItemHandler::testToCsvString() {
+    // Nothing to change
+    std::string actual = toCsvString(R"(test)");
+    std::string expected = R"(test)";
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Double quote enclosed if file name contains a comma
+    actual = toCsvString(R"(te,st)");
+    expected = R"("te,st")";
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Name contains double quotes
+    actual = toCsvString(R"(test"test"test)");
+    expected = R"("test""test""test")";
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+    actual = toCsvString(R"("test")");
+    expected = R"("""test""")";
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Name contains line return
+    actual = toCsvString(R"(test
+test)");
+    expected = R"("test
+test")";
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
+
+    // Name contains escaped double quote (\")
+    actual = toCsvString(R"(te\"st)");
+    expected = R"(te\"st)";
+    CPPUNIT_ASSERT_EQUAL(expected, actual);
 }
 
 void TestSnapshotItemHandler::testGetItem() {

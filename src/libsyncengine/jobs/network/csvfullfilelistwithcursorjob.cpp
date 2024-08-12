@@ -165,7 +165,8 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
         } else if (c == '"') {
             if (state.index != CsvIndexName) {
                 // Double quotes are only allowed within file and directory names.
-                LOG_WARN(_logger, "Item '" << line.c_str() << "' ignored because the '\"' character is only allowed in the name field");
+                LOG_WARN(_logger,
+                         "Item '" << line.c_str() << "' ignored because the '\"' character is only allowed in the name field");
                 return;
             }
 
@@ -174,7 +175,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
                 state.readingDoubleQuotedValue = true;
             } else {
                 if (state.prevCharDoubleQuotes) {
-                    // Replace 2 successive double quotes by one (because in back reply " are replaced by "")
+                    // Replace 2 successive double quotes by one (https://www.ietf.org/rfc/rfc4180.txt)
                     state.prevCharDoubleQuotes = false;
                     state.tmp.push_back('"');
                 } else {
