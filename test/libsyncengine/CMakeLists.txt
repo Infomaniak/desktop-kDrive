@@ -9,6 +9,7 @@ set(testsyncengine_NAME ${APPLICATION_NAME}_test_syncengine)
 set(testsyncengine_SRCS
         ../test.cpp
         test.cpp
+        ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
         ../test_utility/localtemporarydirectory.h ../test_utility/localtemporarydirectory.cpp
         ../test_utility/remotetemporarydirectory.h ../test_utility/remotetemporarydirectory.cpp
         ../test_classes/syncpaltest.h ../test_classes/syncpaltest.cpp
@@ -28,6 +29,7 @@ set(testsyncengine_SRCS
         update_detection/file_system_observer/testlocalfilesystemobserverworker.h update_detection/file_system_observer/testlocalfilesystemobserverworker.cpp
         update_detection/file_system_observer/testsnapshot.h update_detection/file_system_observer/testsnapshot.cpp
         update_detection/file_system_observer/testcomputefsoperationworker.h update_detection/file_system_observer/testcomputefsoperationworker.cpp
+        update_detection/file_system_observer/testfsoperation.h update_detection/file_system_observer/testfsoperation.cpp
         update_detection/file_system_observer/testfsoperationset.h update_detection/file_system_observer/testfsoperationset.cpp
         ## Update Detector
         update_detection/update_detector/testupdatetree.h update_detection/update_detector/testupdatetree.cpp

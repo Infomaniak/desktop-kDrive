@@ -17,6 +17,8 @@
  */
 
 #include "testsyncdb.h"
+#include "test_utility/testhelpers.h"
+
 #include "libcommonserver/utility/asserts.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/log/log.h"
@@ -77,23 +79,6 @@ void TestSyncDb::tearDown() {
     delete _testObj;
 }
 
-namespace helpers {
-SyncName makeNfdSyncName() {
-#ifdef _WIN32
-    return Utility::normalizedSyncName(L"ééé", Utility::UnicodeNormalization::NFD);
-#else
-    return Utility::normalizedSyncName("ééé", Utility::UnicodeNormalization::NFD);
-#endif
-}
-
-SyncName makeNfcSyncName() {
-#ifdef _WIN32
-    return Utility::normalizedSyncName(L"ééé");
-#else
-    return Utility::normalizedSyncName("ééé");
-#endif
-}
-}  // namespace helpers
 
 void TestSyncDb::testUpgrade_3_6_3() {
     const time_t tLoc = std::time(0);
@@ -101,8 +86,8 @@ void TestSyncDb::testUpgrade_3_6_3() {
     const auto rootId = _testObj->rootNode().nodeId();
 
     // Insert nodes with NFD-normalized names
-    const SyncName nfdEncodedName = helpers::makeNfdSyncName();
-    const SyncName nfcEncodedName = helpers::makeNfcSyncName();
+    const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
+    const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
 
     DbNodeTest nodeFile1(0, rootId, nfdEncodedName, nfdEncodedName, "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
                          NodeType::NodeTypeFile, 0, "cs 2.2");
@@ -185,7 +170,7 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile6, dbNodeIdFile6, constraintError));
 
     // Insert node with NFD-normalized name
-    const SyncName nfdEncodedName = helpers::makeNfdSyncName();
+    const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
     DbNodeTest nodeFile7(0, dbNodeIdDir1, nfdEncodedName, nfdEncodedName, "id loc 2.2", "id drive 2.2", tLoc, tLoc, tDrive,
                          NodeType::NodeTypeFile, 0, "cs 2.2");
     DbNodeId dbNodeIdFile7;
@@ -197,7 +182,7 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideLocal, nodeFile7.nodeIdLocal().value(), localName, found) && found);
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::ReplicaSideRemote, nodeFile7.nodeIdRemote().value(), remoteName, found) && found);
 
-    const SyncName nfcEncodedName = helpers::makeNfcSyncName();
+    const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
     CPPUNIT_ASSERT(localName == nfcEncodedName);
     CPPUNIT_ASSERT(remoteName == nfcEncodedName);
 

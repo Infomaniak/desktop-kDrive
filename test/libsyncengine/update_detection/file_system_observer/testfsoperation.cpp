@@ -16,25 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "fsoperation.h"
+#include "testfsoperation.h"
+#include "test_utility/testhelpers.h"
 
-#include "utility/utility.h"
+#include "update_detection/file_system_observer/fsoperation.h"
+
+
+using namespace CppUnit;
 
 namespace KDC {
 
-UniqueId FSOperation::_nextId = 0;
+void TestFsOperation::testConstructor() {
+    const SyncPath syncPath = testhelpers::makeNfdSyncName();
+    const SyncPath destPath = testhelpers::makeNfdSyncName();
+    const auto op = FSOperation(OperationTypeCreate, "node_1", NodeTypeFile, 10, -10, 0, syncPath, destPath);
 
-FSOperation::FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType, SyncTime createdAt /*= 0*/,
-                         SyncTime lastModified /*= 0*/, int64_t size /*= 0*/, const SyncPath &path /*= ""*/,
-                         const SyncPath &destinationPath /*= ""*/)
-    : _id(_nextId++),
-      _operationType(operationType),
-      _nodeId(nodeId),
-      _objectType(objectType),
-      _createdAt(createdAt),
-      _lastModified(lastModified),
-      _size(size),
-      _path(Utility::normalizedSyncPath(path)),
-      _destinationPath(Utility::normalizedSyncPath(destinationPath)) {}
+    CPPUNIT_ASSERT(op.path() == Utility::normalizedSyncPath(syncPath));
+    CPPUNIT_ASSERT(op.destinationPath() == Utility::normalizedSyncPath(destPath));
+}
+
 
 }  // namespace KDC

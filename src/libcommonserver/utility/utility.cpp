@@ -780,6 +780,10 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
     HeapFree(hHeap, 0, strResult);
     return syncName;
 #else
+    if (name.empty()) {
+        return SyncName(name);
+    }
+
     char *str = nullptr;
     if (normalization == UnicodeNormalization::NFD) {
         str = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
@@ -788,7 +792,7 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
     }
 
     if (!str) {  // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion has
-                 // failed. e.g.: Linux can sometime send filesystem events with strange charater in the path
+                 // failed. e.g.: Linux can sometime send filesystem events with strange character in the path
         return "";  // TODO : we should return a boolean value to explicitly say that the conversion has failed. Output value
                     // should be passed by reference as a parameter.
     }
