@@ -19,10 +19,10 @@
 #include "testremotefilesystemobserverworker.h"
 
 #include <memory>
-#include "jobs/network/deletejob.h"
-#include "jobs/network/movejob.h"
-#include "jobs/network/renamejob.h"
-#include "jobs/network/uploadjob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/deletejob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/movejob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/renamejob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/uploadjob.h"
 #include "jobs/network/networkjobsparams.h"
 #include "update_detection/file_system_observer/remotefilesystemobserverworker.h"
 #include "libcommon/keychainmanager/keychainmanager.h"

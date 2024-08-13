@@ -16,29 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #pragma once
 
-#include "abstractnetworkjob.h"
+#include "../abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class GetAvatarJob : public AbstractNetworkJob {
+class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
     public:
-        GetAvatarJob(std::string url);
+        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId);
+        AbstractUploadSessionJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
+                                 const std::string &sessionToken);
+        ~AbstractUploadSessionJob() override = default;
 
-        std::string getUrl() override;
-        [[nodiscard]] std::shared_ptr<std::vector<char>> avatar() const { return _avatar; }
+        inline const std::string &sessionToken() const { return _sessionToken; }
 
-    private:
-        std::string getSpecificUrl() override { return {}; }
-        std::string getContentType(bool &canceled) override;
-        void setQueryParameters(Poco::URI &, bool &) override {}
-        void setData(bool &canceled) override { canceled = false; }
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
-        bool handleResponse(std::istream &is) override;
-
-        std::string _avatarUrl;
-        std::shared_ptr<std::vector<char>> _avatar;
-        std::string _errorCode;
+    protected:
+        std::string _sessionToken;
+        SyncPath _filePath;
 };
+
 }  // namespace KDC

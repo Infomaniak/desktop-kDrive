@@ -17,7 +17,7 @@
  */
 
 #include "testsnapshotitemhandler.h"
-#include "jobs/network/csvfullfilelistwithcursorjob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
 
 #include "libcommonserver/log/log.h"
 
