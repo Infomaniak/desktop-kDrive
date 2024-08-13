@@ -22,7 +22,6 @@
 #include "fsoperation.h"
 #include "libcommon/utility/types.h"
 
-#include <list>
 #include <mutex>
 #include <unordered_set>
 

@@ -15,26 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#include "fsoperation.h"
+#include "testhelpers.h"
 
 #include "utility/utility.h"
 
-namespace KDC {
 
-UniqueId FSOperation::_nextId = 0;
+namespace KDC::testhelpers {
 
-FSOperation::FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType, SyncTime createdAt /*= 0*/,
-                         SyncTime lastModified /*= 0*/, int64_t size /*= 0*/, const SyncPath &path /*= ""*/,
-                         const SyncPath &destinationPath /*= ""*/)
-    : _id(_nextId++),
-      _operationType(operationType),
-      _nodeId(nodeId),
-      _objectType(objectType),
-      _createdAt(createdAt),
-      _lastModified(lastModified),
-      _size(size),
-      _path(Utility::normalizedSyncPath(path)),
-      _destinationPath(Utility::normalizedSyncPath(destinationPath)) {}
 
-}  // namespace KDC
+SyncName makeNfdSyncName() {
+#ifdef _WIN32
+    return Utility::normalizedSyncName(L"ééé", Utility::UnicodeNormalization::NFD);
+#else
+    return Utility::normalizedSyncName("ééé", Utility::UnicodeNormalization::NFD);
+#endif
+}
+
+SyncName makeNfcSyncName() {
+#ifdef _WIN32
+    return Utility::normalizedSyncName(L"ééé");
+#else
+    return Utility::normalizedSyncName("ééé");
+#endif
+}
+
+
+}  // namespace KDC::testhelpers
