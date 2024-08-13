@@ -40,21 +40,26 @@ class AbstractUpdater {
         static AbstractUpdater *instance();
 
         ExitCode checkUpdateAvailable(bool &available);
+        bool isUpdateDownloaded();
+        ExitCode downloadUpdate();
 
-        void setGetAppVersion(GetAppVersionJob *getAppVersionJob) { _getAppVersionJob = getAppVersionJob; }
-
-        static std::string currentVersion();
+        void setGetAppVersionJob(GetAppVersionJob *getAppVersionJob) { _getAppVersionJob = getAppVersionJob; }
 
     private:
         AbstractUpdater();
         ~AbstractUpdater();
 
-        static void run() noexcept;
+        void run() noexcept;
 
         static AbstractUpdater *_instance;
         log4cplus::Logger _logger;
         std::unique_ptr<std::thread> _thread;
 
+        UpdateStateV2 _state{UpdateStateV2::UpToDate};
+        VersionInfo _versionInfo;
+        SyncPath _targetFile;
+
         GetAppVersionJob *_getAppVersionJob{nullptr};
 };
+
 }  // namespace KDC

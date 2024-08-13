@@ -19,9 +19,10 @@
 #include "getappversionjob.h"
 #include "utility/jsonparserutility.h"
 
+#include <config.h>
+
 namespace KDC {
-GetAppVersionJob::GetAppVersionJob(Platform platform, const std::string &appID)
-    : AbstractTokenNetworkJob(AbstractTokenNetworkJob::ApiInfomaniak), _platform(platform), _appId(appID) {
+GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID) : _platform(platform), _appId(appID) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
@@ -41,12 +42,17 @@ std::string platformToStr(Platform platform) {
 }
 
 std::string GetAppVersionJob::getSpecificUrl() {
-    std::string str = AbstractTokenNetworkJob::getSpecificUrl();
-    str += "/kstore-update/";
-    str += platformToStr(_platform);
-    str += "/com.infomaniak.drive/";
-    str += _appId;
+    std::string str = std::format("/app-information/kstore-update/{}/com.infomaniak.drive/{}", platformToStr(_platform), _appId);
     return str;
+}
+std::string GetAppVersionJob::getContentType(bool &canceled) {
+    canceled = false;
+    return {};
+}
+
+bool GetAppVersionJob::handleError(std::istream &is, const Poco::URI &uri) {
+    // TODO
+    return false;
 }
 
 DistributionChannel GetAppVersionJob::toDistributionChannel(const std::string &val) const {
@@ -66,7 +72,7 @@ DistributionChannel GetAppVersionJob::toDistributionChannel(const std::string &v
 }
 
 bool GetAppVersionJob::handleResponse(std::istream &is) {
-    if (!AbstractTokenNetworkJob::handleResponse(is)) {
+    if (!AbstractNetworkJob::handleJsonResponse(is)) {
         return false;
     }
 
@@ -76,11 +82,10 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
     const Poco::JSON::Object::Ptr applicationObj = JsonParserUtility::extractJsonObject(dataObj, applicationKey);
     if (!applicationObj) return false;
 
-    const Poco::JSON::Array::Ptr publishedVersions = JsonParserUtility::extractArrayObject(
-        applicationObj, publishedVersionsKey);
+    const Poco::JSON::Array::Ptr publishedVersions = JsonParserUtility::extractArrayObject(applicationObj, publishedVersionsKey);
     if (!publishedVersions) return false;
 
-    for (const auto &versionInfo: *publishedVersions) {
+    for (const auto &versionInfo : *publishedVersions) {
         const auto &obj = versionInfo.extract<Poco::JSON::Object::Ptr>();
         std::string versionType;
         if (!JsonParserUtility::extractValue(obj, typeKey, versionType)) {
@@ -112,4 +117,4 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
 
     return true;
 }
-} // namespace KDC
+}  // namespace KDC

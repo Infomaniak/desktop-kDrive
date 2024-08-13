@@ -41,11 +41,15 @@ class AbstractNetworkJob : public AbstractJob {
         AbstractNetworkJob();
         ~AbstractNetworkJob() override;
 
-        bool hasHttpError();
+        bool hasHttpError() const;
+        bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr) const;
         [[nodiscard]] inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         void abort() override;
 
         [[nodiscard]] inline bool isDownloadImpossible() const { return _downloadImpossible; }
+
+        inline std::string octetStreamRes() { return _octetStreamRes; }
+        inline Poco::JSON::Object::Ptr jsonRes() { return _jsonRes; }
 
     protected:
         void runJob() noexcept override;
@@ -64,22 +68,29 @@ class AbstractNetworkJob : public AbstractJob {
         void unzip(std::istream &inputStream, std::stringstream &ss);
         void getStringFromStream(std::istream &inputStream, std::string &res);
 
-        const std::string errorText(Poco::Exception const &e) const;
-        const std::string errorText(std::exception const &e) const;
+        [[nodiscard]] std::string errorText(Poco::Exception const &e) const;
+        [[nodiscard]] std::string errorText(std::exception const &e) const;
 
         inline void noRetry() { _trials = 0; }
+
+        virtual bool handleJsonResponse(std::istream &is);
+        virtual bool handleJsonResponse(std::string &str);
+        virtual bool handleOctetStreamResponse(std::istream &is);
+        bool extractJsonError(std::istream &is, Poco::JSON::Object::Ptr errorObjPtr = nullptr);
 
         std::string _httpMethod;
         std::string _data;
         Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;
         int _trials = 2;  // By default, try again once if exception is thrown
+        std::string _errorCode;
+        std::string _errorDescr;
 
     private:
         struct TimeoutHelper {
                 void add(std::chrono::duration<double> duration);
 
-                inline int value() const { return _maxDuration; }
+                [[nodiscard]] inline int value() const { return _maxDuration; }
                 inline bool isTimeoutDetected() { return count() >= TIMEOUT_THRESHOLD; }
 
             private:
@@ -101,6 +112,9 @@ class AbstractNetworkJob : public AbstractJob {
         static std::string _userAgent;
         static Poco::Net::Context::Ptr _context;
         static TimeoutHelper _timeoutHelper;
+
+        Poco::JSON::Object::Ptr _jsonRes{nullptr};
+        std::string _octetStreamRes;
 
         virtual void setQueryParameters(Poco::URI &, bool &canceled) = 0;
         virtual void setData(bool &canceled) = 0;

@@ -22,15 +22,15 @@
 #include "jobs/local/localcopyjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
-#include "jobs/network/copytodirectoryjob.h"
-#include "jobs/network/createdirjob.h"
-#include "jobs/network/deletejob.h"
-#include "jobs/network/duplicatejob.h"
-#include "jobs/network/getfileinfojob.h"
-#include "jobs/network/getfilelistjob.h"
-#include "jobs/network/movejob.h"
-#include "jobs/network/renamejob.h"
-#include "jobs/network/uploadjob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/copytodirectoryjob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/createdirjob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/deletejob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/duplicatejob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/getfileinfojob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/getfilelistjob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/movejob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/renamejob.h"
+#include "../../../../src/libsyncengine/jobs/network/API_v2/uploadjob.h"
 #include "requests/syncnodecache.h"
 #include "requests/exclusiontemplatecache.h"
 #include "libcommon/utility/utility.h"
@@ -357,7 +357,7 @@ void TestIntegration::testEditRemote() {
 
     bool found = false;
     CPPUNIT_ASSERT(_syncPal->syncDb()->correspondingNodeId(ReplicaSideRemote, _newTestFileRemoteId, _newTestFileLocalId,
-                                                          found));  // Update the local ID
+                                                           found));  // Update the local ID
     CPPUNIT_ASSERT(found);
     SyncTime newModTime = _syncPal->_localSnapshot->lastModified(_newTestFileLocalId);
     CPPUNIT_ASSERT(newModTime > prevModTime);

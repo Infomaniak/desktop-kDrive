@@ -83,14 +83,14 @@ void TestAbstractUpdater::testCheckUpdateAvailable() {
 
     // Version is higher than current version
     auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, true);
-    AbstractUpdater::instance()->setGetAppVersion(testJob);
+    AbstractUpdater::instance()->setGetAppVersionJob(testJob);
     bool updateAvailable = false;
     AbstractUpdater::instance()->checkUpdateAvailable(updateAvailable);
     CPPUNIT_ASSERT(updateAvailable);
 
     // Version is lower than current version
     testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, false);
-    AbstractUpdater::instance()->setGetAppVersion(testJob);
+    AbstractUpdater::instance()->setGetAppVersionJob(testJob);
     AbstractUpdater::instance()->checkUpdateAvailable(updateAvailable);
     CPPUNIT_ASSERT(!updateAvailable);
 
@@ -98,7 +98,7 @@ void TestAbstractUpdater::testCheckUpdateAvailable() {
 }
 
 void TestAbstractUpdater::testCurrentVersion() {
-    std::string test = AbstractUpdater::currentVersion();
+    std::string test = CommonUtility::currentVersion();
 #ifdef NDEBUG
     CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]\d{8}$)")));
 #else

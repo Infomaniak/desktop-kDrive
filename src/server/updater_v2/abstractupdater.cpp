@@ -19,14 +19,17 @@
 
 #include "abstractupdater.h"
 
-#include <version.h>
-
 #include "db/parmsdb.h"
+#include "../../libsyncengine/jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/getappversionjob.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
+#include "utility/utility.h"
 
 namespace KDC {
+
+#define ONE_HOUR 3600000
+
 AbstractUpdater *AbstractUpdater::_instance = nullptr;
 
 AbstractUpdater *AbstractUpdater::instance() {
@@ -62,8 +65,8 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
         return ExitCodeUpdateFailed;
     }
     // TODO : for now we support only Prod updates
-    VersionInfo versionInfo = _getAppVersionJob->getVersionInfo(DistributionChannel::Prod);
-    if (!versionInfo.isValid()) {
+    _versionInfo = _getAppVersionJob->getVersionInfo(DistributionChannel::Prod);
+    if (!_versionInfo.isValid()) {
         std::string error = "Invalid version info!";
 #ifdef NDEBUG
         sentry_capture_event(
@@ -73,12 +76,30 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
         return ExitCodeUpdateFailed;
     }
 
-    available = CommonUtility::isVersionLower(currentVersion(), versionInfo.fullVersion());
+    available = CommonUtility::isVersionLower(CommonUtility::currentVersion(), _versionInfo.fullVersion());
+    return ExitCodeOk;
+}
+
+bool AbstractUpdater::isUpdateDownloaded() {
+    return true;
+}
+
+ExitCode AbstractUpdater::downloadUpdate() {
+    if (std::filesystem::exists(_targetFile)) {
+        return ExitCodeOk;
+    }
+
+    const SyncPath targetPath(CommonUtility::getAppSupportDir());
+    const std::string::size_type pos = _versionInfo.downloadUrl.find_last_of('/');
+    _targetFile = targetPath / _versionInfo.downloadUrl.substr(pos + 1);
+
+    // TODO : start a simple download job
+
     return ExitCodeOk;
 }
 
 AbstractUpdater::AbstractUpdater() {
-    _thread = std::make_unique<std::thread>(run);
+    _thread = std::make_unique<std::thread>(&AbstractUpdater::run, _instance);
 }
 
 AbstractUpdater::~AbstractUpdater() {
@@ -89,12 +110,39 @@ AbstractUpdater::~AbstractUpdater() {
 }
 
 void AbstractUpdater::run() noexcept {
-    // To be implemented
+    switch (_state) {
+        case UpdateStateV2::UpToDate: {
+            bool updateAvailable = false;
+            if (const ExitCode exitCode = checkUpdateAvailable(updateAvailable); exitCode != ExitCodeOk) {
+                // TODO : how do we give feedback to main loop about update errors?
+                _state = UpdateStateV2::Error;
+                break;
+            }
+            if (updateAvailable) {
+                _state = UpdateStateV2::Available;
+            } else {
+                Utility::msleep(ONE_HOUR);  // Sleep for 1h
+            }
+            break;
+        }
+        case UpdateStateV2::Available: {
+            if (isUpdateDownloaded()) {
+                _state = UpdateStateV2::Ready;
+                break;
+            }
+            if (const ExitCode exitCode = downloadUpdate(); exitCode != ExitCodeOk) {
+                // TODO : how do we give feedback to main loop about update errors?
+                _state = UpdateStateV2::Error;
+                break;
+            }
+            break;
+        }
+        case UpdateStateV2::Downloading:
+        case UpdateStateV2::Ready:
+        case UpdateStateV2::Error:
+        default:
+            break;
+    }
 }
 
-std::string AbstractUpdater::currentVersion() {
-    static std::string currentVersion =
-        std::format("{}.{}.{}.{}", KDRIVE_VERSION_MAJOR, KDRIVE_VERSION_MINOR, KDRIVE_VERSION_PATCH, KDRIVE_VERSION_BUILD);
-    return currentVersion;
-}
 }  // namespace KDC

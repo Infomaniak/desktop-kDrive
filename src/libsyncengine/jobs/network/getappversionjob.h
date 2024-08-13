@@ -18,28 +18,28 @@
 
 #pragma once
 
-#include "abstracttokennetworkjob.h"
+#include "API_v2/abstracttokennetworkjob.h"
+
+#include <config.h>
 
 namespace KDC {
-class GetAppVersionJob : public AbstractTokenNetworkJob {
+class GetAppVersionJob : public AbstractNetworkJob {
     public:
         GetAppVersionJob(Platform platform, const std::string &appID);
 
         inline const VersionInfo &getVersionInfo(DistributionChannel channel) { return _versionInfo[channel]; }
+
+        std::string getUrl() override { return INFOMANIAK_API_URL + getSpecificUrl(); }
 
     protected:
         bool handleResponse(std::istream &is) override;
 
     private:
         std::string getSpecificUrl() override;
-
-        void setQueryParameters(Poco::URI &, bool &canceled) override {
-            /* no query parameters */
-        }
-
-        void setData(bool &canceled) override {
-            /* no body parameters */
-        }
+        std::string getContentType(bool &canceled) override;
+        void setQueryParameters(Poco::URI &, bool &canceled) override { /* no query parameters */ }
+        void setData(bool &canceled) override { /* no body parameters */ }
+        bool handleError(std::istream &is, const Poco::URI &uri) override;
 
         [[nodiscard]] DistributionChannel toDistributionChannel(const std::string &val) const;
 
@@ -48,4 +48,4 @@ class GetAppVersionJob : public AbstractTokenNetworkJob {
 
         std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;
 };
-} // namespace KDC
+}  // namespace KDC

@@ -18,27 +18,25 @@
 
 #pragma once
 
-#include "abstractnetworkjob.h"
+#include "abstracttokennetworkjob.h"
+#include "../../../update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 namespace KDC {
 
-class GetAvatarJob : public AbstractNetworkJob {
+class JsonFullFileListWithCursorJob : public AbstractTokenNetworkJob {
     public:
-        GetAvatarJob(std::string url);
-
-        std::string getUrl() override;
-        [[nodiscard]] std::shared_ptr<std::vector<char>> avatar() const { return _avatar; }
+        JsonFullFileListWithCursorJob(int driveDbId, const NodeId &dirId, std::list<NodeId> blacklist = {}, bool zip = true);
 
     private:
-        std::string getSpecificUrl() override { return {}; }
-        std::string getContentType(bool &canceled) override;
-        void setQueryParameters(Poco::URI &, bool &) override {}
-        void setData(bool &canceled) override { canceled = false; }
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
-        bool handleResponse(std::istream &is) override;
+        virtual std::string getSpecificUrl() override;
+        virtual void setQueryParameters(Poco::URI &uri, bool &canceled) override;
+        inline virtual void setData(bool &canceled) override { canceled = false; }
 
-        std::string _avatarUrl;
-        std::shared_ptr<std::vector<char>> _avatar;
-        std::string _errorCode;
+        virtual bool handleResponse(std::istream &is) override;
+
+        NodeId _dirId;
+        std::list<NodeId> _blacklist;
+        bool _zip = true;
 };
+
 }  // namespace KDC

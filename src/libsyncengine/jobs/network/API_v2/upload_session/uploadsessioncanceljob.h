@@ -18,27 +18,22 @@
 
 #pragma once
 
-#include "abstractnetworkjob.h"
+#include "jobs/network/API_v2/upload_session/abstractuploadsessionjob.h"
 
 namespace KDC {
 
-class GetAvatarJob : public AbstractNetworkJob {
+class UploadSessionCancelJob : public AbstractUploadSessionJob {
     public:
-        GetAvatarJob(std::string url);
-
-        std::string getUrl() override;
-        [[nodiscard]] std::shared_ptr<std::vector<char>> avatar() const { return _avatar; }
+        UploadSessionCancelJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
+                               const std::string &sessionToken);
+        UploadSessionCancelJob(UploadSessionType uploadType, const std::string &sessionToken);
 
     private:
-        std::string getSpecificUrl() override { return {}; }
-        std::string getContentType(bool &canceled) override;
-        void setQueryParameters(Poco::URI &, bool &) override {}
-        void setData(bool &canceled) override { canceled = false; }
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
-        bool handleResponse(std::istream &is) override;
+        virtual std::string getSpecificUrl() override;
+        virtual void setQueryParameters(Poco::URI &, bool &) override {}
+        virtual void setData(bool &) override {}
 
-        std::string _avatarUrl;
-        std::shared_ptr<std::vector<char>> _avatar;
-        std::string _errorCode;
+        virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
 };
+
 }  // namespace KDC

@@ -42,9 +42,8 @@
 #include "propagation/executor/executorworker.h"
 #include "requests/syncnodecache.h"
 #include "requests/parameterscache.h"
-#include "jobs/network/downloadjob.h"
-#include "jobs/network/upload_session/uploadsessioncanceljob.h"
-#include "jobs/local/localmovejob.h"
+#include "jobs/network/API_v2/downloadjob.h"
+#include "jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/jobmanager.h"
 #include "libcommon/utility/utility.h"
@@ -1282,7 +1281,8 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
 
     for (auto &uploadSessionToken : uploadSessionTokenList) {
         try {
-            auto job = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
+            auto job =
+                std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCodeOk) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);

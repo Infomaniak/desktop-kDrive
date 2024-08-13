@@ -22,6 +22,7 @@
 #include "jobs/network/networkjobsparams.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
+#include "utility/jsonparserutility.h"
 
 #include <log4cplus/loggingmacros.h>
 
@@ -37,6 +38,7 @@
 
 #include <iostream>  // std::ios, std::istream, std::cout, std::cerr
 #include <functional>
+#include <Poco/JSON/Parser.h>
 
 #define ABSTRACTNETWORKJOB_NEW_ERROR_MSG "Failed to create AbstractNetworkJob instance!"
 
@@ -228,9 +230,18 @@ void AbstractNetworkJob::runJob() noexcept {
     }
 }
 
-bool AbstractNetworkJob::hasHttpError() {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
-        return false;
+bool AbstractNetworkJob::hasHttpError() const {
+    return _resHttp.getStatus() != Poco::Net::HTTPResponse::HTTP_OK;
+}
+
+bool AbstractNetworkJob::hasErrorApi(std::string *errorCode, std::string *errorDescr) const {
+    if (hasHttpError()) return true;
+
+    if (errorCode) {
+        *errorCode = _errorCode;
+        if (errorDescr) {
+            *errorDescr = _errorDescr;
+        }
     }
     return true;
 }
@@ -337,7 +348,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
         req.add(header.first, header.second);
     }
 
-    if (_data.size() != 0) {
+    if (!_data.empty()) {
         req.setContentLength(_data.size());
     }
 
@@ -573,7 +584,7 @@ bool AbstractNetworkJob::processSocketError(const std::string &msg, const Unique
 }
 
 bool AbstractNetworkJob::ioOrLogicalErrorOccurred(std::ios &stream) {
-    bool res = (stream.fail() || stream.bad()) && !stream.eof();
+    const bool res = (stream.fail() || stream.bad()) && !stream.eof();
     if (res) {
         LOG_DEBUG(_logger, "sendRequest failed for job " << jobId() << " - stream fail=" << stream.fail()
                                                          << " - stream bad=" << stream.bad() << " - stream eof=" << stream.eof());
@@ -581,16 +592,108 @@ bool AbstractNetworkJob::ioOrLogicalErrorOccurred(std::ios &stream) {
     return res;
 }
 
-const std::string AbstractNetworkJob::errorText(const Poco::Exception &e) const {
+std::string AbstractNetworkJob::errorText(const Poco::Exception &e) const {
     std::ostringstream error;
     error << e.className() << " : (" << e.code() << ") : " << e.displayText().c_str();
     return error.str();
 }
 
-const std::string AbstractNetworkJob::errorText(const std::exception &e) const {
+std::string AbstractNetworkJob::errorText(const std::exception &e) const {
     std::ostringstream error;
     error << "(" << e.what() << ")";
     return error.str();
+}
+
+bool AbstractNetworkJob::handleJsonResponse(std::istream &is) {
+    // Extract JSON
+    try {
+        _jsonRes = Poco::JSON::Parser().parse(is).extract<Poco::JSON::Object::Ptr>();
+    } catch (Poco::Exception &exc) {
+        LOG_DEBUG(_logger,
+                  "Reply " << jobId() << " received doesn't contain a valid JSON payload: " << exc.displayText().c_str());
+        _exitCode = ExitCodeBackError;
+        _exitCause = ExitCauseApiErr;
+        return false;
+    }
+
+    // Extract reply
+    std::ostringstream os;
+    _jsonRes->stringify(os);
+    if (isExtendedLog()) {
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()).c_str());
+    }
+    return true;
+}
+
+bool AbstractNetworkJob::handleJsonResponse(std::string &str) {
+    // Extract JSON
+    try {
+        Poco::JSON::Parser jsonParser;
+        _jsonRes = jsonParser.parse(str).extract<Poco::JSON::Object::Ptr>();
+    } catch (Poco::Exception &exc) {
+        LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
+
+        _exitCode = ExitCodeBackError;
+        _exitCause = ExitCauseApiErr;
+        return false;
+    }
+
+    // Extract reply
+    if (isExtendedLog()) {
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(str).c_str());
+    }
+
+    return true;
+}
+
+bool AbstractNetworkJob::handleOctetStreamResponse(std::istream &is) {
+    getStringFromStream(is, _octetStreamRes);
+    return true;
+}
+
+bool AbstractNetworkJob::extractJsonError(std::istream &is, Poco::JSON::Object::Ptr errorObjPtr /*= nullptr*/) {
+    // Manage Content-Encoding
+    std::string encoding;
+    try {
+        encoding = _resHttp.get("Content-Encoding");
+    } catch (...) {
+        // No Content-Encoding
+    }
+
+    std::stringstream ss;
+    if (encoding == "gzip") {
+        unzip(is, ss);
+    } else {
+        ss << is.rdbuf();
+    }
+
+    Poco::JSON::Object::Ptr jsonObj;
+    try {
+        jsonObj = Poco::JSON::Parser{}.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+    } catch (const Poco::Exception &exc) {
+        LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON error: "
+                                     << Utility::s2ws(exc.displayText()).c_str());
+        Utility::logGenericServerError(_logger, "Request error", ss, _resHttp);
+        _exitCause = ExitCauseApiErr;
+
+        return false;
+    }
+
+    if (isExtendedLog()) {
+        std::ostringstream os;
+        jsonObj->stringify(os);
+        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()).c_str());
+    }
+
+    errorObjPtr = jsonObj->getObject(errorKey);
+    if (!JsonParserUtility::extractValue(errorObjPtr, codeKey, _errorCode)) {
+        return false;
+    }
+    if (!JsonParserUtility::extractValue(errorObjPtr, descriptionKey, _errorDescr)) {
+        return false;
+    }
+
+    return true;
 }
 
 void AbstractNetworkJob::TimeoutHelper::add(std::chrono::duration<double> duration) {

@@ -21,11 +21,11 @@
 #include "config.h"
 #include "db/parmsdb.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/createdirjob.h"
-#include "jobs/network/deletejob.h"
-#include "jobs/network/getfilelistjob.h"
-#include "jobs/network/uploadjob.h"
-#include "jobs/network/upload_session/driveuploadsession.h"
+#include "jobs/network/API_v2/createdirjob.h"
+#include "jobs/network/API_v2/deletejob.h"
+#include "jobs/network/API_v2/getfilelistjob.h"
+#include "jobs/network/API_v2/uploadjob.h"
+#include "jobs/network/API_v2/upload_session/driveuploadsession.h"
 #include "network/proxy.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
@@ -208,8 +208,7 @@ void TestJobManager::testCancelJobs() {
     // Upload all files in testDir
     ulong jobCounter = 0;
     for (auto &dirEntry : std::filesystem::directory_iterator(localTestDirPath_manyFiles)) {
-        auto job =
-            std::make_shared<UploadJob>(_driveDbId, dirEntry.path(), dirEntry.path().filename().native(), _dirId, 0);
+        auto job = std::make_shared<UploadJob>(_driveDbId, dirEntry.path(), dirEntry.path().filename().native(), _dirId, 0);
         std::function<void(UniqueId)> callback = std::bind(&TestJobManager::callback, this, std::placeholders::_1);
         JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
         jobCounter++;

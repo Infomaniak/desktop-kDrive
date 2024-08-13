@@ -18,27 +18,21 @@
 
 #pragma once
 
-#include "abstractnetworkjob.h"
+#include "getrootfilelistjob.h"
+#include "libcommon/utility/types.h"
 
 namespace KDC {
 
-class GetAvatarJob : public AbstractNetworkJob {
+class GetFileListJob : public GetRootFileListJob {
     public:
-        GetAvatarJob(std::string url);
-
-        std::string getUrl() override;
-        [[nodiscard]] std::shared_ptr<std::vector<char>> avatar() const { return _avatar; }
+        GetFileListJob(int userDbId, int driveId, const NodeId &fileId, uint64_t page = 1, bool dirOnly = false);
+        GetFileListJob(int driveDbId, const NodeId &fileId, uint64_t page = 1, bool dirOnly = false);
 
     private:
-        std::string getSpecificUrl() override { return {}; }
-        std::string getContentType(bool &canceled) override;
-        void setQueryParameters(Poco::URI &, bool &) override {}
-        void setData(bool &canceled) override { canceled = false; }
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
-        bool handleResponse(std::istream &is) override;
+        virtual std::string getSpecificUrl() override;
+        virtual void setData(bool &canceled) override { canceled = false; }
 
-        std::string _avatarUrl;
-        std::shared_ptr<std::vector<char>> _avatar;
-        std::string _errorCode;
+        std::string _fileId;
 };
+
 }  // namespace KDC

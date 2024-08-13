@@ -18,27 +18,23 @@
 
 #pragma once
 
-#include "abstractnetworkjob.h"
+#include "../../../../libcommon/utility/types.h"
+#include "abstracttokennetworkjob.h"
 
 namespace KDC {
 
-class GetAvatarJob : public AbstractNetworkJob {
+class RenameJob : public AbstractTokenNetworkJob {
     public:
-        GetAvatarJob(std::string url);
-
-        std::string getUrl() override;
-        [[nodiscard]] std::shared_ptr<std::vector<char>> avatar() const { return _avatar; }
+        RenameJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &absoluteFinalPath);
+        ~RenameJob();
 
     private:
-        std::string getSpecificUrl() override { return {}; }
-        std::string getContentType(bool &canceled) override;
-        void setQueryParameters(Poco::URI &, bool &) override {}
-        void setData(bool &canceled) override { canceled = false; }
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
-        bool handleResponse(std::istream &is) override;
+        virtual std::string getSpecificUrl() override;
+        virtual void setQueryParameters(Poco::URI &, bool &canceled) override { canceled = false; }
+        virtual void setData(bool &canceled) override;
 
-        std::string _avatarUrl;
-        std::shared_ptr<std::vector<char>> _avatar;
-        std::string _errorCode;
+        std::string _remoteFileId;
+        SyncPath _absoluteFinalPath;
 };
+
 }  // namespace KDC

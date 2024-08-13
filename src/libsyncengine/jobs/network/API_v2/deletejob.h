@@ -18,27 +18,25 @@
 
 #pragma once
 
-#include "abstractnetworkjob.h"
+#include "abstracttokennetworkjob.h"
+#include "../networkjobsparams.h"
 
 namespace KDC {
 
-class GetAvatarJob : public AbstractNetworkJob {
+class DeleteJob : public AbstractTokenNetworkJob {
     public:
-        GetAvatarJob(std::string url);
+        DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath);
 
-        std::string getUrl() override;
-        [[nodiscard]] std::shared_ptr<std::vector<char>> avatar() const { return _avatar; }
+        virtual bool canRun() override;
 
     private:
-        std::string getSpecificUrl() override { return {}; }
-        std::string getContentType(bool &canceled) override;
-        void setQueryParameters(Poco::URI &, bool &) override {}
-        void setData(bool &canceled) override { canceled = false; }
-        bool handleError(std::istream &is, const Poco::URI &uri) override;
-        bool handleResponse(std::istream &is) override;
+        virtual std::string getSpecificUrl() override;
+        virtual void setQueryParameters(Poco::URI &, bool &) override {}
+        virtual void setData(bool &canceled) override { canceled = false; }
 
-        std::string _avatarUrl;
-        std::shared_ptr<std::vector<char>> _avatar;
-        std::string _errorCode;
+        const NodeId _remoteItemId;
+        const NodeId _localItemId;
+        SyncPath _absoluteLocalFilepath;
 };
+
 }  // namespace KDC
