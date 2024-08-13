@@ -387,6 +387,8 @@ void TestUtility::testFormatRequest() {
 }
 
 void TestUtility::testNormalizedSyncName() {
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("") == SyncName());
+
 #ifdef _WIN32
     // The two Unicode normalizations coincide.
     CPPUNIT_ASSERT(Utility::normalizedSyncName(L"a") == Utility::normalizedSyncName(L"a", Utility::UnicodeNormalization::NFD));
