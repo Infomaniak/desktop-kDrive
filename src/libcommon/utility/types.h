@@ -42,7 +42,7 @@ typedef std::filesystem::directory_options DirectoryOptions;
 typedef std::variant<bool, int, int64_t, uint64_t, double, std::string, std::wstring> SigValueType;
 
 struct hashPathFunction {
-    std::size_t operator()(const std::optional<SyncPath> &path) const { return path ? hash_value(path.value()) : 0; }
+        std::size_t operator()(const std::optional<SyncPath> &path) const { return path ? hash_value(path.value()) : 0; }
 };
 
 #ifdef _WIN32
@@ -99,7 +99,7 @@ inline ReplicaSide otherSide(ReplicaSide side) {
 
 typedef enum {
     NodeTypeUnknown,
-    NodeTypeFile, // File or symlink
+    NodeTypeFile,  // File or symlink
     NodeTypeDirectory
 } NodeType;
 
@@ -120,18 +120,18 @@ typedef enum {
     // verified
     ExitCodeNetworkError,
     ExitCodeInvalidToken,
-    ExitCodeDataError, // Corruption of data
-    ExitCodeDbError, // Error in a DB function
-    ExitCodeBackError, // Error in an API call
-    ExitCodeSystemError, // IO error etc.
-    ExitCodeFatalError, // SyncPal fatal error
+    ExitCodeDataError,    // Corruption of data
+    ExitCodeDbError,      // Error in a DB function
+    ExitCodeBackError,    // Error in an API call
+    ExitCodeSystemError,  // IO error etc.
+    ExitCodeFatalError,   // SyncPal fatal error
     ExitCodeLogicError,
     // Consequence of faulty logic within the program such as violating logical preconditions or class
     // invariants and may be preventable
     ExitCodeTokenRefreshed,
     ExitCodeNoWritePermission,
     ExitCodeRateLimited,
-    ExitCodeInvalidSync, // The sync configuration is not valid
+    ExitCodeInvalidSync,  // The sync configuration is not valid
     ExitCodeInvalidOperation,
     ExitCodeOperationCanceled,
     ExitCodeUpdateRequired,
@@ -141,7 +141,7 @@ typedef enum {
 
 typedef enum {
     ExitCauseUnknown,
-    ExitCauseWorkerExited, // The SyncPal worker exits because a sub worker has exited
+    ExitCauseWorkerExited,  // The SyncPal worker exits because a sub worker has exited
     ExitCauseDbAccessError,
     ExitCauseDbEntryNotFound,
     ExitCauseInvalidSnapshot,
@@ -173,7 +173,7 @@ typedef enum {
     ExitCauseInvalidName,
     ExitCauseLiteSyncNotAllowed,
     ExitCauseNetworkTimeout,
-    ExitCauseSocketsDefuncted, // macOS: sockets defuncted by kernel
+    ExitCauseSocketsDefuncted,  // macOS: sockets defuncted by kernel
     ExitCauseNoSearchPermission,
     ExitCauseNotFound,
     ExitCauseQuotaExceeded,
@@ -198,8 +198,7 @@ typedef enum {
 
 static const std::unordered_set<ConflictType> conflictsWithLocalRename = {
     // All conflicts that rename the local file
-    ConflictTypeCreateCreate, ConflictTypeEditEdit, ConflictTypeMoveCreate, ConflictTypeMoveMoveDest
-};
+    ConflictTypeCreateCreate, ConflictTypeEditEdit, ConflictTypeMoveCreate, ConflictTypeMoveMoveDest};
 
 inline bool isConflictsWithLocalRename(ConflictType type) {
     return conflictsWithLocalRename.find(type) != conflictsWithLocalRename.end();
@@ -214,7 +213,7 @@ typedef enum {
 typedef enum {
     InconsistencyTypeNone = 0x00,
     InconsistencyTypeCase = 0x01,
-    InconsistencyTypeForbiddenChar = 0x02, // Char unsupported by OS
+    InconsistencyTypeForbiddenChar = 0x02,  // Char unsupported by OS
     InconsistencyTypeReservedName = 0x04,
     InconsistencyTypeNameLength = 0x08,
     InconsistencyTypePathLength = 0x10,
@@ -256,9 +255,7 @@ typedef enum {
 
 enum class UploadSessionType { Unknown, Standard, LogUpload };
 
-typedef enum {
-    NodeStatusUnknown = 0, NodeStatusUnprocessed, NodeStatusPartiallyProcessed, NodeStatusProcessed
-} NodeStatus;
+typedef enum { NodeStatusUnknown = 0, NodeStatusUnprocessed, NodeStatusPartiallyProcessed, NodeStatusProcessed } NodeStatus;
 
 typedef enum {
     SyncStatusUndefined,
@@ -274,13 +271,13 @@ typedef enum {
 
 typedef enum {
     SyncNodeTypeUndefined = 0,
-    SyncNodeTypeBlackList, // Nodes that are excluded from sync
+    SyncNodeTypeBlackList,  // Nodes that are excluded from sync
     SyncNodeTypeWhiteList,
     // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
     // nodes in none of those lists are implicitly whitelisted
-    SyncNodeTypeUndecidedList, // Considered as blacklisted until user action
-    SyncNodeTypeTmpRemoteBlacklist, // Blacklisted temporarily
-    SyncNodeTypeTmpLocalBlacklist // Blacklisted temporarily
+    SyncNodeTypeUndecidedList,       // Considered as blacklisted until user action
+    SyncNodeTypeTmpRemoteBlacklist,  // Blacklisted temporarily
+    SyncNodeTypeTmpLocalBlacklist    // Blacklisted temporarily
 } SyncNodeType;
 
 typedef enum { SyncDirectionUnknown = 0, SyncDirectionUp, SyncDirectionDown } SyncDirection;
@@ -309,14 +306,14 @@ typedef enum {
 typedef enum {
     SyncStepNone = 0,
     SyncStepIdle,
-    SyncStepUpdateDetection1, // Compute operations
-    SyncStepUpdateDetection2, // Update Trees
-    SyncStepReconciliation1, // Platform Inconstistency Checker
-    SyncStepReconciliation2, // Conflict Finder
-    SyncStepReconciliation3, // Conflict Resolver
-    SyncStepReconciliation4, // Operation Generator
-    SyncStepPropagation1, // Sorter
-    SyncStepPropagation2, // Executor
+    SyncStepUpdateDetection1,  // Compute operations
+    SyncStepUpdateDetection2,  // Update Trees
+    SyncStepReconciliation1,   // Platform Inconstistency Checker
+    SyncStepReconciliation2,   // Conflict Finder
+    SyncStepReconciliation3,   // Conflict Resolver
+    SyncStepReconciliation4,   // Operation Generator
+    SyncStepPropagation1,      // Sorter
+    SyncStepPropagation2,      // Executor
     SyncStepDone
 } SyncStep;
 
@@ -326,9 +323,7 @@ typedef enum { ActionTargetDrive = 0, ActionTargetSync, ActionTargetAllDrives } 
 
 typedef enum { ErrorLevelUnknown = 0, ErrorLevelServer, ErrorLevelSyncPal, ErrorLevelNode } ErrorLevel;
 
-typedef enum {
-    LanguageDefault = 0, LanguageEnglish, LanguageFrench, LanguageGerman, LanguageSpanish, LanguageItalian
-} Language;
+typedef enum { LanguageDefault = 0, LanguageEnglish, LanguageFrench, LanguageGerman, LanguageSpanish, LanguageItalian } Language;
 
 typedef enum { LogLevelDebug = 0, LogLevelInfo, LogLevelWarning, LogLevelError, LogLevelFatal } LogLevel;
 
@@ -350,7 +345,7 @@ typedef enum {
     ProxyTypeNone,
     ProxyTypeSystem,
     ProxyTypeHTTP,
-    ProxyTypeSocks5 // Don't use, not implemented in Poco library
+    ProxyTypeSocks5  // Don't use, not implemented in Poco library
 } ProxyType;
 
 typedef enum {
@@ -381,28 +376,28 @@ typedef enum {
 } IoError;
 
 struct ItemType {
-    NodeType nodeType{NodeTypeUnknown}; // The type of a link is `NodeTypeFile`.
-    LinkType linkType{LinkTypeNone};
-    NodeType targetType{NodeTypeUnknown}; // The type of the target item when `linkType` is not `LinkTypeNone`.
-    SyncPath targetPath;
-    // The value of the data member `ioError` is `IoErrorNoSuchFileOrDirectory` if
-    // - the file or directory indicated by `path` doesn't exist
-    // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
-    // `LinkTypeUnknown`) and its target doesn't exist.
-    IoError ioError{IoErrorSuccess};
+        NodeType nodeType{NodeTypeUnknown};  // The type of a link is `NodeTypeFile`.
+        LinkType linkType{LinkTypeNone};
+        NodeType targetType{NodeTypeUnknown};  // The type of the target item when `linkType` is not `LinkTypeNone`.
+        SyncPath targetPath;
+        // The value of the data member `ioError` is `IoErrorNoSuchFileOrDirectory` if
+        // - the file or directory indicated by `path` doesn't exist
+        // - the file or directory indicated by `path` is a symlink or an alias (in which case `linkType` is different from
+        // `LinkTypeUnknown`) and its target doesn't exist.
+        IoError ioError{IoErrorSuccess};
 };
 
 enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
     LastServerSelfRestartDate,
     LastClientSelfRestartDate,
-    LastSuccessfulLogUploadDate, // Format: "month,day,year,hour,minute,second"
+    LastSuccessfulLogUploadDate,  // Format: "month,day,year,hour,minute,second"
     LastLogUploadArchivePath,
     LogUploadState,
     LogUploadPercent,
     LogUploadToken,
     AppUid,
-    Unknown //!\ keep in last position (For tests) /!\\ Only for initialization purpose
+    Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
 
 constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;
@@ -416,22 +411,19 @@ enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
 enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
 
 struct VersionInfo {
-    std::string tag;
-    std::string changeLog;
-    std::uint64_t buildVersion = 0;
-    std::uint64_t buildMinOsVersion = 0;
-    std::string downloadUrl;
+        std::string tag;
+        std::string changeLog;
+        std::uint64_t buildVersion = 0;
+        std::uint64_t buildMinOsVersion = 0;
+        std::string downloadUrl;
 
-    [[nodiscard]] bool isValid() const {
-        return !tag.empty() && !changeLog.empty() && buildVersion != 0 && buildMinOsVersion != 0 && !downloadUrl.
-               empty();
-    }
+        [[nodiscard]] bool isValid() const {
+            return !tag.empty() && !changeLog.empty() && buildVersion != 0 && buildMinOsVersion != 0 && !downloadUrl.empty();
+        }
 
-    [[nodiscard]] std::string fullVersion() const {
-        return std::format("{}.{}", tag, buildVersion);
-    }
+        [[nodiscard]] std::string fullVersion() const { return std::format("{}.{}", tag, std::to_string(buildVersion)); }
 };
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
-} // namespace KDC
+}  // namespace KDC
