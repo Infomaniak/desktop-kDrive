@@ -421,7 +421,9 @@ struct VersionInfo {
             return !tag.empty() && !changeLog.empty() && buildVersion != 0 && buildMinOsVersion != 0 && !downloadUrl.empty();
         }
 
-        [[nodiscard]] std::string fullVersion() const { return std::format("{}.{}", tag, std::to_string(buildVersion)); }
+        [[nodiscard]] std::string fullVersion() const {
+            return std::format<const std::string &, std::string>("{}.{}", tag, std::to_string(buildVersion));
+        }
 };
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
