@@ -116,7 +116,7 @@ IoError IoHelper::posixError2ioError(int error) noexcept {
     }
 }
 
-std::string IoHelper::IoError2StdString(IoError ioError) noexcept {
+std::string IoHelper::ioError2StdString(IoError ioError) noexcept {
     switch (ioError) {
         case IoError::AccessDenied:
             return "Access denied";
@@ -643,7 +643,7 @@ void IoHelper::getFileStat(const SyncPath &path, FileStat *buf, bool &exists) {
     IoError ioError = IoError::Success;
     if (!getFileStat(path, buf, ioError)) {
         exists = (ioError != IoError::NoSuchFileOrDirectory);
-        std::string message = IoError2StdString(ioError);
+        std::string message = ioError2StdString(ioError);
         throw std::runtime_error("IoHelper::getFileStat error: " + message);
     }
 }

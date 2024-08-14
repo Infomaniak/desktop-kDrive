@@ -238,18 +238,18 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
 
             QWidgetAction *syncAction;
             for (auto const &syncInfoMapElt : syncOfCurrentDrive) {
-                if (pauseClicked &&
-                    (syncInfoMapElt.second.status() == SyncStatus::Stopped || syncInfoMapElt.second.status() == SyncStatus::Paused)) {
+                if (pauseClicked && (syncInfoMapElt.second.status() == SyncStatus::Stopped ||
+                                     syncInfoMapElt.second.status() == SyncStatus::Paused)) {
                     continue;
                 }
 
-                if (!pauseClicked &&
-                    (syncInfoMapElt.second.status() != SyncStatus::Stopped && syncInfoMapElt.second.status() != SyncStatus::Paused)) {
+                if (!pauseClicked && (syncInfoMapElt.second.status() != SyncStatus::Stopped &&
+                                      syncInfoMapElt.second.status() != SyncStatus::Paused)) {
                     continue;
                 }
 
                 syncAction = new QWidgetAction(this);
-                syncAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), syncInfoMapElt.first);
+                syncAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt.first);
                 MenuItemWidget *syncMenuItemWidget = new MenuItemWidget(syncInfoMapElt.second.name());
                 syncMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/drive.svg");
                 syncAction->setDefaultWidget(syncMenuItemWidget);
@@ -295,7 +295,7 @@ void StatusBarWidget::onPauseSync() {
 }
 
 void StatusBarWidget::onPauseFolderSync() {
-    int folderId = qvariant_cast<int>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
+    int folderId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     emit pauseSync(ActionTarget::Sync, folderId);
 }
 
@@ -308,7 +308,7 @@ void StatusBarWidget::onResumeSync() {
 }
 
 void StatusBarWidget::onResumeFolderSync() {
-    int folderId = qvariant_cast<int>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
+    int folderId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     emit resumeSync(ActionTarget::Sync, folderId);
 }
 

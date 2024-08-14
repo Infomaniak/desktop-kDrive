@@ -205,7 +205,7 @@ void AppClient::showSynthesisDialog() {
     _gui->showSynthesisDialog();
 }
 
-void AppClient::onSignalReceived(int id, /*SignalNum*/ SignalNum num, const QByteArray &params) {
+void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params) {
     QDataStream paramsStream(params);
 
     qCDebug(lcAppClient) << "Sgnl rcvd" << id << enumClassToInt(num);

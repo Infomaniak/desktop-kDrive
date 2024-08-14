@@ -29,7 +29,7 @@
 
 namespace KDC {
 
-const std::string MenuWidget::ActionTypeProperty = "actionType";
+const std::string MenuWidget::actionTypeProperty = "actionType";
 
 static const int contentMargin = 10;
 static const int cornerRadius = 5;

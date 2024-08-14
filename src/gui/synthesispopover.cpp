@@ -1136,7 +1136,7 @@ void SynthesisPopover::onRefreshErrorList(int /*driveDbId*/) {
 void SynthesisPopover::onOpenFolder(bool checked) {
     Q_UNUSED(checked)
 
-    int syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
+    int syncDbId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     openUrl(syncDbId);
 }
 
@@ -1182,7 +1182,7 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
 
         if (syncInfoMap.size() == 1) {
             auto const &syncInfoMapElt = syncInfoMap.begin();
-            foldersMenuAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), syncInfoMapElt->first);
+            foldersMenuAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt->first);
             connect(foldersMenuAction, &QWidgetAction::triggered, this, &SynthesisPopover::onOpenFolder);
         } else if (syncInfoMap.size() > 1) {
             foldersMenuItemWidget->setHasSubmenu(true);
@@ -1196,7 +1196,7 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
             QWidgetAction *openFolderAction;
             for (auto const &syncInfoMapElt : syncInfoMap) {
                 openFolderAction = new QWidgetAction(this);
-                openFolderAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), syncInfoMapElt.first);
+                openFolderAction->setProperty(MenuWidget::actionTypeProperty.c_str(), syncInfoMapElt.first);
                 MenuItemWidget *openFolderMenuItemWidget = new MenuItemWidget(syncInfoMapElt.second.name());
                 openFolderMenuItemWidget->setLeftIcon(":/client/resources/icons/actions/folder.svg");
                 openFolderAction->setDefaultWidget(openFolderMenuItemWidget);
@@ -1257,7 +1257,7 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     QWidgetAction *notificationAction;
     for (auto const &notificationMapElt : notificationMap) {
         notificationAction = new QWidgetAction(this);
-        notificationAction->setProperty(MenuWidget::ActionTypeProperty.c_str(), enumClassToInt(notificationMapElt.first));
+        notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), enumClassToInt(notificationMapElt.first));
         QString text = QCoreApplication::translate("KDC::SynthesisPopover", notificationMapElt.second.toStdString().c_str());
         MenuItemWidget *notificationMenuItemWidget = new MenuItemWidget(text);
         notificationMenuItemWidget->setChecked(notificationMapElt.first == _notificationsDisabled);
@@ -1362,7 +1362,7 @@ void SynthesisPopover::onNotificationActionTriggered(bool checked) {
     bool notificationAlreadyDisabledForPeriod =
         _notificationsDisabled != NotificationsDisabled::Never && _notificationsDisabled != NotificationsDisabled::Always;
 
-    _notificationsDisabled = qvariant_cast<NotificationsDisabled>(sender()->property(MenuWidget::ActionTypeProperty.c_str()));
+    _notificationsDisabled = qvariant_cast<NotificationsDisabled>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
     switch (_notificationsDisabled) {
         case NotificationsDisabled::Never:
             _notificationsDisabledUntilDateTime = QDateTime();

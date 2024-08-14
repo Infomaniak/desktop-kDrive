@@ -216,15 +216,15 @@ void CommClient::onErrorOccurred(QAbstractSocket::SocketError socketError) {
     }
 }
 
-void CommClient::onSendRequest(int id, /*RequestNum*/ RequestNum num, const QByteArray &params) {
-    QTimer::singleShot(0, this, [this, id, num,params]() {
+void CommClient::onSendRequest(int id, RequestNum num, const QByteArray &params) {
+    QTimer::singleShot(0, this, [this, id, num, params]() {
         if (!sendRequest(id, num, params)) {
             emit sendError(id);
         }
     });
 }
 
-void CommClient::onSignalReceived(int id, /*SignalNum*/ SignalNum num, const QByteArray &params) {
+void CommClient::onSignalReceived(int id, SignalNum num, const QByteArray &params) {
     QTimer::singleShot(0, this, [this, id, num, params]() { emit signalReceived(id, num, params); });
 }
 

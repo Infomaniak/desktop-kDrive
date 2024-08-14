@@ -130,7 +130,7 @@ class AppClient : public SharedTools::QtSingleApplication {
     private slots:
         void onUseMonoIconsChanged(bool);
         void onCleanup();
-        void onSignalReceived(int id, /*SignalNum*/ SignalNum SignalNum, const QByteArray &params);
+        void onSignalReceived(int id, SignalNum SignalNum, const QByteArray &params);
         void onLogTooBig();
 };
 

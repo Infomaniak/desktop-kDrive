@@ -236,7 +236,7 @@ std::wstring Utility::formatStdError(const SyncPath &path, const std::error_code
 
 std::wstring Utility::formatIoError(const SyncPath &path, IoError ioError) {
     std::wstringstream ss;
-    ss << L"path='" << Path2WStr(path) << L"', err='" << s2ws(IoHelper::IoError2StdString(ioError)) << L"'";
+    ss << L"path='" << Path2WStr(path) << L"', err='" << s2ws(IoHelper::ioError2StdString(ioError)) << L"'";
 
     return ss.str();
 }

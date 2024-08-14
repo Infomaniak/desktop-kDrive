@@ -186,7 +186,8 @@ AppServer::AppServer(int &argc, char **argv)
         ExitCode exitCode = migrateConfiguration(proxyNotSupported);
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Error in migrateConfiguration");
-            addError(Error(errId(), exitCode, exitCode == ExitCode::SystemError ? ExitCause::MigrationError : ExitCause::Unknown));
+            addError(
+                Error(errId(), exitCode, exitCode == ExitCode::SystemError ? ExitCause::MigrationError : ExitCause::Unknown));
         }
 
         if (proxyNotSupported) {
@@ -896,7 +897,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             exitCode = initSyncPal(sync, std::unordered_set<NodeId>(), std::unordered_set<NodeId>(), std::unordered_set<NodeId>(),
                                    true, resumedByUser, false);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << enumClassToInt(exitCode));
+                LOG_WARN(_logger,
+                         "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << enumClassToInt(exitCode));
                 addError(Error(errId(), exitCode, exitCause));
                 resultStream << enumClassToInt(exitCode);
                 break;
@@ -1034,7 +1036,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId() << " - exitCode=" << enumClassToInt(exitCode));
+                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << syncInfo.dbId()
+                                                                           << " - exitCode=" << enumClassToInt(exitCode));
                     addError(Error(errId(), exitCode, exitCause));
 
                     // Stop sync and remove it from syncPalMap
@@ -1121,7 +1124,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 // Create and start SyncPal
                 exitCode = initSyncPal(sync, blackList, QSet<QString>(), whiteList, true, false, true);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << enumClassToInt(exitCode));
+                    LOG_WARN(_logger,
+                             "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << enumClassToInt(exitCode));
                     addError(Error(errId(), exitCode, exitCause));
                 }
             });
@@ -1789,7 +1793,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             bool res = LogArchiver::getLogDirEstimatedSize(logSize, ioError);
             if (ioError != IoError::Success) {
                 LOG_WARN(_logger,
-                         "Error in LogArchiver::getLogDirEstimatedSize: " << IoHelper::IoError2StdString(ioError).c_str());
+                         "Error in LogArchiver::getLogDirEstimatedSize: " << IoHelper::ioError2StdString(ioError).c_str());
 
                 addError(Error(errId(), ExitCode::SystemError, ExitCause::Unknown));
                 resultStream << ExitCode::SystemError;
@@ -2041,7 +2045,8 @@ void AppServer::cancelLogUpload() {
     }
 
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport : " << enumClassToInt(exitCode) << " | " << enumClassToInt(exitCause));
+        LOG_WARN(_logger, "Error in Requests::cancelLogUploadToSupport : " << enumClassToInt(exitCode) << " | "
+                                                                           << enumClassToInt(exitCause));
         addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
         sendLogUploadStatusUpdated(LogUploadState::Failed, 0);  // Considered as a failure, in case the operation was not
                                                                 // canceled, the gui will receive updated status quickly.
@@ -2089,7 +2094,8 @@ void AppServer::uploadLog(bool includeArchivedLogs) {
         sendLogUploadStatusUpdated(LogUploadState::Canceled, 0);
         return;
     } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in Requests::sendLogToSupport : " << enumClassToInt(exitCode) << " | " << enumClassToInt(exitCause));
+        LOG_WARN(_logger,
+                 "Error in Requests::sendLogToSupport : " << enumClassToInt(exitCode) << " | " << enumClassToInt(exitCause));
         addError(Error(errId(), ExitCode::LogUploadFailed, exitCause));
     }
     sendLogUploadStatusUpdated(exitCode == ExitCode::Ok ? LogUploadState::Success : LogUploadState::Failed, 0);
@@ -2746,8 +2752,8 @@ ExitCode AppServer::tryCreateAndStartVfs(Sync &sync) noexcept {
     ExitCause exitCause = ExitCause::Unknown;
     const ExitCode exitCode = createAndStartVfs(sync, exitCause);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger,
-                 "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " - exitCode=" << enumClassToInt(exitCode) << ", pausing.");
+        LOG_WARN(_logger, "Error in createAndStartVfs for syncDbId=" << sync.dbId() << " - exitCode=" << enumClassToInt(exitCode)
+                                                                     << ", pausing.");
         addError(Error(sync.dbId(), errId(), exitCode, exitCause));
 
         // Set sync's paused flag
@@ -2848,7 +2854,8 @@ ExitCode AppServer::startSyncs(User &user, ExitCause &exitCause) {
                 exitCode =
                     initSyncPal(sync, blackList, undecidedList, QSet<QString>(), !user.keychainKey().empty(), false, false);
                 if (exitCode != ExitCode::Ok) {
-                    LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << enumClassToInt(exitCode));
+                    LOG_WARN(_logger,
+                             "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << enumClassToInt(exitCode));
                     addError(Error(sync.dbId(), errId(), exitCode, ExitCause::Unknown));
                     mainExitCode = exitCode;
                 }
@@ -4229,7 +4236,8 @@ void AppServer::onRestartSyncs() {
             // Clear LiteSyncNotAllowed error
             ExitCode exitCode = ServerRequests::deleteLiteSyncNotAllowedErrors();
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in ServerRequests::deleteLiteSyncNotAllowedErrors: " << enumClassToInt(exitCode));
+                LOG_WARN(Log::instance()->getLogger(),
+                         "Error in ServerRequests::deleteLiteSyncNotAllowedErrors: " << enumClassToInt(exitCode));
             }
 
             for (const auto &syncPalMapElt : _syncPalMap) {

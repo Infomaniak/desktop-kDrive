@@ -545,9 +545,9 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
     if (value.isEmpty()) {
         // Set default folder status
         if (!setXAttrValue(folderPath, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
-            const std::wstring IoErrorMessage = Utility::s2ws(IoHelper::IoError2StdString(ioError));
-            LOGW_WARN(_logger, L"Error in setXAttrValue - path=" << QStr2Path(folderPath).c_str() << L" Error: "
-                                                                 << IoErrorMessage.c_str());
+            const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+            LOGW_WARN(_logger,
+                      L"Error in setXAttrValue - path=" << QStr2Path(folderPath).c_str() << L" Error: " << ioErrorMsg.c_str());
             return false;
         }
 
@@ -557,9 +557,9 @@ bool LiteSyncExtConnectorPrivate::vfsStart(const QString &folderPath) {
 
         // Set default folder pin state
         if (!setXAttrValue(folderPath, [EXT_ATTR_PIN_STATE UTF8String], EXT_ATTR_PIN_STATE_UNPINNED, ioError)) {
-            const std::wstring IoErrorMessage = Utility::s2ws(IoHelper::IoError2StdString(ioError));
-            LOGW_WARN(_logger, L"Error in setXAttrValue - path=" << QStr2Path(folderPath).c_str() << L" Error: "
-                                                                 << IoErrorMessage.c_str());
+            const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+            LOGW_WARN(_logger,
+                      L"Error in setXAttrValue - path=" << QStr2Path(folderPath).c_str() << L" Error: " << ioErrorMsg.c_str());
             return false;
         }
 
@@ -962,9 +962,9 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
     QString status = (isHydrated ? EXT_ATTR_STATUS_OFFLINE : EXT_ATTR_STATUS_ONLINE);
     IoError ioError = IoError::Success;
     if (!setXAttrValue(filePath, [EXT_ATTR_STATUS UTF8String], status, ioError)) {
-        const std::wstring IoErrorMessage = Utility::s2ws(IoHelper::IoError2StdString(ioError));
-        LOGW_WARN(_logger, L"Call to setXAttrValue failed - path=" << QStr2WStr(filePath).c_str() << L" Error: "
-                                                                   << IoErrorMessage.c_str());
+        const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+        LOGW_WARN(_logger,
+                  L"Call to setXAttrValue failed - path=" << QStr2WStr(filePath).c_str() << L" Error: " << ioErrorMsg.c_str());
         return false;
     }
 
@@ -975,9 +975,9 @@ bool LiteSyncExtConnector::vfsConvertToPlaceHolder(const QString &filePath, bool
     // Set pin state
     QString pinState = (isHydrated ? EXT_ATTR_PIN_STATE_PINNED : EXT_ATTR_PIN_STATE_UNPINNED);
     if (!setXAttrValue(filePath, [EXT_ATTR_PIN_STATE UTF8String], pinState, ioError)) {
-        const std::wstring IoErrorMessage = Utility::s2ws(IoHelper::IoError2StdString(ioError));
-        LOGW_WARN(_logger, L"Call to setXAttrValue failed - path=" << QStr2WStr(filePath).c_str() << L" Error: "
-                                                                   << IoErrorMessage.c_str());
+        const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
+        LOGW_WARN(_logger,
+                  L"Call to setXAttrValue failed - path=" << QStr2WStr(filePath).c_str() << L" Error: " << ioErrorMsg.c_str());
         return false;
     }
 
@@ -1027,9 +1027,9 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
     // Set status
     IoError ioError = IoError::Success;
     if (!setXAttrValue(path, [EXT_ATTR_STATUS UTF8String], EXT_ATTR_STATUS_ONLINE, ioError)) {
-        const std::wstring IoErrorMessage = Utility::s2ws(IoHelper::IoError2StdString(ioError));
+        const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
         LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: " << IoErrorMessage.c_str());
+                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: " << ioErrorMsg.c_str());
         return false;
     }
 
@@ -1039,9 +1039,9 @@ bool LiteSyncExtConnector::vfsCreatePlaceHolder(const QString &relativePath, con
 
     // Set pin state
     if (!setXAttrValue(path, [EXT_ATTR_PIN_STATE UTF8String], EXT_ATTR_PIN_STATE_UNPINNED, ioError)) {
-        const std::wstring IoErrorMessage = Utility::s2ws(IoHelper::IoError2StdString(ioError));
+        const std::wstring ioErrorMsg = Utility::s2ws(IoHelper::ioError2StdString(ioError));
         LOGW_WARN(_logger,
-                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: " << IoErrorMessage.c_str());
+                  L"Call to setXAttrValue failed - path=" << QStr2WStr(path).c_str() << L" Error: " << ioErrorMsg.c_str());
         return false;
     }
 
@@ -1129,7 +1129,7 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
 
                         if (![fileHandle writeData:buffer error:&error]) {
                             LOGW_ERROR(_logger, L"Error while writing to file - path=" << QStr2WStr(filePath).c_str()
-                                                                                        << L" error=" << error);
+                                                                                       << L" error=" << error);
                             break;
                         }
                     }
