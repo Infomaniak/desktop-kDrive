@@ -25,7 +25,6 @@
 #include <sstream>
 #include <unordered_set>
 #include <variant>
-#include <__format/format_functions.h>
 
 namespace KDC {
 #define ERRID Utility::errId(__FILE__, __LINE__)
