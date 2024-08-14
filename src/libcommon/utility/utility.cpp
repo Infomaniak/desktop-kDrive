@@ -128,15 +128,23 @@ QString CommonUtility::platformArch() {
 }
 
 const std::string &CommonUtility::userAgentString() {
-    static std::string userAgent =
-        std::format("{} / {} ({})", APPLICATION_SHORTNAME, KDRIVE_VERSION_STRING, platformName().toStdString());
-    return userAgent;
+    static std::string str;
+    if (str.empty()) {
+        std::stringstream ss;
+        ss << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
+        str = ss.str();
+    }
+    return str;
 }
 
 const std::string &CommonUtility::currentVersion() {
-    static std::string currentVersion =
-        std::format("{}.{}.{}.{}", KDRIVE_VERSION_MAJOR, KDRIVE_VERSION_MINOR, KDRIVE_VERSION_PATCH, KDRIVE_VERSION_BUILD);
-    return currentVersion;
+    static std::string str;
+    if (str.empty()) {
+        std::stringstream ss;
+        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH << "." << KDRIVE_VERSION_BUILD;
+        str = ss.str();
+    }
+    return str;
 }
 
 QString CommonUtility::fileSystemName(const QString &dirPath) {

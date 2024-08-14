@@ -22,6 +22,7 @@
 #include <filesystem>
 #include <functional>
 #include <optional>
+#include <sstream>
 #include <unordered_set>
 #include <variant>
 #include <__format/format_functions.h>
@@ -422,7 +423,9 @@ struct VersionInfo {
         }
 
         [[nodiscard]] std::string fullVersion() const {
-            return std::format<const std::string &, std::string>("{}.{}", tag, std::to_string(buildVersion));
+            std::stringstream ss;
+            ss << tag << "." << buildVersion;
+            return ss.str();
         }
 };
 
