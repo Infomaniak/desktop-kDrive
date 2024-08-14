@@ -194,8 +194,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
             break;
         }
 
-        std::string errorCode;
-        if (job->hasErrorApi(&errorCode)) {
+        if (std::string errorCode; job->hasErrorApi(&errorCode)) {
             if (getNetworkErrorCode(errorCode) == NetworkErrorCode::forbiddenError) {
                 LOG_SYNCPAL_WARN(_logger, "Access forbidden");
                 exitCode = ExitCodeOk;
