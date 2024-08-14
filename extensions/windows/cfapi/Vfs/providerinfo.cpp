@@ -45,6 +45,6 @@ ProviderInfo::ProviderInfo(const LPCWSTR id, const LPCWSTR driveId, const LPCWST
     }
 
     if (!_folderPath.empty()) {
-        CreateDirectory(_folderPath.c_str(), NULL);
+        CreateDirectory(_folderPath.c_str(), nullptr);
     }
 }

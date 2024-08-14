@@ -30,7 +30,7 @@ namespace KDC {
 
 UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
                      SyncTime modtime)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0),
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
       _filePath(filepath),
       _filename(filename),
       _remoteParentDirId(remoteParentDirId),
@@ -54,7 +54,7 @@ UploadJob::~UploadJob() {
     }
 
     if (_vfsSetPinState) {
-        if (!_vfsSetPinState(_filePath, PinStateAlwaysLocal)) {
+        if (!_vfsSetPinState(_filePath, PinState::AlwaysLocal)) {
             LOGW_WARN(_logger, L"Error in vfsSetPinState - path=" << Path2WStr(_filePath).c_str());
         }
     }
@@ -67,19 +67,19 @@ bool UploadJob::canRun() {
 
     // Check that the item still exist
     bool exists;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_filePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_filePath, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger,
                    L"Item does not exist anymore. Aborting current sync and restart - path=" << Path2WStr(_filePath).c_str());
-        _exitCode = ExitCodeNeedRestart;
-        _exitCause = ExitCauseUnexpectedFileSystemEvent;
+        _exitCode = ExitCode::NeedRestart;
+        _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
 
@@ -143,12 +143,12 @@ void UploadJob::setData(bool &canceled) {
         return;
     }
 
-    if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore - " << Utility::formatSyncPath(_filePath).c_str());
         return;
     }
 
-    if (itemType.ioError == IoErrorAccessDenied) {
+    if (itemType.ioError == IoError::AccessDenied) {
         LOGW_DEBUG(_logger, L"Item misses search permission - " << Utility::formatSyncPath(_filePath).c_str());
         return;
     }
@@ -157,7 +157,7 @@ void UploadJob::setData(bool &canceled) {
     _targetType = itemType.targetType;
 
     if (IoHelper::isLink(_linkType)) {
-        LOG_DEBUG(_logger, "Read link data - type=" << _linkType);
+        LOG_DEBUG(_logger, "Read link data - type=" << enumClassToInt(_linkType));
         if (!readLink()) return;
     } else {
         LOG_DEBUG(_logger, "Read file data");
@@ -171,17 +171,17 @@ void UploadJob::setData(bool &canceled) {
 
 std::string UploadJob::getContentType(bool &canceled) {
     canceled = false;
-
-    if (_linkType == LinkTypeSymlink) {
-        return _targetType == NodeTypeFile ? mimeTypeSymlink : mimeTypeSymlinkFolder;
-    } else if (_linkType == LinkTypeHardlink) {
-        return mimeTypeHardlink;
-    } else if (_linkType == LinkTypeFinderAlias) {
-        return mimeTypeFinderAlias;
-    } else if (_linkType == LinkTypeJunction) {
-        return mimeTypeJunction;
-    } else {
-        return AbstractTokenNetworkJob::getContentType(canceled);
+    switch (_linkType) {
+        case LinkType::Symlink:
+            return _targetType == NodeType::File ? mimeTypeSymlink : mimeTypeSymlinkFolder;
+        case LinkType::Hardlink:
+            return mimeTypeHardlink;
+        case LinkType::FinderAlias:
+            return mimeTypeFinderAlias;
+        case LinkType::Junction:
+            return mimeTypeJunction;
+        default:
+            return AbstractTokenNetworkJob::getContentType(canceled);
     }
 }
 
@@ -189,8 +189,8 @@ bool UploadJob::readFile() {
     std::ifstream file(_filePath, std::ios_base::in | std::ios_base::binary);
     if (!file.is_open()) {
         LOGW_WARN(_logger, L"Failed to open file - path=" << Path2WStr(_filePath).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
@@ -199,8 +199,8 @@ bool UploadJob::readFile() {
     if (ostrm.bad()) {
         // Read/writing error or logical error
         LOGW_WARN(_logger, L"Failed to insert file content into string stream - path=" << Path2WStr(_filePath).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
@@ -208,8 +208,8 @@ bool UploadJob::readFile() {
     if (ostrm.bad()) {
         // Read/writing error or logical error
         LOGW_WARN(_logger, L"Failed to flush string stream - path=" << Path2WStr(_filePath).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
@@ -217,8 +217,8 @@ bool UploadJob::readFile() {
     if (file.bad()) {
         // Read/writing error or logical error
         LOGW_WARN(_logger, L"Failed to close file - path=" << Path2WStr(_filePath).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
@@ -226,8 +226,8 @@ bool UploadJob::readFile() {
         _data = ostrm.str();
     } catch (const std::bad_alloc &) {
         LOGW_WARN(_logger, L"Memory allocation error when setting data content - path=" << Path2WStr(_filePath).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseNotEnoughtMemory;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::NotEnoughtMemory;
         return false;
     }
 
@@ -235,7 +235,7 @@ bool UploadJob::readFile() {
 }
 
 bool UploadJob::readLink() {
-    if (_linkType == LinkTypeSymlink) {
+    if (_linkType == LinkType::Symlink) {
         std::error_code ec;
         _linkTarget = std::filesystem::read_symlink(_filePath, ec);
         if (ec.value() != 0) {
@@ -247,83 +247,83 @@ bool UploadJob::readLink() {
 #endif
             if (!exists) {
                 LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_filePath).c_str());
-                _exitCode = ExitCodeSystemError;
-                _exitCause = ExitCauseFileAccessError;
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::FileAccessError;
                 return false;
             }
 
             LOGW_WARN(_logger, L"Failed to read symlink - path=" << Path2WStr(_filePath).c_str() << L": "
                                                                  << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value()
                                                                  << L")");
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseUnknown;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
             return false;
         }
 
         _data = Path2Str(_linkTarget);
-    } else if (_linkType == LinkTypeHardlink) {
+    } else if (_linkType == LinkType::Hardlink) {
         if (!readFile()) {
             LOGW_WARN(_logger, L"Failed to read file - path=" << Path2WStr(_filePath).c_str());
             return false;
         }
 
         _linkTarget = _filePath;
-    } else if (_linkType == LinkTypeJunction) {
+    } else if (_linkType == LinkType::Junction) {
 #ifdef _WIN32
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::readJunction(_filePath, _data, _linkTarget, ioError)) {
             LOGW_WARN(_logger, L"Failed to read junction - " << Utility::formatIoError(_filePath, ioError).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseUnknown;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
 
             return false;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(_logger, L"File doesn't exist - " << Utility::formatSyncPath(_filePath).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseFileAccessError;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
             return false;
         }
 
-        if (ioError == IoErrorAccessDenied) {
+        if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File misses search permissions - " << Utility::formatSyncPath(_filePath).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseNoSearchPermission;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::NoSearchPermission;
             return false;
         }
 #endif
-    } else if (_linkType == LinkTypeFinderAlias) {
+    } else if (_linkType == LinkType::FinderAlias) {
 #ifdef __APPLE__
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::readAlias(_filePath, _data, _linkTarget, ioError)) {
             LOGW_WARN(_logger, L"Failed to read alias - path=" << Path2WStr(_filePath).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseUnknown;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::Unknown;
 
             return false;
         }
 
-        if (ioError == IoErrorNoSuchFileOrDirectory) {
+        if (ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(_logger, L"File doesn't exist - path=" << Path2WStr(_filePath).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseFileAccessError;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
 
             return false;
         }
 
-        if (ioError == IoErrorAccessDenied) {
+        if (ioError == IoError::AccessDenied) {
             LOGW_DEBUG(_logger, L"File with insufficient access rights - path=" << Path2WStr(_filePath).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseNoSearchPermission;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::NoSearchPermission;
 
             return false;
         }
 
-        assert(ioError == IoErrorSuccess);  // For every other error type, false should have been returned.
+        assert(ioError == IoError::Success);  // For every other error type, false should have been returned.
 #endif
     } else {
-        LOG_WARN(_logger, "Link type not managed - type=" << _linkType);
+        LOG_WARN(_logger, "Link type not managed - type=" << enumClassToInt(_linkType));
         return false;
     }
 

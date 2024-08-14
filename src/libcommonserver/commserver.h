@@ -43,7 +43,7 @@ class CommServer : public QObject {
         void operator=(CommServer const &) = delete;
 
         void sendReply(int id, const QByteArray &result);
-        bool sendSignal(int num, const QByteArray &params, int &id);
+        bool sendSignal(SignalNum num, const QByteArray &params, int &id);
         inline quint16 commPort() const { return _tcpServer.serverPort(); }
 
         void setHasQuittedProperly(bool hasQuittedProperly) { _hasQuittedProperly = hasQuittedProperly; }
@@ -73,9 +73,9 @@ class CommServer : public QObject {
         void onBytesWritten(qint64 numBytes);
         void onReadyRead();
         void onErrorOccurred(QAbstractSocket::SocketError socketError);
-        void onRequestReceived(int id, /*RequestNum*/ int num, const QByteArray &params);
+        void onRequestReceived(int id, RequestNum num, const QByteArray &params);
         void onSendReply(int id, const QByteArray &result);
-        void onSendSignal(int id, /*SignalNum*/ int num, const QByteArray &params);
+        void onSendSignal(int id, SignalNum num, const QByteArray &params);
 
         friend class AppServer;
 };
@@ -98,9 +98,9 @@ class Worker : public QObject {
 
     signals:
         void finished();
-        void requestReceived(int id, /*RequestNum*/ int num, const QByteArray &params);
+        void requestReceived(int id, RequestNum num, const QByteArray &params);
         void sendReply(int id, const QByteArray &result);
-        void sendSignal(int id, /*SignalNum*/ int num, const QByteArray &params);
+        void sendSignal(int id, SignalNum num, const QByteArray &params);
 
     private:
         QMutex _mutex;

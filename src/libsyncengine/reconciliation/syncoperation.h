@@ -45,7 +45,7 @@ class SyncOperation {
         inline void setNewName(const SyncName &newNewName) { _newName = newNewName; }
         inline const std::shared_ptr<Node> &newParentNode() const { return _newParentNode; }
         inline void setNewParentNode(const std::shared_ptr<Node> &newParentNode) { _newParentNode = newParentNode; }
-        inline bool hasConflict() { return _conflict.type() != ConflictTypeNone; }
+        inline bool hasConflict() { return _conflict.type() != ConflictType::None; }
         inline const Conflict &conflict() const { return _conflict; }
         inline void setConflict(const Conflict &newConflict) { _conflict = newConflict; }
 
@@ -58,10 +58,10 @@ class SyncOperation {
         inline bool hasParentOp() const { return _parentId > -1; }
 
     private:
-        OperationType _type = OperationTypeNone;
+        OperationType _type = OperationType::None;
         std::shared_ptr<Node> _affectedNode = nullptr;
         std::shared_ptr<Node> _correspondingNode = nullptr;  // The node on which we will apply the operation
-        ReplicaSide _targetSide = ReplicaSideUnknown;        // The side on which we will apply the operation
+        ReplicaSide _targetSide = ReplicaSide::Unknown;        // The side on which we will apply the operation
         bool _omit = false;                                  // If true, apply change only in DB
         SyncName _newName;  // New name on the replica on which we will apply the operation. Only for create and move operation
         std::shared_ptr<Node> _newParentNode =
@@ -102,7 +102,7 @@ class SyncOperationList : public SharedObject {
         void clear();
         void operator=(SyncOperationList const &other);
 
-        void getMapIndexToOp(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationTypeNone);
+        void getMapIndexToOp(std::unordered_map<UniqueId, int> &map, OperationType typeFilter = OperationType::None);
 
     private:
         std::unordered_map<UniqueId, SyncOpPtr> _allOps;

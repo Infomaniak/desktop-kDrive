@@ -31,14 +31,17 @@ namespace KDC {
 
 class DriveInfoClient : public DriveInfo {
     public:
-        typedef enum {
-            SynthesisStackedWidgetSynchronized = 0,
-            SynthesisStackedWidgetFavorites,
-            SynthesisStackedWidgetActivity,
-            SynthesisStackedWidgetFirstAdded
-        } SynthesisStackedWidget;
+        enum class SynthesisStackedWidget {
+            Synchronized = 0,
+            Favorites,
+            Activity, 
+            FirstAdded
+        };
 
-        typedef enum { ParametersStackedWidgetGeneral = 0, ParametersStackedWidgetFirstAdded } ParametersStackedWidget;
+        enum class ParametersStackedWidget {
+            General = 0,
+            FirstAdded
+        };
 
         DriveInfoClient();
         DriveInfoClient(const DriveInfo &driveInfo);
@@ -92,7 +95,7 @@ class DriveInfoClient : public DriveInfo {
                            const QString &filePath) const;
 
     private:
-        SyncStatus _status{SyncStatusUndefined};
+        SyncStatus _status{SyncStatus::Undefined};
         bool _unresolvedConflicts{false};
 
         qint64 _totalSize{0};
@@ -102,7 +105,7 @@ class DriveInfoClient : public DriveInfo {
         bool _isBeingDeleted{false};
 
         // Synthesispopover attributes
-        SynthesisStackedWidget _stackedWidgetIndex{SynthesisStackedWidgetSynchronized};
+        SynthesisStackedWidget _stackedWidgetIndex{SynthesisStackedWidget::Synchronized};
         QListWidget *_synchronizedListWidget{nullptr};
         QVector<SynchronizedItem> _synchronizedItemList;
         int _synchronizedListStackPosition{0};

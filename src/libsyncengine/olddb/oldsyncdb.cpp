@@ -60,7 +60,7 @@ bool OldSyncDb::upgrade(const std::string &, const std::string &) {
     return true;
 }
 
-bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, int>> &selectiveSyncList) {
+bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, SyncNodeType>> &selectiveSyncList) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
@@ -79,7 +79,7 @@ bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, int>> &s
         int type = -1;
         ASSERT(queryIntValue(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, 1, type));
 
-        selectiveSyncList.push_back(std::make_pair(path, type));
+        selectiveSyncList.push_back(std::make_pair(path, intToEnumClass<SyncNodeType>(type)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
 
