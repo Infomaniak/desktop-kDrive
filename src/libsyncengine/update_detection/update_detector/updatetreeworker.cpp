@@ -267,7 +267,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
         FSOpPtr createOp;
         _operationSet->getOp(createOpId, createOp);
-        const auto normalizedPath = Utility::normalizedSyncPath(createOp->path());
+        const auto normalizedPath = createOp->path();
 
         std::pair<FSOpPtrMap::iterator, bool> insertionResult;
         switch (createOp->objectType()) {

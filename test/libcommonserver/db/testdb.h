@@ -41,11 +41,11 @@ class TestDb : public CppUnit::TestFixture {
         struct Test {
                 Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue);
 
-                int64_t _id;
-                int _intValue;
-                int64_t _int64Value;
-                double _doubleValue;
-                std::string _textValue;
+                int64_t id;
+                int intValue;
+                int64_t int64Value;
+                double doubleValue;
+                std::string textValue;
         };
 
         class MyTestDb : public Db {

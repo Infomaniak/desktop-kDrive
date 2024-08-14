@@ -563,7 +563,7 @@ bool SyncDb::prepare() {
 }
 
 bool SyncDb::normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber) {
-    if (dbFromVersionNumber != "3.6.3") return true;
+    if (!Utility::startsWith(dbFromVersionNumber, "3.6.3")) return true;
 
     LOG_DEBUG(_logger, "Upgrade 3.6.3 DB");
 

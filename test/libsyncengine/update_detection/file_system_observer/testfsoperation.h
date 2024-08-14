@@ -16,25 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "fsoperation.h"
+#pragma once
 
-#include "utility/utility.h"
+#include "testincludes.h"
+
+using namespace CppUnit;
 
 namespace KDC {
 
-UniqueId FSOperation::_nextId = 0;
+class TestFsOperation : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestFsOperation);
+        CPPUNIT_TEST(testConstructor);
+        CPPUNIT_TEST_SUITE_END();
 
-FSOperation::FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType, SyncTime createdAt /*= 0*/,
-                         SyncTime lastModified /*= 0*/, int64_t size /*= 0*/, const SyncPath &path /*= ""*/,
-                         const SyncPath &destinationPath /*= ""*/)
-    : _id(_nextId++),
-      _operationType(operationType),
-      _nodeId(nodeId),
-      _objectType(objectType),
-      _createdAt(createdAt),
-      _lastModified(lastModified),
-      _size(size),
-      _path(Utility::normalizedSyncPath(path)),
-      _destinationPath(Utility::normalizedSyncPath(destinationPath)) {}
+    protected:
+        void testConstructor();
+};
 
 }  // namespace KDC
