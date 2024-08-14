@@ -21,7 +21,7 @@ set(testserver_SRCS
     test.cpp
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdater.h updater/testupdater.cpp
-        updater/TestAbstractUpdater.h updater/TestAbstractUpdater.cpp
+    updater/testabstractupdater.h updater/testabstractupdater.cpp
 )
 
 if(APPLE)
