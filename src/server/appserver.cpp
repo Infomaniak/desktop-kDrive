@@ -997,8 +997,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                                         liteSync, showInNavigationPane, accountInfo, driveInfo, syncInfo);
             if (exitCode != ExitCode::Ok) {
                 LOGW_WARN(_logger, L"Error in Requests::addSync - userDbId="
-                                       << userDbId << L" accountId=" << accountId << L" driveId=" << driveId << L" localFolder"
-                                       << Utility::formatPath(localFolderPath).c_str() << L" serverFolderPath="
+                                       << userDbId << L" accountId=" << accountId << L" driveId=" << driveId
+                                       << L" localFolderPath=" << QStr2WStr(localFolderPath).c_str() << L" serverFolderPath="
                                        << QStr2WStr(serverFolderPath).c_str() << L" serverFolderNodeId="
                                        << serverFolderNodeId.toStdWString().c_str() << L" liteSync=" << liteSync
                                        << L" showInNavigationPane=" << showInNavigationPane);
