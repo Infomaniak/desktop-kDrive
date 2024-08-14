@@ -213,6 +213,14 @@ std::wstring Utility::formatSyncPath(const SyncPath &path) {
     return ss.str();
 }
 
+
+std::wstring Utility::formatPath(const QString &path) {
+    std::wstringstream ss;
+    ss << L"path='" << QStr2WStr(path) << L"'";
+
+    return ss.str();
+}
+
 std::wstring Utility::formatStdError(const std::error_code &ec) {
 #ifdef _WIN32
     std::stringstream ss;

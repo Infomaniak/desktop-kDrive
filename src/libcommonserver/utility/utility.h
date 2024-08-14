@@ -39,6 +39,8 @@
 #include <Accctrl.h>
 #endif
 
+class QString;
+
 namespace Poco {
 class URI;
 }
@@ -75,6 +77,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
         static std::wstring formatIoError(const SyncPath &path, IoError ioError);
         static std::wstring formatSyncPath(const SyncPath &path);
+        static std::wstring formatPath(const QString &path);
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
