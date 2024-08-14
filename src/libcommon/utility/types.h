@@ -418,7 +418,7 @@ struct VersionInfo {
         std::string downloadUrl;
 
         [[nodiscard]] bool isValid() const {
-            return !tag.empty() && !changeLog.empty() && buildVersion != 0 && buildMinOsVersion != 0 && !downloadUrl.empty();
+            return !tag.empty() && !changeLog.empty() && buildVersion != 0 && !downloadUrl.empty();
         }
 
         [[nodiscard]] std::string fullVersion() const {

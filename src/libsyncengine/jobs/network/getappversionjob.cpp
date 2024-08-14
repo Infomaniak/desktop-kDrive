@@ -103,7 +103,7 @@ bool GetAppVersionJob::handleResponse(std::istream &is) {
         if (!JsonParserUtility::extractValue(obj, buildVersionKey, _versionInfo[channel].buildVersion)) {
             return false;
         }
-        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionInfo[channel].buildMinOsVersion)) {
+        if (!JsonParserUtility::extractValue(obj, buildMinOsVersionKey, _versionInfo[channel].buildMinOsVersion, false)) {
             return false;
         }
         if (!JsonParserUtility::extractValue(obj, downloadUrlKey, _versionInfo[channel].downloadUrl)) {
