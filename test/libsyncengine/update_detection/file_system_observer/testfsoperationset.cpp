@@ -34,6 +34,7 @@ void TestFsOperationSet::setUp() {
 
 void TestFsOperationSet::tearDown() {}
 
+
 void TestFsOperationSet::testGetOp() {
     FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     FSOpPtr opPtr;
@@ -42,7 +43,7 @@ void TestFsOperationSet::testGetOp() {
     CPPUNIT_ASSERT(!fsOperationSet.getOp(1, opPtr));
 
     // Test getOp with an existing operation
-    auto op = std::make_shared<FSOperation>();
+    auto op = std::make_shared<FSOperation>(OperationType::Create, "node_1", NodeType::File);
     fsOperationSet.insertOp(op);
 
     CPPUNIT_ASSERT(fsOperationSet.getOp(op->id(), opPtr));

@@ -20,14 +20,10 @@
 
 #include "libcommon/utility/types.h"
 
-#include <string>
-#include <unordered_map>
-
 namespace KDC {
 
 struct FSOperation {
     public:
-        FSOperation() {}
         FSOperation(OperationType operationType, const NodeId &nodeId, NodeType objectType = NodeType::Unknown,
                     SyncTime createdAt = 0, SyncTime lastModified = 0, int64_t size = 0, const SyncPath &path = "",
                     const SyncPath &destinationPath = "");

@@ -177,7 +177,8 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
 
             if (!parentNode) {
                 SyncPath newPath;
-                if (const auto newPathExitCode = getNewPathAfterMove(deleteOp->path(), newPath); newPathExitCode != ExitCode::Ok) {
+                if (const auto newPathExitCode = getNewPathAfterMove(deleteOp->path(), newPath);
+                    newPathExitCode != ExitCode::Ok) {
                     LOG_SYNCPAL_WARN(_logger, "Error in UpdateTreeWorker::getNewPathAfterMove");
                     return newPathExitCode;
                 }
@@ -267,7 +268,7 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
         FSOpPtr createOp;
         _operationSet->getOp(createOpId, createOp);
-        const auto normalizedPath = Utility::normalizedSyncPath(createOp->path());
+        const auto normalizedPath = createOp->path();
 
         std::pair<FSOpPtrMap::iterator, bool> insertionResult;
         switch (createOp->objectType()) {
@@ -1060,8 +1061,7 @@ void UpdateTreeWorker::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncN
     treeStr += Str("[");
     treeStr += Str2SyncName(*node->id());
     treeStr += Str(" / ");
-    treeStr += node->changeEvents() != OperationType::None ? Str2SyncName(Utility::opType2Str(node->changeEvents()))
-                   : Str("-");
+    treeStr += node->changeEvents() != OperationType::None ? Str2SyncName(Utility::opType2Str(node->changeEvents())) : Str("-");
     treeStr += Str("]");
     treeStr += Str("\n");
 
@@ -1184,8 +1184,8 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 return ExitCode::DataError;
             }
             node->setMoveOrigin(_side == ReplicaSide::Local ? localPath
-                                                          : remotePath);  // TODO : no need to keep both remote and local paths
-                                                                          // since we do not rename the file locally anymore.
+                                                            : remotePath);  // TODO : no need to keep both remote and local paths
+                                                                            // since we do not rename the file locally anymore.
         }
 
         // if it's dbNodeId is null

@@ -384,10 +384,12 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
 
                 if (syncOp->targetSide() == ReplicaSide::Local) {
                     _executorExitCode = job->exitCode() == ExitCode::NeedRestart ? ExitCode::DataError : job->exitCode();
-                    _executorExitCause = job->exitCode() == ExitCode::NeedRestart ? ExitCause::FileAlreadyExist : job->exitCause();
+                    _executorExitCause =
+                        job->exitCode() == ExitCode::NeedRestart ? ExitCause::FileAlreadyExist : job->exitCause();
                 } else if (syncOp->targetSide() == ReplicaSide::Remote) {
                     _executorExitCode = job->exitCode() == ExitCode::NeedRestart ? ExitCode::BackError : job->exitCode();
-                    _executorExitCause = job->exitCode() == ExitCode::NeedRestart ? ExitCause::FileAlreadyExist : job->exitCause();
+                    _executorExitCause =
+                        job->exitCode() == ExitCode::NeedRestart ? ExitCause::FileAlreadyExist : job->exitCause();
                 }
 
                 return;
@@ -897,9 +899,9 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
         bool exists = false;
         if (!hasRight(syncOp, exists)) {
             // Ignore operation
-            _syncPal->setProgressComplete(
-                relativeLocalFilePath,
-                SyncFileStatus::Ignored);  // TODO: we do not want to propagate the changes, but they must be kept on local replica.
+            _syncPal->setProgressComplete(relativeLocalFilePath,
+                                          SyncFileStatus::Ignored);  // TODO: we do not want to propagate the changes, but they
+                                                                     // must be kept on local replica.
             // Rename the file and exclude the renamed file
             return;
         }
@@ -1281,8 +1283,8 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
                                      ? syncItem.localNodeId().has_value() ? syncItem.localNodeId().value() : ""
                                      : "";
             NodeId remoteNodeId = syncOp->correspondingNode()->side() == ReplicaSide::Local ? ""
-                                  : syncItem.remoteNodeId().has_value()                   ? syncItem.remoteNodeId().value()
-                                                                                          : "";
+                                  : syncItem.remoteNodeId().has_value()                     ? syncItem.remoteNodeId().value()
+                                                                                            : "";
 
             Error err(_syncPal->syncDbId(), localNodeId, remoteNodeId, syncItem.type(),
                       syncItem.newPath().has_value() ? syncItem.newPath().value() : syncItem.path(), syncItem.conflict(),
@@ -1725,7 +1727,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
     auto networkJob(std::dynamic_pointer_cast<AbstractNetworkJob>(job));
     if (const bool isInconsistencyIssue = job->exitCause() == ExitCause::InvalidName;
         job->exitCode() == ExitCode::BackError && details::isManagedBackError(job->exitCause())) {
-        return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue, networkJob->isDownloadImpossible());
+        return handleManagedBackError(job->exitCause(), syncOp, isInconsistencyIssue,
+                                      networkJob && networkJob->isDownloadImpossible());
     }
 
     if (job->exitCode() != ExitCode::Ok) {
@@ -1751,8 +1754,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             // Cancel all queued jobs
             _executorExitCode = job->exitCode();
             _executorExitCause = job->exitCause();
-            LOGW_SYNCPAL_WARN(_logger,
-                              L"Cancelling jobs. exit code: " << enumClassToInt(_executorExitCode) << L" exit cause: " << enumClassToInt(_executorExitCause));
+            LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. exit code: " << enumClassToInt(_executorExitCode) << L" exit cause: "
+                                                                       << enumClassToInt(_executorExitCause));
             cancelAllOngoingJobs();
             _syncPal->setProgressComplete(relativeLocalPath, SyncFileStatus::Error);
             return false;
@@ -1784,9 +1787,10 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             }
         }
 
-        const bool bypassProgressComplete = syncOp->affectedNode()->hasChangeEvent(OperationType::Create) &&
-                                            syncOp->affectedNode()->hasChangeEvent(
-                                                OperationType::Delete);  // TODO : If node has both create and delete events, bypass
+        const bool bypassProgressComplete =
+            syncOp->affectedNode()->hasChangeEvent(OperationType::Create) &&
+            syncOp->affectedNode()->hasChangeEvent(
+                OperationType::Delete);  // TODO : If node has both create and delete events, bypass
         // progress complete. But this should be refactored
         // alongside UpdateTreeWorker::getOrCreateNodeFromPath
 
@@ -2138,8 +2142,8 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
     } else {
         // insert new node
         node = std::shared_ptr<Node>(
-            new Node(newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote, remoteName,
-                     syncOp->affectedNode()->type(), OperationType::None, newNodeId, newLastModTime, newLastModTime,
+            new Node(newDbNodeId, syncOp->targetSide() == ReplicaSide::Local ? ReplicaSide::Local : ReplicaSide::Remote,
+                     remoteName, syncOp->affectedNode()->type(), OperationType::None, newNodeId, newLastModTime, newLastModTime,
                      syncOp->affectedNode()->size(), newCorrespondingParentNode));
         if (node == nullptr) {
             _executorExitCode = ExitCode::SystemError;
@@ -2179,7 +2183,7 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
     }
 
     // 2. Update the database entry, to avoid detecting the edit operation again.
-    std::string localId = syncOp->targetSide() == ReplicaSide::Local   ? newNodeId
+    std::string localId = syncOp->targetSide() == ReplicaSide::Local ? newNodeId
                           : syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id()
                                                                      : std::string();
     std::string remoteId = syncOp->targetSide() == ReplicaSide::Local

@@ -374,14 +374,15 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
                 if (snapshotLastModified != dbLastModified && dbNode.type() == NodeType::File) {
                     // Edit operation
-                    FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File,
-                                                                 snapshot->createdAt(nodeId), snapshotLastModified,
-                                                                 snapshot->size(nodeId), snapPath);
+                    FSOpPtr fsOp =
+                        std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
+                                                      snapshotLastModified, snapshot->size(nodeId), snapPath);
                     opSet->insertOp(fsOp);
                     logOperationGeneration(snapshot->side(), fsOp);
                 }
 
-                bool movedOrRenamed = dbName != snapshot->name(nodeId) || parentId != snapshot->parentId(nodeId);
+                const bool movedOrRenamed =
+                    dbName != Utility::normalizedSyncName(snapshot->name(nodeId)) || parentId != snapshot->parentId(nodeId);
                 if (movedOrRenamed) {
                     FSOpPtr fsOp = nullptr;
                     if (isInUnsyncedList(snapshot, nodeId, side)) {
@@ -395,13 +396,13 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                                                              snapPath);
                     } else {
                         // Move operation
-                        fsOp = std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(),
-                                                             snapshot->createdAt(nodeId), snapshotLastModified,
-                                                             snapshot->size(nodeId),
-                                                             remoteDbPath  // We use the remotePath anyway here to display
-                                                             // notifications with the real (remote) name
-                                                             ,
-                                                             snapPath);
+                        fsOp =
+                            std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
+                                                          snapshotLastModified, snapshot->size(nodeId),
+                                                          remoteDbPath  // We use the remotePath anyway here to display
+                                                          // notifications with the real (remote) name
+                                                          ,
+                                                          snapPath);
                     }
 
                     opSet->insertOp(fsOp);
@@ -534,9 +535,8 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
             }
 
             // Create operation
-            FSOpPtr fsOp =
-                std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
-                                              snapshot->lastModified(nodeId), snapshotSize, snapPath);
+            FSOpPtr fsOp = std::make_shared<FSOperation>(OperationType::Create, nodeId, type, snapshot->createdAt(nodeId),
+                                                         snapshot->lastModified(nodeId), snapshotSize, snapPath);
             opSet->insertOp(fsOp);
             logOperationGeneration(snapshot->side(), fsOp);
         }
@@ -774,7 +774,8 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<Snapshot> remoteSn
     }
 
     if (ParametersCache::instance()->parameters().useBigFolderSizeLimit() &&
-        size > ParametersCache::instance()->parameters().bigFolderSizeLimitB() && _sync.virtualFileMode() == VirtualFileMode::Off) {
+        size > ParametersCache::instance()->parameters().bigFolderSizeLimitB() &&
+        _sync.virtualFileMode() == VirtualFileMode::Off) {
         // Update undecided list
         std::unordered_set<NodeId> tmp;
         SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::UndecidedList, tmp);

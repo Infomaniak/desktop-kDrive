@@ -379,6 +379,60 @@ void TestUtility::testFormatRequest() {
     CPPUNIT_ASSERT(result.find(description) != std::string::npos);
 }
 
+void TestUtility::testNormalizedSyncName() {
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName()).empty());
+
+#ifdef _WIN32
+    // The two Unicode normalizations coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"a") == Utility::normalizedSyncName(L"a", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"@") == Utility::normalizedSyncName(L"@", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"$") == Utility::normalizedSyncName(L"$", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"!") == Utility::normalizedSyncName(L"!", Utility::UnicodeNormalization::NFD));
+
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"abcd") ==
+                   Utility::normalizedSyncName(L"abcd", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"(1234%)") ==
+                   Utility::normalizedSyncName(L"(1234%)", Utility::UnicodeNormalization::NFD));
+
+    // The two Unicode normalizations don't coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"à") != Utility::normalizedSyncName(L"à", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"é") != Utility::normalizedSyncName(L"é", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"è") != Utility::normalizedSyncName(L"è", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"ê") != Utility::normalizedSyncName(L"ê", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"ü")) !=
+                   Utility::normalizedSyncName(L"ü", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"ö")) !=
+                   Utility::normalizedSyncName(L"ö", Utility::UnicodeNormalization::NFD));
+
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"aöe")) !=
+                   Utility::normalizedSyncName(L"aöe", Utility::UnicodeNormalization::NFD));
+#else
+    // The two Unicode normalizations coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("a") == Utility::normalizedSyncName("a", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("@") == Utility::normalizedSyncName("@", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("$") == Utility::normalizedSyncName("$", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("!") == Utility::normalizedSyncName("!", Utility::UnicodeNormalization::NFD));
+
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("abcd") ==
+                   Utility::normalizedSyncName("abcd", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("(1234%)") ==
+                   Utility::normalizedSyncName("(1234%)", Utility::UnicodeNormalization::NFD));
+
+    // The two Unicode normalizations don't coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("à") != Utility::normalizedSyncName("à", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("é") != Utility::normalizedSyncName("é", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("è") != Utility::normalizedSyncName("è", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("ê") != Utility::normalizedSyncName("ê", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("ü")) !=
+                   Utility::normalizedSyncName("ü", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("ö")) !=
+                   Utility::normalizedSyncName("ö", Utility::UnicodeNormalization::NFD));
+
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("aöe")) !=
+                   Utility::normalizedSyncName("aöe", Utility::UnicodeNormalization::NFD));
+#endif
+}
+
 void TestUtility::testNormalizedSyncPath() {
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("a/b/c") == SyncPath("a/b/c"));
     CPPUNIT_ASSERT(Utility::normalizedSyncPath("/a/b/c") == SyncPath("/a/b/c"));

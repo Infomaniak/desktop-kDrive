@@ -15,34 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
-#include "testincludes.h"
-#include "db/syncdb.h"
+#include "utility/types.h"
 
-using namespace CppUnit;
+namespace KDC::testhelpers {
+SyncName makeNfdSyncName();
+SyncName makeNfcSyncName();
 
-namespace KDC {
-
-class TestSyncDb : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSyncDb);
-        CPPUNIT_TEST(testNodes);
-        CPPUNIT_TEST(testSyncNodes);
-        CPPUNIT_TEST(testCorrespondingNodeId);
-        CPPUNIT_TEST(testUpgrade_3_6_3);
-        CPPUNIT_TEST_SUITE_END();
-
-    public:
-        void setUp() override;
-        void tearDown() override;
-
-    protected:
-        void testNodes();
-        void testSyncNodes();
-        void testCorrespondingNodeId();
-        void testUpgrade_3_6_3();
-
-    private:
-        SyncDb *_testObj;
-};
-
-}  // namespace KDC
+}  // namespace KDC::testhelpers

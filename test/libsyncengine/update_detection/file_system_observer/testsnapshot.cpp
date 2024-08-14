@@ -57,7 +57,7 @@ void TestSnapshot::testSnapshot() {
     Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
 
     // Insert node A
-    const SnapshotItem itemA("a", rootNodeId, Str("A"), 1640995201, 1640995201, NodeType::Directory, 123);
+    const SnapshotItem itemA("a", rootNodeId, Str("A"), 1640995201, -1640995201, NodeType::Directory, 123);
     snapshot.updateItem(itemA);
     CPPUNIT_ASSERT(snapshot.exists("a"));
     CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(snapshot.name("a")));
@@ -100,7 +100,7 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), snapshot.itemId(std::filesystem::path("A*/AA/AAA")));
 
     // Move node AA under B
-    snapshot.updateItem(SnapshotItem("aa", "b", Str("AA"), 1640995204, 1640995204, NodeType::Directory, 123));
+    snapshot.updateItem(SnapshotItem("aa", "b", Str("AA"), 1640995204, -1640995204, NodeType::Directory, 123));
     CPPUNIT_ASSERT(snapshot.parentId("aa") == "b");
     snapshot.getChildrenIds("b", childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("aa"));

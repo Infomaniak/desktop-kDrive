@@ -18,6 +18,7 @@
 
 #include "testupdatetree.h"
 
+
 using namespace CppUnit;
 
 namespace KDC {
@@ -28,6 +29,59 @@ void TestUpdateTree::setUp() {
 
 void TestUpdateTree::tearDown() {
     delete _myTree;
+}
+
+void TestUpdateTree::testConstructors() {
+#ifdef _WIN32
+    const SyncName nfdName = Utility::normalizedSyncName(L"éàè", Utility::UnicodeNormalization::NFD);
+    const SyncName nfcName = Utility::normalizedSyncName(L"éàè");
+#else
+    const SyncName nfdName = Utility::normalizedSyncName("éàè", Utility::UnicodeNormalization::NFD);
+    const SyncName nfcName = Utility::normalizedSyncName("éàè");
+#endif
+
+    {
+        Node node(std::nullopt, ReplicaSide::Remote, nfcName, NodeType::Directory, "1", 0, 0, 0);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node(std::nullopt, ReplicaSide::Remote, nfdName, NodeType::Directory, "1", 0, 0, 0);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+
+    {
+        Node node(std::nullopt, ReplicaSide::Remote, nfcName, NodeType::Directory, OperationType::None, "1", 0, 0, 123, nullptr);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node(std::nullopt, ReplicaSide::Remote, nfdName, NodeType::Directory, OperationType::None, "1", 0, 0, 123, nullptr);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node(ReplicaSide::Remote, nfcName, NodeType::Directory, nullptr);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node(ReplicaSide::Remote, nfdName, NodeType::Directory, nullptr);
+
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
+
+    {
+        Node node;
+        node.setName(nfdName);
+        CPPUNIT_ASSERT(node.name() == nfcName);
+    }
 }
 
 void TestUpdateTree::testAll() {
@@ -43,16 +97,16 @@ void TestUpdateTree::testAll() {
                                                                  OperationType::None, "3", 0, 0, 12345, _myTree->rootNode()));
     std::shared_ptr<Node> node4 = std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 4"), NodeType::Directory,
                                                                  OperationType::None, "4", 0, 0, 12345, _myTree->rootNode()));
-    std::shared_ptr<Node> node11 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _myTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None, "11", 0, 0, 12345, node1));
+    std::shared_ptr<Node> node11 = std::shared_ptr<Node>(new Node(
+        std::nullopt, _myTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None, "11", 0, 0, 12345, node1));
     std::shared_ptr<Node> node111 = std::shared_ptr<Node>(new Node(
         std::nullopt, _myTree->side(), Str("Dir 1.1.1"), NodeType::Directory, OperationType::None, "111", 0, 0, 12345, node11));
     std::shared_ptr<Node> node1111 = std::shared_ptr<Node>(new Node(
         std::nullopt, _myTree->side(), Str("File 1.1.1.1"), NodeType::File, OperationType::None, "1111", 0, 0, 12345, node111));
-    std::shared_ptr<Node> node31 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _myTree->side(), Str("Dir 3.1"), NodeType::Directory, OperationType::None, "31", 0, 0, 12345, node3));
-    std::shared_ptr<Node> node41 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _myTree->side(), Str("Dir 4.1"), NodeType::Directory, OperationType::None, "41", 0, 0, 12345, node4));
+    std::shared_ptr<Node> node31 = std::shared_ptr<Node>(new Node(
+        std::nullopt, _myTree->side(), Str("Dir 3.1"), NodeType::Directory, OperationType::None, "31", 0, 0, 12345, node3));
+    std::shared_ptr<Node> node41 = std::shared_ptr<Node>(new Node(
+        std::nullopt, _myTree->side(), Str("Dir 4.1"), NodeType::Directory, OperationType::None, "41", 0, 0, 12345, node4));
     std::shared_ptr<Node> node411 = std::shared_ptr<Node>(new Node(
         std::nullopt, _myTree->side(), Str("Dir 4.1.1"), NodeType::Directory, OperationType::None, "411", 0, 0, 12345, node41));
     std::shared_ptr<Node> node4111 = std::shared_ptr<Node>(new Node(
@@ -98,17 +152,17 @@ void TestUpdateTree::testChangeEvents() {
     std::shared_ptr<Node> node = std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 0"), NodeType::Directory,
                                                                 OperationType::None, "0", 0, 0, 12345, _myTree->rootNode()));
     std::shared_ptr<Node> nodeCreate =
-        std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::Create, "1",
-                                       0, 0, 12345, _myTree->rootNode()));
+        std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::Create,
+                                       "1", 0, 0, 12345, _myTree->rootNode()));
     std::shared_ptr<Node> nodeEdit =
-        std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::Edit, "2", 0,
-                                       0, 12345, _myTree->rootNode()));
-    std::shared_ptr<Node> nodeMove =
-        std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::Move, "3", 0,
-                                       0, 12345, _myTree->rootNode()));
-    std::shared_ptr<Node> nodeDelete =
-        std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::Delete, "4",
+        std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::Edit, "2",
                                        0, 0, 12345, _myTree->rootNode()));
+    std::shared_ptr<Node> nodeMove =
+        std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::Move, "3",
+                                       0, 0, 12345, _myTree->rootNode()));
+    std::shared_ptr<Node> nodeDelete =
+        std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::Delete,
+                                       "4", 0, 0, 12345, _myTree->rootNode()));
     std::shared_ptr<Node> nodeMoveEdit =
         std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 5"), NodeType::Directory,
                                        OperationType::Move | OperationType::Edit, "5", 0, 0, 12345, _myTree->rootNode()));

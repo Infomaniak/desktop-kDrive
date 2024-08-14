@@ -30,9 +30,9 @@
     "textValue TEXT);"
 
 #define INSERT_TEST_REQUEST_ID "testdb2"
-#define INSERT_TEST_REQUEST                                            \
-    "INSERT INTO test (intValue, int64Value, doubleValue, textValue) " \
-    "VALUES (?1, ?2, ?3, ?4);"
+#define INSERT_TEST_REQUEST                                                \
+    "INSERT INTO test (id, intValue, int64Value, doubleValue, textValue) " \
+    "VALUES (?1, ?2, ?3, ?4, ?5);"
 
 #define UPDATE_TEST_REQUEST_ID "testdb3"
 #define UPDATE_TEST_REQUEST                                                     \
@@ -68,37 +68,51 @@ void TestDb::tearDown() {
 void TestDb::testQueries() {
     CPPUNIT_ASSERT(_testObj->exists());
 
-    Test test1(0, 1234, 123456789012, 1234.5678, "test 1");
-    Test test2(0, 5678, 987654321098, 8765.4321, "test 2");
+    const Test test0(0, -4321, 101010101010, 4321.0, "");
+    Test test1(1, 1234, 123456789012, 1234.5678, "test 1");
+    const Test test2(2, 5678, 987654321098, 8765.4321, "test 2");
+    CPPUNIT_ASSERT(_testObj->insertTest(test0));
     CPPUNIT_ASSERT(_testObj->insertTest(test1));
     CPPUNIT_ASSERT(_testObj->insertTest(test2));
 
     std::vector<Test> tests = _testObj->selectTest();
-    CPPUNIT_ASSERT(tests.size() == 2);
-    CPPUNIT_ASSERT(tests[0]._intValue == test1._intValue);
-    CPPUNIT_ASSERT(tests[0]._int64Value == test1._int64Value);
-    CPPUNIT_ASSERT(tests[0]._doubleValue == test1._doubleValue);
-    CPPUNIT_ASSERT(tests[0]._textValue == test1._textValue);
-    CPPUNIT_ASSERT(tests[1]._intValue == test2._intValue);
-    CPPUNIT_ASSERT(tests[1]._int64Value == test2._int64Value);
-    CPPUNIT_ASSERT(tests[1]._doubleValue == test2._doubleValue);
-    CPPUNIT_ASSERT(tests[1]._textValue == test2._textValue);
+    CPPUNIT_ASSERT_EQUAL(size_t(3), tests.size());
 
-    test1._id = tests[0]._id;
-    test1._intValue *= 2;
-    test1._int64Value *= 2;
-    test1._doubleValue *= 2;
-    test1._textValue = std::string("test 1.1");
+    CPPUNIT_ASSERT_EQUAL(tests[0].intValue, test0.intValue);
+    CPPUNIT_ASSERT_EQUAL(tests[0].int64Value, test0.int64Value);
+    CPPUNIT_ASSERT_EQUAL(tests[0].doubleValue, test0.doubleValue);
+    CPPUNIT_ASSERT_EQUAL(tests[0].textValue, test0.textValue);
+
+    CPPUNIT_ASSERT_EQUAL(tests[1].intValue, test1.intValue);
+    CPPUNIT_ASSERT_EQUAL(tests[1].int64Value, test1.int64Value);
+    CPPUNIT_ASSERT_EQUAL(tests[1].doubleValue, test1.doubleValue);
+    CPPUNIT_ASSERT_EQUAL(tests[1].textValue, test1.textValue);
+
+    CPPUNIT_ASSERT_EQUAL(tests[2].intValue, test2.intValue);
+    CPPUNIT_ASSERT_EQUAL(tests[2].int64Value, test2.int64Value);
+    CPPUNIT_ASSERT_EQUAL(tests[2].doubleValue, test2.doubleValue);
+    CPPUNIT_ASSERT_EQUAL(tests[2].textValue, test2.textValue);
+
+    test1.intValue *= 2;
+    test1.int64Value *= 2;
+    test1.doubleValue *= 2;
+    test1.textValue = std::string("test 1.1");
     CPPUNIT_ASSERT(_testObj->updateTest(test1));
 
-    CPPUNIT_ASSERT(_testObj->deleteTest(tests[1]._id));
+    CPPUNIT_ASSERT(_testObj->deleteTest(tests[1].id));
 
-    std::vector<Test> tests2 = _testObj->selectTest();
-    CPPUNIT_ASSERT(tests2.size() == 1);
-    CPPUNIT_ASSERT(tests2[0]._intValue == test1._intValue);
-    CPPUNIT_ASSERT(tests2[0]._int64Value == test1._int64Value);
-    CPPUNIT_ASSERT(tests2[0]._doubleValue == test1._doubleValue);
-    CPPUNIT_ASSERT(tests2[0]._textValue == test1._textValue);
+    const std::vector<Test> tests2 = _testObj->selectTest();
+    CPPUNIT_ASSERT_EQUAL(size_t(2), tests2.size());
+
+    CPPUNIT_ASSERT_EQUAL(tests2[0].intValue, test0.intValue);
+    CPPUNIT_ASSERT_EQUAL(tests2[0].int64Value, test0.int64Value);
+    CPPUNIT_ASSERT_EQUAL(tests2[0].doubleValue, test0.doubleValue);
+    CPPUNIT_ASSERT_EQUAL(tests2[0].textValue, test0.textValue);
+
+    CPPUNIT_ASSERT_EQUAL(tests2[1].intValue, test2.intValue);
+    CPPUNIT_ASSERT_EQUAL(tests2[1].int64Value, test2.int64Value);
+    CPPUNIT_ASSERT_EQUAL(tests2[1].doubleValue, test2.doubleValue);
+    CPPUNIT_ASSERT_EQUAL(tests2[1].textValue, test2.textValue);
 }
 
 TestDb::MyTestDb::MyTestDb(const std::filesystem::path &dbPath) : Db(dbPath) {
@@ -112,7 +126,7 @@ TestDb::MyTestDb::~MyTestDb() {
 }
 
 bool TestDb::MyTestDb::create(bool &retry) {
-    int errId;
+    int errId = -1;
     std::string error;
 
     // Test
@@ -132,7 +146,7 @@ bool TestDb::MyTestDb::create(bool &retry) {
 }
 
 bool TestDb::MyTestDb::prepare() {
-    int errId;
+    int errId = -1;
     std::string error;
 
     // Test
@@ -169,7 +183,7 @@ bool TestDb::MyTestDb::upgrade(const std::string & /*fromVersion*/, const std::s
 
 bool TestDb::MyTestDb::clear() {
     // Drop test table
-    int errId;
+    int errId = -1;
     std::string error;
 
     ASSERT(queryCreate(DROP_TEST_TABLE_ID));
@@ -187,15 +201,16 @@ bool TestDb::MyTestDb::clear() {
 }
 
 bool TestDb::MyTestDb::insertTest(const Test &test) {
-    int64_t rowId;
-    int errId;
+    int64_t rowId = -1;
+    int errId = -1;
     std::string error;
 
     ASSERT(queryResetAndClearBindings(INSERT_TEST_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_TEST_REQUEST_ID, 1, test._intValue));
-    ASSERT(queryBindValue(INSERT_TEST_REQUEST_ID, 2, test._int64Value));
-    ASSERT(queryBindValue(INSERT_TEST_REQUEST_ID, 3, test._doubleValue));
-    ASSERT(queryBindValue(INSERT_TEST_REQUEST_ID, 4, test._textValue));
+    ASSERT(queryBindValue(INSERT_TEST_REQUEST_ID, 1, test.id));
+    ASSERT(queryBindValue(INSERT_TEST_REQUEST_ID, 2, test.intValue));
+    ASSERT(queryBindValue(INSERT_TEST_REQUEST_ID, 3, test.int64Value));
+    ASSERT(queryBindValue(INSERT_TEST_REQUEST_ID, 4, test.doubleValue));
+    ASSERT(queryBindValue(INSERT_TEST_REQUEST_ID, 5, test.textValue));
     if (!queryExecAndGetRowId(INSERT_TEST_REQUEST_ID, rowId, errId, error)) {
         LOG_WARN(_logger, "Error running query:" << INSERT_TEST_REQUEST_ID);
         return false;
@@ -209,11 +224,11 @@ bool TestDb::MyTestDb::updateTest(const Test &test) {
     std::string error;
 
     ASSERT(queryResetAndClearBindings(INSERT_TEST_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 1, test._intValue));
-    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 2, test._int64Value));
-    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 3, test._doubleValue));
-    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 4, test._textValue));
-    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 5, test._id));
+    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 1, test.intValue));
+    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 2, test.int64Value));
+    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 3, test.doubleValue));
+    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 4, test.textValue));
+    ASSERT(queryBindValue(UPDATE_TEST_REQUEST_ID, 5, test.id));
     if (!queryExec(UPDATE_TEST_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query:" << UPDATE_TEST_REQUEST_ID);
         return false;
@@ -248,10 +263,10 @@ std::vector<TestDb::Test> TestDb::MyTestDb::selectTest() {
         if (!hasData) {
             break;
         }
-        int64_t value1;
-        int value2;
-        int64_t value3;
-        double value4;
+        int64_t value1 = -1;
+        int value2 = -1;
+        int64_t value3 = -1;
+        double value4 = -1.0;
         std::string value5;
         ASSERT(queryInt64Value(SELECT_TEST_REQUEST_ID, 0, value1));
         ASSERT(queryIntValue(SELECT_TEST_REQUEST_ID, 1, value2));
@@ -266,6 +281,6 @@ std::vector<TestDb::Test> TestDb::MyTestDb::selectTest() {
 }
 
 TestDb::Test::Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue)
-    : _id(id), _intValue(intValue), _int64Value(int64Value), _doubleValue(doubleValue), _textValue(textValue) {}
+    : id(id), intValue(intValue), int64Value(int64Value), doubleValue(doubleValue), textValue(textValue) {}
 
 }  // namespace KDC

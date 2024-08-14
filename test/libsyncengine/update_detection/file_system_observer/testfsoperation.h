@@ -16,33 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "testincludes.h"
-#include "db/syncdb.h"
 
 using namespace CppUnit;
 
 namespace KDC {
 
-class TestSyncDb : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSyncDb);
-        CPPUNIT_TEST(testNodes);
-        CPPUNIT_TEST(testSyncNodes);
-        CPPUNIT_TEST(testCorrespondingNodeId);
-        CPPUNIT_TEST(testUpgrade_3_6_3);
+class TestFsOperation : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestFsOperation);
+        CPPUNIT_TEST(testConstructor);
         CPPUNIT_TEST_SUITE_END();
 
-    public:
-        void setUp() override;
-        void tearDown() override;
-
     protected:
-        void testNodes();
-        void testSyncNodes();
-        void testCorrespondingNodeId();
-        void testUpgrade_3_6_3();
-
-    private:
-        SyncDb *_testObj;
+        void testConstructor();
 };
 
 }  // namespace KDC

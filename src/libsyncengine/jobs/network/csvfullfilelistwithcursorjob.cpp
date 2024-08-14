@@ -140,6 +140,19 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
 
 void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state) {
     for (char c : line) {
+        if (state.readingDoubleQuotedValue && state.prevCharDoubleQuotes) {
+            if (c != ',' && c != '"') {
+                // After a closing double quote, we must have a comma or another double quote. Otherwise, ignore the line.
+                state.index = CsvIndexId;                // Make sure that `state` is not equal to `CsvIndexEnd`.
+                state.readingDoubleQuotedValue = false;  // Exit the `readingDoubleQuotedValue` mode.
+                LOG_WARN(_logger, "Item '" << line.c_str()
+                                           << "' ignored because a closing double quote character must be followed by a comma or "
+                                              "another double quote");
+
+                return;
+            }
+        }
+
         if (c == ',' && (!state.readingDoubleQuotedValue || state.prevCharDoubleQuotes)) {
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;
@@ -151,12 +164,19 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
             state.tmp.clear();
             incrementCsvIndex(state.index);
         } else if (c == '"') {
+            if (state.index != CsvIndexName) {
+                // Double quotes are only allowed within file and directory names.
+                LOG_WARN(_logger,
+                         "Item '" << line.c_str() << "' ignored because the '\"' character is only allowed in the name field");
+                return;
+            }
+
             ++state.doubleQuoteCount;
             if (!state.readingDoubleQuotedValue) {
                 state.readingDoubleQuotedValue = true;
             } else {
                 if (state.prevCharDoubleQuotes) {
-                    // Replace 2 successive double quotes by one
+                    // Replace 2 successive double quotes by one (https://www.ietf.org/rfc/rfc4180.txt)
                     state.prevCharDoubleQuotes = false;
                     state.tmp.push_back('"');
                 } else {
@@ -195,33 +215,32 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
     while (state.readNextLine) {
         state.readNextLine = false;
 
-        readSnapshotItemFields(item, line, error, state);
-        if (error) return true;
-
-        if (state.doubleQuoteCount > 2) {
-            LOGW_WARN(_logger, L"Item name contains double quote, ignoring it.");
+        // Ignore the lines containing escaped double quotes
+        if (line.find(R"(\")") != std::string::npos) {
+            LOGW_WARN(_logger, L"Line containing an escaped double quotes, ignored it - line=" << Utility::s2ws(line).c_str());
             ignore = true;
             return true;
         }
 
+        readSnapshotItemFields(item, line, error, state);
+        if (error) return true;
+
         // A file name surrounded by double quotes can have a line return in it. If so, read next line and continue parsing
         if (state.readingDoubleQuotedValue) {
-            state.tmp.push_back('\n');
-            state.readNextLine = true;
-            const std::string lastParsedLine = line;
-            std::getline(ss, line);
-            if (line.empty()) {
-                LOGW_WARN(_logger, L"CSV full listing parsing error. Invalid line='"
-                                       << Utility::s2ws(lastParsedLine).c_str()
-                                       << L"'. Check double quote balance and line return characters.");
+            if (ss.eof()) {
+                LOG_WARN(_logger, "EOF file reached prematurely");
                 error = true;
                 return true;
             }
+
+            state.tmp.push_back('\n');
+            state.readNextLine = true;
+            std::getline(ss, line);
         }
     }
 
     if (state.index < CsvIndexEnd - 1) {
-        LOGW_WARN(_logger, L"Invalid item");
+        LOG_WARN(_logger, "Invalid item");
         ignore = true;
         return true;
     }

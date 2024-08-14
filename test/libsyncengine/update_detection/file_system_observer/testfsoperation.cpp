@@ -16,33 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testincludes.h"
-#include "db/syncdb.h"
+#include "testfsoperation.h"
+#include "test_utility/testhelpers.h"
+
+#include "update_detection/file_system_observer/fsoperation.h"
+
 
 using namespace CppUnit;
 
 namespace KDC {
 
-class TestSyncDb : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE(TestSyncDb);
-        CPPUNIT_TEST(testNodes);
-        CPPUNIT_TEST(testSyncNodes);
-        CPPUNIT_TEST(testCorrespondingNodeId);
-        CPPUNIT_TEST(testUpgrade_3_6_3);
-        CPPUNIT_TEST_SUITE_END();
+void TestFsOperation::testConstructor() {
+    const SyncPath syncPath = testhelpers::makeNfdSyncName();
+    const SyncPath destPath = testhelpers::makeNfdSyncName();
+    const auto op = FSOperation(OperationType::Create, "node_1", NodeType::File, 10, -10, 0, syncPath, destPath);
 
-    public:
-        void setUp() override;
-        void tearDown() override;
+    CPPUNIT_ASSERT(op.path() == Utility::normalizedSyncPath(syncPath));
+    CPPUNIT_ASSERT(op.destinationPath() == Utility::normalizedSyncPath(destPath));
+}
 
-    protected:
-        void testNodes();
-        void testSyncNodes();
-        void testCorrespondingNodeId();
-        void testUpgrade_3_6_3();
-
-    private:
-        SyncDb *_testObj;
-};
 
 }  // namespace KDC

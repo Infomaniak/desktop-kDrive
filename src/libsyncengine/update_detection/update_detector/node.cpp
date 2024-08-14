@@ -43,9 +43,10 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
       _moveOriginParentDbId(std::nullopt),
       _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
 
-Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type, OperationType changeEvents,
-           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size,
-           std::shared_ptr<Node> parentNode, std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId)
+Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
+           OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
+           std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
+           std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId)
     : _idb(idb),
       _side(side),
       _name(Utility::normalizedSyncName(name)),
@@ -64,7 +65,7 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
       _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode)
-    : _side(side), _name(name), _type(type), _parentNode(parentNode), _isTmp(true) {
+    : _side(side), _name(Utility::normalizedSyncName(name)), _type(type), _parentNode(parentNode), _isTmp(true) {
     _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
 }
 
@@ -84,6 +85,10 @@ Node::Node()
 
 bool Node::operator==(const Node &n) const {
     return n._idb == _idb && n._name == _name;
+}
+
+void Node::setName(const SyncName &name) {
+    _name = Utility::normalizedSyncName(name);
 }
 
 std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) {

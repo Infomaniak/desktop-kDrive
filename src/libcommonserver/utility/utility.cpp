@@ -719,23 +719,25 @@ std::string Utility::_errId(const char *file, int line) {
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-SyncName Utility::normalizedSyncName(const SyncName &name) {
+SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization normalization) {
 #ifdef _WIN32
     if (name.empty()) {
         return name;
     }
 
     static const int maxIterations = 10;
-    LPWSTR strResult = NULL;
+    LPWSTR strResult = nullptr;
     HANDLE hHeap = GetProcessHeap();
 
-    int iSizeEstimated = NormalizeString(NormalizationC, name.c_str(), -1, NULL, 0);
+    int iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
+                                         name.c_str(), -1, nullptr, 0);
     for (int i = 0; i < maxIterations; i++) {
         if (strResult) {
             HeapFree(hHeap, 0, strResult);
         }
         strResult = (LPWSTR)HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
-        iSizeEstimated = NormalizeString(NormalizationC, name.c_str(), -1, strResult, iSizeEstimated);
+        iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
+                                         name.c_str(), -1, strResult, iSizeEstimated);
 
         if (iSizeEstimated > 0) {
             break;  // success
@@ -778,9 +780,19 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
     HeapFree(hHeap, 0, strResult);
     return syncName;
 #else
-    const char *str = reinterpret_cast<const char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+    if (name.empty()) {
+        return SyncName(name);
+    }
+
+    char *str = nullptr;
+    if (normalization == UnicodeNormalization::NFD) {
+        str = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
+    } else {
+        str = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+    }
+
     if (!str) {  // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion has
-                 // failed. e.g.: Linux can sometime send filesystem events with strange charater in the path
+                 // failed. e.g.: Linux can sometime send filesystem events with strange character in the path
         return "";  // TODO : we should return a boolean value to explicitly say that the conversion has failed. Output value
                     // should be passed by reference as a parameter.
     }
