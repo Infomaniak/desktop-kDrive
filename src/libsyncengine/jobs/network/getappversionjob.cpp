@@ -42,8 +42,9 @@ std::string platformToStr(Platform platform) {
 }
 
 std::string GetAppVersionJob::getSpecificUrl() {
-    std::string str = std::format("/app-information/kstore-update/{}/com.infomaniak.drive/{}", platformToStr(_platform), _appId);
-    return str;
+    std::stringstream ss;
+    ss << "/app-information/kstore-update/" << platformToStr(_platform) << "/com.infomaniak.drive/" << _appId;
+    return ss.str();
 }
 std::string GetAppVersionJob::getContentType(bool &canceled) {
     canceled = false;
