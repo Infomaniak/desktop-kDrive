@@ -263,7 +263,7 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
         log4cplus::tstring ztarget = target + LOG4CPLUS_TEXT(".gz");
 
         bool exists;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         const bool success = IoHelper::checkIfPathExists(ztarget, exists, ioError);
         if (!success) {
             loglog.debug(filename + LOG4CPLUS_TEXT(" failed to check if path exists"));
@@ -290,18 +290,18 @@ void CustomRollingFileAppender::rollover(bool alreadyLocked) {
 void CustomRollingFileAppender::checkForExpiredFiles() {
     _lastExpireCheck = std::chrono::system_clock::now();
     // Archive previous log files and delete expired files
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     SyncPath logDirPath;
-    if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoErrorSuccess) {
+    if (!IoHelper::logDirectoryPath(logDirPath, ioError) || ioError != IoError::Success) {
         return;
     }
     IoHelper::DirectoryIterator dirIt(logDirPath, false, ioError);
     bool endOfDir = false;
     DirectoryEntry entry;
-    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoErrorSuccess) {
+    while (dirIt.next(entry, endOfDir, ioError) && !endOfDir && ioError == IoError::Success) {
         FileStat fileStat;
         IoHelper::getFileStat(entry.path(), &fileStat, ioError);
-        if (ioError != IoErrorSuccess || fileStat.nodeType != NodeTypeFile) {
+        if (ioError != IoError::Success || fileStat.nodeType != NodeType::File) {
             continue;
         }
 

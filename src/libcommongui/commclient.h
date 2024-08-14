@@ -53,7 +53,7 @@ class CommClient : public QObject {
 
     signals:
         void sendError(int id);
-        void signalReceived(int id, /*SignalNum*/ int num, const QByteArray &params);
+        void signalReceived(int id, SignalNum num, const QByteArray &params);
         void disconnected();
 
     private:
@@ -72,8 +72,8 @@ class CommClient : public QObject {
         void onErrorOccurred(QAbstractSocket::SocketError socketError);
         void onBytesWritten(qint64 numBytes);
         void onReadyRead();
-        void onSendRequest(int id, /*RequestNum*/ int num, const QByteArray &params);
-        void onSignalReceived(int id, /*SignalNum*/ int num, const QByteArray &params);
+        void onSendRequest(int id, RequestNum num, const QByteArray &params);
+        void onSignalReceived(int id, SignalNum num, const QByteArray &params);
 
         friend class AppClient;
 };
@@ -95,9 +95,9 @@ class Worker : public QObject {
 
     signals:
         void finished();
-        void sendRequest(int id, /*RequestNum*/ int num, const QByteArray &params);
+        void sendRequest(int id, RequestNum num, const QByteArray &params);
         void replyReceived(int id, const QByteArray &result);
-        void signalReceived(int id, /*SignalNum*/ int num, const QByteArray &params);
+        void signalReceived(int id, SignalNum num, const QByteArray &params);
 
     private:
         QMutex _mutex;

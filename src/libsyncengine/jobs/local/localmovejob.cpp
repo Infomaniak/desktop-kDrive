@@ -32,21 +32,21 @@ bool LocalMoveJob::canRun() {
     }
 
     std::error_code ec;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!Utility::isEqualInsensitive(_source, _dest)) {
         // Check that we can move the file in destination
         bool exists = false;
         if (!IoHelper::checkIfPathExists(_dest, exists, ioError)) {
             LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_dest, ioError).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseFileAccessError;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
             return false;
         }
 
         if (exists) {
             LOGW_DEBUG(_logger, L"Item " << Path2WStr(_dest).c_str() << L" already exist. Aborting current sync and restart.");
-            _exitCode = ExitCodeNeedRestart;
-            _exitCause = ExitCauseUnexpectedFileSystemEvent;
+            _exitCode = ExitCode::NeedRestart;
+            _exitCause = ExitCause::UnexpectedFileSystemEvent;
             return false;
         }
     }
@@ -55,16 +55,16 @@ bool LocalMoveJob::canRun() {
     bool exists = false;
     if (!IoHelper::checkIfPathExists(_source, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_source, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
     if (!exists) {
         LOGW_DEBUG(_logger,
                    L"Item does not exist anymore. Aborting current sync and restart. - path=" << Path2WStr(_source).c_str());
-        _exitCode = ExitCodeNeedRestart;
-        _exitCause = ExitCauseUnexpectedFileSystemEvent;
+        _exitCode = ExitCode::NeedRestart;
+        _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
 
@@ -82,13 +82,13 @@ void LocalMoveJob::runJob() {
     if (ec.value() != 0) {
         LOGW_WARN(_logger, L"Failed to rename " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str() << L": "
                                                 << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return;
     }
 
     LOGW_INFO(_logger, L"Item " << Path2WStr(_source).c_str() << L" moved to " << Path2WStr(_dest).c_str());
-    _exitCode = ExitCodeOk;
+    _exitCode = ExitCode::Ok;
 }
 
 }  // namespace KDC

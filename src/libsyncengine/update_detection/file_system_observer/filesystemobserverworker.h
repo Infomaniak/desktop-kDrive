@@ -49,7 +49,7 @@ class FileSystemObserverWorker : public ISyncWorker {
         std::mutex _mutex;
 
         virtual ExitCode generateInitialSnapshot() = 0;
-        virtual ExitCode processEvents() { return ExitCodeOk; }
+        virtual ExitCode processEvents() { return ExitCode::Ok; }
 
         virtual bool isFolderWatcherReliable() const { return true; }
 

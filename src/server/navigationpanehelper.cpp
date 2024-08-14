@@ -95,7 +95,7 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
     }
 
     for (KDC::Sync &sync : syncList) {
-        if (sync.virtualFileMode() != KDC::VirtualFileModeWin) {
+        if (sync.virtualFileMode() != KDC::VirtualFileMode::Win) {
             if (sync.navigationPaneClsid().empty()) {
                 sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
             }

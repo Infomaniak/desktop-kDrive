@@ -72,16 +72,16 @@ void FolderWatcher_linux::startWatching() {
                 }
                 struct inotify_event *event = (inotify_event *)(buffer + offset);
 
-                OperationType opType = OperationTypeNone;
+                OperationType opType = OperationType::None;
                 bool skip = false;
                 if (event->mask & IN_CREATE) {
-                    opType = OperationTypeCreate;
+                    opType = OperationType::Create;
                 } else if (event->mask & IN_DELETE || event->mask & IN_MOVED_FROM) {
-                    opType = OperationTypeDelete;
+                    opType = OperationType::Delete;
                 } else if (event->mask & IN_MOVED_TO) {
-                    opType = OperationTypeMove;
+                    opType = OperationType::Move;
                 } else if (event->mask & (IN_MODIFY | IN_ATTRIB)) {
-                    opType = OperationTypeEdit;
+                    opType = OperationType::Edit;
                 } else {
                     // Ignore all other events
                     skip = true;
@@ -97,7 +97,7 @@ void FolderWatcher_linux::startWatching() {
 
                         changeDetected(path, opType);
                         bool isDirectory = false;
-                        IoError ioError = IoErrorSuccess;
+                        IoError ioError = IoError::Success;
                         const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
                         if (!isDirSuccess) {
                             LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: "
@@ -105,7 +105,7 @@ void FolderWatcher_linux::startWatching() {
                             continue;
                         }
 
-                        if (ioError == IoErrorAccessDenied) {
+                        if (ioError == IoError::AccessDenied) {
                             LOGW_WARN(_logger, L"The item misses search/exec permission - path=" << Path2WStr(path).c_str());
                         }
 

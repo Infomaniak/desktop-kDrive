@@ -72,7 +72,7 @@ class SyncFileItem {
         inline SyncTime timestamp() const { return _timestamp; }
         inline void setTimestamp(SyncTime newTimestamp) { _timestamp = newTimestamp; }
 
-        inline bool isDirectory() const { return _type == NodeTypeDirectory; }
+        inline bool isDirectory() const { return _type == NodeType::Directory; }
 
     private:
         NodeType _type;

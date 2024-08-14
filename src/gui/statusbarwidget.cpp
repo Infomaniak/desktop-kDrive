@@ -95,7 +95,7 @@ void StatusBarWidget::setStatus(KDC::GuiUtility::StatusInfo &statusInfo) {
     } else {
         _pauseButton->setDisabled(false);
         _resumeButton->setDisabled(false);
-        if (_statusInfo._status == KDC::SyncStatusPauseAsked || _statusInfo._status == KDC::SyncStatusStopAsked) {
+        if (_statusInfo._status == KDC::SyncStatus::PauseAsked || _statusInfo._status == KDC::SyncStatus::StopAsked) {
             _pauseButton->setDisabled(true);
             _resumeButton->setDisabled(true);
         }
@@ -148,9 +148,9 @@ void StatusBarWidget::showStatusMenu(bool pauseClicked) {
         createStatusActionMenu(menu, resetButtons, pauseClicked);
     } else {
         if (pauseClicked) {
-            emit pauseSync(ActionTargetDrive);
+            emit pauseSync(ActionTarget::Drive);
         } else {
-            emit resumeSync(ActionTargetDrive);
+            emit resumeSync(ActionTarget::Drive);
         }
         resetButtons = true;
     }
@@ -238,13 +238,13 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
 
             QWidgetAction *syncAction;
             for (auto const &syncInfoMapElt : syncOfCurrentDrive) {
-                if (pauseClicked &&
-                    (syncInfoMapElt.second.status() == SyncStatusStoped || syncInfoMapElt.second.status() == SyncStatusPaused)) {
+                if (pauseClicked && (syncInfoMapElt.second.status() == SyncStatus::Stopped ||
+                                     syncInfoMapElt.second.status() == SyncStatus::Paused)) {
                     continue;
                 }
 
-                if (!pauseClicked &&
-                    (syncInfoMapElt.second.status() != SyncStatusStoped && syncInfoMapElt.second.status() != SyncStatusPaused)) {
+                if (!pauseClicked && (syncInfoMapElt.second.status() != SyncStatus::Stopped &&
+                                      syncInfoMapElt.second.status() != SyncStatus::Paused)) {
                     continue;
                 }
 
@@ -291,29 +291,29 @@ void StatusBarWidget::showEvent(QShowEvent * /*event*/) {
 }
 
 void StatusBarWidget::onPauseSync() {
-    emit pauseSync(ActionTargetDrive);
+    emit pauseSync(ActionTarget::Drive);
 }
 
 void StatusBarWidget::onPauseFolderSync() {
     int folderId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
-    emit pauseSync(ActionTargetSync, folderId);
+    emit pauseSync(ActionTarget::Sync, folderId);
 }
 
 void StatusBarWidget::onPauseAllSync() {
-    emit pauseSync(ActionTargetAllDrives);
+    emit pauseSync(ActionTarget::AllDrives);
 }
 
 void StatusBarWidget::onResumeSync() {
-    emit resumeSync(ActionTargetDrive);
+    emit resumeSync(ActionTarget::Drive);
 }
 
 void StatusBarWidget::onResumeFolderSync() {
     int folderId = qvariant_cast<int>(sender()->property(MenuWidget::actionTypeProperty.c_str()));
-    emit resumeSync(ActionTargetSync, folderId);
+    emit resumeSync(ActionTarget::Sync, folderId);
 }
 
 void StatusBarWidget::onResumeAllSync() {
-    emit resumeSync(ActionTargetAllDrives);
+    emit resumeSync(ActionTarget::AllDrives);
 }
 
 void StatusBarWidget::retranslateUi() {
