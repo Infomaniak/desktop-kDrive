@@ -190,11 +190,13 @@ class SocketApi : public QObject {
         QString socketAPIString(KDC::SyncFileStatus status, bool isPlaceholder, bool isHydrated, int progress) const;
 
 
-        // Try to retrieve the Sync with DB ID `syncDbId`.
+        // Try to retrieve the Sync object with DB ID `syncDbId`.
         // Returns `false`, add errors and log messages on failure.
         // Returns `true` and set `sync` with the result otherwise.
         bool tryToRetrieveSync(const int syncDbId, KDC::Sync &sync) const;
 
+        // Retrieve map iterators.
+        // Returns the end() iterator on failure but also add an error and log a message in this case.
         std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator retrieveVfsMapIt(const int syncDbId) const;
         std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
 };
