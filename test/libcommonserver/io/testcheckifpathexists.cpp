@@ -117,7 +117,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
-    // Checking existence of a subdirectory inside a directory that have been deleted and replaced with a file with the same name
+    // Checking existence of a subdirectory inside a directory that has been deleted and replaced with a file with the same name.
     // ex: conversion of a bundle into a single file (macOS)
     {
         const SyncPath path = _localTestDirPath / "test_pictures" / "picture-1.jpg" / "A";
