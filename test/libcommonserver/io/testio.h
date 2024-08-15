@@ -114,10 +114,8 @@ class TestIo : public CppUnit::TestFixture {
         void testGetFileSizeAllBranches(void);
 
         void testCheckIfPathExistsSimpleCases(void);
-        void testCheckIfPathExistsAllBranches(void);
 
         void testCheckIfPathExistsWithSameNodeIdSimpleCases(void);
-        void testCheckIfPathExistsWithSameNodeIdAllBranches(void);
 
         void testCheckDirectoryIteratorNonExistingPath(void);
         void testCheckDirectoryIteratorExistingPath(void);
