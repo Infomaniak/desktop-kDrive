@@ -193,7 +193,10 @@ class SocketApi : public QObject {
         // Try to retrieve the Sync with DB ID `syncDbId`.
         // Returns `false`, add errors and log messages on failure.
         // Returns `true` and set `sync` with the result otherwise.
-        bool tryToRetrieveSync(const int syncDbId, KDC::Sync &sync);
+        bool tryToRetrieveSync(const int syncDbId, KDC::Sync &sync) const;
+
+        std::unordered_map<int, std::shared_ptr<KDC::Vfs>>::const_iterator retrieveVfsMapIt(const int syncDbId) const;
+        std::unordered_map<int, std::shared_ptr<KDC::SyncPal>>::const_iterator retrieveSyncPalMapIt(const int syncDbId) const;
 };
 
 }  // namespace KDC
