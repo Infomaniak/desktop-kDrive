@@ -37,7 +37,9 @@ using namespace Windows::Security::Cryptography;
 #define REGKEY_AUMID L"AUMID"
 
 // Package family name, see FileExplorerExtensionPackage / Package.appxmanifest
-//#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_dbrs6rk4qqhna!App" // EV
+/// EV (Extended Validation) certificate AUMID : use this certificate to build a release version
+//#define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_dbrs6rk4qqhna!App"
+/// Virtual certificate AUMID : use this certificate in debug mode and to build version for testing purpose
 #define REGVALUE_AUMID L"Infomaniak.kDrive.Extension_csy8f8zhvqa20!App" // virtual
 
 std::wstring CloudProviderRegistrar::registerWithShell(ProviderInfo *providerInfo, wchar_t *namespaceCLSID,
