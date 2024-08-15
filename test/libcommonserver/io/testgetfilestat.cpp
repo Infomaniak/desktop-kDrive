@@ -135,7 +135,7 @@ void TestIo::testGetFileStat() {
         CPPUNIT_ASSERT_EQUAL(SyncTime(0), fileStat.creationTime);
         CPPUNIT_ASSERT_EQUAL(NodeType::Unknown, fileStat.nodeType);
 #ifdef _WIN32
-        CPPUNIT_ASSERT_EQUAL(IoErrorInvalidArgument, ioError);
+        CPPUNIT_ASSERT_EQUAL(IoError::InvalidArgument, ioError);
 #else
         CPPUNIT_ASSERT_EQUAL(IoError::FileNameTooLong, ioError);
 #endif
