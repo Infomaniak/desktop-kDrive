@@ -919,7 +919,7 @@ void SocketApi::command_SET_THUMBNAIL(const QString &filePath) {
 
 #endif
 
-void SocketApi::sendSharingContextMenuOptions(const FileData &fileData, SocketListener *listener) {
+void SocketApi::sendSharingContextMenuOptions(const FileData &fileData, const SocketListener *listener) {
     auto theme = KDC::Theme::instance();
     if (!(theme->userGroupSharing() || theme->linkSharing())) return;
 

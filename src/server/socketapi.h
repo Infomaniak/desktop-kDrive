@@ -17,20 +17,12 @@
  */
 
 
-#ifndef SOCKETAPI_H
-#define SOCKETAPI_H
+#pragma once
 
 #include "libcommonserver/vfs.h"
 #include "socketlistener.h"
 #include "libcommon/utility/types.h"
 #include "libsyncengine/syncpal/syncpal.h"
-
-#if defined(Q_OS_MAC)
-#include "socketapisocket_mac.h"
-#else
-#include <QLocalServer>
-typedef QLocalServer SocketApiServer;
-#endif
 
 #include <unordered_map>
 
@@ -40,6 +32,14 @@ typedef QLocalServer SocketApiServer;
 #include <QTemporaryFile>
 #include <QTimer>
 
+#if defined(Q_OS_MAC)
+#include "socketapisocket_mac.h"
+#else
+#include <QLocalServer>
+typedef QLocalServer SocketApiServer;
+#endif
+
+
 #define WORKER_GETFILE 0
 #define NB_WORKERS 1
 
@@ -48,7 +48,7 @@ class QUrl;
 namespace KDC {
 
 struct FileData {
-        FileData(){};
+        FileData() = default;
 
         static FileData get(const QString &path);
         static FileData get(const KDC::SyncPath &path);
@@ -150,7 +150,7 @@ class SocketApi : public QObject {
 #endif
 
         // Sends the context menu options relating to sharing to listener
-        void sendSharingContextMenuOptions(const FileData &fileData, SocketListener *listener);
+        void sendSharingContextMenuOptions(const FileData &fileData, const SocketListener *listener);
         void addSharingContextMenuOptions(const FileData &fileData, QTextStream &response);
 
         /** Send the list of menu item. (added in version 1.1)
@@ -202,4 +202,3 @@ class SocketApi : public QObject {
 };
 
 }  // namespace KDC
-#endif  // SOCKETAPI_H
