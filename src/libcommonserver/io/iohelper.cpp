@@ -590,17 +590,17 @@ bool IoHelper::logArchiverDirectoryPath(SyncPath &directoryPath, IoError &ioErro
 
 bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &ioError) noexcept {
     exists = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
     std::error_code ec;
     (void)std::filesystem::symlink_status(path, ec);  // symlink_status does not follow symlinks.
     ioError = stdError2ioError(ec);
-    if (ioError == IoErrorNoSuchFileOrDirectory) {
-        ioError = IoErrorSuccess;
+    if (ioError == IoError::NoSuchFileOrDirectory) {
+        ioError = IoError::Success;
         return true;
     }
 
-    exists = ioError != IoErrorNoSuchFileOrDirectory;
-    return isExpectedError(ioError) || ioError == IoErrorSuccess;
+    exists = ioError != IoError::NoSuchFileOrDirectory;
+    return isExpectedError(ioError) || ioError == IoError::Success;
 }
 
 bool IoHelper::checkIfPathExistsWithSameNodeId(const SyncPath &path, const NodeId &nodeId, bool &existsWithSameId,
