@@ -86,12 +86,11 @@ class Snapshot : public SharedObject {
     private:
         void removeChildrenRecursively(const NodeId &parentId);
 
-        ReplicaSide _side = ReplicaSideUnknown;
+        ReplicaSide _side = ReplicaSide::Unknown;
         NodeId _rootFolderId;
         std::unordered_map<NodeId, SnapshotItem> _items;  // key: id
         bool _isValid = false;
         mutable std::recursive_mutex _mutex;
-
 };
 
 }  // namespace KDC

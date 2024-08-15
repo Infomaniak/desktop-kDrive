@@ -39,13 +39,13 @@ int Parameters::_uploadSessionParallelJobsDefault = UPLOAD_SESSION_PARALLEL_THRE
 int Parameters::_jobPoolCapacityFactorDefault = THREAD_POOL_CAPACITY_FACTOR;
 
 Parameters::Parameters()
-    : _language(LanguageDefault),
+    : _language(Language::Default),
       _monoIcons(false),
       _autoStart(true),
       _moveToTrash(true),
-      _notificationsDisabled(NotificationsDisabledNever),
+      _notificationsDisabled(NotificationsDisabled::Never),
       _useLog(true),
-      _logLevel(LogLevelDebug),
+      _logLevel(LogLevel::Debug),
       _extendedLog(false),
       _purgeOldLogs(true),
       _syncHiddenFiles(false),

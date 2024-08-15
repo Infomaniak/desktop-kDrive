@@ -38,7 +38,7 @@ UpdaterClient *UpdaterClient::instance() {
 
 QString UpdaterClient::version() const {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_VERSION, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_VERSION, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
@@ -51,7 +51,7 @@ QString UpdaterClient::version() const {
 
 bool UpdaterClient::isKDCUpdater() {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_ISKDCUPDATER, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_ISKDCUPDATER, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
@@ -64,7 +64,7 @@ bool UpdaterClient::isKDCUpdater() {
 
 bool UpdaterClient::isSparkleUpdater() {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_ISSPARKLEUPDATER, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_ISSPARKLEUPDATER, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
@@ -77,7 +77,7 @@ bool UpdaterClient::isSparkleUpdater() {
 
 QString UpdaterClient::statusString() const {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_STATUSSTRING, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_STATUSSTRING, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
@@ -90,7 +90,7 @@ QString UpdaterClient::statusString() const {
 
 bool UpdaterClient::downloadCompleted() const {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_DOWNLOADCOMPLETED, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_DOWNLOADCOMPLETED, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
@@ -103,7 +103,7 @@ bool UpdaterClient::downloadCompleted() const {
 
 bool UpdaterClient::updateFound() const {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_UPDATEFOUND, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_UPDATEFOUND, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
@@ -116,14 +116,14 @@ bool UpdaterClient::updateFound() const {
 
 void UpdaterClient::startInstaller() const {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_STARTINSTALLER, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_STARTINSTALLER, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 }
 
 UpdateState UpdaterClient::updateState() const {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_UPDATER_STATUS, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::UPDATER_STATUS, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 
@@ -136,7 +136,7 @@ UpdateState UpdaterClient::updateState() const {
 
 void UpdaterClient::unskipUpdate() const {
     QByteArray results;
-    if (!CommClient::instance()->execute(REQUEST_NUM_RECONSIDER_SKIPPED_UPDATE, QByteArray(), results)) {
+    if (!CommClient::instance()->execute(RequestNum::RECONSIDER_SKIPPED_UPDATE, QByteArray(), results)) {
         throw std::runtime_error(EXECUTE_ERROR_MSG);
     }
 }
@@ -163,7 +163,7 @@ void UpdaterClient::showWindowsUpdaterDialog(const QString &targetVersion, const
         paramsStream << skip;
 
         QByteArray result;
-        if (!KDC::CommClient::instance()->execute(REQUEST_NUM_UPDATER_UPDATE_DIALOG_RESULT, params, result)) {
+        if (!KDC::CommClient::instance()->execute(RequestNum::UPDATER_UPDATE_DIALOG_RESULT, params, result)) {
             // Nothing to do
         }
     }

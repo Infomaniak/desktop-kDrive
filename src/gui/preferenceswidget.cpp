@@ -318,7 +318,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     launchAtStartupSwitch->setAttribute(Qt::WA_MacShowFocusRect, false);
     bool hasSystemLauchAtStartup = false;
     ExitCode exitCode = GuiRequests::hasSystemLaunchOnStartup(hasSystemLauchAtStartup);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcPreferencesWidget()) << "Error in GuiRequests::hasSystemLaunchOnStartup";
     }
     if (hasSystemLauchAtStartup) {
@@ -328,7 +328,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
     } else {
         bool hasLaunchAtStartup = false;
         ExitCode exitCode = GuiRequests::hasLaunchOnStartup(hasLaunchAtStartup);
-        if (exitCode != ExitCodeOk) {
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcPreferencesWidget()) << "Error in GuiRequests::hasLaunchOnStartup";
         }
         launchAtStartupSwitch->setCheckState(hasLaunchAtStartup ? Qt::Checked : Qt::Unchecked);
@@ -478,8 +478,8 @@ void PreferencesWidget::showEvent(QShowEvent *event) {
 void PreferencesWidget::clearUndecidedLists() {
     for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
         // Clear the undecided list
-        ExitCode exitCode = GuiRequests::setSyncIdSet(syncInfoMapElt.first, SyncNodeTypeUndecidedList, QSet<QString>());
-        if (exitCode != ExitCodeOk) {
+        ExitCode exitCode = GuiRequests::setSyncIdSet(syncInfoMapElt.first, SyncNodeType::UndecidedList, QSet<QString>());
+        if (exitCode != ExitCode::Ok) {
             qCWarning(lcPreferencesWidget()) << "Error in Requests::setSyncIdSet";
             return;
         }
@@ -537,7 +537,7 @@ void PreferencesWidget::onLaunchAtStartupSwitchClicked(bool checked) {
     }
 
     const ExitCode exitCode = GuiRequests::setLaunchOnStartup(checked);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcPreferencesWidget()) << "Error in GuiRequests::setLaunchOnStartup";
     }
 }
@@ -762,13 +762,14 @@ void PreferencesWidget::retranslateUi() {
 
     _languageSelectorComboBox->blockSignals(true);  // To avoid triggering more LanguageChange events
     _languageSelectorComboBox->clear();
-    _languageSelectorComboBox->addItem(tr("Default"), LanguageDefault);
-    _languageSelectorComboBox->addItem(tr("English"), LanguageEnglish);
-    _languageSelectorComboBox->addItem(tr("French"), LanguageFrench);
-    _languageSelectorComboBox->addItem(tr("German"), LanguageGerman);
-    _languageSelectorComboBox->addItem(tr("Spanish"), LanguageSpanish);
-    _languageSelectorComboBox->addItem(tr("Italian"), LanguageItalian);
-    const int languageIndex = _languageSelectorComboBox->findData(ParametersCache::instance()->parametersInfo().language());
+    _languageSelectorComboBox->addItem(tr("Default"), enumClassToInt(Language::Default));
+    _languageSelectorComboBox->addItem(tr("English"), enumClassToInt(Language::English));
+    _languageSelectorComboBox->addItem(tr("French"), enumClassToInt(Language::French));
+    _languageSelectorComboBox->addItem(tr("German"), enumClassToInt(Language::German));
+    _languageSelectorComboBox->addItem(tr("Spanish"), enumClassToInt(Language::Spanish));
+    _languageSelectorComboBox->addItem(tr("Italian"), enumClassToInt(Language::Italian));
+    const int languageIndex =
+        _languageSelectorComboBox->findData(enumClassToInt(ParametersCache::instance()->parametersInfo().language()));
     _languageSelectorComboBox->setCurrentIndex(languageIndex);
     _languageSelectorComboBox->blockSignals(false);
 

@@ -144,14 +144,14 @@ void TestPlatformInconsistencyCheckerWorker::testCheckReservedNames() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testNameClash() {
-    const auto parentNode =
-        std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("parentNode"), NodeTypeDirectory,
-                               OperationTypeCreate, "parentID", 0, 0, 12345, _syncPal->updateTree(ReplicaSideRemote)->rootNode());
+    const auto parentNode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(),
+                                                   Str("parentNode"), NodeType::Directory, OperationType::Create, "parentID", 0,
+                                                   0, 12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    const auto nodeLower = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("a"), NodeTypeFile,
-                                                  OperationTypeCreate, "a", 0, 0, 12345, parentNode);
-    const auto nodeUpper = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(), Str("A"), NodeTypeFile,
-                                                  OperationTypeCreate, "A", 0, 0, 12345, parentNode);
+    const auto nodeLower = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("a"),
+                                                  NodeType::File, OperationType::Create, "a", 0, 0, 12345, parentNode);
+    const auto nodeUpper = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"),
+                                                  NodeType::File, OperationType::Create, "A", 0, 0, 12345, parentNode);
 
     parentNode->insertChildren(nodeLower);
     parentNode->insertChildren(nodeUpper);
@@ -175,9 +175,9 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 
     // Set up DB
     const DbNode dbNodeLower(2, _syncPal->_syncDb->rootNode().nodeId(), Str("a1"), Str("a1"), "la", "ra", defaultTime,
-                             defaultTime, defaultTime, NodeType::NodeTypeDirectory, defaultSize, std::nullopt);
+                             defaultTime, defaultTime, NodeType::Directory, defaultSize, std::nullopt);
     const DbNode dbNodeUpper(3, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", defaultTime, defaultTime,
-                             defaultTime, NodeType::NodeTypeDirectory, defaultSize, std::nullopt);
+                             defaultTime, NodeType::Directory, defaultSize, std::nullopt);
     DbNodeId dbNodeIdLower;
     DbNodeId dbNodeIdUpper;
     bool constraintError = false;
@@ -185,32 +185,32 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     _syncPal->_syncDb->insertNode(dbNodeUpper, dbNodeIdUpper, constraintError);
 
     // Set up remote tree
-    const auto remoteParentNode = _syncPal->updateTree(ReplicaSideRemote)->rootNode();
+    const auto remoteParentNode = _syncPal->updateTree(ReplicaSide::Remote)->rootNode();
     const auto remoteNodeLower =
-        std::make_shared<Node>(dbNodeIdLower, ReplicaSideRemote, Str("a"), NodeTypeFile, OperationTypeMove, "ra", 0, 0, 12345,
-                               _syncPal->updateTree(ReplicaSideRemote)->rootNode());
+        std::make_shared<Node>(dbNodeIdLower, ReplicaSide::Remote, Str("a"), NodeType::File, OperationType::Move, "ra", 0, 0,
+                               12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
     const auto remoteNodeUpper =
-        std::make_shared<Node>(dbNodeIdUpper, ReplicaSideRemote, Str("A"), NodeTypeFile, OperationTypeNone, "rA", 0, 0, 12345,
-                               _syncPal->updateTree(ReplicaSideRemote)->rootNode());
+        std::make_shared<Node>(dbNodeIdUpper, ReplicaSide::Remote, Str("A"), NodeType::File, OperationType::None, "rA", 0, 0,
+                               12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
     remoteParentNode->insertChildren(remoteNodeLower);
     remoteParentNode->insertChildren(remoteNodeUpper);
 
-    _syncPal->updateTree(ReplicaSideRemote)->insertNode(remoteNodeLower);
-    _syncPal->updateTree(ReplicaSideRemote)->insertNode(remoteNodeUpper);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(remoteNodeLower);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(remoteNodeUpper);
 
     // Set up local tree
-    const auto localParentNode = _syncPal->updateTree(ReplicaSideLocal)->rootNode();
-    const auto localNodeLower = std::make_shared<Node>(dbNodeIdLower, ReplicaSideLocal, Str("a1"), NodeTypeFile,
-                                                       OperationTypeNone, "la", 0, 0, 12345, localParentNode);
-    const auto localNodeUpper = std::make_shared<Node>(dbNodeIdUpper, ReplicaSideLocal, Str("A"), NodeTypeFile, OperationTypeNone,
-                                                       "lA", 0, 0, 12345, localParentNode);
+    const auto localParentNode = _syncPal->updateTree(ReplicaSide::Local)->rootNode();
+    const auto localNodeLower = std::make_shared<Node>(dbNodeIdLower, ReplicaSide::Local, Str("a1"), NodeType::File,
+                                                       OperationType::None, "la", 0, 0, 12345, localParentNode);
+    const auto localNodeUpper = std::make_shared<Node>(dbNodeIdUpper, ReplicaSide::Local, Str("A"), NodeType::File,
+                                                       OperationType::None, "lA", 0, 0, 12345, localParentNode);
 
     localParentNode->insertChildren(localNodeLower);
     localParentNode->insertChildren(localNodeUpper);
 
-    _syncPal->updateTree(ReplicaSideLocal)->insertNode(localNodeLower);
-    _syncPal->updateTree(ReplicaSideLocal)->insertNode(localNodeUpper);
+    _syncPal->updateTree(ReplicaSide::Local)->insertNode(localNodeLower);
+    _syncPal->updateTree(ReplicaSide::Local)->insertNode(localNodeUpper);
 
     // Check name clash
     _syncPal->_platformInconsistencyCheckerWorker->checkNameClashAgainstSiblings(remoteParentNode);
@@ -239,37 +239,37 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
 }
 
 void TestPlatformInconsistencyCheckerWorker::testExecute() {
-    const auto parentNode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSideRemote)->side(),
-                                                   Str("parentNode"), NodeTypeDirectory, OperationTypeCreate, "parentID", 0, 0,
-                                                   12345, _syncPal->updateTree(ReplicaSideRemote)->rootNode());
+    const auto parentNode = std::make_shared<Node>(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(),
+                                                   Str("parentNode"), NodeType::Directory, OperationType::Create, "parentID", 0,
+                                                   0, 12345, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
 
-    const auto nodeLower = std::make_shared<Node>(std::nullopt, ReplicaSideRemote, Str("a"), NodeTypeFile, OperationTypeCreate,
-                                                  "a", 0, 0, 12345, parentNode);
-    const auto nodeUpper = std::make_shared<Node>(std::nullopt, ReplicaSideRemote, Str("A"), NodeTypeFile, OperationTypeCreate,
-                                                  "A", 0, 0, 12345, parentNode);
+    const auto nodeLower = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("a"), NodeType::File,
+                                                  OperationType::Create, "a", 0, 0, 12345, parentNode);
+    const auto nodeUpper = std::make_shared<Node>(std::nullopt, ReplicaSide::Remote, Str("A"), NodeType::File,
+                                                  OperationType::Create, "A", 0, 0, 12345, parentNode);
 
-    _syncPal->updateTree(ReplicaSideRemote)->rootNode()->insertChildren(parentNode);
+    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(parentNode);
     parentNode->insertChildren(nodeLower);
     parentNode->insertChildren(nodeUpper);
 
-    _syncPal->updateTree(ReplicaSideRemote)->insertNode(parentNode);
-    _syncPal->updateTree(ReplicaSideRemote)->insertNode(nodeLower);
-    _syncPal->updateTree(ReplicaSideRemote)->insertNode(nodeUpper);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(parentNode);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeLower);
+    _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeUpper);
 
     _syncPal->_platformInconsistencyCheckerWorker->execute();
 
-    const bool exactly1exist = (_syncPal->updateTree(ReplicaSideRemote)->exists(*nodeUpper->id()) &&
-                                !_syncPal->updateTree(ReplicaSideRemote)->exists(*nodeLower->id())) ||
-                               (!_syncPal->updateTree(ReplicaSideRemote)->exists(*nodeUpper->id()) &&
-                                _syncPal->updateTree(ReplicaSideRemote)->exists(*nodeLower->id()));
+    const bool exactly1exist = (_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
+                                !_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id())) ||
+                               (!_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
+                                _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
 
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSideRemote)->exists(*parentNode->id()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(*parentNode->id()));
 
 #if defined(WIN32) || defined(__APPLE__)
     CPPUNIT_ASSERT(exactly1exist);
 #else
-    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSideRemote)->exists(*nodeUpper->id()) &&
-                   _syncPal->updateTree(ReplicaSideRemote)->exists(*nodeLower->id()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeUpper->id()) &&
+                   _syncPal->updateTree(ReplicaSide::Remote)->exists(*nodeLower->id()));
 #endif
 }
 

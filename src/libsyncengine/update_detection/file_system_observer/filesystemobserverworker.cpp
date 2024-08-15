@@ -33,7 +33,7 @@ void FileSystemObserverWorker::invalidateSnapshot() {
     if (_snapshot->isValid()) {
         _snapshot->init();
         //    *_interruptSync = true;     // TODO : check if it is possible to avoid restarting the full sync is those cases
-        LOG_SYNCPAL_DEBUG(_logger, (_snapshot->side() == ReplicaSideLocal ? "Local" : "Remote") << " snapshot invalidated");
+        LOG_SYNCPAL_DEBUG(_logger, (_snapshot->side() == ReplicaSide::Local ? "Local" : "Remote") << " snapshot invalidated");
     }
 }
 

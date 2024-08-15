@@ -23,7 +23,7 @@
 namespace KDC {
 
 LongPollJob::LongPollJob(int driveDbId, const std::string &cursor)
-    : AbstractTokenNetworkJob(ApiNotifyDrive, 0, 0, driveDbId, 0), _cursor(cursor) {
+    : AbstractTokenNetworkJob(ApiType::NotifyDrive, 0, 0, driveDbId, 0), _cursor(cursor) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = API_TIMEOUT + 5;  // Must be < 1 min (VPNs' default timeout)
 }

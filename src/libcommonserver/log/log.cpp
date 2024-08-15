@@ -55,19 +55,19 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
     if (useLog) {
         // Set log level
         switch (logLevel) {
-            case LogLevelDebug:
+            case LogLevel::Debug:
                 _logger.setLogLevel(log4cplus::DEBUG_LOG_LEVEL);
                 break;
-            case LogLevelInfo:
+            case LogLevel::Info:
                 _logger.setLogLevel(log4cplus::INFO_LOG_LEVEL);
                 break;
-            case LogLevelWarning:
+            case LogLevel::Warning:
                 _logger.setLogLevel(log4cplus::WARN_LOG_LEVEL);
                 break;
-            case LogLevelError:
+            case LogLevel::Error:
                 _logger.setLogLevel(log4cplus::ERROR_LOG_LEVEL);
                 break;
-            case LogLevelFatal:
+            case LogLevel::Fatal:
                 _logger.setLogLevel(log4cplus::FATAL_LOG_LEVEL);
                 break;
         }
@@ -78,7 +78,7 @@ bool Log::configure(bool useLog, LogLevel logLevel, bool purgeOldLogs) {
     // Set purge rate
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     static_cast<CustomRollingFileAppender *>(rfAppenderPtr.get())
-        ->setExpire(purgeOldLogs ? CommonUtility::logsPurgeRate * 24 * 3600: 0);
+        ->setExpire(purgeOldLogs ? CommonUtility::logsPurgeRate * 24 * 3600 : 0);
 
     return true;
 }

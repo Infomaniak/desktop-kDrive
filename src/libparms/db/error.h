@@ -37,14 +37,14 @@ class PARMS_EXPORT Error {
 
         // Error level Node constructor
         Error(int syncDbId, const NodeId &localNodeId, const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path,
-              ConflictType conflictType, InconsistencyType inconsistencyType = InconsistencyTypeNone,
-              CancelType cancelType = CancelTypeNone, const SyncPath &destinationPath = "", ExitCode exitCode = ExitCodeUnknown,
-              ExitCause exitCause = ExitCauseUnknown);
+              ConflictType conflictType, InconsistencyType inconsistencyType = InconsistencyType::None,
+              CancelType cancelType = CancelType::None, const SyncPath &destinationPath = "",
+              ExitCode exitCode = ExitCode::Unknown, ExitCause exitCause = ExitCause::Unknown);
 
         Error(int64_t dbId, int64_t time, ErrorLevel level, const std::string &functionName, int syncDbId,
               const std::string &workerName, ExitCode exitCode, ExitCause exitCause, const NodeId &localNodeId,
               const NodeId &remoteNodeId, NodeType nodeType, const SyncPath &path, ConflictType conflictType,
-              InconsistencyType inconsistencyType = InconsistencyTypeNone, CancelType cancelType = CancelTypeNone,
+              InconsistencyType inconsistencyType = InconsistencyType::None, CancelType cancelType = CancelType::None,
               const SyncPath &destinationPath = "");
 
         inline int64_t dbId() const { return _dbId; }
@@ -86,19 +86,19 @@ class PARMS_EXPORT Error {
     private:
         int64_t _dbId{0};
         int64_t _time{0};
-        ErrorLevel _level{ErrorLevelUnknown};
+        ErrorLevel _level{ErrorLevel::Unknown};
         std::string _functionName;
         int _syncDbId{0};
         std::string _workerName;
-        ExitCode _exitCode{ExitCodeUnknown};
-        ExitCause _exitCause{ExitCauseUnknown};
+        ExitCode _exitCode{ExitCode::Unknown};
+        ExitCause _exitCause{ExitCause::Unknown};
         NodeId _localNodeId;
         NodeId _remoteNodeId;
-        NodeType _nodeType{NodeTypeUnknown};
+        NodeType _nodeType{NodeType::Unknown};
         SyncPath _path;
-        ConflictType _conflictType{ConflictTypeNone};
-        InconsistencyType _inconsistencyType{InconsistencyTypeNone};
-        CancelType _cancelType{CancelTypeNone};
+        ConflictType _conflictType{ConflictType::None};
+        InconsistencyType _inconsistencyType{InconsistencyType::None};
+        CancelType _cancelType{CancelType::None};
         SyncPath _destinationPath;
 };
 

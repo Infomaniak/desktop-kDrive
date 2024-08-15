@@ -78,10 +78,10 @@ class ExecutorWorker : public OperationProcessor {
 
         void handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job, bool &hasError);
         bool generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job);
-    
+
         /**
-         * This method aims to fix the last modification date of a local file using the date stored in DB. This allows us to fix wrong
-         * EDIT operations generated on dehydrated placeholders.
+         * This method aims to fix the last modification date of a local file using the date stored in DB. This allows us to fix
+         * wrong EDIT operations generated on dehydrated placeholders.
          * @param syncOp : the operation to propagate.
          * @param absolutePath : absolute local path of the affected file.
          * @return `true` if the date is modified successfully.
@@ -123,7 +123,7 @@ class ExecutorWorker : public OperationProcessor {
 
         void manageJobDependencies(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> job);
 
-        inline bool isLiteSyncActivated() { return _syncPal->_vfsMode != VirtualFileModeOff; }
+        inline bool isLiteSyncActivated() { return _syncPal->_vfsMode != VirtualFileMode::Off; }
 
         inline std::shared_ptr<UpdateTree> affectedUpdateTree(SyncOpPtr syncOp) {
             return _syncPal->updateTree(otherSide(syncOp->targetSide()));
@@ -142,8 +142,8 @@ class ExecutorWorker : public OperationProcessor {
         std::unordered_map<UniqueId, UniqueId> _syncOpToJobMap;
         std::list<UniqueId> _opList;
 
-        ExitCode _executorExitCode = ExitCodeUnknown;
-        ExitCause _executorExitCause = ExitCauseUnknown;
+        ExitCode _executorExitCode = ExitCode::Unknown;
+        ExitCause _executorExitCause = ExitCause::Unknown;
 
         std::chrono::steady_clock::time_point _fileProgressTimer = std::chrono::steady_clock::now();
 

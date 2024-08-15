@@ -43,7 +43,7 @@ namespace KDC {
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
                          SyncTime creationTime, SyncTime modtime, bool isCreate)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0, false),
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
       _remoteFileId(remoteFileId),
       _localpath(localpath),
       _expectedSize(expectedSize),
@@ -56,7 +56,7 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 }
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0, false),
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
       _remoteFileId(remoteFileId),
       _localpath(localpath),
       _expectedSize(expectedSize),
@@ -69,7 +69,7 @@ DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPa
 DownloadJob::~DownloadJob() {
     if (_responseHandlingCanceled) {
         if (_vfsSetPinState) {
-            if (!_vfsSetPinState(_localpath, PinStateOnlineOnly)) {
+            if (!_vfsSetPinState(_localpath, PinState::OnlineOnly)) {
                 LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
@@ -88,13 +88,13 @@ DownloadJob::~DownloadJob() {
         }
     } else {
         if (_vfsSetPinState) {
-            if (!_vfsSetPinState(_localpath, _exitCode == ExitCodeOk ? PinStateAlwaysLocal : PinStateOnlineOnly)) {
+            if (!_vfsSetPinState(_localpath, _exitCode == ExitCode::Ok ? PinState::AlwaysLocal : PinState::OnlineOnly)) {
                 LOGW_WARN(_logger, L"Error in vfsSetPinState: " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
 
         if (_vfsForceStatus) {
-            if (!_vfsForceStatus(_localpath, false, 0, _exitCode == ExitCodeOk)) {
+            if (!_vfsForceStatus(_localpath, false, 0, _exitCode == ExitCode::Ok)) {
                 LOGW_WARN(_logger, L"Error in vfsForceStatus: " << Utility::formatSyncPath(_localpath).c_str());
             }
         }
@@ -116,19 +116,19 @@ bool DownloadJob::canRun() {
 
     // Check that we can create the item here
     bool exists;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_localpath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_localpath, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
     if (_isCreate && exists) {
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_localpath).c_str()
                                       << L" already exist. Aborting current sync and restart.");
-        _exitCode = ExitCodeNeedRestart;
-        _exitCause = ExitCauseUnexpectedFileSystemEvent;
+        _exitCode = ExitCode::NeedRestart;
+        _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     }
 
@@ -140,16 +140,16 @@ void DownloadJob::runJob() noexcept {
         // Update size on file system
         if (_vfsUpdateMetadata) {
             FileStat filestat;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError).c_str());
                 return;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath).c_str());
                 return;
-            } else if (ioError == IoErrorAccessDenied) {
+            } else if (ioError == IoError::AccessDenied) {
                 LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath).c_str());
                 return;
             }
@@ -202,8 +202,8 @@ bool DownloadJob::handleResponse(std::istream &is) {
         // Create link
         LOG_DEBUG(_logger, "Create link: mimeType=" << mimeType.c_str());
         if (!createLink(mimeType, linkData)) {
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseFileAccessError;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
             return false;
         }
     } else {
@@ -215,11 +215,11 @@ bool DownloadJob::handleResponse(std::istream &is) {
 #endif
 
         SyncPath tmpPath;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::tempDirectoryPath(tmpPath, ioError)) {
             LOGW_WARN(_logger, L"Failed to get temporary directory path: " << Utility::formatIoError(tmpPath, ioError).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = ExitCauseFileAccessError;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = ExitCause::FileAccessError;
             return false;
         }
 
@@ -228,8 +228,8 @@ bool DownloadJob::handleResponse(std::istream &is) {
         std::ofstream output(tmpPath.native().c_str(), std::ios::binary);
         if (!output) {
             LOGW_WARN(_logger, L"Failed to create file: " << Utility::formatSyncPath(tmpPath).c_str());
-            _exitCode = ExitCodeSystemError;
-            _exitCause = Utility::enoughSpace(tmpPath) ? ExitCauseFileAccessError : ExitCauseNotEnoughDiskSpace;
+            _exitCode = ExitCode::SystemError;
+            _exitCause = Utility::enoughSpace(tmpPath) ? ExitCause::FileAccessError : ExitCause::NotEnoughDiskSpace;
             return false;
         }
 
@@ -369,17 +369,17 @@ bool DownloadJob::handleResponse(std::istream &is) {
 
             if (isAborted() || fetchCanceled) {
                 // Download aborted or canceled by the user
-                _exitCode = ExitCodeOk;
+                _exitCode = ExitCode::Ok;
                 return true;
             } else if (readError) {
                 // Download issue
-                _exitCode = ExitCodeBackError;
-                _exitCause = ExitCauseInvalidSize;
+                _exitCode = ExitCode::BackError;
+                _exitCause = ExitCause::InvalidSize;
                 return false;
             } else {
                 // Fetch issue
-                _exitCode = ExitCodeSystemError;
-                _exitCause = ExitCauseFileAccessError;
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::FileAccessError;
                 return false;
             }
         }
@@ -397,36 +397,36 @@ bool DownloadJob::handleResponse(std::istream &is) {
 #endif
         } else if (!exists) {
             LOGW_INFO(_logger, L"Item does not exist anymore. Restarting sync: " << Utility::formatSyncPath(_localpath).c_str());
-            _exitCode = ExitCodeDataError;
-            _exitCause = ExitCauseInvalidSnapshot;
+            _exitCode = ExitCode::DataError;
+            _exitCause = ExitCause::InvalidSnapshot;
             return false;
         }
     }
 
     // Retrieve inode
     FileStat filestat;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::getFileStat(_localpath, &filestat, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(_localpath, ioError).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseFileAccessError;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
         return false;
     }
 
-    if (ioError == IoErrorNoSuchFileOrDirectory) {
+    if (ioError == IoError::NoSuchFileOrDirectory) {
         LOGW_WARN(_logger, L"Item does not exist anymore: " << Utility::formatSyncPath(_localpath).c_str());
-        _exitCode = ExitCodeDataError;
-        _exitCause = ExitCauseInvalidSnapshot;
+        _exitCode = ExitCode::DataError;
+        _exitCause = ExitCause::InvalidSnapshot;
         return false;
-    } else if (ioError == IoErrorAccessDenied) {
+    } else if (ioError == IoError::AccessDenied) {
         LOGW_WARN(_logger, L"Item misses search permission: " << Utility::formatSyncPath(_localpath).c_str());
-        _exitCode = ExitCodeSystemError;
-        _exitCause = ExitCauseNoSearchPermission;
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::NoSearchPermission;
         return false;
     }
 
     _localNodeId = std::to_string(filestat.inode);
-    _exitCode = ExitCodeOk;
+    _exitCode = ExitCode::Ok;
 
     return true;
 }
@@ -448,7 +448,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
                                                 << Utility::formatSyncPath(_localpath).c_str());
 
         bool isFolder = mimeType == mimeTypeSymlinkFolder;
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::createSymlink(targetPath, _localpath, isFolder, ioError)) {
             LOGW_WARN(_logger, L"Failed to create symlink: " << Utility::formatIoError(targetPath, ioError).c_str());
             return false;
@@ -476,7 +476,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 #if defined(_WIN32)
         LOGW_DEBUG(_logger, L"Create junction: " << Utility::formatSyncPath(_localpath).c_str());
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::createJunction(data, _localpath, ioError)) {
             LOGW_WARN(_logger, L"Failed to create junction: " << Utility::formatIoError(_localpath, ioError).c_str());
             return false;
@@ -486,7 +486,7 @@ bool DownloadJob::createLink(const std::string &mimeType, const std::string &dat
 #if defined(__APPLE__)
         LOGW_DEBUG(_logger, L"Create alias: " << Utility::formatSyncPath(_localpath).c_str());
 
-        IoError ioError = IoErrorSuccess;
+        IoError ioError = IoError::Success;
         if (!IoHelper::createAlias(data, _localpath, ioError)) {
             const std::wstring message = Utility::s2ws(IoHelper::ioError2StdString(ioError));
             LOGW_WARN(_logger, L"Failed to create alias: " << Utility::formatIoError(_localpath, ioError).c_str());
@@ -561,12 +561,12 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
 #endif
         else if (ec) {
             bool exists = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
                                        << Utility::formatIoError(_localpath.parent_path(), ioError).c_str());
-                _exitCode = ExitCodeSystemError;
-                _exitCause = ExitCauseFileAccessError;
+                _exitCode = ExitCode::SystemError;
+                _exitCause = ExitCause::FileAccessError;
                 return false;
             }
 

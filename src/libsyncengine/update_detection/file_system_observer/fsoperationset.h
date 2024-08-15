@@ -58,7 +58,7 @@ class FSOperationSet : public SharedObject {
         std::unordered_map<UniqueId, FSOpPtr> _ops;
         std::unordered_map<OperationType, std::unordered_set<UniqueId>> _opsByType;
         std::unordered_map<NodeId, std::unordered_set<UniqueId>> _opsByNodeId;
-        ReplicaSide _side = ReplicaSideUnknown;
+        ReplicaSide _side = ReplicaSide::Unknown;
         mutable std::recursive_mutex _mutex;
 };
 

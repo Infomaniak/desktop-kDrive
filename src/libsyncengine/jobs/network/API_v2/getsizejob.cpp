@@ -22,12 +22,12 @@
 namespace KDC {
 
 GetSizeJob::GetSizeJob(int userDbId, int driveId, const NodeId &nodeId)
-    : AbstractTokenNetworkJob(ApiDrive, userDbId, 0, 0, driveId), _nodeId(nodeId), _size(0) {
+    : AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId), _nodeId(nodeId), _size(0) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 
 GetSizeJob::GetSizeJob(int driveDbId, const NodeId &nodeId)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0), _nodeId(nodeId) {
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _nodeId(nodeId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 

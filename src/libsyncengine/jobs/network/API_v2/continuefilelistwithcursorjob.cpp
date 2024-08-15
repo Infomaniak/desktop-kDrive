@@ -21,7 +21,7 @@
 namespace KDC {
 
 ContinueFileListWithCursorJob::ContinueFileListWithCursorJob(int driveDbId, const std::string &cursor)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0), _cursor(cursor) {
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _cursor(cursor) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 

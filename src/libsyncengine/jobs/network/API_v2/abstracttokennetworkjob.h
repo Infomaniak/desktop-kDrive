@@ -28,12 +28,12 @@ namespace KDC {
 
 class AbstractTokenNetworkJob : public AbstractNetworkJob {
         struct ExitHandler {
-                ExitCause exitCause{ExitCauseUnknown};
+                ExitCause exitCause{ExitCause::Unknown};
                 std::string debugMessage;
         };
 
     public:
-        typedef enum { ApiDrive, ApiDriveByUser, ApiProfile, ApiNotifyDrive, /*ApiInfomaniak,*/ ApiDesktop } ApiType;
+        enum class ApiType { Drive, DriveByUser, Profile, NotifyDrive, Desktop };
 
         AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId, bool returnJson = true);
         explicit AbstractTokenNetworkJob(ApiType apiType, bool returnJson = true);

@@ -31,16 +31,6 @@ SyncInfo::SyncInfo(int dbId, int driveDbId, const QString &localPath, const QStr
       _virtualFileMode(virtualFileMode),
       _navigationPaneClsid(navigationPaneClsid) {}
 
-SyncInfo::SyncInfo()
-    : _dbId(0),
-      _driveDbId(0),
-      _localPath(QString()),
-      _targetPath(QString()),
-      _targetNodeId(QString()),
-      _supportVfs(false),
-      _virtualFileMode(VirtualFileModeOff),
-      _navigationPaneClsid(QString()) {}
-
 QDataStream &operator>>(QDataStream &in, SyncInfo &info) {
     in >> info._dbId >> info._driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
         info._virtualFileMode >> info._navigationPaneClsid;

@@ -67,9 +67,9 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
         }
         case CsvIndexType: {
             if (str == "dir") {
-                item.setType(NodeTypeDirectory);
+                item.setType(NodeType::Directory);
             } else {
-                item.setType(NodeTypeFile);
+                item.setType(NodeType::File);
             }
             break;
         }
@@ -256,7 +256,7 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 
 CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId,
                                                            std::unordered_set<NodeId> blacklist /*= {}*/, bool zip /*= true*/)
-    : AbstractTokenNetworkJob(ApiDrive, 0, 0, driveDbId, 0),
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
       _dirId(dirId),
       _blacklist(blacklist),
       _zip(zip),

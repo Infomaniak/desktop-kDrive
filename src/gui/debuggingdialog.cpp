@@ -51,11 +51,11 @@ static const QString heavyLogLabelStr = QObject::tr(
     "share only the last kDrive session.");
 Q_LOGGING_CATEGORY(lcDebuggingDialog, "gui.debuggingdialog", QtInfoMsg)
 
-std::map<LogLevel, std::pair<int, QString>> DebuggingDialog::_logLevelMap = {{LogLevelDebug, {0, QString(tr("Debug"))}},
-                                                                             {LogLevelInfo, {1, QString(tr("Info"))}},
-                                                                             {LogLevelWarning, {2, QString(tr("Warning"))}},
-                                                                             {LogLevelError, {3, QString(tr("Error"))}},
-                                                                             {LogLevelFatal, {4, QString(tr("Fatal"))}}};
+std::map<LogLevel, std::pair<int, QString>> DebuggingDialog::_logLevelMap = {{LogLevel::Debug, {0, QString(tr("Debug"))}},
+                                                                             {LogLevel::Info, {1, QString(tr("Info"))}},
+                                                                             {LogLevel::Warning, {2, QString(tr("Warning"))}},
+                                                                             {LogLevel::Error, {3, QString(tr("Error"))}},
+                                                                             {LogLevel::Fatal, {4, QString(tr("Fatal"))}}};
 
 DebuggingDialog::DebuggingDialog(std::shared_ptr<ClientGui> gui, QWidget *parent) : CustomDialog(true, parent), _gui(gui) {
     initUI();
@@ -175,7 +175,8 @@ void DebuggingDialog::initUI() {
         if (debugLevelElt.second.first == 0) {
             debugLevelStr = debugLevelElt.second.second + QString::fromStdString(" (Recommended)");
         }
-        _debugLevelComboBox->insertItem(debugLevelElt.second.first, debugLevelElt.second.second, debugLevelElt.first);
+        _debugLevelComboBox->insertItem(debugLevelElt.second.first, debugLevelElt.second.second,
+                                        enumClassToInt(debugLevelElt.first));
     }
     debugLevelSelectionHBox->addWidget(_debugLevelComboBox);
 
@@ -357,7 +358,7 @@ void DebuggingDialog::initLogUploadLayout() {
     AppStateValue appStateValue = LogUploadState::None;
     LogUploadState logUploadState = LogUploadState::None;
     ExitCode exitCode = GuiRequests::getAppState(AppStateKey::LogUploadState, appStateValue);
-    if (exitCode == ExitCode::ExitCodeOk) {
+    if (exitCode == ExitCode::Ok) {
         logUploadState = std::get<LogUploadState>(appStateValue);
     } else {
         qCWarning(lcDebuggingDialog) << "Failed to get log upload status";
@@ -368,7 +369,7 @@ void DebuggingDialog::initLogUploadLayout() {
         appStateValue = std::string();
         QString LastSuccessfulLogUploadDate = "";
         exitCode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadDate, appStateValue);
-        if (exitCode == ExitCode::ExitCodeOk) {
+        if (exitCode == ExitCode::Ok) {
             LastSuccessfulLogUploadDate = QString::fromStdString(std::get<std::string>(appStateValue));
         } else {
             qCWarning(lcDebuggingDialog) << "Failed to get last successful log upload date";
@@ -384,7 +385,7 @@ void DebuggingDialog::initLogUploadLayout() {
     appStateValue = int();
     int logUploadPercent = 0;
     exitCode = GuiRequests::getAppState(AppStateKey::LogUploadPercent, appStateValue);
-    if (exitCode == ExitCode::ExitCodeOk) {
+    if (exitCode == ExitCode::Ok) {
         logUploadPercent = std::get<int>(appStateValue);
     } else {
         qCWarning(lcDebuggingDialog) << "Failed to get log upload percent";
@@ -400,7 +401,7 @@ void DebuggingDialog::displayHeavyLogBox() {
 
     uint64_t logDirSize = 0;
     ExitCode exitCode = GuiRequests::getLogDirEstimatedSize(logDirSize);
-    if (exitCode != ExitCode::ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcDebuggingDialog) << "Failed to get log dir estimated size";
     }
     if (logDirSize > 100000000) {
@@ -427,7 +428,7 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
 
     AppStateValue appStateValue = std::string();
     ExitCode exitcode = GuiRequests::getAppState(AppStateKey::LastLogUploadArchivePath, appStateValue);
-    if (exitcode == ExitCode::ExitCodeOk) {
+    if (exitcode == ExitCode::Ok) {
         archivePathStr = QString::fromStdString(std::get<std::string>(appStateValue));
     } else {
         qCWarning(lcDebuggingDialog) << "Failed to get last log upload archive path";
@@ -435,7 +436,7 @@ void DebuggingDialog::setlogUploadInfo(LogUploadState status) {
 
     appStateValue = std::string();
     exitcode = GuiRequests::getAppState(AppStateKey::LastSuccessfulLogUploadDate, appStateValue);
-    if (exitcode == ExitCode::ExitCodeOk) {
+    if (exitcode == ExitCode::Ok) {
         lasSuccessfullUploadDate =
             convertAppStateTimeToLocalHumanReadable(QString::fromStdString(std::get<std::string>(appStateValue)));
     } else {
@@ -573,12 +574,12 @@ void DebuggingDialog::updateUI() {
     _extendedLogCheckBox->setCheckState(_extendedLog ? Qt::Checked : Qt::Unchecked);
     _debuggingInfoMainWidget->setVisible(_recordDebugging);
     _debugLevelComboBox->setEnabled(_recordDebugging);
-    _debugLevelComboBox->setCurrentIndex(_recordDebugging ? _minLogLevel : -1);
+    _debugLevelComboBox->setCurrentIndex(_recordDebugging ? enumClassToInt(_minLogLevel) : -1);
 
     _deleteLogsCheckBox->setEnabled(_recordDebugging);
     _deleteLogsCheckBox->setChecked(_recordDebugging ? _deleteLogs : false);
 
-    if (_minLogLevel != LogLevel::LogLevelDebug) {
+    if (_minLogLevel != LogLevel::Debug) {
         _extendedLogCheckBox->hide();
         _extendedLogHelpButton->hide();
         _extendedLog = false;
@@ -597,12 +598,13 @@ QString DebuggingDialog::convertAppStateTimeToLocalHumanReadable(const QString &
     // App state time is formatted as "month,day,year,hour,minute,second"
     QStringList timeParts = time.split(',');
     if (timeParts.size() != 6) {
-        // Invalid time format 
+        // Invalid time format
         return time;
     }
 
     //: Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second
-    return tr("%1/%2/%3 at %4h%5m and %6s").arg(timeParts[0], timeParts[1], timeParts[2], timeParts[3], timeParts[4], timeParts[5]);
+    return tr("%1/%2/%3 at %4h%5m and %6s")
+        .arg(timeParts[0], timeParts[1], timeParts[2], timeParts[3], timeParts[4], timeParts[5]);
 }
 
 void DebuggingDialog::onRecordDebuggingSwitchClicked(bool checked) {

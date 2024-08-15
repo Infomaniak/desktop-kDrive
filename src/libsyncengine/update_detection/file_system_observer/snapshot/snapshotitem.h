@@ -52,7 +52,7 @@ class SnapshotItem {
         inline void setSize(uint64_t newSize) { _size = newSize; }
         inline bool isLink() const { return _isLink; }
         inline void setIsLink(bool isLink) { _isLink = isLink; }
-        inline const std::string & contentChecksum() const { return _contentChecksum; }
+        inline const std::string &contentChecksum() const { return _contentChecksum; }
         inline void setContentChecksum(const std::string &newChecksum) { _contentChecksum = newChecksum; }
         inline bool canWrite() const { return _canWrite; }
         inline void setCanWrite(bool canWrite) { _canWrite = canWrite; }
@@ -71,7 +71,7 @@ class SnapshotItem {
         SyncName _name;
         SyncTime _createdAt = 0;
         SyncTime _lastModified = 0;
-        NodeType _type = NodeTypeUnknown;
+        NodeType _type = NodeType::Unknown;
         int64_t _size = 0;
         bool _isLink = false;
         std::string _contentChecksum;

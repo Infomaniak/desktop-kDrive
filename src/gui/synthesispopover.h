@@ -105,7 +105,7 @@ class SynthesisPopover : public QDialog {
         QWidget *_defaultSynchronizedPageWidget{nullptr};
         QWidget *_mainWidget{nullptr};
         QWidget *_lockedAppVersionWidget{nullptr};
-        NotificationsDisabled _notificationsDisabled{NotificationsDisabledNever};
+        NotificationsDisabled _notificationsDisabled{NotificationsDisabled::Never};
         QDateTime _notificationsDisabledUntilDateTime;
         QLabel *_notImplementedLabel{nullptr};
         QLabel *_notImplementedLabel2{nullptr};
@@ -120,7 +120,7 @@ class SynthesisPopover : public QDialog {
         QLabel *_lockedAppLabel{nullptr};
         QLabel *_lockedAppUpdateOptionalLabel{nullptr};
 #ifdef Q_OS_LINUX
-        QLabel *_lockedAppUpdateManualLabel {nullptr};
+        QLabel *_lockedAppUpdateManualLabel{nullptr};
 #endif
         void changeEvent(QEvent *event) override;
         void paintEvent(QPaintEvent *event) override;

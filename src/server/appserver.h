@@ -201,7 +201,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void addError(const Error &error);
         static void sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId);
         static void addCompletedItem(int syncDbId, const SyncFileItem &item, bool notify);
-        static void sendSignal(int sigId, int syncDbId, const SigValueType &val);
+        static void sendSignal(SignalNum sigNum, int syncDbId, const SigValueType &val);
 
         static bool vfsIsExcluded(int syncDbId, const SyncPath &itemPath, bool &isExcluded);
         static bool vfsExclude(int syncDbId, const SyncPath &itemPath);
@@ -251,7 +251,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void onMessageReceivedFromAnotherProcess(const QString &message, QObject *);
 
     signals:
-        void socketApiExecuteCommandDirect(const QString& commandLine);
+        void socketApiExecuteCommandDirect(const QString &commandLine);
 };
 
 

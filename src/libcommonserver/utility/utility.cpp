@@ -87,13 +87,13 @@ static const std::string NTFS("NTFS");
 #endif
 
 struct VariantPrinter {
-    std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }
-    std::wstring operator()(int value) { return std::to_wstring(value); }
-    std::wstring operator()(int64_t value) { return std::to_wstring(value); }
-    std::wstring operator()(double value) { return std::to_wstring(value); }
-    std::wstring operator()(const std::string &value) { return Utility::s2ws(value); }
-    std::wstring operator()(const std::wstring &value) { return value; }
-    std::wstring operator()(std::shared_ptr<std::vector<char> >) { return std::wstring(); }
+        std::wstring operator()(std::monostate) { return std::wstring(L"NULL"); }
+        std::wstring operator()(int value) { return std::to_wstring(value); }
+        std::wstring operator()(int64_t value) { return std::to_wstring(value); }
+        std::wstring operator()(double value) { return std::to_wstring(value); }
+        std::wstring operator()(const std::string &value) { return Utility::s2ws(value); }
+        std::wstring operator()(const std::wstring &value) { return value; }
+        std::wstring operator()(std::shared_ptr<std::vector<char>>) { return std::wstring(); }
 };
 
 log4cplus::Logger Utility::_logger;
@@ -102,7 +102,7 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 #if defined(__APPLE__)
     struct statvfs stat;
     if (statvfs(path.c_str(), &stat) == 0) {
-        return (int64_t) stat.f_bavail * stat.f_frsize;
+        return (int64_t)stat.f_bavail * stat.f_frsize;
     }
 #elif defined(__unix__)
     struct statvfs64 stat;
@@ -120,7 +120,7 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 }
 
 int64_t Utility::freeDiskSpaceLimit() {
-    static int64_t limit = 250 * 1000 * 1000LL; // 250MB
+    static int64_t limit = 250 * 1000 * 1000LL;  // 250MB
     return limit;
 }
 
@@ -148,9 +148,7 @@ bool Utility::findNodeValue(const Poco::XML::Document &doc, const std::string &n
 bool Utility::setFileDates(const KDC::SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                            std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
     if (!setFileDates_private(filePath,
-                              creationDate.has_value() && isCreationDateValid(creationDate.value())
-                                  ? creationDate
-                                  : std::nullopt,
+                              creationDate.has_value() && isCreationDateValid(creationDate.value()) ? creationDate : std::nullopt,
                               modificationDate, symlink, exists)) {
         return false;
     }
@@ -182,18 +180,14 @@ std::string Utility::ws2s(const std::wstring &wstr) {
 
 std::string Utility::ltrim(const std::string &s) {
     std::string sout(s);
-    auto it = std::find_if(sout.begin(), sout.end(), [](char c) {
-        return !std::isspace<char>(c, std::locale::classic());
-    });
+    auto it = std::find_if(sout.begin(), sout.end(), [](char c) { return !std::isspace<char>(c, std::locale::classic()); });
     sout.erase(sout.begin(), it);
     return sout;
 }
 
 std::string Utility::rtrim(const std::string &s) {
     std::string sout(s);
-    auto it = std::find_if(sout.rbegin(), sout.rend(), [](char c) {
-        return !std::isspace<char>(c, std::locale::classic());
-    });
+    auto it = std::find_if(sout.rbegin(), sout.rend(), [](char c) { return !std::isspace<char>(c, std::locale::classic()); });
     sout.erase(it.base(), sout.end());
     return sout;
 }
@@ -270,11 +264,10 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
         errorStream << ", encoding: " << encoding.c_str();
     }
 
-    return errorStream.str(); // str() return a copy of the underlying string
+    return errorStream.str();  // str() return a copy of the underlying string
 }
 
-void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
-                                    std::istream &inputStream,
+void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
 #ifdef NDEBUG
@@ -336,13 +329,12 @@ bool Utility::startsWith(const std::string &str, const std::string &prefix) {
 
 bool Utility::startsWithInsensitive(const std::string &str, const std::string &prefix) {
     return str.size() >= prefix.size() && std::equal(prefix.begin(), prefix.end(), str.begin(), [](char c1, char c2) {
-        return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
-    });
+               return std::tolower(c1, std::locale()) == std::tolower(c2, std::locale());
+           });
 }
 
 bool Utility::endsWith(const std::string &str, const std::string &suffix) {
-    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(),
-                                                     suffix.begin(),
+    return str.size() >= suffix.size() && std::equal(str.begin() + str.length() - suffix.length(), str.end(), suffix.begin(),
                                                      [](char c1, char c2) { return c1 == c2; });
 }
 
@@ -444,15 +436,15 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
 
 std::string Utility::opType2Str(OperationType opType) {
     switch (opType) {
-        case OperationTypeCreate:
+        case OperationType::Create:
             return "CREATE";
-        case OperationTypeDelete:
+        case OperationType::Delete:
             return "DELETE";
-        case OperationTypeEdit:
+        case OperationType::Edit:
             return "EDIT";
-        case OperationTypeMove:
+        case OperationType::Move:
             return "MOVE";
-        case OperationTypeRights:
+        case OperationType::Rights:
             return "RIGHTS";
         default:
             return "UNKNOWN";
@@ -465,34 +457,34 @@ std::wstring Utility::opType2WStr(OperationType opType) {
 
 std::string Utility::conflictType2Str(ConflictType conflictType) {
     switch (conflictType) {
-        case ConflictTypeMoveParentDelete: {
+        case ConflictType::MoveParentDelete: {
             return "Move-ParentDelete";
         }
-        case ConflictTypeMoveDelete: {
+        case ConflictType::MoveDelete: {
             return "Move-Delete";
         }
-        case ConflictTypeCreateParentDelete: {
+        case ConflictType::CreateParentDelete: {
             return "Create-ParentDelete";
         }
-        case ConflictTypeMoveMoveSource: {
+        case ConflictType::MoveMoveSource: {
             return "Move-Move(Source)";
         }
-        case ConflictTypeMoveMoveDest: {
+        case ConflictType::MoveMoveDest: {
             return "Move-Move(Dest)";
         }
-        case ConflictTypeMoveCreate: {
+        case ConflictType::MoveCreate: {
             return "Move-Create";
         }
-        case ConflictTypeEditDelete: {
+        case ConflictType::EditDelete: {
             return "Edit-Delete";
         }
-        case ConflictTypeCreateCreate: {
+        case ConflictType::CreateCreate: {
             return "Create-Create";
         }
-        case ConflictTypeEditEdit: {
+        case ConflictType::EditEdit: {
             return "Edit-Edit";
         }
-        case ConflictTypeMoveMoveCycle: {
+        case ConflictType::MoveMoveCycle: {
             return "Move-Move(Cycle)";
         }
         default: {
@@ -507,10 +499,10 @@ std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
 
 std::string Utility::side2Str(ReplicaSide side) {
     switch (side) {
-        case ReplicaSideLocal: {
+        case ReplicaSide::Local: {
             return "Local";
         }
-        case ReplicaSideRemote: {
+        case ReplicaSide::Remote: {
             return "Remote";
         }
         default: {
@@ -523,12 +515,12 @@ std::wstring Utility::side2WStr(ReplicaSide side) {
     return s2ws(side2Str(side));
 }
 
-std::string Utility::nodeType2Str(NodeType type) {
+std::string Utility::NodeType2Str(NodeType type) {
     switch (type) {
-        case NodeTypeDirectory: {
+        case NodeType::Directory: {
             return "Directory";
         }
-        case NodeTypeFile: {
+        case NodeType::File: {
             return "File";
         }
         default: {
@@ -537,25 +529,25 @@ std::string Utility::nodeType2Str(NodeType type) {
     }
 }
 
-std::wstring Utility::nodeType2WStr(NodeType type) {
-    return s2ws(nodeType2Str(type));
+std::wstring Utility::NodeType2WStr(NodeType type) {
+    return s2ws(NodeType2Str(type));
 }
 
 std::string Utility::logLevel2Str(LogLevel level) {
     switch (level) {
-        case LogLevelDebug: {
+        case LogLevel::Debug: {
             return "debug";
         }
-        case LogLevelInfo: {
+        case LogLevel::Info: {
             return "info";
         }
-        case LogLevelWarning: {
+        case LogLevel::Warning: {
             return "warning";
         }
-        case LogLevelError: {
+        case LogLevel::Error: {
             return "error";
         }
-        case LogLevelFatal: {
+        case LogLevel::Fatal: {
             return "fatal";
         }
         default:
@@ -571,25 +563,25 @@ std::wstring Utility::logLevel2WStr(LogLevel level) {
 
 std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
     switch (status) {
-        case SyncFileStatusUnknown: {
+        case SyncFileStatus::Unknown: {
             return "Unknown";
         }
-        case SyncFileStatusError: {
+        case SyncFileStatus::Error: {
             return "Error";
         }
-        case SyncFileStatusSuccess: {
+        case SyncFileStatus::Success: {
             return "Success";
         }
-        case SyncFileStatusConflict: {
+        case SyncFileStatus::Conflict: {
             return "Conflict";
         }
-        case SyncFileStatusInconsistency: {
+        case SyncFileStatus::Inconsistency: {
             return "Inconsistency";
         }
-        case SyncFileStatusIgnored: {
+        case SyncFileStatus::Ignored: {
             return "Ignored";
         }
-        case SyncFileStatusSyncing: {
+        case SyncFileStatus::Syncing: {
             return "Syncing";
         }
     }
@@ -676,16 +668,13 @@ std::string Utility::xxHashToStr(XXH64_hash_t hash) {
 
 #if defined(__APPLE__)
 SyncName Utility::getExcludedAppFilePath(bool test /*= false*/) {
-    return (test
-                ? excludedAppFileName
-                : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
+    return (test ? excludedAppFileName : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedAppFileName).native());
 }
 #endif
 
 SyncName Utility::getExcludedTemplateFilePath(bool test /*= false*/) {
-    return (test
-                ? excludedTemplateFileName
-                : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
+    return (test ? excludedTemplateFileName
+                 : (CommonUtility::getAppWorkingDir() / binRelativePath() / excludedTemplateFileName).native());
 }
 
 SyncPath Utility::binRelativePath() {
@@ -721,10 +710,9 @@ std::string Utility::toUpper(const std::string &str) {
     return upperStr;
 }
 
-std::string Utility::errId(const char *file, int line) {
+std::string Utility::_errId(const char *file, int line) {
     std::string err =
-            Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" +
-            std::to_string(line);
+        Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
     return err;
 }
 
@@ -809,7 +797,7 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
     }
 
     SyncName syncName(str);
-    std::free((void*) str);
+    std::free((void *)str);
     return syncName;
 #endif
 }
@@ -833,39 +821,36 @@ SyncPath Utility::normalizedSyncPath(const SyncPath &path) noexcept {
     return result;
 }
 
-bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
-                                       bool &isLink,
+bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
                                        IoError &ioError) {
     isManaged = true;
     isLink = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     ItemType itemType;
     bool result = IoHelper::getItemType(dirIt->path(), itemType);
     ioError = itemType.ioError;
     if (!result) {
-        LOGW_WARN(logger(),
-                  L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirIt->path(), ioError).c_str());
+        LOGW_WARN(logger(), L"Error in IoHelper::getItemType: " << Utility::formatIoError(dirIt->path(), ioError).c_str());
         return false;
     }
 
-    if (itemType.ioError == IoErrorNoSuchFileOrDirectory || itemType.ioError == IoErrorAccessDenied) {
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
         LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirIt->path(), ioError).c_str());
         return true;
     }
 
-    isLink = itemType.linkType != LinkTypeNone;
+    isLink = itemType.linkType != LinkType::None;
     if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
         LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
-                  << L" because it's not a directory, a regular file or a symlink");
+                                       << L" because it's not a directory, a regular file or a symlink");
         isManaged = false;
         return true;
     }
 
     if (dirIt->path().native().length() > CommonUtility::maxPathLength()) {
         LOGW_WARN(logger(),
-                  L"Ignore " << formatSyncPath(dirIt->path()).c_str() << L" because size > " << CommonUtility::
-                  maxPathLength());
+                  L"Ignore " << formatSyncPath(dirIt->path()).c_str() << L" because size > " << CommonUtility::maxPathLength());
         isManaged = false;
         return true;
     }
@@ -954,17 +939,16 @@ bool Utility::ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode) {
 }
 
 
-bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys,
-                       uint64_t &lastTotalIdle,
+bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
                        double &percent) {
 #ifdef __unix__
     return cpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle, percent);
 #else
-    (void) (lastTotalUser);
-    (void) (lastTotalUserLow);
-    (void) (lastTotalSys);
-    (void) (lastTotalIdle);
-    (void) (percent);
+    (void)(lastTotalUser);
+    (void)(lastTotalUserLow);
+    (void)(lastTotalSys);
+    (void)(lastTotalIdle);
+    (void)(percent);
 #endif
     return false;
 }
@@ -991,4 +975,4 @@ SyncPath Utility::commonDocumentsFolderName() {
 SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
-} // namespace KDC
+}  // namespace KDC

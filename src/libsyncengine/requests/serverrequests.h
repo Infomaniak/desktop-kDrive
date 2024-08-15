@@ -134,7 +134,7 @@ struct SYNCENGINE_EXPORT ServerRequests {
                                                              ExclusionTemplate &exclusionTemplate);
         static void exclusionAppToExclusionAppInfo(const ExclusionApp &exclusionApp, ExclusionAppInfo &exclusionAppInfo);
         static void exclusionAppInfoToExclusionApp(const ExclusionAppInfo &exclusionAppInfo, ExclusionApp &exclusionApp);
-        static ExitCode loadOldSelectiveSyncTable(const SyncPath &syncDbPath, QList<QPair<QString, int>> &list);
+        static ExitCode loadOldSelectiveSyncTable(const SyncPath &syncDbPath, QList<QPair<QString, SyncNodeType>> &list);
         static ExitCode migrateSelectiveSync(int syncDbId, std::pair<SyncPath, SyncName> &syncToMigrate);
         static bool isDisplayableError(const Error &error);
         static bool isAutoResolvedError(const Error &error);
@@ -144,10 +144,10 @@ struct SYNCENGINE_EXPORT ServerRequests {
          * \param includeArchivedLog If true, all logs will be sent, else only the last session logs will be sent.
          * \param progressCallback The callback to be called with the progress percentage, the function returns false if the user
          * cancels the operation (else true). \param exitCause The exit cause to be filled in case of error. If no error occurred,
-         * it will be set to ExitCauseUnknown;
+         * it will be set to ExitCause::Unknown;
          */
-        static ExitCode sendLogToSupport(bool includeArchivedLog, const std::function<bool(LogUploadState, int)> &progressCallback,
-                                         ExitCause &exitCause);
+        static ExitCode sendLogToSupport(bool includeArchivedLog,
+                                         const std::function<bool(LogUploadState, int)> &progressCallback, ExitCause &exitCause);
         static ExitCode cancelLogToSupport(ExitCause &exitCause);
 
     private:

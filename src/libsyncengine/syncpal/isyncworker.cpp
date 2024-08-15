@@ -55,7 +55,7 @@ void ISyncWorker::start() {
 
     _stopAsked = false;
     _isRunning = true;
-    _exitCause = ExitCauseUnknown;
+    _exitCause = ExitCause::Unknown;
 
     _thread.reset(new std::thread(executeFunc, this));
 }
@@ -140,16 +140,17 @@ void ISyncWorker::setUnpauseDone() {
     _unpauseAsked = false;
 }
 
-void ISyncWorker::setDone(ExitCode code) {
-    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " has finished with code=" << code << " and cause=" << _exitCause);
+void ISyncWorker::setDone(ExitCode exitCode) {
+    LOG_SYNCPAL_DEBUG(_logger, "Worker " << _name.c_str() << " has finished with code=" << enumClassToInt(exitCode)
+                                         << " and cause=" << enumClassToInt(_exitCause));
 
-    if (code != ExitCodeOk) {
-        _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, code, _exitCause));
+    if (exitCode != ExitCode::Ok) {
+        _syncPal->addError(Error(_syncPal->syncDbId(), _shortName, exitCode, _exitCause));
     }
 
     _isRunning = false;
     _stopAsked = false;
-    _exitCode = code;
+    _exitCode = exitCode;
 }
 
 void *ISyncWorker::executeFunc(void *thisWorker) {

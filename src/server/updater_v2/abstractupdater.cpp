@@ -43,7 +43,7 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
     AppStateValue appStateValue = "";
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
-        return ExitCodeDbError;
+        return ExitCode::DbError;
     }
 
     const auto &appUid = std::get<std::string>(appStateValue);
@@ -62,7 +62,7 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
             sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AbstractUpdater::checkUpdateAvailable", ss.str().c_str()));
 #endif
         LOG_ERROR(_logger, ss.str().c_str());
-        return ExitCodeUpdateFailed;
+        return ExitCode::UpdateFailed;
     }
     // TODO : for now we support only Prod updates
     _versionInfo = _getAppVersionJob->getVersionInfo(DistributionChannel::Prod);
@@ -73,11 +73,11 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
             sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AbstractUpdater::checkUpdateAvailable", error.c_str()));
 #endif
         LOG_ERROR(_logger, error.c_str());
-        return ExitCodeUpdateFailed;
+        return ExitCode::UpdateFailed;
     }
 
     available = CommonUtility::isVersionLower(CommonUtility::currentVersion(), _versionInfo.fullVersion());
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 bool AbstractUpdater::isUpdateDownloaded() {
@@ -86,7 +86,7 @@ bool AbstractUpdater::isUpdateDownloaded() {
 
 ExitCode AbstractUpdater::downloadUpdate() {
     if (std::filesystem::exists(_targetFile)) {
-        return ExitCodeOk;
+        return ExitCode::Ok;
     }
 
     const SyncPath targetPath(CommonUtility::getAppSupportDir());
@@ -95,7 +95,7 @@ ExitCode AbstractUpdater::downloadUpdate() {
 
     // TODO : start a simple download job
 
-    return ExitCodeOk;
+    return ExitCode::Ok;
 }
 
 AbstractUpdater::AbstractUpdater() {
@@ -113,7 +113,7 @@ void AbstractUpdater::run() noexcept {
     switch (_state) {
         case UpdateStateV2::UpToDate: {
             bool updateAvailable = false;
-            if (const ExitCode exitCode = checkUpdateAvailable(updateAvailable); exitCode != ExitCodeOk) {
+            if (const ExitCode exitCode = checkUpdateAvailable(updateAvailable); exitCode != ExitCode::Ok) {
                 // TODO : how do we give feedback to main loop about update errors?
                 _state = UpdateStateV2::Error;
                 break;
@@ -130,7 +130,7 @@ void AbstractUpdater::run() noexcept {
                 _state = UpdateStateV2::Ready;
                 break;
             }
-            if (const ExitCode exitCode = downloadUpdate(); exitCode != ExitCodeOk) {
+            if (const ExitCode exitCode = downloadUpdate(); exitCode != ExitCode::Ok) {
                 // TODO : how do we give feedback to main loop about update errors?
                 _state = UpdateStateV2::Error;
                 break;

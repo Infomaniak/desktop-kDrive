@@ -53,11 +53,11 @@ LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *pa
 #ifdef Q_OS_MAC
     // Get app fetching list from the LiteSync extension
     for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
-        if (syncInfoMapElt.second.virtualFileMode() == VirtualFileModeMac) {
+        if (syncInfoMapElt.second.virtualFileMode() == VirtualFileMode::Mac) {
             try {
                 ExitCode exitCode = GuiRequests::getFetchingAppList(_appTable);
-                if (exitCode != ExitCodeOk) {
-                    qCWarning(lcLiteSyncAppDialog()) << "Error in Requests::getFetchingAppList : " << exitCode;
+                if (exitCode != ExitCode::Ok) {
+                    qCWarning(lcLiteSyncAppDialog()) << "Error in Requests::getFetchingAppList : " << enumClassToInt(exitCode);
                 }
 
                 break;

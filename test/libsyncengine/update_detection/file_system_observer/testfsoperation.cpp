@@ -29,7 +29,7 @@ namespace KDC {
 void TestFsOperation::testConstructor() {
     const SyncPath syncPath = testhelpers::makeNfdSyncName();
     const SyncPath destPath = testhelpers::makeNfdSyncName();
-    const auto op = FSOperation(OperationTypeCreate, "node_1", NodeTypeFile, 10, -10, 0, syncPath, destPath);
+    const auto op = FSOperation(OperationType::Create, "node_1", NodeType::File, 10, -10, 0, syncPath, destPath);
 
     CPPUNIT_ASSERT(op.path() == Utility::normalizedSyncPath(syncPath));
     CPPUNIT_ASSERT(op.destinationPath() == Utility::normalizedSyncPath(destPath));

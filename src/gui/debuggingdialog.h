@@ -50,7 +50,7 @@ class DebuggingDialog : public CustomDialog {
         CustomToolButton *_extendedLogHelpButton = nullptr;
         CustomCheckBox *_deleteLogsCheckBox = nullptr;
         QPushButton *_saveButton = nullptr;
-        QPushButton *_sendLogButton = nullptr; 
+        QPushButton *_sendLogButton = nullptr;
         QPushButton *_cancelLogUploadButton = nullptr;
         QLabel *_debuggingFolderLabel = nullptr;
         QWidget *_heavyLogBox = nullptr;
@@ -59,7 +59,7 @@ class DebuggingDialog : public CustomDialog {
         QHBoxLayout *_logUploadInfoHBox = nullptr;
         bool _recordDebugging = false;
         bool _extendedLog = false;
-        LogLevel _minLogLevel = LogLevelDebug;
+        LogLevel _minLogLevel = LogLevel::Debug;
         bool _deleteLogs = false;
         bool _needToSave = false;
         bool _sendArchivedLogs = true;

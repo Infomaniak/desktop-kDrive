@@ -252,21 +252,21 @@ void GuiUtility::setStyle(QApplication *app, bool isDarkTheme) {
 QString GuiUtility::getFileStatusIconPath(::KDC::SyncFileStatus status) {
     QString path;
     switch (status) {
-        case ::KDC::SyncFileStatusUnknown:
+        case ::KDC::SyncFileStatus::Unknown:
             path = QString();
             break;
-        case ::KDC::SyncFileStatusError:
+        case ::KDC::SyncFileStatus::Error:
             path = QString(":/client/resources/icons/statuts/error-sync.svg");
             break;
-        case ::KDC::SyncFileStatusSuccess:
-        case ::KDC::SyncFileStatusInconsistency:
+        case ::KDC::SyncFileStatus::Success:
+        case ::KDC::SyncFileStatus::Inconsistency:
             path = QString(":/client/resources/icons/statuts/success.svg");
             break;
-        case ::KDC::SyncFileStatusConflict:
-        case ::KDC::SyncFileStatusIgnored:
+        case ::KDC::SyncFileStatus::Conflict:
+        case ::KDC::SyncFileStatus::Ignored:
             path = QString(":/client/resources/icons/statuts/warning.svg");
             break;
-        case ::KDC::SyncFileStatusSyncing:
+        case ::KDC::SyncFileStatus::Syncing:
             path = QString(":/client/resources/icons/statuts/sync.svg");
             break;
     }
@@ -281,23 +281,23 @@ QString GuiUtility::getSyncStatusIconPath(StatusInfo &statusInfo) {
         path = QString(":/client/resources/icons/statuts/pause.svg");
     } else {
         switch (statusInfo._status) {
-            case KDC::SyncStatusUndefined:
+            case KDC::SyncStatus::Undefined:
                 path = QString(":/client/resources/icons/statuts/warning.svg");
                 break;
-            case KDC::SyncStatusStarting:
-            case KDC::SyncStatusRunning:
+            case KDC::SyncStatus::Starting:
+            case KDC::SyncStatus::Running:
                 path = QString(":/client/resources/icons/statuts/sync.svg");
                 break;
-            case KDC::SyncStatusIdle:
+            case KDC::SyncStatus::Idle:
                 path = QString(":/client/resources/icons/statuts/success.svg");
                 break;
-            case KDC::SyncStatusError:
+            case KDC::SyncStatus::Error:
                 path = QString(":/client/resources/icons/statuts/error-sync.svg");
                 break;
-            case KDC::SyncStatusPauseAsked:
-            case KDC::SyncStatusPaused:
-            case KDC::SyncStatusStopAsked:
-            case KDC::SyncStatusStoped:
+            case KDC::SyncStatus::PauseAsked:
+            case KDC::SyncStatus::Paused:
+            case KDC::SyncStatus::StopAsked:
+            case KDC::SyncStatus::Stopped:
                 path = QString(":/client/resources/icons/statuts/pause.svg");
                 break;
             default:
@@ -316,12 +316,12 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                    .arg(loginLink);
     } else {
         switch (statusInfo._status) {
-            case KDC::SyncStatusUndefined:
+            case KDC::SyncStatus::Undefined:
                 text =
                     QCoreApplication::translate("utility", "No folder to synchronize\nYou can add one from the kDrive settings.");
                 break;
-            case KDC::SyncStatusStarting:
-            case KDC::SyncStatusRunning:
+            case KDC::SyncStatus::Starting:
+            case KDC::SyncStatus::Running:
                 if (statusInfo._totalFiles > 0) {
                     if (statusInfo._liteSyncActivated) {
                         text = QCoreApplication::translate("utility", "Sync in progress (%1 of %2)")
@@ -335,33 +335,33 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                     }
                 } else if (statusInfo._oneSyncInPropagationStep) {
                     text = QCoreApplication::translate("utility", "Sync in progress (Step %1/%2).")
-                               .arg(statusInfo._syncStep)
-                               .arg(KDC::SyncStepDone);
-                } else if (statusInfo._status == KDC::SyncStatusStarting) {
+                               .arg(enumClassToInt(statusInfo._syncStep))
+                               .arg(enumClassToInt(KDC::SyncStep::Done));
+                } else if (statusInfo._status == KDC::SyncStatus::Starting) {
                     text = QCoreApplication::translate("utility", "Synchronization starting");
                 } else {
                     text = QCoreApplication::translate("utility", "Sync in progress.");
                 }
                 break;
-            case KDC::SyncStatusIdle:
+            case KDC::SyncStatus::Idle:
                 if (statusInfo._unresolvedConflicts) {
                     text = QCoreApplication::translate("utility", "You are up to date, unresolved conflicts.");
                 } else {
                     text = QCoreApplication::translate("utility", "You are up to date!");
                 }
                 break;
-            case KDC::SyncStatusError:
+            case KDC::SyncStatus::Error:
                 text = QCoreApplication::translate(
                            "utility", "Some files couldn't be synchronized. <a style=\"%1\" href=\"%2\">Learn more</a>")
                            .arg(KDC::CommonUtility::linkStyle)
                            .arg(learnMoreLink);
                 break;
-            case KDC::SyncStatusPauseAsked:
-            case KDC::SyncStatusStopAsked:
+            case KDC::SyncStatus::PauseAsked:
+            case KDC::SyncStatus::StopAsked:
                 text = QCoreApplication::translate("utility", "Synchronization pausing ...");
                 break;
-            case KDC::SyncStatusPaused:
-            case KDC::SyncStatusStoped:
+            case KDC::SyncStatus::Paused:
+            case KDC::SyncStatus::Stopped:
                 text = QCoreApplication::translate("utility", "Synchronization paused.");
                 break;
             default:
@@ -377,8 +377,8 @@ QString GuiUtility::getDriveStatusIconPath(StatusInfo &statusInfo) {
 }
 
 bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
-    if (status == KDC::SyncStatusPauseAsked || status == KDC::SyncStatusPaused || status == KDC::SyncStatusStopAsked ||
-        status == KDC::SyncStatusStoped || status == KDC::SyncStatusError) {
+    if (status == KDC::SyncStatus::PauseAsked || status == KDC::SyncStatus::Paused || status == KDC::SyncStatus::StopAsked ||
+        status == KDC::SyncStatus::Stopped || status == KDC::SyncStatus::Error) {
         // Pause
         return false;
     } else {
@@ -387,8 +387,8 @@ bool GuiUtility::getPauseActionAvailable(KDC::SyncStatus status) {
 }
 
 bool GuiUtility::getResumeActionAvailable(KDC::SyncStatus status) {
-    if (status == KDC::SyncStatusPauseAsked || status == KDC::SyncStatusPaused || status == KDC::SyncStatusStopAsked ||
-        status == KDC::SyncStatusStoped || status == KDC::SyncStatusError) {
+    if (status == KDC::SyncStatus::PauseAsked || status == KDC::SyncStatus::Paused || status == KDC::SyncStatus::StopAsked ||
+        status == KDC::SyncStatus::Stopped || status == KDC::SyncStatus::Error) {
         // Pause
         return true;
     }
@@ -482,7 +482,7 @@ qint64 GuiUtility::folderDiskSize(const QString &dirPath) {
 }
 
 QString GuiUtility::getFolderPath(const QString &path, NodeType nodeType) {
-    return nodeType == NodeTypeDirectory ? path : QFileInfo(path).path();
+    return nodeType == NodeType::Directory ? path : QFileInfo(path).path();
 }
 
 bool GuiUtility::openFolder(const QString &dirPath) {
@@ -538,7 +538,7 @@ void GuiUtility::invalidateLayout(QLayout *layout) {
     layout->invalidate();
     layout->activate();
 }
-  
+
 void GuiUtility::makePrintablePath(QString &path, const uint64_t maxSize /*= 50*/) {
     if (path.size() > (qsizetype)maxSize) {
         path = path.left(maxSize) + "...";
@@ -587,15 +587,15 @@ bool GuiUtility::warnOnInvalidSyncFolder(const QString &dirPath, const std::map<
 
 QLocale GuiUtility::languageToQLocale(Language language) {
     switch (language) {
-        case LanguageSpanish:
+        case Language::Spanish:
             return QLocale::Spanish;
-        case LanguageEnglish:
+        case Language::English:
             return QLocale::English;
-        case LanguageFrench:
+        case Language::French:
             return QLocale::French;
-        case LanguageGerman:
+        case Language::German:
             return QLocale::German;
-        case LanguageItalian:
+        case Language::Italian:
             return QLocale::Italian;
         default:
             return QLocale();

@@ -35,16 +35,17 @@ LocalTemporaryDirectory::LocalTemporaryDirectory(const std::string &testType) {
     const int maxRetry = 100;
     while (!std::filesystem::create_directory(_path) && retryCount < maxRetry) {
         retryCount++;
-        _path = std::filesystem::temp_directory_path() / ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
+        _path = std::filesystem::temp_directory_path() /
+                ("kdrive_" + testType + "_unit_tests_" + woss.str() + "_" + std::to_string(retryCount));
     }
 
     if (retryCount == maxRetry) {
         throw std::runtime_error("Failed to create local temporary directory");
     }
-  
+
     _path = std::filesystem::canonical(_path);  // Follows symlinks to work around the symlink /var -> private/var on MacOSX.
     FileStat fileStat;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     IoHelper::getFileStat(_path, &fileStat, ioError);
     _id = std::to_string(fileStat.inode);
 }

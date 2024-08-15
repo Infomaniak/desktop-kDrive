@@ -54,7 +54,7 @@ class SyncInfoClient : public SyncInfo {
 
     private:
         bool _paused{false};
-        SyncStatus _status{SyncStatus::SyncStatusUndefined};
+        SyncStatus _status{SyncStatus::Undefined};
         SyncStep _step;
         bool _unresolvedConflicts{false};
         qint64 _currentFile{0};

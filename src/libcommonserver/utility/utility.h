@@ -43,6 +43,11 @@ namespace Poco {
 class URI;
 }
 
+/* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
+ *  static std::string errId(std::source_location location = std::source_location::current());
+ */
+#define errId() Utility::_errId(__FILE__, __LINE__)
+
 namespace KDC {
 struct COMMONSERVER_EXPORT Utility {
         inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
@@ -72,8 +77,7 @@ struct COMMONSERVER_EXPORT Utility {
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
-        static std::string formatGenericServerError(std::istream &inputStream,
-                                                    const Poco::Net::HTTPResponse &httpResponse);
+        static std::string formatGenericServerError(std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
         static void logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle,
                                           std::istream &inputStream, const Poco::Net::HTTPResponse &httpResponse);
 
@@ -109,8 +113,8 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring conflictType2WStr(ConflictType conflictType);
         static std::string side2Str(ReplicaSide side);
         static std::wstring side2WStr(ReplicaSide side);
-        static std::string nodeType2Str(NodeType type);
-        static std::wstring nodeType2WStr(NodeType type);
+        static std::string NodeType2Str(NodeType type);
+        static std::wstring NodeType2WStr(NodeType type);
         static std::string logLevel2Str(LogLevel level);
         static std::wstring logLevel2WStr(LogLevel level);
         static std::string syncFileStatus2Str(SyncFileStatus status);
@@ -134,7 +138,12 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncName logFileName();
         static SyncName logFileNameWithTime();
         static std::string toUpper(const std::string &str);
-        static std::string errId(const char *file, int line);
+
+        /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
+         *  static std::string errId(std::source_location location = std::source_location::current());
+         */
+        static std::string _errId(const char *file, int line);
+
 
         enum class UnicodeNormalization { NFC, NFD };
         static SyncName normalizedSyncName(const SyncName &name, UnicodeNormalization normalization = UnicodeNormalization::NFC);
@@ -144,16 +153,14 @@ struct COMMONSERVER_EXPORT Utility {
         static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);
 #endif
-        static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged,
-                                             bool &isLink,
+        static bool checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iterator &dirIt, bool &isManaged, bool &isLink,
                                              IoError &ioError);
 
         /* Resources analyser */
         static bool totalRamAvailable(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsed(uint64_t &ram, int &errorCode);
         static bool ramCurrentlyUsedByProcess(uint64_t &ram, int &errorCode);
-        static bool cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys,
-                             uint64_t &lastTotalIdle,
+        static bool cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint64_t &lastTotalSys, uint64_t &lastTotalIdle,
                              double &percent);
         static bool cpuUsage(uint64_t &previousTotalTicks, uint64_t &_previousIdleTicks, double &percent);
         static bool cpuUsageByProcess(double &percent);
@@ -161,11 +168,9 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncPath commonDocumentsFolderName();
         static SyncPath sharedFolderName();
 
-        private:
-                static log4cplus::Logger _logger;
+    private:
+        static log4cplus::Logger _logger;
 
-                inline static log4cplus::Logger logger() {
-                        return Log::isSet() ? Log::instance()->getLogger() : _logger;
-                }
+        inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 };
-} // namespace KDC
+}  // namespace KDC

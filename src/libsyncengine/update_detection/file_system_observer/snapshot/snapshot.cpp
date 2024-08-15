@@ -30,8 +30,7 @@
 namespace KDC {
 
 Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode)
-    : _side(side),
-      _rootFolderId(side == ReplicaSide::ReplicaSideLocal ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
+    : _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
     _items.insert({_rootFolderId, SnapshotItem(_rootFolderId)});
 }
 
@@ -316,7 +315,7 @@ bool Snapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
 
 NodeType Snapshot::type(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
-    NodeType ret = NodeTypeUnknown;
+    NodeType ret = NodeType::Unknown;
     if (auto it = _items.find(itemId); it != _items.end()) {
         ret = it->second.type();
     }
@@ -326,7 +325,7 @@ NodeType Snapshot::type(const NodeId &itemId) {
 int64_t Snapshot::size(const NodeId &itemId) {
     const std::scoped_lock lock(_mutex);
     int64_t ret = 0;
-    if (type(itemId) == NodeTypeDirectory) {
+    if (type(itemId) == NodeType::Directory) {
         std::unordered_set<NodeId> childrenIds;
         getChildrenIds(itemId, childrenIds);
         for (auto &childId : childrenIds) {
