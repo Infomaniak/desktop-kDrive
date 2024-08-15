@@ -135,7 +135,7 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
     length.QuadPart = MAXLONGLONG;
     try {
         TRACE_DEBUG(L"Dehydrating placeholder: path = %ls", path);
-        winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, NULL));
+        winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, nullptr));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         if (ex.code() == HRESULT_FROM_WIN32(ERROR_CLOUD_FILE_IN_USE)) {
@@ -157,14 +157,14 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
             if (res) {
                 try {
                     TRACE_DEBUG(L"Reverting placeholder: path = %ls", path);
-                    winrt::check_hresult(CfRevertPlaceholder(fileHandle.get(), CF_REVERT_FLAG_NONE, NULL));
+                    winrt::check_hresult(CfRevertPlaceholder(fileHandle.get(), CF_REVERT_FLAG_NONE, nullptr));
 
                     TRACE_DEBUG(L"Converting to placeholder: path = %ls", path);
                     winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), info.FileIdentity, info.FileIdentityLength,
-                                                                CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, NULL));
+                                                                CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr));
 
                     TRACE_DEBUG(L"Dehydrating placeholder: path = %ls", path);
-                    winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, NULL));
+                    winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, nullptr));
                 } catch (winrt::hresult_error const &ex) {
                     TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
                                 ex.message().c_str());
@@ -203,7 +203,7 @@ bool CloudProvider::hydrate(const wchar_t *path) {
 
     try {
         TRACE_DEBUG(L"Hydrating placeholder: path = %ls", path);
-        winrt::check_hresult(CfHydratePlaceholder(fileHandle.get(), offset, length, CF_HYDRATE_FLAG_NONE, NULL));
+        winrt::check_hresult(CfHydratePlaceholder(fileHandle.get(), offset, length, CF_HYDRATE_FLAG_NONE, nullptr));
     } catch (winrt::hresult_error const &ex) {
         std::lock_guard<std::mutex> lk(_providerInfo->_fetchMapMutex);
         const auto &fetchInfoIt = _providerInfo->_fetchMap.find(path);
@@ -616,7 +616,7 @@ bool CloudProvider::addFolderToSearchIndexer(const PCWSTR folder) {
     try {
         winrt::com_ptr<ISearchManager> searchManager;
         winrt::check_hresult(
-            CoCreateInstance(__uuidof(CSearchManager), NULL, CLSCTX_SERVER, __uuidof(&searchManager), searchManager.put_void()));
+            CoCreateInstance(__uuidof(CSearchManager), nullptr, CLSCTX_SERVER, __uuidof(&searchManager), searchManager.put_void()));
 
         winrt::com_ptr<ISearchCatalogManager> searchCatalogManager;
         winrt::check_hresult(searchManager->GetCatalog(MSSEARCH_INDEX, searchCatalogManager.put()));

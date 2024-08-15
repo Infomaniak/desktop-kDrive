@@ -31,11 +31,11 @@ class ErrorInfo {
         ErrorInfo(int dbId, qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
                   ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
                   NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
-                  CancelType cancelType = CancelTypeNone, const QString &destinationPath = "");
+                  CancelType cancelType = CancelType::None, const QString &destinationPath = "");
         ErrorInfo(qint64 time, ErrorLevel level, const QString &functionName, int syncDbId, const QString &workerName,
                   ExitCode exitCode, ExitCause exitCause, const QString &localNodeId, const QString &remoteNodeId,
                   NodeType nodeType, const QString &path, ConflictType conflictType, InconsistencyType inconsistencyType,
-                  CancelType cancelType = CancelTypeNone, const QString &destinationPath = "");
+                  CancelType cancelType = CancelType::None, const QString &destinationPath = "");
         ErrorInfo();
 
         inline int dbId() const { return _dbId; }

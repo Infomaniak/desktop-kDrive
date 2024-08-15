@@ -43,6 +43,11 @@ namespace Poco {
 class URI;
 }
 
+/* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
+ *  static std::string errId(std::source_location location = std::source_location::current());
+ */
+#define errId() Utility::_errId(__FILE__, __LINE__)
+
 namespace KDC {
 
 struct COMMONSERVER_EXPORT Utility {
@@ -109,8 +114,8 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring conflictType2WStr(ConflictType conflictType);
         static std::string side2Str(ReplicaSide side);
         static std::wstring side2WStr(ReplicaSide side);
-        static std::string nodeType2Str(NodeType type);
-        static std::wstring nodeType2WStr(NodeType type);
+        static std::string NodeType2Str(NodeType type);
+        static std::wstring NodeType2WStr(NodeType type);
         static std::string logLevel2Str(LogLevel level);
         static std::wstring logLevel2WStr(LogLevel level);
         static std::string syncFileStatus2Str(SyncFileStatus status);
@@ -134,9 +139,16 @@ struct COMMONSERVER_EXPORT Utility {
         static SyncName logFileName();
         static SyncName logFileNameWithTime();
         static std::string toUpper(const std::string &str);
-        static std::string errId(const char *file, int line);
 
-        static SyncName normalizedSyncName(const SyncName &name);
+        /* TODO : Replace with std::source_location when we will bump gcc version to 10 or higher
+         *  static std::string errId(std::source_location location = std::source_location::current());
+         */
+        static std::string _errId(const char *file, int line);
+
+
+        enum class UnicodeNormalization { NFC, NFD };
+        static SyncName normalizedSyncName(const SyncName &name, UnicodeNormalization normalization = UnicodeNormalization::NFC);
+
         static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;
 #ifdef _WIN32
         static bool fileExists(DWORD dwordError) noexcept;

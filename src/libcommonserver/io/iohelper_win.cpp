@@ -51,45 +51,45 @@ namespace {
 IoError dWordError2ioError(DWORD error, log4cplus::Logger logger) noexcept {
     switch (error) {
         case ERROR_SUCCESS:
-            return IoErrorSuccess;
+            return IoError::Success;
         case ERROR_ACCESS_DENIED:
-            return IoErrorAccessDenied;
+            return IoError::AccessDenied;
         case ERROR_DISK_FULL:
-            return IoErrorDiskFull;
+            return IoError::DiskFull;
         case ERROR_ALREADY_EXISTS:
-            return IoErrorFileExists;
+            return IoError::FileExists;
         case ERROR_INVALID_PARAMETER:
-            return IoErrorInvalidArgument;
+            return IoError::InvalidArgument;
         case ERROR_FILENAME_EXCED_RANGE:
-            return IoErrorFileNameTooLong;
+            return IoError::FileNameTooLong;
         case ERROR_FILE_NOT_FOUND:
         case ERROR_INVALID_DRIVE:
         case ERROR_PATH_NOT_FOUND:
         case ERROR_INVALID_NAME:
-            return IoErrorNoSuchFileOrDirectory;
+            return IoError::NoSuchFileOrDirectory;
         default:
             if (Log::isSet()) {
                 LOG_WARN(logger, "Unhandled DWORD error - error=" << error);
             }
-            return IoErrorUnknown;
+            return IoError::Unknown;
     }
 }
 
 IoError ntStatus2ioError(NTSTATUS status) noexcept {
     switch (status) {
         case STATUS_SUCCESS:
-            return IoErrorSuccess;
+            return IoError::Success;
         case STATUS_ACCESS_DENIED:
-            return IoErrorAccessDenied;
+            return IoError::AccessDenied;
         case STATUS_DISK_FULL:
-            return IoErrorDiskFull;
+            return IoError::DiskFull;
         case STATUS_INVALID_PARAMETER:
-            return IoErrorInvalidArgument;
+            return IoError::InvalidArgument;
         case STATUS_NO_SUCH_FILE:
         case STATUS_NO_SUCH_DEVICE:
-            return IoErrorNoSuchFileOrDirectory;
+            return IoError::NoSuchFileOrDirectory;
         default:
-            return IoErrorUnknown;
+            return IoError::Unknown;
     }
 }
 
@@ -184,7 +184,7 @@ bool IoHelper::getNodeId(const SyncPath &path, NodeId &nodeId) noexcept {
 }
 
 bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError) noexcept {
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     // Get parent folder handle
     HANDLE hParent;
@@ -199,7 +199,7 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
         if (hParent == INVALID_HANDLE_VALUE) {
             DWORD dwError = GetLastError();
             if (!fileExistsFromCode(dwError)) {
-                ioError = IoErrorNoSuchFileOrDirectory;
+                ioError = IoError::NoSuchFileOrDirectory;
                 return true;
             }
             if (counter) {
@@ -270,14 +270,14 @@ bool IoHelper::getFileStat(const SyncPath &path, FileStat *buf, IoError &ioError
     buf->creationTime = FileTimeToUnixTime(pFileInfo->CreationTime, &rem);
 
     buf->isHidden = pFileInfo->FileAttributes & FILE_ATTRIBUTE_HIDDEN;
-    buf->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeTypeDirectory : NodeTypeFile;
+    buf->nodeType = pFileInfo->FileAttributes & FILE_ATTRIBUTE_DIRECTORY ? NodeType::Directory : NodeType::File;
     CloseHandle(hParent);
 
     return true;
 }
 
 bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) {
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     HANDLE hFile = CreateFileW(Path2WStr(absolutePath).c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
     if (hFile == INVALID_HANDLE_VALUE) {
@@ -292,7 +292,7 @@ bool IoHelper::isFileAccessible(const SyncPath &absolutePath, IoError &ioError) 
 
 bool IoHelper::_checkIfIsHiddenFile(const SyncPath &filepath, bool &isHidden, IoError &ioError) noexcept {
     isHidden = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     DWORD result = GetFileAttributes(filepath.c_str());
     if (result != INVALID_FILE_ATTRIBUTES) {
@@ -321,7 +321,7 @@ void IoHelper::setFileHidden(const SyncPath &path, bool hidden) noexcept {
 }
 
 bool IoHelper::setXAttrValue(const SyncPath &path, DWORD attrCode, IoError &ioError) noexcept {
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
     bool result = SetFileAttributesW(path.c_str(), attrCode);
 
     if (!result) {
@@ -334,7 +334,7 @@ bool IoHelper::setXAttrValue(const SyncPath &path, DWORD attrCode, IoError &ioEr
 
 bool IoHelper::getXAttrValue(const SyncPath &path, DWORD attrCode, bool &value, IoError &ioError) noexcept {
     value = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
     DWORD result = GetFileAttributesW(path.c_str());
 
     if (result == INVALID_FILE_ATTRIBUTES) {
@@ -351,7 +351,7 @@ bool IoHelper::getXAttrValue(const SyncPath &path, DWORD attrCode, bool &value, 
 
 bool IoHelper::checkIfFileIsDehydrated(const SyncPath &itemPath, bool &isDehydrated, IoError &ioError) noexcept {
     isDehydrated = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     return IoHelper::getXAttrValue(itemPath.native(), FILE_ATTRIBUTE_OFFLINE, isDehydrated, ioError);
 }
@@ -434,7 +434,7 @@ void IoHelper::initRightsWindowsApi() {
 
     // Check getRights method performance
     SyncPath tmpDir;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::tempDirectoryPath(tmpDir, ioError)) {
         LOGW_WARN(logger(), "Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
         return;
@@ -468,7 +468,7 @@ void IoHelper::initRightsWindowsApi() {
     }
 }
 
-// Always return false if ioError != IoErrorSuccess, caller should call _isExpectedError
+// Always return false if ioError != IoError::Success, caller should call _isExpectedError
 static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_MODE accessMode, IoError &ioError,
                                 log4cplus::Logger logger, bool inherite = false) noexcept {
     PACL pACLold = nullptr;  // Current ACL
@@ -526,7 +526,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     }
 
     if (!IsValidAcl(pACLnew)) {
-        ioError = IoErrorUnknown;
+        ioError = IoError::Unknown;
         LOGW_WARN(logger, L"Invalid new ACL: " << Utility::formatSyncPath(path).c_str());
 
         LocalFree(pSecurityDescriptor);
@@ -555,7 +555,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
 
 static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, bool &exec, IoError &ioError,
                                 log4cplus::Logger logger) noexcept {
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
     read = false;
     write = false;
     exec = false;
@@ -570,7 +570,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
                                         nullptr, &psecDesc);
 
     ioError = dWordError2ioError(result, logger);
-    if (ioError != IoErrorSuccess) {
+    if (ioError != IoError::Success) {
         LocalFree(psecDesc);
         if (IoHelper::isExpectedError(ioError)) {
             return true;
@@ -600,7 +600,7 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
         read = false;
         write = false;
         exec = false;
-        ioError = IoErrorNoSuchFileOrDirectory;
+        ioError = IoError::NoSuchFileOrDirectory;
         LocalFree(psecDesc);
         return IoHelper::isExpectedError(ioError);
     }
@@ -654,16 +654,16 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
         return false;
     }
 
-    if (ioError != IoErrorSuccess) {
+    if (ioError != IoError::Success) {
         return isExpectedError(ioError);
     }
-    const bool isSymlink = itemType.linkType == LinkTypeSymlink;
+    const bool isSymlink = itemType.linkType == LinkType::Symlink;
 
     std::error_code ec;
     std::filesystem::perms perms =
         isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
     ioError = stdError2ioError(ec);
-    if (ioError != IoErrorSuccess) {
+    if (ioError != IoError::Success) {
         LOGW_WARN(logger(), L"Failed to get permissions: " << Utility::formatStdError(path, ec).c_str());
         return isExpectedError(ioError);
     }
@@ -677,7 +677,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
     if (_getAndSetRightsMethod == -1) initRightsWindowsApi();
     // Preferred method
     if (_getAndSetRightsMethod == 0 && IoHelper::getTrustee().ptstrName) {
-        ioError = IoErrorSuccess;
+        ioError = IoError::Success;
         DWORD grantedPermission = WRITE_DAC;
         DWORD deniedPermission = 0;
 
@@ -728,7 +728,7 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
 
 bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError &ioError) noexcept {
     isJunction = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     HANDLE hFile =
         CreateFileW(Path2WStr(path).c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
@@ -760,7 +760,7 @@ bool IoHelper::checkIfIsJunction(const SyncPath &path, bool &isJunction, IoError
 }
 
 bool IoHelper::createJunction(const std::string &data, const SyncPath &path, IoError &ioError) noexcept {
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     // Create the junction directory
     if (!CreateDirectoryW(Path2WStr(path).c_str(), NULL)) {
@@ -790,7 +790,7 @@ bool IoHelper::createJunction(const std::string &data, const SyncPath &path, IoE
 }
 
 bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &targetPath, IoError &ioError) noexcept {
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     HANDLE hFile =
         CreateFileW(Path2WStr(path).c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE, NULL,
@@ -829,7 +829,7 @@ bool IoHelper::readJunction(const SyncPath &path, std::string &data, SyncPath &t
 }
 
 bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath &path, IoError &ioError) noexcept {
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     // Create the junction directory
     if (!CreateDirectoryW(Path2WStr(path).c_str(), NULL)) {
@@ -851,7 +851,7 @@ bool IoHelper::createJunctionFromPath(const SyncPath &targetPath, const SyncPath
     int64_t targetPathWLen = wcslen(targetPathCstr);
     if (targetPathWLen > MAX_PATH - 1) {
         CloseHandle(hDir);
-        ioError = IoErrorFileNameTooLong;
+        ioError = IoError::FileNameTooLong;
         return false;
     }
 

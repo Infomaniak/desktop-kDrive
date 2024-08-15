@@ -17,6 +17,7 @@
  */
 
 #include "dbnode.h"
+#include "libcommonserver/utility/utility.h"
 
 namespace KDC {
 
@@ -38,7 +39,10 @@ DbNode::DbNode(int64_t nodeId, std::optional<DbNodeId> parentNodeId, const SyncN
       _size(size),
       _checksum(checksum),
       _status(status),
-      _syncing(syncing) {}
+      _syncing(syncing) {
+    assert(nameLocal == Utility::normalizedSyncName(nameLocal));
+    assert(nameRemote == Utility::normalizedSyncName(nameRemote));
+}
 
 DbNode::DbNode()
     : _nodeId(0),
@@ -50,10 +54,20 @@ DbNode::DbNode()
       _created(0),
       _lastModifiedLocal(0),
       _lastModifiedRemote(0),
-      _type(NodeTypeUnknown),
+      _type(NodeType::Unknown),
       _size(0),
       _checksum(std::string()),
-      _status(SyncFileStatusUnknown),
+      _status(SyncFileStatus::Unknown),
       _syncing(false) {}
+
+void DbNode::setNameLocal(const SyncName &name) {
+    assert(name == Utility::normalizedSyncName(name));
+    _nameLocal = name;
+}
+
+void DbNode::setNameRemote(const SyncName &name) {
+    assert(name == Utility::normalizedSyncName(name));
+    _nameRemote = name;
+}
 
 }  // namespace KDC

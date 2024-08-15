@@ -43,19 +43,19 @@ std::shared_ptr<ParametersCache> ParametersCache::instance() noexcept {
 ParametersCache::ParametersCache() {
     // Load parameters
     const ExitCode exitCode = GuiRequests::getParameters(_parametersInfo);
-    if (exitCode != ExitCodeOk) {
-        qCWarning(lcAppParameters()) << "Error in Requests::getParameters : " << exitCode;
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcAppParameters()) << "Error in Requests::getParameters : " << enumClassToInt(exitCode);
         throw std::runtime_error("Failed to create ParametersCache instance!");
     }
 }
 
 bool ParametersCache::saveParametersInfo(bool displayMessageBoxOnError) {
     const ExitCode exitCode = GuiRequests::updateParameters(_parametersInfo);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcAppParameters()) << "Error in Requests::updateParameters";
         if (displayMessageBoxOnError) {
             CustomMessageBox msgBox(QMessageBox::Warning,
-                                    exitCode == ExitCodeSystemError
+                                    exitCode == ExitCode::SystemError
                                         ? QObject::tr("Unable to save parameters, please retry later.")
                                         : QObject::tr("Unable to save parameters!"),
                                     QMessageBox::Ok);

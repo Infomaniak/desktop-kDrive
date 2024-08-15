@@ -189,7 +189,7 @@ void DriveSelectionWidget::setDriveIcon() {
     ExitCode exitCode;
     QColor driveColor;
     exitCode = GuiRequests::getDriveDefaultColor(driveColor);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcDriveSelectionWidget()) << "Error in Requests::getDriveDefaultColor";
         return;
     }

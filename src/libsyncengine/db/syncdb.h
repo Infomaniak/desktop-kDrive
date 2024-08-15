@@ -39,7 +39,8 @@ class SyncDb : public Db {
 
         bool initData();
 
-        bool insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraintError);
+        bool insertNode(const DbNode &node, DbNodeId &dbNodeId,
+                        bool &constraintError);  // The local and remote names of an inserted node are normalized.
         bool updateNode(const DbNode &node, bool &found);
         bool updateNodeStatus(DbNodeId nodeId, SyncFileStatus status, bool &found);
         bool updateNodesSyncing(bool syncing);
@@ -103,6 +104,9 @@ class SyncDb : public Db {
 
         bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
         bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
+
+        // Fixes an issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node
+        bool normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber);
 };
 
 }  // namespace KDC

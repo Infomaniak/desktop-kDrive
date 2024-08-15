@@ -437,15 +437,15 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
 
 std::string Utility::opType2Str(OperationType opType) {
     switch (opType) {
-        case OperationTypeCreate:
+        case OperationType::Create:
             return "CREATE";
-        case OperationTypeDelete:
+        case OperationType::Delete:
             return "DELETE";
-        case OperationTypeEdit:
+        case OperationType::Edit:
             return "EDIT";
-        case OperationTypeMove:
+        case OperationType::Move:
             return "MOVE";
-        case OperationTypeRights:
+        case OperationType::Rights:
             return "RIGHTS";
         default:
             return "UNKNOWN";
@@ -458,34 +458,34 @@ std::wstring Utility::opType2WStr(OperationType opType) {
 
 std::string Utility::conflictType2Str(ConflictType conflictType) {
     switch (conflictType) {
-        case ConflictTypeMoveParentDelete: {
+        case ConflictType::MoveParentDelete: {
             return "Move-ParentDelete";
         }
-        case ConflictTypeMoveDelete: {
+        case ConflictType::MoveDelete: {
             return "Move-Delete";
         }
-        case ConflictTypeCreateParentDelete: {
+        case ConflictType::CreateParentDelete: {
             return "Create-ParentDelete";
         }
-        case ConflictTypeMoveMoveSource: {
+        case ConflictType::MoveMoveSource: {
             return "Move-Move(Source)";
         }
-        case ConflictTypeMoveMoveDest: {
+        case ConflictType::MoveMoveDest: {
             return "Move-Move(Dest)";
         }
-        case ConflictTypeMoveCreate: {
+        case ConflictType::MoveCreate: {
             return "Move-Create";
         }
-        case ConflictTypeEditDelete: {
+        case ConflictType::EditDelete: {
             return "Edit-Delete";
         }
-        case ConflictTypeCreateCreate: {
+        case ConflictType::CreateCreate: {
             return "Create-Create";
         }
-        case ConflictTypeEditEdit: {
+        case ConflictType::EditEdit: {
             return "Edit-Edit";
         }
-        case ConflictTypeMoveMoveCycle: {
+        case ConflictType::MoveMoveCycle: {
             return "Move-Move(Cycle)";
         }
         default: {
@@ -500,10 +500,10 @@ std::wstring Utility::conflictType2WStr(ConflictType conflictType) {
 
 std::string Utility::side2Str(ReplicaSide side) {
     switch (side) {
-        case ReplicaSideLocal: {
+        case ReplicaSide::Local: {
             return "Local";
         }
-        case ReplicaSideRemote: {
+        case ReplicaSide::Remote: {
             return "Remote";
         }
         default: {
@@ -516,12 +516,12 @@ std::wstring Utility::side2WStr(ReplicaSide side) {
     return s2ws(side2Str(side));
 }
 
-std::string Utility::nodeType2Str(NodeType type) {
+std::string Utility::NodeType2Str(NodeType type) {
     switch (type) {
-        case NodeTypeDirectory: {
+        case NodeType::Directory: {
             return "Directory";
         }
-        case NodeTypeFile: {
+        case NodeType::File: {
             return "File";
         }
         default: {
@@ -530,25 +530,25 @@ std::string Utility::nodeType2Str(NodeType type) {
     }
 }
 
-std::wstring Utility::nodeType2WStr(NodeType type) {
-    return s2ws(nodeType2Str(type));
+std::wstring Utility::NodeType2WStr(NodeType type) {
+    return s2ws(NodeType2Str(type));
 }
 
 std::string Utility::logLevel2Str(LogLevel level) {
     switch (level) {
-        case LogLevelDebug: {
+        case LogLevel::Debug: {
             return "debug";
         }
-        case LogLevelInfo: {
+        case LogLevel::Info: {
             return "info";
         }
-        case LogLevelWarning: {
+        case LogLevel::Warning: {
             return "warning";
         }
-        case LogLevelError: {
+        case LogLevel::Error: {
             return "error";
         }
-        case LogLevelFatal: {
+        case LogLevel::Fatal: {
             return "fatal";
         }
         default:
@@ -564,25 +564,25 @@ std::wstring Utility::logLevel2WStr(LogLevel level) {
 
 std::string Utility::syncFileStatus2Str(SyncFileStatus status) {
     switch (status) {
-        case SyncFileStatusUnknown: {
+        case SyncFileStatus::Unknown: {
             return "Unknown";
         }
-        case SyncFileStatusError: {
+        case SyncFileStatus::Error: {
             return "Error";
         }
-        case SyncFileStatusSuccess: {
+        case SyncFileStatus::Success: {
             return "Success";
         }
-        case SyncFileStatusConflict: {
+        case SyncFileStatus::Conflict: {
             return "Conflict";
         }
-        case SyncFileStatusInconsistency: {
+        case SyncFileStatus::Inconsistency: {
             return "Inconsistency";
         }
-        case SyncFileStatusIgnored: {
+        case SyncFileStatus::Ignored: {
             return "Ignored";
         }
-        case SyncFileStatusSyncing: {
+        case SyncFileStatus::Syncing: {
             return "Syncing";
         }
     }
@@ -711,7 +711,7 @@ std::string Utility::toUpper(const std::string &str) {
     return upperStr;
 }
 
-std::string Utility::errId(const char *file, int line) {
+std::string Utility::_errId(const char *file, int line) {
     std::string err =
         Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
     return err;
@@ -719,23 +719,25 @@ std::string Utility::errId(const char *file, int line) {
 
 // Be careful, some characters have 2 different encodings in Unicode
 // For example 'é' can be coded as 0x65 + 0xcc + 0x81  or 0xc3 + 0xa9
-SyncName Utility::normalizedSyncName(const SyncName &name) {
+SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization normalization) {
 #ifdef _WIN32
     if (name.empty()) {
         return name;
     }
 
     static const int maxIterations = 10;
-    LPWSTR strResult = NULL;
+    LPWSTR strResult = nullptr;
     HANDLE hHeap = GetProcessHeap();
 
-    int iSizeEstimated = NormalizeString(NormalizationC, name.c_str(), -1, NULL, 0);
+    int iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
+                                         name.c_str(), -1, nullptr, 0);
     for (int i = 0; i < maxIterations; i++) {
         if (strResult) {
             HeapFree(hHeap, 0, strResult);
         }
         strResult = (LPWSTR)HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
-        iSizeEstimated = NormalizeString(NormalizationC, name.c_str(), -1, strResult, iSizeEstimated);
+        iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
+                                         name.c_str(), -1, strResult, iSizeEstimated);
 
         if (iSizeEstimated > 0) {
             break;  // success
@@ -778,9 +780,19 @@ SyncName Utility::normalizedSyncName(const SyncName &name) {
     HeapFree(hHeap, 0, strResult);
     return syncName;
 #else
-    const char *str = reinterpret_cast<const char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+    if (name.empty()) {
+        return SyncName(name);
+    }
+
+    char *str = nullptr;
+    if (normalization == UnicodeNormalization::NFD) {
+        str = reinterpret_cast<char *>(utf8proc_NFD(reinterpret_cast<const uint8_t *>(name.c_str())));
+    } else {
+        str = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
+    }
+
     if (!str) {  // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion has
-                 // failed. e.g.: Linux can sometime send filesystem events with strange charater in the path
+                 // failed. e.g.: Linux can sometime send filesystem events with strange character in the path
         return "";  // TODO : we should return a boolean value to explicitly say that the conversion has failed. Output value
                     // should be passed by reference as a parameter.
     }
@@ -814,7 +826,7 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
                                        IoError &ioError) {
     isManaged = true;
     isLink = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     ItemType itemType;
     bool result = IoHelper::getItemType(dirIt->path(), itemType);
@@ -824,12 +836,12 @@ bool Utility::checkIfDirEntryIsManaged(std::filesystem::recursive_directory_iter
         return false;
     }
 
-    if (itemType.ioError == IoErrorNoSuchFileOrDirectory || itemType.ioError == IoErrorAccessDenied) {
+    if (itemType.ioError == IoError::NoSuchFileOrDirectory || itemType.ioError == IoError::AccessDenied) {
         LOGW_DEBUG(logger(), L"Error in IoHelper::getItemType: " << formatIoError(dirIt->path(), ioError).c_str());
         return true;
     }
 
-    isLink = itemType.linkType != LinkTypeNone;
+    isLink = itemType.linkType != LinkType::None;
     if (!dirIt->is_directory() && !dirIt->is_regular_file() && !isLink) {
         LOGW_WARN(logger(), L"Ignore " << formatSyncPath(dirIt->path()).c_str()
                                        << L" because it's not a directory, a regular file or a symlink");

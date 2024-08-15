@@ -72,7 +72,7 @@ void AddDriveListWidget::setDrivesData() {
     ExitCode exitCode;
     QHash<int, DriveAvailableInfo> driveInfoList;
     exitCode = GuiRequests::getUserAvailableDrives(_userDbId, driveInfoList);
-    if (exitCode != ExitCodeOk) {
+    if (exitCode != ExitCode::Ok) {
         qCWarning(lcAddDriveListWidget()) << "Error in Requests::getUserAvailableDrives";
         return;
     }

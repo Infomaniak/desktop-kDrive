@@ -40,7 +40,7 @@ void TestOldSyncDb::tearDown() {
 void TestOldSyncDb::testSelectiveSync() {
     CPPUNIT_ASSERT(_testObj->exists());
 
-    std::list<std::pair<std::string, int>> selectiveSyncList;
+    std::list<std::pair<std::string, SyncNodeType>> selectiveSyncList;
     CPPUNIT_ASSERT(_testObj->selectAllSelectiveSync(selectiveSyncList));
     CPPUNIT_ASSERT(selectiveSyncList.size() > 0);
 }

@@ -17,7 +17,6 @@
  */
 
 #include "errorspopup.h"
-#include "bottomwidget.h"
 #include "clickablewidget.h"
 #include "guiutility.h"
 
@@ -45,7 +44,7 @@ static const int shadowBlurRadius = 20;
 static const int menuOffsetX = -30;
 static const int menuOffsetY = 10;
 
-const std::string actionTypeProperty = "actionType";
+static const std::string actionTypeProperty = "actionType";
 
 Q_LOGGING_CATEGORY(lcErrorsPopup, "gui.errorspopup", QtInfoMsg)
 
@@ -233,7 +232,7 @@ void ErrorsPopup::setArrowIcon() {
 void ErrorsPopup::onActionButtonClicked() {
     QString accountIdStr = qvariant_cast<QString>(sender()->property(actionTypeProperty.c_str()));
     int accountId = accountIdStr.toInt();
-    QTimer::singleShot(0, this, [=]() { emit accountSelected(accountId); });
+    QTimer::singleShot(0, this, [this, accountId]() { emit accountSelected(accountId); });
     done(QDialog::Accepted);
 }
 

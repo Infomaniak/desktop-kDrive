@@ -181,7 +181,7 @@ struct IoHelper {
           \param size holds the size in bytes of the file indicated by path in case of success.
           \param ioError holds the error associated to a failure of the underlying OS API call, if any.
           \return true if no unexpected error occurred, false otherwise. If path indicates a directory, the function returns false
-          and ioError is set with IoErrorIsADirectory.
+          and ioError is set with IoError::IsADirectory.
         */
         [[nodiscard]] static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
 
@@ -193,7 +193,7 @@ struct IoHelper {
           \param ioError holds the error associated to a failure of the underlying OS API call, if any.
           \param maxDepth is the maximum depth of the recursion. Defaults to 50.
           \return true if no unexpected error occurred, false otherwise. If path indicates a File,
-            the function returns false and ioError is set with IoErrorIsADirectory.
+            the function returns false and ioError is set with IoError::IsADirectory.
         */
         static bool getDirectorySize(const SyncPath &path, uint64_t &size, IoError &ioError, unsigned int maxDepth = 50);
 
@@ -233,7 +233,7 @@ struct IoHelper {
         //! Check if the item indicated by `path` is a directory.
         /*!
          \param path is the file system path of the item to check for.
-         \param isDirectory is boolean that is set to true if the type of the item indicated by path is `NodeTypeFile`, false
+         \param isDirectory is boolean that is set to true if the type of the item indicated by path is `NodeType::File`, false
          otherwise.
          \param ioError holds the error returned when an underlying OS API call fails. Defaults to false.
          \return true if no unexpected error occurred, false otherwise. If the return value is false, isDirectory is also set with
@@ -246,7 +246,7 @@ struct IoHelper {
          \param path is the file system path of the directory to create.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise. If path indicates an existing directory, then the function
-         returns false and sets ioError with IoErrorDirectoryExists.
+         returns false and sets ioError with IoError::DirectoryExists.
          */
         static bool createDirectory(const SyncPath &path, IoError &ioError) noexcept;
 
@@ -317,7 +317,7 @@ struct IoHelper {
 
 #ifdef _WIN32
 #ifndef _WINDEF_
-        typedef unsigned long DWORD;
+        using DWORD = unsigned long;
 #endif
         static bool getXAttrValue(const SyncPath &path, DWORD attrCode, bool &value, IoError &ioError) noexcept;
         static bool setXAttrValue(const SyncPath &path, DWORD attrCode, IoError &ioError) noexcept;
@@ -361,9 +361,9 @@ struct IoHelper {
         static bool setRights(const SyncPath &path, bool read, bool write, bool exec, IoError &ioError) noexcept;
 
         static inline bool isLink(LinkType linkType) {
-            return linkType == LinkTypeSymlink || linkType == LinkTypeHardlink ||
-                   (linkType == LinkTypeFinderAlias && OldUtility::isMac()) ||
-                   (linkType == LinkTypeJunction && OldUtility::isWindows());
+            return linkType == LinkType::Symlink || linkType == LinkType::Hardlink ||
+                   (linkType == LinkType::FinderAlias && OldUtility::isMac()) ||
+                   (linkType == LinkType::Junction && OldUtility::isWindows());
         }
 
         // The most common and expected errors during IO operations

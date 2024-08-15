@@ -37,22 +37,22 @@ IoError nsError2ioError(NSError *nsError) noexcept {
         switch (nsError.code) {
             case NSFileNoSuchFileError:
             case NSFileReadNoSuchFileError:
-                return IoErrorNoSuchFileOrDirectory;
+                return IoError::NoSuchFileOrDirectory;
             case NSFileReadNoPermissionError:
-                return IoErrorAccessDenied;
+                return IoError::AccessDenied;
             case NSFileReadInvalidFileNameError:
-                return IoErrorInvalidFileName;
+                return IoError::InvalidFileName;
             default:
-                return IoErrorUnknown;
+                return IoError::Unknown;
         }
     } else {
-        return IoErrorUnknown;
+        return IoError::Unknown;
     }
 }
 
 bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioError) noexcept {
     isAlias = false;
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     NSString *pathStr = [NSString stringWithCString:path.c_str() encoding:NSUTF8StringEncoding];
     if (pathStr == nil) {
@@ -68,7 +68,7 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
     if (!ret) {
         if (error) {
             ioError = nsError2ioError(error);
-            if (ioError != IoErrorUnknown) {
+            if (ioError != IoError::Unknown) {
                 return true;
             } else {
                 LOGW_WARN(logger(), L"Error in getResourceValue: " << Utility::formatIoError(path, ioError).c_str());
@@ -88,13 +88,13 @@ bool IoHelper::_checkIfAlias(const SyncPath &path, bool &isAlias, IoError &ioErr
 }
 
 bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, IoError &ioError) noexcept {
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
     CFRelease(aliasPathStr);
 
-    CFDataRef bookmarkRef = CFDataCreate(NULL, (const UInt8 *)data.data(), data.size());
+    CFDataRef bookmarkRef = CFDataCreate(nullptr, (const UInt8 *)data.data(), data.size());
 
     CFErrorRef error = nil;
     bool ret = CFURLWriteBookmarkDataToFile(bookmarkRef, aliasUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, &error);
@@ -104,7 +104,7 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
         if (error) {
             ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
-            if (ioError != IoErrorUnknown) {
+            if (ioError != IoError::Unknown) {
                 return true;
             } else {
                 LOGW_WARN(logger(),
@@ -122,7 +122,7 @@ bool IoHelper::createAlias(const std::string &data, const SyncPath &aliasPath, I
 bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath &targetPath, IoError &ioError) noexcept {
     data = std::string{};
     targetPath = SyncPath{};
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     // Read data
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
@@ -136,7 +136,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
         if (error) {
             ioError = nsError2ioError((NSError *)error);
             CFRelease(error);
-            if (ioError != IoErrorUnknown) {
+            if (ioError != IoError::Unknown) {
                 return true;
             } else {
                 LOGW_WARN(logger(),
@@ -175,7 +175,7 @@ bool IoHelper::readAlias(const SyncPath &aliasPath, std::string &data, SyncPath 
 }
 
 bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &aliasPath, IoError &ioError) noexcept {
-    ioError = IoErrorSuccess;
+    ioError = IoError::Success;
 
     CFStringRef aliasPathStr = CFStringCreateWithCString(nil, aliasPath.native().c_str(), kCFStringEncodingUTF8);
     CFURLRef aliasUrl = CFURLCreateWithFileSystemPath(nil, aliasPathStr, kCFURLPOSIXPathStyle, false);
@@ -188,7 +188,7 @@ bool IoHelper::createAliasFromPath(const SyncPath &targetPath, const SyncPath &a
     CFErrorRef error = nil;
     CFDataRef bookmarkRef = CFURLCreateBookmarkData(
         // The obj-c/swift doc: https://developer.apple.com/documentation/corefoundation/1542923-cfurlcreatebookmarkdata
-        NULL, targetUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, CFArrayRef{}, nil, &error);
+        nullptr, targetUrl, kCFURLBookmarkCreationSuitableForBookmarkFile, CFArrayRef{}, nil, &error);
 
     if (bookmarkRef == nil) {
         if (error) {

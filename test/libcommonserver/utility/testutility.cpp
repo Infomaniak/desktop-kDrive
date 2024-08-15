@@ -286,14 +286,7 @@ void TestUtility::testToUpper() {
 }
 
 void TestUtility::testErrId() {
-    // The macro ERRID expands to Utility::errId(__FILE__, __LINE__) (see types.h)
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), ERRID);
-    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), _testObj->errId(__FILE__, __LINE__));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/defgh", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("D:10"), _testObj->errId("abc/d.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DE:10"), _testObj->errId("abc/de.r", 10));
-    CPPUNIT_ASSERT_EQUAL(std::string("DEF:10"), _testObj->errId("abc/def.r", 10));
+    CPPUNIT_ASSERT_EQUAL(std::string("TES:") + std::to_string(__LINE__), errId());
 }
 
 void TestUtility::isSubDir() {
@@ -318,14 +311,14 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
 
     bool isManaged = false;
     bool isLink = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     std::filesystem::recursive_directory_iterator entry(tempDir.path());
 
     // Check with an existing file (managed)
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    CPPUNIT_ASSERT(ioError == IoError::Success);
 
     // Check with a simlink (managed)
     const SyncPath simLinkDir = tempDir.path() / "simLinkDir";
@@ -335,14 +328,14 @@ void TestUtility::testcheckIfDirEntryIsManaged() {
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(isLink);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    CPPUNIT_ASSERT(ioError == IoError::Success);
 
     // Check with a directory
     entry = std::filesystem::recursive_directory_iterator(tempDir.path());
     CPPUNIT_ASSERT(Utility::checkIfDirEntryIsManaged(entry, isManaged, isLink, ioError));
     CPPUNIT_ASSERT(isManaged);
     CPPUNIT_ASSERT(!isLink);
-    CPPUNIT_ASSERT(ioError == IoErrorSuccess);
+    CPPUNIT_ASSERT(ioError == IoError::Success);
 }
 
 void TestUtility::testFormatStdError() {
@@ -362,7 +355,7 @@ void TestUtility::testFormatStdError() {
 }
 
 void TestUtility::testFormatIoError() {
-    const IoError ioError = IoErrorSuccess;
+    const IoError ioError = IoError::Success;
     const SyncPath path = "A/AA";
     const std::wstring result = _testObj->formatIoError(path, ioError);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''", result.find(L"err='Success'") != std::wstring::npos);
@@ -384,6 +377,60 @@ void TestUtility::testFormatRequest() {
     CPPUNIT_ASSERT(result.find(uri) != std::string::npos);
     CPPUNIT_ASSERT(result.find(code) != std::string::npos);
     CPPUNIT_ASSERT(result.find(description) != std::string::npos);
+}
+
+void TestUtility::testNormalizedSyncName() {
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName()).empty());
+
+#ifdef _WIN32
+    // The two Unicode normalizations coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"a") == Utility::normalizedSyncName(L"a", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"@") == Utility::normalizedSyncName(L"@", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"$") == Utility::normalizedSyncName(L"$", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"!") == Utility::normalizedSyncName(L"!", Utility::UnicodeNormalization::NFD));
+
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"abcd") ==
+                   Utility::normalizedSyncName(L"abcd", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"(1234%)") ==
+                   Utility::normalizedSyncName(L"(1234%)", Utility::UnicodeNormalization::NFD));
+
+    // The two Unicode normalizations don't coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"à") != Utility::normalizedSyncName(L"à", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"é") != Utility::normalizedSyncName(L"é", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"è") != Utility::normalizedSyncName(L"è", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"ê") != Utility::normalizedSyncName(L"ê", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"ü")) !=
+                   Utility::normalizedSyncName(L"ü", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"ö")) !=
+                   Utility::normalizedSyncName(L"ö", Utility::UnicodeNormalization::NFD));
+
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName(L"aöe")) !=
+                   Utility::normalizedSyncName(L"aöe", Utility::UnicodeNormalization::NFD));
+#else
+    // The two Unicode normalizations coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("a") == Utility::normalizedSyncName("a", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("@") == Utility::normalizedSyncName("@", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("$") == Utility::normalizedSyncName("$", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("!") == Utility::normalizedSyncName("!", Utility::UnicodeNormalization::NFD));
+
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("abcd") ==
+                   Utility::normalizedSyncName("abcd", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("(1234%)") ==
+                   Utility::normalizedSyncName("(1234%)", Utility::UnicodeNormalization::NFD));
+
+    // The two Unicode normalizations don't coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("à") != Utility::normalizedSyncName("à", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("é") != Utility::normalizedSyncName("é", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("è") != Utility::normalizedSyncName("è", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("ê") != Utility::normalizedSyncName("ê", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("ü")) !=
+                   Utility::normalizedSyncName("ü", Utility::UnicodeNormalization::NFD));
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("ö")) !=
+                   Utility::normalizedSyncName("ö", Utility::UnicodeNormalization::NFD));
+
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(SyncName("aöe")) !=
+                   Utility::normalizedSyncName("aöe", Utility::UnicodeNormalization::NFD));
+#endif
 }
 
 void TestUtility::testNormalizedSyncPath() {

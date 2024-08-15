@@ -31,7 +31,7 @@ class DbNode {
                const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
                std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
                std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
-               const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatusUnknown, bool syncing = false);
+               const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatus::Unknown, bool syncing = false);
 
         DbNode();
 
@@ -52,8 +52,8 @@ class DbNode {
 
         inline void setNodeId(DbNodeId nodeId) { _nodeId = nodeId; }
         inline void setParentNodeId(std::optional<DbNodeId> parentNodeId) { _parentNodeId = parentNodeId; }
-        inline void setNameLocal(const SyncName &name) { _nameLocal = name; }
-        inline void setNameRemote(const SyncName &name) { _nameRemote = name; }
+        virtual void setNameLocal(const SyncName &name);
+        virtual void setNameRemote(const SyncName &name);
         inline void setNodeIdLocal(std::optional<NodeId> newNodeIdLocal) { _nodeIdLocal = newNodeIdLocal; }
         inline void setNodeIdRemote(std::optional<NodeId> newNodeIdDrive) { _nodeIdRemote = newNodeIdDrive; }
         inline void setCreated(std::optional<SyncTime> newCreated) { _created = newCreated; }
@@ -69,11 +69,11 @@ class DbNode {
         inline void setStatus(SyncFileStatus status) { _status = status; }
         inline void setSyncing(bool syncing) { _syncing = syncing; }
 
-    private:
+    protected:
         DbNodeId _nodeId;
         std::optional<DbNodeId> _parentNodeId;
-        SyncName _nameLocal;
-        SyncName _nameRemote;
+        SyncName _nameLocal;   // /!\ Must be in NFC form
+        SyncName _nameRemote;  // /!\ Must be in NFC form
         std::optional<NodeId> _nodeIdLocal;
         std::optional<NodeId> _nodeIdRemote;
         std::optional<SyncTime> _created;

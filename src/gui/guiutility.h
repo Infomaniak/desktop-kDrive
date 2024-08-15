@@ -51,11 +51,11 @@ enum WizardAction { OpenFolder = 0, OpenParameters, AddDrive };
 
 struct StatusInfo {
         bool _unresolvedConflicts = false;
-        KDC::SyncStatus _status = KDC::SyncStatusUndefined;
+        KDC::SyncStatus _status = KDC::SyncStatus::Undefined;
         qint64 _syncedFiles = 0;
         qint64 _totalFiles = 0;
         qint64 _estimatedRemainingTime = 0;
-        KDC::SyncStep _syncStep = KDC::SyncStepNone;
+        KDC::SyncStep _syncStep = KDC::SyncStep::None;
         bool _oneSyncInPropagationStep = false;
         bool _liteSyncActivated = false;
         bool _disconnected = false;
@@ -96,7 +96,7 @@ int getQFontWeightFromQSSFontWeight(int weight);
 qint64 folderSize(const QString &dirPath);
 qint64 folderDiskSize(const QString &dirPath);
 
-// Returns `path` if `nodeType` is `NodeTypeDirectory`, else the parent folder path.
+// Returns `path` if `nodeType` is `NodeType::Directory`, else the parent folder path.
 QString getFolderPath(const QString &path, NodeType nodeType);
 
 // Opens the folder indicated by `path`, if `path` is valid, otherwise tries to open the parent folder.

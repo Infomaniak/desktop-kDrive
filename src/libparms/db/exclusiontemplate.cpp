@@ -34,26 +34,26 @@ void ExclusionTemplate::evaluateComplexity() {
     n = _templ.find('*');
     if (n == std::string::npos) {
         // Simplest pattern without variable part, do not use regex
-        _complexity = ExclusionTemplateComplexitySimplest;
+        _complexity = ExclusionTemplateComplexity::Simplest;
         return;
     }
 
     if (n == _templ.length() - 1) {
         // OK, variable part is at the end only, do not use regex
-        _complexity = ExclusionTemplateComplexitySimple;
+        _complexity = ExclusionTemplateComplexity::Simple;
         return;
     } else if (n == 0) {
         // Variable part at beginning, check if there is another one
         n = _templ.find('*', n + 1);
         if (n == _templ.length() - 1 || n == std::string::npos) {
             // OK, variable part is at beggining and/or end only, do not use regex
-            _complexity = ExclusionTemplateComplexitySimple;
+            _complexity = ExclusionTemplateComplexity::Simple;
             return;
         }
     }
 
     // More complex template, use regex
-    _complexity = ExclusionTemplateComplexityComplex;
+    _complexity = ExclusionTemplateComplexity::Complex;
 }
 
 }  // namespace KDC
