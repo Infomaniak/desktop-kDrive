@@ -808,7 +808,7 @@ void SocketApi::command_GET_THUMBNAIL(const QString &argument, SocketListener *l
         return;
     }
 
-    auto syncPalMapIt = retrieveSnycPalMapIt(fileData.syncDbId);
+    auto syncPalMapIt = retrieveSyncPalMapIt(fileData.syncDbId);
     if (syncPalMapIt == _syncPalMap.end()) return;
 
 
