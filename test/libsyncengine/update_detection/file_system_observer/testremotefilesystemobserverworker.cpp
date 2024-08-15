@@ -28,8 +28,8 @@
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
-#include "libcommonserver/network/proxy.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/remotetemporarydirectory.h"
 #include "requests/syncnodecache.h"
 
 using namespace CppUnit;
@@ -114,15 +114,15 @@ void TestRemoteFileSystemObserverWorker::tearDown() {
 
 void TestRemoteFileSystemObserverWorker::testGenerateRemoteInitialSnapshot() {
     std::unordered_set<NodeId> ids;
-    _syncPal->_remoteFSObserverWorker->_snapshot->ids(ids);
+    _syncPal->_remoteFSObserverWorker->snapshot()->ids(ids);
 
     std::unordered_set<NodeId> childrenIds;
-    CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->getChildrenIds(testRemoteFsoDirId, childrenIds));
+    CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->snapshot()->getChildrenIds(testRemoteFsoDirId, childrenIds));
     CPPUNIT_ASSERT_EQUAL(size_t(nbFileInTestDir), childrenIds.size());
 
     // Blacklisted folder should not appear in snapshot.
-    CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->_snapshot->exists(testBlackListedDirId));
-    CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->_snapshot->exists(testBlackListedFileId));
+    CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->snapshot()->exists(testBlackListedDirId));
+    CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->snapshot()->exists(testBlackListedFileId));
 }
 
 void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
@@ -132,14 +132,17 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     SyncPath testFilePath = temporaryDirectory.path() / testFileName;
     std::string testCallStr = R"(echo "File creation" > )" + testFilePath.make_preferred().string();
     std::system(testCallStr.c_str());
+    RemoteTemporaryDirectory remoteTmpDir(_driveDbId, _testFolderId, "test_remote_FSO");
+    RemoteTemporaryDirectory nestedRemoteTmpDir(_driveDbId, remoteTmpDir.id(), "test_remote_FSO_nested");
 
     {
         LOG_DEBUG(_logger, "***** test create file *****");
 
-        // Upload in Common document sub directory
+        // Upload in Common documents subdirectory
         {
-            const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-            UploadJob job(_driveDbId, testFilePath, testFileName, testRemoteFsoDirId, time);
+            using namespace std::chrono;
+            const auto time = system_clock::to_time_t(system_clock::now());
+            UploadJob job(_driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
             job.runSynchronously();
 
             // Extract file ID
@@ -153,8 +156,8 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->exists(_testFileId));
-        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->_snapshot->canWrite(_testFileId));
+        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->snapshot()->exists(_testFileId));
+        CPPUNIT_ASSERT(_syncPal->_remoteFSObserverWorker->snapshot()->canWrite(_testFileId));
     }
 
     {
@@ -163,30 +166,30 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         testCallStr = R"(echo "This is an edit test" >> )" + testFilePath.make_preferred().string();
         std::system(testCallStr.c_str());
 
-        SyncTime prevModTime = _syncPal->_remoteFSObserverWorker->_snapshot->lastModified(_testFileId);
+        SyncTime prevModTime = _syncPal->_remoteFSObserverWorker->snapshot()->lastModified(_testFileId);
 
         Utility::msleep(1000);
 
         const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        UploadJob job(_driveDbId, testFilePath, testFileName, testRemoteFsoDirId, time);
+        UploadJob job(_driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
         job.runSynchronously();
 
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT_GREATER(prevModTime, _syncPal->_remoteFSObserverWorker->_snapshot->lastModified(_testFileId));
+        CPPUNIT_ASSERT_GREATER(prevModTime, _syncPal->_remoteFSObserverWorker->snapshot()->lastModified(_testFileId));
     }
 
     {
         LOG_DEBUG(_logger, "***** test move file *****");
 
-        MoveJob job(_driveDbId, localTestDirPath, _testFileId, _testFolderId);
+        MoveJob job(_driveDbId, localTestDirPath, _testFileId, nestedRemoteTmpDir.id());
         job.runSynchronously();
 
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT_EQUAL(_testFolderId, _syncPal->_remoteFSObserverWorker->_snapshot->parentId(_testFileId));
+        CPPUNIT_ASSERT_EQUAL(nestedRemoteTmpDir.id(), _syncPal->_remoteFSObserverWorker->snapshot()->parentId(_testFileId));
     }
 
     {
@@ -202,7 +205,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         _syncPal->_remoteFSObserverWorker->processEvents();
 
         CPPUNIT_ASSERT_EQUAL(SyncName2Str(newFileName),
-                             SyncName2Str(_syncPal->_remoteFSObserverWorker->_snapshot->name(_testFileId)));
+                             SyncName2Str(_syncPal->_remoteFSObserverWorker->snapshot()->name(_testFileId)));
     }
 
     {
@@ -215,7 +218,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         // Get activity from the server
         _syncPal->_remoteFSObserverWorker->processEvents();
 
-        CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->_snapshot->exists(_testFileId));
+        CPPUNIT_ASSERT(!_syncPal->_remoteFSObserverWorker->snapshot()->exists(_testFileId));
     }
 }
 

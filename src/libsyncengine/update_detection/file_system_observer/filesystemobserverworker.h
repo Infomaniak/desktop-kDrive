@@ -25,7 +25,6 @@
 #include "libcommon/utility/types.h"
 
 #include <list>
-#include <unordered_set>
 
 namespace KDC {
 
@@ -38,6 +37,8 @@ class FileSystemObserverWorker : public ISyncWorker {
         void invalidateSnapshot();
         virtual void forceUpdate();
         virtual inline bool updating() const { return _updating; }
+
+        std::shared_ptr<Snapshot> snapshot() const { return _snapshot; };
 
     protected:
         std::shared_ptr<SyncDb> _syncDb;

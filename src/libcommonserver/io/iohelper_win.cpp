@@ -634,12 +634,13 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
             return true;
         }
         LOGW_WARN(logger(), L"Failed to get rights using Windows API, falling back to std::filesystem.");
-        sentry_value_t event = sentry_value_new_event();
-        sentry_value_t exc = sentry_value_new_exception(
-            "Exception", "Failed to set/get rights using Windows API, falling back to std::filesystem.");
-        sentry_value_set_stacktrace(exc, NULL, 0);
-        sentry_event_add_exception(event, exc);
-        sentry_capture_event(event);
+        sentry_value_t sentryUser = sentry_value_new_object();
+        sentry_value_set_by_key(sentryUser, "ip_address", sentry_value_new_string("{{auto}}"));
+        sentry_set_user(sentryUser);
+        sentry_capture_event(
+            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "IoHelper", "Failed to get rights using Windows API, falling back to std::filesystem."));
+        sentry_remove_user();
+
         IoHelper::getTrustee().ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
     }
@@ -713,12 +714,12 @@ bool IoHelper::setRights(const SyncPath &path, bool read, bool write, bool exec,
         }
 
         LOGW_WARN(logger(), L"Failed to set rights using Windows API, falling back to std::filesystem.");
-        sentry_value_t event = sentry_value_new_event();
-        sentry_value_t exc = sentry_value_new_exception(
-            "Exception", "Failed to set/get rights using Windows API, falling back to std::filesystem.");
-        sentry_value_set_stacktrace(exc, NULL, 0);
-        sentry_event_add_exception(event, exc);
-        sentry_capture_event(event);
+        sentry_value_t sentryUser = sentry_value_new_object();
+        sentry_value_set_by_key(sentryUser, "ip_address", sentry_value_new_string("{{auto}}"));
+        sentry_set_user(sentryUser);
+        sentry_capture_event(sentry_value_new_message_event(
+            SENTRY_LEVEL_WARNING, "IoHelper", "Failed to set rights using Windows API, falling back to std::filesystem."));
+        sentry_remove_user();
         IoHelper::getTrustee().ptstrName = nullptr;
         _getAndSetRightsMethod = 1;
     }
