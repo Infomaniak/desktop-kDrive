@@ -625,11 +625,7 @@ std::string Utility::list2str(std::list<std::string> inList) {
 }
 
 int Utility::pathDepth(const SyncPath path) {
-    int level = 0;
-    for (auto it = path.begin(); it != path.end(); ++it) {
-        level++;
-    }
-    return level;
+    return std::distance(path.begin(), path.end());
 }
 
 std::string Utility::computeMd5Hash(const std::string &in) {
