@@ -54,8 +54,8 @@ class VirtualFilesCleaner {
                            int &progress);
         bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &itemPath);
 
-        ExitCode _exitCode = ExitCodeUnknown;
-        ExitCause _exitCause = ExitCauseUnknown;
+        ExitCode _exitCode = ExitCode::Unknown;
+        ExitCause _exitCause = ExitCause::Unknown;
 };
 
 }  // namespace KDC

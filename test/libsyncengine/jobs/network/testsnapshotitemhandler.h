@@ -30,6 +30,7 @@ class TestSnapshotItemHandler : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestSnapshotItemHandler);
         CPPUNIT_TEST(testUpdateItem);
+        CPPUNIT_TEST(testToCsvString);
         CPPUNIT_TEST(testGetItem);
         CPPUNIT_TEST_SUITE_END();
 
@@ -39,6 +40,7 @@ class TestSnapshotItemHandler : public CppUnit::TestFixture {
 
     protected:
         void testUpdateItem();
+        void testToCsvString();
         void testGetItem();
 };
 

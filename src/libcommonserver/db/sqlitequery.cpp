@@ -203,7 +203,8 @@ const std::string SqliteQuery::stringValue(int index) const {
     char *value = (char *)sqlite3_column_text(_stmt.get(), index);
     return (value ? std::string(reinterpret_cast<const char *>(value)) : std::string());
 #else
-    return std::string(reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index)));
+    const char *value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
+    return value ? std::string(value) : std::string();
 #endif
 }
 
@@ -212,7 +213,8 @@ const SyncName SqliteQuery::syncNameValue(int index) const {
     wchar_t *value = (wchar_t *)sqlite3_column_text16(_stmt.get(), index);
     return (value ? reinterpret_cast<const wchar_t *>(value) : SyncName());
 #else
-    return SyncName(reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index)));
+    const char *value = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), index));
+    return value ? SyncName(value) : SyncName();
 #endif
 }
 

@@ -48,8 +48,8 @@ static bool shouldCountProgress(const SyncFileItem &item) {
     const auto instruction = item.instruction();
 
     // Skip any ignored, error or non-propagated files and directories.
-    if (instruction == SyncFileInstructionNone || instruction == SyncFileInstructionUpdateMetadata ||
-        instruction == SyncFileInstructionIgnore) {
+    if (instruction == SyncFileInstruction::None || instruction == SyncFileInstruction::UpdateMetadata ||
+        instruction == SyncFileInstruction::Ignore) {
         return false;
     }
 
@@ -142,8 +142,8 @@ void ProgressInfo::setProgressComplete(const SyncPath &path, SyncFileStatus stat
 
 bool ProgressInfo::isSizeDependent(const SyncFileItem &item) const {
     return !item.isDirectory() &&
-           (item.instruction() == SyncFileInstructionUpdate || item.instruction() == SyncFileInstructionGet ||
-            item.instruction() == SyncFileInstructionPut) &&
+           (item.instruction() == SyncFileInstruction::Update || item.instruction() == SyncFileInstruction::Get ||
+            item.instruction() == SyncFileInstruction::Put) &&
            !item.dehydrated();
 }
 

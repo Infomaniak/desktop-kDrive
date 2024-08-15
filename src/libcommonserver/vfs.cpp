@@ -40,13 +40,13 @@ Vfs::~Vfs() {}
 QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
     // Note: Strings are used for config and must be stable
     switch (virtualFileMode) {
-        case KDC::VirtualFileModeOff:
+        case KDC::VirtualFileMode::Off:
             return QStringLiteral("off");
-        case KDC::VirtualFileModeSuffix:
+        case KDC::VirtualFileMode::Suffix:
             return QStringLiteral("suffix");
-        case KDC::VirtualFileModeWin:
+        case KDC::VirtualFileMode::Win:
             return QStringLiteral("wincfapi");
-        case KDC::VirtualFileModeMac:
+        case KDC::VirtualFileMode::Mac:
             return QStringLiteral("mac");
     }
     return QStringLiteral("off");
@@ -55,13 +55,13 @@ QString Vfs::modeToString(KDC::VirtualFileMode virtualFileMode) {
 KDC::VirtualFileMode Vfs::modeFromString(const QString &str) {
     // Note: Strings are used for config and must be stable
     if (str == "off") {
-        return KDC::VirtualFileModeOff;
+        return KDC::VirtualFileMode::Off;
     } else if (str == "suffix") {
-        return KDC::VirtualFileModeSuffix;
+        return KDC::VirtualFileMode::Suffix;
     } else if (str == "wincfapi") {
-        return KDC::VirtualFileModeWin;
+        return KDC::VirtualFileMode::Win;
     } else if (str == "mac") {
-        return KDC::VirtualFileModeMac;
+        return KDC::VirtualFileMode::Mac;
     }
 
     return {};
@@ -83,28 +83,6 @@ void Vfs::stop(bool unregister) {
     }
 }
 
-void Vfs::effectivePinState(const QString &relativePath, KDC::PinState &effPinState) {
-    const KDC::PinState basePinState = pinState(relativePath);
-    if (!basePinState) {
-        effPinState = {};
-        return;
-    }
-
-    // Check if all pin states are identical
-    QDir dir(relativePath);
-    for (const QString &entry :
-         dir.entryList(QStringList(), QDir::Files | QDir::Dirs | QDir::NoSymLinks | QDir::NoDotAndDotDot)) {
-        QString entryPath = QDir::cleanPath(relativePath + QDir::separator() + entry);
-        const KDC::PinState entryPinState = pinState(entryPath);
-        if (entryPinState != basePinState) {
-            effPinState = KDC::PinStateInherited;
-            return;
-        }
-    }
-
-    effPinState = basePinState;
-}
-
 VfsOff::VfsOff(VfsSetupParams &vfsSetupParams, QObject *parent) : Vfs(vfsSetupParams, parent) {}
 
 VfsOff::~VfsOff() {}
@@ -112,7 +90,7 @@ VfsOff::~VfsOff() {}
 bool VfsOff::forceStatus(const QString &path, bool isSyncing, int /*progress*/, bool /*isHydrated*/) {
     KDC::SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     bool exists = false;
-    KDC::IoError ioError = KDC::IoErrorSuccess;
+    KDC::IoError ioError = KDC::IoError::Success;
     if (!KDC::IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << KDC::Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -136,20 +114,20 @@ bool VfsOff::startImpl(bool &, bool &, bool &) {
 }
 
 static QString modeToPluginName(KDC::VirtualFileMode virtualFileMode) {
-    if (virtualFileMode == KDC::VirtualFileModeSuffix) return "suffix";
-    if (virtualFileMode == KDC::VirtualFileModeWin) return "win";
-    if (virtualFileMode == KDC::VirtualFileModeMac) return "mac";
+    if (virtualFileMode == KDC::VirtualFileMode::Suffix) return "suffix";
+    if (virtualFileMode == KDC::VirtualFileMode::Win) return "win";
+    if (virtualFileMode == KDC::VirtualFileMode::Mac) return "mac";
     return QString();
 }
 
 bool KDC::isVfsPluginAvailable(KDC::VirtualFileMode virtualFileMode, QString &error) {
-    if (virtualFileMode == KDC::VirtualFileModeOff) return true;
+    if (virtualFileMode == KDC::VirtualFileMode::Off) return true;
 
-    if (virtualFileMode == KDC::VirtualFileModeSuffix) {
+    if (virtualFileMode == KDC::VirtualFileMode::Suffix) {
         return false;
     }
 
-    if (virtualFileMode == KDC::VirtualFileModeWin) {
+    if (virtualFileMode == KDC::VirtualFileMode::Win) {
         if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::Windows &&
             QOperatingSystemVersion::current() >= QOperatingSystemVersion::Windows10 &&
             QOperatingSystemVersion::current().microVersion() >= MIN_WINDOWS10_MICROVERSION_FOR_CFAPI) {
@@ -159,7 +137,7 @@ bool KDC::isVfsPluginAvailable(KDC::VirtualFileMode virtualFileMode, QString &er
         }
     }
 
-    if (virtualFileMode == KDC::VirtualFileModeMac) {
+    if (virtualFileMode == KDC::VirtualFileMode::Mac) {
         if (QOperatingSystemVersion::current().currentType() == QOperatingSystemVersion::OSType::MacOS &&
             QOperatingSystemVersion::current() >= QOperatingSystemVersion::MacOSCatalina) {
             return true;
@@ -205,19 +183,19 @@ bool KDC::isVfsPluginAvailable(KDC::VirtualFileMode virtualFileMode, QString &er
 
 KDC::VirtualFileMode KDC::bestAvailableVfsMode() {
     QString error;
-    if (isVfsPluginAvailable(KDC::VirtualFileModeWin, error)) {
-        return KDC::VirtualFileModeWin;
-    } else if (isVfsPluginAvailable(KDC::VirtualFileModeMac, error)) {
-        return KDC::VirtualFileModeMac;
-    } else if (isVfsPluginAvailable(KDC::VirtualFileModeSuffix, error)) {
-        return KDC::VirtualFileModeSuffix;
+    if (isVfsPluginAvailable(KDC::VirtualFileMode::Win, error)) {
+        return KDC::VirtualFileMode::Win;
+    } else if (isVfsPluginAvailable(KDC::VirtualFileMode::Mac, error)) {
+        return KDC::VirtualFileMode::Mac;
+    } else if (isVfsPluginAvailable(KDC::VirtualFileMode::Suffix, error)) {
+        return KDC::VirtualFileMode::Suffix;
     }
-    return KDC::VirtualFileModeOff;
+    return KDC::VirtualFileMode::Off;
 }
 
 std::unique_ptr<Vfs> KDC::createVfsFromPlugin(KDC::VirtualFileMode virtualFileMode, VfsSetupParams &vfsSetupParams,
                                               QString &error) {
-    if (virtualFileMode == KDC::VirtualFileModeOff) {
+    if (virtualFileMode == KDC::VirtualFileMode::Off) {
         return std::unique_ptr<Vfs>(new VfsOff(vfsSetupParams));
     }
 

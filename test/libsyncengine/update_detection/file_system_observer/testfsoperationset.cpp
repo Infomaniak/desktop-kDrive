@@ -24,25 +24,26 @@ using namespace CppUnit;
 namespace KDC {
 
 void TestFsOperationSet::setUp() {
-    _operationTypes.push_back(OperationTypeNone);
-    _operationTypes.push_back(OperationTypeCreate);
-    _operationTypes.push_back(OperationTypeMove);
-    _operationTypes.push_back(OperationTypeEdit);
-    _operationTypes.push_back(OperationTypeDelete);
-    _operationTypes.push_back(OperationTypeRights);
+    _operationTypes.push_back(OperationType::None);
+    _operationTypes.push_back(OperationType::Create);
+    _operationTypes.push_back(OperationType::Move);
+    _operationTypes.push_back(OperationType::Edit);
+    _operationTypes.push_back(OperationType::Delete);
+    _operationTypes.push_back(OperationType::Rights);
 }
 
 void TestFsOperationSet::tearDown() {}
 
+
 void TestFsOperationSet::testGetOp() {
-    FSOperationSet fsOperationSet(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     FSOpPtr opPtr;
 
     // Test getOp with an empty set
     CPPUNIT_ASSERT(!fsOperationSet.getOp(1, opPtr));
 
     // Test getOp with an existing operation
-    auto op = std::make_shared<FSOperation>();
+    auto op = std::make_shared<FSOperation>(OperationType::Create, "node_1", NodeType::File);
     fsOperationSet.insertOp(op);
 
     CPPUNIT_ASSERT(fsOperationSet.getOp(op->id(), opPtr));
@@ -50,7 +51,7 @@ void TestFsOperationSet::testGetOp() {
 }
 
 void TestFsOperationSet::testGetOpsByType() {
-    FSOperationSet fsOperationSet(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
 
@@ -68,7 +69,7 @@ void TestFsOperationSet::testGetOpsByType() {
 
 void TestFsOperationSet::testGetOpsByNodeId() {
     // Initialize the set
-    FSOperationSet fsOperationSet(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
     std::vector<UniqueId> opsIds;
     for (OperationType type : _operationTypes) {
@@ -95,7 +96,7 @@ void TestFsOperationSet::testGetOpsByNodeId() {
 }
 
 void TestFsOperationSet::testNbOpsByType() {
-    FSOperationSet fsOperationSet(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
 
@@ -114,7 +115,7 @@ void TestFsOperationSet::testNbOpsByType() {
 
 void TestFsOperationSet::testClear() {
     // Initialize the set
-    FSOperationSet fsOperationSet(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
 
@@ -142,7 +143,7 @@ void TestFsOperationSet::testClear() {
 }
 
 void TestFsOperationSet::testInsertOp() {
-    FSOperationSet fsOperationSet(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = 0;
 
@@ -163,11 +164,11 @@ void TestFsOperationSet::testInsertOp() {
 }
 
 void TestFsOperationSet::testRemoveOp() {
-    FSOperationSet fsOperationSet(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
-    auto op1 = std::make_shared<FSOperation>(OperationTypeCreate, nodeId);
+    auto op1 = std::make_shared<FSOperation>(OperationType::Create, nodeId);
     fsOperationSet.insertOp(op1);
-    auto op2 = std::make_shared<FSOperation>(OperationTypeMove, nodeId);
+    auto op2 = std::make_shared<FSOperation>(OperationType::Move, nodeId);
     fsOperationSet.insertOp(op2);
 
     std::unordered_map<UniqueId, FSOpPtr> allOps;
@@ -176,16 +177,16 @@ void TestFsOperationSet::testRemoveOp() {
     CPPUNIT_ASSERT(fsOperationSet.removeOp(op1->id()));
     allOps = fsOperationSet.getAllOps();
     CPPUNIT_ASSERT(!allOps.contains(op1->id()));
-    std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByType(OperationTypeCreate);
+    std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByType(OperationType::Create);
     CPPUNIT_ASSERT(!ops.contains(op1->id()));
     ops = fsOperationSet.getOpsByNodeId(nodeId);
     CPPUNIT_ASSERT(!ops.contains(op1->id()));
 
     // Test removeOp with an existing operation (Node id + type)
-    CPPUNIT_ASSERT(fsOperationSet.removeOp(nodeId, OperationTypeMove));
+    CPPUNIT_ASSERT(fsOperationSet.removeOp(nodeId, OperationType::Move));
     allOps = fsOperationSet.getAllOps();
     CPPUNIT_ASSERT(!allOps.contains(op2->id()));
-    ops = fsOperationSet.getOpsByType(OperationTypeMove);
+    ops = fsOperationSet.getOpsByType(OperationType::Move);
     CPPUNIT_ASSERT(!ops.contains(op2->id()));
     ops = fsOperationSet.getOpsByNodeId(nodeId);
     CPPUNIT_ASSERT(!ops.contains(op2->id()));
@@ -195,7 +196,7 @@ void TestFsOperationSet::testRemoveOp() {
 }
 
 void TestFsOperationSet::testfindOp() {
-    FSOperationSet fsOperationSet(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
 
     for (auto type : _operationTypes) {
@@ -212,14 +213,14 @@ void TestFsOperationSet::testfindOp() {
     // Test findOp with a non existing operation.
     fsOperationSet.clear();
     FSOpPtr res;
-    fsOperationSet.insertOp(std::make_shared<FSOperation>(OperationTypeCreate, nodeId));
-    CPPUNIT_ASSERT(!fsOperationSet.findOp("nonExistingNodeId", OperationTypeCreate, res));
-    CPPUNIT_ASSERT(!fsOperationSet.findOp(nodeId, OperationTypeMove, res));
+    fsOperationSet.insertOp(std::make_shared<FSOperation>(OperationType::Create, nodeId));
+    CPPUNIT_ASSERT(!fsOperationSet.findOp("nonExistingNodeId", OperationType::Create, res));
+    CPPUNIT_ASSERT(!fsOperationSet.findOp(nodeId, OperationType::Move, res));
 }
 
 void TestFsOperationSet::testOperatorEqual() {
-    FSOperationSet fsOperationSet1(ReplicaSideUnknown);
-    FSOperationSet fsOperationSet2(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet1(ReplicaSide::Unknown);
+    FSOperationSet fsOperationSet2(ReplicaSide::Unknown);
 
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
@@ -273,7 +274,7 @@ void TestFsOperationSet::testOperatorEqual() {
 }
 
 void TestFsOperationSet::testCopyConstructor() {
-    FSOperationSet fsOperationSet(ReplicaSideUnknown);
+    FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = 0;
 

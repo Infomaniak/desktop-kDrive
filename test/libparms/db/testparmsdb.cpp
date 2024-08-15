@@ -67,16 +67,16 @@ void TestParmsDb::testParameters() {
     CPPUNIT_ASSERT(parameters.dialogGeometry() == defaultParameters.dialogGeometry());
 
     Parameters parameters2;
-    parameters2.setLanguage(LanguageFrench);
+    parameters2.setLanguage(Language::French);
     parameters2.setMonoIcons(true);
     parameters2.setAutoStart(false);
     parameters2.setMoveToTrash(false);
-    parameters2.setNotificationsDisabled(NotificationsDisabledAlways);
+    parameters2.setNotificationsDisabled(NotificationsDisabled::Always);
     parameters2.setUseLog(true);
-    parameters2.setLogLevel(LogLevelWarning);
+    parameters2.setLogLevel(LogLevel::Warning);
     parameters2.setPurgeOldLogs(true);
     parameters2.setSyncHiddenFiles(true);
-    parameters2.setProxyConfig(ProxyConfig(ProxyTypeHTTP, "host name", 44444444, true, "user", "token"));
+    parameters2.setProxyConfig(ProxyConfig(ProxyType::HTTP, "host name", 44444444, true, "user", "token"));
     parameters2.setUseBigFolderSizeLimit(true);
     parameters2.setBigFolderSizeLimit(1000);
     parameters2.setDarkTheme(true);
@@ -386,9 +386,9 @@ void TestParmsDb::testExclusionApp() {
 
 void TestParmsDb::testError() {
     // TOOD : créer le drive, sync et user
-    Error error1("Fct1", ExitCodeDbError, ExitCauseDbAccessError);
-    Error error2(1, "Worker1", ExitCodeDataError, ExitCauseSyncDirDoesntExist);
-    Error error3(1, "local node 1", "remote node 1", NodeTypeFile, "/dir1/file1.1", ConflictTypeNone, InconsistencyTypeNone);
+    Error error1("Fct1", ExitCode::DbError, ExitCause::DbAccessError);
+    Error error2(1, "Worker1", ExitCode::DataError, ExitCause::SyncDirDoesntExist);
+    Error error3(1, "local node 1", "remote node 1", NodeType::File, "/dir1/file1.1", ConflictType::None, InconsistencyType::None);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertError(error1));
     // there is no sync, drive or account Fin the database

@@ -407,4 +407,37 @@ SqliteDb::CheckDbResult SqliteDb::checkDb() {
     return CheckDbResult::Ok;
 }
 
+namespace details {
+
+SyncName makeSyncName(sqlite3_value *value) {
+#ifdef _WIN32
+    auto wvalue = (wchar_t *)sqlite3_value_text16(value);
+    return wvalue ? reinterpret_cast<const wchar_t *>(wvalue) : SyncName();
+#else
+    auto charValue = reinterpret_cast<const char *>(sqlite3_value_text(value));
+    return charValue ? SyncName(charValue) : SyncName();
+#endif
+}
+
+static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value **argv) {
+    if (argc == 1) {
+        SyncName normalizedName = Utility::normalizedSyncName(makeSyncName(argv[0]));
+        if (!normalizedName.empty()) {
+#ifdef _WIN32
+            sqlite3_result_text16(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
+#else
+            sqlite3_result_text(context, normalizedName.c_str(), -1, SQLITE_TRANSIENT);
+#endif
+            return;
+        }
+    }
+    sqlite3_result_null(context);
+}
+}  // namespace details
+
+int SqliteDb::createNormalizeSyncNameFunc() {
+    return sqlite3_create_function(_sqlite3Db.get(), "normalizeSyncName", 1, SQLITE_UTF8, nullptr, &details::normalizeSyncName,
+                                   nullptr, nullptr);
+}
+
 }  // namespace KDC

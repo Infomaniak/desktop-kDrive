@@ -39,7 +39,7 @@ IFACEMETHODIMP KDOverlayFactory::QueryInterface(REFIID riid, void **ppv) {
         AddRef();
     } else {
         hResult = E_NOINTERFACE;
-        *ppv = NULL;
+        *ppv = nullptr;
     }
 
     return hResult;
@@ -61,7 +61,7 @@ IFACEMETHODIMP_(ULONG) KDOverlayFactory::Release() {
 IFACEMETHODIMP KDOverlayFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, void **ppv) {
     HRESULT hResult = CLASS_E_NOAGGREGATION;
 
-    if (pUnkOuter != NULL) {
+    if (pUnkOuter != nullptr) {
         return hResult;
     }
 

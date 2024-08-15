@@ -93,7 +93,7 @@ VfsMac::~VfsMac() {
 
 
 VirtualFileMode VfsMac::mode() const {
-    return VirtualFileModeMac;
+    return VirtualFileMode::Mac;
 }
 
 bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &connectionDone) {
@@ -212,7 +212,7 @@ bool VfsMac::forceStatus(const QString &path, bool isSyncing, int progress, bool
     SyncPath stdPath = QStr2Path(path);
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(stdPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(stdPath, ioError).c_str());
         return false;
@@ -289,7 +289,7 @@ bool VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
     fileStat.st_mtimespec = {item.modTime(), 0};
     fileStat.st_atimespec = {item.modTime(), 0};
     fileStat.st_birthtimespec = {item.creationTime(), 0};
-    if (item.type() == NodeTypeDirectory) {
+    if (item.type() == NodeType::Directory) {
         fileStat.st_mode = S_IFDIR;
     } else {
         fileStat.st_mode = S_IFREG;
@@ -379,23 +379,23 @@ bool VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item,
             return false;
         }
 
-        if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(KDC::Log::instance()->getLogger(),
                        L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
-        if (itemType.ioError == IoErrorAccessDenied) {
+        if (itemType.ioError == IoError::AccessDenied) {
             LOGW_DEBUG(KDC::Log::instance()->getLogger(),
                        L"Item misses search permission : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
-        const bool isLink = itemType.linkType != LinkTypeNone;
+        const bool isLink = itemType.linkType != LinkType::None;
         bool isDirectory = false;
         if (!isLink) {
-            isDirectory = itemType.nodeType == NodeTypeDirectory;
-            if (!isDirectory && itemType.ioError != IoErrorSuccess) {
+            isDirectory = itemType.nodeType == NodeType::Directory;
+            if (!isDirectory && itemType.ioError != IoError::Success) {
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
                                         << Utility::formatIoError(fullPath, itemType.ioError).c_str());
                 return false;
@@ -436,7 +436,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             // Check if the directory entry is managed
             bool isManaged = true;
             bool isLink = false;
-            IoError ioError = IoErrorSuccess;
+            IoError ioError = IoError::Success;
             if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                 LOGW_WARN(logger(),
                           L"Error in Utility::checkIfDirEntryIsManaged : " << Utility::formatSyncPath(absolutePath).c_str());
@@ -444,14 +444,14 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
                 continue;
             }
 
-            if (ioError == IoErrorNoSuchFileOrDirectory) {
+            if (ioError == IoError::NoSuchFileOrDirectory) {
                 LOGW_DEBUG(logger(),
                            L"Directory entry does not exist anymore : " << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
-            if (ioError == IoErrorAccessDenied) {
+            if (ioError == IoError::AccessDenied) {
                 LOGW_DEBUG(logger(), L"Directory misses search permission : " << Utility::formatSyncPath(absolutePath).c_str());
                 dirIt.disable_recursion_pending();
                 continue;
@@ -573,7 +573,7 @@ bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
     std::filesystem::path fullPath(_vfsSetupParams._localPath / QStr2Path(fileRelativePath));
 
     bool exists = false;
-    IoError ioError = IoErrorSuccess;
+    IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(fullPath, exists, ioError)) {
         LOGW_WARN(logger(), L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(fullPath, ioError).c_str());
         return false;
@@ -587,7 +587,7 @@ bool VfsMac::setPinState(const QString &fileRelativePath, PinState state) {
 
     const QString strPath = Path2QStr(fullPath);
     if (!_connector->vfsSetPinState(strPath, _localSyncPath,
-                                    (state == PinStateAlwaysLocal ? VFS_PIN_STATE_PINNED : VFS_PIN_STATE_UNPINNED))) {
+                                    (state == PinState::AlwaysLocal ? VFS_PIN_STATE_PINNED : VFS_PIN_STATE_UNPINNED))) {
         LOG_WARN(logger(), "Error in vfsSetPinState!");
         return false;
     }
@@ -600,16 +600,16 @@ PinState VfsMac::pinState(const QString &relativePath) {
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(relativePath));
     QString pinState;
     if (!_connector->vfsGetPinState(Path2QStr(fullPath), pinState)) {
-        return PinStateUnspecified;
+        return PinState::Unspecified;
     }
 
     if (pinState == VFS_PIN_STATE_PINNED) {
-        return PinStateAlwaysLocal;
+        return PinState::AlwaysLocal;
     } else if (pinState == VFS_PIN_STATE_UNPINNED) {
-        return PinStateOnlineOnly;
+        return PinState::OnlineOnly;
     }
 
-    return PinStateUnspecified;
+    return PinState::Unspecified;
 }
 
 bool VfsMac::status(const QString &filePath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
@@ -704,7 +704,7 @@ bool VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
 }
 
 bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
-    LOGW_DEBUG(logger(), L"fileStatusChanged - path = " << QStr2WStr(path).c_str() << L" - status = " << status);
+    LOGW_DEBUG(logger(), L"fileStatusChanged - path = " << QStr2WStr(path).c_str() << L" - status = " << enumClassToInt(status));
 
     SyncPath fullPath(QStr2Path(path));
     std::error_code ec;
@@ -719,34 +719,34 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
         return true;
     }
 
-    if (status == SyncFileStatusIgnored) {
+    if (status == SyncFileStatus::Ignored) {
         exclude(QString::fromStdString(fullPath.native()));
-    } else if (status == SyncFileStatusSuccess) {
+    } else if (status == SyncFileStatus::Success) {
         // Do nothing
-    } else if (status == SyncFileStatusSyncing) {
+    } else if (status == SyncFileStatus::Syncing) {
         ItemType itemType;
         if (!IoHelper::getItemType(fullPath, itemType)) {
             LOGW_WARN(logger(), L"Error in IoHelper::getItemType : " << Utility::formatSyncPath(fullPath).c_str());
             return false;
         }
 
-        if (itemType.ioError == IoErrorNoSuchFileOrDirectory) {
+        if (itemType.ioError == IoError::NoSuchFileOrDirectory) {
             LOGW_DEBUG(logger(), L"Item does not exist anymore : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
-        if (itemType.ioError == IoErrorAccessDenied) {
+        if (itemType.ioError == IoError::AccessDenied) {
             LOGW_DEBUG(logger(), L"Item misses search permission : " << Utility::formatSyncPath(fullPath).c_str());
             return true;
         }
 
-        bool isLink = itemType.linkType != LinkTypeNone;
+        bool isLink = itemType.linkType != LinkType::None;
         bool isDirectory;
         if (isLink) {
             isDirectory = false;
         } else {
-            isDirectory = itemType.nodeType == NodeTypeDirectory;
-            if (!isDirectory && itemType.ioError != IoErrorSuccess) {
+            isDirectory = itemType.nodeType == NodeType::Directory;
+            if (!isDirectory && itemType.ioError != IoError::Success) {
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
                                         << Utility::formatIoError(fullPath, itemType.ioError).c_str());
                 return false;
@@ -757,13 +757,13 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
             QString fileRelativePath = QStringView(path).mid(_vfsSetupParams._localPath.string().size()).toUtf8();
             auto localPinState = pinState(fileRelativePath);
             bool isDehydrated = isDehydratedPlaceholder(fileRelativePath);
-            if (localPinState == PinStateOnlineOnly && !isDehydrated) {
+            if (localPinState == PinState::OnlineOnly && !isDehydrated) {
                 // Add file path to dehydration queue
                 _workerInfo[WORKER_DEHYDRATION]._mutex.lock();
                 _workerInfo[WORKER_DEHYDRATION]._queue.push_front(path);
                 _workerInfo[WORKER_DEHYDRATION]._mutex.unlock();
                 _workerInfo[WORKER_DEHYDRATION]._queueWC.wakeOne();
-            } else if (localPinState == PinStateAlwaysLocal && isDehydrated) {
+            } else if (localPinState == PinState::AlwaysLocal && isDehydrated) {
                 bool syncing;
                 _syncFileSyncing(_vfsSetupParams._syncDbId, QStr2Path(fileRelativePath), syncing);
                 if (!syncing) {
@@ -778,7 +778,7 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
                 }
             }
         }
-    } else if (status == SyncFileStatusError) {
+    } else if (status == SyncFileStatus::Error) {
         // Nothing to do
     }
 

@@ -88,7 +88,7 @@ bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
     try {
         TRACE_DEBUG(L"Converting to placeholder : path = %ls", filePath);
         winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), fileId, (USHORT)(wcslen(fileId) + 1) * sizeof(WCHAR),
-                                                    CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, NULL));
+                                                    CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
@@ -123,7 +123,7 @@ bool Placeholders::revert(const PCWSTR filePath) {
 
     try {
         TRACE_DEBUG(L"Reverting placeholder : path = %ls", filePath);
-        winrt::check_hresult(CfRevertPlaceholder(fileHandle.get(), CF_REVERT_FLAG_NONE, NULL));
+        winrt::check_hresult(CfRevertPlaceholder(fileHandle.get(), CF_REVERT_FLAG_NONE, nullptr));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
@@ -181,7 +181,7 @@ bool Placeholders::update(const PCWSTR filePath, const WIN32_FIND_DATA *findData
 
         TRACE_DEBUG(L"Update placeholder : path = %ls", filePath);
         winrt::check_hresult(CfUpdatePlaceholder(fileHandle.get(), &fsMetadata, info.FileIdentity, info.FileIdentityLength,
-                                                 nullptr, 0, CF_UPDATE_FLAG_VERIFY_IN_SYNC, nullptr, NULL));
+                                                 nullptr, 0, CF_UPDATE_FLAG_VERIFY_IN_SYNC, nullptr, nullptr));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         res = false;
