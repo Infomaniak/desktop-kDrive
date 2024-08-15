@@ -118,7 +118,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     }
 
     // Checking existence of a subdirectory inside a directory that has been deleted and replaced with a file with the same name.
-    // ex: conversion of a bundle into a single file (macOS)
+    // Example: the conversion of a bundle into a single file (macOS).
     {
         const SyncPath path = _localTestDirPath / "test_pictures" / "picture-1.jpg" / "A";
         bool exists = false;
