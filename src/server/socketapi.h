@@ -23,7 +23,6 @@
 #include "libcommonserver/vfs.h"
 #include "socketlistener.h"
 #include "libcommon/utility/types.h"
-#include "libparms/db/parmsdb.h"
 #include "libsyncengine/syncpal/syncpal.h"
 
 #if defined(Q_OS_MAC)
@@ -33,7 +32,6 @@
 typedef QLocalServer SocketApiServer;
 #endif
 
-#include <deque>
 #include <unordered_map>
 
 #include <QList>
@@ -50,24 +48,24 @@ class QUrl;
 namespace KDC {
 
 struct FileData {
-        FileData();
+        FileData(){};
 
         static FileData get(const QString &path);
         static FileData get(const KDC::SyncPath &path);
         FileData parentFolder() const;
 
         // Absolute path of the file locally
-        QString _localPath;
+        QString localPath;
 
         // Relative path of the file
-        QString _relativePath;
+        QString relativePath;
 
-        int _syncDbId;
-        int _driveDbId;
+        int syncDbId{0};
+        int driveDbId{0};
 
-        bool _isDirectory;
-        bool _isLink;
-        KDC::VirtualFileMode _virtualFileMode;
+        bool isDirectory{false};
+        bool isLink{false};
+        KDC::VirtualFileMode virtualFileMode{KDC::VirtualFileMode::Off};
 };
 
 class SocketApi : public QObject {
@@ -190,6 +188,12 @@ class SocketApi : public QObject {
         static bool openBrowser(const QUrl &url);
 
         QString socketAPIString(KDC::SyncFileStatus status, bool isPlaceholder, bool isHydrated, int progress) const;
+
+
+        // Try to retrieve the Sync with DB ID `syncDbId`.
+        // Returns `false`, add errors and log messages on failure.
+        // Returns `true` and set `sync` with the result otherwise.
+        bool tryToRetrieveSync(const int syncDbId, KDC::Sync &sync);
 };
 
 }  // namespace KDC
