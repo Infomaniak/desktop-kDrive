@@ -33,10 +33,6 @@ class Node {
         const static Node _nullNode;
 
         Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
-             const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified,
-             int64_t size);
-
-        Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
              OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
              std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
              std::optional<SyncPath> moveOrigin = std::nullopt, std::optional<DbNodeId> moveOriginParentDbId = std::nullopt);
@@ -138,7 +134,7 @@ class Node {
         int64_t _size = 0;
         NodeStatus _status = NodeStatus::Unprocessed;  // node was already processed during reconciliation
         std::unordered_map<NodeId, std::shared_ptr<Node>> _childrenById;
-        std::shared_ptr<Node> _parentNode = nullptr;
+        std::shared_ptr<Node> _parentNode;
         // For moved items
         std::optional<SyncPath> _moveOrigin = std::nullopt;            // path before it was moved
         std::optional<DbNodeId> _moveOriginParentDbId = std::nullopt;  // parent dir id before it was moved

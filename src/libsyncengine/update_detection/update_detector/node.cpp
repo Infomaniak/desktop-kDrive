@@ -26,39 +26,18 @@ namespace KDC {
 const Node Node::_nullNode;
 
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
-           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size)
-    : _idb(idb),
-      _side(side),
-      _name(Utility::normalizedSyncName(name)),
-      _inconsistencyType(InconsistencyType::None),
-      _type(type),
-      _id(id),
-      _previousId(std::nullopt),
-      _createdAt(createdAt),
-      _lastModified(lastmodified),
-      _size(size),
-      _status(NodeStatus::Unprocessed),
-      _parentNode(nullptr),
-      _moveOrigin(std::nullopt),
-      _moveOriginParentDbId(std::nullopt),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
-
-Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
            std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId)
     : _idb(idb),
       _side(side),
       _name(Utility::normalizedSyncName(name)),
-      _inconsistencyType(InconsistencyType::None),
       _type(type),
       _changeEvents(changeEvents),
       _id(id),
-      _previousId(std::nullopt),
       _createdAt(createdAt),
       _lastModified(lastmodified),
       _size(size),
-      _status(NodeStatus::Unprocessed),
       _parentNode(parentNode),
       _moveOrigin(moveOrigin),
       _moveOriginParentDbId(moveOriginParentDbId),
@@ -69,19 +48,7 @@ Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::sh
     _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
 }
 
-Node::Node()
-    : _idb(std::nullopt),
-      _side(ReplicaSide::Unknown),
-      _name(SyncName()),
-      _inconsistencyType(InconsistencyType::None),
-      _type(NodeType::Unknown),
-      _id(std::string()),
-      _previousId(std::nullopt),
-      _status(NodeStatus::Unprocessed),
-      _parentNode(nullptr),
-      _moveOrigin(std::nullopt),
-      _moveOriginParentDbId(std::nullopt),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
+Node::Node() : _name(SyncName()), _id(std::string()), _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
 
 bool Node::operator==(const Node &n) const {
     return n._idb == _idb && n._name == _name;
@@ -92,6 +59,8 @@ void Node::setName(const SyncName &name) {
 }
 
 bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
+    if (!parentNode) return true;
+
     // Check that the parent is not a descendant
     if (!isParentValid(parentNode)) {
         assert(false);

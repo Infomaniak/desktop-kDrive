@@ -18,6 +18,8 @@
 
 #include "testupdatetree.h"
 
+#include <memory>
+
 
 using namespace CppUnit;
 
@@ -41,39 +43,22 @@ void TestUpdateTree::testConstructors() {
 #endif
 
     {
-        Node node(std::nullopt, ReplicaSide::Remote, nfcName, NodeType::Directory, "1", 0, 0, 0);
-
-        CPPUNIT_ASSERT(node.name() == nfcName);
-    }
-
-    {
-        Node node(std::nullopt, ReplicaSide::Remote, nfdName, NodeType::Directory, "1", 0, 0, 0);
-
-        CPPUNIT_ASSERT(node.name() == nfcName);
-    }
-
-
-    {
         Node node(std::nullopt, ReplicaSide::Remote, nfcName, NodeType::Directory, OperationType::None, "1", 0, 0, 123, nullptr);
-
         CPPUNIT_ASSERT(node.name() == nfcName);
     }
 
     {
         Node node(std::nullopt, ReplicaSide::Remote, nfdName, NodeType::Directory, OperationType::None, "1", 0, 0, 123, nullptr);
-
         CPPUNIT_ASSERT(node.name() == nfcName);
     }
 
     {
         Node node(ReplicaSide::Remote, nfcName, NodeType::Directory, nullptr);
-
         CPPUNIT_ASSERT(node.name() == nfcName);
     }
 
     {
         Node node(ReplicaSide::Remote, nfdName, NodeType::Directory, nullptr);
-
         CPPUNIT_ASSERT(node.name() == nfcName);
     }
 
@@ -86,31 +71,31 @@ void TestUpdateTree::testConstructors() {
 
 void TestUpdateTree::testAll() {
     CPPUNIT_ASSERT(_myTree->_nodes.empty());
-    _myTree->insertNode(std::shared_ptr<Node>(new Node()));
+    _myTree->insertNode(std::make_shared<Node>());
     CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
 
-    std::shared_ptr<Node> node1 = std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory,
-                                                                 OperationType::None, "1", 0, 0, 12345, _myTree->rootNode()));
-    std::shared_ptr<Node> node2 = std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 2"), NodeType::Directory,
-                                                                 OperationType::None, "2", 0, 0, 12345, _myTree->rootNode()));
-    std::shared_ptr<Node> node3 = std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 3"), NodeType::Directory,
-                                                                 OperationType::None, "3", 0, 0, 12345, _myTree->rootNode()));
-    std::shared_ptr<Node> node4 = std::shared_ptr<Node>(new Node(std::nullopt, _myTree->side(), Str("Dir 4"), NodeType::Directory,
-                                                                 OperationType::None, "4", 0, 0, 12345, _myTree->rootNode()));
-    std::shared_ptr<Node> node11 = std::shared_ptr<Node>(new Node(
-        std::nullopt, _myTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None, "11", 0, 0, 12345, node1));
-    std::shared_ptr<Node> node111 = std::shared_ptr<Node>(new Node(
-        std::nullopt, _myTree->side(), Str("Dir 1.1.1"), NodeType::Directory, OperationType::None, "111", 0, 0, 12345, node11));
-    std::shared_ptr<Node> node1111 = std::shared_ptr<Node>(new Node(
-        std::nullopt, _myTree->side(), Str("File 1.1.1.1"), NodeType::File, OperationType::None, "1111", 0, 0, 12345, node111));
-    std::shared_ptr<Node> node31 = std::shared_ptr<Node>(new Node(
-        std::nullopt, _myTree->side(), Str("Dir 3.1"), NodeType::Directory, OperationType::None, "31", 0, 0, 12345, node3));
-    std::shared_ptr<Node> node41 = std::shared_ptr<Node>(new Node(
-        std::nullopt, _myTree->side(), Str("Dir 4.1"), NodeType::Directory, OperationType::None, "41", 0, 0, 12345, node4));
-    std::shared_ptr<Node> node411 = std::shared_ptr<Node>(new Node(
-        std::nullopt, _myTree->side(), Str("Dir 4.1.1"), NodeType::Directory, OperationType::None, "411", 0, 0, 12345, node41));
-    std::shared_ptr<Node> node4111 = std::shared_ptr<Node>(new Node(
-        std::nullopt, _myTree->side(), Str("File 4.1.1.1"), NodeType::File, OperationType::None, "4111", 0, 0, 12345, node411));
+    auto node1 = std::make_shared<Node>(1, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "1", 0, 0,
+                                        12345, _myTree->rootNode());
+    auto node2 = std::make_shared<Node>(2, _myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::None, "2", 0, 0,
+                                        12345, _myTree->rootNode());
+    auto node3 = std::make_shared<Node>(3, _myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::None, "3", 0, 0,
+                                        12345, _myTree->rootNode());
+    auto node4 = std::make_shared<Node>(4, _myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::None, "4", 0, 0,
+                                        12345, _myTree->rootNode());
+    auto node11 = std::make_shared<Node>(11, _myTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None, "11", 0,
+                                         0, 12345, node1);
+    auto node111 = std::make_shared<Node>(111, _myTree->side(), Str("Dir 1.1.1"), NodeType::Directory, OperationType::None, "111",
+                                          0, 0, 12345, node11);
+    auto node1111 = std::make_shared<Node>(1111, _myTree->side(), Str("File 1.1.1.1"), NodeType::File, OperationType::None,
+                                           "1111", 0, 0, 12345, node111);
+    auto node31 = std::make_shared<Node>(31, _myTree->side(), Str("Dir 3.1"), NodeType::Directory, OperationType::None, "31", 0,
+                                         0, 12345, node3);
+    auto node41 = std::make_shared<Node>(41, _myTree->side(), Str("Dir 4.1"), NodeType::Directory, OperationType::None, "41", 0,
+                                         0, 12345, node4);
+    auto node411 = std::make_shared<Node>(411, _myTree->side(), Str("Dir 4.1.1"), NodeType::Directory, OperationType::None, "411",
+                                          0, 0, 12345, node41);
+    auto node4111 = std::make_shared<Node>(4111, _myTree->side(), Str("File 4.1.1.1"), NodeType::File, OperationType::None,
+                                           "4111", 0, 0, 12345, node411);
 
     CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node1));
     CPPUNIT_ASSERT(_myTree->rootNode()->insertChildren(node2));
