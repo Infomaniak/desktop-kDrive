@@ -38,17 +38,17 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
       _createdAt(createdAt),
       _lastModified(lastmodified),
       _size(size),
-      _parentNode(parentNode),
       _moveOrigin(moveOrigin),
       _moveOriginParentDbId(moveOriginParentDbId),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
-
-Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode)
-    : _side(side), _name(Utility::normalizedSyncName(name)), _type(type), _parentNode(parentNode), _isTmp(true) {
-    _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
+      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
+    setParentNode(parentNode);
 }
 
-Node::Node() : _name(SyncName()), _id(std::string()), _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
+Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode)
+    : _side(side), _name(Utility::normalizedSyncName(name)), _type(type), _isTmp(true) {
+    _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
+    setParentNode(parentNode);
+}
 
 bool Node::operator==(const Node &n) const {
     return n._idb == _idb && n._name == _name;
@@ -195,17 +195,9 @@ SyncPath Node::getPath() const {
 }
 
 bool Node::isParentValid(const std::shared_ptr<Node> parentNode) const {
-    for (auto &child : _childrenById) {
-        if (child.second == parentNode) {
-            return false;
-        }
-
-        if (!child.second->isParentValid(parentNode)) {
-            return false;
-        }
-    }
-
-    return true;
+    if (!parentNode) return true;  // Parent node is root node, stop climbing up the tree, `parentNode` is a valid parent.
+    if (parentNode->id() == _id) return false;  // Current node is a parent of parentNode, `parentNode` is not a valid parent.
+    return isParentValid(parentNode->parentNode());
 }
 
 }  // namespace KDC

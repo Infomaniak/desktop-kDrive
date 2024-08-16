@@ -36,7 +36,7 @@ class UpdateTree : public SharedObject {
         void insertNode(std::shared_ptr<Node> node);
         [[nodiscard]] bool deleteNode(std::shared_ptr<Node> node, int depth = 1);
         [[nodiscard]] bool deleteNode(const NodeId &id);
-        inline const ReplicaSide &side() const { return _side; }
+        [[nodiscard]] inline const ReplicaSide &side() const { return _side; }
         inline std::shared_ptr<Node> rootNode() { return _rootNode; }
         inline std::unordered_map<NodeId, std::shared_ptr<Node>> &nodes() { return _nodes; }
         inline std::unordered_map<NodeId, NodeId> &previousIdSet() { return _previousIdSet; }

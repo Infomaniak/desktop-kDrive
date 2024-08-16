@@ -50,10 +50,9 @@ class Node {
          */
         Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode);
 
-        Node();
+        Node() = default;
 
         bool operator==(const Node &n) const;
-        inline bool operator!=(const Node &n) const { return !(n == *this); }
 
         inline std::optional<DbNodeId> idb() const { return _idb; }
         inline ReplicaSide side() const { return _side; }
@@ -63,7 +62,7 @@ class Node {
         inline OperationType changeEvents() const { return _changeEvents; }
         inline std::optional<SyncTime> createdAt() const { return _createdAt; }
         inline std::optional<SyncTime> lastmodified() const { return _lastModified; }
-        inline int64_t size() { return _size; }
+        inline int64_t size() const { return _size; }
         inline std::optional<NodeId> id() const { return _id; }
         inline std::optional<NodeId> previousId() const { return _previousId; }
         inline NodeStatus status() const { return _status; }
@@ -71,7 +70,7 @@ class Node {
         inline const std::optional<SyncPath> &moveOrigin() const { return _moveOrigin; }
         inline const std::optional<DbNodeId> &moveOriginParentDbId() const { return _moveOriginParentDbId; }
         inline const std::vector<ConflictType> &conflictsAlreadyConsidered() const { return _conflictsAlreadyConsidered; }
-        inline bool hasConflictAlreadyConsidered(const ConflictType conf) {
+        inline bool hasConflictAlreadyConsidered(const ConflictType conf) const {
             return std::count(_conflictsAlreadyConsidered.cbegin(), _conflictsAlreadyConsidered.cend(), conf) > 0;
         }
 
@@ -84,7 +83,7 @@ class Node {
         inline void setSize(int64_t size) { _size = size; }
         inline void setId(const std::optional<NodeId> &nodeId) { _id = nodeId; }
         inline void setPreviousId(const std::optional<NodeId> &previousNodeId) { _previousId = previousNodeId; }
-        [[nodiscard]] bool setParentNode(const std::shared_ptr<Node> &parentNode);
+        bool setParentNode(const std::shared_ptr<Node> &parentNode);
         inline void setMoveOrigin(const std::optional<SyncPath> &moveOrigin) { _moveOrigin = moveOrigin; }
         inline void setMoveOriginParentDbId(const std::optional<DbNodeId> &moveOriginParentDbId) {
             _moveOriginParentDbId = moveOriginParentDbId;
@@ -143,7 +142,7 @@ class Node {
 
         bool _isTmp = false;
 
-        [[nodiscard]] bool isParentValid(const std::shared_ptr<Node> parentNode) const;
+        [[nodiscard]] bool isParentValid(std::shared_ptr<Node> parentNode) const;
 };
 
 }  // namespace KDC
