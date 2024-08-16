@@ -1,5 +1,5 @@
 /*
-* Infomaniak kDrive - Desktop
+ * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,5 +18,4 @@
 
 #include "syncpaltest.h"
 
-namespace KDC {
-} // KDC
+namespace KDC {}  // namespace KDC

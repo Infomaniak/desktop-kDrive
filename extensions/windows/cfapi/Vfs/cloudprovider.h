@@ -88,6 +88,6 @@ class CloudProvider {
         std::wstring _synRootID;
 
         static bool addFolderToSearchIndexer(const PCWSTR folder);
-        static bool cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey, LARGE_INTEGER requiredFileOffset);
-
+        static bool cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey,
+                                    LARGE_INTEGER requiredFileOffset);
 };

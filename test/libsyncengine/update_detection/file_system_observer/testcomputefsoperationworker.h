@@ -47,7 +47,7 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         /**
          * Specific test for the issue https://infomaniak.atlassian.net/browse/KDESKTOP-893.
          * Sync is looping because a `.lnk` file was already synchronized with an earlier app's version.
-         * A Delete FS operation was generated on remote replica but could not be propagated since the file still exists on this 
+         * A Delete FS operation was generated on remote replica but could not be propagated since the file still exists on this
          * replica.
          * No FS operation should be generated on an excluded file.
          */

@@ -49,7 +49,9 @@ static SyncPath getAppSupportDir_private() {
         return appDataPath;
     }
 #ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility_win::getAppSupportDir_private", "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method"));
+    sentry_capture_event(
+        sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "Utility_win::getAppSupportDir_private",
+                                       "Fail to get AppSupportDir through SHGetKnownFolderPath, using fallback method"));
 #endif
     return std::filesystem::temp_directory_path().parent_path().parent_path().native();
 }
