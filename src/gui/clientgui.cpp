@@ -687,25 +687,27 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
     switch (type) {
         case ActionType::Stop:
             if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::PauseAsked ||
-                currentStatus == SyncStatus::Paused || currentStatus == SyncStatus::StopAsked || currentStatus == SyncStatus::Stopped ||
-                currentStatus == SyncStatus::Error) {
+                currentStatus == SyncStatus::Paused || currentStatus == SyncStatus::StopAsked ||
+                currentStatus == SyncStatus::Stopped || currentStatus == SyncStatus::Error) {
                 return;
             }
             exitCode = GuiRequests::syncStop(syncDbId);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : " << enumClassToInt(exitCode);
+                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : "
+                                         << enumClassToInt(exitCode);
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
             break;
         case ActionType::Start:
-            if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::Idle || currentStatus == SyncStatus::Running ||
-                currentStatus == SyncStatus::Starting) {
+            if (currentStatus == SyncStatus::Undefined || currentStatus == SyncStatus::Idle ||
+                currentStatus == SyncStatus::Running || currentStatus == SyncStatus::Starting) {
                 return;
             }
             exitCode = GuiRequests::syncStart(syncDbId);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : " << enumClassToInt(exitCode);
+                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : "
+                                         << enumClassToInt(exitCode);
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatus::Starting);

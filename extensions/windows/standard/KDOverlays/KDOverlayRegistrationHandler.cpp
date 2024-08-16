@@ -39,8 +39,8 @@ HRESULT KDOverlayRegistrationHandler::MakeRegistryEntries(const CLSID& clsid, PC
     }
 
     HKEY syncExOverlayKey = nullptr;
-    hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(shellOverlayKey, friendlyName, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr,
-                                                &syncExOverlayKey, nullptr));
+    hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(shellOverlayKey, friendlyName, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE,
+                                                nullptr, &syncExOverlayKey, nullptr));
 
     if (!SUCCEEDED(hResult)) {
         return hResult;
@@ -91,8 +91,8 @@ HRESULT KDOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     }
 
     HKEY clsidKey = nullptr;
-    hResult =
-        HRESULT_FROM_WIN32(RegCreateKeyEx(hKey, stringCLSID, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &clsidKey, nullptr));
+    hResult = HRESULT_FROM_WIN32(
+        RegCreateKeyEx(hKey, stringCLSID, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &clsidKey, nullptr));
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
@@ -100,8 +100,8 @@ HRESULT KDOverlayRegistrationHandler::RegisterCOMObject(PCWSTR modulePath, PCWST
     hResult = HRESULT_FROM_WIN32(RegSetValue(clsidKey, nullptr, REG_SZ, friendlyName, (DWORD)wcslen(friendlyName)));
 
     HKEY inprocessKey = nullptr;
-    hResult = HRESULT_FROM_WIN32(
-        RegCreateKeyEx(clsidKey, REGISTRY_IN_PROCESS, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &inprocessKey, nullptr));
+    hResult = HRESULT_FROM_WIN32(RegCreateKeyEx(clsidKey, REGISTRY_IN_PROCESS, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE,
+                                                nullptr, &inprocessKey, nullptr));
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }

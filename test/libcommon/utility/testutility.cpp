@@ -219,7 +219,7 @@ void TestUtility::testArgsWriter() {
 void TestUtility::testCompressFile() {
     LocalTemporaryDirectory tmpDir("CommonUtility_compressFile");
     SyncPath filePath = tmpDir.path() / "testFile.txt";
-    
+
     // Test with an empty file
     std::ofstream file(filePath);
     file.close();
@@ -235,7 +235,7 @@ void TestUtility::testCompressFile() {
 
     // Test with a non empty file
     file.open(filePath);
-    for (int i = 0 ; i < 100 ; i++) {
+    for (int i = 0; i < 100; i++) {
         file << "test" << std::endl;
     }
     file.close();

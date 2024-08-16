@@ -48,9 +48,11 @@ namespace KDC {
 
 static bool moveItemToTrash_private(const SyncPath &itemPath) {
     if (CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED) != S_OK) {
-        LOGW_INFO(Log::instance()->getLogger(), L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to CoCreateInstance is failing.");
+        LOGW_INFO(Log::instance()->getLogger(),
+                  L"Error in CoInitializeEx in moveItemToTrash. Might be already initialized. Check if next call to "
+                  L"CoCreateInstance is failing.");
     }
-    
+
     // Create the IFileOperation object
     IFileOperation *fileOperation = nullptr;
     HRESULT hr = CoCreateInstance(__uuidof(FileOperation), NULL, CLSCTX_ALL, IID_PPV_ARGS(&fileOperation));

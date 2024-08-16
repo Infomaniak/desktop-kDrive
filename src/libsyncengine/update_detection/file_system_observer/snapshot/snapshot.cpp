@@ -30,8 +30,7 @@
 namespace KDC {
 
 Snapshot::Snapshot(ReplicaSide side, const DbNode &dbNode)
-    : _side(side),
-      _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
+    : _side(side), _rootFolderId(side == ReplicaSide::Local ? dbNode.nodeIdLocal().value() : dbNode.nodeIdRemote().value()) {
     _items.insert({_rootFolderId, SnapshotItem(_rootFolderId)});
 }
 

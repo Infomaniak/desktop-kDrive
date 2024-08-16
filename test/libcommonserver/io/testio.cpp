@@ -134,9 +134,10 @@ void TestIo::testLogDirectoryPath() {
             ec = std::make_error_code(std::errc::not_enough_memory);
             return SyncPath{};
         });
-        /* As IoHelper::logDirectoryPath() use the path returned by Log::instance()->getLogFilePath().parent_path() if Log::_instance is not null,
-        *  we need to reset Log::_instance to ensure that we are in the default state where the function generates the log directory path from the temp directory path.
-        */
+        /* As IoHelper::logDirectoryPath() use the path returned by Log::instance()->getLogFilePath().parent_path() if
+         * Log::_instance is not null, we need to reset Log::_instance to ensure that we are in the default state where the
+         * function generates the log directory path from the temp directory path.
+         */
         auto logInstance = Log::_instance;
         Log::_instance.reset();
         CPPUNIT_ASSERT(!_testObj->logDirectoryPath(logDirPath, ioError));

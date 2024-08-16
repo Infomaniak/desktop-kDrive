@@ -124,7 +124,7 @@ enum class RequestNum {
     UTILITY_QUIT,
 };
 
-enum class SignalNum{
+enum class SignalNum {
     // User
     USER_ADDED = 0,
     USER_UPDATED,

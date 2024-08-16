@@ -52,7 +52,7 @@ class SnapshotItem {
         inline void setSize(uint64_t newSize) { _size = newSize; }
         inline bool isLink() const { return _isLink; }
         inline void setIsLink(bool isLink) { _isLink = isLink; }
-        inline const std::string & contentChecksum() const { return _contentChecksum; }
+        inline const std::string &contentChecksum() const { return _contentChecksum; }
         inline void setContentChecksum(const std::string &newChecksum) { _contentChecksum = newChecksum; }
         inline bool canWrite() const { return _canWrite; }
         inline void setCanWrite(bool canWrite) { _canWrite = canWrite; }

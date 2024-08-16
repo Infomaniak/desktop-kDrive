@@ -632,14 +632,6 @@ std::string Utility::list2str(std::list<std::string> inList) {
     return out;
 }
 
-int Utility::pathDepth(const SyncPath path) {
-    int level = 0;
-    for (auto it = path.begin(); it != path.end(); ++it) {
-        level++;
-    }
-    return level;
-}
-
 std::string Utility::computeMd5Hash(const std::string &in) {
     Poco::MD5Engine md5;
     md5.update(in);

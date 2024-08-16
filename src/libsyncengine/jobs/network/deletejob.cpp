@@ -26,10 +26,10 @@
 namespace KDC {
 
 DeleteJob::DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0)
-      , _remoteItemId(remoteItemId)
-      , _localItemId(localItemId)
-      , _absoluteLocalFilepath(absoluteLocalFilepath) {
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+      _remoteItemId(remoteItemId),
+      _localItemId(localItemId),
+      _absoluteLocalFilepath(absoluteLocalFilepath) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
 
@@ -38,14 +38,10 @@ bool DeleteJob::canRun() {
         return true;
     }
 
-    if (_remoteItemId.empty()
-        || _localItemId.empty()
-        || _absoluteLocalFilepath.empty()) {
-        LOGW_WARN(_logger,
-                  L"Error in DeleteJob::canRun: missing required input, remote ID:" << Utility::s2ws(_remoteItemId).c_str()
-                  << L", local ID: " << Utility::s2ws(_localItemId).c_str()
-                  << L", " << Utility::formatSyncPath(_absoluteLocalFilepath)
-                  );
+    if (_remoteItemId.empty() || _localItemId.empty() || _absoluteLocalFilepath.empty()) {
+        LOGW_WARN(_logger, L"Error in DeleteJob::canRun: missing required input, remote ID:"
+                               << Utility::s2ws(_remoteItemId).c_str() << L", local ID: " << Utility::s2ws(_localItemId).c_str()
+                               << L", " << Utility::formatSyncPath(_absoluteLocalFilepath));
         _exitCode = ExitCode::DataError;
         _exitCause = ExitCause::Unknown;
         return false;

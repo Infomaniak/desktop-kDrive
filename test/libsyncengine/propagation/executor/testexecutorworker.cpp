@@ -172,10 +172,7 @@ void TestExecutorWorker::testFixModificationDate() {
 
     // Update DB
     DbNode dbNode(0, _syncPal->syncDb()->rootNode().nodeId(), filename, filename, "lid", "rid", defaultTime, defaultTime,
-                  defaultTime,
-                  NodeType::File,
-                  defaultSize,
-                  "cs");
+                  defaultTime, NodeType::File, defaultSize, "cs");
     DbNodeId dbNodeId;
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
@@ -183,8 +180,7 @@ void TestExecutorWorker::testFixModificationDate() {
     // Generate sync operation
     std::shared_ptr<Node> node =
         std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, "lid", defaultTime, 12345, defaultSize);
-    std::shared_ptr<Node> correspondingNode =
-        std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File,
+    std::shared_ptr<Node> correspondingNode = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File,
                                                                      "rid", defaultTime, defaultTime, defaultSize);
     SyncOpPtr op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);

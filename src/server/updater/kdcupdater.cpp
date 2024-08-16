@@ -71,10 +71,7 @@ void UpdaterScheduler::slotTimerFired() {
 /* ----------------------------------------------------------------- */
 
 KDCUpdater::KDCUpdater(const QUrl &url)
-    : UpdaterServer(),
-      _updateUrl(url),
-      _accessManager(new QNetworkAccessManager(this)),
-      _timeoutWatchdog(new QTimer(this)) {}
+    : UpdaterServer(), _updateUrl(url), _accessManager(new QNetworkAccessManager(this)), _timeoutWatchdog(new QTimer(this)) {}
 
 void KDCUpdater::setUpdateUrl(const QUrl &url) {
     _updateUrl = url;
