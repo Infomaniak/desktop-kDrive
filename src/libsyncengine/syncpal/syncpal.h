@@ -32,7 +32,6 @@
 #include "libparms/db/parmsdb.h"
 
 #include <memory>
-#include <filesystem>
 #include <comm.h>
 
 namespace KDC {
