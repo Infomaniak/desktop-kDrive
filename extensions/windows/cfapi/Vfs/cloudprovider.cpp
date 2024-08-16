@@ -164,7 +164,8 @@ bool CloudProvider::dehydrate(const wchar_t *path) {
                                                                 CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr));
 
                     TRACE_DEBUG(L"Dehydrating placeholder: path = %ls", path);
-                    winrt::check_hresult(CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, nullptr));
+                    winrt::check_hresult(
+                        CfDehydratePlaceholder(fileHandle.get(), offset, length, CF_DEHYDRATE_FLAG_NONE, nullptr));
                 } catch (winrt::hresult_error const &ex) {
                     TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()),
                                 ex.message().c_str());
@@ -434,7 +435,8 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
         }
 
         if (callbackParameters->FetchData.Flags & CF_CALLBACK_FETCH_DATA_FLAG_NONE) {
-            if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey, callbackParameters->FetchData.RequiredFileOffset)) {
+            if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
+                                 callbackParameters->FetchData.RequiredFileOffset)) {
                 TRACE_ERROR(L"Error in cancelFetchData: path = %ls", fullPath.wstring().c_str());
             }
             return;
@@ -467,7 +469,8 @@ void CALLBACK CloudProvider::onFetchData(_In_ CONST CF_CALLBACK_INFO *callbackIn
 
         if (!PipeClient::getInstance().sendMessageWithoutAnswer(L"MAKE_AVAILABLE_LOCALLY_DIRECT", fullPath.wstring())) {
             TRACE_ERROR(L"Error in Utilities::writeMessage!");
-            if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey, callbackParameters->FetchData.RequiredFileOffset)) {
+            if (!cancelFetchData(callbackInfo->ConnectionKey, callbackInfo->TransferKey,
+                                 callbackParameters->FetchData.RequiredFileOffset)) {
                 TRACE_ERROR(L"Error in cancelFetchData: path = %ls", fullPath.wstring().c_str());
             }
         }
@@ -615,8 +618,8 @@ bool CloudProvider::addFolderToSearchIndexer(const PCWSTR folder) {
 
     try {
         winrt::com_ptr<ISearchManager> searchManager;
-        winrt::check_hresult(
-            CoCreateInstance(__uuidof(CSearchManager), nullptr, CLSCTX_SERVER, __uuidof(&searchManager), searchManager.put_void()));
+        winrt::check_hresult(CoCreateInstance(__uuidof(CSearchManager), nullptr, CLSCTX_SERVER, __uuidof(&searchManager),
+                                              searchManager.put_void()));
 
         winrt::com_ptr<ISearchCatalogManager> searchCatalogManager;
         winrt::check_hresult(searchManager->GetCatalog(MSSEARCH_INDEX, searchCatalogManager.put()));
@@ -634,11 +637,11 @@ bool CloudProvider::addFolderToSearchIndexer(const PCWSTR folder) {
     return true;
 }
 
-bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey, LARGE_INTEGER requiredFileOffset)
-{
+bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER_KEY transferKey,
+                                    LARGE_INTEGER requiredFileOffset) {
     // Update transfer status
-    CF_OPERATION_INFO opInfo = { 0 };
-    CF_OPERATION_PARAMETERS opParams = { 0 };
+    CF_OPERATION_INFO opInfo = {0};
+    CF_OPERATION_PARAMETERS opParams = {0};
 
     opInfo.StructSize = sizeof(opInfo);
     opInfo.Type = CF_OPERATION_TYPE_TRANSFER_DATA;
@@ -647,13 +650,12 @@ bool CloudProvider::cancelFetchData(CF_CONNECTION_KEY connectionKey, CF_TRANSFER
     opParams.ParamSize = CF_SIZE_OF_OP_PARAM(TransferData);
     opParams.TransferData.CompletionStatus = STATUS_UNSUCCESSFUL;
     opParams.TransferData.Buffer = nullptr;
-    opParams.TransferData.Offset = { 0 };  // Cancel entire transfer
+    opParams.TransferData.Offset = {0};  // Cancel entire transfer
     opParams.TransferData.Length = requiredFileOffset;
 
     try {
         winrt::check_hresult(CfExecute(&opInfo, &opParams));
-    }
-    catch (winrt::hresult_error const& ex) {
+    } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"Error catched: hr %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
         return false;
     }

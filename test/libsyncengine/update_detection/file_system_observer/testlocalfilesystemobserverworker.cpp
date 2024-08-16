@@ -99,7 +99,7 @@ void TestLocalFileSystemObserverWorker::tearDown() {
     LOGW_DEBUG(_logger, L"$$$$$ Tear Down $$$$$");
 
     if (_syncPal && _syncPal->_localFSObserverWorker) {
-      _syncPal->_localFSObserverWorker->stop();
+        _syncPal->_localFSObserverWorker->stop();
     }
 
     ParmsDb::instance()->close();
@@ -110,24 +110,24 @@ void TestLocalFileSystemObserverWorker::tearDown() {
 }
 
 void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
-        std::unordered_set<NodeId> ids;
-        _syncPal->snapshot(ReplicaSide::Local)->ids(ids);
+    std::unordered_set<NodeId> ids;
+    _syncPal->snapshot(ReplicaSide::Local)->ids(ids);
 
-        uint64_t fileCounter = 0;
-        for (const auto &id : ids) {
-            const auto name = _syncPal->snapshot(ReplicaSide::Local)->name(id);
-            if (name == Str(".DS_Store") || name == Str(".ds_store")) {
-                continue;  // Ignore ".DS_Store"
-            }
-
-            const NodeId parentId = _syncPal->snapshot(ReplicaSide::Local)->parentId(id);
-            SyncPath parentPath;
-            if (!parentId.empty() && _syncPal->snapshot(ReplicaSide::Local)->path(parentId, parentPath) &&
-                parentPath.filename() == _testPicturesFolderName) {
-                fileCounter++;
-            }
+    uint64_t fileCounter = 0;
+    for (const auto &id : ids) {
+        const auto name = _syncPal->snapshot(ReplicaSide::Local)->name(id);
+        if (name == Str(".DS_Store") || name == Str(".ds_store")) {
+            continue;  // Ignore ".DS_Store"
         }
-        CPPUNIT_ASSERT_EQUAL(_nbFileInTestDir, fileCounter);
+
+        const NodeId parentId = _syncPal->snapshot(ReplicaSide::Local)->parentId(id);
+        SyncPath parentPath;
+        if (!parentId.empty() && _syncPal->snapshot(ReplicaSide::Local)->path(parentId, parentPath) &&
+            parentPath.filename() == _testPicturesFolderName) {
+            fileCounter++;
+        }
+    }
+    CPPUNIT_ASSERT_EQUAL(_nbFileInTestDir, fileCounter);
 }
 
 void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
@@ -173,7 +173,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         SyncPath source = _testRootFolderPath / SyncPath("A") / "test_file.txt";
         SyncPath target = _testRootFolderPath / SyncPath("B") / "test_file.txt";
 #ifdef _WIN32
-        const std::string testCallStr = "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
+        const std::string testCallStr =
+            "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
 #else
         const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
 #endif
@@ -193,7 +194,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
 #ifdef _WIN32
         const std::string testCallStr = "ren " + source.make_preferred().string() + " " + target.filename().string();
 #else
-        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
+        const std::string testCallStr =
+            "mv " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
 #endif
         std::system(testCallStr.c_str());
 
@@ -250,7 +252,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         SyncPath testRelativePath = SyncPath("B") / SyncPath("AC");
         SyncPath target = _testRootFolderPath / testRelativePath;
 #ifdef _WIN32
-        const std::string testCallStr = "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
+        const std::string testCallStr =
+            "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
 #else
         const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
 #endif
@@ -397,7 +400,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases() {
         //// move
 #ifdef _WIN32
         testCallStr = "move " + testAbsolutePath.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string() +
-                      "\\aa.jpg"  + " >nil";
+                      "\\aa.jpg" + " >nil";
 #else
         testCallStr =
             "mv " + testAbsolutePath.make_preferred().string() + " " + _testRootFolderPath.make_preferred().string() + "/aa.jpg";
@@ -421,7 +424,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases() {
         NodeId initItemId = std::to_string(fileStat.inode);
 #ifdef _WIN32
         std::string testCallStr = "move " + _testRootFolderPath.make_preferred().string() + "\\test_b\\b.jpg" + " " +
-            _testRootFolderPath.make_preferred().string() + "\\bb.jpg" + " >nil";
+                                  _testRootFolderPath.make_preferred().string() + "\\bb.jpg" + " >nil";
 #else
         std::string testCallStr = "mv " + _testRootFolderPath.make_preferred().string() + "/test_b/b.jpg" + " " +
                                   _testRootFolderPath.make_preferred().string() + "/bb.jpg";

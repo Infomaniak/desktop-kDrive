@@ -50,7 +50,7 @@ class DebuggingDialog : public CustomDialog {
         CustomToolButton *_extendedLogHelpButton = nullptr;
         CustomCheckBox *_deleteLogsCheckBox = nullptr;
         QPushButton *_saveButton = nullptr;
-        QPushButton *_sendLogButton = nullptr; 
+        QPushButton *_sendLogButton = nullptr;
         QPushButton *_cancelLogUploadButton = nullptr;
         QLabel *_debuggingFolderLabel = nullptr;
         QWidget *_heavyLogBox = nullptr;

@@ -25,13 +25,13 @@ namespace KDC {
 
 class UploadSessionFinishJob : public AbstractUploadSessionJob {
     public:
-        UploadSessionFinishJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath, const std::string &sessionToken,
-                               const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime);
-
-        UploadSessionFinishJob(UploadSessionType uploadType, const SyncPath &filepath,
+        UploadSessionFinishJob(UploadSessionType uploadType, int driveDbId, const SyncPath &filepath,
                                const std::string &sessionToken, const std::string &totalChunkHash, uint64_t totalChunks,
                                SyncTime modtime);
-        
+
+        UploadSessionFinishJob(UploadSessionType uploadType, const SyncPath &filepath, const std::string &sessionToken,
+                               const std::string &totalChunkHash, uint64_t totalChunks, SyncTime modtime);
+
         ~UploadSessionFinishJob();
 
         inline const NodeId &nodeId() const { return _nodeId; }

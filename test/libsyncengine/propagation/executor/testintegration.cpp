@@ -332,7 +332,8 @@ void TestIntegration::testCreateRemote() {
     waitForSyncToFinish();
 
     bool found = false;
-    CPPUNIT_ASSERT(_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, _newTestFileRemoteId, _newTestFileLocalId, found));
+    CPPUNIT_ASSERT(
+        _syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, _newTestFileRemoteId, _newTestFileLocalId, found));
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT(_syncPal->_localSnapshot->exists(_newTestFileLocalId));
 
@@ -357,7 +358,7 @@ void TestIntegration::testEditRemote() {
 
     bool found = false;
     CPPUNIT_ASSERT(_syncPal->syncDb()->correspondingNodeId(ReplicaSide::Remote, _newTestFileRemoteId, _newTestFileLocalId,
-                                                          found));  // Update the local ID
+                                                           found));  // Update the local ID
     CPPUNIT_ASSERT(found);
     SyncTime newModTime = _syncPal->_localSnapshot->lastModified(_newTestFileLocalId);
     CPPUNIT_ASSERT(newModTime > prevModTime);

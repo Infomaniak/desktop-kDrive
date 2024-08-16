@@ -125,7 +125,7 @@ class AbstractNetworkJob : public AbstractJob {
 
         std::unordered_map<std::string, std::string> _rawHeaders;
 
-        bool _downloadImpossible {false};
+        bool _downloadImpossible{false};
 };
 
 }  // namespace KDC

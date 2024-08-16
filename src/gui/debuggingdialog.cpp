@@ -598,12 +598,13 @@ QString DebuggingDialog::convertAppStateTimeToLocalHumanReadable(const QString &
     // App state time is formatted as "month,day,year,hour,minute,second"
     QStringList timeParts = time.split(',');
     if (timeParts.size() != 6) {
-        // Invalid time format 
+        // Invalid time format
         return time;
     }
 
     //: Date format for the last successful log upload. %1: month, %2: day, %3: year, %4: hour, %5: minute, %6: second
-    return tr("%1/%2/%3 at %4h%5m and %6s").arg(timeParts[0], timeParts[1], timeParts[2], timeParts[3], timeParts[4], timeParts[5]);
+    return tr("%1/%2/%3 at %4h%5m and %6s")
+        .arg(timeParts[0], timeParts[1], timeParts[2], timeParts[3], timeParts[4], timeParts[5]);
 }
 
 void DebuggingDialog::onRecordDebuggingSwitchClicked(bool checked) {

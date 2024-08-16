@@ -388,7 +388,8 @@ void TestParmsDb::testError() {
     // TOOD : créer le drive, sync et user
     Error error1("Fct1", ExitCode::DbError, ExitCause::DbAccessError);
     Error error2(1, "Worker1", ExitCode::DataError, ExitCause::SyncDirDoesntExist);
-    Error error3(1, "local node 1", "remote node 1", NodeType::File, "/dir1/file1.1", ConflictType::None, InconsistencyType::None);
+    Error error3(1, "local node 1", "remote node 1", NodeType::File, "/dir1/file1.1", ConflictType::None,
+                 InconsistencyType::None);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertError(error1));
     // there is no sync, drive or account Fin the database

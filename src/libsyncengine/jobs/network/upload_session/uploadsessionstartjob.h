@@ -28,11 +28,11 @@ class UploadSessionStartJob : public AbstractUploadSessionJob {
     public:
         // Using file name and parent ID, for create or edit
         UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const SyncName &filename, uint64_t size,
-                              const NodeId &remoteParentDirId,
-                              uint64_t totalChunks);
+                              const NodeId &remoteParentDirId, uint64_t totalChunks);
         // Using file ID, for edit only
-        UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const NodeId &fileId, uint64_t size, uint64_t totalChunks);
-        
+        UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const NodeId &fileId, uint64_t size,
+                              uint64_t totalChunks);
+
         // Using file name for log upload
         UploadSessionStartJob(UploadSessionType uploadType, const SyncName &filename, uint64_t size, uint64_t totalChunks);
 

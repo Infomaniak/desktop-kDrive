@@ -414,8 +414,8 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
-                                                   << userDbId << " driveId=" << driveId
-                                                   << " nodeId=" << nodeId.toStdString().c_str() << " : " << enumClassToInt(exitCode));
+                                                   << userDbId << " driveId=" << driveId << " nodeId="
+                                                   << nodeId.toStdString().c_str() << " : " << enumClassToInt(exitCode));
         return exitCode;
     }
 
@@ -574,8 +574,8 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
-                                                   << userDbId << " driveId=" << driveId
-                                                   << " nodeId=" << nodeId.toStdString().c_str() << " : " << enumClassToInt(exitCode));
+                                                   << userDbId << " driveId=" << driveId << " nodeId="
+                                                   << nodeId.toStdString().c_str() << " : " << enumClassToInt(exitCode));
         return exitCode;
     }
 
@@ -921,7 +921,8 @@ bool ServerRequests::isDisplayableError(const Error &error) {
             }
         }
         case ExitCode::Unknown: {
-            return error.inconsistencyType() != InconsistencyType::PathLength && error.cancelType() != CancelType::AlreadyExistRemote;
+            return error.inconsistencyType() != InconsistencyType::PathLength &&
+                   error.cancelType() != CancelType::AlreadyExistRemote;
         }
         default:
             return true;
@@ -1041,12 +1042,12 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
                                                        archivePath, exitCause);
     if (exitCause == ExitCause::OperationCanceled) {
         IoHelper::deleteDirectory(logUploadTempFolder, ioError);
-        LOG_INFO(Log::instance()->getLogger(),
-                 "LogArchiver::generateLogsSupportArchive canceled: " << enumClassToInt(exitCode) << " : " << enumClassToInt(exitCause));
+        LOG_INFO(Log::instance()->getLogger(), "LogArchiver::generateLogsSupportArchive canceled: "
+                                                   << enumClassToInt(exitCode) << " : " << enumClassToInt(exitCause));
         return ExitCode::Ok;
     } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in LogArchiver::generateLogsSupportArchive: " << enumClassToInt(exitCode) << " : " << enumClassToInt(exitCause));
+        LOG_WARN(Log::instance()->getLogger(), "Error in LogArchiver::generateLogsSupportArchive: "
+                                                   << enumClassToInt(exitCode) << " : " << enumClassToInt(exitCause));
         IoHelper::deleteDirectory(logUploadTempFolder, ioError);
         return exitCode;
     }
@@ -1097,7 +1098,8 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << enumClassToInt(exitCode) << " : " << enumClassToInt(exitCause));
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error during log upload: " << enumClassToInt(exitCode) << " : " << enumClassToInt(exitCause));
         // We do not delete the archive here. The path is stored in the app state so that the user can still try to upload it
         // manually.
         return exitCode;
@@ -1218,8 +1220,9 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
 
             exitCode = job2->runSynchronously();
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in GetFileLinkJob::GetFileLinkJob for driveDbId="
-                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " : " << enumClassToInt(exitCode));
+                LOG_WARN(Log::instance()->getLogger(),
+                         "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
+                                                                                  << " : " << enumClassToInt(exitCode));
                 return exitCode;
             }
 
@@ -1245,8 +1248,9 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
 
             return ExitCode::Ok;
         } else {
-            LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
-                                                       << driveDbId << " nodeId=" << nodeId.c_str() << " : " << enumClassToInt(exitCode));
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in PostFileLinkJob::PostFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
+                                                                                << " : " << enumClassToInt(exitCode));
             return exitCode;
         }
     }
@@ -1294,9 +1298,9 @@ ExitCode ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
 
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetSizeJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
-                                                                       << " nodeId=" << nodeId.c_str() << " : " << enumClassToInt(exitCode));
+        LOG_WARN(Log::instance()->getLogger(), "Error in GetSizeJob::runSynchronously for userDbId="
+                                                   << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.c_str() << " : "
+                                                   << enumClassToInt(exitCode));
         return exitCode;
     }
 

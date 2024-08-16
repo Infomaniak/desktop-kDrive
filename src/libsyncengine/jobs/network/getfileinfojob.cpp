@@ -55,7 +55,7 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
     if (!JsonParserUtility::extractValue(dataObj, typeKey, tmp)) {
         return false;
     }
-   const bool isDir = tmp == dirKey;
+    const bool isDir = tmp == dirKey;
     if (!isDir) {
         if (!JsonParserUtility::extractValue(dataObj, sizeKey, _size)) {
             return false;
@@ -82,7 +82,8 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
 }
 
 bool GetFileInfoJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN || _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
+    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+        _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
         // The file is not accessible or doesn't exist
         return true;
     } else {

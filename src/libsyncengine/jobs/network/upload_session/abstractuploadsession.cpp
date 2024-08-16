@@ -482,7 +482,7 @@ bool AbstractUploadSession::cancelSession() {
 }
 
 void AbstractUploadSession::waitForJobsToComplete(bool all) {
-    while (_threadCounter > (all ? 0 : _nbParalleleThread -1) && !isAborted() && !_jobExecutionError) {
+    while (_threadCounter > (all ? 0 : _nbParalleleThread - 1) && !isAborted() && !_jobExecutionError) {
         if (isExtendedLog()) {
             LOG_DEBUG(_logger, (all ? "Wait for all jobs to complete" : "Wait for some jobs to complete"));
         }

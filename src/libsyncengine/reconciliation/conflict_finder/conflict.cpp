@@ -131,9 +131,9 @@ bool ConflictCmp::operator()(const Conflict &c1, const Conflict &c2) {
 
 SyncPath ConflictCmp::pathOfEvent(const Conflict &conflict, OperationType optype) const {
     ReplicaSide side = conflict.sideOfEvent(optype);
-    SyncPath path = (side == ReplicaSide::Local                 ? conflict.node()->getPath()
+    SyncPath path = (side == ReplicaSide::Local    ? conflict.node()->getPath()
                      : side == ReplicaSide::Remote ? conflict.correspondingNode()->getPath()
-                                                                : std::filesystem::path());
+                                                   : std::filesystem::path());
 
     return path;
 }

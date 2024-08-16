@@ -61,7 +61,7 @@ class SyncOperation {
         OperationType _type = OperationType::None;
         std::shared_ptr<Node> _affectedNode = nullptr;
         std::shared_ptr<Node> _correspondingNode = nullptr;  // The node on which we will apply the operation
-        ReplicaSide _targetSide = ReplicaSide::Unknown;        // The side on which we will apply the operation
+        ReplicaSide _targetSide = ReplicaSide::Unknown;      // The side on which we will apply the operation
         bool _omit = false;                                  // If true, apply change only in DB
         SyncName _newName;  // New name on the replica on which we will apply the operation. Only for create and move operation
         std::shared_ptr<Node> _newParentNode =
