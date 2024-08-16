@@ -154,8 +154,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
             if (toExclude) {
                 if (isWarning) {
-                    Error error(_syncPal->syncDbId(), "", nodeId, nodeType, relativePath, ConflictType::None, InconsistencyType::None,
-                                CancelType::ExcludedByTemplate);
+                    Error error(_syncPal->syncDbId(), "", nodeId, nodeType, relativePath, ConflictType::None,
+                                InconsistencyType::None, CancelType::ExcludedByTemplate);
                     _syncPal->addError(error);
                 }
 

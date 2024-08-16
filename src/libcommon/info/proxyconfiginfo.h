@@ -28,8 +28,8 @@ namespace KDC {
 class ProxyConfigInfo {
     public:
         ProxyConfigInfo() = default;
-        ProxyConfigInfo(ProxyType type, const QString &hostName, int port, bool needsAuth,
-                                                    const QString &user = "", const QString &pwd = "");
+        ProxyConfigInfo(ProxyType type, const QString &hostName, int port, bool needsAuth, const QString &user = "",
+                        const QString &pwd = "");
 
         inline ProxyType type() const { return _type; }
         inline void setType(ProxyType type) { _type = type; }

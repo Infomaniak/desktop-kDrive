@@ -149,7 +149,7 @@ SocketApi::~SocketApi() {
     _listeners.clear();
 }
 
-void SocketApi::executeCommandDirect(const QString& commandLineStr) {
+void SocketApi::executeCommandDirect(const QString &commandLineStr) {
     LOGW_DEBUG(KDC::Log::instance()->getLogger(), L"Execute command - cmd=" << commandLineStr.toStdWString().c_str());
 
     QByteArray command = commandLineStr.split(MSG_CDE_SEPARATOR).value(0).toLatin1();

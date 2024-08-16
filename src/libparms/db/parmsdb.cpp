@@ -442,7 +442,7 @@
 
 #define DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST_ID "delete_error_by_exitcause"
 #define DELETE_ALL_ERROR_BY_EXITCAUSEREQUEST \
-    "DELETE FROM error "                      \
+    "DELETE FROM error "                     \
     "WHERE exitCause=?1;"
 
 #define DELETE_ALL_ERROR_BY_LEVEL_REQUEST_ID "delete_error_by_level"
@@ -3055,7 +3055,7 @@ bool ParmsDb::selectConflicts(int syncDbId, ConflictType filter, std::vector<Err
     const std::scoped_lock lock(_mutex);
 
     std::string requestId = (filter == ConflictType::None ? SELECT_ALL_CONFLICTS_BY_SYNCDBID_REQUEST_ID
-                                                        : SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
+                                                          : SELECT_FILTERED_CONFLICTS_BY_SYNCDBID_REQUEST_ID);
 
     ASSERT(queryResetAndClearBindings(requestId));
     ASSERT(queryBindValue(requestId, 1, syncDbId));

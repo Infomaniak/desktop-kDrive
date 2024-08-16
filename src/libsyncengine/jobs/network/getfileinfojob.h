@@ -50,11 +50,11 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
         NodeId _nodeId;
         NodeId _parentNodeId;
         std::string _name;
-        SyncTime _creationTime {0};
-        SyncTime _modtime {0};
-        bool _isLink {false};
-        bool _withPath {false};
-        int64_t _size {-1};
+        SyncTime _creationTime{0};
+        SyncTime _modtime{0};
+        bool _isLink{false};
+        bool _withPath{false};
+        int64_t _size{-1};
         SyncPath _path;
 };
 

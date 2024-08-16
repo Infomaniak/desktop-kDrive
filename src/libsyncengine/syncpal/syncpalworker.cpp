@@ -129,7 +129,8 @@ void SyncPalWorker::execute() {
                     (stepWorkers[index] && !stepWorkers[index]->isRunning() ? stepWorkers[index]->exitCode() : ExitCode::Unknown);
             }
 
-            if ((!stepWorkers[0] || workersExitCode[0] == ExitCode::Ok) && (!stepWorkers[1] || workersExitCode[1] == ExitCode::Ok)) {
+            if ((!stepWorkers[0] || workersExitCode[0] == ExitCode::Ok) &&
+                (!stepWorkers[1] || workersExitCode[1] == ExitCode::Ok)) {
                 // Next step
                 SyncStep step = nextStep();
                 if (step != _step) {
@@ -415,7 +416,8 @@ SyncStep SyncPalWorker::nextStep() const {
                 return SyncStep::Idle;
             }
 
-            return (_syncPal->operationSet(ReplicaSide::Local)->updated() || _syncPal->operationSet(ReplicaSide::Remote)->updated())
+            return (_syncPal->operationSet(ReplicaSide::Local)->updated() ||
+                    _syncPal->operationSet(ReplicaSide::Remote)->updated())
                        ? SyncStep::UpdateDetection2
                        : SyncStep::Done;
             break;

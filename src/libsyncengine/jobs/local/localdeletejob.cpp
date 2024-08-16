@@ -40,15 +40,13 @@ LocalDeleteJob::LocalDeleteJob(int driveDbId, const SyncPath &syncPath, const Sy
       _absolutePath(syncPath / relativePath),
       _isDehydratedPlaceholder(isDehydratedPlaceholder),
       _remoteNodeId(remoteId),
-      _forceToTrash(forceToTrash) {
-}
+      _forceToTrash(forceToTrash) {}
 
 LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) : _absolutePath(absolutePath) {
     setBypassCheck(true);
 }
 
-LocalDeleteJob::~LocalDeleteJob() {
-}
+LocalDeleteJob::~LocalDeleteJob() {}
 
 bool LocalDeleteJob::canRun() {
     if (bypassCheck()) {

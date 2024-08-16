@@ -53,7 +53,8 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
     }
 
-    if (((_apiType == ApiType::Drive || _apiType == ApiType::NotifyDrive) && _driveDbId == 0 && (_userDbId == 0 || _driveId == 0)) ||
+    if (((_apiType == ApiType::Drive || _apiType == ApiType::NotifyDrive) && _driveDbId == 0 &&
+         (_userDbId == 0 || _driveId == 0)) ||
         ((_apiType == ApiType::Profile || _apiType == ApiType::DriveByUser) && _userDbId == 0)) {
         LOG_WARN(_logger, "Invalid parameters!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
@@ -526,7 +527,7 @@ bool AbstractTokenNetworkJob::refreshToken() {
         ExitCode exitCode = login->refreshToken();
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(_logger, "Failed to refresh token: " << enumClassToInt(exitCode) << " - " << login->error().c_str() << " - "
-                                                           << login->errorDescr().c_str());
+                                                          << login->errorDescr().c_str());
             _exitCause = ExitCause::LoginError;
             _exitCode = exitCode;
 

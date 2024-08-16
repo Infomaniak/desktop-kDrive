@@ -120,7 +120,7 @@ class SynthesisPopover : public QDialog {
         QLabel *_lockedAppLabel{nullptr};
         QLabel *_lockedAppUpdateOptionalLabel{nullptr};
 #ifdef Q_OS_LINUX
-        QLabel *_lockedAppUpdateManualLabel {nullptr};
+        QLabel *_lockedAppUpdateManualLabel{nullptr};
 #endif
         void changeEvent(QEvent *event) override;
         void paintEvent(QPaintEvent *event) override;

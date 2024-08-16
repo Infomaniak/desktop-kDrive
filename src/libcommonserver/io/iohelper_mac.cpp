@@ -146,7 +146,7 @@ bool IoHelper::getRights(const SyncPath &path, bool &read, bool &write, bool &ex
     std::filesystem::perms perms =
         isSymlink ? std::filesystem::symlink_status(path, ec).permissions() : std::filesystem::status(path, ec).permissions();
     if (ec) {
-       const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
+        const bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
         ioError = stdError2ioError(ec);
         if (!exists) {
             ioError = IoError::NoSuchFileOrDirectory;

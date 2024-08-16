@@ -64,7 +64,8 @@ HRESULT GetHKCRRegistryKeyAndValue(PCWSTR pszSubKey, PCWSTR pszValueName, PWSTR 
 
     if (SUCCEEDED(hr)) {
         // Get the data for the specified value name.
-        hr = HRESULT_FROM_WIN32(RegQueryValueEx(hKey, pszValueName, nullptr, nullptr, reinterpret_cast<LPBYTE>(pszData), &cbData));
+        hr =
+            HRESULT_FROM_WIN32(RegQueryValueEx(hKey, pszValueName, nullptr, nullptr, reinterpret_cast<LPBYTE>(pszData), &cbData));
 
         RegCloseKey(hKey);
     }

@@ -495,8 +495,8 @@ bool SyncPal::wipeOldPlaceholders() {
     if (!virtualFileCleaner.removeDehydratedPlaceholders(failedToRemovePlaceholders)) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
         for (auto &failedItem : failedToRemovePlaceholders) {
-            addError(Error(_syncDbId, "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyType::None, CancelType::None,
-                           "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+            addError(Error(_syncDbId, "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyType::None,
+                           CancelType::None, "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
         }
         return false;
     }
@@ -932,7 +932,7 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
     auto nodeIdIt = nodeIdSet.begin();
     while (nodeIdIt != nodeIdSet.end()) {
         const bool ok = syncNodeType == SyncNodeType::TmpLocalBlacklist ? snapshot(ReplicaSide::Local, true)->exists(*nodeIdIt)
-                                                                      : snapshot(ReplicaSide::Remote, true)->exists(*nodeIdIt);
+                                                                        : snapshot(ReplicaSide::Remote, true)->exists(*nodeIdIt);
         if (!ok) {
             nodeIdIt = nodeIdSet.erase(nodeIdIt);
         } else {
@@ -950,12 +950,14 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 }
 
 ExitCode SyncPal::updateSyncNode() {
-    for (int syncNodeTypeIdx = enumClassToInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= enumClassToInt(SyncNodeType::UndecidedList); syncNodeTypeIdx++) {
+    for (int syncNodeTypeIdx = enumClassToInt(SyncNodeType::WhiteList);
+         syncNodeTypeIdx <= enumClassToInt(SyncNodeType::UndecidedList); syncNodeTypeIdx++) {
         SyncNodeType syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
 
         ExitCode exitCode = updateSyncNode(syncNodeType);
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << enumClassToInt(syncNodeType));
+            LOG_WARN(Log::instance()->getLogger(),
+                     "Error in SyncPal::updateSyncNode for syncNodeType=" << enumClassToInt(syncNodeType));
             return exitCode;
         }
     }
@@ -1282,7 +1284,8 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
 
     for (auto &uploadSessionToken : uploadSessionTokenList) {
         try {
-            auto job = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
+            auto job =
+                std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << enumClassToInt(exitCode));

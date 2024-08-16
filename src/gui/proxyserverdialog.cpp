@@ -46,14 +46,11 @@ static const int defaultPortNumber = 8080;
 static const int hostNameMaxLength = 200;
 
 std::map<ProxyType, std::pair<int, QString>> ProxyServerDialog::_manualProxyMap = {
-    {ProxyType::HTTP, {0, QString(tr("HTTP(S) Proxy"))}}
-};
+    {ProxyType::HTTP, {0, QString(tr("HTTP(S) Proxy"))}}};
 
 Q_LOGGING_CATEGORY(lcProxyServerDialog, "gui.proxyserverdialog", QtInfoMsg)
 
-ProxyServerDialog::ProxyServerDialog(QWidget *parent)
-    : CustomDialog(true, parent),
-      _portValidator(new PortValidator(this)) {
+ProxyServerDialog::ProxyServerDialog(QWidget *parent) : CustomDialog(true, parent), _portValidator(new PortValidator(this)) {
     initUI();
 
     _proxyConfigInfo = ParametersCache::instance()->parametersInfo().proxyConfigInfo();
@@ -115,7 +112,8 @@ void ProxyServerDialog::initUI() {
     _proxyTypeComboBox->setAttribute(Qt::WA_MacShowFocusRect, false);
 
     for (auto const &manualProxyMapElt : _manualProxyMap) {
-        _proxyTypeComboBox->insertItem(manualProxyMapElt.second.first, manualProxyMapElt.second.second, enumClassToInt(manualProxyMapElt.first));
+        _proxyTypeComboBox->insertItem(manualProxyMapElt.second.first, manualProxyMapElt.second.second,
+                                       enumClassToInt(manualProxyMapElt.first));
     }
     manualProxyTypeHBox->addWidget(_proxyTypeComboBox);
     manualProxyTypeHBox->addStretch();

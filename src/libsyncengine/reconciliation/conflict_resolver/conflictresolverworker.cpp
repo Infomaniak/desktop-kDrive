@@ -307,7 +307,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             // Check if this node is a registered orphan
             if (_registeredOrphans.contains(*conflict.node()->idb())) {
                 loserNode = _registeredOrphans.find(*conflict.node()->idb())->second == ReplicaSide::Local ? conflict.remoteNode()
-                                                                                                         : conflict.localNode();
+                                                                                                           : conflict.localNode();
                 LOGW_SYNCPAL_INFO(_logger, L"Undoing move operation on orphan node " << SyncName2WStr(loserNode->name()));
             }
 
