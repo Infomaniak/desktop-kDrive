@@ -505,8 +505,8 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     ioError = dWordError2ioError(result, logger);
     if (result != ERROR_SUCCESS) {
         ioError = dWordError2ioError(result, logger);
-        LOGW_WARN(logger, L"Error in GetNamedSecurityInfo: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result
-                                                                   << L"'");
+        LOGW_WARN(logger,
+                  L"Error in GetNamedSecurityInfo: " << Utility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
         // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -517,8 +517,7 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     ioError = dWordError2ioError(result, logger);
     if (result != ERROR_SUCCESS) {
         ioError = dWordError2ioError(result, logger);
-        LOGW_WARN(logger,
-                  L"Error in SetEntriesInAcl: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result << L"'");
+        LOGW_WARN(logger, L"Error in SetEntriesInAcl: " << Utility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
         // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -539,8 +538,8 @@ static bool setRightsWindowsApi(const SyncPath &path, DWORD permission, ACCESS_M
     ioError = dWordError2ioError(result, logger);
     if (result != ERROR_SUCCESS) {
         ioError = dWordError2ioError(result, logger);
-        LOGW_WARN(logger, L"Error in SetNamedSecurityInfo: path='" << Utility::formatSyncPath(path) << L"',DWORD err='" << result
-                                                                   << L"'");
+        LOGW_WARN(logger,
+                  L"Error in SetNamedSecurityInfo: " << Utility::formatSyncPath(path) << L", DWORD err='" << result << L"'");
         LocalFree(pSecurityDescriptor);
         LocalFree(pACLnew);
         // pACLold is a pointer to the ACL in the security descriptor, so it should not be freed.
@@ -594,9 +593,9 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     if (result == ERROR_INVALID_ACL) {
         LOGW_INFO(
             logger,
-            L"getRightsWindowsApi: path='"
+            L"getRightsWindowsApi: "
                 << Utility::formatSyncPath(path)
-                << L"', the specified ACL contains an inherited access - denied ACE. Considerring the file as not existing.");
+                << L", the specified ACL contains an inherited access - denied ACE. Considerring the file as not existing.");
         read = false;
         write = false;
         exec = false;
@@ -608,8 +607,8 @@ static bool getRightsWindowsApi(const SyncPath &path, bool &read, bool &write, b
     if (result != ERROR_SUCCESS) {
         LocalFree(psecDesc);
         if (!IoHelper::isExpectedError(ioError)) {
-            LOGW_WARN(logger, L"GetEffectiveRightsFromAcl failed: path='" << Utility::formatSyncPath(path) << L"',DWORD err='"
-                                                                          << result << L"'");
+            LOGW_WARN(logger, L"GetEffectiveRightsFromAcl failed: " << Utility::formatSyncPath(path) << L", DWORD err='" << result
+                                                                    << L"'");
             return false;
         }
         return true;
