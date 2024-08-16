@@ -29,15 +29,6 @@
 
 namespace KDC {
 
-typedef int64_t SyncTime;
-typedef int64_t DbNodeId;
-typedef int64_t UniqueId;
-typedef std::string NodeId;
-typedef std::filesystem::path SyncPath;
-typedef std::filesystem::path::string_type SyncName;
-typedef std::filesystem::path::value_type SyncChar;
-typedef std::filesystem::directory_entry DirectoryEntry;
-typedef std::filesystem::directory_options DirectoryOptions;
 using SyncTime = int64_t;
 using DbNodeId = int64_t;
 using UniqueId = int64_t;
@@ -358,13 +349,14 @@ enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
 enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
 
 struct VersionInfo {
-        std::string tag;
-        std::string changeLog;
-        std::uint64_t buildVersion = 0;
-        std::uint64_t buildMinOsVersion = 0;
-        std::string downloadUrl;
+        std::string tag;                      // Version number. ex: 3.6.4
+        std::string changeLog;                // List of changes in this version
+        std::uint64_t buildVersion = 0;       // ex: 20240816
+        std::uint64_t buildMinOsVersion = 0;  // Minimum version of the OS supported. ex: 10.15, 11, ...
+        std::string downloadUrl;              // URL to download the version
 
         [[nodiscard]] bool isValid() const {
+            // buildMinOsVersion is not mandatory
             return !tag.empty() && !changeLog.empty() && buildVersion != 0 && !downloadUrl.empty();
         }
 

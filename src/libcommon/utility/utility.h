@@ -61,8 +61,8 @@ struct COMMON_EXPORT CommonUtility {
         static const std::string &userAgentString();
         static const std::string &currentVersion();
 
-        static QByteArray intToArray(qint32 source);
-        static int arrayToInt(QByteArray source);
+        static QByteArray toQByteArray(qint32 source);
+        static int toInt(QByteArray source);
         static QString escape(const QString &in);
         static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
         static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);

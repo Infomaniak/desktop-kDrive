@@ -238,7 +238,7 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
     return -1;
 }
 
-QByteArray CommonUtility::intToArray(qint32 source) {
+QByteArray CommonUtility::toQByteArray(const qint32 source) {
     // Avoid use of cast, this is the Qt way to serialize objects
     QByteArray temp;
     QDataStream data(&temp, QIODevice::ReadWrite);
@@ -246,7 +246,7 @@ QByteArray CommonUtility::intToArray(qint32 source) {
     return temp;
 }
 
-int CommonUtility::arrayToInt(QByteArray source) {
+int CommonUtility::toInt(QByteArray source) {
     int temp;
     QDataStream data(&source, QIODevice::ReadWrite);
     data >> temp;
