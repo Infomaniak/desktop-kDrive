@@ -192,10 +192,16 @@ SyncPath Node::getPath() const {
     return path;
 }
 
-bool Node::isParentValid(const std::shared_ptr<Node> parentNode) const {
-    if (!parentNode) return true;  // Parent node is root node, stop climbing up the tree, `parentNode` is a valid parent.
-    if (parentNode->id() == _id) return false;  // Current node is a parent of parentNode, `parentNode` is not a valid parent.
-    return isParentValid(parentNode->parentNode());
+bool Node::isParentValid(std::shared_ptr<Node> parentNode) const {
+    if (!parentNode) return true;  // `parentNode` is root node, hence a valid parent. Stop climbing up the tree.
+
+    while (parentNode) {
+        if (parentNode->id() == _id)
+            return false;  // This node is a parent of `parentNode`, hence `parentNode` is not a valid parent.
+        parentNode = parentNode->parentNode();
+    }
+
+    return true;
 }
 
 }  // namespace KDC

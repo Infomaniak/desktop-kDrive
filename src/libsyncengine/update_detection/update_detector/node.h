@@ -141,6 +141,7 @@ class Node {
         bool _isTmp = false;
 
         [[nodiscard]] bool isParentValid(std::shared_ptr<Node> parentNode) const;
+        friend class TestUpdateTree;
 };
 
 }  // namespace KDC
