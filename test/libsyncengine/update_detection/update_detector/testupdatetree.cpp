@@ -63,7 +63,8 @@ void TestUpdateTree::testConstructors() {
     }
 
     {
-        Node node;
+        Node node(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0, 12345,
+                  _myTree->rootNode());
         node.setName(nfdName);
         CPPUNIT_ASSERT(node.name() == nfcName);
     }
@@ -71,11 +72,12 @@ void TestUpdateTree::testConstructors() {
 
 void TestUpdateTree::testAll() {
     CPPUNIT_ASSERT(_myTree->_nodes.empty());
-    _myTree->insertNode(std::make_shared<Node>());
-    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
-
     auto node1 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None,
                                         "l1", 0, 0, 12345, _myTree->rootNode());
+    _myTree->insertNode(node1);
+    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
+
+
     auto node2 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::None,
                                         "l2", 0, 0, 12345, _myTree->rootNode());
     auto node3 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::None,
@@ -112,7 +114,6 @@ void TestUpdateTree::testAll() {
     _myTree->insertNode(node1111);
     _myTree->insertNode(node111);
     _myTree->insertNode(node11);
-    _myTree->insertNode(node1);
     _myTree->insertNode(node2);
     _myTree->insertNode(node3);
     _myTree->insertNode(node4);
@@ -130,10 +131,6 @@ void TestUpdateTree::testAll() {
 }
 
 void TestUpdateTree::testChangeEvents() {
-    CPPUNIT_ASSERT(_myTree->_nodes.empty());
-    _myTree->insertNode(std::make_shared<Node>());
-    CPPUNIT_ASSERT(_myTree->_nodes.size() == 1);
-
     std::shared_ptr<Node> node = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 0"), NodeType::Directory,
                                                         OperationType::None, "0", 0, 0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeCreate =

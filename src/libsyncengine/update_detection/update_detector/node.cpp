@@ -23,8 +23,6 @@
 
 namespace KDC {
 
-const Node Node::_nullNode;
-
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,

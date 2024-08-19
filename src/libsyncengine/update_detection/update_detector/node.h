@@ -50,8 +50,6 @@ class Node {
          */
         Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode);
 
-        Node() = default;
-
         bool operator==(const Node &n) const;
 
         inline std::optional<DbNodeId> idb() const { return _idb; }
