@@ -23,7 +23,9 @@
 namespace KDC {
 
 DuplicateJob::DuplicateJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &absoluteFinalPath)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteFileId(remoteFileId), _absoluteFinalPath(absoluteFinalPath) {
+    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+      _remoteFileId(remoteFileId),
+      _absoluteFinalPath(absoluteFinalPath) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 

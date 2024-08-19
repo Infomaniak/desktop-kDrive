@@ -248,7 +248,8 @@ void TestIo::testGetItemTypeSimpleCases() {
 #ifdef _WIN32
         const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::File);
 #else
-        const auto result = checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::Unknown);
+        const auto result =
+            checker.checkSuccessfullRetrievalOfDanglingLink(path, targetPath, LinkType::Symlink, NodeType::Unknown);
 #endif
         CPPUNIT_ASSERT_MESSAGE(result.message, result.success);
     }

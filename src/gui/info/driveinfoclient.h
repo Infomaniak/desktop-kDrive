@@ -31,17 +31,9 @@ namespace KDC {
 
 class DriveInfoClient : public DriveInfo {
     public:
-        enum class SynthesisStackedWidget {
-            Synchronized = 0,
-            Favorites,
-            Activity, 
-            FirstAdded
-        };
+        enum class SynthesisStackedWidget { Synchronized = 0, Favorites, Activity, FirstAdded };
 
-        enum class ParametersStackedWidget {
-            General = 0,
-            FirstAdded
-        };
+        enum class ParametersStackedWidget { General = 0, FirstAdded };
 
         DriveInfoClient();
         DriveInfoClient(const DriveInfo &driveInfo);

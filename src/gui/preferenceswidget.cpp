@@ -768,7 +768,8 @@ void PreferencesWidget::retranslateUi() {
     _languageSelectorComboBox->addItem(tr("German"), enumClassToInt(Language::German));
     _languageSelectorComboBox->addItem(tr("Spanish"), enumClassToInt(Language::Spanish));
     _languageSelectorComboBox->addItem(tr("Italian"), enumClassToInt(Language::Italian));
-    const int languageIndex = _languageSelectorComboBox->findData(enumClassToInt(ParametersCache::instance()->parametersInfo().language()));
+    const int languageIndex =
+        _languageSelectorComboBox->findData(enumClassToInt(ParametersCache::instance()->parametersInfo().language()));
     _languageSelectorComboBox->setCurrentIndex(languageIndex);
     _languageSelectorComboBox->blockSignals(false);
 

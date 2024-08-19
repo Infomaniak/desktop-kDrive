@@ -163,7 +163,7 @@ class COMMONSERVER_EXPORT Log {
         inline log4cplus::Logger getLogger() { return _logger; }
         bool configure(bool useLog, LogLevel logLevel, bool purgeOldLogs);
 
-		/*! Returns the path of the log file.
+        /*! Returns the path of the log file.
          * \return The path of the log file.
          */
         SyncPath getLogFilePath() const;

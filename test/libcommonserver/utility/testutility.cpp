@@ -237,10 +237,19 @@ void TestUtility::testJoinStr() {
 }
 
 void TestUtility::testPathDepth() {
-    SyncPath path = "";
-    CPPUNIT_ASSERT_EQUAL(0, _testObj->pathDepth(path));
+    CPPUNIT_ASSERT_EQUAL(0, _testObj->pathDepth({}));
+    CPPUNIT_ASSERT_EQUAL(1, _testObj->pathDepth(SyncPath{"/"}));
+    CPPUNIT_ASSERT_EQUAL(1, _testObj->pathDepth(SyncPath{"A"}));
+    CPPUNIT_ASSERT_EQUAL(2, _testObj->pathDepth(SyncPath{"A/"}));
+    CPPUNIT_ASSERT_EQUAL(2, _testObj->pathDepth(SyncPath{"/A"}));
+    CPPUNIT_ASSERT_EQUAL(3, _testObj->pathDepth(SyncPath{"/A/"}));
+    CPPUNIT_ASSERT_EQUAL(2, _testObj->pathDepth(SyncPath{"A/B"}));
+    CPPUNIT_ASSERT_EQUAL(3, _testObj->pathDepth(SyncPath{"A/B/C"}));
+    CPPUNIT_ASSERT_EQUAL(4, _testObj->pathDepth(SyncPath{"/A/B/C"}));
+    CPPUNIT_ASSERT_EQUAL(5, _testObj->pathDepth(SyncPath{"/A/B/C/"}));
 
-    for (int i = 1; i < 10; i++) {
+    SyncPath path;
+    for (int i = 1; i < 5; i++) {
         path /= "dir";
         CPPUNIT_ASSERT_EQUAL(i, _testObj->pathDepth(path));
     }
@@ -362,6 +371,11 @@ void TestUtility::testFormatIoError() {
     CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
     CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
                            result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+}
+
+void TestUtility::testFormatPath() {
+    const QString path = "A/AA";
+    CPPUNIT_ASSERT(Utility::formatPath(path).find(path.toStdWString()) != std::wstring::npos);
 }
 
 void TestUtility::testFormatSyncPath() {

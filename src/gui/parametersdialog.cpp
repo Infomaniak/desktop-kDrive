@@ -261,8 +261,8 @@ void ParametersDialog::initUI() {
     errorsVBox->setStretchFactor(_errorsStackedWidget, 1);
 
     // Create General level errors list
-    _errorTabWidgetStackPosition =
-        _errorsStackedWidget->addWidget(new ErrorTabWidget(enumClassToInt(DriveInfoClient::ParametersStackedWidget::General), true, this));
+    _errorTabWidgetStackPosition = _errorsStackedWidget->addWidget(
+        new ErrorTabWidget(enumClassToInt(DriveInfoClient::ParametersStackedWidget::General), true, this));
     refreshErrorList(0);
 
     // Init labels and setup connection for on the fly translation
@@ -911,7 +911,8 @@ void ParametersDialog::onConfigRefreshed() {
     }
 
     // Clear unused Drive level (SyncPal or Node) errors list
-    for (int widgetIndex = enumClassToInt(DriveInfoClient::ParametersStackedWidget::FirstAdded); widgetIndex < _errorsStackedWidget->count();) {
+    for (int widgetIndex = enumClassToInt(DriveInfoClient::ParametersStackedWidget::FirstAdded);
+         widgetIndex < _errorsStackedWidget->count();) {
         QWidget *widget = _errorsStackedWidget->widget(widgetIndex);
         bool driveIsFound = false;
         bool driveHasSyncs = false;

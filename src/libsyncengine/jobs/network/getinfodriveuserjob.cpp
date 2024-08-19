@@ -20,7 +20,8 @@
 
 namespace KDC {
 
-GetInfoDriveUserJob::GetInfoDriveUserJob(int userDbId, int driveId) : AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId) {
+GetInfoDriveUserJob::GetInfoDriveUserJob(int userDbId, int driveId)
+    : AbstractTokenNetworkJob(ApiType::Drive, userDbId, 0, 0, driveId) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }
 

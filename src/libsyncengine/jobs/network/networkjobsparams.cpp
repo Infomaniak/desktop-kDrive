@@ -24,7 +24,7 @@
 namespace KDC {
 
 struct StringHash {
-        using is_transparent = void; // Enables heterogeneous operations.
+        using is_transparent = void;  // Enables heterogeneous operations.
 
         std::size_t operator()(std::string_view sv) const {
             std::hash<std::string_view> hasher;
@@ -58,8 +58,7 @@ ActionCode getActionCode(const std::string &action) noexcept {
         {"acl_team_remove", ActionCode::actionCodeAccessRightTeamRemove},
         {"acl_main_users_insert", ActionCode::actionCodeAccessRightMainUsersInsert},
         {"acl_main_users_update", ActionCode::actionCodeAccessRightMainUsersUpdate},
-        {"acl_main_users_remove", ActionCode::actionCodeAccessRightMainUsersRemove}
-    };
+        {"acl_main_users_remove", ActionCode::actionCodeAccessRightMainUsersRemove}};
 
     if (const auto it = actionMap.find(action); it != actionMap.cend()) return it->second;
 

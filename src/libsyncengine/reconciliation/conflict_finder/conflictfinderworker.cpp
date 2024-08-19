@@ -99,8 +99,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             }
         }
         // Create - Create_Create conflict
-        if (node->hasChangeEvent(OperationType::Create) &&
-            !node->hasConflictAlreadyConsidered(ConflictType::CreateCreate)) {
+        if (node->hasChangeEvent(OperationType::Create) && !node->hasConflictAlreadyConsidered(ConflictType::CreateCreate)) {
             std::optional<Conflict> createCreateConf = checkCreateCreateConflict(node);
             if (createCreateConf) {
                 _syncPal->_conflictQueue->push(*createCreateConf);
@@ -114,8 +113,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
             }
         }
         // Edit - Edit_Edit conflict
-        if (node->hasChangeEvent(OperationType::Edit) &&
-            !node->hasConflictAlreadyConsidered(ConflictType::EditEdit)) {
+        if (node->hasChangeEvent(OperationType::Edit) && !node->hasConflictAlreadyConsidered(ConflictType::EditEdit)) {
             std::optional<Conflict> editEditConf = checkEditEditConflict(node);
             if (editEditConf) {
                 _syncPal->_conflictQueue->push(*editEditConf);

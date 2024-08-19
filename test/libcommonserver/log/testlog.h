@@ -35,12 +35,13 @@ class TestLog : public CppUnit::TestFixture {
 
         void testLargeLogRolling(void);
         void testExpiredLogFiles(void);
+
     private:
         log4cplus::Logger _logger;
         void testLog(void);
 
         int countFilesInDirectory(const SyncPath& directory) const;  // return -1 if error
-        void clearLogDirectory(void) const; // remove all files in log directory except the current log file
+        void clearLogDirectory(void) const;  // remove all files in log directory except the current log file
         SyncPath _logDir;
 };
 }  // namespace KDC

@@ -39,6 +39,8 @@
 #include <Accctrl.h>
 #endif
 
+class QString;
+
 namespace Poco {
 class URI;
 }
@@ -75,6 +77,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::wstring formatStdError(const SyncPath &path, const std::error_code &ec);
         static std::wstring formatIoError(const SyncPath &path, IoError ioError);
         static std::wstring formatSyncPath(const SyncPath &path);
+        static std::wstring formatPath(const QString &path);
 
         static std::string formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description);
 
@@ -123,7 +126,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string list2str(std::unordered_set<std::string> inList);
         static std::string list2str(std::list<std::string> inList);
 
-        static int pathDepth(const SyncPath path);
+        inline static int pathDepth(const SyncPath &path) { return std::distance(path.begin(), path.end()); };
         static std::string computeMd5Hash(const std::string &in);
         static std::string computeMd5Hash(const char *in, std::size_t length);
         static std::string computeXxHash(const std::string &in);

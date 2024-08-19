@@ -213,6 +213,14 @@ std::wstring Utility::formatSyncPath(const SyncPath &path) {
     return ss.str();
 }
 
+
+std::wstring Utility::formatPath(const QString &path) {
+    std::wstringstream ss;
+    ss << L"path='" << QStr2WStr(path) << L"'";
+
+    return ss.str();
+}
+
 std::wstring Utility::formatStdError(const std::error_code &ec) {
 #ifdef _WIN32
     std::stringstream ss;
@@ -622,14 +630,6 @@ std::string Utility::list2str(std::list<std::string> inList) {
         }
     }
     return out;
-}
-
-int Utility::pathDepth(const SyncPath path) {
-    int level = 0;
-    for (auto it = path.begin(); it != path.end(); ++it) {
-        level++;
-    }
-    return level;
 }
 
 std::string Utility::computeMd5Hash(const std::string &in) {

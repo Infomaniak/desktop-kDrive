@@ -79,8 +79,8 @@ void FolderWatcher_win::watchChanges() {
     LOG_DEBUG(_logger, "Start watching changes");
 
     _directoryHandle =
-        CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE, nullptr,
-                    OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
+        CreateFileW(_folder.native().c_str(), FILE_LIST_DIRECTORY, FILE_SHARE_WRITE | FILE_SHARE_READ | FILE_SHARE_DELETE,
+                    nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED, nullptr);
 
     if (_directoryHandle == INVALID_HANDLE_VALUE) {
         DWORD errorCode = GetLastError();
