@@ -373,6 +373,11 @@ void TestUtility::testFormatIoError() {
                            result.find(Utility::s2ws(path.string())) != std::wstring::npos);
 }
 
+void TestUtility::testFormatPath() {
+    const QString path = "A/AA";
+    CPPUNIT_ASSERT(Utility::formatPath(path).find(path.toStdWString()) != std::wstring::npos);
+}
+
 void TestUtility::testFormatSyncPath() {
     const SyncPath path = "A/AA";
     CPPUNIT_ASSERT(Utility::formatSyncPath(path).find(Utility::s2ws(path.string())) != std::wstring::npos);

@@ -158,7 +158,7 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
         bool ok = true;
         for (const auto &dir : dirsToFix) {
             if (!_connector->vfsProcessDirStatus(dir, _localSyncPath)) {
-                LOGW_WARN(logger(), L"Error in vfsProcessDirStatus for " << QStr2WStr(dir).c_str() << errno);
+                LOGW_WARN(logger(), L"Error in vfsProcessDirStatus for " << Utility::formatPath(dir).c_str() << errno);
                 ok = false;
             }
         }
@@ -185,7 +185,7 @@ void VfsMac::stopImpl(bool unregister) {
 }
 
 void VfsMac::dehydrate(const QString &absoluteFilepath) {
-    LOGW_DEBUG(logger(), L"dehydrate - path = " << QStr2WStr(absoluteFilepath).c_str());
+    LOGW_DEBUG(logger(), L"dehydrate - " << Utility::formatPath(absoluteFilepath).c_str());
 
     // Dehydrate file
 
@@ -198,7 +198,7 @@ void VfsMac::dehydrate(const QString &absoluteFilepath) {
 }
 
 void VfsMac::hydrate(const QString &path) {
-    LOGW_DEBUG(logger(), L"hydrate - path = " << QStr2WStr(path).c_str());
+    LOGW_DEBUG(logger(), L"hydrate - " << Utility::formatPath(path).c_str());
 
     if (!_connector->vfsHydratePlaceHolder(QDir::toNativeSeparators(path))) {
         LOG_WARN(logger(), "Error in vfsHydratePlaceHolder!");
@@ -243,7 +243,7 @@ bool VfsMac::updateMetadata(const QString &absoluteFilePath, time_t creationTime
     Q_UNUSED(fileId);
 
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"updateMetadata - path = " << QStr2WStr(absoluteFilePath).c_str());
+        LOGW_DEBUG(logger(), L"updateMetadata - " << Utility::formatPath(absoluteFilePath).c_str());
     }
 
     if (!_connector) {
@@ -305,7 +305,7 @@ bool VfsMac::createPlaceholder(const SyncPath &relativeLocalPath, const SyncFile
 
 bool VfsMac::dehydratePlaceholder(const QString &path) {
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"dehydratePlaceholder - file = " << QStr2WStr(path).c_str());
+        LOGW_DEBUG(logger(), L"dehydratePlaceholder - file " << Utility::formatPath(path).c_str());
     }
     SyncPath fullPath(_vfsSetupParams._localPath / QStr2Path(path));
     std::error_code ec;
@@ -333,7 +333,7 @@ bool VfsMac::dehydratePlaceholder(const QString &path) {
     }
 
     if (isHydrated) {
-        LOGW_DEBUG(logger(), L"Dehydrate file " << QStr2WStr(path).c_str());
+        LOGW_DEBUG(logger(), L"Dehydrate file with " << Utility::formatPath(path).c_str());
         dehydrate(QString::fromStdString(fullPath.string()));
     }
 
@@ -344,7 +344,7 @@ bool VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item,
     needRestart = false;
 
     if (extendedLog()) {
-        LOGW_DEBUG(logger(), L"convertToPlaceholder - path = " << QStr2WStr(path).c_str());
+        LOGW_DEBUG(logger(), L"convertToPlaceholder - " << Utility::formatPath(path).c_str());
     }
 
     if (path.isEmpty()) {
@@ -498,7 +498,7 @@ void VfsMac::resetLiteSyncConnector() {
 
 bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled, bool &finished) {
     if (extendedLog()) {
-        LOGW_INFO(logger(), L"updateFetchStatus " << QStr2WStr(path).c_str() << " - " << received);
+        LOGW_INFO(logger(), L"updateFetchStatus file " << Utility::formatPath(path).c_str() << " - " << received);
     }
     if (tmpPath.isEmpty() || path.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
@@ -623,7 +623,7 @@ bool VfsMac::status(const QString &filePath, bool &isPlaceholder, bool &isHydrat
 }
 
 void VfsMac::exclude(const QString &path) {
-    LOGW_DEBUG(logger(), L"exclude - path = " << QStr2WStr(path).c_str());
+    LOGW_DEBUG(logger(), L"exclude - " << Utility::formatPath(path).c_str());
 
     bool isPlaceholder = false;
     bool isHydrated = false;
@@ -704,7 +704,8 @@ bool VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
 }
 
 bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
-    LOGW_DEBUG(logger(), L"fileStatusChanged - path = " << QStr2WStr(path).c_str() << L" - status = " << enumClassToInt(status));
+    LOGW_DEBUG(logger(),
+               L"fileStatusChanged - " << Utility::formatPath(path).c_str() << L" - status = " << enumClassToInt(status));
 
     SyncPath fullPath(QStr2Path(path));
     std::error_code ec;
