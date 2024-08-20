@@ -17,8 +17,6 @@
  */
 
 #include "testoldsyncdb.h"
-#include "libcommonserver/utility/asserts.h"
-
 
 using namespace CppUnit;
 

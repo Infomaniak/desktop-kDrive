@@ -2130,9 +2130,9 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
                                << enumClassToInt(syncOp->affectedNode()->type()));
     }
 
-    if (dbNode.nameLocal().empty() || dbNode.nameRemote().empty() || !dbNode.nodeIdLocal().has_value() ||
-        !dbNode.nodeIdRemote().has_value() || !dbNode.created().has_value() || !dbNode.lastModifiedLocal().has_value() ||
-        !dbNode.lastModifiedRemote().has_value() || dbNode.type() == NodeType::Unknown) {
+    if (dbNode.nameRemote().empty() || !dbNode.nodeIdLocal().has_value() || !dbNode.nodeIdRemote().has_value() ||
+        !dbNode.created().has_value() || !dbNode.lastModifiedLocal().has_value() || !dbNode.lastModifiedRemote().has_value() ||
+        dbNode.type() == NodeType::Unknown) {
         LOG_SYNCPAL_ERROR(_logger, "Error inserting new node in DB!!!");
         assert(false);
     }

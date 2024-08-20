@@ -1286,9 +1286,8 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
             // update parentDbId
             node->setMoveOriginParentDbId(dbNode.parentNodeId());
 
-            SyncPath localPath;
-            SyncPath remotePath;
-            if (!_syncDb->path(node->idb().value(), localPath, remotePath, found)) {
+            SyncPath dbPath;
+            if (!_syncDb->path(node->idb().value(), dbPath, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
                 return ExitCode::DbError;
             }
@@ -1296,9 +1295,7 @@ ExitCode UpdateTreeWorker::updateNodeWithDb(const std::shared_ptr<Node> parentNo
                 LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for DB ID=" << node->idb().value());
                 return ExitCode::DataError;
             }
-            node->setMoveOrigin(_side == ReplicaSide::Local ? localPath
-                                                            : remotePath);  // TODO : no need to keep both remote and local paths
-                                                                            // since we do not rename the file locally anymore.
+            node->setMoveOrigin(dbPath);
         }
 
         // if it's dbNodeId is null
@@ -1452,9 +1449,8 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
                 return ExitCode::DataError;
             }
 
-            SyncPath localPath;
-            SyncPath remotePath;
-            if (!_syncDb->path(dbNode.nodeId(), localPath, remotePath, found)) {
+            SyncPath dbPath;
+            if (!_syncDb->path(dbNode.nodeId(), dbPath, found)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::path");
                 return ExitCode::DbError;
             }
@@ -1463,7 +1459,7 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
                 return ExitCode::DataError;
             }
 
-            path = localPath;
+            path = dbPath;
             break;
         } else {
             names.push_back(tmpNode->name());
@@ -1498,17 +1494,6 @@ ExitCode UpdateTreeWorker::updateNameFromDbForMoveOp(const std::shared_ptr<Node>
         LOG_SYNCPAL_WARN(_logger,
                          "Failed to retrieve node for id=" << (node->id().has_value() ? *node->id() : std::string()).c_str());
         return ExitCode::DataError;
-    }
-
-    if (dbNode.nameLocal() != dbNode.nameRemote()) {  // Useless?? Now the local and remote name are always the same
-        // Check if the file has been renamed locally
-        if (moveOp->destinationPath().filename() != dbNode.nameLocal()) {
-            // The file has been renamed locally, propagate the change on remote
-            node->setName(moveOp->destinationPath().filename().native());
-        } else {
-            // The file has been moved but not renamed, keep the names from DB
-            node->setName(dbNode.nameRemote());
-        }
     }
 
     return ExitCode::Ok;

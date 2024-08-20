@@ -1345,23 +1345,14 @@ void SyncPal::fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const Syn
         LOG_DEBUG(KDC::Log::instance()->getLogger(), "Delete " << dbNodeList.size() << " files");
         for (DbNode &dbNode : dbNodeList) {
             SyncPath oldLocalPath;
-            SyncPath remotePath;
-            bool found;
-            if (!syncDb->path(dbNode.nodeId(), oldLocalPath, remotePath, found)) {
+            bool dbNodeIsfound = false;
+            if (!syncDb->path(dbNode.nodeId(), oldLocalPath, dbNodeIsfound, ReplicaSide::Local)) {
                 LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::path");
                 continue;
             }
-            if (!found) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
-                continue;
-            }
 
-            found = false;
-            if (!syncDb->deleteNode(dbNode.nodeId(), found)) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
-                continue;
-            }
-            if (!found) {
+            bool nodeToDeleteIsfound = false;
+            if (!dbNodeIsfound || !syncDb->deleteNode(dbNode.nodeId(), nodeToDeleteIsfound) || !nodeToDeleteIsfound) {
                 LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
                 continue;
             }

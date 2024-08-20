@@ -19,10 +19,6 @@
 #include "testsyncdb.h"
 #include "test_utility/testhelpers.h"
 
-#include "libcommonserver/utility/asserts.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/log/log.h"
-
 #include <time.h>
 
 using namespace CppUnit;
@@ -96,13 +92,14 @@ void TestSyncDb::testUpgrade_3_6_3() {
     DbNode nodeFile3(0, rootId, nfcEncodedName, nfcEncodedName, "id loc 3", "id drive 3", tLoc, tLoc, tDrive, NodeType::File, 0,
                      "cs 2.2");
 
-    bool constraintError = false;
-    DbNodeId dbNodeId;
+    {
+        bool constraintError = false;
+        DbNodeId dbNodeId;
 
-    _testObj->insertNode(nodeFile1, dbNodeId, constraintError);
-    _testObj->insertNode(nodeFile2, dbNodeId, constraintError);
-    _testObj->insertNode(nodeFile3, dbNodeId, constraintError);
-
+        _testObj->insertNode(nodeFile1, dbNodeId, constraintError);
+        _testObj->insertNode(nodeFile2, dbNodeId, constraintError);
+        _testObj->insertNode(nodeFile3, dbNodeId, constraintError);
+    }
     _testObj->upgrade("3.6.3", "3.6.4");
 
     // All DB sync names should now be NFC-normalized.
@@ -115,6 +112,52 @@ void TestSyncDb::testUpgrade_3_6_3() {
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, std::string("id drive ") + std::to_string(i), remoteName, found) &&
                        found);
         CPPUNIT_ASSERT(remoteName == nfcEncodedName);
+    }
+}
+
+void TestSyncDb::testPathFromDb() {
+    const time_t tLoc = std::time(0);
+    const time_t tDrive = std::time(0);
+    const auto rootId = _testObj->rootNode().nodeId();
+
+    const auto nfdEncodedName = testhelpers::makeNfdSyncName();
+    const auto nfcEncodedName = testhelpers::makeNfcSyncName();
+
+    DbNodeTest nodeFile1(rootId + 1, rootId, nfdEncodedName, nfdEncodedName, "dir_1", "id drive 1", tLoc, tLoc, tDrive,
+                         NodeType::Directory, 0, "cs 2.2");
+    DbNodeTest nodeFile11(rootId + 2, rootId + 1, nfcEncodedName, nfdEncodedName, "dir_11", "id drive 11", tLoc, tLoc, tDrive,
+                          NodeType::Directory, 0, "cs 2.2");
+    DbNodeTest nodeFile111(rootId + 3, rootId + 2, nfcEncodedName, nfcEncodedName, "dir_111", "id drive 111", tLoc, tLoc, tDrive,
+                           NodeType::File, 0, "cs 2.2");
+
+    {
+        bool constraintError = false;
+        DbNodeId dbNodeId;
+        _testObj->insertNode(nodeFile1, dbNodeId, constraintError);
+        _testObj->insertNode(nodeFile11, dbNodeId, constraintError);
+        _testObj->insertNode(nodeFile111, dbNodeId, constraintError);
+    }
+
+    const SyncPath expectedPath = SyncPath(nfcEncodedName) / nfcEncodedName / nfcEncodedName;
+    {
+        SyncPath dbPath;
+        bool found = false;
+        CPPUNIT_ASSERT(_testObj->path(rootId + 3, dbPath, found) && found);
+        CPPUNIT_ASSERT_EQUAL(expectedPath, dbPath);
+    }
+
+    {
+        SyncPath dbPath;
+        bool found = false;
+        CPPUNIT_ASSERT(_testObj->path(rootId + 3, dbPath, found, ReplicaSide::Local) && found);
+        CPPUNIT_ASSERT_EQUAL(expectedPath, dbPath);
+    }
+
+    {
+        SyncPath dbPath;
+        bool found = false;
+        CPPUNIT_ASSERT(_testObj->path(rootId + 3, dbPath, found, ReplicaSide::Remote) && found);
+        CPPUNIT_ASSERT_EQUAL(expectedPath, dbPath);
     }
 }
 
@@ -448,29 +491,21 @@ void TestSyncDb::testNodes() {
 
     // paths from db ID
     {
-        SyncPath localPathFile3;
-        SyncPath remotePathFile3;
-        CPPUNIT_ASSERT(_testObj->path(dbNodeIdFile3, localPathFile3, remotePathFile3, found) && found);
-        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("Dir loc 1/File loc 1.3")), localPathFile3);
-        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("Dir drive 1/File drive 1.3")), remotePathFile3);
+        SyncPath pathFile3;
+        CPPUNIT_ASSERT(_testObj->path(dbNodeIdFile3, pathFile3, found) && found);
+        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("Dir drive 1/File drive 1.3")), pathFile3);
 
-        SyncPath localPathDir1;
-        SyncPath remotePathDir1;
-        CPPUNIT_ASSERT(_testObj->path(dbNodeIdDir1, localPathDir1, remotePathDir1, found) && found);
-        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("Dir loc 1")), localPathDir1);
-        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("Dir drive 1")), remotePathDir1);
+        SyncPath pathDir1;
+        CPPUNIT_ASSERT(_testObj->path(dbNodeIdDir1, pathDir1, found) && found);
+        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("Dir drive 1")), pathDir1);
 
-        SyncPath localPathDir3;
-        SyncPath remotePathDir3;
-        CPPUNIT_ASSERT(_testObj->path(dbNodeIdDir3, localPathDir3, remotePathDir3, found) && found);
-        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("家屋香袈睷晦")), localPathDir3);
-        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("家屋香袈睷晦")), remotePathDir3);
+        SyncPath pathDir3;
+        CPPUNIT_ASSERT(_testObj->path(dbNodeIdDir3, pathDir3, found) && found);
+        CPPUNIT_ASSERT_EQUAL(SyncPath(Str("家屋香袈睷晦")), pathDir3);
 
-        SyncPath localPathRoot;
-        SyncPath remotePathRoot;
-        CPPUNIT_ASSERT(_testObj->path(_testObj->rootNode().nodeId(), localPathRoot, remotePathRoot, found) && found);
-        CPPUNIT_ASSERT_EQUAL(SyncPath(""), localPathRoot);
-        CPPUNIT_ASSERT_EQUAL(SyncPath(""), remotePathRoot);
+        SyncPath pathRoot;
+        CPPUNIT_ASSERT(_testObj->path(_testObj->rootNode().nodeId(), pathRoot, found) && found);
+        CPPUNIT_ASSERT_EQUAL(SyncPath(""), pathRoot);
     }
 
     // node from db ID
