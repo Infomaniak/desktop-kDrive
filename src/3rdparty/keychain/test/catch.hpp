@@ -165,9 +165,10 @@ unsigned int rngSeed();
                                                hicpp-vararg) */
 #endif
 
-#define CATCH_INTERNAL_SUPPRESS_GLOBALS_WARNINGS                                                        \
-    _Pragma("clang diagnostic ignored \"-Wexit-time-destructors\"") _Pragma("clang diagnostic ignored " \
-                                                                            "\"-Wglobal-constructors\"")
+#define CATCH_INTERNAL_SUPPRESS_GLOBALS_WARNINGS                             \
+    _Pragma("clang diagnostic ignored \"-Wexit-time-destructors\"") _Pragma( \
+        "clang diagnostic ignored "                                          \
+        "\"-Wglobal-constructors\"")
 
 #define CATCH_INTERNAL_SUPPRESS_PARENTHESES_WARNINGS _Pragma("clang diagnostic ignored \"-Wparentheses\"")
 
@@ -4227,8 +4228,8 @@ template <typename L>
 // Note: The type after -> is weird, because VS2015 cannot parse
 //       the expression used in the typedef inside, when it is in
 //       return type. Yeah.
-auto generate(StringRef generatorName, SourceLineInfo const &lineInfo, L const &generatorExpression)
-    -> decltype(std::declval<decltype(generatorExpression())>().get()) {
+auto generate(StringRef generatorName, SourceLineInfo const &lineInfo,
+              L const &generatorExpression) -> decltype(std::declval<decltype(generatorExpression())>().get()) {
     using UnderlyingType = typename decltype(generatorExpression())::type;
 
     IGeneratorTracker &tracker = acquireGeneratorTracker(generatorName, lineInfo);
@@ -4326,8 +4327,7 @@ class FilterGenerator : public IGenerator<T> {
             if (!success) {
                 return false;
             }
-            while (!m_predicate(m_generator.get()) && (success = m_generator.next()) == true)
-                ;
+            while (!m_predicate(m_generator.get()) && (success = m_generator.next()) == true);
             return success;
         }
 };
