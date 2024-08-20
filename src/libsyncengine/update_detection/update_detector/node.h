@@ -140,7 +140,7 @@ class Node {
 
         bool _isTmp = false;
 
-        [[nodiscard]] bool isParentValid(std::shared_ptr<Node> parentNode) const;
+        [[nodiscard]] bool isParentValid(std::shared_ptr<const Node> parentNode) const;
         friend class TestUpdateTree;
 };
 

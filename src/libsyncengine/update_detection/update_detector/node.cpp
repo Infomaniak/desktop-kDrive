@@ -192,8 +192,8 @@ SyncPath Node::getPath() const {
     return path;
 }
 
-bool Node::isParentValid(std::shared_ptr<Node> parentNode) const {
-    if (!parentNode) return true;  // `parentNode` is root node, hence a valid parent. Stop climbing up the tree.
+bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
+    if (!parentNode) return true;  // `parentNode` is the root node, hence a valid parent. Stop climbing up the tree.
 
     while (parentNode) {
         if (parentNode->id() == _id)
