@@ -349,14 +349,13 @@ enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
 enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
 
 struct VersionInfo {
-        std::string tag;                      // Version number. ex: 3.6.4
-        std::string changeLog;                // List of changes in this version
-        std::uint64_t buildVersion = 0;       // ex: 20240816
-        std::uint64_t buildMinOsVersion = 0;  // Minimum version of the OS supported. ex: 10.15, 11, ...
-        std::string downloadUrl;              // URL to download the version
+        std::string tag;                 // Version number. Example: 3.6.4
+        std::string changeLog;           // List of changes in this version
+        std::uint64_t buildVersion = 0;  // Example: 20240816
+        std::string buildMinOsVersion;   // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
+        std::string downloadUrl;         // URL to download the version
 
         [[nodiscard]] bool isValid() const {
-            // buildMinOsVersion is not mandatory
             return !tag.empty() && !changeLog.empty() && buildVersion != 0 && !downloadUrl.empty();
         }
 
