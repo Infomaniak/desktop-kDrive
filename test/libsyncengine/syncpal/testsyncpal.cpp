@@ -429,12 +429,12 @@ void TestSyncPal::testFixInconsistenFileNames() {
     const time_t tDrive = std::time(0);
     const auto rootId = syncPalMock->syncDb()->rootNode().nodeId();
 
-    const DbNode nodeFile1(0, rootId, "file 1", "file 1", "id loc 1", "id drive 1", tLoc, tLoc, tDrive, NodeType::File, 0,
-                           "cs 2.2");
-    const DbNode nodeFile2(0, rootId, "file 2", "FILE 2", "id loc 2", "id drive 2", tLoc, tLoc, tDrive, NodeType::File, 0,
-                           "cs 2.2");
-    const DbNode nodeFile3(0, rootId, "FILE 3", "file 3", "id loc 3", "id drive 3", tLoc, tLoc, tDrive, NodeType::File, 0,
-                           "cs 2.2");
+    const DbNode nodeFile1(0, rootId, Str("file 1"), Str("file 1"), "id loc 1", "id drive 1", tLoc, tLoc, tDrive, NodeType::File,
+                           0, "cs 2.2");
+    const DbNode nodeFile2(0, rootId, Str("file 2"), Str("FILE 2"), "id loc 2", "id drive 2", tLoc, tLoc, tDrive, NodeType::File,
+                           0, "cs 2.2");
+    const DbNode nodeFile3(0, rootId, Str("FILE 3"), Str("file 3"), "id loc 3", "id drive 3", tLoc, tLoc, tDrive, NodeType::File,
+                           0, "cs 2.2");
 
     {
         bool constraintError = false;
