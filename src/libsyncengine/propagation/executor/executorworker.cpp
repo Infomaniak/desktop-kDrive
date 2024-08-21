@@ -143,7 +143,7 @@ void ExecutorWorker::execute() {
                 }
                 default: {
                     LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type: "
-                                                   << Utility::s2ws(Utility::opType2Str(syncOp->type())).c_str() << L" on file "
+                                                   << syncOp->type() << L" on file "
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                     _executorExitCode = ExitCode::DataError;
                     _executorExitCause = ExitCause::Unknown;
@@ -2067,7 +2067,7 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
             return propagateDeleteToDbAndTree(syncOp);
         }
         default: {
-            LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type " << Utility::s2ws(Utility::opType2Str(syncOp->type())).c_str()
+            LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type " << syncOp->type()
                                                                   << L" on file "
                                                                   << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
         }

@@ -454,7 +454,7 @@ std::wstring stringToWideString(const std::string &str);  // Convert string to w
 // Stream Operator (toString)
 template <PrintableEnum C>
 std::string enumClassToStringWithCode(C e) {
-    return enumClassToString(e) + " (" + std::to_string(enumClassToInt(e)) + ")"; // Example: "Ok (1)"
+    return enumClassToString(e) + "(" + std::to_string(enumClassToInt(e)) + ")"; // Example: "Ok (1)"
 }
 
 template <PrintableEnum C>

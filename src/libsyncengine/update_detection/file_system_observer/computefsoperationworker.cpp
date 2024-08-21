@@ -211,8 +211,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     nodeId = dbNode.nodeIdRemote().has_value() ? dbNode.nodeIdRemote().value() : "";
                 }
                 if (nodeId.empty()) {
-                    LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(side)).c_str()
-                                                   << L" node ID empty for for dbId=" << dbId);
+                    LOGW_SYNCPAL_WARN(_logger, side << L" node ID empty for for dbId=" << dbId);
                     setExitCause(ExitCause::DbEntryNotFound);
                     return ExitCode::DataError;
                 }
@@ -428,7 +427,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
     std::unordered_set<NodeId> remainingDbIds;
     snapshot->ids(remainingDbIds);
     if (remainingDbIds.empty()) {
-        LOG_SYNCPAL_DEBUG(_logger, "No items found in snapshot on side " << Utility::side2Str(side).c_str());
+        LOG_SYNCPAL_DEBUG(_logger, "No items found in snapshot on side " << side);
         return ExitCode::Ok;
     }
 
@@ -554,20 +553,16 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
     }
 
     if (fsOp->operationType() == OperationType::Move) {
-        LOGW_SYNCPAL_DEBUG(
-            _logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                                  << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str()) << L" FS operation from "
-                                  << (fsOp->objectType() == NodeType::Directory ? L"dir \"" : L"file \"")
-                                  << Path2WStr(fsOp->path()).c_str() << L"\" to \"" << Path2WStr(fsOp->destinationPath()).c_str()
-                                  << L"\" (" << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
+        LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << side << L" " << fsOp->operationType() << L" FS operation from "
+                                                 << fsOp->objectType() << Path2WStr(fsOp->path()).c_str() << L"\" to \""
+                                                 << Path2WStr(fsOp->destinationPath()).c_str() << L"\" ("
+                                                 << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
         return;
     }
 
-    LOGW_SYNCPAL_DEBUG(
-        _logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                              << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str()) << L" FS operation on "
-                              << (fsOp->objectType() == NodeType::Directory ? L"dir \"" : L"file \"")
-                              << Path2WStr(fsOp->path()).c_str() << L"\" (" << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
+    LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << side << L" " << fsOp->operationType() << L" FS operation on "
+                                             << fsOp->objectType() << Path2WStr(fsOp->path()).c_str() << L"\" ("
+                                             << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
 }
 
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {

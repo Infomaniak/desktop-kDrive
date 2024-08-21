@@ -161,14 +161,14 @@ void FolderWatcher_win::watchChanges() {
                 }
                 if (!isDirectory) {
                     if (ioError == IoError::NoSuchFileOrDirectory) {
-                        LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
+                        LOGW_DEBUG(_logger, L"Skip operation " << opType
                                                                << L" detected on item " << Path2WStr(filepath).c_str()
                                                                << L" (item doesn't exist)");
                         skip = true;
                     }
                 } else {
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
+                        LOGW_DEBUG(_logger, L"Skip operation " << opType
                                                                << L" detected on item " << Path2WStr(filepath).c_str()
                                                                << L" (directory)");
                     }
@@ -183,7 +183,7 @@ void FolderWatcher_win::watchChanges() {
                 if (!KDC::Utility::longPath(filepath, longfilepath, notFound)) {
                     if (notFound) {
                         // Item doesn't exist anymore
-                        LOGW_DEBUG(_logger, L"Skip operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
+                        LOGW_DEBUG(_logger, L"Skip operation " << opType
                                                                << L" detected on item " << Path2WStr(longfilepath).c_str()
                                                                << L" (item doesn't exist)");
                         skip = true;
@@ -197,7 +197,7 @@ void FolderWatcher_win::watchChanges() {
 
             if (!skip) {
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
+                    LOGW_DEBUG(_logger, L"Operation " << opType
                                                       << L" detected on item " << Path2WStr(longfilepath).c_str());
                 }
 

@@ -382,8 +382,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_snapshot->isOrphan(*nodeIdIt)) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Node '" << SyncName2WStr(_snapshot->name(*nodeIdIt)).c_str() << L"' ("
                                                   << Utility::s2ws(*nodeIdIt).c_str() << L") is orphan. Removing it from "
-                                                  << Utility::s2ws(Utility::side2Str(_snapshot->side())).c_str()
-                                                  << L" snapshot.");
+                                                  << _snapshot->side() << L" snapshot.");
             _snapshot->removeItem(*nodeIdIt);
         }
         nodeIdIt++;
