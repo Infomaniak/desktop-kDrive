@@ -103,6 +103,7 @@ enum class NodeType {
 std::string enumClassToString(NodeType e);
 
 enum class OperationType { None = 0x00, Create = 0x01, Move = 0x02, Edit = 0x04, Delete = 0x08, Rights = 0x10 };
+std::string enumClassToString(OperationType e);
 
 enum class ExitCode {
     Unknown,
@@ -127,6 +128,7 @@ enum class ExitCode {
     UpdateRequired,
     LogUploadFailed
 };
+std::string enumClassToString(ExitCode e);
 
 enum class ExitCause {
     Unknown,
@@ -169,6 +171,7 @@ enum class ExitCause {
     FullListParsingError,
     OperationCanceled
 };
+std::string enumClassToString(ExitCause e);
 
 // Conflict types ordered by priority
 enum class ConflictType {
@@ -184,6 +187,7 @@ enum class ConflictType {
     EditEdit,
     MoveMoveCycle
 };
+std::string enumClassToString(ConflictType e);
 
 static const std::unordered_set<ConflictType> conflictsWithLocalRename = {  // All conflicts that rename the local file
     ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
@@ -193,6 +197,7 @@ inline bool isConflictsWithLocalRename(ConflictType type) {
 }
 
 enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
+std::string enumClassToString(ConflictTypeResolution e);
 
 enum class InconsistencyType {
     None = 0x00,
@@ -204,6 +209,7 @@ enum class InconsistencyType {
     NotYetSupportedChar = 0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
     DuplicateNames = 0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
 };
+std::string enumClassToString(InconsistencyType e);
 
 enum class CancelType {
     None,
@@ -218,8 +224,10 @@ enum class CancelType {
     ExcludedByTemplate,
     Hardlink
 };
+std::string enumClassToString(CancelType e);
 
 enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed };
+std::string enumClassToString(NodeStatus e);
 
 enum class SyncStatus {
     Undefined,
@@ -232,8 +240,10 @@ enum class SyncStatus {
     Stopped,
     Error,
 };
+std::string enumClassToString(SyncStatus e);
 
 enum class UploadSessionType { Unknown, Standard, LogUpload };
+std::string enumClassToString(UploadSessionType e);
 
 enum class SyncNodeType {
     Undefined = 0,
@@ -244,12 +254,16 @@ enum class SyncNodeType {
     TmpRemoteBlacklist,  // Blacklisted temporarily
     TmpLocalBlacklist    // Blacklisted temporarily
 };
+std::string enumClassToString(SyncNodeType e);
 
 enum class SyncDirection { Unknown = 0, Up, Down };
+std::string enumClassToString(SyncDirection e);
 
 enum class SyncFileStatus { Unknown = 0, Error, Success, Conflict, Inconsistency, Ignored, Syncing };
+std::string enumClassToString(SyncFileStatus e);
 
 enum class SyncFileInstruction { None = 0, Update, UpdateMetadata, Remove, Move, Get, Put, Ignore };
+std::string enumClassToString(SyncFileInstruction e);
 
 enum class SyncStep {
     None = 0,
@@ -264,22 +278,31 @@ enum class SyncStep {
     Propagation2,      // Executor
     Done
 };
+std::string enumClassToString(SyncStep e);
 
 enum class ActionType { Stop = 0, Start };
+std::string enumClassToString(ActionType e);
 
 enum class ActionTarget { Drive = 0, Sync, AllDrives };
+std::string enumClassToString(ActionTarget e);
 
 enum class ErrorLevel { Unknown = 0, Server, SyncPal, Node };
+std::string enumClassToString(ErrorLevel e);
 
 enum class Language { Default = 0, English, French, German, Spanish, Italian };
+std::string enumClassToString(Language e);
 
 enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal };
+std::string enumClassToString(LogLevel e);
 
 enum class NotificationsDisabled { Never, OneHour, UntilTomorrow, TreeDays, OneWeek, Always };
+std::string enumClassToString(NotificationsDisabled e);
 
 enum class VirtualFileMode { Off, Win, Mac, Suffix };
+std::string enumClassToString(VirtualFileMode e);
 
 enum class PinState { Inherited, AlwaysLocal, OnlineOnly, Unspecified };
+std::string enumClassToString(PinState e);
 
 enum class ProxyType {
     Undefined = 0,
@@ -288,10 +311,13 @@ enum class ProxyType {
     HTTP,
     Socks5  // Don't use, not implemented in Poco library
 };
+std::string enumClassToString(ProxyType e);
 
 enum class ExclusionTemplateComplexity { Simplest = 0, Simple, Complex };
+std::string enumClassToString(ExclusionTemplateComplexity e);
 
 enum class LinkType { None = 0, Symlink, Hardlink, FinderAlias, Junction };
+std::string enumClassToString(LinkType e);
 
 enum class IoError {
     Success = 0,
@@ -311,6 +337,7 @@ enum class IoError {
     ResultOutOfRange,
     Unknown
 };
+std::string enumClassToString(IoError e);
 
 struct ItemType {
         NodeType nodeType{NodeType::Unknown};  // The type of a link is `NodeType::File`.
@@ -335,12 +362,16 @@ enum class AppStateKey {
     LogUploadToken,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
+std::string enumClassToString(AppStateKey e);
+
 constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;
 constexpr int64_t SELF_RESTARTER_NO_CRASH_DETECTED = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
+std::string enumClassToString(LogUploadState e);
 
 enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
+std::string enumClassToString(UpdateState e);
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
