@@ -1174,7 +1174,8 @@ void UpdateTreeWorker::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncN
     treeStr += Str("[");
     treeStr += Str2SyncName(*node->id());
     treeStr += Str(" / ");
-    treeStr += node->changeEvents() != OperationType::None ? Utility::s2ws(enumClassToString(node->changeEvents())).c_str() : Str("-");
+    treeStr +=
+        node->changeEvents() != OperationType::None ? Str2SyncName(enumClassToString(node->changeEvents())).c_str() : Str("-");
     treeStr += Str("]");
     treeStr += Str("\n");
 
