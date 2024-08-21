@@ -18,8 +18,8 @@
  */
 
 #include "csvfullfilelistwithcursorjob.h"
-#include "../../../../libcommonserver/utility/utility.h"
-#include "../../../update_detection/file_system_observer/snapshot/snapshotitem.h"
+#include "libcommonserver/utility/utility.h"
+#include "update_detection/file_system_observer/snapshot/snapshotitem.h"
 
 #ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"

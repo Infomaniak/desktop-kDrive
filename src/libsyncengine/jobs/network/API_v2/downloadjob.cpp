@@ -18,12 +18,12 @@
 
 #include "downloadjob.h"
 
-#include "../../../../libcommonserver/io/filestat.h"
-#include "../../../../libcommonserver/io/iohelper.h"
-#include "../../../../libcommonserver/utility/utility.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
 
-#include "../../../../libcommon/utility/utility.h"
-#include "../../../../common/utility.h"
+#include "libcommon/utility/utility.h"
+#include "common/utility.h"
 
 #if defined(__APPLE__) || defined(__unix__)
 #include <unistd.h>

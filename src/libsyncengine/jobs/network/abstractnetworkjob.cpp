@@ -617,7 +617,7 @@ bool AbstractNetworkJob::extractJson(std::istream &is, Poco::JSON::Object::Ptr &
     try {
         jsonObj = Poco::JSON::Parser{}.parse(is).extract<Poco::JSON::Object::Ptr>();
     } catch (const Poco::Exception &exc) {
-        LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON error: "
+        LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON payload: "
                                      << Utility::s2ws(exc.displayText()).c_str());
         Utility::logGenericServerError(_logger, "Request error", is, _resHttp);
         _exitCode = ExitCode::BackError;

@@ -17,8 +17,8 @@
  */
 
 #include "createdirjob.h"
-#include "../../../../libcommonserver/utility/utility.h"
-#include "../../../../libcommon/utility/jsonparserutility.h"
+#include "libcommonserver/utility/utility.h"
+#include "libcommon/utility/jsonparserutility.h"
 
 namespace KDC {
 

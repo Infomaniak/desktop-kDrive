@@ -19,10 +19,10 @@
 #include "abstracttokennetworkjob.h"
 #include "config.h"
 #include "../networkjobsparams.h"
-#include "../../../../libcommonserver/utility/utility.h"
-#include "../../../../libparms/db/parmsdb.h"
-#include "../../../../libcommon/keychainmanager/keychainmanager.h"
-#include "../../../../libcommon/utility/jsonparserutility.h"
+#include "libcommonserver/utility/utility.h"
+#include "libparms/db/parmsdb.h"
+#include "libcommon/keychainmanager/keychainmanager.h"
+#include "libcommon/utility/jsonparserutility.h"
 
 #include <unordered_map>
 

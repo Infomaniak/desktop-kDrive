@@ -18,8 +18,8 @@
 
 #include "movejob.h"
 
-#include "../../../../libcommonserver/io/iohelper.h"
-#include "../../../../libcommonserver/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
 
 namespace KDC {
 

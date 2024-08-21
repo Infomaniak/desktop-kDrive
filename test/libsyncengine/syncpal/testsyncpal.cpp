@@ -17,7 +17,7 @@
  */
 
 #include "testsyncpal.h"
-#include "../../../src/libsyncengine/jobs/network/API_v2/movejob.h"
+#include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
 #include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"

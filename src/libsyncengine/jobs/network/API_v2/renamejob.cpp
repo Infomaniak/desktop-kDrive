@@ -17,7 +17,7 @@
  */
 
 #include "renamejob.h"
-#include "../../../../libcommonserver/utility/utility.h"
+#include "libcommonserver/utility/utility.h"
 
 namespace KDC {
 

@@ -18,10 +18,10 @@
 
 #include "deletejob.h"
 
-#include "../../../requests/parameterscache.h"
-#include "../../../../libcommonserver/io/filestat.h"
-#include "../../../../libcommonserver/io/iohelper.h"
-#include "../../../../libcommonserver/utility/utility.h"
+#include "requests/parameterscache.h"
+#include "libcommonserver/io/filestat.h"
+#include "libcommonserver/io/iohelper.h"
+#include "libcommonserver/utility/utility.h"
 
 namespace KDC {
 

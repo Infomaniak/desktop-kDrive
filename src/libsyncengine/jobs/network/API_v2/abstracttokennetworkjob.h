@@ -20,7 +20,7 @@
 
 #include "../abstractnetworkjob.h"
 #include "../networkjobsparams.h"
-#include "../../../login/login.h"
+#include "login/login.h"
 
 #include <unordered_map>
 

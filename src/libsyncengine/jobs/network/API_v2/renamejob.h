@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "../../../../libcommon/utility/types.h"
+#include "libcommon/utility/types.h"
 #include "abstracttokennetworkjob.h"
 
 namespace KDC {

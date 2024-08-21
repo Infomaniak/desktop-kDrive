@@ -17,7 +17,7 @@
  */
 
 #include "copytodirectoryjob.h"
-#include "../../../../libcommon/utility/jsonparserutility.h"
+#include "libcommon/utility/jsonparserutility.h"
 
 namespace KDC {
 
