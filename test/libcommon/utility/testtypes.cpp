@@ -31,19 +31,19 @@ void KDC::TestTypes::testOtherSide() {
 }
 void TestTypes::testStreamConversion() {
     // Test enum class to string conversion with code
-    CPPUNIT_ASSERT_EQUAL(std::string("Unknown (0)"), enumClassToStringWithCode(NodeType::Unknown));
-    CPPUNIT_ASSERT_EQUAL(std::string("File (1)"), enumClassToStringWithCode(NodeType::File));
-    CPPUNIT_ASSERT_EQUAL(std::string("Directory (2)"), enumClassToStringWithCode(NodeType::Directory));
+    CPPUNIT_ASSERT_EQUAL(std::string("Unknown(0)"), enumClassToStringWithCode(NodeType::Unknown));
+    CPPUNIT_ASSERT_EQUAL(std::string("File(1)"), enumClassToStringWithCode(NodeType::File));
+    CPPUNIT_ASSERT_EQUAL(std::string("Directory(2)"), enumClassToStringWithCode(NodeType::Directory));
 
     // Test stream operator for enum class without unicode
     std::ostringstream os;
     os << NodeType::Unknown;
-    CPPUNIT_ASSERT_EQUAL(std::string("Unknown (0)"), os.str());
+    CPPUNIT_ASSERT_EQUAL(std::string("Unknown(0)"), os.str());
 
     // Test stream operator for enum class with unicode
     std::wostringstream wos;
     wos << NodeType::Unknown;
-    CPPUNIT_ASSERT(L"Unknown (0)" == wos.str());  // Can't use CPPUNIT_ASSERT_EQUAL because of issue with wchar_t in CPPUNIT
+    CPPUNIT_ASSERT(L"Unknown(0)" == wos.str());  // Can't use CPPUNIT_ASSERT_EQUAL because of issue with wchar_t in CPPUNIT
 
     // Test Logging of enum class
     LOG_WARN(Log::instance()->getLogger(), "Test log of enumClass: " << NodeType::Unknown);
@@ -55,6 +55,6 @@ void TestTypes::testStreamConversion() {
     while (std::getline(is, line)) {
         previousLine = line;
     }
-    CPPUNIT_ASSERT(previousLine.find("Test log of enumClass: Unknown (0)") != std::string::npos);
+    CPPUNIT_ASSERT(previousLine.find("Test log of enumClass: Unknown(0)") != std::string::npos);
 }
 }  // namespace KDC
