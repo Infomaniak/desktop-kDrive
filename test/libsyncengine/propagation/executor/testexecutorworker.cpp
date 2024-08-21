@@ -82,8 +82,9 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     // Setup dummy values. Test inputs are set in the callbacks defined below.
     const auto opPtr = std::make_shared<SyncOperation>();
     opPtr->setTargetSide(ReplicaSide::Remote);
-    const auto node = std::make_shared<Node>(1, ReplicaSide::Local, "test_file.txt", NodeType::File, "1234",
-                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize);
+    const auto node = std::make_shared<Node>(1, ReplicaSide::Local, "test_file.txt", NodeType::File, OperationType::None, "1234",
+                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                             _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
 
     // A hydrated placeholder.
@@ -176,12 +177,13 @@ void TestExecutorWorker::testFixModificationDate() {
     _syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
 
     // Generate sync operation
-    auto node = std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, "lid", testhelpers::defaultTime,
-                                       12345, testhelpers::defaultFileSize);
-    auto correspondingNode =
-        std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, "rid", testhelpers::defaultTime,
-                               testhelpers::defaultTime, testhelpers::defaultFileSize);
-    auto op = std::make_shared<SyncOperation>();
+    std::shared_ptr<Node> node = std::make_shared<Node>(
+        dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid", testhelpers::defaultTime,
+        testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    std::shared_ptr<Node> correspondingNode = std::make_shared<Node>(
+        dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
+        testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    SyncOpPtr op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
     op->setCorrespondingNode(correspondingNode);
 

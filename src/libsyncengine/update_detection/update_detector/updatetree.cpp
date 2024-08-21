@@ -19,6 +19,8 @@
 #include "updatetree.h"
 #include "libcommon/utility/utility.h"
 
+#define MAX_DEPTH 1000
+
 namespace KDC {
 
 UpdateTree::UpdateTree(ReplicaSide side, const DbNode &dbNode)
@@ -42,24 +44,36 @@ void UpdateTree::insertNode(std::shared_ptr<Node> node) {
     _nodes[*node->id()] = node;
 }
 
-void UpdateTree::deleteNode(std::shared_ptr<Node> node) {
+bool UpdateTree::deleteNode(std::shared_ptr<Node> node, int depth) {
     if (!node) {
-        return;
+        return false;
+    }
+
+    if (depth > MAX_DEPTH) {
+        assert(false);
+#ifdef NDEBUG
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "UpdateTree::deleteNode", "UpdateTree loop"));
+#endif
+        return false;
     }
 
     // Recursively remove all children
     while (node->children().size() > 0) {
-        deleteNode((node->children().begin())->second);
+        if (!deleteNode((node->children().begin())->second, depth + 1)) {
+            return false;
+        }
     }
 
     // Remove node from tree
     node->parentNode()->deleteChildren(node);
     _nodes.erase(*node->id());
+
+    return true;
 }
 
-void UpdateTree::deleteNode(const NodeId &id) {
+bool UpdateTree::deleteNode(const NodeId &id) {
     std::shared_ptr<Node> node = getNodeById(id);
-    deleteNode(node);
+    return deleteNode(node);
 }
 
 std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
