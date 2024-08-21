@@ -350,11 +350,19 @@ using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
  */
 
 // Concepts
+template <class C>  // Any enum class
+concept EnumClass = std::is_enum_v<C>;
+
 template <class C>  // Any enum class that can be converted to (and from) int
-concept IntableEnum = std::is_enum_v<C> && std::is_convertible_v<std::underlying_type_t<C>, int>;
+concept IntableEnum = EnumClass<C> && std::is_convertible_v<std::underlying_type_t<C>, int>;
 
 template <class C>  // Any enum class we want to allow bitwise operations (OperationType & InconsistencyType)
 concept AllowBitWiseOpEnum = IntableEnum<C> && (std::is_same_v<C, OperationType> || std::is_same_v<C, InconsistencyType>);
+
+template <class C>  // Any enum class
+concept PrintableEnum = EnumClass<C> && requires(C e) {
+    enumClassToString(e);
+};
 
 // Converters
 template <IntableEnum C>
@@ -403,4 +411,25 @@ inline bool bitWiseEnumToBool(const C a) {
     return enumClassToInt(a) != 0;
 }
 
+
+namespace typesUtility {
+std::wstring stringToWideString(const std::string &str);  // Convert string to wstring (We can't use the s2ws of Utility because
+                                                          // it's in libCommonServer and it includes types.f)
+} // namespace typesUtility
+
+// Stream Operator (toString)
+template <PrintableEnum C>
+std::string enumClassToStringWithCode(C e) {
+    return enumClassToString(e) + " (" + std::to_string(enumClassToInt(e)) + ")"; // Example: "Ok (1)"
+}
+
+template <PrintableEnum C>
+inline std::wostream &operator<<(std::wostream &os, C e) {
+    return os << typesUtility::stringToWideString(enumClassToStringWithCode(e));
+}
+
+template <PrintableEnum C>
+inline std::ostream &operator<<(std::ostream &os, C e) {
+    return os << enumClassToStringWithCode(e);
+}
 }  // namespace KDC
