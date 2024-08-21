@@ -85,7 +85,7 @@ class SyncDb : public Db {
         bool updateAllSyncNodes(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet);
         bool selectAllSyncNodes(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet);
 
-        bool selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyColon);
+        bool selectAllRenamedNodes(std::vector<DbNode> &dbNodeList);
         bool deleteNodesWithNullParentNodeId();
 
         bool insertUploadSessionToken(const UploadSessionToken &uploadSessionToken, int64_t &uploadSessionTokenDbId);

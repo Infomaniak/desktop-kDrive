@@ -2124,12 +2124,12 @@ bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::unorde
     return true;
 }
 
-bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyColon) {
+bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     dbNodeList.clear();
 
-    const std::string requestId = onlyColon ? SELECT_ALL_RENAMED_COLON_NODES_REQUEST_ID : SELECT_ALL_RENAMED_NODES_REQUEST_ID;
+    const std::string requestId = SELECT_ALL_RENAMED_NODES_REQUEST_ID;
 
     ASSERT(queryResetAndClearBindings(requestId));
 

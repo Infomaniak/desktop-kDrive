@@ -44,7 +44,6 @@
 #include "requests/parameterscache.h"
 #include "jobs/network/downloadjob.h"
 #include "jobs/network/upload_session/uploadsessioncanceljob.h"
-#include "jobs/local/localmovejob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/jobmanager.h"
 #include "libcommon/utility/utility.h"
@@ -164,10 +163,18 @@ SyncPal::SyncPal(int syncDbId, const std::string &version) : _logger(Log::instan
     if (!createOrOpenDb(sync.dbPath(), version, sync.targetNodeId())) {
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
+}
 
-    fixInconsistentFileNames(_syncDb, _localPath);
+void SyncPal::applyFixes() {
+    if (const auto dbFromVersion = _syncDb->fromVersion();
+        !dbFromVersion.empty() && CommonUtility::isVersionLower(CommonUtility::dbVersionNumber(dbFromVersion), "3.4.9")) {
+        fixInconsistentFileNames();
+    }
     fixNodeTableDeleteItemsWithNullParentNodeId();
+}
 
+void SyncPal::init() {
+    applyFixes();
     createSharedObjects();
 }
 
@@ -1326,41 +1333,37 @@ bool SyncPal::isDownloadOngoing(const SyncPath &localPath) {
     return false;
 }
 
-void SyncPal::fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const SyncPath &path) {
-    if (syncDb->fromVersion().empty()) {
-        // New DB
+void SyncPal::deleteLocalItem(const SyncPath &driveRootPath, const SyncPath &oldLocalPath, const NodeId remoteNodeId) {
+    LocalDeleteJob deleteJob(_driveDbId, driveRootPath, oldLocalPath, false, remoteNodeId, true);
+    deleteJob.setBypassCheck(true);
+    deleteJob.runSynchronously();
+}
+
+void SyncPal::fixInconsistentFileNames() {
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Fix inconsistent file names");
+
+    std::vector<DbNode> dbNodeList;
+    if (!_syncDb->selectAllRenamedNodes(dbNodeList)) {
+        LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::selectAllRenamedNodes");
         return;
     }
 
-    std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(syncDb->fromVersion());
-    if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.9")) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Fix inconsistent file names");
-
-        std::vector<DbNode> dbNodeList;
-        if (!syncDb->selectAllRenamedNodes(dbNodeList, false)) {
-            LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::selectAllRenamedNodes");
-            return;
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Delete " << dbNodeList.size() << " files");
+    for (DbNode &dbNode : dbNodeList) {
+        SyncPath oldLocalPath;
+        bool dbNodeIsfound = false;
+        if (!_syncDb->path(dbNode.nodeId(), oldLocalPath, dbNodeIsfound, ReplicaSide::Local)) {
+            LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::path");
+            continue;
         }
 
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Delete " << dbNodeList.size() << " files");
-        for (DbNode &dbNode : dbNodeList) {
-            SyncPath oldLocalPath;
-            bool dbNodeIsfound = false;
-            if (!syncDb->path(dbNode.nodeId(), oldLocalPath, dbNodeIsfound, ReplicaSide::Local)) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::path");
-                continue;
-            }
-
-            bool nodeToDeleteIsfound = false;
-            if (!dbNodeIsfound || !syncDb->deleteNode(dbNode.nodeId(), nodeToDeleteIsfound) || !nodeToDeleteIsfound) {
-                LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
-                continue;
-            }
-
-            LocalDeleteJob deleteJob(_driveDbId, path, oldLocalPath, false, dbNode.nodeIdRemote().value(), true);
-            deleteJob.setBypassCheck(true);
-            deleteJob.runSynchronously();
+        bool nodeToDeleteIsfound = false;
+        if (!dbNodeIsfound || !_syncDb->deleteNode(dbNode.nodeId(), nodeToDeleteIsfound) || !nodeToDeleteIsfound) {
+            LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
+            continue;
         }
+
+        deleteLocalItem(_localPath, oldLocalPath, *dbNode.nodeIdRemote());
     }
 }
 

@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include "testsyncpal.h"
 #include "jobs/network/movejob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
@@ -31,6 +32,26 @@ namespace KDC {
 
 // const std::string testExecutorFolderRemoteId = "75";        // In common documents
 const std::string testExecutorFolderRemoteId = "5007";  // In root
+
+class SyncPalMock : public SyncPal {
+    public:
+        SyncPalMock(DbNodeId dbNodeId, const std::string &version) : SyncPal(dbNodeId, version){};
+        struct ItemInfo {
+                SyncPath driveRootPath;
+                SyncPath oldLocalPath;
+                NodeId remoteNodeId{-1};
+        };
+        std::vector<ItemInfo> deletedLocalItemInfos() const { return _deletedLocalItemInfos; };
+        void clearDeletedLocalItemInfos() { _deletedLocalItemInfos.clear(); }
+
+
+    protected:
+        std::vector<ItemInfo> _deletedLocalItemInfos;
+        void deleteLocalItem(const SyncPath &driveRootPath, const SyncPath &oldLocalPath, const NodeId remoteNodeId) override {
+            _deletedLocalItemInfos.push_back(ItemInfo{driveRootPath, oldLocalPath, remoteNodeId});
+        };
+};
+
 
 void TestSyncPal::setUp() {
     const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
@@ -84,7 +105,8 @@ void TestSyncPal::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
+    _syncPal = std::shared_ptr<SyncPal>(new SyncPalMock(sync.dbId(), "3.4.0"));
+    _syncPal->init();
 }
 
 void TestSyncPal::tearDown() {
@@ -116,7 +138,7 @@ void TestSyncPal::testSnapshot() {
     snapshot = _syncPal->snapshot(ReplicaSide::Unknown);
     CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
 
-    snapshot = _syncPal->snapshot(ReplicaSide::Local, true);
+    snapshot = _syncPal->snapshotCopy(ReplicaSide::Local);
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, snapshot->side());
 
     snapshot = _syncPal->snapshot(ReplicaSide::Remote, true);
@@ -125,7 +147,7 @@ void TestSyncPal::testSnapshot() {
     snapshot = _syncPal->snapshot(ReplicaSide::Unknown, true);
     CPPUNIT_ASSERT_EQUAL(std::shared_ptr<Snapshot>(nullptr), snapshot);
 
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local, true).get() != _syncPal->snapshot(ReplicaSide::Local, false).get());
+    CPPUNIT_ASSERT(_syncPal->snapshotCopy(ReplicaSide::Local).get() != _syncPal->snapshot(ReplicaSide::Local).get());
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Remote, true).get() != _syncPal->snapshot(ReplicaSide::Remote, false).get());
 }
 
@@ -144,21 +166,19 @@ void TestSyncPal::testCopySnapshots() {
     _syncPal->copySnapshots();
 
     // Check that the copy is the same as the original
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local, true)->nbItems(),
-                         _syncPal->snapshot(ReplicaSide::Local, false)->nbItems());
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local, true)->isValid(),
-                         _syncPal->snapshot(ReplicaSide::Local, false)->isValid());
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local, true)->rootFolderId(),
-                         _syncPal->snapshot(ReplicaSide::Local, false)->rootFolderId());
-    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshot(ReplicaSide::Local, true)->side(),
-                         _syncPal->snapshot(ReplicaSide::Local, false)->side());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshotCopy(ReplicaSide::Local)->nbItems(),
+                         _syncPal->snapshot(ReplicaSide::Local)->nbItems());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshotCopy(ReplicaSide::Local)->isValid(),
+                         _syncPal->snapshot(ReplicaSide::Local)->isValid());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshotCopy(ReplicaSide::Local)->rootFolderId(),
+                         _syncPal->snapshot(ReplicaSide::Local)->rootFolderId());
+    CPPUNIT_ASSERT_EQUAL(_syncPal->snapshotCopy(ReplicaSide::Local)->side(), _syncPal->snapshot(ReplicaSide::Local)->side());
 
     // Check that the copy is different object
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local, true).get() != _syncPal->snapshot(ReplicaSide::Local, false).get());
-    _syncPal->snapshot(ReplicaSide::Local, false)->setValid(true);
-    _syncPal->snapshot(ReplicaSide::Local, true)->setValid(false);
-    CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local, true)->isValid() !=
-                   _syncPal->snapshot(ReplicaSide::Local, false)->isValid());
+    CPPUNIT_ASSERT(_syncPal->snapshotCopy(ReplicaSide::Local).get() != _syncPal->snapshot(ReplicaSide::Local).get());
+    _syncPal->snapshot(ReplicaSide::Local)->setValid(true);
+    _syncPal->snapshotCopy(ReplicaSide::Local)->setValid(false);
+    CPPUNIT_ASSERT(_syncPal->snapshotCopy(ReplicaSide::Local)->isValid() != _syncPal->snapshot(ReplicaSide::Local)->isValid());
 }
 
 void TestSyncPal::testAll() {
@@ -378,18 +398,18 @@ bool TestSyncPal::exec_case_6_4() {
 }
 
 bool TestSyncPal::check_case_6_4() {
-    std::string caseName("case_6.4");
+    const std::string caseName("case_6.4");
 
     // Check local result
-    SyncPath localCasePath = _localPath / caseName;
+    const SyncPath localCasePath = _localPath / caseName;
 
     if (!std::filesystem::exists(localCasePath / "n/g/w/q")) {
         return false;
     }
 
     // Check remote result
-    SyncPath remoteCasePath = _remotePath / caseName;
-    bool found;
+    const SyncPath remoteCasePath = _remotePath / caseName;
+    bool found = false;
 
     std::optional<NodeId> driveIdQ;
     _syncPal->syncDb()->id(ReplicaSide::Remote, remoteCasePath / "n/g/w/q", driveIdQ, found);
@@ -398,5 +418,40 @@ bool TestSyncPal::check_case_6_4() {
     }
 
     return true;
+}
+
+void TestSyncPal::testFixInconsistenFileNames() {
+    _syncPal->fixInconsistentFileNames();
+    auto syncPalMock = dynamic_cast<SyncPalMock *>(_syncPal.get());
+    CPPUNIT_ASSERT(syncPalMock->deletedLocalItemInfos().empty());
+
+    const time_t tLoc = std::time(0);
+    const time_t tDrive = std::time(0);
+    const auto rootId = syncPalMock->syncDb()->rootNode().nodeId();
+
+    const DbNode nodeFile1(0, rootId, "file 1", "file 1", "id loc 1", "id drive 1", tLoc, tLoc, tDrive, NodeType::File, 0,
+                           "cs 2.2");
+    const DbNode nodeFile2(0, rootId, "file 2", "FILE 2", "id loc 2", "id drive 2", tLoc, tLoc, tDrive, NodeType::File, 0,
+                           "cs 2.2");
+    const DbNode nodeFile3(0, rootId, "FILE 3", "file 3", "id loc 3", "id drive 3", tLoc, tLoc, tDrive, NodeType::File, 0,
+                           "cs 2.2");
+
+    {
+        bool constraintError = false;
+        DbNodeId dbNodeId;
+        syncPalMock->syncDb()->insertNode(nodeFile1, dbNodeId, constraintError);
+        syncPalMock->syncDb()->insertNode(nodeFile2, dbNodeId, constraintError);
+        syncPalMock->syncDb()->insertNode(nodeFile3, dbNodeId, constraintError);
+    }
+
+    _syncPal->fixInconsistentFileNames();
+
+    CPPUNIT_ASSERT_EQUAL(size_t(2), syncPalMock->deletedLocalItemInfos().size());
+    CPPUNIT_ASSERT_EQUAL(SyncPath("file 2"), syncPalMock->deletedLocalItemInfos().at(0).oldLocalPath);
+    CPPUNIT_ASSERT_EQUAL(NodeId("id drive 2"), syncPalMock->deletedLocalItemInfos().at(0).remoteNodeId);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->localPath(), syncPalMock->deletedLocalItemInfos().at(0).driveRootPath);
+    CPPUNIT_ASSERT_EQUAL(SyncPath("FILE 3"), syncPalMock->deletedLocalItemInfos().at(1).oldLocalPath);
+    CPPUNIT_ASSERT_EQUAL(NodeId("id drive 3"), syncPalMock->deletedLocalItemInfos().at(1).remoteNodeId);
+    CPPUNIT_ASSERT_EQUAL(_syncPal->localPath(), syncPalMock->deletedLocalItemInfos().at(1).driveRootPath);
 }
 }  // namespace KDC

@@ -77,8 +77,8 @@ class GetSizeJob;
 
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
-        SyncPal(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted);
-        SyncPal(int syncDbId, const std::string &version);
+        SyncPal(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted);  // For test only (To refactor).
+        SyncPal(int syncDbId, const std::string &version);  // Use subsequently the method `init` to complete initialization.
         virtual ~SyncPal();
 
         ExitCode setTargetNodeId(const std::string &targetNodeId);
@@ -209,10 +209,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         inline bool syncHasFullyCompleted() const { return _syncHasFullyCompleted; }
 
-        void fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const SyncPath &path);
-
-        void fixNodeTableDeleteItemsWithNullParentNodeId();
-
         virtual void increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath, ReplicaSide side);
         virtual int getErrorCount(const NodeId &nodeId, ReplicaSide side) const noexcept;
         virtual void blacklistTemporarily(const NodeId &nodeId, const SyncPath &relativePath, ReplicaSide side);
@@ -223,6 +219,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         SyncPath getLocalPath() const { return _localPath; };
         void setLocalPath(const SyncPath &path) { _localPath = path; };
+
+        void init();  // Apply fixes and create shared objects.
+
+    protected:
+        virtual void fixInconsistentFileNames();
+        virtual void deleteLocalItem(const SyncPath &driveRootPath, const SyncPath &oldLocalPath, const NodeId remoteNodeId);
 
     private:
         log4cplus::Logger _logger;
@@ -307,6 +309,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         std::shared_ptr<ProgressInfo> _progressInfo{nullptr};
 
         std::shared_ptr<TmpBlacklistManager> _tmpBlacklistManager{nullptr};
+
+        void applyFixes();
+        void fixNodeTableDeleteItemsWithNullParentNodeId();
 
         void createSharedObjects();
         void resetSharedObjects();
