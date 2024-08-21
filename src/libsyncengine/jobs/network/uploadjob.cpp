@@ -157,7 +157,7 @@ void UploadJob::setData(bool &canceled) {
     _targetType = itemType.targetType;
 
     if (IoHelper::isLink(_linkType)) {
-        LOG_DEBUG(_logger, "Read link data - type=" << enumClassToInt(_linkType));
+        LOG_DEBUG(_logger, "Read link data - type=" << _linkType);
         if (!readLink()) return;
     } else {
         LOG_DEBUG(_logger, "Read file data");
@@ -323,7 +323,7 @@ bool UploadJob::readLink() {
         assert(ioError == IoError::Success);  // For every other error type, false should have been returned.
 #endif
     } else {
-        LOG_WARN(_logger, "Link type not managed - type=" << enumClassToInt(_linkType));
+        LOG_WARN(_logger, "Link type not managed - type=" << _linkType);
         return false;
     }
 

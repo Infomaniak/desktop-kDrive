@@ -343,7 +343,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             break;
         }
         default: {
-            LOG_SYNCPAL_WARN(_logger, "Unknown conflict type: " << enumClassToInt(conflict.type()));
+            LOG_SYNCPAL_WARN(_logger, "Unknown conflict type: " << conflict.type());
             return ExitCode::DataError;
         }
     }

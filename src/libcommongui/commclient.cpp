@@ -119,7 +119,7 @@ bool CommClient::sendRequest(int id, RequestNum num, const QByteArray &params) {
     QByteArray request(requestDoc.toJson(QJsonDocument::Compact));
 
     try {
-        qCDebug(lcCommClient()) << "Snd rqst" << id << enumClassToInt(num);
+        qCDebug(lcCommClient()) << "Snd rqst" << id << num;
 
         _tcpConnection->write(KDC::CommonUtility::IntToArray(request.size()));
         _tcpConnection->write(request);

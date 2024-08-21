@@ -68,14 +68,14 @@ void RemoteFileSystemObserverWorker::execute() {
         if (!_snapshot->isValid()) {
             exitCode = generateInitialSnapshot();
             if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << enumClassToInt(exitCode));
+                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << exitCode);
                 break;
             }
         }
 
         exitCode = processEvents();
         if (exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents : " << enumClassToInt(exitCode));
+            LOG_SYNCPAL_DEBUG(_logger, "Error in processEvents : " << exitCode);
             break;
         }
 
@@ -182,7 +182,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
 
         exitCode = job->runSynchronously();
         if (exitCode != ExitCode::Ok) {
-            LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob::runSynchronously : " << enumClassToInt(exitCode));
+            LOG_SYNCPAL_WARN(_logger, "Error in ContinuousCursorListingJob::runSynchronously : " << exitCode);
             break;
         }
 
@@ -291,7 +291,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     }
 
     if (job->exitCode() != ExitCode::Ok) {
-        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob::runSynchronously : " << enumClassToInt(job->exitCode()));
+        LOG_SYNCPAL_WARN(_logger, "Error in GetFileListWithCursorJob::runSynchronously : " << job->exitCode());
         setExitCause(job->getExitCause());
         return job->exitCode();
     }

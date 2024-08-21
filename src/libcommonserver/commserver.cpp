@@ -191,7 +191,7 @@ void CommServer::onReadyRead() {
                 const QByteArray params(QByteArray::fromBase64(msgObj[MSG_REQUEST_PARAMS].toString().toUtf8()));
 
                 // Request received
-                LOG_DEBUG(Log::instance()->getLogger(), "Rqst rcvd " << id << " " << enumClassToInt(num));
+                LOG_DEBUG(Log::instance()->getLogger(), "Rqst rcvd " << id << " " << num);
                 _requestWorker->addRequest(id, num, params);
             } else {
                 LOG_WARN(Log::instance()->getLogger(), "Bad message received!");
@@ -278,7 +278,7 @@ void CommServer::onSendSignal(int id, SignalNum num, const QByteArray &params) {
     QByteArray signal(signalDoc.toJson(QJsonDocument::Compact));
 
     try {
-        LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << enumClassToInt(num));
+        LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << num);
 
         _tcpSocket->write(KDC::CommonUtility::IntToArray(signal.count()));
         _tcpSocket->write(signal);

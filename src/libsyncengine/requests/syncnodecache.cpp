@@ -50,7 +50,7 @@ ExitCode SyncNodeCache::syncNodes(int syncDbId, SyncNodeType type, std::unordere
 
     if (_syncNodesMap[syncDbId].find(type) == _syncNodesMap[syncDbId].end()) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type=" << enumClassToInt(type));
+                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type= " << type);
         return ExitCode::DataError;
     }
 
@@ -73,7 +73,7 @@ ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const std::unord
 
     if (_syncNodesMap[syncDbId].find(type) == _syncNodesMap[syncDbId].end()) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type=" << enumClassToInt(type));
+                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type= " << type);
         return ExitCode::DataError;
     }
 

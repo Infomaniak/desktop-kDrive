@@ -29,6 +29,19 @@ std::wstring stringToWideString(const std::string &str) {
 }
 }  // namespace typesUtility
 
+std::string enumClassToString(ReplicaSide e) {
+    switch (e) {
+        case ReplicaSide::Local:
+            return "Local";
+        case ReplicaSide::Remote:
+            return "Remote";
+        case ReplicaSide::Unknown:
+            return "Unknown";
+        default:
+            return "No conversion to string available";
+    }
+}
+
 std::string enumClassToString(NodeType e) {
     switch (e) {
         case NodeType::Unknown:

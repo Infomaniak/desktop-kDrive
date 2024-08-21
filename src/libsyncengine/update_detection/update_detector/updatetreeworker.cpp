@@ -747,7 +747,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
         return ExitCode::DbError;
     }
     if (!found) {
-        LOG_SYNCPAL_DEBUG(_logger, "There is no dbNodeIds for side=" << enumClassToInt(_side));
+        LOG_SYNCPAL_DEBUG(_logger, "There is no dbNodeIds for side=" << _side);
         return ExitCode::Ok;
     }
 

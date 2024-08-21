@@ -705,7 +705,7 @@ bool VfsMac::getFetchingAppList(QHash<QString, QString> &appTable) {
 
 bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
     LOGW_DEBUG(logger(),
-               L"fileStatusChanged - " << Utility::formatPath(path).c_str() << L" - status = " << enumClassToInt(status));
+               L"fileStatusChanged - " << Utility::formatPath(path).c_str() << L" - status = " << status);
 
     SyncPath fullPath(QStr2Path(path));
     std::error_code ec;

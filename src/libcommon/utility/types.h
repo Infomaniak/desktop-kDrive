@@ -25,6 +25,7 @@
 #include <optional>
 #include <unordered_set>
 #include <variant>
+#include <qdebug.h>
 
 namespace KDC {
 
@@ -89,6 +90,7 @@ using OStringStream = std::ostringstream;
 
 using ExecuteCommand = std::function<void(const char *)>;
 enum class ReplicaSide { Unknown, Local, Remote };
+std::string enumClassToString(ReplicaSide e);
 
 inline ReplicaSide otherSide(ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
@@ -463,5 +465,10 @@ inline std::wostream &operator<<(std::wostream &os, C e) {
 template <PrintableEnum C>
 inline std::ostream &operator<<(std::ostream &os, C e) {
     return os << enumClassToStringWithCode(e);
+}
+
+template <PrintableEnum C>
+inline QDebug &operator<<(QDebug &os, C e) {
+    return os << enumClassToStringWithCode(e).c_str();
 }
 }  // namespace KDC

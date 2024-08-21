@@ -126,7 +126,7 @@ struct COMMONSERVER_EXPORT Utility {
         static std::string list2str(std::unordered_set<std::string> inList);
         static std::string list2str(std::list<std::string> inList);
 
-        inline static int pathDepth(const SyncPath &path) { return std::distance(path.begin(), path.end()); };
+        inline static int pathDepth(const SyncPath &path) { return (int)std::distance(path.begin(), path.end()); };
         static std::string computeMd5Hash(const std::string &in);
         static std::string computeMd5Hash(const char *in, std::size_t length);
         static std::string computeXxHash(const std::string &in);

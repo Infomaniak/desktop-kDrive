@@ -418,7 +418,7 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << enumClassToInt(exitCode);
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
 
     return {};
 }
@@ -606,7 +606,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << enumClassToInt(exitCode);
+    qCDebug(lcParametersDialog()) << "Unmanaged exit code: " << exitCode;
 
     return {};
 }
@@ -679,7 +679,7 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
             break;
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << enumClassToInt(conflictType);
+    qCDebug(lcParametersDialog()) << "Unmanaged conflict type: " << conflictType;
 
     return {};
 }
@@ -793,7 +793,7 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
         }
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged cancel type: " << enumClassToInt(cancelType);
+    qCDebug(lcParametersDialog()) << "Unmanaged cancel type: " << cancelType;
 
     return {};
 }
@@ -890,7 +890,7 @@ QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const noex
             return getErrorLevelNodeText(errorInfo);
     }
 
-    qCDebug(lcParametersDialog()) << "Unmanaged error level : " << enumClassToInt(errorInfo.level());
+    qCDebug(lcParametersDialog()) << "Unmanaged error level : " << errorInfo.level();
 
     return {};
 }
