@@ -902,7 +902,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             currentNode->setSize(moveOp->size());
             currentNode->setMoveOriginParentDbId(currentNode->parentNode()->idb());
             currentNode->setIsTmp(false);
-            ExitCode tmpExitCode = updateNameFromDbForMoveOp(currentNode, moveOp);
+            ExitCode tmpExitCode = checkNodeIsFoundInDbForMoveOp(currentNode, moveOp);
             if (tmpExitCode != ExitCode::Ok) {
                 return tmpExitCode;
             }
@@ -974,7 +974,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
                 return ExitCode::SystemError;
             }
 
-            ExitCode tmpExitCode = updateNameFromDbForMoveOp(newNode, moveOp);
+            ExitCode tmpExitCode = checkNodeIsFoundInDbForMoveOp(n, moveOp);
             if (tmpExitCode != ExitCode::Ok) {
                 return tmpExitCode;
             }
@@ -1474,25 +1474,20 @@ ExitCode UpdateTreeWorker::getOriginPath(const std::shared_ptr<Node> node, SyncP
     return ExitCode::Ok;
 }
 
-ExitCode UpdateTreeWorker::updateNameFromDbForMoveOp(const std::shared_ptr<Node> node, FSOpPtr moveOp) {
-    if (_side == ReplicaSide::Remote) {
-        return ExitCode::Ok;
-    }
-
-    if (moveOp->operationType() != OperationType::Move) {
+ExitCode UpdateTreeWorker::checkNodeIsFoundInDbForMoveOp(const std::shared_ptr<Node> node, FSOpPtr moveOp) {
+    if (_side == ReplicaSide::Remote || moveOp->operationType() != OperationType::Move) {
         return ExitCode::Ok;
     }
 
     // Does the file has a valid name in DB?
     DbNode dbNode;
     bool found = false;
-    if (!_syncDb->node(_side, node->id().has_value() ? *node->id() : std::string(), dbNode, found)) {
+    if (!_syncDb->node(_side, node->id() ? *node->id() : std::string(), dbNode, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::node");
         return ExitCode::DbError;
     }
     if (!found) {
-        LOG_SYNCPAL_WARN(_logger,
-                         "Failed to retrieve node for id=" << (node->id().has_value() ? *node->id() : std::string()).c_str());
+        LOG_SYNCPAL_WARN(_logger, "Failed to retrieve node for id=" << (node->id() ? *node->id() : std::string()).c_str());
         return ExitCode::DataError;
     }
 

@@ -1115,10 +1115,10 @@ bool SyncDb::dbIds(std::unordered_set<DbNodeId> &ids, bool &found) {
     return true;
 }
 
-SyncPath buildPathFromReversedNameVector(std::vector<SyncName> &&names) {
+SyncPath buildPathFromReversedNameVector(const std::vector<SyncName> &names) {
     SyncPath result;
     for (auto it = names.rbegin(); it != names.rend(); ++it) {
-        result.append(std::move(*it));
+        result.append(*it);
     }
 
     return result;
@@ -1385,8 +1385,8 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
     if (!names.empty()) {
         ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
-        std::string queryId = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
-                                                          : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
+        const std::string queryId = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
+                                                                : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
         // Find file node
         for (auto nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
             ASSERT(queryResetAndClearBindings(queryId));
@@ -1460,7 +1460,7 @@ bool SyncDb::type(ReplicaSide side, const NodeId &nodeId, NodeType &type, bool &
 bool SyncDb::size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    const std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    const std::string id = (side == ReplicaSide::Local) ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID;
 
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
@@ -1483,7 +1483,7 @@ bool SyncDb::size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &f
 bool SyncDb::created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    const std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    const std::string id = (side == ReplicaSide::Local) ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID;
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
@@ -1514,7 +1514,7 @@ bool SyncDb::created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncT
 bool SyncDb::lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    const std::string id = (side == ReplicaSide::Local) ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID;
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
@@ -1668,7 +1668,7 @@ bool SyncDb::name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &
 bool SyncDb::checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    const std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
@@ -1763,7 +1763,7 @@ bool SyncDb::ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nod
     }
 
     // Find node 2
-    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    const std::string id = (side == ReplicaSide::Local) ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID;
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId2));
     if (!queryNext(id, found)) {
@@ -2129,7 +2129,7 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
 
     dbNodeList.clear();
 
-    std::string requestId = onlyColon ? SELECT_ALL_RENAMED_COLON_NODES_REQUEST_ID : SELECT_ALL_RENAMED_NODES_REQUEST_ID;
+    const std::string requestId = onlyColon ? SELECT_ALL_RENAMED_COLON_NODES_REQUEST_ID : SELECT_ALL_RENAMED_NODES_REQUEST_ID;
 
     ASSERT(queryResetAndClearBindings(requestId));
 

@@ -115,7 +115,7 @@ void TestSyncDb::testUpgrade_3_6_3() {
     }
 }
 
-void TestSyncDb::testPathFromDb() {
+void TestSyncDb::testPathFromDbId() {
     const time_t tLoc = std::time(0);
     const time_t tDrive = std::time(0);
     const auto rootId = _testObj->rootNode().nodeId();
@@ -123,12 +123,16 @@ void TestSyncDb::testPathFromDb() {
     const auto nfdEncodedName = testhelpers::makeNfdSyncName();
     const auto nfcEncodedName = testhelpers::makeNfcSyncName();
 
-    DbNodeTest nodeFile1(rootId + 1, rootId, nfdEncodedName, nfdEncodedName, "dir_1", "id drive 1", tLoc, tLoc, tDrive,
-                         NodeType::Directory, 0, "cs 2.2");
-    DbNodeTest nodeFile11(rootId + 2, rootId + 1, nfcEncodedName, nfdEncodedName, "dir_11", "id drive 11", tLoc, tLoc, tDrive,
-                          NodeType::Directory, 0, "cs 2.2");
-    DbNodeTest nodeFile111(rootId + 3, rootId + 2, nfcEncodedName, nfcEncodedName, "dir_111", "id drive 111", tLoc, tLoc, tDrive,
-                           NodeType::File, 0, "cs 2.2");
+    const DbNodeTest nodeFile1(rootId + 1, rootId, nfdEncodedName, nfdEncodedName, "dir_1", "id drive 1", tLoc, tLoc, tDrive,
+                               NodeType::Directory, 0, "cs 2.2");
+    const DbNodeTest nodeFile11(rootId + 2, rootId + 1, nfcEncodedName, nfdEncodedName, "dir_11", "id drive 11", tLoc, tLoc,
+                                tDrive, NodeType::Directory, 0, "cs 2.2");
+    const DbNodeTest nodeFile111(rootId + 3, rootId + 2, nfcEncodedName, nfcEncodedName, "dir_111", "id drive 111", tLoc, tLoc,
+                                 tDrive, NodeType::File, 0, "cs 2.2");
+
+    CPPUNIT_ASSERT(nodeFile1.isValid());
+    CPPUNIT_ASSERT(nodeFile11.isValid());
+    CPPUNIT_ASSERT(nodeFile111.isValid());
 
     {
         bool constraintError = false;

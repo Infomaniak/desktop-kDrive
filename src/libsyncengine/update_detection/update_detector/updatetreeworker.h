@@ -114,7 +114,7 @@ class UpdateTreeWorker : public ISyncWorker {
         ExitCode updateNodeWithDb(const std::shared_ptr<Node> parentNode);
         ExitCode updateTmpNode(const std::shared_ptr<Node> tmpNode);
         ExitCode getOriginPath(const std::shared_ptr<Node> node, SyncPath &path);
-        ExitCode updateNameFromDbForMoveOp(const std::shared_ptr<Node> node, FSOpPtr moveOp);
+        ExitCode checkNodeIsFoundInDbForMoveOp(const std::shared_ptr<Node> node, FSOpPtr moveOp);
 
         // Log update information if extended logging is on.
         void logUpdate(const std::shared_ptr<Node> node, const OperationType opType,

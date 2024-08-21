@@ -49,6 +49,7 @@ class DbNode {
         inline const std::optional<std::string> &checksum() const { return _checksum; }
         inline SyncFileStatus status() const { return _status; }
         inline bool syncing() const { return _syncing; }
+        bool isValid() const;
 
         inline void setNodeId(DbNodeId nodeId) { _nodeId = nodeId; }
         inline void setParentNodeId(std::optional<DbNodeId> parentNodeId) { _parentNodeId = parentNodeId; }
