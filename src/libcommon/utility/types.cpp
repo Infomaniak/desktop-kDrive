@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include <string>
 #include "types.h"
 #include <Poco/UnicodeConverter.h>
@@ -29,4 +28,16 @@ std::wstring stringToWideString(const std::string &str) {
     return wstr;
 }
 }  // namespace typesUtility
+
+std::string enumClassToString(NodeType e) {
+    switch (e) {
+        case NodeType::Unknown:
+            return "Unknown";
+        case NodeType::File:
+            return "File";
+        case NodeType::Directory:
+            return "Directory";
+    }
+    return "Unknown";
+}
 }  // namespace KDC
