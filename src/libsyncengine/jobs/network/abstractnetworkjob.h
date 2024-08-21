@@ -74,8 +74,8 @@ class AbstractNetworkJob : public AbstractJob {
         inline void noRetry() { _trials = 0; }
 
         virtual bool handleJsonResponse(std::istream &is);
-        virtual bool handleJsonResponse(std::string &str);
         virtual bool handleOctetStreamResponse(std::istream &is);
+        bool extractJson(std::istream &is, Poco::JSON::Object::Ptr &jsonObj);
         bool extractJsonError(std::istream &is, Poco::JSON::Object::Ptr errorObjPtr = nullptr);
 
         std::string _httpMethod;

@@ -54,9 +54,8 @@ bool JsonFullFileListWithCursorJob::handleResponse(std::istream &is) {
         std::stringstream ss;
         unzip(is, ss);
         return AbstractTokenNetworkJob::handleJsonResponse(ss);
-    } else {
-        return AbstractTokenNetworkJob::handleJsonResponse(is);
     }
+    return AbstractTokenNetworkJob::handleJsonResponse(is);
 }
 
 }  // namespace KDC

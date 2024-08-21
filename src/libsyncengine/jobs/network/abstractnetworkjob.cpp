@@ -605,45 +605,7 @@ std::string AbstractNetworkJob::errorText(const std::exception &e) const {
 }
 
 bool AbstractNetworkJob::handleJsonResponse(std::istream &is) {
-    // Extract JSON
-    try {
-        _jsonRes = Poco::JSON::Parser().parse(is).extract<Poco::JSON::Object::Ptr>();
-    } catch (Poco::Exception &exc) {
-        LOG_DEBUG(_logger,
-                  "Reply " << jobId() << " received doesn't contain a valid JSON payload: " << exc.displayText().c_str());
-        _exitCode = ExitCode::BackError;
-        _exitCause = ExitCause::ApiErr;
-        return false;
-    }
-
-    // Extract reply
-    std::ostringstream os;
-    _jsonRes->stringify(os);
-    if (isExtendedLog()) {
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()).c_str());
-    }
-    return true;
-}
-
-bool AbstractNetworkJob::handleJsonResponse(std::string &str) {
-    // Extract JSON
-    try {
-        Poco::JSON::Parser jsonParser;
-        _jsonRes = jsonParser.parse(str).extract<Poco::JSON::Object::Ptr>();
-    } catch (Poco::Exception &exc) {
-        LOG_DEBUG(_logger, "Reply " << jobId() << " received doesn't contain a valid JSON error: " << exc.displayText().c_str());
-
-        _exitCode = ExitCode::BackError;
-        _exitCause = ExitCause::ApiErr;
-        return false;
-    }
-
-    // Extract reply
-    if (isExtendedLog()) {
-        LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(str).c_str());
-    }
-
-    return true;
+    return extractJson(is, _jsonRes);
 }
 
 bool AbstractNetworkJob::handleOctetStreamResponse(std::istream &is) {
@@ -651,31 +613,15 @@ bool AbstractNetworkJob::handleOctetStreamResponse(std::istream &is) {
     return true;
 }
 
-bool AbstractNetworkJob::extractJsonError(std::istream &is, Poco::JSON::Object::Ptr errorObjPtr /*= nullptr*/) {
-    // Manage Content-Encoding
-    std::string encoding;
+bool AbstractNetworkJob::extractJson(std::istream &is, Poco::JSON::Object::Ptr &jsonObj) {
     try {
-        encoding = _resHttp.get("Content-Encoding");
-    } catch (...) {
-        // No Content-Encoding
-    }
-
-    std::stringstream ss;
-    if (encoding == "gzip") {
-        unzip(is, ss);
-    } else {
-        ss << is.rdbuf();
-    }
-
-    Poco::JSON::Object::Ptr jsonObj;
-    try {
-        jsonObj = Poco::JSON::Parser{}.parse(ss.str()).extract<Poco::JSON::Object::Ptr>();
+        jsonObj = Poco::JSON::Parser{}.parse(is).extract<Poco::JSON::Object::Ptr>();
     } catch (const Poco::Exception &exc) {
         LOGW_WARN(_logger, L"Reply " << jobId() << L" received doesn't contain a valid JSON error: "
                                      << Utility::s2ws(exc.displayText()).c_str());
-        Utility::logGenericServerError(_logger, "Request error", ss, _resHttp);
+        Utility::logGenericServerError(_logger, "Request error", is, _resHttp);
+        _exitCode = ExitCode::BackError;
         _exitCause = ExitCause::ApiErr;
-
         return false;
     }
 
@@ -684,6 +630,12 @@ bool AbstractNetworkJob::extractJsonError(std::istream &is, Poco::JSON::Object::
         jsonObj->stringify(os);
         LOGW_DEBUG(_logger, L"Reply " << jobId() << L" received: " << Utility::s2ws(os.str()).c_str());
     }
+    return true;
+}
+
+bool AbstractNetworkJob::extractJsonError(std::istream &is, Poco::JSON::Object::Ptr errorObjPtr /*= nullptr*/) {
+    Poco::JSON::Object::Ptr jsonObj;
+    if (!extractJson(is, jsonObj)) return false;
 
     errorObjPtr = jsonObj->getObject(errorKey);
     if (!JsonParserUtility::extractValue(errorObjPtr, codeKey, _errorCode)) {
