@@ -974,7 +974,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
                 return ExitCode::SystemError;
             }
 
-            ExitCode tmpExitCode = checkNodeIsFoundInDbForMoveOp(n, moveOp);
+            ExitCode tmpExitCode = checkNodeIsFoundInDbForMoveOp(newNode, moveOp);
             if (tmpExitCode != ExitCode::Ok) {
                 return tmpExitCode;
             }
