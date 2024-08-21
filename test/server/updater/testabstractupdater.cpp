@@ -27,6 +27,7 @@
 #include <regex>
 
 #include "server/updater_v2/abstractupdater.h"
+#include "test_utility/testhelpers.h"
 
 #include <Poco/JSON/Parser.h>
 
@@ -40,20 +41,6 @@ static const std::string smallVersionJsonUpdateStr =
 void TestAbstractUpdater::setUp() {
     LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ Set Up");
 
-    const std::string userIdStr = loadEnvVariable("KDRIVE_TEST_CI_USER_ID");
-    const std::string accountIdStr = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string remoteDirIdStr = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID");
-    const std::string apiTokenStr = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
-
-    // Insert api token into keystore
-    ApiToken apiToken;
-    apiToken.setAccessToken(apiTokenStr);
-
-    const std::string keychainKey("123");
-    KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
-
     // Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -63,9 +50,9 @@ void TestAbstractUpdater::setUp() {
 
 void TestAbstractUpdater::tearDown() {}
 
-class TestGetAppVersionJob : public GetAppVersionJob {
+class TestGetAppVersionJob final : public GetAppVersionJob {
     public:
-        TestGetAppVersionJob(Platform platform, const std::string &appID, bool updateAvailable)
+        TestGetAppVersionJob(const Platform platform, const std::string &appID, const bool updateAvailable)
             : GetAppVersionJob(platform, appID), _updateAvailable(updateAvailable) {}
 
         void runJob() noexcept override {

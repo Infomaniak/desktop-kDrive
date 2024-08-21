@@ -22,6 +22,23 @@
 #include <config.h>
 
 namespace KDC {
+
+static const std::string applicationKey = "application";
+static const std::string publishedVersionsKey = "published_versions";
+static const std::string versionTypeProdKey = "production";
+static const std::string versionTypeNextKey = "production-next";
+static const std::string versionTypeBetaKey = "beta";
+static const std::string versionTypeInternalKey = "internal";
+static const std::string platformMacOsKey = "mac-os";
+static const std::string platformWindowsKey = "windows";
+static const std::string platformLinuxAmdKey = "linux-amd";
+static const std::string platformLinuxArmKey = "linux-arm";
+static const std::string tagKey = "tag";
+static const std::string changeLogKey = "version_changelog";
+static const std::string buildVersionKey = "build_version";
+static const std::string buildMinOsVersionKey = "build_min_os_version";
+static const std::string downloadUrlKey = "download_link";
+
 GetAppVersionJob::GetAppVersionJob(const Platform platform, const std::string &appID) : _platform(platform), _appId(appID) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 }

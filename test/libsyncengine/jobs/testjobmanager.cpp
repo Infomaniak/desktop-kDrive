@@ -32,6 +32,7 @@
 #include "libcommonserver/utility/utility.h"
 #include "requests/parameterscache.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/testhelpers.h"
 
 #include <unordered_set>
 
@@ -45,19 +46,11 @@ static const SyncPath localTestDirPath_pictures(std::wstring(L"" TEST_DIR) + L"/
 static const SyncPath localTestDirPath_bigFiles(std::wstring(L"" TEST_DIR) + L"/test_ci/big_file_dir");
 
 void KDC::TestJobManager::setUp() {
-    const std::string userIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_USER_ID");
-    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string remoteDirIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_DIR_ID");
-    const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-
-    if (userIdStr.empty() || accountIdStr.empty() || driveIdStr.empty() || remoteDirIdStr.empty() || apiTokenStr.empty()) {
-        throw std::runtime_error("Some environment variables are missing!");
-    }
+    const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
     ApiToken apiToken;
-    apiToken.setAccessToken(apiTokenStr);
+    apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
     KeyChainManager::instance(true);
@@ -72,20 +65,20 @@ void KDC::TestJobManager::setUp() {
     ParametersCache::instance()->parameters().setExtendedLog(true);
 
     // Insert user, account & drive
-    int userId(atoi(userIdStr.c_str()));
+    int userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr.c_str()));
+    int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    int driveId = atoi(driveIdStr.c_str());
+    int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    NodeId remoteDirId = std::string(remoteDirIdStr);
+    NodeId remoteDirId = std::string(testVariables.remoteDirId);
 
     // Setup proxy
     Parameters parameters;

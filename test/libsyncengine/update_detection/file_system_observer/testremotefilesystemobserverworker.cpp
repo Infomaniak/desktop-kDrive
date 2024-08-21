@@ -31,6 +31,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "test_utility/remotetemporarydirectory.h"
 #include "requests/syncnodecache.h"
+#include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
 using namespace std::literals;
@@ -48,15 +49,13 @@ void TestRemoteFileSystemObserverWorker::setUp() {
 
     LOG_DEBUG(_logger, "$$$$$ Set Up $$$$$");
 
-    const std::string userIdStr = loadEnvVariable("KDRIVE_TEST_CI_USER_ID");
-    const std::string accountIdStr = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string apiTokenStr = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
-    _testFolderId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID");
+    const testhelpers::TestVariables testVariables;
+
+    _testFolderId = testVariables.remoteDirId;
 
     // Insert api token into keystore
     ApiToken apiToken;
-    apiToken.setAccessToken(apiTokenStr);
+    apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
     KeyChainManager::instance(true);
@@ -68,16 +67,16 @@ void TestRemoteFileSystemObserverWorker::setUp() {
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
 
     // Insert user, account, drive & sync
-    const int userId(atoi(userIdStr.c_str()));
+    const int userId(atoi(testVariables.userId.c_str()));
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    const int accountId(atoi(accountIdStr.c_str()));
+    const int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    const int driveId(atoi(driveIdStr.c_str()));
+    const int driveId(atoi(testVariables.driveId.c_str()));
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
@@ -183,7 +182,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
     {
         LOG_DEBUG(_logger, "***** test move file *****");
 
-        MoveJob job(_driveDbId, localTestDirPath, _testFileId, nestedRemoteTmpDir.id());
+        MoveJob job(_driveDbId, testhelpers::localTestDirPath, _testFileId, nestedRemoteTmpDir.id());
         job.runSynchronously();
 
         // Get activity from the server

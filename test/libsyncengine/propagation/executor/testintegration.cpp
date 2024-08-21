@@ -18,6 +18,8 @@
 
 #include "testintegration.h"
 
+#include <memory>
+
 #include "db/db.h"
 #include "jobs/local/localcopyjob.h"
 #include "jobs/local/localdeletejob.h"
@@ -39,6 +41,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
+#include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
 
@@ -64,19 +67,11 @@ void TestIntegration::setUp() {
 
     LOGW_DEBUG(_logger, L"$$$$$ Set Up");
 
-    const std::string accountIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string localPathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_LOCAL_PATH");
-    const std::string remotePathStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_REMOTE_PATH");
-    const std::string apiTokenStr = CommonUtility::envVarValue("KDRIVE_TEST_CI_API_TOKEN");
-
-    if (accountIdStr.empty() || driveIdStr.empty() || localPathStr.empty() || remotePathStr.empty() || apiTokenStr.empty()) {
-        throw std::runtime_error("Some environment variables are missing!");
-    }
+    const testhelpers::TestVariables testVariables;
 
     // Insert api token into keystore
     ApiToken apiToken;
-    apiToken.setAccessToken(apiTokenStr);
+    apiToken.setAccessToken(testVariables.apiToken);
 
     std::string keychainKey("123");
     KeyChainManager::instance(true);
@@ -94,17 +89,17 @@ void TestIntegration::setUp() {
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr.c_str()));
+    int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     _driveDbId = 1;
-    int driveId = atoi(driveIdStr.c_str());
+    int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    _localPath = localPathStr;
-    _remotePath = remotePathStr;
+    _localPath = testVariables.localPath;
+    _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, _remotePath);
     ParmsDb::instance()->insertSync(sync);
 
@@ -115,7 +110,7 @@ void TestIntegration::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPal(sync.dbId(), "3.4.0"));
+    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
 
     // Insert items to blacklist
     SyncNodeCache::instance()->update(_syncPal->syncDbId(), SyncNodeType::BlackList, {test_beaucoupRemoteId});
