@@ -85,7 +85,7 @@ void TestComputeFSOperationWorker::setUp() {
     Sync sync(1, drive.dbId(), localPathStr, remotePathStr);
     ParmsDb::instance()->insertSync(sync);
 
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal = createSyncPal<SyncPal>(sync.dbId(), "3.4.0");
     _syncPal->syncDb()->setAutoDelete(true);
 
     /// Insert node "AC" in blacklist

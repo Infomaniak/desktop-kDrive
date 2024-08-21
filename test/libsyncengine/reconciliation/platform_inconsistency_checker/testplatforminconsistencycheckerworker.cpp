@@ -62,7 +62,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
     ParmsDb::instance()->insertSync(sync);
 
     // Create SyncPal
-    _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
+    _syncPal = createSyncPal<SyncPal>(sync.dbId(), "3.4.0");
     _syncPal->_syncDb->setAutoDelete(true);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 

@@ -74,7 +74,7 @@ void TestExecutorWorker::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::make_shared<SyncPal>(_sync.dbId(), "3.4.0");
+    _syncPal = createSyncPal<SyncPal>(_sync.dbId(), "3.4.0");
     _syncPal->createWorkers();
     _syncPal->syncDb()->setAutoDelete(true);
 }

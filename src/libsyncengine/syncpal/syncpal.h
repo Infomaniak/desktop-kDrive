@@ -380,4 +380,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestIntegration;
 };
 
+template <class SyncPalType>
+std::shared_ptr<SyncPal> createSyncPal(int syncDbId, const std::string &version) {
+    auto syncPal = new SyncPalType(syncDbId, version);
+    syncPal->init();
+
+    return std::shared_ptr<SyncPal>(syncPal);
+}
+
 }  // namespace KDC

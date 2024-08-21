@@ -105,8 +105,7 @@ void TestSyncPal::setUp() {
         Proxy::instance(parameters.proxyConfig());
     }
 
-    _syncPal = std::shared_ptr<SyncPal>(new SyncPalMock(sync.dbId(), "3.4.0"));
-    _syncPal->init();
+    _syncPal = createSyncPal<SyncPalMock>(sync.dbId(), "3.4.0");
 }
 
 void TestSyncPal::tearDown() {
