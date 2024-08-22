@@ -67,14 +67,6 @@ void TestLocalFileSystemObserverWorker::setUp() {
         }
     }
 
-        if (i == 0) {
-            FileStat fileStat;
-            bool exists = false;
-            IoHelper::getFileStat(filepath, &fileStat, exists);
-            _testFileId = std::to_string(fileStat.inode);
-        }
-    }
-    
     // Create parmsDb
     bool alreadyExists = false;
     SyncPath parmsDbPath = Db::makeDbName(alreadyExists, true);
