@@ -758,7 +758,7 @@ void PreferencesWidget::retranslateUi() {
     _monochromeLabel->setText(tr("Activate monochrome icons"));
     _launchAtStartupLabel->setText(tr("Launch kDrive at startup"));
     _languageSelectorLabel->setText(tr("Language"));
-    _moveToTrashLabel->setText(tr("Move deleted files to computer's bin"));
+    _moveToTrashLabel->setText(tr("Move deleted files to trash"));
 
     _languageSelectorComboBox->blockSignals(true);  // To avoid triggering more LanguageChange events
     _languageSelectorComboBox->clear();
