@@ -67,6 +67,14 @@ void TestLocalFileSystemObserverWorker::setUp() {
         }
     }
 
+        if (i == 0) {
+            FileStat fileStat;
+            bool exists = false;
+            IoHelper::getFileStat(filepath, &fileStat, exists);
+            _testFileId = std::to_string(fileStat.inode);
+        }
+    }
+    
     // Create parmsDb
     bool alreadyExists = false;
     SyncPath parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -174,9 +182,10 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         SyncPath source = testAbsolutePath;
         SyncPath target = _subDirPath / filename;
 #ifdef _WIN32
-        const std::string testCallStr = "move " + Path2Str(source) + " " + Path2Str(target) + " >nil";
+        const std::string testCallStr =
+            "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
 #else
-        const std::string testCallStr = "mv " + Path2Str(source) + " " + Path2Str(target);
+        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
 #endif
         std::system(testCallStr.c_str());
 
@@ -193,9 +202,10 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         SyncPath source = testAbsolutePath;
         SyncPath target = _subDirPath / Str("test_file_renamed.txt");
 #ifdef _WIN32
-        const std::string testCallStr = "ren " + Path2Str(source) + " " + Path2Str(target);
+        const std::string testCallStr = "ren " + source.make_preferred().string() + " " + target.filename().string();
 #else
-        const std::string testCallStr = "mv " + Path2Str(source) + " " + Path2Str(target) + " >nil";
+        const std::string testCallStr =
+            "mv " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
 #endif
         std::system(testCallStr.c_str());
 
@@ -209,9 +219,9 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         /// Delete file
         LOGW_DEBUG(_logger, L"***** test delete file *****");
 #ifdef _WIN32
-        const std::string testCallStr = "del " + Path2Str(testAbsolutePath);
+        const std::string testCallStr = "del " + testAbsolutePath.make_preferred().string();
 #else
-        const std::string testCallStr = "rm -r " + Path2Str(testAbsolutePath);
+        const std::string testCallStr = "rm -r " + testAbsolutePath.make_preferred().string();
 #endif
         std::system(testCallStr.c_str());
 
@@ -251,9 +261,10 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         SyncPath source = testAbsolutePath;
         SyncPath target = _subDirPath / dirname;
 #ifdef _WIN32
-        const std::string testCallStr = "move " + Path2Str(source) + " " + Path2Str(target) + " >nil";
+        const std::string testCallStr =
+            "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
 #else
-        const std::string testCallStr = "mv " + Path2Str(source) + " " + Path2Str(target).string();
+        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
 #endif
         std::system(testCallStr.c_str());
 
@@ -271,9 +282,9 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         SyncPath source = testAbsolutePath;
         SyncPath target = _subDirPath / Str("A_renamed");
 #ifdef _WIN32
-        const std::string testCallStr = "ren " + Path2Str(source) + " " + SyncName2Str(target.filename()) + " >nil";
+        const std::string testCallStr = "ren " + source.make_preferred().string() + " " + target.filename().string() + " >nil";
 #else
-        const std::string testCallStr = "mv " + Path2Str(source) + " " + Path2Str(target);
+        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
 #endif
         std::system(testCallStr.c_str());
 
