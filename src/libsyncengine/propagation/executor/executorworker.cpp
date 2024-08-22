@@ -1763,9 +1763,10 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
                                       networkJob && networkJob->isDownloadImpossible());
     }
 
+    auto jobWithNetworkStatus(std::dynamic_pointer_cast<AbstractJobWithNetworkStatusCode>(job));
     if (job->exitCode() != ExitCode::Ok) {
-        if (networkJob && (networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-                           networkJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT)) {
+        if (jobWithNetworkStatus && (jobWithNetworkStatus->getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
+                                     jobWithNetworkStatus->getStatusCode() == Poco::Net::HTTPResponse::HTTP_CONFLICT)) {
             handleForbiddenAction(syncOp, relativeLocalPath);
         } else if (job->exitCode() == ExitCode::SystemError &&
                    (job->exitCause() == ExitCause::FileAccessError || job->exitCause() == ExitCause::MoveToTrashFailed)) {

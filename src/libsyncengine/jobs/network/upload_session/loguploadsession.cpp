@@ -53,7 +53,12 @@ std::shared_ptr<UploadSessionCancelJob> LogUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::LogUpload, getSessionToken());
 }
 
-bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
+bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob,
+                                            const std::string &uploadToken) {
+    if (!AbstractUploadSession::handleStartJobResult(StartJob, uploadToken)) {
+        return false;
+    }
+
     AppStateValue appStateValue = "";
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadToken, appStateValue, found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::selectAppState");
@@ -79,6 +84,10 @@ bool LogUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionS
 }
 
 bool LogUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+    if (!AbstractUploadSession::handleFinishJobResult(finishJob)) {
+        return false;
+    }
+
     if (bool found = true; !ParmsDb::instance()->updateAppState(AppStateKey::LogUploadToken, std::string(), found) || !found) {
         LOG_WARN(getLogger(), "Error in ParmsDb::updateAppState");
     }

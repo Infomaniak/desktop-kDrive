@@ -68,7 +68,7 @@ AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const Syn
     setProgressExpectedFinalValue(_filesize);
 }
 
-void AbstractUploadSession::runJob() {
+void AbstractUploadSession::runJob() noexcept{
     if (isExtendedLog()) {
         LOGW_DEBUG(_logger, L"Starting upload session " << jobId() << L" for file " << Path2WStr(_filePath.filename()).c_str()
                                                         << L" with " << _nbParalleleThread << L" threads");
@@ -140,7 +140,19 @@ void AbstractUploadSession::abort() {
     AbstractJob::abort();
 }
 
+bool AbstractUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &startJob,
+                                                 const std::string &uploadToken) {
+    _statusCode = startJob ? startJob->getStatusCode() : Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK;
+    return true;
+}
+
+bool AbstractUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+    _statusCode = finishJob ? finishJob->getStatusCode() : Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK;
+    return true;
+}
+
 bool AbstractUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) {
+    _statusCode = cancelJob ? cancelJob->getStatusCode() : Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK;
     if (cancelJob->hasHttpError()) {
         LOGW_WARN(_logger, L"Failed to cancel upload session for " << Utility::formatSyncPath(_filePath.filename()).c_str());
         _exitCode = ExitCode::DataError;

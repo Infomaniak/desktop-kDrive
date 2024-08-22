@@ -229,7 +229,7 @@ void AbstractNetworkJob::runJob() noexcept {
 }
 
 bool AbstractNetworkJob::hasHttpError() {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_OK) {
+    if (getStatusCode() == Poco::Net::HTTPResponse::HTTP_OK) {
         return false;
     }
     return true;

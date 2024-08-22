@@ -37,7 +37,8 @@ class DriveUploadSession : public AbstractUploadSession {
         inline SyncTime modtime() const { return _modtimeOut; }
 
     protected:
-        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) override;
+        bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob,
+                                  const std::string &uploadToken) override;
         bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) override;
         bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob) override;
         bool runJobInit() override;

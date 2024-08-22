@@ -26,20 +26,20 @@
 #include "uploadsessionstartjob.h"
 #include "uploadsessioncanceljob.h"
 #include <log4cplus/logger.h>
-
 #include <unordered_map>
 
 namespace KDC {
 
 class UploadSessionChunkJob;
 
-class AbstractUploadSession : public AbstractJob {
+class AbstractUploadSession : public AbstractJob, public AbstractJobWithNetworkStatusCode {
     public:
         AbstractUploadSession(const SyncPath &filepath, const SyncName &filename, uint64_t nbParalleleThread = 1);
         inline virtual ~AbstractUploadSession() = default;
         void uploadChunkCallback(UniqueId jobId);
         void abort() override;
         UploadSessionType _uploadSessionType = UploadSessionType::Unknown;
+        Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const override { return _statusCode; };
 
     protected:
         virtual std::shared_ptr<UploadSessionCancelJob> createCancelJob() = 0;
@@ -49,8 +49,8 @@ class AbstractUploadSession : public AbstractJob {
                                                                       std::streamsize actualChunkSize) = 0;
 
         virtual bool runJobInit() = 0;
-        virtual bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) = 0;
-        virtual bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) = 0;
+        virtual bool handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, const std::string &uploadToken);
+        virtual bool handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob);
         virtual bool handleCancelJobResult(const std::shared_ptr<UploadSessionCancelJob> &cancelJob);
 
         inline SyncPath getFilePath() const { return _filePath; }
@@ -71,7 +71,7 @@ class AbstractUploadSession : public AbstractJob {
         };
 
         bool canRun() override;
-        void runJob() override;
+        void runJob() noexcept override;
 
         bool initChunks();
         bool startSession();
@@ -100,6 +100,7 @@ class AbstractUploadSession : public AbstractJob {
         std::unordered_map<UniqueId, std::shared_ptr<UploadSessionChunkJob>> _ongoingChunkJobs;
         uint64_t _threadCounter = 0;  // Number of running
 
+        Poco::Net::HTTPResponse::HTTPStatus _statusCode = Poco::Net::HTTPResponse::HTTPStatus::HTTP_OK;
         std::recursive_mutex _mutex;
 };
 

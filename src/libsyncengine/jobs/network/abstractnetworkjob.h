@@ -36,14 +36,20 @@ namespace KDC {
 
 class AbstractJob;
 
-class AbstractNetworkJob : public AbstractJob {
+struct AbstractJobWithNetworkStatusCode {
+        virtual Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const = 0;
+        AbstractJobWithNetworkStatusCode() = default;
+        virtual ~AbstractJobWithNetworkStatusCode() = default;
+};
+
+class AbstractNetworkJob : public AbstractJobWithNetworkStatusCode, public AbstractJob {
     public:
         AbstractNetworkJob();
         ~AbstractNetworkJob() override;
-
+        inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const override { return _resHttp.getStatus(); };
         bool hasHttpError();
-        inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         virtual void abort() override;
+
 
         inline bool isDownloadImpossible() const { return _downloadImpossible; }
 

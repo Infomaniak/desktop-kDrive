@@ -62,7 +62,10 @@ std::shared_ptr<UploadSessionCancelJob> DriveUploadSession::createCancelJob() {
     return std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, getFilePath(), getSessionToken());
 }
 
-bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, std::string uploadToken) {
+bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessionStartJob> &StartJob, const std::string &uploadToken) {
+    if (!AbstractUploadSession::handleStartJobResult(StartJob, uploadToken)) {
+        return false;
+    }
     if (_syncDb && !_syncDb->insertUploadSessionToken(UploadSessionToken(uploadToken), _uploadSessionTokenDbId)) {
         LOG_WARN(getLogger(), "Error in SyncDb::insertUploadSessionToken");
         _exitCode = ExitCode::DbError;
@@ -72,6 +75,9 @@ bool DriveUploadSession::handleStartJobResult(const std::shared_ptr<UploadSessio
 }
 
 bool DriveUploadSession::handleFinishJobResult(const std::shared_ptr<UploadSessionFinishJob> &finishJob) {
+    if (!AbstractUploadSession::handleFinishJobResult(finishJob)) {
+        return false;
+    }
     _nodeId = finishJob->nodeId();
     _modtimeOut = finishJob->modtime();
 
