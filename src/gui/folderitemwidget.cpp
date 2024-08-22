@@ -464,7 +464,7 @@ void FolderItemWidget::retranslateUi() {
 
     if (ParametersCache::instance()->parametersInfo().moveToTrash()) {
         _saveLabel->setText(
-            tr("Unselected folders will be moved to your computer's recycle bin. Folders synced to kDrive will remain available "
+            tr("Unselected folders will be moved to trash. Folders synced to kDrive will remain available "
                "online."));
     } else {
         _saveLabel->setText(
