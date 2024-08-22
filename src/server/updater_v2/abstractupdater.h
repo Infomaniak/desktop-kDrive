@@ -29,7 +29,6 @@
 namespace KDC {
 /**
  * @brief Checks for new updates and manage installation.
- * @ingroup gui
  *
  * This class schedules regular update checks.
  * It also trigger automatic update and installation of the new version.
@@ -55,9 +54,9 @@ class AbstractUpdater {
         log4cplus::Logger _logger;
         std::unique_ptr<std::thread> _thread;
 
-        UpdateStateV2 _state{UpdateStateV2::UpToDate};
-        VersionInfo _versionInfo;
-        SyncPath _targetFile;
+        UpdateStateV2 _state{UpdateStateV2::UpToDate};  // Current state of the update process.
+        VersionInfo _versionInfo;  // A struct keeping all the informations about the currently available version.
+        SyncPath _targetFile;      // Path to the downloaded installer file.
 
         GetAppVersionJob *_getAppVersionJob{nullptr};
 };

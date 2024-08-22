@@ -29,7 +29,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateDir);
         CPPUNIT_TEST(testCopyToDir);
         CPPUNIT_TEST(testDelete);
-        // CPPUNIT_TEST(testDownload);
+        CPPUNIT_TEST(testDownload);
         //        CPPUNIT_TEST(testDownloadAborted);
         CPPUNIT_TEST(testGetAvatar);
         CPPUNIT_TEST(testGetDriveList);
@@ -47,13 +47,13 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testThumbnail);
         CPPUNIT_TEST(testDuplicateRenameMove);
         CPPUNIT_TEST(testRename);
-        // CPPUNIT_TEST(testUpload);
+        CPPUNIT_TEST(testUpload);
         //        CPPUNIT_TEST(testUploadAborted);
-        // CPPUNIT_TEST(testDriveUploadSessionConstructorException);
-        // CPPUNIT_TEST(testDriveUploadSessionSynchronous);
-        // CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
-        // CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
-        // CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
+        CPPUNIT_TEST(testDriveUploadSessionConstructorException);
+        CPPUNIT_TEST(testDriveUploadSessionSynchronous);
+        CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
+        CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
+        CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
         CPPUNIT_TEST(testGetAppVersionInfo);
         CPPUNIT_TEST_SUITE_END();
 
