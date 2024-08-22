@@ -20,7 +20,10 @@
 #include "utility/types.h"
 
 namespace KDC::testhelpers {
+
 SyncName makeNfdSyncName();
 SyncName makeNfcSyncName();
+
+void generateTestFile(const SyncPath &path);
 
 }  // namespace KDC::testhelpers

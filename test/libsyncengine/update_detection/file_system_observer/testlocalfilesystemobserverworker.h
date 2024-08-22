@@ -38,7 +38,8 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testFolderWatcherWithFiles);
         CPPUNIT_TEST(testFolderWatcherDeleteDir);
         CPPUNIT_TEST(testFolderWatcherWithDirs);
-        CPPUNIT_TEST(testFolderWatcherWithSpecialCases);
+        CPPUNIT_TEST(testFolderWatcherWithSpecialCases1);
+        CPPUNIT_TEST(testFolderWatcherWithSpecialCases2);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -52,18 +53,17 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         log4cplus::Logger _logger;
         std::shared_ptr<SyncPal> _syncPal = nullptr;
 
-        static const SyncPath _testFolderPath;
-        static const SyncPath _testPicturesFolderName;
-        static const uint64_t _nbFileInTestDir;
-
         LocalTemporaryDirectory _tempDir;
-        SyncPath _testRootFolderPath;
+        SyncPath _rootFolderPath;
+        SyncPath _subDirPath;
+        NodeId _testFileId;
 
         void testFolderWatcherWithInitialSnapshot();
         void testFolderWatcherWithFiles();
         void testFolderWatcherWithDirs();
         void testFolderWatcherDeleteDir();
-        void testFolderWatcherWithSpecialCases();
+        void testFolderWatcherWithSpecialCases1();
+        void testFolderWatcherWithSpecialCases2();
 };
 
 }  // namespace KDC

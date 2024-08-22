@@ -15,13 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <fstream>
 #include "testhelpers.h"
 
 #include "utility/utility.h"
 
-
 namespace KDC::testhelpers {
-
 
 SyncName makeNfdSyncName() {
 #ifdef _WIN32
@@ -39,5 +38,10 @@ SyncName makeNfcSyncName() {
 #endif
 }
 
+void generateTestFile(const SyncPath &path) {
+    std::ofstream fakeFile(path);
+    fakeFile << "test" << std::endl;
+    fakeFile.close();
+}
 
 }  // namespace KDC::testhelpers
