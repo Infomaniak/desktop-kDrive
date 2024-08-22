@@ -770,7 +770,7 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
             return tr("This item already exists on remote kDrive. It is not synced because it has been blacklisted.");
         }
         case CancelType::MoveToBinFailed: {
-            return tr("Failed to move this item to bin, it has been blacklisted.");
+            return tr("Failed to move this item to trash, it has been blacklisted.");
         }
         case CancelType::AlreadyExistLocal: {
             return tr("This item already exists on local file system. It is not synced.");

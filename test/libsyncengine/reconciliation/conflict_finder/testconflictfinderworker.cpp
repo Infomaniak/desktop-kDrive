@@ -204,33 +204,33 @@ void TestConflictFinderWorker::setUpTreesAndDb() {
         std::shared_ptr<Node>(new Node(dbnodeIdfile4111, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("File 4.1.1.1"),
                                        NodeType::File, OperationType::None, "r4111", createdAt, lastmodified, size, rNode411));
 
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeB);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(node1);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(node2);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(node3);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(node4);
-    node1->insertChildren(node11);
-    node11->insertChildren(node111);
-    node111->insertChildren(node1111);
-    node3->insertChildren(node31);
-    node4->insertChildren(node41);
-    node41->insertChildren(node411);
-    node411->insertChildren(node4111);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeB));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(node1));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(node2));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(node3));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(node4));
+    CPPUNIT_ASSERT(node1->insertChildren(node11));
+    CPPUNIT_ASSERT(node11->insertChildren(node111));
+    CPPUNIT_ASSERT(node111->insertChildren(node1111));
+    CPPUNIT_ASSERT(node3->insertChildren(node31));
+    CPPUNIT_ASSERT(node4->insertChildren(node41));
+    CPPUNIT_ASSERT(node41->insertChildren(node411));
+    CPPUNIT_ASSERT(node411->insertChildren(node4111));
 
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNode1);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNode2);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNode3);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNode4);
-    rNode1->insertChildren(rNode11);
-    rNode11->insertChildren(rNode111);
-    rNode111->insertChildren(rNode1111);
-    rNode3->insertChildren(rNode31);
-    rNode4->insertChildren(rNode41);
-    rNode41->insertChildren(rNode411);
-    rNode411->insertChildren(rNode4111);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNode1));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNode2));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNode3));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNode4));
+    CPPUNIT_ASSERT(rNode1->insertChildren(rNode11));
+    CPPUNIT_ASSERT(rNode11->insertChildren(rNode111));
+    CPPUNIT_ASSERT(rNode111->insertChildren(rNode1111));
+    CPPUNIT_ASSERT(rNode3->insertChildren(rNode31));
+    CPPUNIT_ASSERT(rNode4->insertChildren(rNode41));
+    CPPUNIT_ASSERT(rNode41->insertChildren(rNode411));
+    CPPUNIT_ASSERT(rNode411->insertChildren(rNode4111));
 
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(node1111);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(node111);
@@ -422,10 +422,10 @@ void TestConflictFinderWorker::testMoveMoveSrc() {
     std::shared_ptr<Node> remoteDir2 = _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 2");
     localDir2->setChangeEvents(OperationType::Move);
     remoteDir2->setChangeEvents(OperationType::Move);
-    _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 1")->insertChildren(localDir2);
-    _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3")->insertChildren(remoteDir2);
-    localDir2->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 1"));
-    remoteDir2->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3"));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 1")->insertChildren(localDir2));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3")->insertChildren(remoteDir2));
+    CPPUNIT_ASSERT(localDir2->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 1")));
+    CPPUNIT_ASSERT(remoteDir2->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3")));
     _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(localDir2);
     _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(remoteDir2);
 
@@ -442,10 +442,10 @@ void TestConflictFinderWorker::testMoveMoveDest() {
     std::shared_ptr<Node> remoteDir1 = _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 1");
     localDir2->setChangeEvents(OperationType::Move);
     remoteDir1->setChangeEvents(OperationType::Move);
-    _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 3")->insertChildren(localDir2);
-    _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3")->insertChildren(remoteDir1);
-    localDir2->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 3"));
-    remoteDir1->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3"));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 3")->insertChildren(localDir2));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3")->insertChildren(remoteDir1));
+    CPPUNIT_ASSERT(localDir2->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("Dir 3")));
+    CPPUNIT_ASSERT(remoteDir1->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("Dir 3")));
     localDir2->setName(Str("Dir 3.2"));
     remoteDir1->setName(Str("Dir 3.2"));
     _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(localDir2);
@@ -465,13 +465,13 @@ void TestConflictFinderWorker::testMoveMoveCycle() {
 
     // A moved in B/A
     A->setChangeEvents(OperationType::Move);
-    A->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("B"));
-    _syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("B")->insertChildren(A);
+    CPPUNIT_ASSERT(A->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("B")));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->getNodeByPath("B")->insertChildren(A));
     _syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(A);
     // B moved in A/B
     B->setChangeEvents(OperationType::Move);
-    B->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("A"));
-    _syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("A")->insertChildren(B);
+    CPPUNIT_ASSERT(B->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("A")));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->getNodeByPath("A")->insertChildren(B));
     _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(B);
 
     std::optional<std::vector<Conflict>> confTestList = _syncPal->_conflictFinderWorker->determineMoveMoveCycleConflicts(
@@ -510,9 +510,9 @@ void TestConflictFinderWorker::testCase55b() {
     std::shared_ptr<Node> rNodeA = std::shared_ptr<Node>(
         new Node(dbNodeIdFileA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"), NodeType::File, OperationType::None,
                  "rA", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
 
     // Conflict Situation
@@ -524,7 +524,7 @@ void TestConflictFinderWorker::testCase55b() {
     std::shared_ptr<Node> rNodeB = std::shared_ptr<Node>(
         new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"), NodeType::File, OperationType::Create,
                  "rB", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeB);
 
     _syncPal->_conflictFinderWorker->findConflicts();
@@ -562,9 +562,9 @@ void TestConflictFinderWorker::testCase55c() {
     std::shared_ptr<Node> rNodeA = std::shared_ptr<Node>(
         new Node(dbNodeIdFileA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"), NodeType::File, OperationType::None,
                  "rA", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
 
     // Conflict Situation
@@ -579,13 +579,13 @@ void TestConflictFinderWorker::testCase55c() {
         new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"), NodeType::File, OperationType::Create,
                  "rB", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeB);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB));
 
     std::shared_ptr<Node> nodeC = std::shared_ptr<Node>(
         new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("C"), NodeType::File, OperationType::Create,
                  "C", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeC);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeC);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeC));
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->size() == 3);
@@ -637,27 +637,27 @@ void TestConflictFinderWorker::testCase57() {
     std::shared_ptr<Node> rNodeC =
         std::shared_ptr<Node>(new Node(dbNodeIdFileC, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c"), NodeType::File,
                                        OperationType::None, "rc", createdAt, lastmodified, size, rNodeA));
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeB);
-    nodeA->insertChildren(nodeC);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeB));
+    CPPUNIT_ASSERT(nodeA->insertChildren(nodeC));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeB);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeC);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB);
-    rNodeA->insertChildren(rNodeC);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB));
+    CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeC));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeB);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeC);
 
     // Conflict Situation
-    nodeC->setParentNode(nodeB);
+    CPPUNIT_ASSERT(nodeC->setParentNode(nodeB));
     nodeC->insertChangeEvent(OperationType::Move);
-    nodeB->insertChildren(nodeC);
+    CPPUNIT_ASSERT(nodeB->insertChildren(nodeC));
     CPPUNIT_ASSERT(nodeA->deleteChildren(nodeC));
     rNodeC->insertChangeEvent(OperationType::Move);
-    rNodeC->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeC);
+    CPPUNIT_ASSERT(rNodeC->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeC));
     rNodeB->insertChangeEvent(OperationType::Delete);
     CPPUNIT_ASSERT(rNodeA->deleteChildren(rNodeC));
 
@@ -709,12 +709,12 @@ void TestConflictFinderWorker::testCase59() {
     std::shared_ptr<Node> rNodeB = std::shared_ptr<Node>(new Node(
         dbNodeIdDirB, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"), NodeType::Directory, OperationType::None, "rB",
         createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeB);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeB);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeB);
 
@@ -764,25 +764,25 @@ void TestConflictFinderWorker::testCase510() {
         std::shared_ptr<Node>(new Node(dbNodeIdFileX, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("x"), NodeType::File,
                                        OperationType::None, "rX", createdAt, lastmodified, size, rNodeA));
 
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA);
-    nodeA->insertChildren(nodeX);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
+    CPPUNIT_ASSERT(nodeA->insertChildren(nodeX));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeX);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA);
-    rNodeA->insertChildren(rNodeX);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
+    CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeX));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeX);
 
     // Conflict situation
     nodeX->insertChangeEvent(OperationType::Move);
-    nodeX->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeX);
+    CPPUNIT_ASSERT(nodeX->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeX));
     CPPUNIT_ASSERT(nodeA->deleteChildren(nodeX));
     std::shared_ptr<Node> nodeX2 =
         std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("x"), NodeType::File,
                                        OperationType::Create, "X2", createdAt, lastmodified, size, nodeA));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeX2);
-    nodeA->insertChildren(nodeX2);
+    CPPUNIT_ASSERT(nodeA->insertChildren(nodeX2));
     rNodeA->insertChangeEvent(OperationType::Delete);
     rNodeX->insertChangeEvent(OperationType::Delete);
 
@@ -829,12 +829,12 @@ void TestConflictFinderWorker::testCase511() {
         std::shared_ptr<Node>(new Node(dbNodeIdDirB, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"),
                                        NodeType::Directory, OperationType::None, "rB", createdAt, lastmodified, size, rNodeA));
 
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA);
-    nodeA->insertChildren(nodeB);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeA));
+    CPPUNIT_ASSERT(nodeA->insertChildren(nodeB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeA);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeB);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA);
-    rNodeA->insertChildren(rNodeB);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
+    CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeB));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeB);
 
@@ -842,14 +842,14 @@ void TestConflictFinderWorker::testCase511() {
     nodeB->insertChangeEvent(OperationType::Delete);
     nodeA->insertChangeEvent(OperationType::Delete);
     CPPUNIT_ASSERT(rNodeA->deleteChildren(rNodeB));
-    rNodeB->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB);
+    CPPUNIT_ASSERT(rNodeB->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB));
     rNodeB->setName(Str("B_moved"));
     rNodeB->insertChangeEvent(OperationType::Move);
     std::shared_ptr<Node> nodeNewFile =
         std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("new.txt"),
                                        NodeType::File, OperationType::Create, "new", createdAt, lastmodified, size, rNodeB));
-    rNodeB->insertChildren(nodeNewFile);
+    CPPUNIT_ASSERT(rNodeB->insertChildren(nodeNewFile));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(nodeNewFile);
 
     _syncPal->_conflictFinderWorker->findConflicts();
@@ -904,32 +904,32 @@ void TestConflictFinderWorker::testCase513() {
         std::shared_ptr<Node>(new Node(dbNodeIdDirN, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("n"),
                                        NodeType::Directory, OperationType::None, "rn", createdAt, lastmodified, size, rNodeQ));
 
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeQ);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeR);
-    nodeQ->insertChildren(nodeN);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeQ));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeR));
+    CPPUNIT_ASSERT(nodeQ->insertChildren(nodeN));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeQ);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeR);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeN);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeQ);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeR);
-    rNodeQ->insertChildren(rNodeN);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeQ));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeR));
+    CPPUNIT_ASSERT(rNodeQ->insertChildren(rNodeN));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeQ);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeR);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeN);
 
     // Conflict situation
     nodeR->insertChangeEvent(OperationType::Move);
-    nodeR->setParentNode(nodeN);
-    nodeN->insertChildren(nodeR);
+    CPPUNIT_ASSERT(nodeR->setParentNode(nodeN));
+    CPPUNIT_ASSERT(nodeN->insertChildren(nodeR));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->deleteChildren(nodeR));
     rNodeQ->insertChangeEvent(OperationType::Move);
-    rNodeQ->setParentNode(rNodeR);
-    rNodeR->insertChildren(rNodeQ);
+    CPPUNIT_ASSERT(rNodeQ->setParentNode(rNodeR));
+    CPPUNIT_ASSERT(rNodeR->insertChildren(rNodeQ));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeQ));
     rNodeN->insertChangeEvent(OperationType::Move);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeN);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeN));
     // update the node's name in the parent's children map
-    rNodeN->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    CPPUNIT_ASSERT(rNodeN->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
     CPPUNIT_ASSERT(rNodeQ->deleteChildren(rNodeN));
     rNodeN->setName(Str("n_moved2"));
 
@@ -990,18 +990,18 @@ void TestConflictFinderWorker::testCase516() {
         std::shared_ptr<Node>(new Node(dbNodeIdDirN, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("n"),
                                        NodeType::Directory, OperationType::None, "rn", createdAt, lastmodified, size, rNodeR));
 
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeQ);
-    nodeQ->insertChildren(nodeM);
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeR);
-    nodeR->insertChildren(nodeN);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeQ));
+    CPPUNIT_ASSERT(nodeQ->insertChildren(nodeM));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeR));
+    CPPUNIT_ASSERT(nodeR->insertChildren(nodeN));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeQ);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeR);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeN);
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(nodeM);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeQ);
-    rNodeQ->insertChildren(rNodeM);
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeR);
-    rNodeR->insertChildren(rNodeN);
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeQ));
+    CPPUNIT_ASSERT(rNodeQ->insertChildren(rNodeM));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeR));
+    CPPUNIT_ASSERT(rNodeR->insertChildren(rNodeN));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeQ);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeR);
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeN);
@@ -1011,27 +1011,27 @@ void TestConflictFinderWorker::testCase516() {
     CPPUNIT_ASSERT(nodeR->deleteChildren(nodeN));
     CPPUNIT_ASSERT(nodeQ->deleteChildren(nodeM));
     nodeM->insertChangeEvent(OperationType::Move);
-    nodeM->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    _syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeM);
-    nodeM->insertChildren(nodeN);
+    CPPUNIT_ASSERT(nodeM->setParentNode(_syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(nodeM));
+    CPPUNIT_ASSERT(nodeM->insertChildren(nodeN));
     nodeN->insertChangeEvent(OperationType::Move);
-    nodeN->setParentNode(nodeM);
-    nodeN->insertChildren(nodeQ);
+    CPPUNIT_ASSERT(nodeN->setParentNode(nodeM));
+    CPPUNIT_ASSERT(nodeN->insertChildren(nodeQ));
     nodeQ->insertChangeEvent(OperationType::Move);
-    nodeQ->setParentNode(nodeN);
+    CPPUNIT_ASSERT(nodeQ->setParentNode(nodeN));
 
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->deleteChildren(rNodeR));
     rNodeR->insertChangeEvent(OperationType::Move);
-    rNodeR->setParentNode(rNodeQ);
-    rNodeQ->insertChildren(rNodeR);
+    CPPUNIT_ASSERT(rNodeR->setParentNode(rNodeQ));
+    CPPUNIT_ASSERT(rNodeQ->insertChildren(rNodeR));
     CPPUNIT_ASSERT(rNodeR->deleteChildren(rNodeN));
     rNodeN->insertChangeEvent(OperationType::Move);
-    rNodeN->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode());
-    _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeN);
+    CPPUNIT_ASSERT(rNodeN->setParentNode(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
+    CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeN));
     CPPUNIT_ASSERT(rNodeQ->deleteChildren(rNodeM));
     rNodeM->insertChangeEvent(OperationType::Move);
-    rNodeM->setParentNode(rNodeN);
-    rNodeN->insertChildren(rNodeM);
+    CPPUNIT_ASSERT(rNodeM->setParentNode(rNodeN));
+    CPPUNIT_ASSERT(rNodeN->insertChildren(rNodeM));
 
     _syncPal->_conflictFinderWorker->findConflicts();
     CPPUNIT_ASSERT(_syncPal->_conflictQueue->size() == 3);

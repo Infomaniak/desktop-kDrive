@@ -23,26 +23,6 @@
 
 namespace KDC {
 
-const Node Node::_nullNode;
-
-Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
-           const std::optional<NodeId> &id, std::optional<SyncTime> createdAt, std::optional<SyncTime> lastmodified, int64_t size)
-    : _idb(idb),
-      _side(side),
-      _name(Utility::normalizedSyncName(name)),
-      _inconsistencyType(InconsistencyType::None),
-      _type(type),
-      _id(id),
-      _previousId(std::nullopt),
-      _createdAt(createdAt),
-      _lastModified(lastmodified),
-      _size(size),
-      _status(NodeStatus::Unprocessed),
-      _parentNode(nullptr),
-      _moveOrigin(std::nullopt),
-      _moveOriginParentDbId(std::nullopt),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
-
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
@@ -50,38 +30,23 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
     : _idb(idb),
       _side(side),
       _name(Utility::normalizedSyncName(name)),
-      _inconsistencyType(InconsistencyType::None),
       _type(type),
       _changeEvents(changeEvents),
       _id(id),
-      _previousId(std::nullopt),
       _createdAt(createdAt),
       _lastModified(lastmodified),
       _size(size),
-      _status(NodeStatus::Unprocessed),
-      _parentNode(parentNode),
       _moveOrigin(moveOrigin),
       _moveOriginParentDbId(moveOriginParentDbId),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
-
-Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode)
-    : _side(side), _name(Utility::normalizedSyncName(name)), _type(type), _parentNode(parentNode), _isTmp(true) {
-    _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
+      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
+    setParentNode(parentNode);
 }
 
-Node::Node()
-    : _idb(std::nullopt),
-      _side(ReplicaSide::Unknown),
-      _name(SyncName()),
-      _inconsistencyType(InconsistencyType::None),
-      _type(NodeType::Unknown),
-      _id(std::string()),
-      _previousId(std::nullopt),
-      _status(NodeStatus::Unprocessed),
-      _parentNode(nullptr),
-      _moveOrigin(std::nullopt),
-      _moveOriginParentDbId(std::nullopt),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {}
+Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode)
+    : _side(side), _name(Utility::normalizedSyncName(name)), _type(type), _isTmp(true) {
+    _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
+    setParentNode(parentNode);
+}
 
 bool Node::operator==(const Node &n) const {
     return n._idb == _idb && n._name == _name;
@@ -89,6 +54,23 @@ bool Node::operator==(const Node &n) const {
 
 void Node::setName(const SyncName &name) {
     _name = Utility::normalizedSyncName(name);
+}
+
+bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
+    if (!parentNode) return true;
+
+    // Check that the parent is not a descendant
+    if (!isParentValid(parentNode)) {
+        assert(false);
+#ifdef NDEBUG
+        sentry_capture_event(
+            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Node::setParentNode", "Parent is a descendant"));
+#endif
+        return false;
+    }
+
+    _parentNode = parentNode;
+    return true;
 }
 
 std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) {
@@ -130,7 +112,25 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
     if (!child->id().has_value()) {
         return false;
     }
+
+    // Check that the child is not an ancestor
+    if (std::shared_ptr<Node> tmpNode = parentNode(); tmpNode) {
+        while (tmpNode->parentNode() != nullptr) {
+            if (child == tmpNode) {
+                assert(false);
+#ifdef NDEBUG
+                sentry_capture_event(
+                    sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Node::insertChildren", "Child is an ancestor"));
+#endif
+                return false;
+            }
+
+            tmpNode = tmpNode->parentNode();
+        }
+    }
+
     _childrenById[*child->id()] = child;
+
     return true;
 }
 
@@ -190,6 +190,18 @@ SyncPath Node::getPath() const {
     }
 
     return path;
+}
+
+bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
+    if (!parentNode) return true;  // `parentNode` is the root node, hence a valid parent. Stop climbing up the tree.
+
+    while (parentNode) {
+        if (parentNode->id() == _id)
+            return false;  // This node is a parent of `parentNode`, hence `parentNode` is not a valid parent.
+        parentNode = parentNode->parentNode();
+    }
+
+    return true;
 }
 
 }  // namespace KDC
