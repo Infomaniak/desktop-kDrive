@@ -52,6 +52,9 @@ struct TestVariables {
             localPath = loadEnvVariable("KDRIVE_TEST_CI_LOCAL_PATH");
             apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
         }
+
+void generateTestFile(const SyncPath &path);
+
 };
 
 }  // namespace KDC::testhelpers
