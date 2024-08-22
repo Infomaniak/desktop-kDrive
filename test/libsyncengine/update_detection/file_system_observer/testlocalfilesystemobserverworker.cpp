@@ -66,7 +66,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
             _testFileId = std::to_string(fileStat.inode);
         }
     }
-    
+
     // Create parmsDb
     bool alreadyExists = false;
     SyncPath parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -373,7 +373,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases1() {
 #ifdef _WIN32
     testCallStr = "move " + sourcePath.make_preferred().string() + " " + destinationPath.make_preferred().string() + " >nil";
 #else
-    testCallStr = "mv " + testAbsolutePath.make_preferred().string() + " " + destinationPath.make_preferred().string();
+    testCallStr = "mv " + sourcePath.make_preferred().string() + " " + destinationPath.make_preferred().string();
 #endif
     std::system(testCallStr.c_str());
 
