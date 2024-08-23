@@ -1023,7 +1023,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
 
     IoHelper::createDirectory(logUploadTempFolder, ioError);
     if (ioError == IoError::DirectoryExists) {  // If the directory already exists, we delete it and recreate it
-        IoHelper::deleteDirectory(logUploadTempFolder, ioError);
+        IoHelper::deleteItem(logUploadTempFolder, ioError);
         IoHelper::createDirectory(logUploadTempFolder, ioError);
     }
 
@@ -1042,14 +1042,14 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, logUploadTempFolder, progressCallbackArchivingWrapper,
                                                        archivePath, exitCause);
     if (exitCause == ExitCause::OperationCanceled) {
-        IoHelper::deleteDirectory(logUploadTempFolder, ioError);
+        IoHelper::deleteItem(logUploadTempFolder, ioError);
         LOG_INFO(Log::instance()->getLogger(), "LogArchiver::generateLogsSupportArchive canceled: "
                                                    << exitCode << " : " << exitCause);
         return ExitCode::Ok;
     } else if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in LogArchiver::generateLogsSupportArchive: "
                                                    << exitCode << " : " << exitCause);
-        IoHelper::deleteDirectory(logUploadTempFolder, ioError);
+        IoHelper::deleteItem(logUploadTempFolder, ioError);
         return exitCode;
     }
 
@@ -1106,7 +1106,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
         return exitCode;
     }
 
-    IoHelper::deleteDirectory(logUploadTempFolder, ioError);  // Delete temp folder if the upload was successful
+    IoHelper::deleteItem(logUploadTempFolder, ioError);  // Delete temp folder if the upload was successful
 
     if (exitCause != ExitCause::OperationCanceled) {
         std::string uploadDate = "";

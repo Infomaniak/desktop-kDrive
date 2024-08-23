@@ -117,7 +117,7 @@ void TestLog::clearLogDirectory(void) const {
         if (entry.path().filename().string() == Log::instance()->getLogFilePath().filename().string()) {
             continue;
         }
-        IoHelper::deleteDirectory(entry.path(), ioError);
+        IoHelper::deleteItem(entry.path(), ioError);
     }
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
     CPPUNIT_ASSERT(endOfDirectory);
