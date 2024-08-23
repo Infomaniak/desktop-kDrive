@@ -97,7 +97,7 @@ static int moveItemToTrash_private(const SyncPath &itemPath) {
 
     int result = system(command.c_str());
     if (result != 0) {
-        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to bin - err=" << std::to_string(result).c_str());
+        LOG_WARN(Log::instance()->getLogger(), "Failed to move item to trash - err=" << std::to_string(result).c_str());
         return false;
     }
     return true;
