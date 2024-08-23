@@ -39,10 +39,7 @@ DbNode::DbNode(int64_t nodeId, std::optional<DbNodeId> parentNodeId, const SyncN
       _size(size),
       _checksum(checksum),
       _status(status),
-      _syncing(syncing) {
-    assert(nameLocal == Utility::normalizedSyncName(nameLocal));
-    assert(nameRemote == Utility::normalizedSyncName(nameRemote));
-}
+      _syncing(syncing) {}
 
 DbNode::DbNode()
     : _nodeId(0),
