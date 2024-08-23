@@ -110,7 +110,7 @@ struct IoHelper {
         /*!
          \param path is a file system path to a directory entry (we also call it an item).
          \param filestat is set with the file status of the item indicated by path, if the item exists and the status could be
-         succesfully retrieved, nullptr otherwise.
+         successfully retrieved, nullptr otherwise.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
@@ -186,7 +186,7 @@ struct IoHelper {
         [[nodiscard]] static bool getFileSize(const SyncPath &path, uint64_t &size, IoError &ioError);
 
         //! Get the size of the directory indicated by `path` expressed in bytes.
-        //! This funciton is recursiv.
+        //! This function is recursive.
         /*!
           \param path is the file system path of a directory.
           \param size holds the size in bytes of the directory indicated by path in case of success.
@@ -250,13 +250,31 @@ struct IoHelper {
          */
         static bool createDirectory(const SyncPath &path, IoError &ioError) noexcept;
 
-        //! Remove a directory located under the specified path.
+        /** Move an item located under the specified path.
+         *
+         * @param sourcePath is the source file system path of the item to move.
+         * @param destinationPath is the destination file system path of the item to move.
+         * @param ioError
+         * @return
+         */
+        static bool moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+
+        /** Rename an item located under the specified path.
+         *
+         * @param sourcePath is the source file system path of the item to rename.
+         * @param destinationPath is the destination file system path of the item to rename.
+         * @param ioError holds the error returned when an underlying OS API call fails.
+         * @return true if no unexpected error occurred, false otherwise.
+         */
+        static bool renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept;
+
+        //! Remove an item located under the specified path.
         /*!
-         \param path is the file system path of the directory to remove.
+         \param path is the file system path of the item to remove.
          \param ioError holds the error returned when an underlying OS API call fails.
          \return true if no unexpected error occurred, false otherwise.
          */
-        static bool deleteDirectory(const SyncPath &path, IoError &ioError) noexcept;
+        static bool deleteItem(const SyncPath &path, IoError &ioError) noexcept;
 
         //! Create a directory iterator for the specified path. The iterator can be used to iterate over the items in the directory.
         /*!
