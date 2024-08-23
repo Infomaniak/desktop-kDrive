@@ -68,14 +68,15 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
     }
 
     if (_withPath) {
-        std::string str;
-        if (!JsonParserUtility::extractValue(dataObj, pathKey, str)) {
+        std::string relativePathStr;
+        if (!JsonParserUtility::extractValue(dataObj, pathKey, relativePathStr)) {
             return false;
         }
-        if (Utility::startsWith(str, "/")) {
-            str.erase(0, 1);
+        if (Utility::startsWith(relativePathStr, "/")) {
+            relativePathStr.erase(0, 1);
         }
-        _path = str;
+
+        _path = relativePathStr;
     }
 
     return true;

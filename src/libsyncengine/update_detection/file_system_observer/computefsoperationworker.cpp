@@ -258,7 +258,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                             if (exitCode == ExitCode::NoWritePermission) {
                                 // Blacklist node
                                 _syncPal->blacklistTemporarily(nodeId, dbPath, side);
-                                Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, dbPath, ConflictType::None,
+                                Error error(_syncPal->syncDbId(), "", "", NodeType::Directory, dbPath, ConflictType::None,
                                             InconsistencyType::None, CancelType::None, "", ExitCode::SystemError,
                                             ExitCause::FileAccessError);
                                 _syncPal->addError(error);
@@ -281,7 +281,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
 
                     bool checkTemplate = side == ReplicaSide::Remote;
                     if (side == ReplicaSide::Local) {
-                        SyncPath localPath = _syncPal->_localPath / dbPath;
+                        SyncPath localPath = _syncPal->localPath() / dbPath;
 
                         // Do not propagate delete if path too long
                         size_t pathSize = localPath.native().size();
@@ -308,7 +308,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                         IoError ioError = IoError::Success;
                         bool warn = false;
                         bool isExcluded = false;
-                        const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, dbPath,
+                        const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), dbPath,
                                                                                                    warn, isExcluded, ioError);
                         if (!success) {
                             LOGW_WARN(_logger, L"Error in ExclusionTemplateCache::checkIfIsExcluded: "
@@ -350,7 +350,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
 
                 if (side == ReplicaSide::Local && !_testing) {
                     // OS might fail to notify all delete events, therefore we check that the file still exists.
-                    SyncPath absolutePath = _syncPal->_localPath / snapPath;
+                    SyncPath absolutePath = _syncPal->localPath() / snapPath;
                     bool exists = false;
                     if (IoError ioError = IoError::Success; !IoHelper::checkIfPathExists(absolutePath, exists, ioError)) {
                         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
@@ -505,7 +505,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 bool isExcluded = false;
                 IoError ioError = IoError::Success;
                 const bool success = ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(
-                    _syncPal->_localPath, snapPath, isExcluded, ioError);
+                    _syncPal->localPath(), snapPath, isExcluded, ioError);
                 if (!success || ioError != IoError::Success || isExcluded) {
                     if (_testing && ioError == IoError::NoSuchFileOrDirectory) {
                         // Files does exist in test, this fine, ignore ioError.
@@ -524,7 +524,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const s
                 //                if (type == NodeType::File && !isLink) {
                 //                    // On Windows, we receive CREATE event while the file is still being copied
                 //                    // Do not start synchronizing the file while copying is in progress
-                //                    const SyncPath absolutePath = _syncPal->_localPath / snapPath;
+                //                    const SyncPath absolutePath = _syncPal->localPath() / snapPath;
                 //                    if (!IoHelper::isFileAccessible(absolutePath, ioError)) {
                 //                        LOG_SYNCPAL_INFO(_logger, L"Item \"" << Path2WStr(absolutePath).c_str()
                 //                                                             << L"\" is not ready. Synchronization postponed.");
@@ -614,7 +614,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         }
 
         // OS might fail to notify all delete events, therefor we check that the file still exists
-        SyncPath absoluteLocalPath = _syncPal->_localPath / localSnapshotPath;
+        SyncPath absoluteLocalPath = _syncPal->localPath() / localSnapshotPath;
 
         // No operations detected on this file but its size is not the same between remote and local replica
         // Remove it from local replica and download the remote version
@@ -655,7 +655,7 @@ bool ComputeFSOperationWorker::isExcludedFromSync(const std::shared_ptr<Snapshot
         }
     } else {
         if (!_testing) {
-            SyncPath absoluteFilePath = _syncPal->_localPath / path;
+            SyncPath absoluteFilePath = _syncPal->localPath() / path;
 
             // Check that file exists
             bool exists = false;
@@ -799,7 +799,7 @@ bool ComputeFSOperationWorker::isTooBig(const std::shared_ptr<Snapshot> remoteSn
 }
 
 bool ComputeFSOperationWorker::isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) {
-    SyncPath absolutePath = _syncPal->_localPath / path;
+    SyncPath absolutePath = _syncPal->localPath() / path;
     size_t pathSize = absolutePath.native().size();
     if (PlatformInconsistencyCheckerUtility::instance()->checkPathLength(pathSize, type)) {
         LOGW_SYNCPAL_WARN(_logger, L"Path length too big (" << pathSize << L" characters) for item "
@@ -823,7 +823,7 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
         return ExitCode::Ok;
     }
 
-    const SyncPath absolutePath = _syncPal->_localPath / relativePath;
+    const SyncPath absolutePath = _syncPal->localPath() / relativePath;
     bool existsWithSameId = false;
     NodeId otherNodeId;
     IoError ioError = IoError::Success;
@@ -859,8 +859,8 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
     // Check if file is synced
     bool isWarning = false;
     ioError = IoError::Success;
-    const bool success =
-        ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
+    const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath, isWarning,
+                                                                               isExcluded, ioError);
     if (!success) {
         LOGW_WARN(_logger,
                   L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError).c_str());

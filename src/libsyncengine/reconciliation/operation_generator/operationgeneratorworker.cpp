@@ -114,17 +114,19 @@ void OperationGeneratorWorker::execute() {
     }
 
     if (_bytesToDownload > 0) {
-        const int64_t freeBytes = Utility::freeDiskSpace(_syncPal->_localPath);
+        const int64_t freeBytes = Utility::freeDiskSpace(_syncPal->localPath());
         if (freeBytes >= 0) {
             if (freeBytes < _bytesToDownload + Utility::freeDiskSpaceLimit()) {
-                LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only "
-                                               << freeBytes << L" B available at path " << Path2WStr(_syncPal->_localPath).c_str()
-                                               << L", " << _bytesToDownload << L" B to download. Synchronization canceled.");
+                LOGW_SYNCPAL_WARN(_logger, L"Disk almost full, only " << freeBytes << L" B available at path "
+                                                                      << Path2WStr(_syncPal->localPath()).c_str() << L", "
+                                                                      << _bytesToDownload
+                                                                      << L" B to download. Synchronization canceled.");
                 exitCode = ExitCode::SystemError;
                 setExitCause(ExitCause::NotEnoughDiskSpace);
             }
         } else {
-            LOGW_SYNCPAL_WARN(_logger, L"Could not determine free space available at" << Path2WStr(_syncPal->_localPath).c_str());
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Could not determine free space available at" << Path2WStr(_syncPal->localPath()).c_str());
         }
     }
 
@@ -168,7 +170,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
                              << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
+        if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
             currentNode->type() == NodeType::File) {
             _bytesToDownload += currentNode->size();
         }
@@ -213,7 +215,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
                                             << L")");
         }
 
-        if (_syncPal->_vfsMode == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
+        if (_syncPal->vfsMode() == VirtualFileMode::Off && op->targetSide() == ReplicaSide::Local &&
             currentNode->type() == NodeType::File) {
             // Keep only the difference between remote size and local size
             int64_t diffSize = currentNode->size() - correspondingNode->size();
@@ -314,9 +316,9 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
                                             << L" replica. Operation Delete to be propagated in DB only for item "
                                             << SyncName2WStr(currentNode->name()).c_str());
         }
-        _syncPal->_restart =
-            true;  // In certain cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
-                   // of next sync because nothing has changed but create events are not propagated
+        _syncPal->setRestart(true);
+        // In certain cases (e.g.: directory deleted and re-created with the same name), we need to trigger the start
+        // of next sync because nothing has changed but create events are not propagated
     } else {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(

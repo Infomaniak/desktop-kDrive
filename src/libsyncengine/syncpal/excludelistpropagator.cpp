@@ -52,7 +52,7 @@ ExitCode ExcludeListPropagator::checkItems() {
     try {
         std::error_code ec;
         auto dirIt = std::filesystem::recursive_directory_iterator(
-            _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
+            _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
             LOGW_SYNCPAL_DEBUG(Log::instance()->getLogger(), L"Error in checkItems: " << Utility::formatStdError(ec).c_str());
             return ExitCode::SystemError;
@@ -82,11 +82,11 @@ ExitCode ExcludeListPropagator::checkItems() {
                 continue;
             }
 
-            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, dirIt->path());
+            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), dirIt->path());
             bool isWarning = false;
             bool isExcluded = false;
             IoError ioError = IoError::Success;
-            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
+            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
                                                                                        isWarning, isExcluded, ioError);
             if (!success) {
                 LOGW_SYNCPAL_WARN(Log::instance()->getLogger(), L"Error in ExclusionTemplateCache::isExcluded: "

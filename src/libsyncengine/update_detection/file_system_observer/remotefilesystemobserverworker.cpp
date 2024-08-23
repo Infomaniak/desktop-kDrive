@@ -45,7 +45,7 @@ namespace KDC {
 
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                                const std::string &shortName)
-    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote), _driveDbId(syncPal->_driveDbId) {}
+    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote), _driveDbId(syncPal->driveDbId()) {}
 
 RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~RemoteFileSystemObserverWorker");
