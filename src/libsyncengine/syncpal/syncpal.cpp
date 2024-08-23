@@ -1365,7 +1365,7 @@ void SyncPal::fixInconsistentFileNames() {
                 continue;
             }
 
-            LocalDeleteJob deleteJob(SyncPalInfo(), oldLocalPath, false, *dbNode.nodeIdRemote(), true);
+            LocalDeleteJob deleteJob(syncInfo(), oldLocalPath, false, *dbNode.nodeIdRemote(), true);
             deleteJob.setBypassCheck(true);
             deleteJob.runSynchronously();
         }
