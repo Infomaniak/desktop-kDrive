@@ -19,8 +19,8 @@
 #include "testincludes.h"
 #include "remotetemporarydirectory.h"
 
-#include "libsyncengine/jobs/network/createdirjob.h"
-#include "libsyncengine/jobs/network/deletejob.h"
+#include "../../src/libsyncengine/jobs/network/API_v2/createdirjob.h"
+#include "../../src/libsyncengine/jobs/network/API_v2/deletejob.h"
 #include "libsyncengine/jobs/network/networkjobsparams.h"
 #include "libcommonserver/utility/utility.h"
 

@@ -72,7 +72,6 @@
 #define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
 
 namespace KDC {
-
 const int CommonUtility::logsPurgeRate = 7;               // days
 const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
 
@@ -114,14 +113,38 @@ QString CommonUtility::platformName() {
     return QSysInfo::prettyProductName();
 }
 
+Platform CommonUtility::platform() {
+    const QString name = platformName();
+    if (name.contains("macos", Qt::CaseInsensitive)) return Platform::MacOS;
+    if (name.contains("windows", Qt::CaseInsensitive)) return Platform::Windows;
+    // Otherwise we consider the OS to be Linux based
+    if (platformArch().contains("arm", Qt::CaseInsensitive)) return Platform::LinuxARM;
+
+    return Platform::LinuxAMD;
+}
+
 QString CommonUtility::platformArch() {
     return QSysInfo::currentCpuArchitecture();
 }
 
-std::string CommonUtility::userAgentString() {
-    std::ostringstream userAgent;
-    userAgent << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
-    return userAgent.str();
+const std::string &CommonUtility::userAgentString() {
+    static std::string str;
+    if (str.empty()) {
+        std::stringstream ss;
+        ss << APPLICATION_SHORTNAME << " / " << KDRIVE_VERSION_STRING << " (" << platformName().toStdString() << ")";
+        str = ss.str();
+    }
+    return str;
+}
+
+const std::string &CommonUtility::currentVersion() {
+    static std::string str;
+    if (str.empty()) {
+        std::stringstream ss;
+        ss << KDRIVE_VERSION_MAJOR << "." << KDRIVE_VERSION_MINOR << "." << KDRIVE_VERSION_PATCH << "." << KDRIVE_VERSION_BUILD;
+        str = ss.str();
+    }
+    return str;
 }
 
 QString CommonUtility::fileSystemName(const QString &dirPath) {
@@ -215,7 +238,7 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
     return -1;
 }
 
-QByteArray CommonUtility::IntToArray(qint32 source) {
+QByteArray CommonUtility::toQByteArray(const qint32 source) {
     // Avoid use of cast, this is the Qt way to serialize objects
     QByteArray temp;
     QDataStream data(&temp, QIODevice::ReadWrite);
@@ -223,7 +246,7 @@ QByteArray CommonUtility::IntToArray(qint32 source) {
     return temp;
 }
 
-int CommonUtility::ArrayToInt(QByteArray source) {
+int CommonUtility::toInt(QByteArray source) {
     int temp;
     QDataStream data(&source, QIODevice::ReadWrite);
     data >> temp;
@@ -435,9 +458,9 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
             if (!qtTranslator->load(qtTrFile, qtTrPath)) {
                 if (!qtTranslator->load(qtTrFile, trPath)) {
                     if (!qtTranslator->load(qtBaseTrFile, qtTrPath)) {
-                        static_cast<void>(
-                            qtTranslator->load(qtBaseTrFile, trPath));  // static_cast<void>() explicitly discard warning on
-                                                                        // function declared with 'nodiscard' attribute
+                        static_cast<void>(qtTranslator->load(qtBaseTrFile, trPath));
+                        // static_cast<void>() explicitly discard warning on
+                        // function declared with 'nodiscard' attribute
                     }
                 }
             }
@@ -662,7 +685,7 @@ bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
 #if defined(NDEBUG)
-// Release mode
+    // Release mode
 #if defined(__APPLE__) || defined(_WIN32)
     // Version format = "X.Y.Z (build yyyymmdd)"
     size_t sepPosition = dbVersion.find(" ");
@@ -849,5 +872,4 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
     return false;
 }
 #endif
-
 }  // namespace KDC

@@ -23,6 +23,7 @@
 #include <functional>
 #include <cctype>
 #include <optional>
+#include <sstream>
 #include <unordered_set>
 #include <variant>
 
@@ -124,7 +125,8 @@ enum class ExitCode {
     InvalidOperation,
     OperationCanceled,
     UpdateRequired,
-    LogUploadFailed
+    LogUploadFailed,
+    UpdateFailed
 };
 
 enum class ExitCause {
@@ -332,18 +334,40 @@ enum class AppStateKey {
     LogUploadState,
     LogUploadPercent,
     LogUploadToken,
+    AppUid,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
+
 constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;
 constexpr int64_t SELF_RESTARTER_NO_CRASH_DETECTED = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
-
 enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
+
+enum class UpdateStateV2 { UpToDate, Available, Downloading, Ready, Error };
+enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
+enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
+
+struct VersionInfo {
+        std::string tag;                 // Version number. Example: 3.6.4
+        std::string changeLog;           // List of changes in this version
+        std::uint64_t buildVersion = 0;  // Example: 20240816
+        std::string buildMinOsVersion;   // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
+        std::string downloadUrl;         // URL to download the version
+
+        [[nodiscard]] bool isValid() const {
+            return !tag.empty() && !changeLog.empty() && buildVersion != 0 && !downloadUrl.empty();
+        }
+
+        [[nodiscard]] std::string fullVersion() const {
+            std::stringstream ss;
+            ss << tag << "." << buildVersion;
+            return ss.str();
+        }
+};
 
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
-
 
 /*
  * Define operator and converter for enum class

@@ -26,6 +26,7 @@
 
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "test_utility/localtemporarydirectory.h"
+#include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
 
@@ -174,10 +175,12 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     }
 
     // Set up DB
-    const DbNode dbNodeLower(2, _syncPal->_syncDb->rootNode().nodeId(), Str("a1"), Str("a1"), "la", "ra", defaultTime,
-                             defaultTime, defaultTime, NodeType::Directory, defaultSize, std::nullopt);
-    const DbNode dbNodeUpper(3, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", defaultTime, defaultTime,
-                             defaultTime, NodeType::Directory, defaultSize, std::nullopt);
+    const DbNode dbNodeLower(2, _syncPal->_syncDb->rootNode().nodeId(), Str("a1"), Str("a1"), "la", "ra",
+                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                             testhelpers::defaultFileSize, std::nullopt);
+    const DbNode dbNodeUpper(3, _syncPal->_syncDb->rootNode().nodeId(), Str("A"), Str("A"), "lA", "rA", testhelpers::defaultTime,
+                             testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
+                             testhelpers::defaultFileSize, std::nullopt);
     DbNodeId dbNodeIdLower;
     DbNodeId dbNodeIdUpper;
     bool constraintError = false;

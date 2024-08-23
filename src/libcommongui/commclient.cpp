@@ -121,7 +121,7 @@ bool CommClient::sendRequest(int id, RequestNum num, const QByteArray &params) {
     try {
         qCDebug(lcCommClient()) << "Snd rqst" << id << enumClassToInt(num);
 
-        _tcpConnection->write(KDC::CommonUtility::IntToArray(request.size()));
+        _tcpConnection->write(KDC::CommonUtility::toQByteArray(request.size()));
         _tcpConnection->write(request);
 #ifdef Q_OS_WIN
         _tcpConnection->flush();
@@ -151,7 +151,7 @@ void CommClient::onReadyRead() {
                 break;
             }
 
-            int size = CommonUtility::ArrayToInt(_buffer.mid(0, (qint32)sizeof(qint32)));
+            int size = CommonUtility::toInt(_buffer.mid(0, (qint32)sizeof(qint32)));
 
             // Read data
             if (_buffer.size() < (int)sizeof(qint32) + size) {

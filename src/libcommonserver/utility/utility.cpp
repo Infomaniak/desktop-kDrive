@@ -67,7 +67,6 @@
 #define SHARED_FOLDER "Shared"
 
 namespace KDC {
-
 static const SyncName excludedTemplateFileName(Str("sync-exclude.lst"));
 
 #if defined(__APPLE__)
@@ -261,14 +260,14 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
     errorStream << "Error in reply";
 
     // Try to parse as string
-    if (std::string str(std::istreambuf_iterator<char>(inputStream), {}); !str.empty()) {
+    if (const std::string str(std::istreambuf_iterator<char>(inputStream), {}); !str.empty()) {
         errorStream << ", error: " << str.c_str();
     }
 
     errorStream << ", content type: " << httpResponse.getContentType().c_str();
     errorStream << ", reason: " << httpResponse.getReason().c_str();
 
-    std::string encoding = httpResponse.get("Content-Encoding", "");
+    const std::string encoding = httpResponse.get("Content-Encoding", "");
     if (!encoding.empty()) {
         errorStream << ", encoding: " << encoding.c_str();
     }
@@ -976,5 +975,4 @@ SyncPath Utility::commonDocumentsFolderName() {
 SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
-
 }  // namespace KDC

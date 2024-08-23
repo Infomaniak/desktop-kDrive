@@ -15,12 +15,43 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #pragma once
 
+#include "libcommon/utility/utility.h"
 #include "utility/types.h"
+#include "utility/utility.h"
+
+#include <config.h>
 
 namespace KDC::testhelpers {
+
+const SyncPath localTestDirPath(KDC::Utility::s2ws(TEST_DIR) + L"/test_ci");
+const SyncTime defaultTime = std::time(nullptr);
+constexpr int64_t defaultFileSize = 1654788079;
+
 SyncName makeNfdSyncName();
 SyncName makeNfcSyncName();
+
+std::string loadEnvVariable(const std::string &key);
+struct TestVariables {
+        std::string userId;
+        std::string accountId;
+        std::string driveId;
+        std::string remoteDirId;
+        std::string remotePath;
+        std::string localPath;
+        std::string apiToken;
+
+        TestVariables() {
+            userId = loadEnvVariable("KDRIVE_TEST_CI_USER_ID");
+            accountId = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID");
+            driveId = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
+            remoteDirId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID");
+            remotePath = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH");
+            localPath = loadEnvVariable("KDRIVE_TEST_CI_LOCAL_PATH");
+            apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
+        }
+};
 
 }  // namespace KDC::testhelpers

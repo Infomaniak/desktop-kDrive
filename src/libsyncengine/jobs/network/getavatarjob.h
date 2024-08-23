@@ -26,16 +26,16 @@ class GetAvatarJob : public AbstractNetworkJob {
     public:
         GetAvatarJob(std::string url);
 
-        virtual std::string getUrl() override;
-        std::shared_ptr<std::vector<char>> avatar() const { return _avatar; }
+        std::string getUrl() override;
+        [[nodiscard]] std::shared_ptr<std::vector<char>> avatar() const { return _avatar; }
 
     private:
-        virtual std::string getSpecificUrl() override { return std::string(); }
-        virtual std::string getContentType(bool &canceled) override;
-        virtual void setQueryParameters(Poco::URI &, bool &) override {}
-        virtual void setData(bool &canceled) override { canceled = false; }
-        virtual bool handleError(std::istream &is, const Poco::URI &uri) override;
-        virtual bool handleResponse(std::istream &is) override;
+        std::string getSpecificUrl() override { return {}; }
+        std::string getContentType(bool &canceled) override;
+        void setQueryParameters(Poco::URI &, bool &) override {}
+        void setData(bool &canceled) override { canceled = false; }
+        bool handleError(std::istream &is, const Poco::URI &uri) override;
+        bool handleResponse(std::istream &is) override;
 
         std::string _avatarUrl;
         std::shared_ptr<std::vector<char>> _avatar;

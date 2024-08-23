@@ -20,13 +20,14 @@
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
-#include "jobs/network/createdirjob.h"
-#include "jobs/network/deletejob.h"
-#include "jobs/network/downloadjob.h"
-#include "jobs/network/movejob.h"
-#include "jobs/network/renamejob.h"
-#include "jobs/network/uploadjob.h"
-#include "jobs/network/upload_session/driveuploadsession.h"
+#include "../../jobs/network/API_v2/createdirjob.h"
+#include "../../jobs/network/API_v2/deletejob.h"
+#include "../../jobs/network/API_v2/downloadjob.h"
+#include "../../jobs/network/API_v2/movejob.h"
+#include "../../jobs/network/API_v2/renamejob.h"
+#include "../../jobs/network/API_v2/uploadjob.h"
+#include "../../jobs/network/API_v2/getfilelistjob.h"
+#include "jobs/network/API_v2/upload_session/driveuploadsession.h"
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #include "update_detection/file_system_observer/filesystemobserverworker.h"
 #include "update_detection/update_detector/updatetree.h"
@@ -40,8 +41,6 @@
 
 #include <iostream>
 #include <log4cplus/loggingmacros.h>
-
-#include <jobs/network/getfilelistjob.h>
 
 namespace KDC {
 

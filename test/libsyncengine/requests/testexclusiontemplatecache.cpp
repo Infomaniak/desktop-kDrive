@@ -19,6 +19,7 @@
 #include "testexclusiontemplatecache.h"
 #include "libparms/db/parmsdb.h"
 #include "requests/parameterscache.h"
+#include "test_utility/testhelpers.h"
 
 #include <filesystem>
 
@@ -152,28 +153,28 @@ void TestExclusionTemplateCache::testIsExcluded() {
 #ifndef _WIN32
     {
         // Test exclude hidden file
-        SyncPath testPath = localTestDirPath / ".my_hidden_file.txt";
+        SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_file.txt";
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(localTestDirPath, testPath, isExcluded, ioError));
-        CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(testhelpers::localTestDirPath, testPath,
+                                                                                          isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded(testhelpers::localTestDirPath, testPath, isWarning,
+                                                                             isExcluded, ioError));
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 
     {
         // Test exclude hidden folder
-        SyncPath testPath = localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
+        SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(localTestDirPath, testPath, isExcluded, ioError));
-        CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(testhelpers::localTestDirPath, testPath,
+                                                                                          isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded(testhelpers::localTestDirPath, testPath, isWarning,
+                                                                             isExcluded, ioError));
         CPPUNIT_ASSERT(isExcluded);
         CPPUNIT_ASSERT(ioError == IoError::Success);
     }
@@ -183,27 +184,27 @@ void TestExclusionTemplateCache::testIsExcluded() {
 
     {
         // Test include hidden file
-        SyncPath testPath = localTestDirPath / ".my_hidden_file.txt";
+        SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_file.txt";
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(localTestDirPath, testPath, isExcluded, ioError));
-        CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(testhelpers::localTestDirPath, testPath,
+                                                                                          isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded(testhelpers::localTestDirPath, testPath, isWarning,
+                                                                             isExcluded, ioError));
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoError::Success);
     }
     {
         // Test include hidden folder
-        SyncPath testPath = localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
+        SyncPath testPath = testhelpers::localTestDirPath / ".my_hidden_folder/AA/my_file.txt";
         bool isWarning = true;
         bool isExcluded = false;
         IoError ioError = IoError::Unknown;
-        CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(localTestDirPath, testPath, isExcluded, ioError));
-        CPPUNIT_ASSERT(
-            ExclusionTemplateCache::instance()->checkIfIsExcluded(localTestDirPath, testPath, isWarning, isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcludedBecauseHidden(testhelpers::localTestDirPath, testPath,
+                                                                                          isExcluded, ioError));
+        CPPUNIT_ASSERT(ExclusionTemplateCache::instance()->checkIfIsExcluded(testhelpers::localTestDirPath, testPath, isWarning,
+                                                                             isExcluded, ioError));
         CPPUNIT_ASSERT(!isExcluded);
         CPPUNIT_ASSERT(ioError == IoError::Success);
     }
