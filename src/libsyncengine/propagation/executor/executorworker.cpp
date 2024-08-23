@@ -656,7 +656,9 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             }
         }
     } else {
-        SyncPath relativeLocalFilePath = syncOp->affectedNode()->getPath();
+        NodeId nodeId = syncOp->affectedNode()->id().value();
+        SyncPath relativeLocalFilePath;
+        _syncPal->_localSnapshotCopy->path(nodeId, relativeLocalFilePath);
         SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
         if (syncOp->affectedNode()->type() == NodeType::Directory) {
             bool needRestart = false;
@@ -1440,8 +1442,11 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
         syncOp->correspondingNode() ? syncOp->correspondingNode() : syncOp->affectedNode();  // No corresponding node => rename
 
     // Check if file exists
-    SyncPath relativeLocalFilePath =
-        (syncOp->type() == OperationType::Create ? syncOp->affectedNode()->getPath() : correspondingNode->getPath());
+    NodeId nodeId =
+        syncOp->type() == OperationType::Create ? syncOp->affectedNode()->id().value() : correspondingNode->id().value();
+
+    SyncPath relativeLocalFilePath;
+    _syncPal->_localSnapshotCopy->path(nodeId, relativeLocalFilePath);
     SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
 
     bool readPermission = false;

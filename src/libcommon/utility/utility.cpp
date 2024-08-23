@@ -58,6 +58,7 @@
 
 #if defined(Q_OS_WIN)
 #include "utility_win.cpp"
+#include "libcommonserver/utility/utility.h"
 #elif defined(Q_OS_MAC)
 #include "utility_mac.cpp"
 #else
@@ -99,6 +100,25 @@ std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*
     tmp.reserve(length);
     for (int i = 0; i < length; ++i) {
         tmp += alphanum[distrib(gen)];
+    }
+
+    return tmp;
+}
+
+std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
+    static const char charArray[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "-._~";
+
+    static std::uniform_int_distribution<int> distrib(
+        0, sizeof(charArray) - 2);  // -2 in order to avoid the null terminating character
+
+    std::string tmp;
+    tmp.reserve(length);
+    for (int i = 0; i < length; ++i) {
+        tmp += charArray[distrib(gen)];
     }
 
     return tmp;
@@ -196,25 +216,6 @@ bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType icon
 
     return true;
 #endif
-}
-
-std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
-    static const char charArray[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz"
-        "-._~";
-
-    static std::uniform_int_distribution<int> distrib(
-        0, sizeof(charArray) - 2);  // -2 in order to avoid the null terminating character
-
-    std::string tmp;
-    tmp.reserve(length);
-    for (int i = 0; i < length; ++i) {
-        tmp += charArray[distrib(gen)];
-    }
-
-    return tmp;
 }
 
 qint64 CommonUtility::freeDiskSpace(const QString &path) {
@@ -670,17 +671,20 @@ size_t CommonUtility::maxPathLengthFolder() {
 #endif
 
 bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
-    if (path1.compare(path2) == 0) {
+    SyncPath path1normalized = Utility::normalizedSyncPath(path1);
+    SyncPath path2normalized = Utility::normalizedSyncPath(path2);
+
+    if (path1normalized.compare(path2) == 0) {
         return true;
     }
 
-    auto it1 = path1.begin();
-    auto it2 = path2.begin();
-    while (it1 != path1.end() && it2 != path2.end() && *it1 == *it2) {
+    auto it1 = path1normalized.begin();
+    auto it2 = path2normalized.begin();
+    while (it1 != path1normalized.end() && it2 != path2normalized.end() && *it1 == *it2) {
         it1++;
         it2++;
     }
-    return (it1 == path1.end());
+    return (it1 == path1normalized.end());
 }
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {
