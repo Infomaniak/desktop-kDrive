@@ -171,8 +171,8 @@ void TestComputeFSOperationWorker::setUp() {
 
     _syncPal->_computeFSOperationsWorker =
         std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP");
-    _syncPal->computeFSOperationWorker()->setTesting(true);
-    _syncPal->_localPath = testhelpers::localTestDirPath;
+    _syncPal->computeFSOperationsWorker()->setTesting(true);
+    _syncPal->localPath() = testhelpers::localTestDirPath;
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationWorker()->execute();
 }

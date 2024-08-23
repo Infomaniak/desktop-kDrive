@@ -29,7 +29,8 @@ namespace KDC {
 class TestLocalJobs : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestLocalJobs);
-        CPPUNIT_TEST(testLocalJobs);
+        // CPPUNIT_TEST(testLocalJobs);
+        CPPUNIT_TEST(testLocalDeleteJob);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -37,6 +38,7 @@ class TestLocalJobs : public CppUnit::TestFixture {
 
     protected:
         void testLocalJobs();
+        void testLocalDeleteJob();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
