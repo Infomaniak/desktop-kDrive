@@ -75,10 +75,33 @@ class GetSizeJob;
 #define LOG_SYNCPAL_FATAL(logger, logEvent) LOG_FATAL(logger, LOG_SYNCDBID << " " << logEvent)
 #define LOGW_SYNCPAL_FATAL(logger, logEvent) LOGW_FATAL(logger, LOG_SYNCDBID << " " << logEvent)
 
+struct SyncPalInfo {
+        SyncPalInfo() = default;
+        SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {})
+            : driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
+
+        int syncDbId{0};
+        int driveDbId{0};
+        int driveId{0};
+        int accountDbId{0};
+        int userDbId{0};
+        int userId{0};
+        std::string driveName;
+        SyncPath localPath;
+        SyncPath targetPath;
+        VirtualFileMode vfsMode{VirtualFileMode::Off};
+        bool restart{false};
+        bool isPaused{false};
+        bool syncHasFullyCompleted;
+
+        bool isAdvancedSync() const { return !targetPath.empty(); };
+};
+
+
 class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
     public:
-        SyncPal(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted);
-        SyncPal(int syncDbId, const std::string &version);
+        SyncPal(const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted);
+        SyncPal(const int syncDbId, const std::string &version);
         virtual ~SyncPal();
 
         ExitCode setTargetNodeId(const std::string &targetNodeId);
@@ -131,15 +154,18 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         }
 
         [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
-        inline int syncDbId() const { return _syncDbId; }
-        inline int driveDbId() const { return _driveDbId; }
-        inline int driveId() const { return _driveId; }
-        inline int accountDbId() const { return _accountDbId; }
-        inline int userDbId() const { return _userDbId; }
-        inline int userId() const { return _userId; }
-        inline const std::string &driveName() const { return _driveName; }
-        inline VirtualFileMode vfsMode() const { return _vfsMode; }
-        inline SyncPath localPath() const { return _localPath; }
+        inline const SyncPalInfo &syncInfo() const { return _syncInfo; };
+        inline int syncDbId() const { return _syncInfo.syncDbId; }
+        inline int driveDbId() const { return _syncInfo.driveDbId; }
+        inline int driveId() const { return _syncInfo.driveId; }
+        inline int accountDbId() const { return _syncInfo.accountDbId; }
+        inline int userDbId() const { return _syncInfo.userDbId; }
+        inline int userId() const { return _syncInfo.userId; }
+        inline const std::string &driveName() const { return _syncInfo.driveName; }
+        inline VirtualFileMode vfsMode() const { return _syncInfo.vfsMode; }
+        inline SyncPath localPath() const { return _syncInfo.localPath; }
+        inline bool restart() const { return _syncInfo.restart; };
+        inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
 
         // TODO : not ideal, to be refactored
         bool existOnServer(const SyncPath &path) const;
@@ -207,9 +233,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode cleanOldUploadSessionTokens();
         bool isDownloadOngoing(const SyncPath &localPath);
 
-        inline bool syncHasFullyCompleted() const { return _syncHasFullyCompleted; }
+        inline bool syncHasFullyCompleted() const { return _syncInfo.syncHasFullyCompleted; }
 
-        void fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const SyncPath &path);
+        void fixInconsistentFileNames();
 
         void fixNodeTableDeleteItemsWithNullParentNodeId();
 
@@ -221,29 +247,15 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
-        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
-        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
-        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
-        inline std::shared_ptr<ComputeFSOperationWorker> computeFSOperationWorker() const { return _computeFSOperationsWorker; };
-
-        SyncPath getLocalPath() const { return _localPath; };
-        void setLocalPath(const SyncPath &path) { _localPath = path; };
+        void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; };
+        void setSyncHasFullyCompeleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; };
+        void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; };
+        void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; };
+        void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
     private:
         log4cplus::Logger _logger;
-        int _syncDbId{0};
-        int _driveDbId{0};
-        int _driveId{0};
-        int _accountDbId{0};
-        int _userDbId{0};
-        int _userId{0};
-        std::string _driveName;
-        SyncPath _localPath;
-        SyncPath _targetPath;
-        VirtualFileMode _vfsMode{VirtualFileMode::Off};
-        bool _restart{false};
-        bool _isPaused{false};
-        bool _syncHasFullyCompleted;
+        SyncPalInfo _syncInfo;
 
         std::shared_ptr<ExcludeListPropagator> _excludeListPropagator = nullptr;
         std::shared_ptr<BlacklistPropagator> _blacklistPropagator = nullptr;
@@ -326,6 +338,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
+        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false);
+        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side);
+        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side);
 
         // Progress info management
         void resetEstimateUpdates();

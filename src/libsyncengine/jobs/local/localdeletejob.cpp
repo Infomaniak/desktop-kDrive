@@ -32,12 +32,35 @@
 
 namespace KDC {
 
-LocalDeleteJob::LocalDeleteJob(int driveDbId, const SyncPath &syncPath, const SyncPath &relativePath,
-                               bool isDehydratedPlaceholder, NodeId remoteId, bool forceToTrash /* = false */)
-    : _driveDbId(driveDbId),
-      _syncPath(syncPath),
+LocalDeleteJob::Path::Path(const SyncPath &path) : _path(path){};
+
+bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
+    if (!_path.empty() && ending.empty()) return false;
+
+    SyncPath path = _path;
+
+    while (!ending.empty() && !path.empty()) {
+        if (ending.filename() != path.filename()) return false;
+        ending = ending.parent_path();
+        path = path.parent_path();
+    }
+
+    return !path.empty() || ending.empty();
+};
+
+bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
+                                        const SyncPath &remoteRelativePath) {
+    if (targetPath.empty()) return localRelativePath == remoteRelativePath;
+
+    // Case of an advanced synchronisation
+    return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
+}
+
+LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &SyncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
+                               NodeId remoteId, bool forceToTrash /* = false */)
+    : _syncInfo(SyncPalInfo),
       _relativePath(relativePath),
-      _absolutePath(syncPath / relativePath),
+      _absolutePath(SyncPalInfo.localPath / relativePath),
       _isDehydratedPlaceholder(isDehydratedPlaceholder),
       _remoteNodeId(remoteId),
       _forceToTrash(forceToTrash) {}
@@ -47,6 +70,29 @@ LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) : _absolutePath(abs
 }
 
 LocalDeleteJob::~LocalDeleteJob() {}
+
+
+bool LocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
+    bool found = true;
+    remoteItemPath.clear();
+
+    // The item must be absent of remote replica for the job to run
+    GetFileInfoJob job(syncInfo().driveDbId, _remoteNodeId);
+    job.setWithPath(true);
+    job.runSynchronously();
+
+    if (job.hasHttpError()) {
+        using namespace Poco::Net;
+        if (job.getStatusCode() == HTTPResponse::HTTP_FORBIDDEN || job.getStatusCode() == HTTPResponse::HTTP_NOT_FOUND) {
+            found = false;
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
+                                          << L" not found on remote replica. This is normal and expected.");
+        }
+        remoteItemPath = job.path();
+    }
+
+    return found;
+}
 
 bool LocalDeleteJob::canRun() {
     if (bypassCheck()) {
@@ -78,24 +124,11 @@ bool LocalDeleteJob::canRun() {
         return false;
     }
 
-    // The item must be absent of remote replica for the job to run
-    GetFileInfoJob job(_driveDbId, _remoteNodeId);
-    job.setWithPath(true);
-    job.runSynchronously();
-    bool itemFound = true;
-    if (job.hasHttpError()) {
-        if (job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-            job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
-            itemFound = false;
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
-                                          << L" not found on remote replica. This is normal and expected.");
-        }
-    }
-
-    if (itemFound) {
+    SyncPath remoteRelativePath;
+    if (const bool itemFound = findRemoteItem(remoteRelativePath); itemFound) {
         // Verify that that the item has not moved
         // For item moved in a blacklisted folder, we need to delete them even if they still exist on remote replica
-        if (_relativePath == job.path().relative_path()) {
+        if (matchRelativePaths(syncInfo().targetPath, Utility::normalizedSyncPath(_relativePath), remoteRelativePath)) {
             // Item is found at the same path on remote
             LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");

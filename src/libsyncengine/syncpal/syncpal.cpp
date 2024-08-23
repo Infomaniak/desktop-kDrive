@@ -54,10 +54,9 @@
 
 namespace KDC {
 
-#define SYNCDB _syncDbId
-
-SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted)
-    : _logger(Log::instance()->getLogger()), _syncHasFullyCompleted(hasFullyCompleted) {
+SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted)
+    : _logger(Log::instance()->getLogger()) {
+    _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init : " << Utility::formatSyncPath(syncDbPath).c_str());
 
     if (!createOrOpenDb(syncDbPath, version)) {
@@ -67,13 +66,13 @@ SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, bool ha
     createSharedObjects();
 }
 
-SyncPal::SyncPal(int syncDbId, const std::string &version) : _logger(Log::instance()->getLogger()), _syncDbId(syncDbId) {
+SyncPal::SyncPal(const int syncDbId_, const std::string &version) : _logger(Log::instance()->getLogger()) {
     LOG_SYNCPAL_DEBUG(_logger, "SyncPal init");
 
     // Get sync
     Sync sync;
     bool found;
-    if (!ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
+    if (!ParmsDb::instance()->selectSync(syncDbId_, sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
@@ -81,54 +80,55 @@ SyncPal::SyncPal(int syncDbId, const std::string &version) : _logger(Log::instan
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
-    _driveDbId = sync.driveDbId();
-    _localPath = sync.localPath();
-    _localPath.make_preferred();
-    _targetPath = sync.targetPath();
-    _targetPath.make_preferred();
+    _syncInfo.syncDbId = syncDbId_;
+    _syncInfo.driveDbId = sync.driveDbId();
+    _syncInfo.localPath = sync.localPath();
+    _syncInfo.localPath.make_preferred();
+    _syncInfo.targetPath = sync.targetPath();
+    _syncInfo.targetPath.make_preferred();
 
     // Get drive
     Drive drive;
-    if (!ParmsDb::instance()->selectDrive(_driveDbId, drive, found)) {
+    if (!ParmsDb::instance()->selectDrive(driveDbId(), drive, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectDrive");
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
     if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Drive not found for driveDbId=" << _driveDbId);
+        LOG_SYNCPAL_WARN(_logger, "Drive not found for driveDbId=" << driveDbId());
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
-    _driveId = drive.driveId();
-    _accountDbId = drive.accountDbId();
-    _driveName = drive.name();
+    _syncInfo.driveId = drive.driveId();
+    _syncInfo.accountDbId = drive.accountDbId();
+    _syncInfo.driveName = drive.name();
 
     // Get account
     Account account;
-    if (!ParmsDb::instance()->selectAccount(_accountDbId, account, found)) {
+    if (!ParmsDb::instance()->selectAccount(accountDbId(), account, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectAccount");
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
     if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Account not found for accountDbId=" << _accountDbId);
+        LOG_SYNCPAL_WARN(_logger, "Account not found for accountDbId=" << accountDbId());
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
-    _userDbId = account.userDbId();
+    _syncInfo.userDbId = account.userDbId();
 
     // Get user
     User user;
-    if (!ParmsDb::instance()->selectUser(_userDbId, user, found)) {
+    if (!ParmsDb::instance()->selectUser(userDbId(), user, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectUser");
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
     if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "User not found for userDbId=" << _userDbId);
+        LOG_SYNCPAL_WARN(_logger, "User not found for userDbId=" << userDbId());
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
-    _userId = user.userId();
+    _syncInfo.userId = user.userId();
 
     if (sync.dbPath().empty()) {
         // Set Db path
         bool alreadyExist;
-        SyncPath dbPath = Db::makeDbName(user.userId(), account.accountId(), drive.driveId(), _syncDbId, alreadyExist);
+        SyncPath dbPath = Db::makeDbName(user.userId(), account.accountId(), drive.driveId(), syncDbId(), alreadyExist);
         if (dbPath.empty()) {
             LOG_SYNCPAL_WARN(_logger, "Error in Db::makeDbName");
             throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
@@ -164,14 +164,14 @@ SyncPal::SyncPal(int syncDbId, const std::string &version) : _logger(Log::instan
         throw std::runtime_error(SYNCPAL_NEW_ERROR_MSG);
     }
 
-    fixInconsistentFileNames(_syncDb, _localPath);
+    fixInconsistentFileNames();
     fixNodeTableDeleteItemsWithNullParentNodeId();
 
     createSharedObjects();
 }
 
 SyncPal::~SyncPal() {
-    SyncNodeCache::instance()->clearCache(_syncDbId);
+    SyncNodeCache::instance()->clearCache(syncDbId());
     LOG_SYNCPAL_DEBUG(_logger, "~SyncPal");
 }
 
@@ -213,7 +213,7 @@ SyncStatus SyncPal::status() const {
             } else if (_syncPalWorker->stopAsked()) {
                 // Stopping at the request of the user
                 return SyncStatus::StopAsked;
-            } else if (_syncPalWorker->step() == SyncStep::Idle && !_restart && !_localSnapshot->updated() &&
+            } else if (_syncPalWorker->step() == SyncStep::Idle && !restart() && !_localSnapshot->updated() &&
                        !_remoteSnapshot->updated()) {
                 // Sync pending
                 return SyncStatus::Idle;
@@ -319,7 +319,7 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
     if (jobPtr) {
         if (jobPtr->exitCode() != ExitCode::Ok) {
             LOG_SYNCPAL_WARN(_logger, "Error in PropagatorJob");
-            addError(Error(_syncDbId, errId(), jobPtr->exitCode(), ExitCause::Unknown));
+            addError(Error(syncDbId(), errId(), jobPtr->exitCode(), ExitCause::Unknown));
             return;
         }
 
@@ -339,7 +339,7 @@ void SyncPal::syncPalStartCallback([[maybe_unused]] UniqueId jobId) {
         } else if (std::dynamic_pointer_cast<ExcludeListPropagator>(jobPtr)) {
             _excludeListPropagator = nullptr;
         } else if (std::dynamic_pointer_cast<ConflictingFilesCorrector>(jobPtr)) {
-            _sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, _syncDbId, _conflictingFilesCorrector->nbErrors());
+            _sendSignal(SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED, syncDbId(), _conflictingFilesCorrector->nbErrors());
             _conflictingFilesCorrector = nullptr;
         }
     }
@@ -362,7 +362,7 @@ bool SyncPal::vfsIsExcluded(const SyncPath &itemPath, bool &isExcluded) {
         return false;
     }
 
-    return _vfsIsExcluded(_syncDbId, itemPath, isExcluded);
+    return _vfsIsExcluded(syncDbId(), itemPath, isExcluded);
 }
 
 bool SyncPal::vfsExclude(const SyncPath &itemPath) {
@@ -370,7 +370,7 @@ bool SyncPal::vfsExclude(const SyncPath &itemPath) {
         return false;
     }
 
-    return _vfsExclude(_syncDbId, itemPath);
+    return _vfsExclude(syncDbId(), itemPath);
 }
 
 bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
@@ -378,7 +378,7 @@ bool SyncPal::vfsPinState(const SyncPath &itemPath, PinState &pinState) {
         return false;
     }
 
-    return _vfsPinState(_syncDbId, itemPath, pinState);
+    return _vfsPinState(syncDbId(), itemPath, pinState);
 }
 
 bool SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
@@ -386,7 +386,7 @@ bool SyncPal::vfsSetPinState(const SyncPath &itemPath, PinState pinState) {
         return false;
     }
 
-    return _vfsSetPinState(_syncDbId, itemPath, pinState);
+    return _vfsSetPinState(syncDbId(), itemPath, pinState);
 }
 
 bool SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing, int &progress) {
@@ -394,7 +394,7 @@ bool SyncPal::vfsStatus(const SyncPath &itemPath, bool &isPlaceholder, bool &isH
         return false;
     }
 
-    return _vfsStatus(_syncDbId, itemPath, isPlaceholder, isHydrated, isSyncing, progress);
+    return _vfsStatus(syncDbId(), itemPath, isPlaceholder, isHydrated, isSyncing, progress);
 }
 
 bool SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const SyncFileItem &item) {
@@ -402,7 +402,7 @@ bool SyncPal::vfsCreatePlaceholder(const SyncPath &relativeLocalPath, const Sync
         return false;
     }
 
-    return _vfsCreatePlaceholder(_syncDbId, relativeLocalPath, item);
+    return _vfsCreatePlaceholder(syncDbId(), relativeLocalPath, item);
 }
 
 bool SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &item, bool &needRestart) {
@@ -410,7 +410,7 @@ bool SyncPal::vfsConvertToPlaceholder(const SyncPath &path, const SyncFileItem &
         return false;
     }
 
-    return _vfsConvertToPlaceholder(_syncDbId, path, item, needRestart);
+    return _vfsConvertToPlaceholder(syncDbId(), path, item, needRestart);
 }
 
 bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTime, const SyncTime &modtime, const int64_t size,
@@ -419,7 +419,7 @@ bool SyncPal::vfsUpdateMetadata(const SyncPath &path, const SyncTime &creationTi
         return false;
     }
 
-    return _vfsUpdateMetadata(_syncDbId, path, creationTime, modtime, size, id, error);
+    return _vfsUpdateMetadata(syncDbId(), path, creationTime, modtime, size, id, error);
 }
 
 bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path, int64_t received, bool &canceled,
@@ -433,7 +433,7 @@ bool SyncPal::vfsUpdateFetchStatus(const SyncPath &tmpPath, const SyncPath &path
         return false;
     }
 
-    return _vfsUpdateFetchStatus(_syncDbId, tmpPath, path, received, canceled, finished);
+    return _vfsUpdateFetchStatus(syncDbId(), tmpPath, path, received, canceled, finished);
 }
 
 bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) {
@@ -441,7 +441,7 @@ bool SyncPal::vfsFileStatusChanged(const SyncPath &path, SyncFileStatus status) 
         return false;
     }
 
-    return _vfsFileStatusChanged(_syncDbId, path, status);
+    return _vfsFileStatusChanged(syncDbId(), path, status);
 }
 
 bool SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress, bool isHydrated) {
@@ -449,7 +449,7 @@ bool SyncPal::vfsForceStatus(const SyncPath &path, bool isSyncing, int progress,
         return false;
     }
 
-    return _vfsForceStatus(_syncDbId, path, isSyncing, progress, isHydrated);
+    return _vfsForceStatus(syncDbId(), path, isSyncing, progress, isHydrated);
 }
 
 bool SyncPal::vfsCleanUpStatuses() {
@@ -457,7 +457,7 @@ bool SyncPal::vfsCleanUpStatuses() {
         return false;
     }
 
-    return _vfsCleanUpStatuses(_syncDbId);
+    return _vfsCleanUpStatuses(syncDbId());
 }
 
 bool SyncPal::vfsClearFileAttributes(const SyncPath &path) {
@@ -465,7 +465,7 @@ bool SyncPal::vfsClearFileAttributes(const SyncPath &path) {
         return false;
     }
 
-    return _vfsClearFileAttributes(_syncDbId, path);
+    return _vfsClearFileAttributes(syncDbId(), path);
 }
 
 bool SyncPal::vfsCancelHydrate(const SyncPath &path) {
@@ -473,15 +473,15 @@ bool SyncPal::vfsCancelHydrate(const SyncPath &path) {
         return false;
     }
 
-    return _vfsCancelHydrate(_syncDbId, path);
+    return _vfsCancelHydrate(syncDbId(), path);
 }
 
 bool SyncPal::wipeVirtualFiles() {
     LOG_SYNCPAL_INFO(_logger, "Wiping virtual files");
-    VirtualFilesCleaner virtualFileCleaner(_localPath, _syncDbId, _syncDb, _vfsStatus, _vfsClearFileAttributes);
+    VirtualFilesCleaner virtualFileCleaner(localPath(), syncDbId(), _syncDb, _vfsStatus, _vfsClearFileAttributes);
     if (!virtualFileCleaner.run()) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::run");
-        addError(Error(_syncDbId, errId(), virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
+        addError(Error(syncDbId(), errId(), virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
         return false;
     }
     return true;
@@ -489,12 +489,12 @@ bool SyncPal::wipeVirtualFiles() {
 
 bool SyncPal::wipeOldPlaceholders() {
     LOG_SYNCPAL_INFO(_logger, "Wiping old placeholders files");
-    VirtualFilesCleaner virtualFileCleaner(_localPath);
+    VirtualFilesCleaner virtualFileCleaner(localPath());
     std::vector<SyncPath> failedToRemovePlaceholders;
     if (!virtualFileCleaner.removeDehydratedPlaceholders(failedToRemovePlaceholders)) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
         for (auto &failedItem : failedToRemovePlaceholders) {
-            addError(Error(_syncDbId, "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyType::None,
+            addError(Error(syncDbId(), "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyType::None,
                            CancelType::None, "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
         }
         return false;
@@ -525,7 +525,7 @@ void SyncPal::createSharedObjects() {
     _syncOps = std::make_shared<SyncOperationList>();
 
     // Init SyncNode table cache
-    SyncNodeCache::instance()->initCache(_syncDbId, _syncDb);
+    SyncNodeCache::instance()->initCache(syncDbId(), _syncDb);
 }
 
 void SyncPal::resetSharedObjects() {
@@ -537,7 +537,7 @@ void SyncPal::resetSharedObjects() {
     _remoteUpdateTree->init();
     _conflictQueue->clear();
     _syncOps->clear();
-    _syncHasFullyCompleted = false;
+    setSyncHasFullyCompleted(false);
 
     LOG_SYNCPAL_DEBUG(_logger, "Reset shared objects done");
 }
@@ -617,7 +617,7 @@ void SyncPal::free() {
 
 ExitCode SyncPal::setSyncPaused(bool value) {
     bool found;
-    if (!ParmsDb::instance()->setSyncPaused(_syncDbId, value, found)) {
+    if (!ParmsDb::instance()->setSyncPaused(syncDbId(), value, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::setSyncPaused");
         return ExitCode::DbError;
     }
@@ -684,7 +684,7 @@ void SyncPal::setProgress(const SyncPath &relativePath, int64_t current) {
 
 void SyncPal::setProgressComplete(const SyncPath &relativeLocalPath, SyncFileStatus status) {
     _progressInfo->setProgressComplete(relativeLocalPath, status);
-    vfsFileStatusChanged(_localPath / relativeLocalPath, status);
+    vfsFileStatusChanged(localPath() / relativeLocalPath, status);
 
     bool found;
     if (!_syncDb->setStatus(ReplicaSide::Local, relativeLocalPath, status, found)) {
@@ -766,7 +766,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     // Hydration job
     std::shared_ptr<DownloadJob> job = nullptr;
     try {
-        job = std::make_shared<DownloadJob>(_driveDbId, remoteNodeId, localPath, expectedSize);
+        job = std::make_shared<DownloadJob>(driveDbId(), remoteNodeId, localPath, expectedSize);
         if (!job) {
             LOG_SYNCPAL_WARN(_logger, "Memory allocation error");
             return ExitCode::SystemError;
@@ -774,11 +774,11 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
         job->setAffectedFilePath(localPath);
     } catch (std::exception const &) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in DownloadJob::DownloadJob");
-        addError(Error(_syncDbId, errId(), ExitCode::Unknown, ExitCause::Unknown));
+        addError(Error(syncDbId(), errId(), ExitCode::Unknown, ExitCause::Unknown));
         return ExitCode::Unknown;
     }
 
-    if (_vfsMode == VirtualFileMode::Mac || _vfsMode == VirtualFileMode::Win) {
+    if (vfsMode() == VirtualFileMode::Mac || vfsMode() == VirtualFileMode::Win) {
         // Set callbacks
         std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
             std::bind(&SyncPal::vfsUpdateFetchStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
@@ -865,10 +865,10 @@ ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
 }
 
 void SyncPal::setSyncHasFullyCompleted(bool syncHasFullyCompleted) {
-    _syncHasFullyCompleted = syncHasFullyCompleted;
+    setSyncHasFullyCompeleted(syncHasFullyCompleted);
 
-    bool found;
-    if (!ParmsDb::instance()->setSyncHasFullyCompleted(_syncDbId, syncHasFullyCompleted, found)) {
+    bool found = false;
+    if (!ParmsDb::instance()->setSyncHasFullyCompleted(syncDbId(), syncHasFullyCompleted, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::setSyncHasFullyCompleted");
         return;
     }
@@ -881,7 +881,7 @@ void SyncPal::setSyncHasFullyCompleted(bool syncHasFullyCompleted) {
 ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) {
     Sync sync;
     bool found;
-    if (!ParmsDb::instance()->selectSync(_syncDbId, sync, found)) {
+    if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
         return ExitCode::DbError;
     }
@@ -906,7 +906,7 @@ ExitCode SyncPal::setListingCursor(const std::string &value, int64_t timestamp) 
 ExitCode SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
     Sync sync;
     bool found;
-    if (!ParmsDb::instance()->selectSync(_syncDbId, sync, found)) {
+    if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
         return ExitCode::DbError;
     }
@@ -922,7 +922,7 @@ ExitCode SyncPal::listingCursor(std::string &value, int64_t &timestamp) {
 ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
     // Remove deleted nodes from sync_node table & cache
     std::unordered_set<NodeId> nodeIdSet;
-    ExitCode exitCode = SyncNodeCache::instance()->syncNodes(_syncDbId, syncNodeType, nodeIdSet);
+    ExitCode exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), syncNodeType, nodeIdSet);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
         return exitCode;
@@ -939,7 +939,7 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
         }
     }
 
-    exitCode = SyncNodeCache::instance()->update(_syncDbId, syncNodeType, nodeIdSet);
+    exitCode = SyncNodeCache::instance()->update(syncDbId(), syncNodeType, nodeIdSet);
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::update");
         return exitCode;
@@ -1031,7 +1031,7 @@ bool SyncPal::canShareItem(const SyncPath &path) const {
 }
 
 ExitCode SyncPal::syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeIdSet) {
-    ExitCode exitCode = SyncNodeCache::instance()->syncNodes(_syncDbId, type, nodeIdSet);
+    ExitCode exitCode = SyncNodeCache::instance()->syncNodes(syncDbId(), type, nodeIdSet);
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
         return exitCode;
@@ -1041,7 +1041,7 @@ ExitCode SyncPal::syncIdSet(SyncNodeType type, std::unordered_set<NodeId> &nodeI
 }
 
 ExitCode SyncPal::setSyncIdSet(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet) {
-    ExitCode exitCode = SyncNodeCache::instance()->update(_syncDbId, type, nodeIdSet);
+    ExitCode exitCode = SyncNodeCache::instance()->update(syncDbId(), type, nodeIdSet);
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_WARN(Log::instance()->getLogger(), "Error in SyncNodeCache::syncNodes");
         return exitCode;
@@ -1147,24 +1147,24 @@ void SyncPal::start() {
     // Load VFS mode
     Sync sync;
     bool found;
-    if (!ParmsDb::instance()->selectSync(_syncDbId, sync, found)) {
+    if (!ParmsDb::instance()->selectSync(syncDbId(), sync, found)) {
         LOG_SYNCPAL_WARN(_logger, "Error in ParmsDb::selectSync");
-        addError(Error(_syncDbId, errId(), ExitCode::DbError, ExitCause::Unknown));
+        addError(Error(syncDbId(), errId(), ExitCode::DbError, ExitCause::Unknown));
         return;
     }
     if (!found) {
-        LOG_SYNCPAL_WARN(_logger, "Sync not found in sync table for syncDbId=" << _syncDbId);
-        addError(Error(_syncDbId, errId(), ExitCode::DataError, ExitCause::Unknown));
+        LOG_SYNCPAL_WARN(_logger, "Sync not found in sync table for syncDbId=" << syncDbId());
+        addError(Error(syncDbId(), errId(), ExitCode::DataError, ExitCause::Unknown));
         return;
     }
-    _vfsMode = sync.virtualFileMode();
+    setVfsMode(sync.virtualFileMode());
 
     // Reset shared objects
     resetSharedObjects();
 
     // Clear tmp blacklist
-    SyncNodeCache::instance()->update(_syncDbId, SyncNodeType::TmpRemoteBlacklist, std::unordered_set<NodeId>());
-    SyncNodeCache::instance()->update(_syncDbId, SyncNodeType::TmpLocalBlacklist, std::unordered_set<NodeId>());
+    SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpRemoteBlacklist, std::unordered_set<NodeId>());
+    SyncNodeCache::instance()->update(syncDbId(), SyncNodeType::TmpLocalBlacklist, std::unordered_set<NodeId>());
 
     // Create ProgressInfo
     _progressInfo = std::shared_ptr<ProgressInfo>(new ProgressInfo(shared_from_this()));
@@ -1176,14 +1176,14 @@ void SyncPal::start() {
     ExitCode exitCode = setSyncPaused(false);
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::setSyncPaused");
-        addError(Error(_syncDbId, errId(), exitCode, ExitCause::Unknown));
+        addError(Error(syncDbId(), errId(), exitCode, ExitCause::Unknown));
         return;
     }
 
     exitCode = cleanOldUploadSessionTokens();
     if (exitCode != ExitCode::Ok) {
         LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::cleanOldUploadSessionTokens");
-        addError(Error(_syncDbId, errId(), exitCode, ExitCause::Unknown));
+        addError(Error(syncDbId(), errId(), exitCode, ExitCause::Unknown));
     }
 
     // Start main worker
@@ -1202,7 +1202,7 @@ void SyncPal::pause() {
         // Pause main worker
         _syncPalWorker->pause();
 
-        _isPaused = true;
+        setIsPaused(true);
     }
 }
 
@@ -1216,13 +1216,13 @@ void SyncPal::unpause() {
         ExitCode exitCode = cleanOldUploadSessionTokens();
         if (exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::cleanOldUploadSessionTokens");
-            addError(Error(_syncDbId, errId(), exitCode, ExitCause::Unknown));
+            addError(Error(syncDbId(), errId(), exitCode, ExitCause::Unknown));
         }
 
         // Unpause main worker
         _syncPalWorker->unpause();
 
-        _isPaused = false;
+        setIsPaused(false);
     }
 }
 
@@ -1243,7 +1243,7 @@ void SyncPal::stop(bool pausedByUser, bool quit, bool clear) {
         ExitCode exitCode = setSyncPaused(true);
         if (exitCode != ExitCode::Ok) {
             LOG_SYNCPAL_DEBUG(_logger, "Error in SyncPal::setSyncPaused");
-            addError(Error(_syncDbId, errId(), exitCode, ExitCause::Unknown));
+            addError(Error(syncDbId(), errId(), exitCode, ExitCause::Unknown));
         }
     }
 
@@ -1269,7 +1269,7 @@ bool SyncPal::isPaused(std::chrono::time_point<std::chrono::system_clock> &pause
 
 bool SyncPal::isIdle() const {
     if (_syncPalWorker) {
-        return (_syncPalWorker->step() == SyncStep::Idle && _restart == false);
+        return (_syncPalWorker->step() == SyncStep::Idle && !restart());
     }
     return false;
 }
@@ -1283,8 +1283,8 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
 
     for (auto &uploadSessionToken : uploadSessionTokenList) {
         try {
-            auto job =
-                std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
+            auto job = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, driveDbId(), "",
+                                                                uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCode::Ok) {
                 LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
@@ -1325,18 +1325,18 @@ bool SyncPal::isDownloadOngoing(const SyncPath &localPath) {
     return false;
 }
 
-void SyncPal::fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const SyncPath &path) {
-    if (syncDb->fromVersion().empty()) {
+void SyncPal::fixInconsistentFileNames() {
+    if (_syncDb->fromVersion().empty()) {
         // New DB
         return;
     }
 
-    std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(syncDb->fromVersion());
+    std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(_syncDb->fromVersion());
     if (CommonUtility::isVersionLower(dbFromVersionNumber, "3.4.9")) {
         LOG_DEBUG(KDC::Log::instance()->getLogger(), "Fix inconsistent file names");
 
         std::vector<DbNode> dbNodeList;
-        if (!syncDb->selectAllRenamedNodes(dbNodeList, false)) {
+        if (!_syncDb->selectAllRenamedNodes(dbNodeList, false)) {
             LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::selectAllRenamedNodes");
             return;
         }
@@ -1346,7 +1346,7 @@ void SyncPal::fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const Syn
             SyncPath oldLocalPath;
             SyncPath remotePath;
             bool found;
-            if (!syncDb->path(dbNode.nodeId(), oldLocalPath, remotePath, found)) {
+            if (!_syncDb->path(dbNode.nodeId(), oldLocalPath, remotePath, found)) {
                 LOG_WARN(KDC::Log::instance()->getLogger(), "Error in SyncDb::path");
                 continue;
             }
@@ -1356,7 +1356,7 @@ void SyncPal::fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const Syn
             }
 
             found = false;
-            if (!syncDb->deleteNode(dbNode.nodeId(), found)) {
+            if (!_syncDb->deleteNode(dbNode.nodeId(), found)) {
                 LOG_WARN(KDC::Log::instance()->getLogger(), "Node not found for id=" << dbNode.nodeId());
                 continue;
             }
@@ -1365,7 +1365,7 @@ void SyncPal::fixInconsistentFileNames(std::shared_ptr<SyncDb> syncDb, const Syn
                 continue;
             }
 
-            LocalDeleteJob deleteJob(_driveDbId, path, oldLocalPath, false, dbNode.nodeIdRemote().value(), true);
+            LocalDeleteJob deleteJob(SyncPalInfo(), oldLocalPath, false, *dbNode.nodeIdRemote(), true);
             deleteJob.setBypassCheck(true);
             deleteJob.runSynchronously();
         }
