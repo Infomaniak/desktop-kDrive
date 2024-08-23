@@ -100,6 +100,9 @@ struct COMMONSERVER_EXPORT Utility {
         static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
         static bool isEqualInsensitive(const SyncName &a, const SyncName &b);
 #endif
+        static bool isEqual(const SyncName &a, const SyncName &b);
+        static bool isEqual(const SyncPath &a, const SyncPath &b);
+
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__
         static bool preventSleeping(bool enable);
@@ -151,7 +154,7 @@ struct COMMONSERVER_EXPORT Utility {
         enum class UnicodeNormalization { NFC, NFD };
         static SyncName normalizedSyncName(const SyncName &name, UnicodeNormalization normalization = UnicodeNormalization::NFC);
         static SyncPath normalizedSyncPath(const SyncPath &path) noexcept;
-        
+
 #ifdef _WIN32
         static bool fileExists(DWORD dwordError) noexcept;
         static bool longPath(const SyncPath &shortPathIn, SyncPath &longPathOut, bool &notFound);

@@ -218,7 +218,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 }
 
                 SyncName dbName = side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote();
-                const SyncPath &dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
+                const SyncPath &dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;  // dbPath is not normalized!
                 const std::shared_ptr<Snapshot> snapshot = _syncPal->snapshot(side, true);
                 std::shared_ptr<FSOperationSet> opSet = _syncPal->operationSet(side);
 
@@ -381,28 +381,20 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                     logOperationGeneration(snapshot->side(), fsOp);
                 }
 
-                const bool movedOrRenamed =
-                    dbName != Utility::normalizedSyncName(snapshot->name(nodeId)) || parentId != snapshot->parentId(nodeId);
+                const auto snapshotName = snapshot->name(nodeId);
+                const bool movedOrRenamed = !Utility::isEqual(dbName, snapshotName) || parentId != snapshot->parentId(nodeId);
                 if (movedOrRenamed) {
                     FSOpPtr fsOp = nullptr;
                     if (isInUnsyncedList(snapshot, nodeId, side)) {
                         // Delete operation
                         fsOp = std::make_shared<FSOperation>(OperationType::Delete, nodeId, dbNode.type(),
                                                              snapshot->createdAt(nodeId), snapshotLastModified,
-                                                             snapshot->size(nodeId),
-                                                             remoteDbPath  // We use the remotePath anyway here to display
-                                                             // notifications with the real (remote) name
-                                                             ,
-                                                             snapPath);
+                                                             snapshot->size(nodeId));
                     } else {
                         // Move operation
                         fsOp =
                             std::make_shared<FSOperation>(OperationType::Move, nodeId, dbNode.type(), snapshot->createdAt(nodeId),
-                                                          snapshotLastModified, snapshot->size(nodeId),
-                                                          remoteDbPath  // We use the remotePath anyway here to display
-                                                          // notifications with the real (remote) name
-                                                          ,
-                                                          snapPath);
+                                                          snapshotLastModified, snapshot->size(nodeId), dbPath, snapPath);
                     }
 
                     opSet->insertOp(fsOp);

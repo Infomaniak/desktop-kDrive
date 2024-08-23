@@ -685,7 +685,7 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
     ASSERT(queryResetAndClearBindings(INSERT_NODE_REQUEST_ID));
     ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 2, Utility::normalizedSyncName(node.nameLocal())));
+    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 2, node.nameLocal()));
     ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
     ASSERT(
         queryBindValue(INSERT_NODE_REQUEST_ID, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
@@ -730,7 +730,7 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
     ASSERT(queryResetAndClearBindings(UPDATE_NODE_REQUEST_ID));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, Utility::normalizedSyncName(node.nameLocal())));
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, node.nameLocal()));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
     ASSERT(
         queryBindValue(UPDATE_NODE_REQUEST_ID, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
@@ -985,16 +985,16 @@ bool SyncDb::setSyncing(ReplicaSide side, const SyncPath &path, bool syncing, bo
     return true;
 }
 
-bool SyncDb::node(ReplicaSide snapshot, const NodeId &nodeId, DbNode &dbNode, bool &found) {
+bool SyncDb::node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
@@ -1072,7 +1072,7 @@ bool SyncDb::node(ReplicaSide snapshot, const NodeId &nodeId, DbNode &dbNode, bo
     dbNode.setCreated(created);
     dbNode.setType(type);
     dbNode.setSize(size);
-    if (snapshot == ReplicaSide::Local) {
+    if (side == ReplicaSide::Local) {
         dbNode.setLastModifiedLocal(lastModified);
     } else {
         dbNode.setLastModifiedRemote(lastModified);
@@ -1320,7 +1320,7 @@ bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bo
         for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
             ASSERT(queryResetAndClearBindings(id));
             ASSERT(queryBindValue(id, 1, dbNodeId));
-            ASSERT(queryBindValue(id, 2, Utility::normalizedSyncName(*nameIt)));
+            ASSERT(queryBindValue(id, 2, side == ReplicaSide::Local ? *nameIt : Utility::normalizedSyncName(*nameIt)));
             if (!queryNext(id, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << Utility::s2ws(id).c_str() << L" - parentNodeId="
                                                                    << std::to_wstring(dbNodeId).c_str() << L" and name="
@@ -1358,7 +1358,7 @@ bool SyncDb::clearNodes() {
 
 // Returns the id of the object from its path
 // path is relative to the root directory
-bool SyncDb::id(ReplicaSide snapshot, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found) {
+bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     // Split path
@@ -1384,13 +1384,13 @@ bool SyncDb::id(ReplicaSide snapshot, const SyncPath &path, std::optional<NodeId
     if (names.size() > 0) {
         ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
-        std::string queryId = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
-                                                              : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
+        std::string queryId = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
+                                                          : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
         // Find file node
         for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
             ASSERT(queryResetAndClearBindings(queryId));
             ASSERT(queryBindValue(queryId, 1, nodeDbId));
-            ASSERT(queryBindValue(queryId, 2, Utility::normalizedSyncName(*nameIt)));
+            ASSERT(queryBindValue(queryId, 2, side == ReplicaSide::Local ? *nameIt : Utility::normalizedSyncName(*nameIt)));
             if (!queryNext(queryId, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << queryId.c_str() << L" - parentNodeId=" << nodeDbId
                                                                    << L" and name=" << (SyncName2WStr(*nameIt)).c_str());
@@ -1414,13 +1414,12 @@ bool SyncDb::id(ReplicaSide snapshot, const SyncPath &path, std::optional<NodeId
         ASSERT(queryResetAndClearBindings(queryId));
     } else {
         bool ok;
-        ASSERT(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (snapshot == ReplicaSide::Local ? 3 : 4), ok));
+        ASSERT(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), ok));
         if (ok) {
             nodeId = std::nullopt;
         } else {
             NodeId idTmp;
-            ASSERT(
-                queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (snapshot == ReplicaSide::Local ? 3 : 4), idTmp));
+            ASSERT(queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), idTmp));
             nodeId = std::make_optional(idTmp);
         }
 
@@ -1432,16 +1431,16 @@ bool SyncDb::id(ReplicaSide snapshot, const SyncPath &path, std::optional<NodeId
 }
 
 // Returns the type of the object with ID nodeId
-bool SyncDb::type(ReplicaSide snapshot, const NodeId &nodeId, NodeType &type, bool &found) {
+bool SyncDb::type(ReplicaSide side, const NodeId &nodeId, NodeType &type, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
@@ -1456,16 +1455,16 @@ bool SyncDb::type(ReplicaSide snapshot, const NodeId &nodeId, NodeType &type, bo
     return true;
 }
 
-bool SyncDb::size(ReplicaSide snapshot, const NodeId &nodeId, int64_t &size, bool &found) {
+bool SyncDb::size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
@@ -1478,16 +1477,16 @@ bool SyncDb::size(ReplicaSide snapshot, const NodeId &nodeId, int64_t &size, boo
     return true;
 }
 
-bool SyncDb::created(ReplicaSide snapshot, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found) {
+bool SyncDb::created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
@@ -1509,16 +1508,16 @@ bool SyncDb::created(ReplicaSide snapshot, const NodeId &nodeId, std::optional<S
 }
 
 // Returns the lastmodified date of the object with ID nodeId
-bool SyncDb::lastModified(ReplicaSide snapshot, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found) {
+bool SyncDb::lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
@@ -1540,16 +1539,16 @@ bool SyncDb::lastModified(ReplicaSide snapshot, const NodeId &nodeId, std::optio
 }
 
 // Returns the parent directory ID of the object with ID nodeId
-bool SyncDb::parent(ReplicaSide snapshot, const NodeId &nodeId, NodeId &parentNodeid, bool &found) {
+bool SyncDb::parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
@@ -1562,15 +1561,15 @@ bool SyncDb::parent(ReplicaSide snapshot, const NodeId &nodeId, NodeId &parentNo
     ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_NODEID_LITE_ID));
     ASSERT(queryBindValue(SELECT_NODE_BY_NODEID_LITE_ID, 1, parentNodeDbId));
     if (!queryNext(SELECT_NODE_BY_NODEID_LITE_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << SELECT_NODE_BY_NODEID_LITE_ID
-                              << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=") << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_NODE_BY_NODEID_LITE_ID
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
         return true;
     }
-    ASSERT(queryStringValue(SELECT_NODE_BY_NODEID_LITE_ID, (snapshot == ReplicaSide::Local ? 3 : 4), parentNodeid));
+    ASSERT(queryStringValue(SELECT_NODE_BY_NODEID_LITE_ID, (side == ReplicaSide::Local ? 3 : 4), parentNodeid));
     ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_NODEID_LITE_ID));
 
     return true;
@@ -1578,16 +1577,16 @@ bool SyncDb::parent(ReplicaSide snapshot, const NodeId &nodeId, NodeId &parentNo
 
 // Returns the path from the root node to the node with ID nodeId, concatenating the respective names of the nodes along the
 // traversal-path
-bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bool &found) {
+bool SyncDb::path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
@@ -1605,7 +1604,7 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
 
         SyncName name;
         ASSERT(querySyncNameValue(
-            id, snapshot == ReplicaSide::Local ? SELECT_NODE_BY_REPLICAID_NAMELOCAL : SELECT_NODE_BY_REPLICAID_NAMEDRIVE, name));
+            id, side == ReplicaSide::Local ? SELECT_NODE_BY_REPLICAID_NAMELOCAL : SELECT_NODE_BY_REPLICAID_NAMEDRIVE, name));
         names.push_back(name);
 
         ASSERT(queryResetAndClearBindings(id));
@@ -1616,8 +1615,7 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
             if (!queryNext(SELECT_NODE_BY_NODEID_LITE_ID, found)) {
                 LOG_WARN(_logger, "Error getting query result: "
                                       << SELECT_NODE_BY_NODEID_LITE_ID
-                                      << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                                      << nodeId.c_str());
+                                      << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=") << nodeId.c_str());
                 return false;
             }
             if (!found) {
@@ -1628,7 +1626,7 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
             if (!parentNodeDbIdIsNull) {
                 ASSERT(queryInt64Value(SELECT_NODE_BY_NODEID_LITE_ID, 0, parentNodeDbId));
 
-                ASSERT(querySyncNameValue(SELECT_NODE_BY_NODEID_LITE_ID, (snapshot == ReplicaSide::Local ? 1 : 2), name));
+                ASSERT(querySyncNameValue(SELECT_NODE_BY_NODEID_LITE_ID, (side == ReplicaSide::Local ? 1 : 2), name));
                 names.push_back(name);
             }
 
@@ -1648,39 +1646,39 @@ bool SyncDb::path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bo
 }
 
 // Returns the name of the object with ID nodeId
-bool SyncDb::name(ReplicaSide snapshot, const NodeId &nodeId, SyncName &name, bool &found) {
+bool SyncDb::name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
         return true;
     }
     ASSERT(querySyncNameValue(
-        id, snapshot == ReplicaSide::Local ? SELECT_NODE_BY_REPLICAID_NAMELOCAL : SELECT_NODE_BY_REPLICAID_NAMEDRIVE, name));
+        id, side == ReplicaSide::Local ? SELECT_NODE_BY_REPLICAID_NAMELOCAL : SELECT_NODE_BY_REPLICAID_NAMEDRIVE, name));
     ASSERT(queryResetAndClearBindings(id));
 
     return true;
 }
 
 // Returns the checksum of the object with ID nodeId
-bool SyncDb::checksum(ReplicaSide snapshot, const NodeId &nodeId, std::optional<std::string> &cs, bool &found) {
+bool SyncDb::checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
@@ -1701,7 +1699,7 @@ bool SyncDb::checksum(ReplicaSide snapshot, const NodeId &nodeId, std::optional<
 }
 
 // Returns the list of IDs contained in snapshot
-bool SyncDb::ids(ReplicaSide snapshot, std::vector<NodeId> &ids, bool &found) {
+bool SyncDb::ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     // Find root node
@@ -1717,20 +1715,20 @@ bool SyncDb::ids(ReplicaSide snapshot, std::vector<NodeId> &ids, bool &found) {
     ASSERT(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 0, nodeDbId));
 
     std::string id;
-    ASSERT(queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (snapshot == ReplicaSide::Local ? 3 : 4), id));
+    ASSERT(queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), id));
     ids.push_back(id);
 
     ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
     // Push child nodes' ids
-    if (!pushChildIds(snapshot, nodeDbId, ids)) {
+    if (!pushChildIds(side, nodeDbId, ids)) {
         return false;
     }
 
     return true;
 }
 
-bool SyncDb::ids(ReplicaSide snapshot, std::unordered_set<NodeId> &ids, bool &found) {
+bool SyncDb::ids(ReplicaSide side, std::unordered_set<NodeId> &ids, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     // Find root node
@@ -1746,13 +1744,13 @@ bool SyncDb::ids(ReplicaSide snapshot, std::unordered_set<NodeId> &ids, bool &fo
     ASSERT(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 0, nodeDbId));
 
     std::string id;
-    ASSERT(queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (snapshot == ReplicaSide::Local ? 3 : 4), id));
+    ASSERT(queryStringValue(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), id));
     ids.insert(id);
 
     ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
     // Push child nodes' ids
-    if (!pushChildIds(snapshot, nodeDbId, ids)) {
+    if (!pushChildIds(side, nodeDbId, ids)) {
         return false;
     }
 
@@ -1760,7 +1758,7 @@ bool SyncDb::ids(ReplicaSide snapshot, std::unordered_set<NodeId> &ids, bool &fo
 }
 
 // Returns whether node with ID nodeId1 is an ancestor of the node with ID nodeId2 in snapshot
-bool SyncDb::ancestor(ReplicaSide snapshot, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found) {
+bool SyncDb::ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     if (nodeId1 == nodeId2) {
@@ -1769,13 +1767,13 @@ bool SyncDb::ancestor(ReplicaSide snapshot, const NodeId &nodeId1, const NodeId 
     }
 
     // Find node 2
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId2));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId2.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId2.c_str());
         return false;
     }
     if (!found) {
@@ -1804,17 +1802,17 @@ bool SyncDb::ancestor(ReplicaSide snapshot, const NodeId &nodeId1, const NodeId 
         }
 
         bool nodeIdIsNull;
-        ASSERT(queryIsNullValue(SELECT_NODE_BY_NODEID_LITE_ID, (snapshot == ReplicaSide::Local ? 3 : 4), nodeIdIsNull));
+        ASSERT(queryIsNullValue(SELECT_NODE_BY_NODEID_LITE_ID, (side == ReplicaSide::Local ? 3 : 4), nodeIdIsNull));
         if (nodeIdIsNull) {
             // Database inconsistency
             LOG_WARN(_logger, "Database inconsistency: node with dbId=" << parentNodeDbId << " is not in snapshot="
-                                                                        << (snapshot == ReplicaSide::Local ? "Local" : "Drive")
+                                                                        << (side == ReplicaSide::Local ? "Local" : "Drive")
                                                                         << " while child is");
             found = false;
             return true;
         }
         NodeId nodeId;
-        ASSERT(queryStringValue(SELECT_NODE_BY_NODEID_LITE_ID, (snapshot == ReplicaSide::Local ? 3 : 4), nodeId));
+        ASSERT(queryStringValue(SELECT_NODE_BY_NODEID_LITE_ID, (side == ReplicaSide::Local ? 3 : 4), nodeId));
         if (nodeId == nodeId1) {
             ret = true;
             return true;
@@ -1833,22 +1831,22 @@ bool SyncDb::ancestor(ReplicaSide snapshot, const NodeId &nodeId1, const NodeId 
 }
 
 // Returns database ID for the ID nodeId of snapshot
-bool SyncDb::dbId(ReplicaSide snapshot, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found) {
+bool SyncDb::dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
     found = false;
     dbNodeId = 0;
-    if (snapshot == ReplicaSide::Unknown) {
+    if (side == ReplicaSide::Unknown) {
         LOG_ERROR(_logger, "Call to SyncDb::dbId with snapshot=='ReplicaSide::Unknown'");
         return false;
     }
 
-    std::string id = (snapshot == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
+    std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_NODEIDLOCAL_ID : SELECT_NODE_BY_NODEIDDRIVE_ID);
     ASSERT(queryResetAndClearBindings(id));
     ASSERT(queryBindValue(id, 1, nodeId));
     if (!queryNext(id, found)) {
-        LOG_WARN(_logger, "Error getting query result: "
-                              << id.c_str() << (snapshot == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
-                              << nodeId.c_str());
+        LOG_WARN(_logger, "Error getting query result: " << id.c_str()
+                                                         << (side == ReplicaSide::Local ? " - nodeIdLocal=" : " - nodeIdDrive=")
+                                                         << nodeId.c_str());
         return false;
     }
     if (!found) {
@@ -1861,7 +1859,7 @@ bool SyncDb::dbId(ReplicaSide snapshot, const NodeId &nodeId, DbNodeId &dbNodeId
 }
 
 // Returns the ID of snapshot for the database ID dbNodeId
-bool SyncDb::id(ReplicaSide snapshot, DbNodeId dbNodeId, NodeId &nodeId, bool &found) {
+bool SyncDb::id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_NODEID_LITE_ID));
@@ -1874,22 +1872,22 @@ bool SyncDb::id(ReplicaSide snapshot, DbNodeId dbNodeId, NodeId &nodeId, bool &f
     if (!found) {
         return true;
     }
-    ASSERT(queryStringValue(SELECT_NODE_BY_NODEID_LITE_ID, (snapshot == ReplicaSide::Local ? 3 : 4), nodeId));
+    ASSERT(queryStringValue(SELECT_NODE_BY_NODEID_LITE_ID, (side == ReplicaSide::Local ? 3 : 4), nodeId));
     ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_NODEID_LITE_ID));
 
     return true;
 }
 
-bool SyncDb::correspondingNodeId(ReplicaSide snapshotIn, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found) {
+bool SyncDb::correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found) {
     DbNodeId dbNodeId;
-    if (!dbId(snapshotIn, nodeIdIn, dbNodeId, found)) {
+    if (!dbId(side, nodeIdIn, dbNodeId, found)) {
         return false;
     }
     if (!found) {
         return true;
     }
 
-    return id(otherSide(snapshotIn), dbNodeId, nodeIdOut, found);
+    return id(otherSide(side), dbNodeId, nodeIdOut, found);
 }
 
 bool SyncDb::updateAllSyncNodes(SyncNodeType type, const std::unordered_set<NodeId> &nodeIdSet) {
@@ -2039,7 +2037,7 @@ bool SyncDb::setTargetNodeId(const std::string &targetNodeId, bool &found) {
     return updateNode(_rootNode, found);
 }
 
-bool SyncDb::pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::vector<NodeId> &ids) {
+bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids) {
     std::queue<DbNodeId> dbNodeIdQueue;
     dbNodeIdQueue.push(parentNodeDbId);
 
@@ -2060,16 +2058,15 @@ bool SyncDb::pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::ve
                 break;
             }
             bool nodeIdIsNull;
-            ASSERT(
-                queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (snapshot == ReplicaSide::Local ? 3 : 4), nodeIdIsNull));
+            ASSERT(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), nodeIdIsNull));
             if (!nodeIdIsNull) {
                 // The node exists in the snapshot
                 DbNodeId dbChildNodeId;
                 ASSERT(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, dbChildNodeId));
 
                 NodeId childNodeId;
-                ASSERT(queryStringValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (snapshot == ReplicaSide::Local ? 3 : 4),
-                                        childNodeId));
+                ASSERT(
+                    queryStringValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), childNodeId));
                 ids.push_back(childNodeId);
 
                 int type;
@@ -2085,7 +2082,7 @@ bool SyncDb::pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::ve
     return true;
 }
 
-bool SyncDb::pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids) {
+bool SyncDb::pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids) {
     std::queue<DbNodeId> dbNodeIdQueue;
     dbNodeIdQueue.push(parentNodeDbId);
 
@@ -2106,16 +2103,15 @@ bool SyncDb::pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::un
                 break;
             }
             bool nodeIdIsNull;
-            ASSERT(
-                queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (snapshot == ReplicaSide::Local ? 3 : 4), nodeIdIsNull));
+            ASSERT(queryIsNullValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), nodeIdIsNull));
             if (!nodeIdIsNull) {
                 // The node exists in the snapshot
                 DbNodeId dbChildNodeId;
                 ASSERT(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, 0, dbChildNodeId));
 
                 NodeId childNodeId;
-                ASSERT(queryStringValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (snapshot == ReplicaSide::Local ? 3 : 4),
-                                        childNodeId));
+                ASSERT(
+                    queryStringValue(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID, (side == ReplicaSide::Local ? 3 : 4), childNodeId));
                 ids.insert(childNodeId);
 
                 int type;

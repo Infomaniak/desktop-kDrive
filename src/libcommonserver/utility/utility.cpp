@@ -388,6 +388,18 @@ bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
 }
 #endif
 
+bool Utility::isEqual(const SyncName &a, const SyncName &b) {
+    const auto aNormalized = Utility::normalizedSyncName(a);
+    const auto bNormalized = Utility::normalizedSyncName(b);
+    return aNormalized == bNormalized;
+}
+
+bool Utility::isEqual(const SyncPath &a, const SyncPath &b) {
+    const auto aNormalized = Utility::normalizedSyncPath(a);
+    const auto bNormalized = Utility::normalizedSyncPath(b);
+    return aNormalized == bNormalized;
+}
+
 bool Utility::moveItemToTrash(const SyncPath &itemPath) {
     return moveItemToTrash_private(itemPath);
 }
@@ -975,4 +987,5 @@ SyncPath Utility::commonDocumentsFolderName() {
 SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
+
 }  // namespace KDC
