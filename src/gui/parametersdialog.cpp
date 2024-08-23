@@ -262,7 +262,7 @@ void ParametersDialog::initUI() {
 
     // Create General level errors list
     _errorTabWidgetStackPosition = _errorsStackedWidget->addWidget(
-        new ErrorTabWidget(enumClassToInt(DriveInfoClient::ParametersStackedWidget::General), true, this));
+        new ErrorTabWidget(toInt(DriveInfoClient::ParametersStackedWidget::General), true, this));
     refreshErrorList(0);
 
     // Init labels and setup connection for on the fly translation
@@ -323,7 +323,7 @@ void ParametersDialog::reset() {
     _drivePreferencesWidget->reset();
 
     // Clear errorsStackedWidget
-    int index = enumClassToInt(DriveInfoClient::ParametersStackedWidget::FirstAdded);
+    int index = toInt(DriveInfoClient::ParametersStackedWidget::FirstAdded);
     while (index < _errorsStackedWidget->count()) {
         _errorsStackedWidget->removeWidget(_errorsStackedWidget->widget(index));
         index++;
@@ -334,7 +334,7 @@ void ParametersDialog::reset() {
 }
 
 QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const noexcept {
-    const QString err = QString("%1:%2:%3").arg(fctCode).arg(enumClassToInt(exitCode)).arg(enumClassToInt(exitCause));
+    const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
     // TODO: USELESS CODE : this switch should be simplified !!!!
     switch (exitCode) {
         case ExitCode::Unknown:
@@ -517,7 +517,7 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
 
 QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause,
                                               bool userIsAdmin) const noexcept {
-    const QString err = QString("%1:%2:%3").arg(fctCode).arg(enumClassToInt(exitCode)).arg(enumClassToInt(exitCause));
+    const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
 
     switch (exitCode) {
         case ExitCode::Unknown:
@@ -911,7 +911,7 @@ void ParametersDialog::onConfigRefreshed() {
     }
 
     // Clear unused Drive level (SyncPal or Node) errors list
-    for (int widgetIndex = enumClassToInt(DriveInfoClient::ParametersStackedWidget::FirstAdded);
+    for (int widgetIndex = toInt(DriveInfoClient::ParametersStackedWidget::FirstAdded);
          widgetIndex < _errorsStackedWidget->count();) {
         QWidget *widget = _errorsStackedWidget->widget(widgetIndex);
         bool driveIsFound = false;
@@ -1074,7 +1074,7 @@ void ParametersDialog::onBackButtonClicked() {
     }
 
     if (_pageStackedWidget->currentIndex() == Page::Errors) {
-        if (_errorsStackedWidget->currentIndex() == enumClassToInt(DriveInfoClient::ParametersStackedWidget::General)) {
+        if (_errorsStackedWidget->currentIndex() == toInt(DriveInfoClient::ParametersStackedWidget::General)) {
             onDisplayPreferences();
         } else {
             onDisplayDriveParameters();

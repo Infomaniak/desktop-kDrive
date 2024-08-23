@@ -484,15 +484,15 @@ void SynthesisPopover::initUI() {
 
     auto *synchronizedButton = new CustomTogglePushButton(tr("Synchronized"), _buttonsBarWidget);
     synchronizedButton->setIconPath(":/client/resources/icons/actions/sync.svg");
-    _buttonsBarWidget->insertButton(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Synchronized), synchronizedButton);
+    _buttonsBarWidget->insertButton(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized), synchronizedButton);
 
     auto *favoritesButton = new CustomTogglePushButton(tr("Favorites"), _buttonsBarWidget);
     favoritesButton->setIconPath(":/client/resources/icons/actions/favorite.svg");
-    _buttonsBarWidget->insertButton(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Favorites), favoritesButton);
+    _buttonsBarWidget->insertButton(toInt(DriveInfoClient::SynthesisStackedWidget::Favorites), favoritesButton);
 
     auto *activityButton = new CustomTogglePushButton(tr("Activity"), _buttonsBarWidget);
     activityButton->setIconPath(":/client/resources/icons/actions/notifications.svg");
-    _buttonsBarWidget->insertButton(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Activity), activityButton);
+    _buttonsBarWidget->insertButton(toInt(DriveInfoClient::SynthesisStackedWidget::Activity), activityButton);
 
     // Stacked widget
     _stackedWidget = new QStackedWidget(this);
@@ -500,18 +500,18 @@ void SynthesisPopover::initUI() {
     mainVBox->setStretchFactor(_stackedWidget, 1);
 
     setSynchronizedDefaultPage(&_defaultSynchronizedPageWidget, this);
-    _stackedWidget->insertWidget(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Synchronized),
+    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized),
                                  _defaultSynchronizedPageWidget);
 
     _notImplementedLabel = new QLabel(this);
     _notImplementedLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     _notImplementedLabel->setObjectName("defaultTitleLabel");
-    _stackedWidget->insertWidget(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Favorites), _notImplementedLabel);
+    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Favorites), _notImplementedLabel);
 
     _notImplementedLabel2 = new QLabel(this);
     _notImplementedLabel2->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
     _notImplementedLabel2->setObjectName("defaultTitleLabel");
-    _stackedWidget->insertWidget(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Activity), _notImplementedLabel2);
+    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Activity), _notImplementedLabel2);
 
     // Bottom
     auto *bottomWidget = new BottomWidget(this);
@@ -833,7 +833,7 @@ void SynthesisPopover::handleRemovedDrives() {
 
     if (syncInfoMap.empty()) _statusBarWidget->reset();
 
-    for (int widgetIndex = enumClassToInt(DriveInfoClient::SynthesisStackedWidget::FirstAdded);
+    for (int widgetIndex = toInt(DriveInfoClient::SynthesisStackedWidget::FirstAdded);
          widgetIndex < _stackedWidget->count();) {
         QWidget *widget = _stackedWidget->widget(widgetIndex);
         bool driveIsFound = false;
@@ -926,7 +926,7 @@ void SynthesisPopover::onItemCompleted(int syncDbId, const SyncFileItemInfo &ite
         driveInfoIt->second.setSynchronizedListStackPosition(
             _stackedWidget->addWidget(driveInfoIt->second.synchronizedListWidget()));
         if (_gui->currentDriveDbId() == driveInfoIt->first &&
-            _buttonsBarWidget->position() == enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Synchronized)) {
+            _buttonsBarWidget->position() == toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized)) {
             _stackedWidget->setCurrentIndex(driveInfoIt->second.synchronizedListStackPosition());
         }
     }
@@ -995,7 +995,7 @@ void SynthesisPopover::reset() {
     _driveSelectionWidget->clear();
     _progressBarWidget->reset();
     _statusBarWidget->reset();
-    _stackedWidget->setCurrentIndex(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Synchronized));
+    _stackedWidget->setCurrentIndex(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized));
 }
 
 void SynthesisPopover::addSynchronizedListWidgetItem(DriveInfoClient &driveInfoClient, int row) {
@@ -1257,7 +1257,7 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     QWidgetAction *notificationAction;
     for (auto const &notificationMapElt : notificationMap) {
         notificationAction = new QWidgetAction(this);
-        notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), enumClassToInt(notificationMapElt.first));
+        notificationAction->setProperty(MenuWidget::actionTypeProperty.c_str(), toInt(notificationMapElt.first));
         QString text = QCoreApplication::translate("KDC::SynthesisPopover", notificationMapElt.second.toStdString().c_str());
         MenuItemWidget *notificationMenuItemWidget = new MenuItemWidget(text);
         notificationMenuItemWidget->setChecked(notificationMapElt.first == _notificationsDisabled);
@@ -1446,26 +1446,26 @@ void SynthesisPopover::onButtonBarToggled(int position) {
         driveInfoIt->second.setStackedWidget(DriveInfoClient::SynthesisStackedWidget(position));
     }
 
-    switch (intToEnumClass<DriveInfoClient::SynthesisStackedWidget>(position)) {
+    switch (fromInt<DriveInfoClient::SynthesisStackedWidget>(position)) {
         case DriveInfoClient::SynthesisStackedWidget::Synchronized:
             if (driveInfoIt != _gui->driveInfoMap().end() && driveInfoIt->second.synchronizedListStackPosition()) {
                 _stackedWidget->setCurrentIndex(driveInfoIt->second.synchronizedListStackPosition());
             } else {
-                _stackedWidget->setCurrentIndex(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Synchronized));
+                _stackedWidget->setCurrentIndex(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized));
             }
             break;
         case DriveInfoClient::SynthesisStackedWidget::Favorites:
             if (driveInfoIt != _gui->driveInfoMap().end() && driveInfoIt->second.favoritesListStackPosition()) {
                 _stackedWidget->setCurrentIndex(driveInfoIt->second.favoritesListStackPosition());
             } else {
-                _stackedWidget->setCurrentIndex(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Favorites));
+                _stackedWidget->setCurrentIndex(toInt(DriveInfoClient::SynthesisStackedWidget::Favorites));
             }
             break;
         case DriveInfoClient::SynthesisStackedWidget::Activity:
             if (driveInfoIt != _gui->driveInfoMap().end() && driveInfoIt->second.activityListStackPosition()) {
                 _stackedWidget->setCurrentIndex(driveInfoIt->second.activityListStackPosition());
             } else {
-                _stackedWidget->setCurrentIndex(enumClassToInt(DriveInfoClient::SynthesisStackedWidget::Activity));
+                _stackedWidget->setCurrentIndex(toInt(DriveInfoClient::SynthesisStackedWidget::Activity));
             }
             break;
         default:

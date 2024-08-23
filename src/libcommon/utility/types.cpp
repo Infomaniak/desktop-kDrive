@@ -29,7 +29,7 @@ std::wstring stringToWideString(const std::string &str) {
 }
 }  // namespace typesUtility
 
-std::string enumClassToString(ReplicaSide e) {
+std::string toString(ReplicaSide e) {
     switch (e) {
         case ReplicaSide::Local:
             return "Local";
@@ -42,7 +42,7 @@ std::string enumClassToString(ReplicaSide e) {
     }
 }
 
-std::string enumClassToString(NodeType e) {
+std::string toString(NodeType e) {
     switch (e) {
         case NodeType::Unknown:
             return "Unknown";
@@ -53,7 +53,7 @@ std::string enumClassToString(NodeType e) {
     }
 }
 
-std::string enumClassToString(OperationType e) {
+std::string toString(OperationType e) {
     switch (e) {
         case OperationType::None:
             return "None";
@@ -70,7 +70,7 @@ std::string enumClassToString(OperationType e) {
     }
 }
 
-std::string enumClassToString(ExitCode e) {
+std::string toString(ExitCode e) {
     switch (e) {
         case ExitCode::Unknown:
             return "Unknown";
@@ -115,7 +115,7 @@ std::string enumClassToString(ExitCode e) {
     }
 }
 
-std::string enumClassToString(ExitCause e) {
+std::string toString(ExitCause e) {
     switch (e) {
         case ExitCause::Unknown:
             return "Unknown";
@@ -201,7 +201,7 @@ std::string enumClassToString(ExitCause e) {
 
 }  // namespace KDC
 
-std::string enumClassToString(ConflictType e) {
+std::string toString(ConflictType e) {
     switch (e) {
         case ConflictType::None:
             return "None";
@@ -230,7 +230,7 @@ std::string enumClassToString(ConflictType e) {
     }
 }
 
-std::string enumClassToString(ConflictTypeResolution e) {
+std::string toString(ConflictTypeResolution e) {
     switch (e) {
         case ConflictTypeResolution::None:
             return "None";
@@ -243,7 +243,7 @@ std::string enumClassToString(ConflictTypeResolution e) {
     }
 }
 
-std::string enumClassToString(InconsistencyType e) {
+std::string toString(InconsistencyType e) {
     switch (e) {
         case InconsistencyType::None:
             return "None";
@@ -266,7 +266,7 @@ std::string enumClassToString(InconsistencyType e) {
     }
 }
 
-std::string enumClassToString(CancelType e) {
+std::string toString(CancelType e) {
     switch (e) {
         case CancelType::None:
             return "None";
@@ -295,7 +295,7 @@ std::string enumClassToString(CancelType e) {
     }
 }
 
-std::string enumClassToString(NodeStatus e) {
+std::string toString(NodeStatus e) {
     switch (e) {
         case NodeStatus::Unknown:
             return "Unknown";
@@ -310,7 +310,7 @@ std::string enumClassToString(NodeStatus e) {
     }
 }
 
-std::string enumClassToString(SyncStatus e) {
+std::string toString(SyncStatus e) {
     switch (e) {
         case SyncStatus::Undefined:
             return "Undefined";
@@ -335,7 +335,7 @@ std::string enumClassToString(SyncStatus e) {
     }
 }
 
-std::string enumClassToString(UploadSessionType e) {
+std::string toString(UploadSessionType e) {
     switch (e) {
         case UploadSessionType::Unknown:
             return "Unknown";
@@ -348,7 +348,7 @@ std::string enumClassToString(UploadSessionType e) {
     }
 }
 
-std::string enumClassToString(SyncNodeType e) {
+std::string toString(SyncNodeType e) {
     switch (e) {
         case SyncNodeType::Undefined:
             return "Undefined";
@@ -367,7 +367,7 @@ std::string enumClassToString(SyncNodeType e) {
     }
 }
 
-std::string enumClassToString(SyncDirection e) {
+std::string toString(SyncDirection e) {
     switch (e) {
         case SyncDirection::Unknown:
             return "Unknown";
@@ -380,7 +380,7 @@ std::string enumClassToString(SyncDirection e) {
     }
 }
 
-std::string enumClassToString(SyncFileStatus e) {
+std::string toString(SyncFileStatus e) {
     switch (e) {
         case SyncFileStatus::Unknown:
             return "Unknown";
@@ -401,7 +401,7 @@ std::string enumClassToString(SyncFileStatus e) {
     }
 }
 
-std::string enumClassToString(SyncFileInstruction e) {
+std::string toString(SyncFileInstruction e) {
     switch (e) {
         case SyncFileInstruction::None:
             return "None";
@@ -424,7 +424,7 @@ std::string enumClassToString(SyncFileInstruction e) {
     }
 }
 
-std::string enumClassToString(SyncStep e) {
+std::string toString(SyncStep e) {
     switch (e) {
         case SyncStep::None:
             return "None";
@@ -453,7 +453,7 @@ std::string enumClassToString(SyncStep e) {
     }
 }
 
-std::string enumClassToString(ActionType e) {
+std::string toString(ActionType e) {
     switch (e) {
         case ActionType::Stop:
             return "Stop";
@@ -464,7 +464,7 @@ std::string enumClassToString(ActionType e) {
     }
 }
 
-std::string enumClassToString(ActionTarget e) {
+std::string toString(ActionTarget e) {
     switch (e) {
         case ActionTarget::Drive:
             return "Drive";
@@ -477,7 +477,7 @@ std::string enumClassToString(ActionTarget e) {
     }
 }
 
-std::string enumClassToString(ErrorLevel e) {
+std::string toString(ErrorLevel e) {
     switch (e) {
         case ErrorLevel::Unknown:
             return "Unknown";
@@ -492,7 +492,7 @@ std::string enumClassToString(ErrorLevel e) {
     }
 }
 
-std::string enumClassToString(Language e) {
+std::string toString(Language e) {
     switch (e) {
         case Language::Default:
             return "Default";
@@ -511,7 +511,7 @@ std::string enumClassToString(Language e) {
     }
 }
 
-std::string enumClassToString(LogLevel e) {
+std::string toString(LogLevel e) {
     switch (e) {
         case LogLevel::Debug:
             return "Debug";
@@ -528,7 +528,7 @@ std::string enumClassToString(LogLevel e) {
     }
 }
 
-std::string enumClassToString(NotificationsDisabled e) {
+std::string toString(NotificationsDisabled e) {
     switch (e) {
         case NotificationsDisabled::Never:
             return "Never";
@@ -547,7 +547,7 @@ std::string enumClassToString(NotificationsDisabled e) {
     }
 }
 
-std::string enumClassToString(VirtualFileMode e) {
+std::string toString(VirtualFileMode e) {
     switch (e) {
         case VirtualFileMode::Off:
             return "Off";
@@ -562,7 +562,7 @@ std::string enumClassToString(VirtualFileMode e) {
     }
 }
 
-std::string enumClassToString(PinState e) {
+std::string toString(PinState e) {
     switch (e) {
         case PinState::Inherited:
             return "Inherited";
@@ -577,7 +577,7 @@ std::string enumClassToString(PinState e) {
     }
 }
 
-std::string enumClassToString(ProxyType e) {
+std::string toString(ProxyType e) {
     switch (e) {
         case ProxyType::Undefined:
             return "Undefined";
@@ -594,7 +594,7 @@ std::string enumClassToString(ProxyType e) {
     }
 }
 
-std::string enumClassToString(ExclusionTemplateComplexity e) {
+std::string toString(ExclusionTemplateComplexity e) {
     switch (e) {
         case ExclusionTemplateComplexity::Simplest:
             return "Simplest";
@@ -607,7 +607,7 @@ std::string enumClassToString(ExclusionTemplateComplexity e) {
     }
 }
 
-std::string enumClassToString(LinkType e) {
+std::string toString(LinkType e) {
     switch (e) {
         case LinkType::None:
             return "None";
@@ -624,7 +624,7 @@ std::string enumClassToString(LinkType e) {
     }
 }
 
-std::string enumClassToString(IoError e) {
+std::string toString(IoError e) {
     switch (e) {
         case IoError::Success:
             return "Success";
@@ -663,7 +663,7 @@ std::string enumClassToString(IoError e) {
     }
 }
 
-std::string enumClassToString(AppStateKey e) {
+std::string toString(AppStateKey e) {
     switch (e) {
         case AppStateKey::LastServerSelfRestartDate:
             return "LastServerSelfRestartDate";
@@ -686,7 +686,7 @@ std::string enumClassToString(AppStateKey e) {
     }
 }
 
-std::string enumClassToString(LogUploadState e) {
+std::string toString(LogUploadState e) {
     switch (e) {
         case LogUploadState::None:
             return "None";
@@ -707,7 +707,7 @@ std::string enumClassToString(LogUploadState e) {
     }
 }
 
-std::string enumClassToString(UpdateState e) {
+std::string toString(UpdateState e) {
     switch (e) {
         case UpdateState::Error:
             return "Error";
@@ -727,7 +727,7 @@ std::string enumClassToString(UpdateState e) {
             return "No conversion to string available";
     }
 }
-std::string enumClassToString(UpdateStateV2 e) {
+std::string toString(UpdateStateV2 e) {
     switch (e) {
         case UpdateStateV2::UpToDate:
             return "UpToDate";
@@ -743,7 +743,7 @@ std::string enumClassToString(UpdateStateV2 e) {
             return "No conversion to string available";
     }
 }
-std::string enumClassToString(DistributionChannel e) {
+std::string toString(DistributionChannel e) {
     switch (e) {
         case DistributionChannel::Prod:
             return "Prod";
@@ -759,7 +759,7 @@ std::string enumClassToString(DistributionChannel e) {
             return "No conversion to string available";
     }
 }
-std::string enumClassToString(Platform e) {
+std::string toString(Platform e) {
     switch (e) {
         case Platform::Windows:
             return "Windows";

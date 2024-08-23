@@ -91,7 +91,7 @@ using OStringStream = std::ostringstream;
 
 using ExecuteCommand = std::function<void(const char *)>;
 enum class ReplicaSide { Unknown, Local, Remote };
-std::string enumClassToString(ReplicaSide e);
+std::string toString(ReplicaSide e);
 
 inline ReplicaSide otherSide(ReplicaSide side) {
     if (side == ReplicaSide::Unknown) return ReplicaSide::Unknown;
@@ -103,10 +103,10 @@ enum class NodeType {
     File,  // File or symlink
     Directory,
 };
-std::string enumClassToString(NodeType e);
+std::string toString(NodeType e);
 
 enum class OperationType { None = 0x00, Create = 0x01, Move = 0x02, Edit = 0x04, Delete = 0x08, Rights = 0x10 };
-std::string enumClassToString(OperationType e);
+std::string toString(OperationType e);
 
 enum class ExitCode {
     Unknown,
@@ -132,7 +132,7 @@ enum class ExitCode {
     LogUploadFailed,
     UpdateFailed
 };
-std::string enumClassToString(ExitCode e);
+std::string toString(ExitCode e);
 
 enum class ExitCause {
     Unknown,
@@ -175,7 +175,7 @@ enum class ExitCause {
     FullListParsingError,
     OperationCanceled
 };
-std::string enumClassToString(ExitCause e);
+std::string toString(ExitCause e);
 
 // Conflict types ordered by priority
 enum class ConflictType {
@@ -191,7 +191,7 @@ enum class ConflictType {
     EditEdit,
     MoveMoveCycle
 };
-std::string enumClassToString(ConflictType e);
+std::string toString(ConflictType e);
 
 static const std::unordered_set<ConflictType> conflictsWithLocalRename = {  // All conflicts that rename the local file
     ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
@@ -201,7 +201,7 @@ inline bool isConflictsWithLocalRename(ConflictType type) {
 }
 
 enum class ConflictTypeResolution { None, DeleteCanceled, FileMovedToRoot };
-std::string enumClassToString(ConflictTypeResolution e);
+std::string toString(ConflictTypeResolution e);
 
 enum class InconsistencyType {
     None = 0x00,
@@ -213,7 +213,7 @@ enum class InconsistencyType {
     NotYetSupportedChar = 0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
     DuplicateNames = 0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
 };
-std::string enumClassToString(InconsistencyType e);
+std::string toString(InconsistencyType e);
 
 enum class CancelType {
     None,
@@ -228,10 +228,10 @@ enum class CancelType {
     ExcludedByTemplate,
     Hardlink
 };
-std::string enumClassToString(CancelType e);
+std::string toString(CancelType e);
 
 enum class NodeStatus { Unknown = 0, Unprocessed, PartiallyProcessed, Processed };
-std::string enumClassToString(NodeStatus e);
+std::string toString(NodeStatus e);
 
 enum class SyncStatus {
     Undefined,
@@ -244,10 +244,10 @@ enum class SyncStatus {
     Stopped,
     Error,
 };
-std::string enumClassToString(SyncStatus e);
+std::string toString(SyncStatus e);
 
 enum class UploadSessionType { Unknown, Standard, LogUpload };
-std::string enumClassToString(UploadSessionType e);
+std::string toString(UploadSessionType e);
 
 enum class SyncNodeType {
     Undefined = 0,
@@ -258,16 +258,16 @@ enum class SyncNodeType {
     TmpRemoteBlacklist,  // Blacklisted temporarily
     TmpLocalBlacklist    // Blacklisted temporarily
 };
-std::string enumClassToString(SyncNodeType e);
+std::string toString(SyncNodeType e);
 
 enum class SyncDirection { Unknown = 0, Up, Down };
-std::string enumClassToString(SyncDirection e);
+std::string toString(SyncDirection e);
 
 enum class SyncFileStatus { Unknown = 0, Error, Success, Conflict, Inconsistency, Ignored, Syncing };
-std::string enumClassToString(SyncFileStatus e);
+std::string toString(SyncFileStatus e);
 
 enum class SyncFileInstruction { None = 0, Update, UpdateMetadata, Remove, Move, Get, Put, Ignore };
-std::string enumClassToString(SyncFileInstruction e);
+std::string toString(SyncFileInstruction e);
 
 enum class SyncStep {
     None = 0,
@@ -282,31 +282,31 @@ enum class SyncStep {
     Propagation2,      // Executor
     Done
 };
-std::string enumClassToString(SyncStep e);
+std::string toString(SyncStep e);
 
 enum class ActionType { Stop = 0, Start };
-std::string enumClassToString(ActionType e);
+std::string toString(ActionType e);
 
 enum class ActionTarget { Drive = 0, Sync, AllDrives };
-std::string enumClassToString(ActionTarget e);
+std::string toString(ActionTarget e);
 
 enum class ErrorLevel { Unknown = 0, Server, SyncPal, Node };
-std::string enumClassToString(ErrorLevel e);
+std::string toString(ErrorLevel e);
 
 enum class Language { Default = 0, English, French, German, Spanish, Italian };
-std::string enumClassToString(Language e);
+std::string toString(Language e);
 
 enum class LogLevel { Debug = 0, Info, Warning, Error, Fatal };
-std::string enumClassToString(LogLevel e);
+std::string toString(LogLevel e);
 
 enum class NotificationsDisabled { Never, OneHour, UntilTomorrow, TreeDays, OneWeek, Always };
-std::string enumClassToString(NotificationsDisabled e);
+std::string toString(NotificationsDisabled e);
 
 enum class VirtualFileMode { Off, Win, Mac, Suffix };
-std::string enumClassToString(VirtualFileMode e);
+std::string toString(VirtualFileMode e);
 
 enum class PinState { Inherited, AlwaysLocal, OnlineOnly, Unspecified };
-std::string enumClassToString(PinState e);
+std::string toString(PinState e);
 
 enum class ProxyType {
     Undefined = 0,
@@ -315,13 +315,13 @@ enum class ProxyType {
     HTTP,
     Socks5  // Don't use, not implemented in Poco library
 };
-std::string enumClassToString(ProxyType e);
+std::string toString(ProxyType e);
 
 enum class ExclusionTemplateComplexity { Simplest = 0, Simple, Complex };
-std::string enumClassToString(ExclusionTemplateComplexity e);
+std::string toString(ExclusionTemplateComplexity e);
 
 enum class LinkType { None = 0, Symlink, Hardlink, FinderAlias, Junction };
-std::string enumClassToString(LinkType e);
+std::string toString(LinkType e);
 
 enum class IoError {
     Success = 0,
@@ -341,7 +341,7 @@ enum class IoError {
     ResultOutOfRange,
     Unknown
 };
-std::string enumClassToString(IoError e);
+std::string toString(IoError e);
 
 struct ItemType {
         NodeType nodeType{NodeType::Unknown};  // The type of a link is `NodeType::File`.
@@ -367,24 +367,24 @@ enum class AppStateKey {
     AppUid,
     Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
-std::string enumClassToString(AppStateKey e);
+std::string toString(AppStateKey e);
 
 constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;
 constexpr int64_t SELF_RESTARTER_NO_CRASH_DETECTED = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };
-std::string enumClassToString(LogUploadState e);
+std::string toString(LogUploadState e);
 enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
-std::string enumClassToString(UpdateState e);
+std::string toString(UpdateState e);
 
 enum class UpdateStateV2 { UpToDate, Available, Downloading, Ready, Error };
-std::string enumClassToString(UpdateStateV2 e);
+std::string toString(UpdateStateV2 e);
 
 enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
-std::string enumClassToString(DistributionChannel e);
+std::string toString(DistributionChannel e);
 
 enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
-std::string enumClassToString(Platform e);
+std::string toString(Platform e);
 
 struct VersionInfo {
         std::string tag;                 // Version number. Example: 3.6.4
@@ -423,54 +423,54 @@ concept AllowBitWiseOpEnum = IntableEnum<C> && (std::is_same_v<C, OperationType>
 
 template <class C>  // Any enum class that  can be printed (with enumClassToString)
 concept PrintableEnum = EnumClass<C> && requires(C e) {
-    enumClassToString(e);
+    toString(e);
 };
 
 // Converters
 template <IntableEnum C>
-inline int enumClassToInt(C e) {
+inline int toInt(C e) {
     return static_cast<int>(e);
 }
 
 template <IntableEnum C>
-inline C intToEnumClass(int e) {
+inline C fromInt(int e) {
     return static_cast<C>(e);
 }
 
 // Operators
 template <AllowBitWiseOpEnum C>
 inline C operator|=(C &a, const C b) {
-    return a = intToEnumClass<C>(enumClassToInt(a) | enumClassToInt(b));
+    return a = fromInt<C>(toInt(a) | toInt(b));
 }
 
 template <AllowBitWiseOpEnum C>
 inline C operator&=(C &a, const C b) {
-    return a = intToEnumClass<C>(enumClassToInt(a) & enumClassToInt(b));
+    return a = fromInt<C>(toInt(a) & toInt(b));
 }
 
 template <AllowBitWiseOpEnum C>
 inline C operator^=(C &a, const C b) {
-    return a = intToEnumClass<C>(enumClassToInt(a) ^ enumClassToInt(b));
+    return a = fromInt<C>(toInt(a) ^ toInt(b));
 }
 
 template <AllowBitWiseOpEnum C>
 inline C operator|(const C a, const C b) {
-    return intToEnumClass<C>(enumClassToInt(a) | enumClassToInt(b));
+    return fromInt<C>(toInt(a) | toInt(b));
 }
 
 template <AllowBitWiseOpEnum C>
 inline C operator&(const C a, const C b) {
-    return intToEnumClass<C>(enumClassToInt(a) & enumClassToInt(b));
+    return fromInt<C>(toInt(a) & toInt(b));
 }
 
 template <AllowBitWiseOpEnum C>
 inline C operator^(const C a, const C b) {
-    return intToEnumClass<C>(enumClassToInt(a) ^ enumClassToInt(b));
+    return fromInt<C>(toInt(a) ^ toInt(b));
 }
 
 template <AllowBitWiseOpEnum C>
 inline bool bitWiseEnumToBool(const C a) {
-    return enumClassToInt(a) != 0;
+    return toInt(a) != 0;
 }
 
 namespace typesUtility {
@@ -480,22 +480,22 @@ std::wstring stringToWideString(const std::string &str);  // Convert string to w
 
 // Stream Operator (toString)
 template <PrintableEnum C>
-std::string enumClassToStringWithCode(C e) {
-    return enumClassToString(e) + "(" + std::to_string(enumClassToInt(e)) + ")"; // Example: "Ok(1)"
+std::string toStringWithCode(C e) {
+    return toString(e) + "(" + std::to_string(toInt(e)) + ")"; // Example: "Ok(1)"
 }
 
 template <PrintableEnum C>
 inline std::wostream &operator<<(std::wostream &wos, C e) {
-    return wos << typesUtility::stringToWideString(enumClassToStringWithCode(e));
+    return wos << typesUtility::stringToWideString(toStringWithCode(e));
 }
 
 template <PrintableEnum C>
 inline std::ostream &operator<<(std::ostream &os, C e) {
-    return os << enumClassToStringWithCode(e);
+    return os << toStringWithCode(e);
 }
 
 template <PrintableEnum C>
 inline QDebug &operator<<(QDebug &os, C e) {
-    return os << enumClassToStringWithCode(e).c_str();
+    return os << toStringWithCode(e).c_str();
 }
 }  // namespace KDC

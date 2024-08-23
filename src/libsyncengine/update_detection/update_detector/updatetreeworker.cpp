@@ -340,11 +340,11 @@ void UpdateTreeWorker::logUpdate(const std::shared_ptr<Node> node, const Operati
         updateTypeStr = L"inserted";
     }
 
-    const std::wstring updateTreeStr = Utility::s2ws(enumClassToString(_side)) + L" update tree";
+    const std::wstring updateTreeStr = Utility::s2ws(toString(_side)) + L" update tree";
     const std::wstring nodeStr = L"Node '" + SyncName2WStr(node->name()) + L"'";
     const std::wstring nodeIdStr = L"node ID: '" + Utility::s2ws(node->id() ? *node->id() : NodeId()) + L"'";
     const std::wstring dbIdStr = L"DB ID: '" + std::to_wstring(node->idb() ? *node->idb() : -1) + L"'";
-    const std::wstring opTypeStr = Utility::s2ws(enumClassToString(opType));
+    const std::wstring opTypeStr = Utility::s2ws(toString(opType));
 
     LOGW_SYNCPAL_DEBUG(_logger, updateTreeStr.c_str()
                                     << L": " << nodeStr.c_str() << L" (" << nodeIdStr.c_str() << L", " << dbIdStr.c_str() << L", "
@@ -1175,7 +1175,7 @@ void UpdateTreeWorker::drawUpdateTreeRow(const std::shared_ptr<Node> node, SyncN
     treeStr += Str2SyncName(*node->id());
     treeStr += Str(" / ");
     treeStr +=
-        node->changeEvents() != OperationType::None ? Str2SyncName(enumClassToString(node->changeEvents())).c_str() : Str("-");
+        node->changeEvents() != OperationType::None ? Str2SyncName(toString(node->changeEvents())).c_str() : Str("-");
     treeStr += Str("]");
     treeStr += Str("\n");
 

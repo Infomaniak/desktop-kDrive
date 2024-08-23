@@ -31,9 +31,9 @@ void KDC::TestTypes::testOtherSide() {
 }
 void TestTypes::testStreamConversion() {
     // Test enum class to string conversion with code
-    CPPUNIT_ASSERT_EQUAL(std::string("Unknown(0)"), enumClassToStringWithCode(NodeType::Unknown));
-    CPPUNIT_ASSERT_EQUAL(std::string("File(1)"), enumClassToStringWithCode(NodeType::File));
-    CPPUNIT_ASSERT_EQUAL(std::string("Directory(2)"), enumClassToStringWithCode(NodeType::Directory));
+    CPPUNIT_ASSERT_EQUAL(std::string("Unknown(0)"), toStringWithCode(NodeType::Unknown));
+    CPPUNIT_ASSERT_EQUAL(std::string("File(1)"), toStringWithCode(NodeType::File));
+    CPPUNIT_ASSERT_EQUAL(std::string("Directory(2)"), toStringWithCode(NodeType::Directory));
 
     // Test stream operator for enum class without unicode
     std::ostringstream os;

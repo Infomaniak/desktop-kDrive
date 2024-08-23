@@ -124,7 +124,7 @@ enum class RequestNum {
     RECONSIDER_SKIPPED_UPDATE,
     UTILITY_QUIT,
 };
-inline std::string enumClassToString(RequestNum e) {
+inline std::string toString(RequestNum e) {
     switch (e) {
         case RequestNum::LOGIN_REQUESTTOKEN:
             return "LOGIN_REQUESTTOKEN";
@@ -329,7 +329,7 @@ enum class SignalNum {
     UTILITY_SHOW_SYNTHESIS,
     UTILITY_LOG_UPLOAD_STATUS_UPDATED,
 };
-inline std::string enumClassToString(SignalNum e) {
+inline std::string toString(SignalNum e) {
     switch (e) {
         case SignalNum::USER_ADDED:
             return "USER_ADDED";

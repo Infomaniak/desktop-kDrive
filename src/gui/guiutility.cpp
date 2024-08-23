@@ -335,8 +335,8 @@ QString GuiUtility::getSyncStatusText(StatusInfo &statusInfo) {
                     }
                 } else if (statusInfo._oneSyncInPropagationStep) {
                     text = QCoreApplication::translate("utility", "Sync in progress (Step %1/%2).")
-                               .arg(enumClassToInt(statusInfo._syncStep))
-                               .arg(enumClassToInt(KDC::SyncStep::Done));
+                               .arg(toInt(statusInfo._syncStep))
+                               .arg(toInt(KDC::SyncStep::Done));
                 } else if (statusInfo._status == KDC::SyncStatus::Starting) {
                     text = QCoreApplication::translate("utility", "Synchronization starting");
                 } else {

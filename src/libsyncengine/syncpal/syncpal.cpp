@@ -949,14 +949,14 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 }
 
 ExitCode SyncPal::updateSyncNode() {
-    for (int syncNodeTypeIdx = enumClassToInt(SyncNodeType::WhiteList);
-         syncNodeTypeIdx <= enumClassToInt(SyncNodeType::UndecidedList); syncNodeTypeIdx++) {
+    for (int syncNodeTypeIdx = toInt(SyncNodeType::WhiteList);
+         syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList); syncNodeTypeIdx++) {
         SyncNodeType syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
 
         ExitCode exitCode = updateSyncNode(syncNodeType);
         if (exitCode != ExitCode::Ok) {
             LOG_WARN(Log::instance()->getLogger(),
-                     "Error in SyncPal::updateSyncNode for syncNodeType=" << enumClassToInt(syncNodeType));
+                     "Error in SyncPal::updateSyncNode for syncNodeType=" << toInt(syncNodeType));
             return exitCode;
         }
     }

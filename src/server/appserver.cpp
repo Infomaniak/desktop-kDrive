@@ -494,7 +494,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 sendUserUpdated(userInfo);
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             if (exitCode == ExitCode::Ok) {
                 resultStream << userInfo.dbId();
             } else {
@@ -511,7 +511,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -523,7 +523,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -574,7 +574,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -609,7 +609,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -620,7 +620,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::ERROR_DELETE_SYNC: {
@@ -637,7 +637,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::ERROR_DELETE_INVALIDTOKEN: {
@@ -683,7 +683,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR: {
@@ -709,7 +709,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -725,7 +725,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << userId;
             break;
         }
@@ -737,7 +737,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -749,7 +749,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -765,7 +765,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << driveInfo;
             break;
         }
@@ -781,7 +781,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << driveId;
             break;
         }
@@ -797,7 +797,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << driveId;
             break;
         }
@@ -819,7 +819,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::DRIVE_DELETE: {
@@ -859,7 +859,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -885,7 +885,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             ExitCause exitCause = ExitCause::Unknown;
             if (exitCode != ExitCode::Ok) {
                 addError(Error(sync.dbId(), errId(), exitCode, exitCause));
-                resultStream << enumClassToInt(exitCode);
+                resultStream << toInt(exitCode);
                 break;
             }
 
@@ -897,11 +897,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in initSyncPal for syncDbId=" << sync.dbId() << " - exitCode=" << exitCode);
                 addError(Error(errId(), exitCode, exitCause));
-                resultStream << enumClassToInt(exitCode);
+                resultStream << toInt(exitCode);
                 break;
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::SYNC_STOP: {
@@ -1000,7 +1000,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                                        << serverFolderNodeId.toStdWString().c_str() << L" liteSync=" << liteSync
                                        << L" showInNavigationPane=" << showInNavigationPane);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
-                resultStream << enumClassToInt(exitCode);
+                resultStream << toInt(exitCode);
                 break;
             }
 
@@ -1012,7 +1012,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             }
             sendSyncAdded(syncInfo);
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             if (exitCode == ExitCode::Ok) {
                 resultStream << syncInfo.dbId();
             }
@@ -1092,13 +1092,13 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                                        << L" serverFolderPath=" << Path2WStr(QStr2Path(serverFolderPath)).c_str() << L" liteSync="
                                        << liteSync << L" showInNavigationPane=" << showInNavigationPane);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
-                resultStream << enumClassToInt(exitCode);
+                resultStream << toInt(exitCode);
                 break;
             }
 
             sendSyncAdded(syncInfo);
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             if (exitCode == ExitCode::Ok) {
                 resultStream << syncInfo.dbId();
             }
@@ -1150,7 +1150,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 LOG_WARN(_logger, "Error in startSyncs for userDbId=" << user.dbId());
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::SYNC_DELETE: {
@@ -1195,7 +1195,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << linkUrl;
             break;
         }
@@ -1213,7 +1213,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << linkUrl;
             break;
         }
@@ -1249,7 +1249,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 nodeIdSet2 << QString::fromStdString(nodeId);
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << nodeIdSet2;
             break;
         }
@@ -1279,7 +1279,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::NODE_PATH: {
@@ -1304,7 +1304,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << path;
             break;
         }
@@ -1326,7 +1326,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << nodeInfo;
             break;
         }
@@ -1348,7 +1348,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << subfoldersList;
             break;
         }
@@ -1368,7 +1368,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << subfoldersList;
             break;
         }
@@ -1416,7 +1416,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                         LOG_WARN(_logger, "Error in Requests::createDir for driveDbId=" << driveDbId << " parentNodeId="
                                                                                         << parentNodeId.toStdString().c_str());
                         addError(Error(errId(), exitCode, ExitCause::Unknown));
-                        resultStream << enumClassToInt(exitCode);
+                        resultStream << toInt(exitCode);
                         resultStream << QString();
                         break;
                     }
@@ -1437,7 +1437,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     if (exitCode != ExitCode::Ok) {
                         LOG_WARN(_logger, "Error in SyncPal::syncIdSet for syncDbId=" << syncPalMapElt.first);
                         addError(Error(errId(), exitCode, ExitCause::Unknown));
-                        resultStream << enumClassToInt(exitCode);
+                        resultStream << toInt(exitCode);
                         resultStream << QString();
                         break;
                     }
@@ -1448,7 +1448,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                     if (exitCode != ExitCode::Ok) {
                         LOG_WARN(_logger, "Error in SyncPal::setSyncIdSet for syncDbId=" << syncPalMapElt.first);
                         addError(Error(errId(), exitCode, ExitCause::Unknown));
-                        resultStream << enumClassToInt(exitCode);
+                        resultStream << toInt(exitCode);
                         resultStream << QString();
                         break;
                     }
@@ -1487,7 +1487,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -1502,11 +1502,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(_logger, "Error in Requests::setExclusionTemplateList : " << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
-                resultStream << enumClassToInt(exitCode);
+                resultStream << toInt(exitCode);
                 break;
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE: {
@@ -1541,7 +1541,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << list;
             break;
         }
@@ -1571,7 +1571,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::GET_FETCHING_APP_LIST: {
@@ -1588,7 +1588,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 }
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << appTable;
             break;
         }
@@ -1601,7 +1601,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << parametersInfo;
             break;
         }
@@ -1654,7 +1654,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 Proxy::instance()->setProxyConfig(ParametersCache::instance()->parameters().proxyConfig());
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC: {
@@ -1672,7 +1672,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             resultStream << path;
             resultStream << error;
             break;
@@ -1824,7 +1824,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 LOG_WARN(_logger, "Error in setSupportsVirtualFiles for syncDbId=" << syncDbId);
             }
 
-            resultStream << enumClassToInt(exitCode);
+            resultStream << toInt(exitCode);
             break;
         }
         case RequestNum::SYNC_SETROOTPINSTATE: {
@@ -2220,7 +2220,7 @@ void AppServer::sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << serverLevel;
-    paramsStream << enumClassToInt(exitCode);
+    paramsStream << toInt(exitCode);
     paramsStream << syncDbId;
     CommServer::instance()->sendSignal(SignalNum::UTILITY_ERROR_ADDED, params, id);
 }
@@ -4229,7 +4229,7 @@ void AppServer::onRestartSyncs() {
             ExitCode exitCode = ServerRequests::deleteLiteSyncNotAllowedErrors();
             if (exitCode != ExitCode::Ok) {
                 LOG_WARN(Log::instance()->getLogger(),
-                         "Error in ServerRequests::deleteLiteSyncNotAllowedErrors: " << enumClassToInt(exitCode));
+                         "Error in ServerRequests::deleteLiteSyncNotAllowedErrors: " << toInt(exitCode));
             }
 
             for (const auto &syncPalMapElt : _syncPalMap) {

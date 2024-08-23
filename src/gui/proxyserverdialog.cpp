@@ -113,7 +113,7 @@ void ProxyServerDialog::initUI() {
 
     for (auto const &manualProxyMapElt : _manualProxyMap) {
         _proxyTypeComboBox->insertItem(manualProxyMapElt.second.first, manualProxyMapElt.second.second,
-                                       enumClassToInt(manualProxyMapElt.first));
+                                       toInt(manualProxyMapElt.first));
     }
     manualProxyTypeHBox->addWidget(_proxyTypeComboBox);
     manualProxyTypeHBox->addStretch();
