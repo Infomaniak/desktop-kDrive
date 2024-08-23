@@ -38,10 +38,10 @@ SyncName makeNfcSyncName() {
 #endif
 }
 
-void generateTestFile(const SyncPath &path) {
-    std::ofstream fakeFile(path);
-    fakeFile << "test" << std::endl;
-    fakeFile.close();
+void generateOrEditTestFile(const SyncPath& path) {
+    std::ofstream testFile(path);
+    testFile << "test" << std::endl;
+    testFile.close();
 }
 
 std::string loadEnvVariable(const std::string& key) {

@@ -54,6 +54,6 @@ struct TestVariables {
         }
 };
 
-void generateTestFile(const SyncPath &path);
+void generateOrEditTestFile(const SyncPath &path);
 
 }  // namespace KDC::testhelpers

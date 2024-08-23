@@ -717,7 +717,18 @@ bool IoHelper::createDirectory(const SyncPath &path, IoError &ioError) noexcept 
     return creationSuccess;
 }
 
-bool IoHelper::deleteDirectory(const SyncPath &path, IoError &ioError) noexcept {
+bool IoHelper::moveItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
+    return renameItem(sourcePath, destinationPath, ioError);
+}
+
+bool IoHelper::renameItem(const SyncPath &sourcePath, const SyncPath &destinationPath, IoError &ioError) noexcept {
+    std::error_code ec;
+    std::filesystem::rename(sourcePath, destinationPath, ec);
+    ioError = stdError2ioError(ec);
+    return ioError == IoError::Success;
+}
+
+bool IoHelper::deleteItem(const SyncPath &path, IoError &ioError) noexcept {
     std::error_code ec;
     std::filesystem::remove_all(path, ec);
     ioError = stdError2ioError(ec);
