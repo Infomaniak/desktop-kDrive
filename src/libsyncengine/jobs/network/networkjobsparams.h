@@ -161,6 +161,7 @@ static const std::string reasonKey = "reason";
 static const std::string codeKey = "code";
 static const std::string descriptionKey = "description";
 static const std::string contextKey = "context";
+
 /// Error codes
 enum class NetworkErrorCode {
     forbiddenError,
@@ -188,7 +189,9 @@ enum class NetworkErrorReason {
 };
 
 ActionCode getActionCode(const std::string &action) noexcept;
+
 NetworkErrorCode getNetworkErrorCode(const std::string &errorCode) noexcept;
+
 NetworkErrorReason getNetworkErrorReason(const std::string &errorCode) noexcept;
 
 

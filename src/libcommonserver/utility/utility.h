@@ -51,7 +51,6 @@ class URI;
 #define errId() Utility::_errId(__FILE__, __LINE__)
 
 namespace KDC {
-
 struct COMMONSERVER_EXPORT Utility {
         inline static void setLogger(log4cplus::Logger logger) { _logger = logger; }
 
@@ -165,5 +164,4 @@ struct COMMONSERVER_EXPORT Utility {
 
         inline static log4cplus::Logger logger() { return Log::isSet() ? Log::instance()->getLogger() : _logger; }
 };
-
 }  // namespace KDC

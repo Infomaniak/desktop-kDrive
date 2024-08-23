@@ -23,6 +23,7 @@
 #include "libcommonserver/io/iohelper.h"
 #include "libcommon/utility/utility.h"
 
+#include <config.h>
 #include <log4cplus/loggingmacros.h>
 #include <iostream>
 #include <log/customrollingfileappender.h>

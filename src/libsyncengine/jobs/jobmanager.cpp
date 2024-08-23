@@ -20,7 +20,7 @@
 #include "jobs/network/networkjobsparams.h"
 #include "jobs/network/abstractnetworkjob.h"
 #include "log/log.h"
-#include "jobs/network/upload_session/abstractuploadsession.h"
+#include "jobs/network/API_v2/upload_session/abstractuploadsession.h"
 #include "libcommonserver/utility/utility.h"
 #include "performance_watcher/performancewatcher.h"
 #include "requests/parameterscache.h"
@@ -141,7 +141,7 @@ JobManager::JobManager() : _logger(Log::instance()->getLogger()) {
 
     _cpuUsageThreshold = ParametersCache::instance()->parameters().maxAllowedCpu() / 100.0;
 
-    _thread = std::unique_ptr<std::thread>(new std::thread(run));
+    _thread = std::make_unique<std::thread>(run);
     LOG_DEBUG(_logger, "Network Job Manager started with max " << _maxNbThread << " threads");
 }
 

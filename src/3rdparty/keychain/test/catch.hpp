@@ -523,6 +523,7 @@ struct SourceLineInfo {
         SourceLineInfo() = delete;
         SourceLineInfo(char const *_file, std::size_t _line) noexcept : file(_file), line(_line) {}
 
+        char const *file;
         SourceLineInfo(SourceLineInfo const &other) = default;
         SourceLineInfo &operator=(SourceLineInfo const &) = default;
         SourceLineInfo(SourceLineInfo &&) noexcept = default;
@@ -5516,6 +5517,7 @@ namespace Catch {
 struct ReporterConfig {
         explicit ReporterConfig(IConfigPtr const &_fullConfig);
 
+        std::ostream &stream() const;
         ReporterConfig(IConfigPtr const &_fullConfig, std::ostream &_stream);
 
         std::ostream &stream() const;
@@ -6242,6 +6244,7 @@ class XmlWriter {
                 XmlFormatting m_fmt;
         };
 
+        XmlWriter &endElement(XmlFormatting fmt = XmlFormatting::Newline | XmlFormatting::Indent);
         XmlWriter(std::ostream &os = Catch::cout());
         ~XmlWriter();
 
@@ -6356,6 +6359,7 @@ class XmlReporter : public StreamingReporterBase<XmlReporter> {
     public:  // StreamingReporterBase
         void noMatchingTestCases(std::string const &s) override;
 
+        void testRunStarting(TestRunInfo const &testInfo) override;
         void testRunStarting(TestRunInfo const &testInfo) override;
 
         void testGroupStarting(GroupInfo const &groupInfo) override;
@@ -7971,6 +7975,7 @@ class RunContext : public IResultCapture, public IRunner {
         RunContext(RunContext const &) = delete;
         RunContext &operator=(RunContext const &) = delete;
 
+        Totals runTest(TestCase const &testCase);
         explicit RunContext(IConfigPtr const &_config, IStreamingReporterPtr &&reporter);
 
         ~RunContext() override;

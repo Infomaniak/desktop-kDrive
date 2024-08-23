@@ -1354,7 +1354,6 @@ bool ParmsDb::initData() {
         return false;
     }
 
-
     // Update exclusion templates
     if (!updateExclusionTemplates()) {
         LOG_WARN(_logger, "Error in updateExclusionTemplates");

@@ -32,6 +32,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "jobs/local/localcopyjob.h"
 #include "requests/parameterscache.h"
+#include "test_utility/testhelpers.h"
 
 using namespace CppUnit;
 
@@ -53,7 +54,7 @@ void KDC::TestLocalJobs::testLocalJobs() {
     CPPUNIT_ASSERT(std::filesystem::exists(localDirPath));
 
     // Add a file in "tmp_dir"
-    const SyncPath picturesPath = localTestDirPath / "test_pictures";
+    const SyncPath picturesPath = testhelpers::localTestDirPath / "test_pictures";
     std::filesystem::copy(picturesPath / "picture-1.jpg", localDirPath / "tmp_picture.jpg");
 
     // Copy

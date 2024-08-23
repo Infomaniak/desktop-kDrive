@@ -22,7 +22,6 @@
 #include "updater/kdcupdater.h"
 #include "libcommonserver/vfs.h"
 #include "migration/migrationparams.h"
-#include "updater/kdcupdater.h"
 #include "socketapi.h"
 #include "logarchiver.h"
 #include "keychainmanager/keychainmanager.h"
@@ -37,13 +36,12 @@
 #include "libcommon/info/exclusiontemplateinfo.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 #include "libsyncengine/requests/serverrequests.h"
 #include "libsyncengine/requests/parameterscache.h"
 #include "libsyncengine/requests/exclusiontemplatecache.h"
 #include "libsyncengine/jobs/jobmanager.h"
-#include "libsyncengine/jobs/network/upload_session/uploadsessioncanceljob.h"
+#include "libsyncengine/jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
 
 #include <iostream>
 #include <filesystem>

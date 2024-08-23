@@ -42,8 +42,9 @@ else()
     set( NOTIFY_KDRIVE_V2_URL "https://notify.kdrive.infomaniak.com/2" )
     set( LOGIN_URL "https://login.infomaniak.com" )
 endif()
-set( TEST_DIR "${CMAKE_SOURCE_DIR}/test" )
+set( INFOMANIAK_API_URL "https://api.infomaniak.com/1" )
 
+set( TEST_DIR "${CMAKE_SOURCE_DIR}/test" )
 
 set ( CLIENT_ID "5EA39279-FF64-4BB8-A872-4A40B5786317" CACHE STRING "App client ID" )
 set ( REDIRECT_URI "kdrive://auth-desktop" CACHE STRING "Redirect URI" )

@@ -34,7 +34,6 @@
 #endif
 
 namespace KDC {
-
 struct COMMON_EXPORT CommonUtility {
         enum IconType { MAIN_FOLDER_ICON, COMMON_DOCUMENT_ICON, DROP_BOX_ICON, NORMAL_FOLDER_ICON };
 
@@ -49,20 +48,21 @@ struct COMMON_EXPORT CommonUtility {
         static bool hasDarkSystray();
         static bool setFolderCustomIcon(const QString &folderPath, IconType iconType);
 
-        static std::string generateRandomStringAlphaNum(const int length = 10);
-        static std::string userAgentString();
-        static std::string generateRandomStringPKCE(const int length = 10);
-
-        // static const KDC::SyncPath Utility::getAppDir();
+        static std::string generateRandomStringAlphaNum(int length = 10);
+        static std::string generateRandomStringPKCE(int length = 10);
 
         static QString fileSystemName(const QString &dirPath);
 
         static qint64 freeDiskSpace(const QString &path);
         static void crash();
         static QString platformName();
+        static Platform platform();
         static QString platformArch();
-        static QByteArray IntToArray(qint32 source);
-        static int ArrayToInt(QByteArray source);
+        static const std::string &userAgentString();
+        static const std::string &currentVersion();
+
+        static QByteArray toQByteArray(qint32 source);
+        static int toInt(QByteArray source);
         static QString escape(const QString &in);
         static bool stringToAppStateValue(const std::string &value, AppStateValue &appStateValue);
         static bool appStateValueToString(const AppStateValue &appStateValue, std::string &value);
@@ -121,15 +121,18 @@ struct ArgsReader {
         explicit ArgsReader(Args... args) : stream(&params, QIODevice::WriteOnly) {
             read(args...);
         }
+
         template <class T>
         void read(const T p) {
             stream << p;
         }
+
         template <class T, class... Args>
         void read(const T p, Args... args) {
             stream << p;
             read(args...);
         }
+
         explicit operator QByteArray() const { return params; }
         QByteArray params;
         QDataStream stream;
@@ -137,17 +140,18 @@ struct ArgsReader {
 
 struct ArgsWriter {
         explicit ArgsWriter(const QByteArray &results) : stream{QDataStream(results)} {};
+
         template <class T>
         void write(T &r) {
             stream >> r;
         }
+
         template <class T, class... Args>
         void write(T &r, Args &...args) {
             stream >> r;
             write(args...);
         }
+
         QDataStream stream;
 };
-
-
 }  // namespace KDC

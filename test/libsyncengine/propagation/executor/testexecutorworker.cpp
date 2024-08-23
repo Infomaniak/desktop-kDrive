@@ -28,22 +28,20 @@
 #include "keychainmanager/keychainmanager.h"
 #include "network/proxy.h"
 #include "server/vfs/mac/vfs_mac.h"
+#include "test_utility/testhelpers.h"
 #include "utility/utility.h"
 
 namespace KDC {
 
 void TestExecutorWorker::setUp() {
-    const std::string accountIdStr = loadEnvVariable("KDRIVE_TEST_CI_ACCOUNT_ID");
-    const std::string driveIdStr = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
-    const std::string remotePathStr = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH");
-    const std::string apiTokenStr = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
+    const testhelpers::TestVariables testVariables;
 
     const std::string localPathStr = _localTempDir.path().string();
 
     // Insert api token into keystore
     std::string keychainKey("123");
     KeyChainManager::instance(true);
-    KeyChainManager::instance()->writeToken(keychainKey, apiTokenStr);
+    KeyChainManager::instance()->writeToken(keychainKey, testVariables.apiToken);
 
     // Create parmsDb
     bool alreadyExists = false;
@@ -56,16 +54,16 @@ void TestExecutorWorker::setUp() {
     User user(1, userId, keychainKey);
     ParmsDb::instance()->insertUser(user);
 
-    int accountId(atoi(accountIdStr.c_str()));
+    int accountId(atoi(testVariables.accountId.c_str()));
     Account account(1, accountId, user.dbId());
     ParmsDb::instance()->insertAccount(account);
 
     int driveDbId = 1;
-    int driveId = atoi(driveIdStr.c_str());
+    int driveId = atoi(testVariables.driveId.c_str());
     Drive drive(driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    _sync = Sync(1, drive.dbId(), localPathStr, remotePathStr);
+    _sync = Sync(1, drive.dbId(), localPathStr, testVariables.remotePath);
     ParmsDb::instance()->insertSync(_sync);
 
     // Setup proxy
@@ -85,7 +83,8 @@ void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {
     const auto opPtr = std::make_shared<SyncOperation>();
     opPtr->setTargetSide(ReplicaSide::Remote);
     const auto node = std::make_shared<Node>(1, ReplicaSide::Local, "test_file.txt", NodeType::File, OperationType::None, "1234",
-                                             defaultTime, defaultTime, 123, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+                                             testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultFileSize,
+                                             _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     opPtr->setAffectedNode(node);
 
     // A hydrated placeholder.
@@ -171,19 +170,19 @@ void TestExecutorWorker::testFixModificationDate() {
     }
 
     // Update DB
-    DbNode dbNode(0, _syncPal->syncDb()->rootNode().nodeId(), filename, filename, "lid", "rid", defaultTime, defaultTime,
-                  defaultTime, NodeType::File, defaultSize, "cs");
+    DbNode dbNode(0, _syncPal->syncDb()->rootNode().nodeId(), filename, filename, "lid", "rid", testhelpers::defaultTime,
+                  testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, testhelpers::defaultFileSize, "cs");
     DbNodeId dbNodeId;
     bool constraintError = false;
     _syncPal->syncDb()->insertNode(dbNode, dbNodeId, constraintError);
 
     // Generate sync operation
-    std::shared_ptr<Node> node =
-        std::make_shared<Node>(dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid", defaultTime,
-                               defaultTime, defaultSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
-    std::shared_ptr<Node> correspondingNode =
-        std::make_shared<Node>(dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", defaultTime,
-                               defaultTime, defaultSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+    std::shared_ptr<Node> node = std::make_shared<Node>(
+        dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid", testhelpers::defaultTime,
+        testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+    std::shared_ptr<Node> correspondingNode = std::make_shared<Node>(
+        dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
+        testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
     SyncOpPtr op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
     op->setCorrespondingNode(correspondingNode);
@@ -195,7 +194,7 @@ void TestExecutorWorker::testFixModificationDate() {
     IoHelper::getFileStat(path, &filestat, ioError);
 
     CPPUNIT_ASSERT_EQUAL(IoError::Success, ioError);
-    CPPUNIT_ASSERT_EQUAL(defaultTime, filestat.modtime);
+    CPPUNIT_ASSERT_EQUAL(testhelpers::defaultTime, filestat.modtime);
 }
 
 void TestExecutorWorker::testAffectedUpdateTree() {

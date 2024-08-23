@@ -23,7 +23,6 @@
 using namespace CppUnit;
 
 namespace KDC {
-
 class TestNetworkJobs : public CppUnit::TestFixture {
     public:
         CPPUNIT_TEST_SUITE(TestNetworkJobs);
@@ -55,6 +54,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST(testDriveUploadSessionAsynchronous);
         CPPUNIT_TEST(testDriveUploadSessionSynchronousAborted);
         CPPUNIT_TEST(testDriveUploadSessionAsynchronousAborted);
+        CPPUNIT_TEST(testGetAppVersionInfo);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -90,6 +90,7 @@ class TestNetworkJobs : public CppUnit::TestFixture {
         void testDriveUploadSessionAsynchronous();
         void testDriveUploadSessionSynchronousAborted();
         void testDriveUploadSessionAsynchronousAborted();
+        void testGetAppVersionInfo();
 
     private:
         // bool createTestDir();
@@ -106,5 +107,4 @@ class TestNetworkJobs : public CppUnit::TestFixture {
 
         static int _nbParalleleThreads;
 };
-
 }  // namespace KDC

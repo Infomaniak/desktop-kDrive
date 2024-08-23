@@ -727,4 +727,52 @@ std::string enumClassToString(UpdateState e) {
             return "No conversion to string available";
     }
 }
+std::string enumClassToString(UpdateStateV2 e) {
+    switch (e) {
+        case UpdateStateV2::UpToDate:
+            return "UpToDate";
+        case UpdateStateV2::Available:
+            return "Available";
+        case UpdateStateV2::Downloading:
+            return "Downloading";
+        case UpdateStateV2::Ready:
+            return "Ready";
+        case UpdateStateV2::Error:
+            return "Error";
+        default:
+            return "No conversion to string available";
+    }
+}
+std::string enumClassToString(DistributionChannel e) {
+    switch (e) {
+        case DistributionChannel::Prod:
+            return "Prod";
+        case DistributionChannel::Next:
+            return "Next";
+        case DistributionChannel::Beta:
+            return "Beta";
+        case DistributionChannel::Internal:
+            return "Internal";
+        case DistributionChannel::Unknown:
+            return "Unknown";
+        default:
+            return "No conversion to string available";
+    }
+}
+std::string enumClassToString(Platform e) {
+    switch (e) {
+        case Platform::Windows:
+            return "Windows";
+        case Platform::MacOS:
+            return "MacOS";
+        case Platform::LinuxAMD:
+            return "LinuxAMD";
+        case Platform::LinuxARM:
+            return "LinuxARM";
+        case Platform::Unknown:
+            return "Unknown";
+        default:
+            return "No conversion to string available";
+    }
+}
 }  // namespace KDC

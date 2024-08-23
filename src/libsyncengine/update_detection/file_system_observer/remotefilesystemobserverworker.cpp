@@ -18,10 +18,10 @@
 
 #include "remotefilesystemobserverworker.h"
 #include "jobs/jobmanager.h"
-#include "jobs/network/csvfullfilelistwithcursorjob.h"
-#include "jobs/network/getfileinfojob.h"
-#include "jobs/network/longpolljob.h"
-#include "jobs/network/continuefilelistwithcursorjob.h"
+#include "../../jobs/network/API_v2/csvfullfilelistwithcursorjob.h"
+#include "../../jobs/network/API_v2/getfileinfojob.h"
+#include "../../jobs/network/API_v2/longpolljob.h"
+#include "../../jobs/network/API_v2/continuefilelistwithcursorjob.h"
 #ifdef _WIN32
 #include "reconciliation/platform_inconsistency_checker/platforminconsistencycheckerutility.h"
 #endif
@@ -194,8 +194,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
             break;
         }
 
-        std::string errorCode;
-        if (job->hasErrorApi(&errorCode)) {
+        if (std::string errorCode; job->hasErrorApi(&errorCode)) {
             if (getNetworkErrorCode(errorCode) == NetworkErrorCode::forbiddenError) {
                 LOG_SYNCPAL_WARN(_logger, "Access forbidden");
                 exitCode = ExitCode::Ok;
