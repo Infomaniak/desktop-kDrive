@@ -864,8 +864,8 @@ ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
     return ExitCode::Ok;
 }
 
-void SyncPal::setSyncHasFullyCompleted(bool syncHasFullyCompleted) {
-    setSyncHasFullyCompeleted(syncHasFullyCompleted);
+void SyncPal::setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted) {
+    setSyncHasFullyCompleted(syncHasFullyCompleted);
 
     bool found = false;
     if (!ParmsDb::instance()->setSyncHasFullyCompleted(syncDbId(), syncHasFullyCompleted, found)) {
@@ -874,7 +874,6 @@ void SyncPal::setSyncHasFullyCompleted(bool syncHasFullyCompleted) {
     }
     if (!found) {
         LOG_SYNCPAL_WARN(_logger, "Sync not found");
-        return;
     }
 }
 

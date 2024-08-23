@@ -248,7 +248,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void copySnapshots();
 
         void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; };
-        void setSyncHasFullyCompeleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; };
+        void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; };
         void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; };
         void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; };
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
@@ -332,7 +332,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode setSyncPaused(bool value);
         bool createOrOpenDb(const SyncPath &syncDbPath, const std::string &version,
                             const std::string &targetNodeId = std::string());
-        void setSyncHasFullyCompleted(bool syncHasFullyCompleted);
+        void setSyncHasFullyCompletedInParms(bool syncHasFullyCompleted);
         inline bool interruptSync() const { return *_interruptSync; }
         ExitCode setListingCursor(const std::string &value, int64_t timestamp);
         ExitCode listingCursor(std::string &value, int64_t &timestamp);

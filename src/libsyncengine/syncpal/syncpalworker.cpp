@@ -340,7 +340,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
             if (!_syncPal->restart()) {
-                _syncPal->setSyncHasFullyCompleted(true);
+                _syncPal->setSyncHasFullyCompletedInParms(true);
             }
             break;
         default:
