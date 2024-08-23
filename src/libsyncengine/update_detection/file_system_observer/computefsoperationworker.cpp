@@ -910,10 +910,11 @@ void ComputeFSOperationWorker::updateUnsyncedList() {
 }
 
 void ComputeFSOperationWorker::addFolderToDelete(const SyncPath &path) {
+    SyncPath normalizedPath = Utility::normalizedSyncPath(path);
     // Remove sub dirs
     auto dirPathToDeleteSetIt = _dirPathToDeleteSet.begin();
     while (dirPathToDeleteSetIt != _dirPathToDeleteSet.end()) {
-        if (CommonUtility::isSubDir(path, *dirPathToDeleteSetIt)) {
+        if (CommonUtility::isSubDir(normalizedPath, *dirPathToDeleteSetIt)) {
             dirPathToDeleteSetIt = _dirPathToDeleteSet.erase(dirPathToDeleteSetIt);
         } else {
             dirPathToDeleteSetIt++;
@@ -921,13 +922,14 @@ void ComputeFSOperationWorker::addFolderToDelete(const SyncPath &path) {
     }
 
     // Insert dir
-    _dirPathToDeleteSet.insert(path);
+    _dirPathToDeleteSet.insert(normalizedPath);
 }
 
 bool ComputeFSOperationWorker::pathInDeletedFolder(const SyncPath &path) {
+    SyncPath normalizedPath = Utility::normalizedSyncPath(path);
     for (auto dirPathToDeleteSetIt = _dirPathToDeleteSet.begin(); dirPathToDeleteSetIt != _dirPathToDeleteSet.end();
          ++dirPathToDeleteSetIt) {
-        if (CommonUtility::isSubDir(*dirPathToDeleteSetIt, path)) {
+        if (CommonUtility::isSubDir(*dirPathToDeleteSetIt, normalizedPath)) {
             return true;
         }
     }

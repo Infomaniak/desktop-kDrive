@@ -55,7 +55,7 @@ void TestComputeFSOperationWorker::setUp() {
 
     /// Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
 

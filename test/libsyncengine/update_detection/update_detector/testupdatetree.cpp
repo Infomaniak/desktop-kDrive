@@ -49,7 +49,7 @@ void TestUpdateTree::testConstructors() {
 
     {
         Node node(std::nullopt, ReplicaSide::Remote, nfdName, NodeType::Directory, OperationType::None, "1", 0, 0, 123, nullptr);
-        CPPUNIT_ASSERT(node.name() == nfcName);
+        CPPUNIT_ASSERT(node.name() == nfdName);
     }
 
     {
@@ -59,14 +59,14 @@ void TestUpdateTree::testConstructors() {
 
     {
         Node node(ReplicaSide::Remote, nfdName, NodeType::Directory, nullptr);
-        CPPUNIT_ASSERT(node.name() == nfcName);
+        CPPUNIT_ASSERT(node.name() == nfdName);
     }
 
     {
         Node node(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0, 12345,
                   _myTree->rootNode());
         node.setName(nfdName);
-        CPPUNIT_ASSERT(node.name() == nfcName);
+        CPPUNIT_ASSERT(node.name() == nfdName);
     }
 }
 

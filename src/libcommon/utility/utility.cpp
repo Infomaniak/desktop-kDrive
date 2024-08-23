@@ -58,7 +58,6 @@
 
 #if defined(Q_OS_WIN)
 #include "utility_win.cpp"
-#include "libcommonserver/utility/utility.h"
 #elif defined(Q_OS_MAC)
 #include "utility_mac.cpp"
 #else
@@ -671,20 +670,17 @@ size_t CommonUtility::maxPathLengthFolder() {
 #endif
 
 bool CommonUtility::isSubDir(const SyncPath &path1, const SyncPath &path2) {
-    SyncPath path1normalized = Utility::normalizedSyncPath(path1);
-    SyncPath path2normalized = Utility::normalizedSyncPath(path2);
-
-    if (path1normalized.compare(path2) == 0) {
+    if (path1.compare(path2) == 0) {
         return true;
     }
 
-    auto it1 = path1normalized.begin();
-    auto it2 = path2normalized.begin();
-    while (it1 != path1normalized.end() && it2 != path2normalized.end() && *it1 == *it2) {
+    auto it1 = path1.begin();
+    auto it2 = path2.begin();
+    while (it1 != path1.end() && it2 != path2.end() && *it1 == *it2) {
         it1++;
         it2++;
     }
-    return (it1 == path1normalized.end());
+    return (it1 == path1.end());
 }
 
 const std::string CommonUtility::dbVersionNumber(const std::string &dbVersion) {

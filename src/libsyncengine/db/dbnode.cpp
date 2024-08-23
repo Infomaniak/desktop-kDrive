@@ -61,12 +61,10 @@ DbNode::DbNode()
       _syncing(false) {}
 
 void DbNode::setNameLocal(const SyncName &name) {
-    assert(name == Utility::normalizedSyncName(name));
     _nameLocal = name;
 }
 
 void DbNode::setNameRemote(const SyncName &name) {
-    assert(name == Utility::normalizedSyncName(name));
     _nameRemote = name;
 }
 
