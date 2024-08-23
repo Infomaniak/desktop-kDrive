@@ -57,7 +57,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     for (int i = 0; i < nbFileInTestDir; i++) {
         std::string filename = "test" + std::to_string(i) + ".txt";
         SyncPath filepath = _subDirPath / filename;
-        testhelpers::generateTestFile(filepath);
+        testhelpers::generateOrEditTestFile(filepath);
 
         if (i == 0) {
             FileStat fileStat;
@@ -141,8 +141,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
     {
         /// Create file
         LOGW_DEBUG(_logger, L"***** test create file *****");
-        const std::string testCallStr = R"(echo "This is a create test" >> )" + testAbsolutePath.make_preferred().string();
-        std::system(testCallStr.c_str());
+        testhelpers::generateOrEditTestFile(testAbsolutePath);
 
         Utility::msleep(1000);  // Wait 1sec
 
@@ -160,8 +159,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         /// Edit file
         LOGW_DEBUG(_logger, L"***** test edit file *****");
         const SyncTime prevModTime = _syncPal->snapshot(ReplicaSide::Local)->lastModified(itemId);
-        const std::string testCallStr = R"(echo "This is an edit test" >> )" + testAbsolutePath.make_preferred().string();
-        std::system(testCallStr.c_str());
+        testhelpers::generateOrEditTestFile(testAbsolutePath);
 
         Utility::msleep(1000);  // Wait 1sec
 
@@ -171,51 +169,39 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
     {
         /// Move file
         LOGW_DEBUG(_logger, L"***** test move file *****");
-        SyncPath source = testAbsolutePath;
-        SyncPath target = _subDirPath / filename;
-#ifdef _WIN32
-        const std::string testCallStr =
-            "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
-#else
-        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
+        SyncPath sourcePath = testAbsolutePath;
+        SyncPath destinationPath = _subDirPath / filename;
+
+        IoError ioError = IoError::Unknown;
+        IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
         Utility::msleep(1000);  // Wait 1sec
 
         const NodeId parentId = _syncPal->snapshot(ReplicaSide::Local)->parentId(itemId);
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(parentId) == _subDirPath.filename());
-        testAbsolutePath = target;
+        testAbsolutePath = destinationPath;
     }
 
     {
         /// Rename file
         LOGW_DEBUG(_logger, L"***** test rename file *****");
         SyncPath source = testAbsolutePath;
-        SyncPath target = _subDirPath / Str("test_file_renamed.txt");
-#ifdef _WIN32
-        const std::string testCallStr = "ren " + source.make_preferred().string() + " " + target.filename().string();
-#else
-        const std::string testCallStr =
-            "mv " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
-#endif
-        std::system(testCallStr.c_str());
+        SyncPath destinationPath = _subDirPath / Str("test_file_renamed.txt");
+
+        IoError ioError = IoError::Unknown;
+        IoHelper::renameItem(source, destinationPath, ioError);
 
         Utility::msleep(1000);  // Wait 1sec
 
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(itemId) == Str("test_file_renamed.txt"));
-        testAbsolutePath = target;
+        testAbsolutePath = destinationPath;
     }
 
     {
         /// Delete file
         LOGW_DEBUG(_logger, L"***** test delete file *****");
-#ifdef _WIN32
-        const std::string testCallStr = "del " + testAbsolutePath.make_preferred().string();
-#else
-        const std::string testCallStr = "rm -r " + testAbsolutePath.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
+        IoError ioError = IoError::Unknown;
+        IoHelper::deleteItem(testAbsolutePath, ioError);
 
         Utility::msleep(1000);  // Wait 1sec
 
@@ -232,8 +218,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
     {
         /// Create dir
         LOGW_DEBUG(_logger, L"***** test create dir *****");
-        const std::string testCallStr = "mkdir " + testAbsolutePath.make_preferred().string();
-        std::system(testCallStr.c_str());
+        testhelpers::generateOrEditTestFile(testAbsolutePath);
 
         Utility::msleep(1000);  // Wait 1sec
 
@@ -250,60 +235,44 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
     {
         /// Move dir
         LOGW_DEBUG(_logger, L"***** test move dir *****");
-        SyncPath source = testAbsolutePath;
-        SyncPath target = _subDirPath / dirname;
-#ifdef _WIN32
-        const std::string testCallStr =
-            "move " + source.make_preferred().string() + " " + target.make_preferred().string() + " >nil";
-#else
-        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
+        SyncPath sourcePath = testAbsolutePath;
+        SyncPath destinationPath = _subDirPath / dirname;
+        IoError ioError = IoError::Unknown;
+        IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
         Utility::msleep(1000);  // Wait 1sec
 
         SyncPath path;
         _syncPal->snapshot(ReplicaSide::Local)->path(itemId, path);
-        CPPUNIT_ASSERT(path == CommonUtility::relativePath(_rootFolderPath, target));
-        testAbsolutePath = target;
+        CPPUNIT_ASSERT(path == CommonUtility::relativePath(_rootFolderPath, destinationPath));
+        testAbsolutePath = destinationPath;
     }
 
     {
         /// Rename dir
         LOGW_DEBUG(_logger, L"***** test rename dir *****");
-        SyncPath source = testAbsolutePath;
-        SyncPath target = _subDirPath / Str("A_renamed");
-#ifdef _WIN32
-        const std::string testCallStr = "ren " + source.make_preferred().string() + " " + target.filename().string() + " >nil";
-#else
-        const std::string testCallStr = "mv " + source.make_preferred().string() + " " + target.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
+        SyncPath sourcePath = testAbsolutePath;
+        SyncPath destinationPath = _subDirPath / (dirname + Str("_renamed"));
+        IoError ioError = IoError::Unknown;
+        IoHelper::renameItem(sourcePath, destinationPath, ioError);
 
         Utility::msleep(1000);  // Wait 1sec
 
-        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(itemId) == target.filename());
-        testAbsolutePath = target;
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(itemId) == destinationPath.filename());
+        testAbsolutePath = destinationPath;
     }
 
     {
         // Generate test item outside sync folder
         SyncName dirName = Str("dir_copy");
         SyncPath sourcePath = _tempDir.path() / dirName;
-        std::filesystem::copy(_subDirPath, sourcePath);
+        IoError ioError = IoError::Unknown;
+        IoHelper::copyFileOrDirectory(_subDirPath, sourcePath, ioError);
 
         /// Move dir from outside sync dir
         LOGW_DEBUG(_logger, L"***** test move dir from outside sync dir *****");
-
         SyncPath destinationPath = _rootFolderPath / dirName;
-#ifdef _WIN32
-        const std::string testCallStr =
-            "move " + sourcePath.make_preferred().string() + " " + destinationPath.make_preferred().string() + " >nil";
-#else
-        const std::string testCallStr =
-            "mv " + sourcePath.make_preferred().string() + " " + destinationPath.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
+        IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
         Utility::msleep(1000);  // Wait 1sec
 
@@ -327,12 +296,8 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherDeleteDir() {
     {
         /// Delete dir and all its content
         LOGW_DEBUG(_logger, L"***** test delete dir *****");
-#ifdef _WIN32
-        const std::string testCallStr = "rmdir /s /q " + _subDirPath.make_preferred().string();
-#else
-        const std::string testCallStr = "rm -r " + _subDirPath.make_preferred().string();
-#endif
-        std::system(testCallStr.c_str());
+        IoError ioError = IoError::Unknown;
+        IoHelper::deleteItem(_subDirPath, ioError);
 
         Utility::msleep(1000);  // Wait 1sec
 
@@ -355,27 +320,17 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases1() {
     IoHelper::getFileStat(sourcePath, &fileStat, exists);
     NodeId initItemId = std::to_string(fileStat.inode);
 
-#ifdef _WIN32
-    std::string testCallStr = "del " + sourcePath.make_preferred().string();
-#else
-    std::string testCallStr = "rm -r " + sourcePath.make_preferred().string();
-#endif
-    std::system(testCallStr.c_str());
+    IoError ioError = IoError::Unknown;
+    IoHelper::deleteItem(sourcePath, ioError);
     //// create
-    KDC::testhelpers::generateTestFile(sourcePath);
+    KDC::testhelpers::generateOrEditTestFile(sourcePath);
     IoHelper::getFileStat(sourcePath, &fileStat, exists);
     NodeId newItemId = std::to_string(fileStat.inode);
     //// edit
-    testCallStr = R"(echo "This is an edit test" >>  )" + sourcePath.make_preferred().string();
-    std::system(testCallStr.c_str());
+    KDC::testhelpers::generateOrEditTestFile(sourcePath);
     //// move
     SyncPath destinationPath = _rootFolderPath / testFilename;
-#ifdef _WIN32
-    testCallStr = "move " + sourcePath.make_preferred().string() + " " + destinationPath.make_preferred().string() + " >nil";
-#else
-    testCallStr = "mv " + sourcePath.make_preferred().string() + " " + destinationPath.make_preferred().string();
-#endif
-    std::system(testCallStr.c_str());
+    IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
     Utility::msleep(1000);  // Wait 1sec
 
@@ -395,27 +350,17 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases2() {
     bool exists = false;
     IoHelper::getFileStat(sourcePath, &fileStat, exists);
     NodeId initItemId = std::to_string(fileStat.inode);
-#ifdef _WIN32
-    std::string testCallStr =
-        "move " + sourcePath.make_preferred().string() + " " + destinationPath.make_preferred().string() + " >nil";
-#else
-    std::string testCallStr = "mv " + sourcePath.make_preferred().string() + " " + destinationPath.make_preferred().string();
-#endif
-    std::system(testCallStr.c_str());
+
+    IoError ioError = IoError::Unknown;
+    IoHelper::moveItem(sourcePath, destinationPath, ioError);
     //// create
-    KDC::testhelpers::generateTestFile(sourcePath);
+    KDC::testhelpers::generateOrEditTestFile(sourcePath);
     IoHelper::getFileStat(sourcePath, &fileStat, exists);
     NodeId newItemId = std::to_string(fileStat.inode);
     //// edit
-    testCallStr = R"(echo "This is an edit test" >>  )" + sourcePath.make_preferred().string();
-    std::system(testCallStr.c_str());
+    KDC::testhelpers::generateOrEditTestFile(sourcePath);
     //// delete
-#ifdef _WIN32
-    testCallStr = "del " + sourcePath.make_preferred().string();
-#else
-    testCallStr = "rm -r " + sourcePath.make_preferred().native();
-#endif
-    std::system(testCallStr.c_str());
+    IoHelper::deleteItem(sourcePath, ioError);
 
     Utility::msleep(1000);  // Wait 1sec
 
