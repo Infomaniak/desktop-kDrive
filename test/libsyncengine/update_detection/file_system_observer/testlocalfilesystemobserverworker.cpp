@@ -57,7 +57,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
     for (int i = 0; i < nbFileInTestDir; i++) {
         std::string filename = "test" + std::to_string(i) + ".txt";
         SyncPath filepath = _subDirPath / filename;
-        KDC::testhelpers::generateTestFile(filepath);
+        testhelpers::generateTestFile(filepath);
 
         if (i == 0) {
             FileStat fileStat;
