@@ -93,6 +93,7 @@ struct COMMON_EXPORT CommonUtility {
 
         static QString getRelativePathFromHome(const QString &dirPath);
 
+        static bool isFileSizeMismatchDetectionEnabled();
         static size_t maxPathLength();
 #if defined(_WIN32)
         static size_t maxPathLengthFolder();
