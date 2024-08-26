@@ -1074,8 +1074,8 @@ void TestIntegration::testMoveDeleteConflict1() {
     // On local replica
     // Delete S
     {
-        const SyncPalInfo SyncPalInfo(_driveDbId, _localPath);
-        LocalDeleteJob localDeleteJob(SyncPalInfo, testExecutorFolderRelativePath / testConflictFolderName / "A/S", false,
+        const SyncPalInfo syncPalInfo(_driveDbId, _localPath);
+        LocalDeleteJob localDeleteJob(syncPalInfo, testExecutorFolderRelativePath / testConflictFolderName / "A/S", false,
                                       sRemoteId);
         localDeleteJob.setBypassCheck(true);
         localDeleteJob.runSynchronously();

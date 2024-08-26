@@ -56,11 +56,11 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
     return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
 }
 
-LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &SyncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
+LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
                                NodeId remoteId, bool forceToTrash /* = false */)
-    : _syncInfo(SyncPalInfo),
+    : _syncInfo(syncPalInfo),
       _relativePath(relativePath),
-      _absolutePath(SyncPalInfo.localPath / relativePath),
+      _absolutePath(syncPalInfo.localPath / relativePath),
       _isDehydratedPlaceholder(isDehydratedPlaceholder),
       _remoteNodeId(remoteId),
       _forceToTrash(forceToTrash) {}
@@ -147,7 +147,7 @@ void LocalDeleteJob::runJob() {
     }
 
     if ((ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash) {
-        bool success = Utility::moveItemToTrash(_absolutePath);
+        const bool success = Utility::moveItemToTrash(_absolutePath);
         _exitCode = ExitCode::Ok;
         if (!success) {
             LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" to trash");
