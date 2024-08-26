@@ -94,6 +94,7 @@ struct SyncPalInfo {
         bool isPaused{false};
         bool syncHasFullyCompleted;
 
+        // An advanced synchronisation targets a subdirectory of a remote drive
         bool isAdvancedSync() const { return !targetPath.empty(); };
 };
 
