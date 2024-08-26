@@ -388,13 +388,13 @@ bool Utility::isEqualInsensitive(const SyncName &a, const SyncName &b) {
 }
 #endif
 
-bool Utility::isEqual(const SyncName &a, const SyncName &b) {
+bool Utility::isEqualNormalized(const SyncName &a, const SyncName &b) {
     const auto aNormalized = Utility::normalizedSyncName(a);
     const auto bNormalized = Utility::normalizedSyncName(b);
     return aNormalized == bNormalized;
 }
 
-bool Utility::isEqual(const SyncPath &a, const SyncPath &b) {
+bool Utility::isEqualNormalized(const SyncPath &a, const SyncPath &b) {
     const auto aNormalized = Utility::normalizedSyncPath(a);
     const auto bNormalized = Utility::normalizedSyncPath(b);
     return aNormalized == bNormalized;

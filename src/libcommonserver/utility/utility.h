@@ -100,8 +100,20 @@ struct COMMONSERVER_EXPORT Utility {
         static bool endsWithInsensitive(const SyncName &str, const SyncName &suffix);
         static bool isEqualInsensitive(const SyncName &a, const SyncName &b);
 #endif
-        static bool isEqual(const SyncName &a, const SyncName &b);
-        static bool isEqual(const SyncPath &a, const SyncPath &b);
+        /**
+         * Normalize the SyncName parameters before comparing them.
+         * @param a SyncName value to be compared.
+         * @param b Other SyncName value to be compared.
+         * @return true if the normalized strings are equal.
+         */
+        static bool isEqualNormalized(const SyncName &a, const SyncName &b);
+        /**
+         * Normalize the SyncPath parameters before comparing them.
+         * @param a SyncPath value to be compared.
+         * @param b Other SyncPath value to be compared.
+         * @return true if the normalized paths are equal.
+         */
+        static bool isEqualNormalized(const SyncPath &a, const SyncPath &b);
 
         static bool moveItemToTrash(const SyncPath &itemPath);
 #ifdef __APPLE__

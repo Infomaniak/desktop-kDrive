@@ -42,7 +42,8 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
 
     // Move-Move (Source) pseudo-conflict
     if (node->hasChangeEvent(OperationType::Move) && correspondingNode->hasChangeEvent(OperationType::Move) &&
-        node->parentNode()->idb() == correspondingNode->parentNode()->idb() && node->name() == correspondingNode->name()) {
+        node->parentNode()->idb() == correspondingNode->parentNode()->idb() &&
+        Utility::isEqualNormalized(node->name(), correspondingNode->name())) {
         return true;
     }
 

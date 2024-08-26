@@ -374,7 +374,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 const SyncTime snapshotLastModified = snapshot->lastModified(nodeId);
                 if (snapshotLastModified != dbLastModified && dbNode.type() == NodeType::File) {
                     // Edit operation
-                    FSOpPtr fsOp =
+                    auto fsOp =
                         std::make_shared<FSOperation>(OperationType::Edit, nodeId, NodeType::File, snapshot->createdAt(nodeId),
                                                       snapshotLastModified, snapshot->size(nodeId), snapPath);
                     opSet->insertOp(fsOp);
@@ -382,7 +382,7 @@ ExitCode ComputeFSOperationWorker::exploreDbTree(std::unordered_set<NodeId> &loc
                 }
 
                 const auto snapshotName = snapshot->name(nodeId);
-                const bool movedOrRenamed = !Utility::isEqual(dbName, snapshotName) || parentId != snapshot->parentId(nodeId);
+                const bool movedOrRenamed = dbName != snapshotName || parentId != snapshot->parentId(nodeId);
                 if (movedOrRenamed) {
                     FSOpPtr fsOp = nullptr;
                     if (isInUnsyncedList(snapshot, nodeId, side)) {

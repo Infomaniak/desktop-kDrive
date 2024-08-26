@@ -93,7 +93,7 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
     for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
         for (const auto &childNode : tmpNode->children()) {
-            if (*nameIt == childNode.second->name()) {
+            if (Utility::isEqualNormalized(*nameIt, childNode.second->name())) {
                 tmpChildNode = childNode.second;
                 break;
             }
