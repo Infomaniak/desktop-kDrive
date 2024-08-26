@@ -571,7 +571,8 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
 }
 
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
-    if (dbNode.type() == NodeType::File && dbNode.nodeIdLocal().has_value() && dbNode.nodeIdRemote().has_value() &&
+    if (CommonUtility::isFileSizeMismatchDetectionEnabled() && dbNode.type() == NodeType::File && dbNode.nodeIdLocal().has_value() &&
+        dbNode.nodeIdRemote().has_value() &&
         dbNode.lastModifiedLocal().has_value()) {
         if (_fileSizeMismatchMap.find(dbNode.nodeIdLocal().value()) != _fileSizeMismatchMap.end()) {
             // Size mismatch already detected
@@ -598,7 +599,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
             _syncPal->snapshot(ReplicaSide::Remote, true)->lastModified(dbNode.nodeIdRemote().value());
 
         // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
-        if (CommonUtility::isFileSizeMismatchDetectionEnabled() && localSnapshotSize != remoteSnapshotSize &&
+        if (localSnapshotSize != remoteSnapshotSize &&
             localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
             localSnapshotLastModified == remoteSnapshotLastModified) {
             SyncPath localSnapshotPath;

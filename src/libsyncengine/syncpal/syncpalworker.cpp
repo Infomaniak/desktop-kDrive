@@ -27,6 +27,8 @@
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommon/utility/utility.h"
+
 
 #include <log4cplus/loggingmacros.h>
 
@@ -410,7 +412,8 @@ SyncStep SyncPalWorker::nextStep() const {
             logNbOps(ReplicaSide::Local);
             logNbOps(ReplicaSide::Remote);
 
-            if (!_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap().empty()) {
+            if (CommonUtility::isFileSizeMismatchDetectionEnabled() &&
+                !_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap().empty()) {
                 _syncPal->fixCorruptedFile(_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap());
                 _syncPal->_restart = true;
                 return SyncStep::Idle;
