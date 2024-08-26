@@ -248,11 +248,6 @@ void ParametersDialog::initUI() {
     errorsHeaderVBox->setSpacing(boxVSpacing);
     // errorsHeaderWidget->setLayout(errorsHeaderVBox);
 
-    _sendLogsWidget = new ActionWidget(":/client/resources/icons/actions/help.svg", this);
-    _sendLogsWidget->setObjectName("sendLogsWidget");
-    _sendLogsWidget->hide();
-    errorsHeaderVBox->addWidget(_sendLogsWidget);
-
     // Errors stacked widget
     _errorsStackedWidget = new QStackedWidget(this);
     _errorsStackedWidget->setObjectName("errorsStackedWidget");
@@ -289,7 +284,6 @@ void ParametersDialog::initUI() {
     connect(_preferencesWidget, &PreferencesWidget::setStyle, this, &ParametersDialog::onSetStyle);
     connect(_preferencesWidget, &PreferencesWidget::undecidedListsCleared, _drivePreferencesWidget,
             &DrivePreferencesWidget::undecidedListsCleared);
-    connect(_sendLogsWidget, &ActionWidget::clicked, this, &ParametersDialog::onSendLogs);
     connect(this, &ParametersDialog::clearErrors, this, &ParametersDialog::onClearErrors);
     connect(this, &ParametersDialog::newBigFolder, _drivePreferencesWidget, &DrivePreferencesWidget::newBigFolderDiscovered);
 }
@@ -415,6 +409,7 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
         case ExitCode::InvalidSync:
         case ExitCode::OperationCanceled:
         case ExitCode::InvalidOperation:
+        case ExitCode::UpdateFailed:
             break;
     }
 
@@ -603,6 +598,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
         case ExitCode::InvalidOperation:
         case ExitCode::UpdateRequired:
         case ExitCode::LogUploadFailed:
+        case ExitCode::UpdateFailed:
             break;
     }
 
@@ -1086,119 +1082,6 @@ void ParametersDialog::onSetStyle(bool darkTheme) {
     emit setStyle(darkTheme);
 }
 
-void ParametersDialog::onSendLogs() {
-    EnableStateHolder _(this);
-
-    if (Theme::instance()->debugReporterUrl().isEmpty()) {
-        Q_ASSERT(false);
-        return;
-    }
-
-    CustomMessageBox msgBox(QMessageBox::Information,
-                            tr("Please confirm the transmission of debugging information to our support."), QMessageBox::NoButton,
-                            this);
-    msgBox.addButton(tr("LAST LOG"), QMessageBox::Yes);
-    msgBox.addButton(tr("ALL LOGS"), QMessageBox::YesToAll);
-    msgBox.addButton(tr("NO"), QMessageBox::No);
-    msgBox.setDefaultButton(QMessageBox::Yes);
-
-    const int ret = msgBox.execAndMoveToCenter(this);
-    if (ret == QDialog::Rejected || ret == QMessageBox::No) return;
-
-    auto *debugReporter = new DebugReporter(QUrl(Theme::instance()->debugReporterUrl()), this);
-
-    // Write accounts
-    int num = 0;
-    for (const auto &userInfoMapElt : _gui->userInfoMap()) {
-        num++;
-        for (const auto &accountInfoMapElt : _gui->accountInfoMap()) {
-            if (accountInfoMapElt.second.userDbId() == userInfoMapElt.first) {
-                for (const auto &driveInfoMapElt : _gui->driveInfoMap()) {
-                    if (driveInfoMapElt.second.accountDbId() == accountInfoMapElt.first) {
-                        int userId = 0;
-                        if (GuiRequests::getUserIdFromUserDbId(userInfoMapElt.second.dbId(), userId) != ExitCode::Ok) {
-                            qCWarning(lcParametersDialog()) << "Error in GuiRequests::getUserIdFromUserDbId";
-                        }
-
-                        debugReporter->setReportData(DebugReporter::MapKeyType::DriveId, num,
-                                                     QString::number(driveInfoMapElt.first).toUtf8());
-                        debugReporter->setReportData(DebugReporter::MapKeyType::DriveName, num,
-                                                     driveInfoMapElt.second.name().toUtf8());
-                        debugReporter->setReportData(DebugReporter::MapKeyType::UserId, num, QString::number(userId).toUtf8());
-                        debugReporter->setReportData(DebugReporter::MapKeyType::UserName, num,
-                                                     userInfoMapElt.second.name().toUtf8());
-                    }
-                }
-            }
-        }
-    }
-
-    if (num == 0) {
-        qCDebug(lcParametersDialog()) << "No account";
-        return;
-    }
-
-    // Write logs
-    QString temporaryFolderLogDirPath = KDC::Logger::instance()->temporaryFolderLogDirPath();
-    QDir dir(temporaryFolderLogDirPath);
-    if (dir.exists()) {
-        num = 0;
-
-        // Send server & client logs
-        for (int i = 0; i < 2; i++) {
-            // Include current log
-            QStringList files =
-                dir.entryList(QStringList(QString(i == 0 ? LOGFILE_SERVER_EXT : LOGFILE_CLIENT_EXT).arg(APPLICATION_NAME)),
-                              QDir::Files, QDir::Name | QDir::Reversed);
-            QString zlogFile;
-            if (!files.empty()) {
-                num++;
-                QString logFile = files.first();
-
-                zlogFile = logFile + ".gz";
-                if (dir.exists(zlogFile)) dir.remove(zlogFile);
-
-                CommonUtility::compressFile(temporaryFolderLogDirPath + dirSeparator + logFile,
-                                            temporaryFolderLogDirPath + dirSeparator + zlogFile);
-
-                debugReporter->setReportData(DebugReporter::MapKeyType::LogName, num,
-                                             contents(temporaryFolderLogDirPath + dirSeparator + zlogFile),
-                                             "application/octet-stream", QFileInfo(zlogFile).fileName().toUtf8());
-            }
-
-            if (ret == QMessageBox::YesToAll) {
-                // Include archived logs
-                QStringList files =
-                    dir.entryList(QStringList(QString(i == 0 ? ZLOGFILE_SERVER_EXT : ZLOGFILE_CLIENT_EXT).arg(APPLICATION_NAME)),
-                                  QDir::Files, QDir::Name | QDir::Reversed);
-                for (const QString &file : files) {
-                    if (file.startsWith(zlogFile)) continue;
-
-                    num++;
-                    if (num > maxLogFilesToSend) {
-                        break;
-                    }
-
-                    debugReporter->setReportData(DebugReporter::MapKeyType::LogName, num,
-                                                 contents(temporaryFolderLogDirPath + dirSeparator + file),
-                                                 "application/octet-stream", QFileInfo(file).fileName().toUtf8());
-                }
-            }
-        }
-
-        if (num == 0) {
-            qCDebug(lcParametersDialog()) << "No log file";
-            return;
-        }
-    } else {
-        qCDebug(lcParametersDialog()) << "Empty log dir: " << temporaryFolderLogDirPath;
-        return;
-    }
-
-    connect(debugReporter, &DebugReporter::sent, this, &ParametersDialog::onDebugReporterDone);
-    debugReporter->send();
-}
-
 void ParametersDialog::onOpenFolder(const QString &filePath) {
     if (!KDC::GuiUtility::openFolder(filePath)) {
         CustomMessageBox msgBox(QMessageBox::Warning, tr("Unable to open folder path %1.").arg(filePath), QMessageBox::Ok, this);
@@ -1238,7 +1121,6 @@ void ParametersDialog::onDebugReporterDone(bool retCode, const QString &debugId)
 
 void ParametersDialog::retranslateUi() {
     _defaultTextLabel->setText(tr("No kDrive configured!"));
-    _sendLogsWidget->setText(tr("Need help? Generate an application log archive to send to our support team."));
 }
 
 void ParametersDialog::onPauseSync(int syncDbId) {
