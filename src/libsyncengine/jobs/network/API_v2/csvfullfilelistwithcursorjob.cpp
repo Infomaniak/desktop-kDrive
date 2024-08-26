@@ -308,7 +308,7 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
         _ss << is.rdbuf();
     }
 
-    // Check that the stringstream is not empty (Can be caused by network issues)
+    // Check that the stringstream is not empty (network issues)
     _ss.seekg(0, std::ios_base::end);
     int length = _ss.tellg();
     if (length == 0) {
