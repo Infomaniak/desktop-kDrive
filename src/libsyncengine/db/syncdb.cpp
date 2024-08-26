@@ -686,7 +686,7 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
     ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
     ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 2, node.nameLocal()));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
+    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 3, node.nameRemote()));
     ASSERT(
         queryBindValue(INSERT_NODE_REQUEST_ID, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
     ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 5,
@@ -731,7 +731,7 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, node.nameLocal()));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, node.nameRemote()));
     ASSERT(
         queryBindValue(UPDATE_NODE_REQUEST_ID, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 5,
@@ -1313,14 +1313,14 @@ bool SyncDb::dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bo
 
     ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
-    if (names.size() > 0) {
+    if (!names.empty()) {
         // Find file node
         std::string id = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
                                                      : SELECT_NODE_BY_PARENTNODEID_AND_NAMEDRIVE_REQUEST_ID);
         for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
             ASSERT(queryResetAndClearBindings(id));
             ASSERT(queryBindValue(id, 1, dbNodeId));
-            ASSERT(queryBindValue(id, 2, side == ReplicaSide::Local ? *nameIt : Utility::normalizedSyncName(*nameIt)));
+            ASSERT(queryBindValue(id, 2, *nameIt));
             if (!queryNext(id, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << Utility::s2ws(id).c_str() << L" - parentNodeId="
                                                                    << std::to_wstring(dbNodeId).c_str() << L" and name="
@@ -1381,7 +1381,7 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
     DbNodeId nodeDbId;
     ASSERT(queryInt64Value(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID, 0, nodeDbId));
 
-    if (names.size() > 0) {
+    if (!names.empty()) {
         ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_ROOT_REQUEST_ID));
 
         std::string queryId = (side == ReplicaSide::Local ? SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID
@@ -1390,7 +1390,7 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
         for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
             ASSERT(queryResetAndClearBindings(queryId));
             ASSERT(queryBindValue(queryId, 1, nodeDbId));
-            ASSERT(queryBindValue(queryId, 2, side == ReplicaSide::Local ? *nameIt : Utility::normalizedSyncName(*nameIt)));
+            ASSERT(queryBindValue(queryId, 2, *nameIt));
             if (!queryNext(queryId, found)) {
                 LOGW_WARN(_logger, L"Error getting query result: " << queryId.c_str() << L" - parentNodeId=" << nodeDbId
                                                                    << L" and name=" << (SyncName2WStr(*nameIt)).c_str());
