@@ -308,15 +308,15 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
         _ss << is.rdbuf();
     }
 
-    // Check that the stringstream ends by a LF (0x0A)
+    // Check that the stringstream is not empty (Can be caused by network issues)
     _ss.seekg(0, std::ios_base::end);
     int length = _ss.tellg();
     if (length == 0) {
-        // Folder is empty
-        LOG_DEBUG(_logger, "Reply " << jobId() << " received - length=" << length);
-        return true;
+        LOG_ERROR(_logger, "Reply " << jobId() << " received with empty content.");
+        return false;
     }
 
+    // Check that the stringstream ends by a LF (0x0A)
     _ss.seekg(length - 1, std::ios_base::beg);
     char lastChar = 0x00;
     _ss.read(&lastChar, 1);
