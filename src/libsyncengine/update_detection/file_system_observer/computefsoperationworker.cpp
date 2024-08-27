@@ -571,8 +571,15 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
 }
 
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
-    if (!CommonUtility::isFileSizeMismatchDetectionEnabled() || dbNode.type() != NodeType::File ||
-        !dbNode.nodeIdLocal().has_value() || !dbNode.nodeIdRemote().has_value() || !dbNode.lastModifiedLocal().has_value()) {
+    if (dbNode.type() != NodeType::File) {
+        return ExitCode::Ok;
+    }
+
+    if (!CommonUtility::isFileSizeMismatchDetectionEnabled()){
+        return ExitCode::Ok;
+    }
+
+    if (!dbNode.nodeIdLocal().has_value() || !dbNode.nodeIdRemote().has_value() || !dbNode.lastModifiedLocal().has_value()) {
         return ExitCode::Ok;
     }
 
