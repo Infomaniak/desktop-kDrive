@@ -49,6 +49,8 @@ class SyncOperation {
         inline const Conflict &conflict() const { return _conflict; }
         inline void setConflict(const Conflict &newConflict) { _conflict = newConflict; }
 
+        SyncPath getPath(const ReplicaSide side) const;
+
         bool operator==(const SyncOperation &other) const;
         inline bool operator!=(const SyncOperation &other) const { return !(*this == other); }
 
