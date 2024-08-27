@@ -640,6 +640,11 @@ QString CommonUtility::getRelativePathFromHome(const QString &dirPath) {
     return QDir::toNativeSeparators(name);
 }
 
+bool CommonUtility::isFileSizeMismatchDetectionEnabled() {
+    static const bool enableFileSizeMismatchDetection = !envVarValue("KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION").empty();
+    return enableFileSizeMismatchDetection;
+}
+
 size_t CommonUtility::maxPathLength() {
 #if defined(_WIN32)
     static size_t _maxPathWin = 0;
