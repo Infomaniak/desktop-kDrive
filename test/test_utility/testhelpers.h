@@ -40,7 +40,6 @@ struct TestVariables {
         std::string driveId;
         std::string remoteDirId;
         std::string remotePath;
-        std::string localPath;
         std::string apiToken;
 
         TestVariables() {
@@ -49,7 +48,6 @@ struct TestVariables {
             driveId = loadEnvVariable("KDRIVE_TEST_CI_DRIVE_ID");
             remoteDirId = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_DIR_ID");
             remotePath = loadEnvVariable("KDRIVE_TEST_CI_REMOTE_PATH");
-            localPath = loadEnvVariable("KDRIVE_TEST_CI_LOCAL_PATH");
             apiToken = loadEnvVariable("KDRIVE_TEST_CI_API_TOKEN");
         }
 };
