@@ -100,7 +100,7 @@ bool LocalDeleteJob::canRun() {
     }
 
     // The item must exist locally for the job to run
-    bool exists;
+    bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError).c_str());
@@ -124,18 +124,25 @@ bool LocalDeleteJob::canRun() {
         return false;
     }
 
+    // Check if the item we want to delete locally has a remote counterpart.
+
     SyncPath remoteRelativePath;
-    if (const bool itemFound = findRemoteItem(remoteRelativePath); itemFound) {
-        // Verify that that the item has not moved
-        // For item moved in a blacklisted folder, we need to delete them even if they still exist on remote replica
-        if (matchRelativePaths(syncInfo().targetPath, Utility::normalizedSyncPath(_relativePath), remoteRelativePath)) {
-            // Item is found at the same path on remote
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
+    const bool remotItemIsFound = findRemoteItem(remoteRelativePath);
+
+    if (!remotItemIsFound) return true;  // Safe deletion.
+
+    // Check whether the remote item has been moved.
+    // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
+    // the local item should be deleted.
+    // Note: the other remote move operations are not relevant: they generate Move jobs.
+
+    if (matchRelativePaths(syncInfo().targetPath, Utility::normalizedSyncPath(_relativePath), remoteRelativePath)) {
+        // Item is found at the same path on remote
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
-            _exitCode = ExitCode::DataError;  // We need to rebuild the remote snapshot from scratch
-            _exitCause = ExitCause::InvalidSnapshot;
-            return false;
-        }
+        _exitCode = ExitCode::DataError;  // We need to rebuild the remote snapshot from scratch
+        _exitCause = ExitCause::InvalidSnapshot;
+        return false;
     }
 
     return true;

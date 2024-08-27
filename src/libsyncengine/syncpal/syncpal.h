@@ -154,6 +154,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
             _vfsCancelHydrate = vfsCancelHydrate;
         }
 
+        // SyncPalInfo
         [[nodiscard]] inline std::shared_ptr<SyncDb> syncDb() const { return _syncDb; }
         inline const SyncPalInfo &syncInfo() const { return _syncInfo; };
         inline int syncDbId() const { return _syncInfo.syncDbId; }
@@ -167,6 +168,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline SyncPath localPath() const { return _syncInfo.localPath; }
         inline bool restart() const { return _syncInfo.restart; };
         inline bool isAdvancedSync() const { return _syncInfo.isAdvancedSync(); }
+
+        void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; };
+        void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; };
+        void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; };
+        void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; };
+        void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
         // TODO : not ideal, to be refactored
         bool existOnServer(const SyncPath &path) const;
@@ -248,11 +255,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
-        void setLocalPath(const SyncPath &path) { _syncInfo.localPath = path; };
-        void setSyncHasFullyCompleted(bool completed) { _syncInfo.syncHasFullyCompleted = completed; };
-        void setRestart(bool shouldRestart) { _syncInfo.restart = shouldRestart; };
-        void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; };
-        void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
+        // Workers
+        std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; };
 
     private:
         log4cplus::Logger _logger;
@@ -339,9 +343,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
-        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false);
-        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side);
-        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side);
+        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
+        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
+        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
 
         // Progress info management
         void resetEstimateUpdates();
