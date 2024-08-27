@@ -238,6 +238,10 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
+        static void setDefaultSentryUsers();
+        static void setSpecificSentryUser(const User &user);  // Do not forget to call setDefaultSentryUsers() after calling this function
+
+
     private slots:
         void onLoadInfo();
         void onUpdateSyncsProgress();

@@ -309,6 +309,8 @@ AppServer::AppServer(int &argc, char **argv)
         return;
     }
 
+    // Configure sentry users for better identification
+    setDefaultSentryUsers();
 
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
@@ -371,9 +373,11 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
+    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::TEST::Start", "blablabla..."));
 }
 
 AppServer::~AppServer() {
+    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::TEST::Close", "blablabla..."));
     LOG_DEBUG(_logger, "~AppServer");
 }
 
@@ -467,6 +471,53 @@ void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexc
     LOG_INFO(_logger, msg.c_str());
 }
 
+void AppServer::setDefaultSentryUsers() {
+    std::vector<User> userList;
+    ParmsDb::instance()->selectAllUsers(userList);
+
+    std::string userId;
+    std::string userName;
+    std::string userEmail;
+    std::string allUsersIds;
+
+    if (!userList.empty()) {
+        userId = std::to_string(userList[0].userId());
+        userName = userList[0].name();
+        userEmail = userList[0].email();
+        for (const auto& user : userList) {
+            if (user.userId() != userList[0].userId()) {
+                allUsersIds += " | ";
+            }
+            allUsersIds += std::to_string(user.userId());
+        }
+    } else {
+        userId = "No user in db";
+        userName = "No user in db";
+        userEmail = "No user in db";
+    }
+
+    auto sentryUsers = sentry_value_new_object();
+    sentry_value_set_by_key(sentryUsers, "ip_address", sentry_value_new_string("{{auto}}"));
+    sentry_value_set_by_key(sentryUsers, "id", sentry_value_new_string(userId.c_str()));
+    sentry_value_set_by_key(sentryUsers, "name", sentry_value_new_string(userName.c_str()));
+    sentry_value_set_by_key(sentryUsers, "email", sentry_value_new_string(userEmail.c_str()));
+    sentry_value_set_by_key(sentryUsers, "userLoggedInCount", sentry_value_new_string(std::to_string(userList.size()).c_str()));
+    sentry_remove_user();          // Remove previous user if any
+    sentry_set_user(sentryUsers);  // Set new user
+}
+
+void AppServer::setSpecificSentryUser(const User &user) {
+    sentry_value_t sentryUser = sentry_value_new_object();
+    sentry_value_set_by_key(sentryUser, "ip_address", sentry_value_new_string("{{auto}}"));
+    if (user.dbId()) {
+        sentry_value_set_by_key(sentryUser, "id", sentry_value_new_string(std::to_string(user.userId()).c_str()));
+        sentry_value_set_by_key(sentryUser, "name", sentry_value_new_string(user.name().c_str()));
+        sentry_value_set_by_key(sentryUser, "email", sentry_value_new_string(user.email().c_str()));
+    }
+    sentry_remove_user();  // Remove previous user if any
+    sentry_set_user(sentryUser);
+}
+
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
@@ -493,7 +544,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             } else {
                 sendUserUpdated(userInfo);
             }
-
+            setDefaultSentryUsers();
             resultStream << enumClassToInt(exitCode);
             if (exitCode == ExitCode::Ok) {
                 resultStream << userInfo.dbId();
@@ -3882,20 +3933,10 @@ void AppServer::addError(const Error &error) {
 
 #ifdef NDEBUG
     if (!ServerRequests::isAutoResolvedError(error)) {
-        // Send error to sentry only for technical errors
-        sentry_value_t sentryUser = sentry_value_new_object();
-        sentry_value_set_by_key(sentryUser, "ip_address", sentry_value_new_string("{{auto}}"));
-        if (user.dbId()) {
-            sentry_value_set_by_key(sentryUser, "id", sentry_value_new_string(std::to_string(user.userId()).c_str()));
-            sentry_value_set_by_key(sentryUser, "name", sentry_value_new_string(user.name().c_str()));
-            sentry_value_set_by_key(sentryUser, "email", sentry_value_new_string(user.email().c_str()));
-        }
-        sentry_set_user(sentryUser);
-
+        setSpecificSentryUser(user);
         sentry_capture_event(
             sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", error.errorString().c_str()));
-
-        sentry_remove_user();
+        setDefaultSentryUsers();
     }
 #endif
 }
