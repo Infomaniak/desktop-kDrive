@@ -641,7 +641,7 @@ QString CommonUtility::getRelativePathFromHome(const QString &dirPath) {
 }
 
 bool CommonUtility::isFileSizeMismatchDetectionEnabled() {
-    static bool enableFileSizeMismatchDetection = !envVarValue("KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION").empty();
+    static const bool enableFileSizeMismatchDetection = !envVarValue("KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION").empty();
     return enableFileSizeMismatchDetection;
 }
 
