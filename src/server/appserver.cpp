@@ -473,10 +473,10 @@ void AppServer::setDefaultSentryUsers() {
     std::vector<User> userList;
     ParmsDb::instance()->selectAllUsers(userList);
 
-    std::string userId;
-    std::string userName;
-    std::string userEmail;
-    std::string allUsersIds;
+    std::string userId = "No user in db";
+    std::string userName = "No user in db";
+    std::string userEmail = "No user in db";
+    std::string allUsersIds = "No user in db";
 
     if (!userList.empty()) {
         userId = std::to_string(userList[0].userId());
@@ -488,31 +488,33 @@ void AppServer::setDefaultSentryUsers() {
             }
             allUsersIds += std::to_string(user.userId());
         }
-    } else {
-        userId = "No user in db";
-        userName = "No user in db";
-        userEmail = "No user in db";
-        allUsersIds = "No user in db";
-    }
+    } 
 
     auto sentryUsers = sentry_value_new_object();
     sentry_value_set_by_key(sentryUsers, "ip_address", sentry_value_new_string("{{auto}}"));
     sentry_value_set_by_key(sentryUsers, "id", sentry_value_new_string(userId.c_str()));
     sentry_value_set_by_key(sentryUsers, "name", sentry_value_new_string(userName.c_str()));
     sentry_value_set_by_key(sentryUsers, "email", sentry_value_new_string(userEmail.c_str()));
-    sentry_value_set_by_key(sentryUsers, "userLoggedInCount", sentry_value_new_string(std::to_string(userList.size()).c_str()));
+    sentry_value_set_by_key(sentryUsers, "user(s)LoggedInCount", sentry_value_new_string(std::to_string(userList.size()).c_str()));
     sentry_remove_user();          // Remove previous user if any
     sentry_set_user(sentryUsers);  // Set new user
 }
 
 void AppServer::setSpecificSentryUser(const User &user) {
+    std::string userId = "No user in db";
+    std::string userName = "No user in db";
+    std::string userEmail = "No user in db";
+
+    if (user.dbId()) {
+        userId = std::to_string(user.userId());
+        userName = user.name();
+        userEmail = user.email();
+    }
     sentry_value_t sentryUser = sentry_value_new_object();
     sentry_value_set_by_key(sentryUser, "ip_address", sentry_value_new_string("{{auto}}"));
-    if (user.dbId()) {
-        sentry_value_set_by_key(sentryUser, "id", sentry_value_new_string(std::to_string(user.userId()).c_str()));
-        sentry_value_set_by_key(sentryUser, "name", sentry_value_new_string(user.name().c_str()));
-        sentry_value_set_by_key(sentryUser, "email", sentry_value_new_string(user.email().c_str()));
-    }
+    sentry_value_set_by_key(sentryUser, "id", sentry_value_new_string(userId.c_str()));
+    sentry_value_set_by_key(sentryUser, "name", sentry_value_new_string(userName.c_str()));
+    sentry_value_set_by_key(sentryUser, "email", sentry_value_new_string(userEmail.c_str()));
     sentry_remove_user();  // Remove previous user if any
     sentry_set_user(sentryUser);
 }
