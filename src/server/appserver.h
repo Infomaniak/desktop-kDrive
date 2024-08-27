@@ -241,7 +241,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         static void setDefaultSentryUsers();
         static void setSpecificSentryUser(const User &user);  // Do not forget to call setDefaultSentryUsers() after calling this function
 
-
     private slots:
         void onLoadInfo();
         void onUpdateSyncsProgress();
