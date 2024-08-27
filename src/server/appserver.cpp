@@ -482,20 +482,21 @@ void AppServer::setDefaultSentryUsers() {
         userId = std::to_string(userList[0].userId());
         userName = userList[0].name();
         userEmail = userList[0].email();
-        for (const auto& user : userList) {
+        for (const auto &user : userList) {
             if (user.userId() != userList[0].userId()) {
                 allUsersIds += " | ";
             }
             allUsersIds += std::to_string(user.userId());
         }
-    } 
+    }
 
     auto sentryUsers = sentry_value_new_object();
     sentry_value_set_by_key(sentryUsers, "ip_address", sentry_value_new_string("{{auto}}"));
     sentry_value_set_by_key(sentryUsers, "id", sentry_value_new_string(userId.c_str()));
     sentry_value_set_by_key(sentryUsers, "name", sentry_value_new_string(userName.c_str()));
     sentry_value_set_by_key(sentryUsers, "email", sentry_value_new_string(userEmail.c_str()));
-    sentry_value_set_by_key(sentryUsers, "user(s)LoggedInCount", sentry_value_new_string(std::to_string(userList.size()).c_str()));
+    sentry_value_set_by_key(sentryUsers, "usersLoggedInCount", sentry_value_new_string(std::to_string(userList.size()).c_str()));
+    sentry_value_set_by_key(sentryUsers, "allUsersIds", sentry_value_new_string(allUsersIds.c_str()));
     sentry_remove_user();          // Remove previous user if any
     sentry_set_user(sentryUsers);  // Set new user
 }
