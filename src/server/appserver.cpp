@@ -373,11 +373,9 @@ AppServer::AppServer(int &argc, char **argv)
     // Restart paused syncs
     connect(&_restartSyncsTimer, &QTimer::timeout, this, &AppServer::onRestartSyncs);
     _restartSyncsTimer.start(RESTART_SYNCS_INTERVAL);
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::TEST::Start", "blablabla..."));
 }
 
 AppServer::~AppServer() {
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::TEST::Close", "blablabla..."));
     LOG_DEBUG(_logger, "~AppServer");
 }
 
