@@ -226,11 +226,12 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         if (side == ReplicaSide::Local) {
             SyncPath localPath = _syncPal->localPath() / dbPath;
 
-            // Do not propagate delete if path too long
-            size_t pathSize = localPath.native().size();
+            // Do not propagate delete if the path is too long.
+            const size_t pathSize = localPath.native().size();
             if (PlatformInconsistencyCheckerUtility::instance()->checkPathLength(pathSize, dbNode.type())) {
-                LOGW_SYNCPAL_WARN(_logger, L"Path length too big (" << pathSize << L" characters) for item "
-                                                                    << Path2WStr(localPath).c_str() << L". Item is ignored.");
+                LOGW_SYNCPAL_WARN(_logger, L"Path length too long (" << pathSize << L" characters) for item with "
+                                                                     << Utility::formatSyncPath(localPath).c_str()
+                                                                     << L". Item is ignored.");
                 return ExitCode::Ok;
             }
 
@@ -578,7 +579,7 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
                                                  << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str())
                                                  << L" FS operation from "
                                                  << (fsOp->objectType() == NodeType::Directory ? L"dir with " : L"file with ")
-                                                 << Utility::formatSyncPath(fsOp->path()).c_str() << L"\" to "
+                                                 << Utility::formatSyncPath(fsOp->path()).c_str() << L" to "
                                                  << Utility::formatSyncPath(fsOp->destinationPath()).c_str() << L" ("
                                                  << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
         return;
