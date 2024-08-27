@@ -171,10 +171,10 @@ void TestComputeFSOperationWorker::setUp() {
 
     _syncPal->_computeFSOperationsWorker =
         std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP");
-    _syncPal->_computeFSOperationsWorker->setTesting(true);
+    _syncPal->computeFSOperationWorker()->setTesting(true);
     _syncPal->_localPath = testhelpers::localTestDirPath;
     _syncPal->copySnapshots();
-    _syncPal->_computeFSOperationsWorker->execute();
+    _syncPal->computeFSOperationWorker()->execute();
 }
 
 void TestComputeFSOperationWorker::tearDown() {
@@ -183,7 +183,7 @@ void TestComputeFSOperationWorker::tearDown() {
 
 void TestComputeFSOperationWorker::testNoOps() {
     _syncPal->copySnapshots();
-    _syncPal->_computeFSOperationsWorker->execute();
+    _syncPal->computeFSOperationWorker()->execute();
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
@@ -211,7 +211,7 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-renamed"));
 
     _syncPal->copySnapshots();
-    _syncPal->_computeFSOperationsWorker->execute();
+    _syncPal->computeFSOperationWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lad", OperationType::Create, tmpOp));
@@ -239,7 +239,7 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
 
     // File is excluded by template, it does not appear in snapshot
     _syncPal->copySnapshots();
-    _syncPal->_computeFSOperationsWorker->execute();
+    _syncPal->computeFSOperationWorker()->execute();
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->_localOperationSet->nbOps());
 }
 
