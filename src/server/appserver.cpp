@@ -492,6 +492,7 @@ void AppServer::setDefaultSentryUsers() {
         userId = "No user in db";
         userName = "No user in db";
         userEmail = "No user in db";
+        allUsersIds = "No user in db";
     }
 
     auto sentryUsers = sentry_value_new_object();
