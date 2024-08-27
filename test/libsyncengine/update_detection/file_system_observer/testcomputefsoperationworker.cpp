@@ -187,6 +187,27 @@ void TestComputeFSOperationWorker::testNoOps() {
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
+void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
+    // Delete operations
+    _syncPal->_localSnapshot->removeItem("laa");  // Folder "AA" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("lab");  // Folder "AB" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("lac");  // Folder "AC" is contained in folder "A" but is blacklisted.
+    _syncPal->_localSnapshot->removeItem("la");
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("la", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("laa", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lab", OperationType::Delete, tmpOp));
+
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lac", OperationType::Delete, tmpOp));
+
+    CPPUNIT_ASSERT_EQUAL(uint64_t(3), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+}
+
+
 void TestComputeFSOperationWorker::testMultipleOps() {
     // On local replica
     // Create operation

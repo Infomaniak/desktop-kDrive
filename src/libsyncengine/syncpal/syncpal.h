@@ -140,7 +140,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline const std::string &driveName() const { return _driveName; }
         inline VirtualFileMode vfsMode() const { return _vfsMode; }
         inline SyncPath localPath() const { return _localPath; }
+        void setLocalPath(const SyncPath &path) { _localPath = path; }
 
+        std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; };
         // TODO : not ideal, to be refactored
         bool existOnServer(const SyncPath &path) const;
         bool canShareItem(const SyncPath &path) const;
@@ -220,8 +222,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
-
-        void setLocalPath(const SyncPath &path) { _localPath = path; };
 
     private:
         log4cplus::Logger _logger;

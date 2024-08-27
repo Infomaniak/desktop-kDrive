@@ -19,7 +19,6 @@
 #include "testsyncpal.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 #include "test_utility/testhelpers.h"
