@@ -283,7 +283,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->refreshTmpBlacklist();
             break;
         case SyncStep::UpdateDetection1:
-            workers[0] = _syncPal->_computeFSOperationsWorker;
+            workers[0] = _syncPal->computeFSOperationWorker();
             workers[1] = nullptr;
             _syncPal->copySnapshots();
             inputSharedObject[0] = _syncPal->snapshot(ReplicaSide::Local, true);
@@ -413,8 +413,8 @@ SyncStep SyncPalWorker::nextStep() const {
             logNbOps(ReplicaSide::Remote);
 
             if (CommonUtility::isFileSizeMismatchDetectionEnabled() &&
-                !_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap().empty()) {
-                _syncPal->fixCorruptedFile(_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap());
+                !_syncPal->computeFSOperationWorker()->getFileSizeMismatchMap().empty()) {
+                _syncPal->fixCorruptedFile(_syncPal->computeFSOperationWorker()->getFileSizeMismatchMap());
                 _syncPal->_restart = true;
                 return SyncStep::Idle;
             }

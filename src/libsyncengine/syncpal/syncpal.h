@@ -221,6 +221,11 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
 
+        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
+        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
+        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
+        inline std::shared_ptr<ComputeFSOperationWorker> computeFSOperationWorker() const { return _computeFSOperationsWorker; };
+
         SyncPath getLocalPath() const { return _localPath; };
         void setLocalPath(const SyncPath &path) { _localPath = path; };
 
@@ -321,9 +326,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
-        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false);
-        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side);
-        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side);
 
         // Progress info management
         void resetEstimateUpdates();
