@@ -169,7 +169,7 @@ void TestComputeFSOperationWorker::setUp() {
     /// Activate big folder limit
     ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(true);
 
-    _syncPal->computeFSOperationWorker() =
+    _syncPal->_computeFSOperationsWorker =
         std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP");
     _syncPal->computeFSOperationWorker()->setTesting(true);
     _syncPal->_localPath = testhelpers::localTestDirPath;
