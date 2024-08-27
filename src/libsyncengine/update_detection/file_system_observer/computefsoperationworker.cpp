@@ -574,7 +574,8 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
     if (CommonUtility::isFileSizeMismatchDetectionEnabled() && dbNode.type() == NodeType::File && dbNode.nodeIdLocal().has_value() &&
         dbNode.nodeIdRemote().has_value() &&
         dbNode.lastModifiedLocal().has_value()) {
-        if (_fileSizeMismatchMap.find(dbNode.nodeIdLocal().value()) != _fileSizeMismatchMap.end()) {
+        
+        if (_fileSizeMismatchMap.contains(dbNode.nodeIdLocal().value())) {
             // Size mismatch already detected
             return ExitCode::Ok;
         }
