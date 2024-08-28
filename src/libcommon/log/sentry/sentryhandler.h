@@ -30,6 +30,22 @@ enum class SentryLevel {  // Not defined in types.h as we don't want to include 
     Fatal = SENTRY_LEVEL_FATAL
 };
 
+inline std::string toString(SentryLevel level) {
+    switch (level) {
+        case SentryLevel::Debug:
+            return "Debug";
+        case SentryLevel::Info:
+            return "Info";
+        case SentryLevel::Warning:
+            return "Warning";
+        case SentryLevel::Error:
+            return "Error";
+        case SentryLevel::Fatal:
+            return "Fatal";
+    }
+};
+
+
 enum class SentryProject { Server, Client };
 
 class SentryHandler {
@@ -37,8 +53,8 @@ class SentryHandler {
         ~SentryHandler();
 
         enum class SentryUserType {
-            Anonymous,  // The sentry will not be able to identify the user (no ip, no email, no username, ...)
-            Unknown,    // The sentry will be able to uniquely identify the user with his IP address but nothing else.
+            Anonymous,      // The sentry will not be able to identify the user (no ip, no email, no username, ...)
+            Unknown,        // The sentry will be able to uniquely identify the user with his IP address but nothing else.
             Authenticated,  // The sentry will contains information about the last user connected to the application. (email,
                             // username, user id, ...)
             Specific        // The sentry will contains information about a specific user given in parameter.
@@ -50,9 +66,9 @@ class SentryHandler {
                 SentryUser(const std::string_view &email, const std::string_view &username, const std::string_view &userId)
                     : email(email), username(username), userId(userId) {}
 
-                inline const std::string_view &getEmail() const { return email; };
-                inline const std::string_view &getUsername() const { return username; };
-                inline const std::string_view &getUserId() const { return userId; };
+                inline std::string_view getEmail() const { return email; };
+                inline std::string_view getUsername() const { return username; };
+                inline std::string_view getUserId() const { return userId; };
 
             private:
                 std::string email = "Not set";
@@ -63,7 +79,7 @@ class SentryHandler {
         static std::shared_ptr<SentryHandler> instance();
         static void init(SentryProject project, int breadCrumbsSize = 100);
         void setAuthenticatedUser(const SentryUser &user);
-        void captureMessage(SentryLevel level, const std::string &title, const std::string &message,
+        void captureMessage(SentryLevel level, const std::string &title, std::string message,
                             SentryUserType userType = SentryUserType::Authenticated,
                             const SentryUser &user = SentryUser() /*Only for UserType::Specific*/);
 
@@ -78,7 +94,28 @@ class SentryHandler {
         sentry_value_t toSentryValue(const SentryUser &user);
 
     private:
+        struct SentryEvent {
+                SentryEvent(const std::string &title, const std::string &message, SentryLevel level, SentryUserType userType,
+                            const SentryUser &user);
+
+                bool operator==(const SentryEvent &other) const {
+                    return title == other.title && message == other.message && level == other.level &&
+                           userType == other.userType && userId == other.userId;
+                }
+
+                std::string title;
+                std::string message;
+                SentryLevel level;
+                SentryUserType userType;
+                std::string userId;
+                using time_point = std::chrono::system_clock::time_point;
+                time_point lastCapture;
+                time_point lastUpload;
+                unsigned int captureCount = 0;
+        };
         std::mutex _mutex;
-        sentry_value_t _authenticatedUser;
+        SentryUser _authenticatedUser;
+        std::vector<SentryEvent> _events;  // TODO: see if there is a better way to store the events
+        SentryUserType _lastUserType = SentryUserType::Specific; 
 };
 }  // namespace KDC

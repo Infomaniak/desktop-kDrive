@@ -65,8 +65,6 @@
 #include <QTimer>
 #include <QUuid>
 
-#include <sentry.h>
-
 #define QUIT_DELAY 1000                    // ms
 #define LOAD_PROGRESS_INTERVAL 1000        // ms
 #define LOAD_PROGRESS_MAXITEMS 100         // ms
@@ -117,7 +115,6 @@ static void displayHelpText(const QString &t) {
 AppServer::AppServer(int &argc, char **argv)
     : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv), _theme(Theme::instance()) {
     _startedAt.start();
-
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
     setApplicationName(_theme->appName());
     setWindowIcon(_theme->applicationIcon());
@@ -310,7 +307,7 @@ AppServer::AppServer(int &argc, char **argv)
     std::string userName = "No user in db";
     std::string userEmail = "No user in db";
     if (!userList.empty()) {
-        userId = std::to_string(userList[userList.size()-1].dbId());
+        userId = std::to_string(userList[userList.size() - 1].dbId());
         userName = userList[userList.size() - 1].name();
         userEmail = userList[userList.size() - 1].email();
     }

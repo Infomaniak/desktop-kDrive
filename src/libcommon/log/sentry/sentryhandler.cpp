@@ -6,6 +6,9 @@
 #include <asserts.h>
 
 namespace KDC {
+
+constexpr const int SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT = 10;
+constexpr const int SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT = 10;
 std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
 
 std::shared_ptr<SentryHandler> SentryHandler::instance() {
@@ -68,52 +71,88 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
 
 void SentryHandler::setAuthenticatedUser(const SentryUser &user) {
     std::scoped_lock lock(_mutex);
-    _authenticatedUser = toSentryValue(user);
-    sentry_value_set_by_key(_authenticatedUser, "ip_address", sentry_value_new_string("{{auto}}"));
+    _authenticatedUser = user;
 }
 
-void SentryHandler::captureMessage(SentryLevel level, const std::string &title, const std::string &message, SentryUserType userType,
-                                   const SentryUser &user) {
+void SentryHandler::captureMessage(SentryLevel level, const std::string &title, /*Copy needed*/ std::string message,
+                                   SentryUserType userType, const SentryUser &user) {
     std::scoped_lock lock(_mutex);
-    sentry_value_t userValue;
-    switch (userType) {
-        case KDC::SentryHandler::SentryUserType::Unknown:
-            userValue = toSentryValue(SentryUser());
-            sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
-            sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Unknown"));
-            break;
-        case KDC::SentryHandler::SentryUserType::Authenticated:
-            userValue = _authenticatedUser; // TODO: Change this to not copy the value
-            sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
-            break;
-        case KDC::SentryHandler::SentryUserType::Specific:
-            userValue = toSentryValue(user);
-            sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
-            sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
+    SentryEvent event(title, message, level, userType, user);
 
-            break;
-        default: // KDC::SentryHandler::SentryUserType::Anonymous
-            userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
-            sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("-1.-1.-1.-1"));
-            sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
-            break;
+    if (auto it = std::ranges::find(_events, event); it != _events.end()) {  // If the event is already in the list
+        it->captureCount++;
+        if (it->lastCapture + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) <
+            std::chrono::system_clock::now()) {  // Reset the capture count if the last capture was more than 10 minutes ago
+            it->captureCount = 0;
+        } else if (it->captureCount >= SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT) {
+            event.lastCapture = std::chrono::system_clock::now();
+            if (it->lastUpload + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) >
+                    std::chrono::system_clock::now() &&
+                it->captureCount != SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT) {  // Rate limit reached for this event wait 10
+                                                                                   // minutes before sending it again
+                return;
+            } else {
+                it->lastUpload = std::chrono::system_clock::now();
+                message += " (Rate limit reached: " + std::to_string(it->captureCount) +
+                           " captures since last app start. Level escalated from " + toString(level) + " to Error)";
+                level = SentryLevel::Error;
+            }
+        } else {
+            event.lastCapture = std::chrono::system_clock::now();
+        }
+    } else {
+        event.lastCapture = std::chrono::system_clock::now();
+        event.lastUpload = std::chrono::system_clock::now();
+        _events.push_back(event);
     }
-    sentry_set_user(userValue);
+
+    if (userType != _lastUserType || userType == SentryUserType::Specific) {
+        _lastUserType = userType;
+        sentry_value_t userValue;
+        switch (userType) {
+            case KDC::SentryHandler::SentryUserType::Unknown:
+                userValue = toSentryValue(SentryUser());
+                sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
+                sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Unknown"));
+                break;
+            case KDC::SentryHandler::SentryUserType::Authenticated:
+                userValue = toSentryValue(_authenticatedUser);  // TODO: Change this to not copy the value
+                sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
+                break;
+            case KDC::SentryHandler::SentryUserType::Specific:
+                userValue = toSentryValue(user);
+                sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
+                sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
+
+                break;
+            default:  // KDC::SentryHandler::SentryUserType::Anonymous
+                userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
+                sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("-1.-1.-1.-1"));
+                sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
+                break;
+        }
+
+        sentry_remove_user();
+        sentry_set_user(userValue);
+    }
     sentry_capture_event(sentry_value_new_message_event((sentry_level_t)toInt(level), title.c_str(), message.c_str()));
 }
 
 sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) {
     sentry_value_t userValue = sentry_value_new_object();
     sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.getEmail().data()));
-    sentry_value_set_by_key(userValue, "username", sentry_value_new_string(user.getUsername().data()));
-    sentry_value_set_by_key(userValue, "userId", sentry_value_new_string(user.getUserId().data()));
+    sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.getUsername().data()));
+    sentry_value_set_by_key(userValue, "id", sentry_value_new_string(user.getUserId().data()));
     return userValue;
 }
 
 SentryHandler::~SentryHandler() {
-    std::scoped_lock lock(_mutex);
     if (this == _instance.get()) {
-        sentry_close();  // Only the instance can close the sentry
+        _instance.reset();
     }
 }
+
+SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
+                                        SentryUserType userType, const SentryUser &user)
+    : title(title), message(message), level(level), userType(userType), userId(user.getUserId()) {}
 }  // namespace KDC
