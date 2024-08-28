@@ -34,6 +34,7 @@
 #include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/log/sentry/sentryhandler.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
@@ -301,6 +302,19 @@ AppServer::AppServer(int &argc, char **argv)
         }
     }
 
+    // Set sentry user
+    std::vector<User> userList;
+    ParmsDb::instance()->selectAllUsers(userList);
+
+    std::string userId = "No user in db";
+    std::string userName = "No user in db";
+    std::string userEmail = "No user in db";
+    if (!userList.empty()) {
+        userId = std::to_string(userList[userList.size()-1].dbId());
+        userName = userList[userList.size() - 1].name();
+        userEmail = userList[userList.size() - 1].email();
+    }
+    SentryHandler::instance()->setAuthenticatedUser(SentryHandler::SentryUser(userEmail, userName, userId));
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
     handleCrashRecovery(shouldQuit);
