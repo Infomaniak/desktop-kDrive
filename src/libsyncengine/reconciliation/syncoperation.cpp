@@ -24,6 +24,18 @@ UniqueId SyncOperation::_nextId = 0;
 
 SyncOperation::SyncOperation() : _id(_nextId++) {}
 
+SyncName SyncOperation::getName(ReplicaSide side) const {
+    auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
+    if (!node) return {};
+    return node->name();
+}
+
+SyncPath SyncOperation::getPath(const ReplicaSide side) const {
+    auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
+    if (!node) return {};
+    return node->getPath();
+}
+
 bool SyncOperation::operator==(const SyncOperation &other) const {
     return _id == other.id();
 }

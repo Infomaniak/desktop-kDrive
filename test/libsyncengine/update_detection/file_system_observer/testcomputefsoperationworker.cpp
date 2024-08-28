@@ -56,7 +56,6 @@ void TestComputeFSOperationWorker::setUp() {
     /// Create parmsDb
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    std::filesystem::remove(parmsDbPath);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
 
     /// Insert user, account, drive & sync
@@ -173,12 +172,15 @@ void TestComputeFSOperationWorker::setUp() {
         std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP");
     _syncPal->_computeFSOperationsWorker->setTesting(true);
     _syncPal->_localPath = testhelpers::localTestDirPath;
-    _syncPal->copySnapshots();
-    _syncPal->_computeFSOperationsWorker->execute();
 }
 
 void TestComputeFSOperationWorker::tearDown() {
+    ParmsDb::instance()->close();
     ParmsDb::reset();
+
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
+    }
 }
 
 void TestComputeFSOperationWorker::testNoOps() {
@@ -262,6 +264,84 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->_localOperationSet->nbOps());
+}
+
+void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
+    // NFC in DB, NFD on FS
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                    testhelpers::defaultFileSize, std::nullopt);
+    DbNodeId dbNodeIdTest;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
+
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                                      testhelpers::defaultFileSize));
+
+    _syncPal->copySnapshots();
+    _syncPal->_computeFSOperationsWorker->execute();
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("ltest", OperationType::Move, tmpOp));
+}
+
+void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
+    // NFD in DB, NFC on FS
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                    testhelpers::defaultFileSize, std::nullopt);
+    DbNodeId dbNodeIdTest;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
+
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                                      testhelpers::defaultFileSize));
+
+    _syncPal->copySnapshots();
+    _syncPal->_computeFSOperationsWorker->execute();
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("ltest", OperationType::Move, tmpOp));
+}
+
+void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
+    // NFD in DB, NFD on FS
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                    testhelpers::defaultFileSize, std::nullopt);
+    DbNodeId dbNodeIdTest;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
+
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                                      testhelpers::defaultFileSize));
+
+    _syncPal->copySnapshots();
+    _syncPal->_computeFSOperationsWorker->execute();
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->nbOps() == 0);
+}
+
+void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
+    // NFC in DB, NFC on FS
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                    testhelpers::defaultFileSize, std::nullopt);
+    DbNodeId dbNodeIdTest;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
+
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                                      testhelpers::defaultFileSize));
+
+    _syncPal->copySnapshots();
+    _syncPal->_computeFSOperationsWorker->execute();
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->nbOps() == 0);
 }
 
 }  // namespace KDC

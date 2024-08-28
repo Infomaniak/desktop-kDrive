@@ -54,7 +54,7 @@ class Node {
 
         inline std::optional<DbNodeId> idb() const { return _idb; }
         inline ReplicaSide side() const { return _side; }
-        inline SyncName name() const { return _name; }
+        inline const SyncName &name() const { return _name; }
         inline NodeType type() const { return _type; }
         inline InconsistencyType inconsistencyType() const { return _inconsistencyType; }
         inline OperationType changeEvents() const { return _changeEvents; }

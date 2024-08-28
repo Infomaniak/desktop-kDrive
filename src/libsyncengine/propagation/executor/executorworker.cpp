@@ -273,7 +273,7 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
     // iteration.
     // 3. Update the update tree structures to ensure that follow-up operations can execute correctly, as they are based on the
     // information in these structures.
-    SyncPath relativeLocalFilePath = syncOp->affectedNode()->getPath();
+    SyncPath relativeLocalFilePath = syncOp->getPath(ReplicaSide::Local);
     SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;
@@ -656,9 +656,7 @@ bool ExecutorWorker::generateCreateJob(SyncOpPtr syncOp, std::shared_ptr<Abstrac
             }
         }
     } else {
-        NodeId nodeId = syncOp->affectedNode()->id().value();
-        SyncPath relativeLocalFilePath;
-        _syncPal->_localSnapshotCopy->path(nodeId, relativeLocalFilePath);
+        SyncPath relativeLocalFilePath = syncOp->getPath(ReplicaSide::Local);
         SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
         if (syncOp->affectedNode()->type() == NodeType::Directory) {
             bool needRestart = false;
@@ -876,7 +874,7 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
     // iteration.
     // 3. If the omit flag is False, update the updatetreeY structure to ensure that follow-up operations can execute correctly,
     // as they are based on the information in this structure.
-    SyncPath relativeLocalFilePath = syncOp->affectedNode()->getPath();
+    SyncPath relativeLocalFilePath = syncOp->getPath(ReplicaSide::Local);
 
     if (relativeLocalFilePath.empty()) {
         _executorExitCode = ExitCode::DataError;
@@ -940,7 +938,7 @@ void ExecutorWorker::handleEditOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJob>
 bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJob> &job) {
     // 1. If omit-flag is False, propagate the file to replicaY, replacing the existing one.
     if (syncOp->targetSide() == ReplicaSide::Local) {
-        SyncPath relativeLocalFilePath = syncOp->affectedNode()->getPath();
+        SyncPath relativeLocalFilePath = syncOp->getPath(ReplicaSide::Local);
         SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
 
         try {
@@ -980,7 +978,7 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
             downloadJob->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
         }
     } else {
-        SyncPath relativeLocalFilePath = syncOp->affectedNode()->getPath();
+        SyncPath relativeLocalFilePath = syncOp->getPath(ReplicaSide::Local);
         SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
 
         uint64_t filesize;
@@ -1217,27 +1215,60 @@ void ExecutorWorker::handleMoveOp(SyncOpPtr syncOp, bool &hasError) {
 bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
     // 1. If omit-flag is False, move the object on replica Y (where it still needs to be moved) from uY to vY, changing the name
     // to nameX.
-
-    std::shared_ptr<Node> correspondingNode =
-        syncOp->correspondingNode() ? syncOp->correspondingNode() : syncOp->affectedNode();  // No corresponding node => rename
-
-    // Get the new parent node
-    std::shared_ptr<Node> parentNode = syncOp->newParentNode() ? syncOp->newParentNode() : syncOp->affectedNode()->parentNode();
-    if (!parentNode) {
-        LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item " << Path2WStr(correspondingNode->getPath()).c_str());
-        return false;
-    }
-
     std::shared_ptr<AbstractJob> job = nullptr;
-    SyncPath relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
-    SyncPath relativeSourceLocalFilePath = correspondingNode->getPath();
-    SyncPath absoluteDestLocalFilePath = _syncPal->_localPath / relativeDestLocalFilePath;
+
+    SyncPath relativeDestLocalFilePath;
+    SyncPath absoluteDestLocalFilePath;
+    SyncPath relativeSourceLocalFilePath;
 
     if (syncOp->targetSide() == ReplicaSide::Local) {
+        // Target side is local, so corresponding node is on local side.
+        std::shared_ptr<Node> correspondingNode = syncOp->correspondingNode();
+        if (!correspondingNode) {
+            LOGW_SYNCPAL_WARN(_logger, L"Corresponding node not found for item "
+                                           << Utility::formatSyncPath(syncOp->affectedNode()->getPath()).c_str());
+            return false;
+        }
+
+        // Get the new parent node
+        std::shared_ptr<Node> parentNode =
+            syncOp->newParentNode() ? syncOp->newParentNode() : syncOp->affectedNode()->parentNode();
+        if (!parentNode) {
+            LOGW_SYNCPAL_WARN(
+                _logger, L"Parent node not found for item " << Utility::formatSyncPath(correspondingNode->getPath()).c_str());
+            return false;
+        }
+
+        relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
+        relativeSourceLocalFilePath = correspondingNode->getPath();
+        absoluteDestLocalFilePath = _syncPal->_localPath / relativeDestLocalFilePath;
         SyncPath absoluteSourceLocalFilePath = _syncPal->_localPath / relativeSourceLocalFilePath;
         job = std::make_shared<LocalMoveJob>(absoluteSourceLocalFilePath, absoluteDestLocalFilePath);
     } else {
         try {
+            // Target side is remote, so affected node is on local side.
+            std::shared_ptr<Node> correspondingNode = syncOp->correspondingNode();
+            if (!correspondingNode) {
+                LOGW_SYNCPAL_WARN(_logger, L"Corresponding node not found for item "
+                                               << Utility::formatSyncPath(syncOp->affectedNode()->getPath()).c_str());
+                return false;
+            }
+
+            // Get the new parent node
+            std::shared_ptr<Node> parentNode =
+                syncOp->newParentNode() ? syncOp->newParentNode() : syncOp->affectedNode()->parentNode();
+            if (!parentNode) {
+                LOGW_SYNCPAL_WARN(
+                    _logger, L"Parent node not found for item " << Utility::formatSyncPath(correspondingNode->getPath()).c_str());
+                return false;
+            }
+
+            relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
+            relativeSourceLocalFilePath = correspondingNode->getPath();
+            absoluteDestLocalFilePath = _syncPal->_localPath / relativeDestLocalFilePath;
+            SyncPath absoluteSourceLocalFilePath = _syncPal->_localPath / relativeSourceLocalFilePath;
+            job = std::make_shared<LocalMoveJob>(absoluteSourceLocalFilePath, absoluteDestLocalFilePath);
+
             if (relativeSourceLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
                 // This is just a rename
                 job = std::make_shared<RenameJob>(_syncPal->_driveDbId,
@@ -1386,7 +1417,7 @@ void ExecutorWorker::handleDeleteOp(SyncOpPtr syncOp, bool &hasError) {
 bool ExecutorWorker::generateDeleteJob(SyncOpPtr syncOp) {
     // 1. If omit-flag is False, delete the file or directory on replicaY, because the objects till exists there
     std::shared_ptr<AbstractJob> job = nullptr;
-    SyncPath relativeLocalFilePath = syncOp->correspondingNode()->getPath();
+    SyncPath relativeLocalFilePath = syncOp->getPath(ReplicaSide::Local);
     SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
     if (syncOp->targetSide() == ReplicaSide::Local) {
         bool isDehydratedPlaceholder = false;
@@ -1445,8 +1476,7 @@ bool ExecutorWorker::hasRight(SyncOpPtr syncOp, bool &exists) {
     NodeId nodeId =
         syncOp->type() == OperationType::Create ? syncOp->affectedNode()->id().value() : correspondingNode->id().value();
 
-    SyncPath relativeLocalFilePath;
-    _syncPal->_localSnapshotCopy->path(nodeId, relativeLocalFilePath);
+    SyncPath relativeLocalFilePath = syncOp->getPath(ReplicaSide::Local);
     SyncPath absoluteLocalFilePath = _syncPal->_localPath / relativeLocalFilePath;
 
     bool readPermission = false;
@@ -1644,7 +1674,7 @@ bool ExecutorWorker::deleteFinishedAsyncJobs() {
             }
 
             SyncOpPtr syncOp = jobToSyncOpIt->second;
-            SyncPath relativeLocalPath = syncOp->affectedNode()->getPath();
+            SyncPath relativeLocalPath = syncOp->getPath(ReplicaSide::Local);
             if (!handleFinishedJob(job, syncOp, relativeLocalPath)) {
                 increaseErrorCount(syncOp);
                 hasError = true;
@@ -2104,8 +2134,9 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
     std::string remoteId = syncOp->targetSide() == ReplicaSide::Local
                                ? (syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : "")
                                : newNodeId;
-    SyncName localName = syncOp->targetSide() == ReplicaSide::Local ? syncOp->newName() : syncOp->affectedNode()->name();
-    SyncName remoteName = localName;
+    SyncName localName = syncOp->targetSide() == ReplicaSide::Local ? syncOp->newName() : syncOp->getName(ReplicaSide::Local);
+    SyncName remoteName = Utility::normalizedSyncName(
+        syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote));
 
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
@@ -2253,8 +2284,8 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
     std::string remoteId = syncOp->targetSide() == ReplicaSide::Local
                                ? syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string()
                                : newNodeId;
-    SyncName localName = syncOp->affectedNode()->name();
-    SyncName remoteName = syncOp->affectedNode()->name();
+    SyncName localName = syncOp->getName(ReplicaSide::Local);
+    SyncName remoteName = Utility::normalizedSyncName(syncOp->getName(ReplicaSide::Remote));
 
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
@@ -2362,8 +2393,9 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                                ? syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string()
                            : correspondingNode->id().has_value() ? *correspondingNode->id()
                                                                  : std::string();
-    SyncName localName = syncOp->newName();
-    SyncName remoteName = localName;
+    SyncName localName = syncOp->targetSide() == ReplicaSide::Local ? syncOp->newName() : syncOp->getName(ReplicaSide::Local);
+    SyncName remoteName = Utility::normalizedSyncName(
+        syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote));
 
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "

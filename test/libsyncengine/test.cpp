@@ -60,7 +60,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateTreeWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestPlatformInconsistencyCheckerWorker);
 //  CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictFinderWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestConflictResolverWorker);
-//  CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
 //  CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationSorterWorker);
 
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestOldSyncDb); // Needs a pre 3.3.4 DB

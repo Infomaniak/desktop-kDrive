@@ -234,13 +234,6 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
         correspondingNode->setStatus(NodeStatus::Processed);
     }
 
-    /*
-     * Special case:
-     * 1 - The file name contained à special character, for example: "test:1.png" and was renamed locally "test%3a1.png".
-     * 2 - The file is renamed "test%3a2.png" on local side. Since the "%3a" was not removed, the name is uploaded as it is on
-     * local replica and appears now "test%3a2.png" on remote. 3 - The file is renamed "test:2.png" on remote replica. We then try
-     * to rename the local file "test%3a2.png" but fail since it already exist
-     */
     if (currentNode->side() == ReplicaSide::Remote && correspondingNode->name().empty() &&
         currentNode->name() == correspondingNode->name()) {
         // Only update DB and tree

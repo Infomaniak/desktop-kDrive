@@ -29,6 +29,10 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testNoOps);
         CPPUNIT_TEST(testMultipleOps);
         CPPUNIT_TEST(testLnkFileAlreadySynchronized);
+        CPPUNIT_TEST(testDifferentEncoding_NFC_NFD);
+        CPPUNIT_TEST(testDifferentEncoding_NFD_NFC);
+        CPPUNIT_TEST(testDifferentEncoding_NFD_NFD);
+        CPPUNIT_TEST(testDifferentEncoding_NFC_NFC);
         CPPUNIT_TEST(testDeletionOfNestedFolders);
         CPPUNIT_TEST_SUITE_END();
 
@@ -53,6 +57,14 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
          * No FS operation should be generated on an excluded file.
          */
         void testLnkFileAlreadySynchronized();
+        // NFC in DB, NFD on FS
+        void testDifferentEncoding_NFC_NFD();
+        // NFD in DB, NFC on FS
+        void testDifferentEncoding_NFD_NFC();
+        // NFD in DB, NFD on FS
+        void testDifferentEncoding_NFD_NFD();
+        // NFC in DB, NFC on FS
+        void testDifferentEncoding_NFC_NFC();
 
         /**
          * The deletion of a local folders and their common parent should generate a Delete operation for each item.
