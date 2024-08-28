@@ -794,17 +794,24 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
 }
 
 std::string CommonUtility::envVarValue(const std::string &name) {
+    bool isSet;
+    return envVarValue(name, isSet);
+}
+
+std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
 #ifdef _WIN32
     char *value = nullptr;
-    size_t sz = 0;
-    if (_dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
+    isSet = false;
+    if (size_t sz = 0; _dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
         std::string valueStr(value);
         free(value);
+        isSet = true;
         return valueStr;
     }
 #else
     char *value = std::getenv(name.c_str());
     if (value) {
+        isSet = true;
         return std::string(value);
         // Don't free "value"
     }
