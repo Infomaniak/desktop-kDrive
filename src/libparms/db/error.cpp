@@ -118,7 +118,8 @@ std::string Error::errorString() const {
             break;
         case ErrorLevel::Node:
             errStream << "Level: SyncPal - conflictType: " << _conflictType << " - inconsistencyType: " << _inconsistencyType
-                      << " - cancelType: " << _cancelType;
+                      << " - cancelType: " << _cancelType << " - ExitCode: " << _exitCode
+                      << " - ExitCause: " << _exitCause;
             break;
         default:
             errStream << "Level: Unknown";
