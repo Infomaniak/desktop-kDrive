@@ -693,8 +693,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
             }
             exitCode = GuiRequests::syncStop(syncDbId);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : "
-                                         << enumClassToInt(exitCode);
+                qCWarning(lcClientGui()) << "Error in Requests::syncStop for syncDbId=" << syncDbId << " : " << exitCode;
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatus::PauseAsked);
@@ -706,8 +705,7 @@ void ClientGui::executeSyncAction(ActionType type, int syncDbId) {
             }
             exitCode = GuiRequests::syncStart(syncDbId);
             if (exitCode != ExitCode::Ok) {
-                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : "
-                                         << enumClassToInt(exitCode);
+                qCWarning(lcClientGui()) << "Error in Requests::syncStart for syncDbId=" << syncDbId << " : " << exitCode;
                 return;
             }
             syncInfoMapIt->second.setStatus(SyncStatus::Starting);
@@ -886,7 +884,7 @@ void ClientGui::onScreenUpdated(QScreen *screen) {
 ExitCode ClientGui::loadError(int driveDbId, int syncDbId, ErrorLevel level) {
     const ExitCode exitCode = GuiRequests::getErrorInfoList(level, syncDbId, MAX_ERRORS_DISPLAYED, _errorInfoMap[driveDbId]);
     if (exitCode != ExitCode::Ok) {
-        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << enumClassToInt(level);
+        qCWarning(lcClientGui()) << "Error in Requests::getErrorInfoList for level=" << level;
     }
 
     return exitCode;

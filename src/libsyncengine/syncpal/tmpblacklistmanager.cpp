@@ -44,7 +44,7 @@ int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, ReplicaSide side) c
 
 void logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side, const SyncPath &path = "") {
     LOGW_INFO(Log::instance()->getLogger(),
-              msg.c_str() << L" - node ID='" << Utility::s2ws(id).c_str() << L"' - side='" << Utility::side2WStr(side).c_str()
+              msg.c_str() << L" - node ID='" << Utility::s2ws(id).c_str() << L"' - side='" << side
                           << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path)).c_str()));
 }
 

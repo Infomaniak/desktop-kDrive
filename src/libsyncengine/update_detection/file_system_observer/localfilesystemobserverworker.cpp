@@ -447,14 +447,14 @@ void LocalFileSystemObserverWorker::execute() {
             invalidateSnapshot();
             exitCode = generateInitialSnapshot();
             if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << enumClassToInt(exitCode));
+                LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << exitCode);
                 break;
             }
         } else {
             if (!_snapshot->isValid()) {
                 exitCode = generateInitialSnapshot();
                 if (exitCode != ExitCode::Ok) {
-                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << enumClassToInt(exitCode));
+                    LOG_SYNCPAL_DEBUG(_logger, "Error in generateInitialSnapshot : " << exitCode);
                     break;
                 }
             }

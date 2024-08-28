@@ -67,7 +67,7 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
         CFStringRef pathRef = reinterpret_cast<CFStringRef>(CFArrayGetValueAtIndex(eventPaths, i));
         const char *pathPtr = CFStringGetCStringPtr(pathRef, kCFStringEncodingUTF8);
         if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_DEBUG(fw->logger(), L"Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str() << L" detected on item "
+            LOGW_DEBUG(fw->logger(), L"Operation " << opType << L" detected on item "
                                                    << Utility::s2ws(pathPtr ? pathPtr : "").c_str());
         }
 

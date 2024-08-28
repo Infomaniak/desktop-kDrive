@@ -403,7 +403,7 @@ SyncStep SyncPalWorker::nextStep() const {
             auto logNbOps = [=](const ReplicaSide side) {
                 auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->nbOps()
-                                               << " " << Utility::side2Str(side).c_str()
+                                               << " " << side
                                                << " operations detected (# CREATE: " << opsSet->nbOpsByType(OperationType::Create)
                                                << ", # EDIT: " << opsSet->nbOpsByType(OperationType::Edit)
                                                << ", # MOVE: " << opsSet->nbOpsByType(OperationType::Move)

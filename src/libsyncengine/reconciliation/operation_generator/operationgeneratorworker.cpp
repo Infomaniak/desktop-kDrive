@@ -163,7 +163,7 @@ void OperationGeneratorWorker::generateCreateOperation(std::shared_ptr<Node> cur
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                 _logger, L"Create operation "
-                             << op->id() << L" to be propagated on " << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
+                             << op->id() << L" to be propagated on " << op->targetSide()
                              << L" replica for item " << SyncName2WStr(op->newName()).c_str() << L" ("
                              << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
@@ -207,7 +207,7 @@ void OperationGeneratorWorker::generateEditOperation(std::shared_ptr<Node> curre
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Edit operation "
                                             << op->id() << L" to be propagated on "
-                                            << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str() << L" replica for item "
+                                            << op->targetSide() << L" replica for item "
                                             << SyncName2WStr(currentNode->name()).c_str() << L"(ID: "
                                             << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str()
                                             << L")");
@@ -270,7 +270,7 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
             LOGW_SYNCPAL_DEBUG(_logger,
                                L"Move operation "
                                    << op->id() << L" to be propagated on "
-                                   << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str() << L" replica from \""
+                                   << op->targetSide() << L" replica from \""
                                    << (currentNode->moveOrigin() ? Path2WStr(currentNode->moveOrigin().value()).c_str() : L"")
                                    << L"\" to \"" << Path2WStr(currentNode->getPath()).c_str() << L"\" (ID: "
                                    << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
@@ -310,7 +310,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
     if (op->omit()) {
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Corresponding file already deleted on "
-                                            << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
+                                            << op->targetSide()
                                             << L" replica. Operation Delete to be propagated in DB only for item "
                                             << SyncName2WStr(currentNode->name()).c_str());
         }
@@ -321,7 +321,7 @@ void OperationGeneratorWorker::generateDeleteOperation(std::shared_ptr<Node> cur
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_SYNCPAL_DEBUG(
                 _logger, L"Delete operation "
-                             << op->id() << L" to be propagated on " << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str()
+                             << op->id() << L" to be propagated on " << op->targetSide()
                              << L" replica for item " << SyncName2WStr(currentNode->name()).c_str() << L" ("
                              << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }

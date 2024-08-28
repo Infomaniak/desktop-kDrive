@@ -257,7 +257,7 @@ ExitCode MigrationParams::migrateAccountsParams() {
         settings.beginGroup(accountIdStr);
         code = loadAccount(settings);
         if (code != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in loadAccount : " << enumClassToInt(code));
+            LOG_WARN(_logger, "Error in loadAccount : " << code);
             return code;
         }
         settings.endGroup();
@@ -758,7 +758,7 @@ ExitCode MigrationParams::getTokenFromAppPassword(const std::string &email, cons
     GetTokenFromAppPasswordJob job(email, appPassword);
     ExitCode exitCode = job.runSynchronously();
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << enumClassToInt(exitCode));
+        LOG_WARN(_logger, "Error in GetTokenJob::runSynchronously : " << exitCode);
         errorCode = std::string();
         errorDescr = std::string();
         return exitCode;

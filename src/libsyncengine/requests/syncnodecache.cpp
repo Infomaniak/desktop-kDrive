@@ -50,7 +50,7 @@ ExitCode SyncNodeCache::syncNodes(int syncDbId, SyncNodeType type, std::unordere
 
     if (_syncNodesMap[syncDbId].find(type) == _syncNodesMap[syncDbId].end()) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type=" << enumClassToInt(type));
+                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type= " << type);
         return ExitCode::DataError;
     }
 
@@ -73,7 +73,7 @@ ExitCode SyncNodeCache::update(int syncDbId, SyncNodeType type, const std::unord
 
     if (_syncNodesMap[syncDbId].find(type) == _syncNodesMap[syncDbId].end()) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type=" << enumClassToInt(type));
+                 "Type not found in syncNodes map for syncDbId=" << syncDbId << " and type= " << type);
         return ExitCode::DataError;
     }
 
@@ -94,9 +94,9 @@ ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) 
     _syncDbMap[syncDbId] = syncDb;
 
     // Load sync nodes for all sync node types
-    for (int typeInt = enumClassToInt(SyncNodeType::BlackList); typeInt <= enumClassToInt(SyncNodeType::TmpLocalBlacklist);
+    for (int typeInt = toInt(SyncNodeType::BlackList); typeInt <= toInt(SyncNodeType::TmpLocalBlacklist);
          typeInt++) {
-        SyncNodeType type = intToEnumClass<SyncNodeType>(typeInt);
+        SyncNodeType type = fromInt<SyncNodeType>(typeInt);
         std::unordered_set<NodeId> nodeIdSet;
         if (!syncDb->selectAllSyncNodes(type, nodeIdSet)) {
             LOG_WARN(Log::instance()->getLogger(), "Error in SyncDb::selectAllSyncNodes");

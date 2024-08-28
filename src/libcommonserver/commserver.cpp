@@ -185,13 +185,13 @@ void CommServer::onReadyRead() {
             }
 
             QJsonObject msgObj = msgDoc.object();
-            if (msgObj[MSG_TYPE].toInt() == enumClassToInt(MsgType::REQUEST)) {
+            if (msgObj[MSG_TYPE].toInt() == toInt(MsgType::REQUEST)) {
                 const int id(msgObj[MSG_REQUEST_ID].toInt());
                 const RequestNum num(static_cast<RequestNum>(msgObj[MSG_REQUEST_NUM].toInt()));
                 const QByteArray params(QByteArray::fromBase64(msgObj[MSG_REQUEST_PARAMS].toString().toUtf8()));
 
                 // Request received
-                LOG_DEBUG(Log::instance()->getLogger(), "Rqst rcvd " << id << " " << enumClassToInt(num));
+                LOG_DEBUG(Log::instance()->getLogger(), "Rqst rcvd " << id << " " << num);
                 _requestWorker->addRequest(id, num, params);
             } else {
                 LOG_WARN(Log::instance()->getLogger(), "Bad message received!");
@@ -236,7 +236,7 @@ void CommServer::onSendReply(int id, const QByteArray &result) {
     }
 
     QJsonObject replyObj;
-    replyObj[MSG_TYPE] = enumClassToInt(MsgType::REPLY);
+    replyObj[MSG_TYPE] = toInt(MsgType::REPLY);
     replyObj[MSG_REPLY_ID] = id;
     replyObj[MSG_REPLY_RESULT] = QString(result.toBase64());
 
@@ -269,16 +269,16 @@ void CommServer::onSendSignal(int id, SignalNum num, const QByteArray &params) {
     }
 
     QJsonObject signalObj;
-    signalObj[MSG_TYPE] = enumClassToInt(MsgType::SIGNAL);
+    signalObj[MSG_TYPE] = toInt(MsgType::SIGNAL);
     signalObj[MSG_SIGNAL_ID] = id;
-    signalObj[MSG_SIGNAL_NUM] = enumClassToInt(num);
+    signalObj[MSG_SIGNAL_NUM] = toInt(num);
     signalObj[MSG_SIGNAL_PARAMS] = QString(params.toBase64());
 
     QJsonDocument signalDoc(signalObj);
     QByteArray signal(signalDoc.toJson(QJsonDocument::Compact));
 
     try {
-        LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << enumClassToInt(num));
+        LOG_DEBUG(Log::instance()->getLogger(), "Snd sgnl " << id << " " << num);
 
         _tcpSocket->write(KDC::CommonUtility::toQByteArray(signal.count()));
         _tcpSocket->write(signal);

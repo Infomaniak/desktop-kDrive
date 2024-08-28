@@ -208,7 +208,7 @@ void AppClient::showSynthesisDialog() {
 void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params) {
     QDataStream paramsStream(params);
 
-    qCDebug(lcAppClient) << "Sgnl rcvd" << id << enumClassToInt(num);
+    qCDebug(lcAppClient) << "Sgnl rcvd" << id << num;
 
     switch (num) {
         case SignalNum::USER_ADDED: {
@@ -546,7 +546,7 @@ void AppClient::setupLogging() {
     logger->setLogDebug(_logDebug);
     logger->enterNextLogFile();
 
-    logger->setMinLogLevel(enumClassToInt(ParametersCache::instance()->parametersInfo().logLevel()));
+    logger->setMinLogLevel(toInt(ParametersCache::instance()->parametersInfo().logLevel()));
 
     if (ParametersCache::instance()->parametersInfo().useLog()) {
         // Don't override other configured logging

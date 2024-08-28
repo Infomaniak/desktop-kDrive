@@ -57,7 +57,7 @@ LiteSyncAppDialog::LiteSyncAppDialog(std::shared_ptr<ClientGui> gui, QWidget *pa
             try {
                 ExitCode exitCode = GuiRequests::getFetchingAppList(_appTable);
                 if (exitCode != ExitCode::Ok) {
-                    qCWarning(lcLiteSyncAppDialog()) << "Error in Requests::getFetchingAppList : " << enumClassToInt(exitCode);
+                    qCWarning(lcLiteSyncAppDialog()) << "Error in Requests::getFetchingAppList : " << toInt(exitCode);
                 }
 
                 break;

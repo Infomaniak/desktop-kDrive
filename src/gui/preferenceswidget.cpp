@@ -762,14 +762,14 @@ void PreferencesWidget::retranslateUi() {
 
     _languageSelectorComboBox->blockSignals(true);  // To avoid triggering more LanguageChange events
     _languageSelectorComboBox->clear();
-    _languageSelectorComboBox->addItem(tr("Default"), enumClassToInt(Language::Default));
-    _languageSelectorComboBox->addItem(tr("English"), enumClassToInt(Language::English));
-    _languageSelectorComboBox->addItem(tr("French"), enumClassToInt(Language::French));
-    _languageSelectorComboBox->addItem(tr("German"), enumClassToInt(Language::German));
-    _languageSelectorComboBox->addItem(tr("Spanish"), enumClassToInt(Language::Spanish));
-    _languageSelectorComboBox->addItem(tr("Italian"), enumClassToInt(Language::Italian));
+    _languageSelectorComboBox->addItem(tr("Default"), toInt(Language::Default));
+    _languageSelectorComboBox->addItem(tr("English"), toInt(Language::English));
+    _languageSelectorComboBox->addItem(tr("French"), toInt(Language::French));
+    _languageSelectorComboBox->addItem(tr("German"), toInt(Language::German));
+    _languageSelectorComboBox->addItem(tr("Spanish"), toInt(Language::Spanish));
+    _languageSelectorComboBox->addItem(tr("Italian"), toInt(Language::Italian));
     const int languageIndex =
-        _languageSelectorComboBox->findData(enumClassToInt(ParametersCache::instance()->parametersInfo().language()));
+        _languageSelectorComboBox->findData(toInt(ParametersCache::instance()->parametersInfo().language()));
     _languageSelectorComboBox->setCurrentIndex(languageIndex);
     _languageSelectorComboBox->blockSignals(false);
 
