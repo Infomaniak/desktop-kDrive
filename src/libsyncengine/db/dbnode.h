@@ -33,6 +33,12 @@ class DbNode {
                std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
                const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatus::Unknown, bool syncing = false);
 
+        DbNode(std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
+               const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
+               std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
+               std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
+               const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatus::Unknown, bool syncing = false);
+
         DbNode();
 
         inline DbNodeId nodeId() const { return _nodeId; }

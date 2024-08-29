@@ -18,9 +18,13 @@
 
 #include "syncdb.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/utility/asserts.h"
 #include "libcommonserver/log/log.h"
+
+#include "libparms/db/sync.h"
+#include "libparms/db/parmsdb.h"
 
 #include <queue>
 
@@ -92,6 +96,11 @@
     "UPDATE node SET status=?1 "   \
     "WHERE nodeId=?2;"
 
+#define UPDATE_NODE_NAME_LOCAL_REQUEST_ID "update_node_name_local"
+#define UPDATE_NODE_NAME_LOCAL_REQUEST \
+    "UPDATE node SET nameLocal=?1 "    \
+    "WHERE nodeId=?2;"
+
 #define UPDATE_NODES_SYNCING_REQUEST_ID "update_nodes_syncing"
 #define UPDATE_NODES_SYNCING_REQUEST "UPDATE node SET syncing=?1;"
 
@@ -159,12 +168,6 @@
 #define SELECT_NODE_BY_REPLICAID_CHECKSUM 8
 #define SELECT_NODE_BY_REPLICAID_STATUS 9
 #define SELECT_NODE_BY_REPLICAID_SYNCING 10
-
-
-#define NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID "normalize_local_and_remote_names"
-#define NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST \
-    "UPDATE node "                               \
-    "SET nameLocal = normalizeSyncName(nameLocal), nameDrive = normalizeSyncName(nameDrive);"
 
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST_ID "select_node5"
 #define SELECT_NODE_BY_PARENTNODEID_AND_NAMELOCAL_REQUEST    \
@@ -385,54 +388,16 @@ bool SyncDb::prepare() {
     std::string error;
 
     // Node
-    ASSERT(queryCreate(INSERT_NODE_REQUEST_ID));
-    if (!queryPrepare(INSERT_NODE_REQUEST_ID, INSERT_NODE_REQUEST, false, errId, error)) {
-        queryFree(INSERT_NODE_REQUEST_ID);
-        return sqlFail(INSERT_NODE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_NODE_REQUEST_ID));
-    if (!queryPrepare(UPDATE_NODE_REQUEST_ID, UPDATE_NODE_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_NODE_REQUEST_ID);
-        return sqlFail(UPDATE_NODE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_NODE_STATUS_REQUEST_ID));
-    if (!queryPrepare(UPDATE_NODE_STATUS_REQUEST_ID, UPDATE_NODE_STATUS_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_NODE_STATUS_REQUEST_ID);
-        return sqlFail(UPDATE_NODE_STATUS_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_NODES_SYNCING_REQUEST_ID));
-    if (!queryPrepare(UPDATE_NODES_SYNCING_REQUEST_ID, UPDATE_NODE_SYNCING_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_NODES_SYNCING_REQUEST_ID);
-        return sqlFail(UPDATE_NODES_SYNCING_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(UPDATE_NODE_SYNCING_REQUEST_ID));
-    if (!queryPrepare(UPDATE_NODE_SYNCING_REQUEST_ID, UPDATE_NODE_SYNCING_REQUEST, false, errId, error)) {
-        queryFree(UPDATE_NODE_SYNCING_REQUEST_ID);
-        return sqlFail(UPDATE_NODE_SYNCING_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_NODE_REQUEST_ID));
-    if (!queryPrepare(DELETE_NODE_REQUEST_ID, DELETE_NODE_REQUEST, false, errId, error)) {
-        queryFree(DELETE_NODE_REQUEST_ID);
-        return sqlFail(DELETE_NODE_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_NODES_BUT_ROOT_REQUEST_ID));
-    if (!queryPrepare(DELETE_NODES_BUT_ROOT_REQUEST_ID, DELETE_NODES_BUT_ROOT_REQUEST, false, errId, error)) {
-        queryFree(DELETE_NODES_BUT_ROOT_REQUEST_ID);
-        return sqlFail(DELETE_NODES_BUT_ROOT_REQUEST_ID, error);
-    }
-
-    ASSERT(queryCreate(DELETE_NODES_WITH_NULL_PARENTNODEID_REQUEST_ID));
-    if (!queryPrepare(DELETE_NODES_WITH_NULL_PARENTNODEID_REQUEST_ID, DELETE_NODES_WITH_NULL_PARENTNODEID_REQUEST, false, errId,
-                      error)) {
-        queryFree(DELETE_NODES_WITH_NULL_PARENTNODEID_REQUEST_ID);
-        return sqlFail(DELETE_NODES_WITH_NULL_PARENTNODEID_REQUEST_ID, error);
-    }
+    if (!createAndPrepareRequest(INSERT_NODE_REQUEST_ID, INSERT_NODE_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_NODE_REQUEST_ID, UPDATE_NODE_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_NODE_STATUS_REQUEST_ID, UPDATE_NODE_STATUS_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_NODE_NAME_LOCAL_REQUEST_ID, UPDATE_NODE_NAME_LOCAL_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_NODES_SYNCING_REQUEST_ID, UPDATE_NODES_SYNCING_REQUEST)) return false;
+    if (!createAndPrepareRequest(UPDATE_NODE_SYNCING_REQUEST_ID, UPDATE_NODE_SYNCING_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_NODE_REQUEST_ID, DELETE_NODE_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_NODES_BUT_ROOT_REQUEST_ID, DELETE_NODES_BUT_ROOT_REQUEST)) return false;
+    if (!createAndPrepareRequest(DELETE_NODES_WITH_NULL_PARENTNODEID_REQUEST_ID, DELETE_NODES_WITH_NULL_PARENTNODEID_REQUEST))
+        return false;
 
     ASSERT(queryCreate(SELECT_NODE_BY_NODEID_LITE_ID));
     if (!queryPrepare(SELECT_NODE_BY_NODEID_LITE_ID, SELECT_NODE_BY_NODEID_LITE, false, errId, error)) {
@@ -562,29 +527,46 @@ bool SyncDb::prepare() {
     return true;
 }
 
+bool SyncDb::createAndPrepareRequest(const char *requestId, const char *query) {
+    int errId = 0;
+    std::string error;
+
+    if (!queryCreate(requestId)) {
+        LOG_FATAL(_logger, "ENFORCE: \"queryCreate(" << requestId << ")\".");
+    }
+    if (!queryPrepare(requestId, query, false, errId, error)) {
+        queryFree(requestId);
+        return sqlFail(requestId, error);
+    }
+
+    return true;
+}
+
 bool SyncDb::normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber) {
-    if (!Utility::startsWith(dbFromVersionNumber, "3.6.3")) return true;
+    if (!CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.5")) return true;
 
     LOG_DEBUG(_logger, "Upgrade 3.6.3 DB");
+
+    static const char *requestId = "normalize_local_and_remote_names";
+    static const char *query =
+        "UPDATE node "
+        "SET nameLocal = normalizeSyncName(nameLocal), nameDrive = normalizeSyncName(nameDrive);";
 
     if (_sqliteDb->createNormalizeSyncNameFunc() != SQLITE_OK) {
         return false;
     }
 
+
+    if (!createAndPrepareRequest(requestId, query)) return false;
+
     int errId = 0;
     std::string error;
 
-    ASSERT(queryCreate(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID));
-    if (!queryPrepare(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST, false, errId,
-                      error)) {
-        queryFree(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID);
-        return sqlFail(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, error);
+    if (!queryExec(requestId, errId, error)) {
+        queryFree(requestId);
+        return sqlFail(requestId, error);
     }
-    if (!queryExec(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, errId, error)) {
-        queryFree(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID);
-        return sqlFail(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID, error);
-    }
-    queryFree(NORMALIZE_LOCAL_AND_REMOTE_NAMES_REQUEST_ID);
+    queryFree(requestId);
 
     return true;
 }
@@ -593,6 +575,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVer
     const std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
 
     if (!normalizeLocalAndRemoteNames(dbFromVersionNumber)) return false;
+    if (!resintateEncodingOfLocalNames(dbFromVersionNumber)) return false;
 
     int errId;
     std::string error;
@@ -778,6 +761,31 @@ bool SyncDb::updateNodeStatus(DbNodeId nodeId, SyncFileStatus status, bool &foun
         found = true;
     } else {
         LOG_WARN(_logger, "Error running query: " << UPDATE_NODE_STATUS_REQUEST_ID << " - num rows affected != 1");
+        found = false;
+    }
+
+    return true;
+}
+
+bool SyncDb::updateNodeLocalName(DbNodeId nodeId, const SyncName &nameLocal, bool &found) {
+    const char *queryId = UPDATE_NODE_NAME_LOCAL_REQUEST_ID;
+
+    const std::lock_guard<std::mutex> lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(queryId));
+    ASSERT(queryBindValue(queryId, 1, nameLocal));
+    ASSERT(queryBindValue(queryId, 2, nodeId));
+
+    int errId = -1;
+    std::string error;
+    if (!queryExec(queryId, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << queryId);
+        return false;
+    }
+    if (numRowsAffected() == 1) {
+        found = true;
+    } else {
+        LOG_WARN(_logger, "Error running query: " << queryId << " - num rows affected != 1");
         found = false;
     }
 
@@ -2318,6 +2326,114 @@ bool SyncDb::pushChildDbIds(DbNodeId parentNodeDbId, std::unordered_set<DbNodeId
         }
         ASSERT(queryResetAndClearBindings(SELECT_NODE_BY_PARENTNODEID_REQUEST_ID));
     }
+
+    return true;
+}
+
+bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
+    static const char *requestId = "select_node_with_names_and_ids";
+    static const char *query = "SELECT nodeId, nameLocal, nameDrive, nodeIdLocal FROM node;";
+
+    if (!createAndPrepareRequest(requestId, query)) return false;
+
+    const std::lock_guard<std::mutex> lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(requestId));
+    bool found = false;
+    for (;;) {
+        if (!queryNext(requestId, found)) {
+            LOGW_WARN(_logger, L"Error getting query result: " << requestId);
+            return false;
+        }
+
+        if (!found) break;
+
+        DbNodeId dbNodeId;
+        ASSERT(queryInt64Value(requestId, 0, dbNodeId));
+
+        SyncName nameLocal;
+        ASSERT(querySyncNameValue(requestId, 1, nameLocal));
+
+        const bool sameLocalEncodings = (Utility::normalizedSyncName(nameLocal, Utility::UnicodeNormalization::NFC) ==
+                                         Utility::normalizedSyncName(nameLocal, Utility::UnicodeNormalization::NFD));
+
+        if (sameLocalEncodings) continue;
+
+        SyncName nameDrive;
+        ASSERT(querySyncNameValue(requestId, 2, nameDrive));
+
+        bool ok = false;
+        ASSERT(queryIsNullValue(requestId, 3, ok));
+
+        if (ok) continue;
+
+        NodeId nodeIdLocal;
+        ASSERT(queryStringValue(requestId, 3, nodeIdLocal));
+
+        namedNodeMap.insert({nodeIdLocal, NamedNode{dbNodeId, nameLocal}});
+    }
+    ASSERT(queryResetAndClearBindings(requestId));
+
+    return true;
+}
+
+bool SyncDb::updateNamesWithDistinctEncodings(const SyncNameMap &localNames) {
+    for (const auto &[dbNodeId, fileName] : localNames) {
+        bool found = false;
+        updateNodeLocalName(dbNodeId, fileName, found);
+        if (!found) {
+            LOGW_WARN(_logger, L"Node with DB id='" << dbNodeId << L"' and name='" << SyncName2WStr(fileName) << L"' not found.");
+            return false;
+        }
+    }
+    return true;
+}
+
+bool SyncDb::resintateEncodingOfLocalNames(const std::string &dbFromVersionNumber) {
+    if (!CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.5")) return true;
+
+    const auto msg = "Upgrade < " + dbFromVersionNumber + " DB";
+    LOG_DEBUG(_logger, msg.c_str());
+
+    Sync sync;
+    bool found = false;
+    ParmsDb::instance()->selectSync(_dbPath, sync, found);
+    if (!found) {
+        LOGW_WARN(_logger, L"Sync DB with " << Utility::formatSyncPath(_dbPath) << L" not found.");
+        return false;
+    }
+
+    const SyncPath &localDrivePath = sync.localPath();
+
+    NamedNodeMap namedNodeMap;
+    if (!selectNamesWithDistinctEncodings(namedNodeMap)) return false;
+
+    using namespace std::filesystem;
+    std::error_code ec;
+    const auto dirIt = recursive_directory_iterator(localDrivePath, directory_options::skip_permission_denied, ec);
+    if (ec) {
+        LOGW_WARN(_logger, L"Error in reinstateEncodingOfLocalNames: " << Utility::formatStdError(ec).c_str());
+        return false;
+    }
+
+    std::map<DbNodeId, SyncName> localNames;
+    for (const auto &dirEntry : dirIt) {
+        NodeId nodeId;
+        if (!IoHelper::getNodeId(dirEntry.path(), nodeId)) {
+            LOGW_WARN(_logger,
+                      L"Could not retrieve the node id of item with" << Utility::formatSyncPath(dirEntry.path()).c_str());
+        } else {
+            if (!namedNodeMap.contains(nodeId)) continue;
+        }
+
+        SyncName syncName(dirEntry.path().filename().c_str());
+        if (syncName != namedNodeMap[nodeId].name) {
+            localNames.insert({namedNodeMap[nodeId].id, std::move(syncName)});
+        }
+    }
+
+    if (!updateNamesWithDistinctEncodings(localNames)) return false;
+
 
     return true;
 }

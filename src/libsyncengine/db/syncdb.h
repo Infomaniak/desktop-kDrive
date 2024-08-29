@@ -105,8 +105,26 @@ class SyncDb : public Db {
         bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
         bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
 
-        // Fixes an issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node
+        // Helpers
+        bool createAndPrepareRequest(const char *requestId, const char *query);
+
+        // Fixes
+
+        // Fix issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node.
         bool normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber);
+
+        bool updateNodeLocalName(DbNodeId nodeId, const SyncName &localName, bool &found);
+        struct NamedNode {
+                DbNodeId id{-1};
+                SyncName name;
+        };
+        using NamedNodeMap = std::map<NodeId, NamedNode>;
+        bool selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap);
+        using SyncNameMap = std::map<DbNodeId, SyncName>;
+        bool updateNamesWithDistinctEncodings(const SyncNameMap &localNames);
+        bool resintateEncodingOfLocalNames(const std::string &dbFromVersionNumber);
+
+        friend class TestSyncDb;
 };
 
 }  // namespace KDC

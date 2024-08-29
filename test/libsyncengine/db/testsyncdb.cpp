@@ -18,10 +18,9 @@
 
 #include "testsyncdb.h"
 #include "test_utility/testhelpers.h"
+#include "test_utility/localtemporarydirectory.h"
 
-#include "libcommonserver/utility/asserts.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/log/log.h"
+#include "libparms/db/parmsdb.h"
 
 #include <time.h>
 
@@ -31,13 +30,13 @@ namespace KDC {
 
 class DbNodeTest : public DbNode {
     public:
-        DbNodeTest(DbNodeId nodeId, std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
+        DbNodeTest(std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
                    const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
                    std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
                    std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
                    const std::optional<std::string> &checksum, SyncFileStatus status = SyncFileStatus::Unknown,
                    bool syncing = false) {
-            _nodeId = nodeId;
+            _nodeId = 0;
             _parentNodeId = parentNodeId;
             _nameLocal = nameLocal;    // Don't check normalization
             _nameRemote = nameRemote;  // Don't check normalization
@@ -62,8 +61,8 @@ class DbNodeTest : public DbNode {
 };
 
 void TestSyncDb::setUp() {
-    bool alreadyExists;
-    std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
+    bool alreadyExists = false;
+    const std::filesystem::path syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
 
     // Delete previous DB
     std::filesystem::remove(syncDbPath);
@@ -89,19 +88,21 @@ void TestSyncDb::testUpgrade_3_6_3() {
     const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
     const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
 
-    DbNodeTest nodeFile1(0, rootId, nfdEncodedName, nfdEncodedName, "id loc 1", "id drive 1", tLoc, tLoc, tDrive, NodeType::File,
-                         0, "cs 2.2");
-    DbNodeTest nodeFile2(0, rootId, nfcEncodedName, nfdEncodedName, "id loc 2", "id drive 2", tLoc, tLoc, tDrive, NodeType::File,
-                         0, "cs 2.2");
-    DbNode nodeFile3(0, rootId, nfcEncodedName, nfcEncodedName, "id loc 3", "id drive 3", tLoc, tLoc, tDrive, NodeType::File, 0,
-                     "cs 2.2");
+    const DbNodeTest nodeFile1(rootId, nfdEncodedName, nfdEncodedName, "id loc 1", "id drive 1", tLoc, tLoc, tDrive,
+                               NodeType::File, 0, "cs 2.2");
+    const DbNodeTest nodeFile2(rootId, nfcEncodedName, nfdEncodedName, "id loc 2", "id drive 2", tLoc, tLoc, tDrive,
+                               NodeType::File, 0, "cs 2.2");
+    const DbNode nodeFile3(rootId, nfcEncodedName, nfcEncodedName, "id loc 3", "id drive 3", tLoc, tLoc, tDrive, NodeType::File,
+                           0, "cs 2.2");
 
-    bool constraintError = false;
-    DbNodeId dbNodeId;
+    {
+        bool constraintError = false;
+        DbNodeId dbNodeId;
 
-    _testObj->insertNode(nodeFile1, dbNodeId, constraintError);
-    _testObj->insertNode(nodeFile2, dbNodeId, constraintError);
-    _testObj->insertNode(nodeFile3, dbNodeId, constraintError);
+        _testObj->insertNode(nodeFile1, dbNodeId, constraintError);
+        _testObj->insertNode(nodeFile2, dbNodeId, constraintError);
+        _testObj->insertNode(nodeFile3, dbNodeId, constraintError);
+    }
 
     _testObj->upgrade("3.6.3", "3.6.4");
 
@@ -116,6 +117,127 @@ void TestSyncDb::testUpgrade_3_6_3() {
                        found);
         CPPUNIT_ASSERT(remoteName == nfcEncodedName);
     }
+}
+void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
+    bool alreadyExists = false;
+    const std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
+    ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
+    ParmsDb::instance()->setAutoDelete(true);
+
+    const User user(1, 5555555, "123");
+    ParmsDb::instance()->insertUser(user);
+    const Account acc(1, 12345678, user.dbId());
+    ParmsDb::instance()->insertAccount(acc);
+    Drive drive(1, 99999991, acc.dbId(), "Drive 1", 2000000000, "#000000");
+    ParmsDb::instance()->insertDrive(drive);
+
+    Sync sync;
+    sync.setDbId(1);
+    sync.setDriveDbId(drive.dbId());
+    sync.setLocalPath(localPath);
+    sync.setDbPath(syncDbPath);
+    ParmsDb::instance()->insertSync(sync);
+}
+
+std::vector<SyncName> createSyncFiles(const SyncPath &localPath) {
+    /**
+     * FS tree:
+     *      *      Root
+     *      |-- a
+     *      |   |-- c
+     *      |   `-- nfd
+     *      `-- b
+     *          `-- nfc
+     */
+
+    std::filesystem::create_directories(localPath / "a");  // file1
+    std::filesystem::create_directories(localPath / "b");  // file4
+
+    const auto nfc = testhelpers::makeNfcSyncName();
+    const auto nfd = testhelpers::makeNfdSyncName();
+
+    std::ofstream file2{localPath / "a" / "c"};
+    std::ofstream file3{localPath / "a" / nfc};
+    std::ofstream file5{localPath / "b" / nfd};
+
+    return {"a", "c", nfc, "b", nfd};
+}
+
+std::vector<DbNode> TestSyncDb::setupSyncDb_3_6_4() {
+    const time_t tLoc = std::time(0);
+    const time_t tDrive = std::time(0);
+    const auto rootId = _testObj->rootNode().nodeId();
+
+    const auto nfc = testhelpers::makeNfcSyncName();
+    const auto nfd = testhelpers::makeNfdSyncName();
+
+    DbNode node1(rootId, "a", "A", "id loc 1", "id drive 1", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
+    DbNodeTest node2(rootId, "c", nfd, "id loc 2", "id drive 2", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
+    DbNodeTest node3(rootId, nfd, "a", "id loc 3", "id drive 3", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
+    DbNode node4(rootId, "b", "B", "id loc 4", "id drive 4", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
+    DbNodeTest node5(rootId, nfc, nfd, "id loc 5", "id drive 5", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
+
+    {
+        /**
+         * DB tree:
+         *      *      Root
+         *      |-- a
+         *      |   |-- c
+         *      |   `-- nfd
+         *      `-- b
+         *          `-- nfc
+         */
+        bool constraintError = false;
+        DbNodeId dbNodeId;
+        _testObj->insertNode(node1, dbNodeId, constraintError);
+        node2.setParentNodeId(dbNodeId);
+        node3.setParentNodeId(dbNodeId);
+        _testObj->insertNode(node2, dbNodeId, constraintError);
+        _testObj->insertNode(node3, dbNodeId, constraintError);
+        _testObj->insertNode(node4, dbNodeId, constraintError);
+        node5.setParentNodeId(dbNodeId);
+        _testObj->insertNode(node5, dbNodeId, constraintError);
+    }
+
+    return {node1, node2, node3, node4, node5};
+}
+
+void TestSyncDb::testUpgrade_3_6_4_checkNodeMap() {
+    setupSyncDb_3_6_4();
+
+    SyncDb::NamedNodeMap namedNodeMap;
+    _testObj->selectNamesWithDistinctEncodings(namedNodeMap);
+
+    CPPUNIT_ASSERT_EQUAL(size_t(2), namedNodeMap.size());
+    CPPUNIT_ASSERT_EQUAL(DbNodeId(4), namedNodeMap.at("id loc 3").id);
+    CPPUNIT_ASSERT_EQUAL(DbNodeId(6), namedNodeMap.at("id loc 5").id);
+}
+
+void TestSyncDb::testUpgrade_3_6_4() {
+    LocalTemporaryDirectory localTmpDir("testUpgrade_3_6_4");
+    createParmsDb(_testObj->dbPath(), localTmpDir.path());
+    const auto localFileNames = createSyncFiles(localTmpDir.path());
+    const auto initialDbNodes = setupSyncDb_3_6_4();
+
+    _testObj->upgrade("3.6.4", "3.6.5");
+
+    CPPUNIT_ASSERT_EQUAL(initialDbNodes.size(), localFileNames.size());
+    for (int i = 0; i < initialDbNodes.size(); ++i) {
+        SyncName localName, remoteName;
+        bool found = false;
+        CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, *initialDbNodes[i].nodeIdLocal(), localName, found) && found);
+#ifdef __APPLE__
+        // On MacOSX, the std::filesystem API creates files with NFC encoded names only.
+        CPPUNIT_ASSERT(localName == Utility::normalizedSyncName(localFileNames[i]));
+#else
+        CPPUNIT_ASSERT(localName == localFileNames[i]);
+#endif
+        CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, *initialDbNodes[i].nodeIdRemote(), remoteName, found) && found);
+        CPPUNIT_ASSERT(remoteName == Utility::normalizedSyncName(initialDbNodes[i].nameRemote()));
+    }
+
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
 }
 
 void TestSyncDb::testNodes() {
@@ -168,7 +290,7 @@ void TestSyncDb::testNodes() {
 
     // Insert node with NFD-normalized name
     const SyncName nfdEncodedName = testhelpers::makeNfdSyncName();
-    DbNodeTest nodeFile7(0, dbNodeIdDir1, nfdEncodedName, nfdEncodedName, "id loc 2.2", "id drive 2.2", tLoc, tLoc, tDrive,
+    DbNodeTest nodeFile7(dbNodeIdDir1, nfdEncodedName, nfdEncodedName, "id loc 2.2", "id drive 2.2", tLoc, tLoc, tDrive,
                          NodeType::File, 0, "cs 2.2");
     DbNodeId dbNodeIdFile7;
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile7, dbNodeIdFile7, constraintError));

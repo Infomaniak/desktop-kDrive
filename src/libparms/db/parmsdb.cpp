@@ -301,9 +301,16 @@
 
 #define SELECT_SYNC_REQUEST_ID "select_sync"
 #define SELECT_SYNC_REQUEST                                                                                           \
-    "SELECT driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "            \
+    "SELECT dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "      \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync " \
     "WHERE dbId=?1;"
+
+#define SELECT_SYNC_BY_PATH_REQUEST_ID "select_sync_by_path"
+#define SELECT_SYNC_BY_PATH_REQUEST                                                                                   \
+    "SELECT dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "      \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync " \
+    "WHERE dbPath=?1;"
+
 
 #define SELECT_ALL_SYNCS_REQUEST_ID "select_syncs"
 #define SELECT_ALL_SYNCS_REQUEST                                                                                      \
@@ -1074,6 +1081,12 @@ bool ParmsDb::prepare() {
     if (!queryPrepare(SELECT_SYNC_REQUEST_ID, SELECT_SYNC_REQUEST, false, errId, error)) {
         queryFree(SELECT_SYNC_REQUEST_ID);
         return sqlFail(SELECT_SYNC_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(SELECT_SYNC_BY_PATH_REQUEST_ID));
+    if (!queryPrepare(SELECT_SYNC_BY_PATH_REQUEST_ID, SELECT_SYNC_BY_PATH_REQUEST, false, errId, error)) {
+        queryFree(SELECT_SYNC_BY_PATH_REQUEST_ID);
+        return sqlFail(SELECT_SYNC_BY_PATH_REQUEST_ID, error);
     }
 
     ASSERT(queryCreate(SELECT_ALL_SYNCS_REQUEST_ID));
@@ -2246,33 +2259,35 @@ bool ParmsDb::getNewDriveDbId(int &dbId) {
 }
 
 bool ParmsDb::insertSync(const Sync &sync) {
+    const char *requestId = INSERT_SYNC_REQUEST_ID;
+
     const std::scoped_lock lock(_mutex);
 
     std::string listingCursor;
-    int64_t listingCursorTimestamp;
+    int64_t listingCursorTimestamp{0};
     sync.listingCursor(listingCursor, listingCursorTimestamp);
 
     // Insert sync record
-    int errId;
-    std::string error;
+    ASSERT(queryResetAndClearBindings(requestId));
+    ASSERT(queryBindValue(requestId, 1, sync.dbId()));
+    ASSERT(queryBindValue(requestId, 2, sync.driveDbId()));
+    ASSERT(queryBindValue(requestId, 3, sync.localPath().native()));
+    ASSERT(queryBindValue(requestId, 4, sync.targetPath().native()));
+    ASSERT(queryBindValue(requestId, 5, sync.targetNodeId()));
+    ASSERT(queryBindValue(requestId, 6, sync.dbPath().native()));
+    ASSERT(queryBindValue(requestId, 7, static_cast<int>(sync.paused())));
+    ASSERT(queryBindValue(requestId, 8, static_cast<int>(sync.supportVfs())));
+    ASSERT(queryBindValue(requestId, 9, static_cast<int>(sync.virtualFileMode())));
+    ASSERT(queryBindValue(requestId, 10, static_cast<int>(sync.notificationsDisabled())));
+    ASSERT(queryBindValue(requestId, 11, static_cast<int>(sync.hasFullyCompleted())));
+    ASSERT(queryBindValue(requestId, 12, sync.navigationPaneClsid()));
+    ASSERT(queryBindValue(requestId, 13, listingCursor));
+    ASSERT(queryBindValue(requestId, 14, listingCursorTimestamp));
 
-    ASSERT(queryResetAndClearBindings(INSERT_SYNC_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 1, sync.dbId()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 2, sync.driveDbId()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 3, sync.localPath().native()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 4, sync.targetPath().native()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 5, sync.targetNodeId()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 6, sync.dbPath().native()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 7, static_cast<int>(sync.paused())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 8, static_cast<int>(sync.supportVfs())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 9, static_cast<int>(sync.virtualFileMode())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 10, static_cast<int>(sync.notificationsDisabled())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 11, static_cast<int>(sync.hasFullyCompleted())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 12, sync.navigationPaneClsid()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 13, listingCursor));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 14, listingCursorTimestamp));
-    if (!queryExec(INSERT_SYNC_REQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << INSERT_SYNC_REQUEST_ID);
+    int errId = -1;
+    std::string error;
+    if (!queryExec(requestId, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << requestId);
         return false;
     }
 
@@ -2386,64 +2401,96 @@ bool ParmsDb::deleteSync(int dbId, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
+void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
+    assert(std::string(requestId) == std::string(SELECT_SYNC_BY_PATH_REQUEST_ID) ||
+           std::string(requestId) == std::string(SELECT_SYNC_REQUEST_ID));
+
+    int intResult = -1;
+    ASSERT(queryIntValue(requestId, 0, intResult));
+    sync.setDbId(intResult);
+
+    ASSERT(queryIntValue(requestId, 1, intResult));
+    sync.setDriveDbId(intResult);
+
+    SyncName syncNameResult;
+    ASSERT(querySyncNameValue(requestId, 2, syncNameResult));
+    sync.setLocalPath(SyncPath(syncNameResult));
+
+    ASSERT(querySyncNameValue(requestId, 3, syncNameResult));
+    sync.setTargetPath(SyncPath(syncNameResult));
+
+    std::string strResult;
+    ASSERT(queryStringValue(requestId, 4, strResult));
+    sync.setTargetNodeId(strResult);
+
+    ASSERT(querySyncNameValue(requestId, 5, syncNameResult));
+    sync.setDbPath(SyncPath(syncNameResult));
+
+    ASSERT(queryIntValue(requestId, 6, intResult));
+    sync.setPaused(static_cast<bool>(intResult));
+
+    ASSERT(queryIntValue(requestId, 7, intResult));
+    sync.setSupportVfs(static_cast<bool>(intResult));
+
+    ASSERT(queryIntValue(requestId, 8, intResult));
+    sync.setVirtualFileMode(static_cast<VirtualFileMode>(intResult));
+
+    ASSERT(queryIntValue(requestId, 9, intResult));
+    sync.setNotificationsDisabled(static_cast<bool>(intResult));
+
+    ASSERT(queryIntValue(requestId, 10, intResult));
+    sync.setHasFullyCompleted(static_cast<bool>(intResult));
+
+    ASSERT(queryStringValue(requestId, 11, strResult));
+    sync.setNavigationPaneClsid(strResult);
+
+    ASSERT(queryStringValue(requestId, 12, strResult));
+
+    int64_t int64Result;
+    ASSERT(queryInt64Value(requestId, 13, int64Result));
+    sync.setListingCursor(strResult, int64Result);
+}
+
+bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
+    static const char *requestId = SELECT_SYNC_BY_PATH_REQUEST_ID;
+
     const std::scoped_lock lock(_mutex);
 
-    ASSERT(queryResetAndClearBindings(SELECT_SYNC_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_SYNC_REQUEST_ID, 1, dbId));
-    if (!queryNext(SELECT_SYNC_REQUEST_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << SELECT_SYNC_REQUEST_ID);
+    ASSERT(queryResetAndClearBindings(requestId));
+    ASSERT(queryBindValue(requestId, 1, syncDbPath));
+    if (!queryNext(requestId, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << requestId);
+        return false;
+    }
+
+    if (!found) return true;
+
+
+    fillSyncWithQueryResult(sync, requestId);
+
+    ASSERT(queryResetAndClearBindings(requestId));
+
+    return true;
+}
+
+bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
+    static const char *requestId = SELECT_SYNC_REQUEST_ID;
+
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(requestId));
+    ASSERT(queryBindValue(requestId, 1, dbId));
+    if (!queryNext(requestId, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << requestId);
         return false;
     }
     if (!found) {
         return true;
     }
 
-    sync.setDbId(dbId);
+    fillSyncWithQueryResult(sync, requestId);
 
-    int intResult;
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 0, intResult));
-    sync.setDriveDbId(intResult);
-
-    SyncName syncNameResult;
-    ASSERT(querySyncNameValue(SELECT_SYNC_REQUEST_ID, 1, syncNameResult));
-    sync.setLocalPath(SyncPath(syncNameResult));
-
-    ASSERT(querySyncNameValue(SELECT_SYNC_REQUEST_ID, 2, syncNameResult));
-    sync.setTargetPath(SyncPath(syncNameResult));
-
-    std::string strResult;
-    ASSERT(queryStringValue(SELECT_SYNC_REQUEST_ID, 3, strResult));
-    sync.setTargetNodeId(strResult);
-
-    ASSERT(querySyncNameValue(SELECT_SYNC_REQUEST_ID, 4, syncNameResult));
-    sync.setDbPath(SyncPath(syncNameResult));
-
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 5, intResult));
-    sync.setPaused(static_cast<bool>(intResult));
-
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 6, intResult));
-    sync.setSupportVfs(static_cast<bool>(intResult));
-
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 7, intResult));
-    sync.setVirtualFileMode(static_cast<VirtualFileMode>(intResult));
-
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 8, intResult));
-    sync.setNotificationsDisabled(static_cast<bool>(intResult));
-
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 9, intResult));
-    sync.setHasFullyCompleted(static_cast<bool>(intResult));
-
-    ASSERT(queryStringValue(SELECT_SYNC_REQUEST_ID, 10, strResult));
-    sync.setNavigationPaneClsid(strResult);
-
-    ASSERT(queryStringValue(SELECT_SYNC_REQUEST_ID, 11, strResult));
-
-    int64_t int64Result;
-    ASSERT(queryInt64Value(SELECT_SYNC_REQUEST_ID, 12, int64Result));
-    sync.setListingCursor(strResult, int64Result);
-
-    ASSERT(queryResetAndClearBindings(SELECT_SYNC_REQUEST_ID));
+    ASSERT(queryResetAndClearBindings(requestId));
 
     return true;
 }
@@ -3193,8 +3240,7 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
         int type;
         ASSERT(queryIntValue(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID, 2, type));
 
-        migrationSelectiveSyncList.push_back(
-            MigrationSelectiveSync(syncDbId, SyncPath(path), fromInt<SyncNodeType>(type)));
+        migrationSelectiveSyncList.push_back(MigrationSelectiveSync(syncDbId, SyncPath(path), fromInt<SyncNodeType>(type)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_MIGRATION_SELECTIVESYNC_REQUEST_ID));
 
