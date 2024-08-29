@@ -18,17 +18,10 @@
 
 #include "testlocaljobs.h"
 
-#include <memory>
-
 #include "config.h"
 #include "jobs/local/localcreatedirjob.h"
 #include "jobs/local/localdeletejob.h"
 #include "jobs/local/localmovejob.h"
-#include "db/db.h"
-#include "db/parmsdb.h"
-#include "keychainmanager/keychainmanager.h"
-#include "libcommonserver/network/proxy.h"
-#include "libcommon/utility/utility.h"
 #include "test_utility/localtemporarydirectory.h"
 #include "jobs/local/localcopyjob.h"
 #include "requests/parameterscache.h"

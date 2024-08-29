@@ -343,9 +343,9 @@ void TestNetworkJobs::testGetFileInfo() {
         CPPUNIT_ASSERT_EQUAL(expectedPath, jobWithPath.path());
     }
 
-    // The returned path is empty if the job requests info on the drive root.
+    // The returned path is empty if the job requests info on the remote drive root.
     {
-        GetFileInfoJob jobWithPath(_driveDbId, "1064345");  // Id of a remote drive root
+        GetFileInfoJob jobWithPath(_driveDbId, "1");  // The identifier of the remote root drive is always 1.
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, jobWithPath.runSynchronously());
         jobWithPath.setWithPath(true);
         CPPUNIT_ASSERT(jobWithPath.path().empty());
