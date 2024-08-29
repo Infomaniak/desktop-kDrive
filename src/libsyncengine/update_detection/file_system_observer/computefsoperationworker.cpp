@@ -599,7 +599,7 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         }
 
         // OS might fail to notify all delete events, therefor we check that the file still exists
-        SyncPath absoluteLocalPath = _syncPal->_localPath / localSnapshotPath;
+        SyncPath absoluteLocalPath = _syncPal->localPath() / localSnapshotPath;
 
         // No operations detected on this file but its size is not the same between remote and local replica
         // Remove it from local replica and download the remote version

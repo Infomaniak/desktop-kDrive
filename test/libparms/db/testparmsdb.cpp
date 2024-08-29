@@ -28,10 +28,9 @@ namespace KDC {
 
 void TestParmsDb::setUp() {
     // Create a temp parmsDb
-    bool alreadyExists;
+    bool alreadyExists = false;
     std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 }
 
 void TestParmsDb::tearDown() {

@@ -46,10 +46,8 @@ void TestSyncPal::setUp() {
 
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 
     // Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
@@ -162,7 +160,7 @@ void TestSyncPal::testAll() {
     CPPUNIT_ASSERT(_syncPal->isRunning());
 
     // Wait for end of 1st sync
-    while (!_syncPal->_syncHasFullyCompleted) {
+    while (!_syncPal->syncHasFullyCompleted()) {
         Utility::msleep(1000);
     }
     Utility::msleep(60000);

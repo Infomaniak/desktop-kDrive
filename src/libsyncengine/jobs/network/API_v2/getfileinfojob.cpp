@@ -68,27 +68,27 @@ bool GetFileInfoJob::handleResponse(std::istream &is) {
     }
 
     if (_withPath) {
-        std::string str;
-        if (!JsonParserUtility::extractValue(dataObj, pathKey, str)) {
+        std::string relativePathStr;
+        if (!JsonParserUtility::extractValue(dataObj, pathKey, relativePathStr)) {
             return false;
         }
-        if (Utility::startsWith(str, "/")) {
-            str.erase(0, 1);
+        if (Utility::startsWith(relativePathStr, "/")) {
+            relativePathStr.erase(0, 1);
         }
-        _path = str;
+
+        _path = relativePathStr;
     }
 
     return true;
 }
 
 bool GetFileInfoJob::handleError(std::istream &is, const Poco::URI &uri) {
-    if (_resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-        _resHttp.getStatus() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
-        // The file is not accessible or doesn't exist
-        return true;
-    } else {
-        return AbstractTokenNetworkJob::handleError(is, uri);
+    using namespace Poco::Net;
+    if (_resHttp.getStatus() == HTTPResponse::HTTP_FORBIDDEN || _resHttp.getStatus() == HTTPResponse::HTTP_NOT_FOUND) {
+        return true;  // The file is not accessible or doesn't exist
     }
+
+    return AbstractTokenNetworkJob::handleError(is, uri);
 }
 
 std::string GetFileInfoJob::getSpecificUrl() {

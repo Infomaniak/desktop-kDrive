@@ -222,7 +222,7 @@ void TestPlatformInconsistencyCheckerWorker::testNameClashAfterRename() {
     CPPUNIT_ASSERT(!_syncPal->_platformInconsistencyCheckerWorker->_idsToBeRemoved.empty());
     CPPUNIT_ASSERT(!std::filesystem::exists(_tempDir.path() / "a1"));
     std::error_code ec;
-    auto dirIt = std::filesystem::recursive_directory_iterator(_syncPal->_localPath,
+    auto dirIt = std::filesystem::recursive_directory_iterator(_syncPal->localPath(),
                                                                std::filesystem::directory_options::skip_permission_denied, ec);
     CPPUNIT_ASSERT(!ec);
     bool foundConflicted = false;

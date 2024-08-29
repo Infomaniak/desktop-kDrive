@@ -32,12 +32,35 @@
 
 namespace KDC {
 
-LocalDeleteJob::LocalDeleteJob(int driveDbId, const SyncPath &syncPath, const SyncPath &relativePath,
-                               bool isDehydratedPlaceholder, NodeId remoteId, bool forceToTrash /* = false */)
-    : _driveDbId(driveDbId),
-      _syncPath(syncPath),
+LocalDeleteJob::Path::Path(const SyncPath &path) : _path(path){};
+
+bool LocalDeleteJob::Path::endsWith(SyncPath &&ending) const {
+    if (!_path.empty() && ending.empty()) return false;
+
+    SyncPath path = _path;
+
+    while (!ending.empty() && !path.empty()) {
+        if (ending.filename() != path.filename()) return false;
+        ending = ending.parent_path();
+        path = path.parent_path();
+    }
+
+    return !path.empty() || ending.empty();
+};
+
+bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
+                                        const SyncPath &remoteRelativePath) {
+    if (targetPath.empty()) return localRelativePath == remoteRelativePath;
+
+    // Case of an advanced synchronisation
+    return Path(remoteRelativePath).endsWith(SyncPath(targetPath.filename()) / localRelativePath);
+}
+
+LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
+                               NodeId remoteId, bool forceToTrash /* = false */)
+    : _syncInfo(syncPalInfo),
       _relativePath(relativePath),
-      _absolutePath(syncPath / relativePath),
+      _absolutePath(syncPalInfo.localPath / relativePath),
       _isDehydratedPlaceholder(isDehydratedPlaceholder),
       _remoteNodeId(remoteId),
       _forceToTrash(forceToTrash) {}
@@ -48,13 +71,36 @@ LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) : _absolutePath(abs
 
 LocalDeleteJob::~LocalDeleteJob() {}
 
+
+bool LocalDeleteJob::findRemoteItem(SyncPath &remoteItemPath) const {
+    bool found = true;
+    remoteItemPath.clear();
+
+    // The item must be absent of remote replica for the job to run
+    GetFileInfoJob job(syncInfo().driveDbId, _remoteNodeId);
+    job.setWithPath(true);
+    job.runSynchronously();
+
+    if (job.hasHttpError()) {
+        using namespace Poco::Net;
+        if (job.getStatusCode() == HTTPResponse::HTTP_FORBIDDEN || job.getStatusCode() == HTTPResponse::HTTP_NOT_FOUND) {
+            found = false;
+            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
+                                          << L" not found on remote replica. This is normal and expected.");
+        }
+        remoteItemPath = job.path();
+    }
+
+    return found;
+}
+
 bool LocalDeleteJob::canRun() {
     if (bypassCheck()) {
         return true;
     }
 
     // The item must exist locally for the job to run
-    bool exists;
+    bool exists = false;
     IoError ioError = IoError::Success;
     if (!IoHelper::checkIfPathExists(_absolutePath, exists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(_absolutePath, ioError).c_str());
@@ -78,31 +124,25 @@ bool LocalDeleteJob::canRun() {
         return false;
     }
 
-    // The item must be absent of remote replica for the job to run
-    GetFileInfoJob job(_driveDbId, _remoteNodeId);
-    job.setWithPath(true);
-    job.runSynchronously();
-    bool itemFound = true;
-    if (job.hasHttpError()) {
-        if (job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_FORBIDDEN ||
-            job.getStatusCode() == Poco::Net::HTTPResponse::HTTP_NOT_FOUND) {
-            itemFound = false;
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
-                                          << L" not found on remote replica. This is normal and expected.");
-        }
-    }
+    // Check if the item we want to delete locally has a remote counterpart.
 
-    if (itemFound) {
-        // Verify that that the item has not moved
-        // For item moved in a blacklisted folder, we need to delete them even if they still exist on remote replica
-        if (_relativePath == job.path().relative_path()) {
-            // Item is found at the same path on remote
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str()
+    SyncPath remoteRelativePath;
+    const bool remotItemIsFound = findRemoteItem(remoteRelativePath);
+
+    if (!remotItemIsFound) return true;  // Safe deletion.
+
+    // Check whether the remote item has been moved.
+    // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
+    // the local item should be deleted.
+    // Note: the other remote move operations are not relevant: they generate Move jobs.
+
+    if (matchRelativePaths(syncInfo().targetPath, Utility::normalizedSyncPath(_relativePath), remoteRelativePath)) {
+        // Item is found at the same path on remote
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
-            _exitCode = ExitCode::DataError;  // We need to rebuild the remote snapshot from scratch
-            _exitCause = ExitCause::InvalidSnapshot;
-            return false;
-        }
+        _exitCode = ExitCode::DataError;  // We need to rebuild the remote snapshot from scratch
+        _exitCause = ExitCause::InvalidSnapshot;
+        return false;
     }
 
     return true;
@@ -114,7 +154,7 @@ void LocalDeleteJob::runJob() {
     }
 
     if ((ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash) {
-        bool success = Utility::moveItemToTrash(_absolutePath);
+        const bool success = Utility::moveItemToTrash(_absolutePath);
         _exitCode = ExitCode::Ok;
         if (!success) {
             LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" to trash");

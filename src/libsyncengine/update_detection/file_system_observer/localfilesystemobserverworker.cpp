@@ -36,7 +36,7 @@ static const int waitForUpdateDelay = 1000;         // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
                                                              const std::string &shortName)
-    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->_localPath) {}
+    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -84,7 +84,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
         OperationType opTypeFromOS = changedItem.second;
         SyncPath absolutePath = changedItem.first.native();
-        SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
+        SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
 
         // Check if exists with same nodeId
         if (opTypeFromOS == OperationType::Delete) {
@@ -144,7 +144,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             // Check if excluded by a file exclusion rule
             bool isWarning = false;
             bool toExclude = false;
-            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
+            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
                                                                                        isWarning, toExclude, ioError);
             if (!success) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
@@ -378,7 +378,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         if (fileStat.modtime > _snapshot->lastModified(nodeId)) {
             // This is an edit operation
 #ifdef __APPLE__
-            if (_syncPal->_vfsMode == VirtualFileMode::Mac) {
+            if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
                 // Exclude spurious operations (for example setIcon)
                 bool valid = true;
                 ExitCode exitCode = isEditValid(nodeId, absolutePath, fileStat.modtime, valid);
@@ -575,12 +575,12 @@ ExitCode LocalFileSystemObserverWorker::isEditValid(const NodeId &nodeId, const 
 void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolutePath) {
     LOGW_SYNCPAL_INFO(_logger, L"Access denied on item: " << Utility::formatSyncPath(absolutePath).c_str());
 
-    const SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
+    const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
     bool isWarning = false;
     bool isExcluded = false;
     IoError ioError = IoError::Success;
-    const bool success =
-        ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath, isWarning, isExcluded, ioError);
+    const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath, isWarning,
+                                                                               isExcluded, ioError);
     if (!success) {
         LOGW_WARN(_logger,
                   L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(absolutePath, ioError).c_str());
@@ -607,7 +607,7 @@ void LocalFileSystemObserverWorker::sendAccessDeniedError(const SyncPath &absolu
         }
     }
 
-    Error error(_syncPal->_syncDbId, "", "", NodeType::Directory, absolutePath, ConflictType::None, InconsistencyType::None,
+    Error error(_syncPal->syncDbId(), "", "", NodeType::Directory, absolutePath, ConflictType::None, InconsistencyType::None,
                 CancelType::None, "", ExitCode::SystemError, ExitCause::FileAccessError);
     _syncPal->addError(error);
 }
@@ -682,7 +682,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             }
 
             const SyncPath absolutePath = dirIt->path();
-            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->_localPath, absolutePath);
+            const SyncPath relativePath = CommonUtility::relativePath(_syncPal->localPath(), absolutePath);
 
             bool toExclude = false;
             bool denyFullControl = false;
@@ -734,7 +734,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 bool isWarning = false;
                 bool isExcluded = false;
                 IoError ioError = IoError::Success;
-                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->_localPath, relativePath,
+                const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_syncPal->localPath(), relativePath,
                                                                                            isWarning, isExcluded, ioError);
                 if (!success) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Error in ExclusionTemplateCache::isExcluded: "

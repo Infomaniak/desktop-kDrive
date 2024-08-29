@@ -89,7 +89,7 @@ ExitCode OperationSorterWorker::sortOperations() {
             _hasOrderChanged = true;
 
             // If a cycle is discover, the sync must be restarted after the execution of the operation in _syncOrderedOps
-            _syncPal->_restart = true;
+            _syncPal->setRestart(true);
 
             return ExitCode::Ok;
         }
@@ -100,7 +100,7 @@ ExitCode OperationSorterWorker::sortOperations() {
         *_syncPal->_syncOps = *reshuffledOps;
 
         // If a cycle is discover, the sync must be restarted after the execution of the operation in _syncOrderedOps
-        _syncPal->_restart = true;
+        _syncPal->setRestart(true);
     }
 
     return ExitCode::Ok;

@@ -46,13 +46,13 @@ void SyncPalWorker::execute() {
 
     LOG_SYNCPAL_INFO(_logger, "Worker " << name().c_str() << " started");
 
-    if (_syncPal->_vfsMode != VirtualFileMode::Off) {
+    if (_syncPal->vfsMode() != VirtualFileMode::Off) {
         // Reset vfs files status
         if (!resetVfsFilesStatus()) {
             LOG_SYNCPAL_WARN(_logger, "Error in resetVfsFilesStatus for syncDbId=" << _syncPal->syncDbId());
         }
 
-        if (_syncPal->_vfsMode == VirtualFileMode::Mac) {
+        if (_syncPal->vfsMode() == VirtualFileMode::Mac) {
             // Reset nodes syncing flag
             if (!_syncPal->_syncDb->updateNodesSyncing(false)) {
                 LOG_SYNCPAL_WARN(_logger, "Error in SyncDb::updateNodesSyncing for syncDbId=" << _syncPal->syncDbId());
@@ -288,7 +288,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->copySnapshots();
             inputSharedObject[0] = _syncPal->snapshot(ReplicaSide::Local, true);
             inputSharedObject[1] = _syncPal->snapshot(ReplicaSide::Remote, true);
-            _syncPal->_restart = false;
+            _syncPal->setRestart(false);
             break;
         case SyncStep::UpdateDetection2:
             workers[0] = _syncPal->_localUpdateTreeWorker;
@@ -339,8 +339,8 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             inputSharedObject[0] = nullptr;
             inputSharedObject[1] = nullptr;
             _syncPal->stopEstimateUpdates();
-            if (!_syncPal->_restart) {
-                _syncPal->setSyncHasFullyCompleted(true);
+            if (!_syncPal->restart()) {
+                _syncPal->setSyncHasFullyCompletedInParms(true);
             }
             break;
         default:
@@ -395,7 +395,7 @@ SyncStep SyncPalWorker::nextStep() const {
             return (_syncPal->isSnapshotValid(ReplicaSide::Local) && _syncPal->isSnapshotValid(ReplicaSide::Remote) &&
                     !_syncPal->_localFSObserverWorker->updating() && !_syncPal->_remoteFSObserverWorker->updating() &&
                     (_syncPal->snapshot(ReplicaSide::Local)->updated() || _syncPal->snapshot(ReplicaSide::Remote)->updated() ||
-                     _syncPal->_restart))
+                     _syncPal->restart()))
                        ? SyncStep::UpdateDetection1
                        : SyncStep::Idle;
             break;
@@ -415,7 +415,7 @@ SyncStep SyncPalWorker::nextStep() const {
             if (CommonUtility::isFileSizeMismatchDetectionEnabled() &&
                 !_syncPal->computeFSOperationsWorker()->getFileSizeMismatchMap().empty()) {
                 _syncPal->fixCorruptedFile(_syncPal->computeFSOperationsWorker()->getFileSizeMismatchMap());
-                _syncPal->_restart = true;
+                _syncPal->setRestart(true);
                 return SyncStep::Idle;
             }
 
@@ -525,7 +525,7 @@ bool SyncPalWorker::resetVfsFilesStatus() {
     try {
         std::error_code ec;
         auto dirIt = std::filesystem::recursive_directory_iterator(
-            _syncPal->_localPath, std::filesystem::directory_options::skip_permission_denied, ec);
+            _syncPal->localPath(), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in resetVfsFilesStatus: " << Utility::formatStdError(ec).c_str());
             return false;
