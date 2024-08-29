@@ -175,13 +175,13 @@ void TestSyncDb::testNodes() {
 
     SyncName localName;
     SyncName remoteName;
-    bool found;
+    bool found = false;
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, nodeFile7.nodeIdLocal().value(), localName, found) && found);
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, nodeFile7.nodeIdRemote().value(), remoteName, found) && found);
 
     const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
-    CPPUNIT_ASSERT(localName == nfcEncodedName);
-    CPPUNIT_ASSERT(remoteName == nfcEncodedName);
+    CPPUNIT_ASSERT(localName == nfdEncodedName);   // Local name is not normalized.
+    CPPUNIT_ASSERT(remoteName == nfcEncodedName);  // Remote name is normalized.
 
     // Update node
     nodeFile6.setNodeId(dbNodeIdFile6);
@@ -215,8 +215,8 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, nodeFile7.nodeIdLocal().value(), localName, found) && found);
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, nodeFile7.nodeIdRemote().value(), remoteName, found) && found);
 
-    CPPUNIT_ASSERT(localName == nfcEncodedName);
-    CPPUNIT_ASSERT(remoteName == nfcEncodedName);
+    CPPUNIT_ASSERT(localName == nfdEncodedName);   // Local name is not normalized.
+    CPPUNIT_ASSERT(remoteName == nfcEncodedName);  // Remote name is normalized.
 
     // Delete node
     CPPUNIT_ASSERT(_testObj->deleteNode(dbNodeIdFile6, found) && found);

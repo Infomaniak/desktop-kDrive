@@ -2134,8 +2134,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
                                ? (syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : "")
                                : newNodeId;
     SyncName localName = syncOp->targetSide() == ReplicaSide::Local ? syncOp->newName() : syncOp->getName(ReplicaSide::Local);
-    SyncName remoteName = Utility::normalizedSyncName(
-        syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote));
+    SyncName remoteName = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote);
 
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
@@ -2283,8 +2282,8 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
     std::string remoteId = syncOp->targetSide() == ReplicaSide::Local
                                ? syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string()
                                : newNodeId;
-    SyncName localName = syncOp->getName(ReplicaSide::Local);
-    SyncName remoteName = Utility::normalizedSyncName(syncOp->getName(ReplicaSide::Remote));
+    const SyncName localName = syncOp->getName(ReplicaSide::Local);
+    const SyncName remoteName = syncOp->getName(ReplicaSide::Remote);
 
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
@@ -2393,8 +2392,7 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                            : correspondingNode->id().has_value() ? *correspondingNode->id()
                                                                  : std::string();
     SyncName localName = syncOp->targetSide() == ReplicaSide::Local ? syncOp->newName() : syncOp->getName(ReplicaSide::Local);
-    SyncName remoteName = Utility::normalizedSyncName(
-        syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote));
+    SyncName remoteName = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote);
 
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
