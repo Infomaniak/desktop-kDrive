@@ -170,7 +170,7 @@ void TestRemoteFileSystemObserverWorker::testUpdateSnapshot() {
         Utility::msleep(1000);
 
         const std::time_t time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        UploadJob job(_driveDbId, testFilePath, testFileName, remoteTmpDir.id(), time);
+        UploadJob job(_driveDbId, testFilePath, _testFileId, time);
         job.runSynchronously();
 
         // Get activity from the server
