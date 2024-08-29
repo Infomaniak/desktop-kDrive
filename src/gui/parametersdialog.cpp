@@ -734,7 +734,7 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
     switch (cancelType) {
         case CancelType::Create: {
             return tr(
-                "You are not allowed to create item.<br>"
+                "You are not allowed to create item or another one already exist with the same name.<br>"
                 "The item has been excluded from synchronization.");
         }
         case CancelType::Edit: {
