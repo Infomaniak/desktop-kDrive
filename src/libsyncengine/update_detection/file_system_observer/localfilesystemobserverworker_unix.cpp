@@ -32,9 +32,9 @@ LocalFileSystemObserverWorker_unix::LocalFileSystemObserverWorker_unix(std::shar
                                                                        const std::string &shortName)
     : LocalFileSystemObserverWorker(syncPal, name, shortName) {
 #ifdef __APPLE__
-    _folderWatcher.reset(new FolderWatcher_mac(this, syncPal->_localPath));
+    _folderWatcher.reset(new FolderWatcher_mac(this, syncPal->localPath()));
 #else
-    _folderWatcher.reset(new FolderWatcher_linux(this, syncPal->_localPath));
+    _folderWatcher.reset(new FolderWatcher_linux(this, syncPal->localPath()));
 #endif
 }
 

@@ -234,7 +234,7 @@ void ConflictFinderWorker::findConflictsInTree(std::shared_ptr<UpdateTree> local
 
 std::optional<Conflict> ConflictFinderWorker::checkCreateCreateConflict(std::shared_ptr<Node> createNode) {
     std::shared_ptr<Node> correspondingParentNode;
-    if (_syncPal->_syncHasFullyCompleted) {
+    if (_syncPal->syncHasFullyCompleted()) {
         correspondingParentNode = correspondingNodeDirect(createNode->parentNode());
     } else {
         correspondingParentNode = correspondingNodeInOtherTree(createNode->parentNode());

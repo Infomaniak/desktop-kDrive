@@ -49,7 +49,7 @@ void ConflictResolverWorker::execute() {
     }
 
     // The sync must be restarted after the execution of the operations that resolve the conflict
-    _syncPal->_restart = true;
+    _syncPal->setRestart(true);
 
     setDone(exitCode);
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
@@ -353,7 +353,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
 bool ConflictResolverWorker::generateConflictedName(const std::shared_ptr<Node> node, SyncName &newName,
                                                     bool isOrphanNode /*= false*/) const {
-    SyncPath absoluteLocalFilePath = _syncPal->_localPath / node->getPath();
+    SyncPath absoluteLocalFilePath = _syncPal->localPath() / node->getPath();
     newName = PlatformInconsistencyCheckerUtility::instance()->generateNewValidName(
         absoluteLocalFilePath, isOrphanNode ? PlatformInconsistencyCheckerUtility::SuffixTypeOrphan
                                             : PlatformInconsistencyCheckerUtility::SuffixTypeConflict);

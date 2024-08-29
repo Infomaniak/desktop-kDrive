@@ -29,7 +29,6 @@ class GetFileInfoJob : public AbstractTokenNetworkJob {
 
         inline const NodeId &nodeId() const { return _nodeId; }
         inline const NodeId &parentNodeId() const { return _parentNodeId; }
-        inline const std::string &name() const { return _name; }
         inline SyncTime creationTime() const { return _creationTime; }
         inline SyncTime modtime() const { return _modtime; }
         inline bool isLink() const { return _isLink; }
