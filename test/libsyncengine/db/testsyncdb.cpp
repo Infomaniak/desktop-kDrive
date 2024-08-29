@@ -160,7 +160,11 @@ std::vector<SyncName> createSyncFiles(const SyncPath &localPath) {
     std::ofstream file3{localPath / "a" / nfc};
     std::ofstream file5{localPath / "b" / nfd};
 
+#ifndef _WIN32
     return {"a", "c", nfc, "b", nfd};
+#else
+    return {L"a", L"c", nfc, L"b", nfd};
+#endif
 }
 
 std::vector<DbNode> TestSyncDb::setupSyncDb_3_6_4() {
