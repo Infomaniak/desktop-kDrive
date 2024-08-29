@@ -25,12 +25,12 @@ namespace KDC {
 
 class TestSyncDb : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSyncDb);
-        // CPPUNIT_TEST(testNodes);
-        // CPPUNIT_TEST(testSyncNodes);
-        // CPPUNIT_TEST(testCorrespondingNodeId);
-        // CPPUNIT_TEST(testUpgrade_3_6_3);
-        CPPUNIT_TEST(testUpgrade_3_6_4);
-        CPPUNIT_TEST(testUpgrade_3_6_4_checkNodeMap);
+        CPPUNIT_TEST(testNodes);
+        CPPUNIT_TEST(testSyncNodes);
+        CPPUNIT_TEST(testCorrespondingNodeId);
+        CPPUNIT_TEST(testUpdateLocalName);
+        CPPUNIT_TEST(testUpgradeTo3_6_5);
+        CPPUNIT_TEST(testUpgradeTo3_6_5_checkNodeMap);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -41,13 +41,13 @@ class TestSyncDb : public CppUnit::TestFixture {
         void testNodes();
         void testSyncNodes();
         void testCorrespondingNodeId();
-        void testUpgrade_3_6_3();
-        void testUpgrade_3_6_4();
-        void testUpgrade_3_6_4_checkNodeMap();
+        void testUpdateLocalName();
+        void testUpgradeTo3_6_5();
+        void testUpgradeTo3_6_5_checkNodeMap();
 
     private:
         SyncDb *_testObj;
-        std::vector<DbNode> setupSyncDb_3_6_4();
+        std::vector<DbNode> setupSyncDb_3_6_5();
 };
 
 }  // namespace KDC
