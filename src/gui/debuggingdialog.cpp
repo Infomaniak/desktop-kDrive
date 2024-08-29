@@ -175,8 +175,7 @@ void DebuggingDialog::initUI() {
         if (debugLevelElt.second.first == 0) {
             debugLevelStr = debugLevelElt.second.second + QString::fromStdString(" (Recommended)");
         }
-        _debugLevelComboBox->insertItem(debugLevelElt.second.first, debugLevelElt.second.second,
-                                        enumClassToInt(debugLevelElt.first));
+        _debugLevelComboBox->insertItem(debugLevelElt.second.first, debugLevelElt.second.second, toInt(debugLevelElt.first));
     }
     debugLevelSelectionHBox->addWidget(_debugLevelComboBox);
 
@@ -574,7 +573,7 @@ void DebuggingDialog::updateUI() {
     _extendedLogCheckBox->setCheckState(_extendedLog ? Qt::Checked : Qt::Unchecked);
     _debuggingInfoMainWidget->setVisible(_recordDebugging);
     _debugLevelComboBox->setEnabled(_recordDebugging);
-    _debugLevelComboBox->setCurrentIndex(_recordDebugging ? enumClassToInt(_minLogLevel) : -1);
+    _debugLevelComboBox->setCurrentIndex(_recordDebugging ? toInt(_minLogLevel) : -1);
 
     _deleteLogsCheckBox->setEnabled(_recordDebugging);
     _deleteLogsCheckBox->setChecked(_recordDebugging ? _deleteLogs : false);

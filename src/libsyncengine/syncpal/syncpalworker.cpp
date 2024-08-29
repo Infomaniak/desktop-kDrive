@@ -27,6 +27,8 @@
 #include "propagation/operation_sorter/operationsorterworker.h"
 #include "propagation/executor/executorworker.h"
 #include "libcommonserver/utility/utility.h"
+#include "libcommon/utility/utility.h"
+
 
 #include <log4cplus/loggingmacros.h>
 
@@ -281,7 +283,7 @@ void SyncPalWorker::initStep(SyncStep step, std::shared_ptr<ISyncWorker> (&worke
             _syncPal->refreshTmpBlacklist();
             break;
         case SyncStep::UpdateDetection1:
-            workers[0] = _syncPal->_computeFSOperationsWorker;
+            workers[0] = _syncPal->computeFSOperationWorker();
             workers[1] = nullptr;
             _syncPal->copySnapshots();
             inputSharedObject[0] = _syncPal->snapshot(ReplicaSide::Local, true);
@@ -401,7 +403,7 @@ SyncStep SyncPalWorker::nextStep() const {
             auto logNbOps = [=](const ReplicaSide side) {
                 auto opsSet = _syncPal->operationSet(side);
                 LOG_SYNCPAL_DEBUG(_logger, opsSet->nbOps()
-                                               << " " << Utility::side2Str(side).c_str()
+                                               << " " << side
                                                << " operations detected (# CREATE: " << opsSet->nbOpsByType(OperationType::Create)
                                                << ", # EDIT: " << opsSet->nbOpsByType(OperationType::Edit)
                                                << ", # MOVE: " << opsSet->nbOpsByType(OperationType::Move)
@@ -410,8 +412,9 @@ SyncStep SyncPalWorker::nextStep() const {
             logNbOps(ReplicaSide::Local);
             logNbOps(ReplicaSide::Remote);
 
-            if (!_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap().empty()) {
-                _syncPal->fixCorruptedFile(_syncPal->_computeFSOperationsWorker->getFileSizeMismatchMap());
+            if (CommonUtility::isFileSizeMismatchDetectionEnabled() &&
+                !_syncPal->computeFSOperationWorker()->getFileSizeMismatchMap().empty()) {
+                _syncPal->fixCorruptedFile(_syncPal->computeFSOperationWorker()->getFileSizeMismatchMap());
                 _syncPal->_restart = true;
                 return SyncStep::Idle;
             }

@@ -142,7 +142,7 @@ void ExecutorWorker::execute() {
                 }
                 default: {
                     LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type: "
-                                                   << Utility::s2ws(Utility::opType2Str(syncOp->type())).c_str() << L" on file "
+                                                   << syncOp->type() << L" on file "
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                     _executorExitCode = ExitCode::DataError;
                     _executorExitCause = ExitCause::Unknown;
@@ -1833,8 +1833,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             // Cancel all queued jobs
             _executorExitCode = job->exitCode();
             _executorExitCause = job->exitCause();
-            LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. exit code: " << enumClassToInt(_executorExitCode) << L" exit cause: "
-                                                                       << enumClassToInt(_executorExitCause));
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Cancelling jobs. exit code: " << _executorExitCode << L" exit cause: " << _executorExitCause);
             cancelAllOngoingJobs();
             _syncPal->setProgressComplete(relativeLocalPath, SyncFileStatus::Error);
             return false;
@@ -2101,8 +2101,7 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
             return propagateDeleteToDbAndTree(syncOp);
         }
         default: {
-            LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type " << Utility::s2ws(Utility::opType2Str(syncOp->type())).c_str()
-                                                                  << L" on file "
+            LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type " << syncOp->type() << L" on file "
                                                                   << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
         }
     }
@@ -2162,7 +2161,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
                                << L" / createdAt="
                                << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
                                << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                               << enumClassToInt(syncOp->affectedNode()->type()));
+                               << syncOp->affectedNode()->type());
     }
 
     if (dbNode.nameLocal().empty() || dbNode.nameRemote().empty() || !dbNode.nodeIdLocal().has_value() ||
@@ -2314,7 +2313,7 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
                              << (dbNode.parentNodeId().has_value() ? dbNode.parentNodeId().value() : -1) << L" / createdAt="
                              << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
                              << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                             << enumClassToInt(syncOp->affectedNode()->type()));
+                             << syncOp->affectedNode()->type());
     }
 
     if (!_syncPal->_syncDb->updateNode(dbNode, found)) {
@@ -2423,7 +2422,7 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                              << L" / lastModTime="
                              << (syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified()
                                                                                     : -1)
-                             << L" / type=" << enumClassToInt(syncOp->affectedNode()->type()));
+                             << L" / type=" << syncOp->affectedNode()->type());
     }
 
     if (!_syncPal->_syncDb->updateNode(dbNode, found)) {

@@ -88,7 +88,6 @@ class ParametersDialog : public CustomDialog {
         DrivePreferencesWidget *_drivePreferencesWidget{nullptr};
         QScrollArea *_drivePreferencesScrollArea{nullptr};
         QWidget *_noDrivePagewidget{nullptr};
-        ActionWidget *_sendLogsWidget{nullptr};
         QStackedWidget *_errorsStackedWidget{nullptr};
         QLabel *_defaultTextLabel{nullptr};
 
@@ -123,7 +122,6 @@ class ParametersDialog : public CustomDialog {
         void onDisplayPreferences();
         void onBackButtonClicked();
         void onSetStyle(bool darkTheme);
-        void onSendLogs();
         void onOpenFolder(const QString &filePath);
         void onDebugReporterDone(bool retCode, const QString &debugId = QString());
         void retranslateUi();

@@ -655,8 +655,7 @@ bool VfsWin::status(const QString &filePath, bool &isPlaceholder, bool &isHydrat
 }
 
 bool VfsWin::fileStatusChanged(const QString &path, SyncFileStatus status) {
-    LOGW_DEBUG(logger(), L"fileStatusChanged: " << Utility::formatSyncPath(QStr2Path(path)).c_str() << L" status = "
-                                                << Utility::s2ws(Utility::syncFileStatus2Str(status)).c_str());
+    LOGW_DEBUG(logger(), L"fileStatusChanged: " << Utility::formatSyncPath(QStr2Path(path)).c_str() << L" status = " << status);
 
     SyncPath fullPath(QStr2Path(path));
     bool exists = false;

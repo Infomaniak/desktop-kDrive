@@ -125,22 +125,10 @@ struct COMMONSERVER_EXPORT Utility {
         static void strhex2str(const std::string &hexstr, std::string &str);
         static std::vector<std::string> splitStr(const std::string &str, char sep);
         static std::string joinStr(const std::vector<std::string> &strList, char sep = 0);
-        static std::string opType2Str(OperationType opType);
-        static std::wstring opType2WStr(OperationType opType);
-        static std::string conflictType2Str(ConflictType conflictType);
-        static std::wstring conflictType2WStr(ConflictType conflictType);
-        static std::string side2Str(ReplicaSide side);
-        static std::wstring side2WStr(ReplicaSide side);
-        static std::string NodeType2Str(NodeType type);
-        static std::wstring NodeType2WStr(NodeType type);
-        static std::string logLevel2Str(LogLevel level);
-        static std::wstring logLevel2WStr(LogLevel level);
-        static std::string syncFileStatus2Str(SyncFileStatus status);
-        static std::wstring syncFileStatus2WStr(SyncFileStatus status);
         static std::string list2str(std::unordered_set<std::string> inList);
         static std::string list2str(std::list<std::string> inList);
 
-        inline static int pathDepth(const SyncPath &path) { return std::distance(path.begin(), path.end()); };
+        inline static int pathDepth(const SyncPath &path) { return (int)std::distance(path.begin(), path.end()); };
         static std::string computeMd5Hash(const std::string &in);
         static std::string computeMd5Hash(const char *in, std::size_t length);
         static std::string computeXxHash(const std::string &in);

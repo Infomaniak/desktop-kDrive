@@ -20,6 +20,7 @@
 
 #include "syncpal/syncpal.h"
 #include "testincludes.h"
+#include "test_utility/localtemporarydirectory.h"
 
 using namespace CppUnit;
 
@@ -97,6 +98,7 @@ class TestIntegration : public CppUnit::TestFixture {
         NodeId _newTestFileRemoteId;
 
         std::vector<testFctPtr> _testFctPtrVector;
+        LocalTemporaryDirectory _localTmpDir{"test_integration"};
 };
 
 }  // namespace KDC

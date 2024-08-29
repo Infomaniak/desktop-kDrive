@@ -17,6 +17,7 @@
  */
 
 #pragma once
+#include <string>
 
 #define COMM_SHORT_TIMEOUT 1000
 #define COMM_AVERAGE_TIMEOUT 10000
@@ -123,6 +124,172 @@ enum class RequestNum {
     RECONSIDER_SKIPPED_UPDATE,
     UTILITY_QUIT,
 };
+inline std::string toString(RequestNum e) {
+    switch (e) {
+        case RequestNum::LOGIN_REQUESTTOKEN:
+            return "LOGIN_REQUESTTOKEN";
+        case RequestNum::USER_DBIDLIST:
+            return "USER_DBIDLIST";
+        case RequestNum::USER_INFOLIST:
+            return "USER_INFOLIST";
+        case RequestNum::USER_DELETE:
+            return "USER_DELETE";
+        case RequestNum::USER_AVAILABLEDRIVES:
+            return "USER_AVAILABLEDRIVES";
+        case RequestNum::USER_ID_FROM_USERDBID:
+            return "USER_ID_FROM_USERDBID";
+        case RequestNum::ACCOUNT_INFOLIST:
+            return "ACCOUNT_INFOLIST";
+        case RequestNum::DRIVE_INFOLIST:
+            return "DRIVE_INFOLIST";
+        case RequestNum::DRIVE_INFO:
+            return "DRIVE_INFO";
+        case RequestNum::DRIVE_ID_FROM_DRIVEDBID:
+            return "DRIVE_ID_FROM_DRIVEDBID";
+        case RequestNum::DRIVE_ID_FROM_SYNCDBID:
+            return "DRIVE_ID_FROM_SYNCDBID";
+        case RequestNum::DRIVE_DEFAULTCOLOR:
+            return "DRIVE_DEFAULTCOLOR";
+        case RequestNum::DRIVE_UPDATE:
+            return "DRIVE_UPDATE";
+        case RequestNum::DRIVE_DELETE:
+            return "DRIVE_DELETE";
+        case RequestNum::SYNC_INFOLIST:
+            return "SYNC_INFOLIST";
+        case RequestNum::SYNC_START:
+            return "SYNC_START";
+        case RequestNum::SYNC_STOP:
+            return "SYNC_STOP";
+        case RequestNum::SYNC_STATUS:
+            return "SYNC_STATUS";
+        case RequestNum::SYNC_ISRUNNING:
+            return "SYNC_ISRUNNING";
+        case RequestNum::SYNC_ADD:
+            return "SYNC_ADD";
+        case RequestNum::SYNC_ADD2:
+            return "SYNC_ADD2";
+        case RequestNum::SYNC_START_AFTER_LOGIN:
+            return "SYNC_START_AFTER_LOGIN";
+        case RequestNum::SYNC_DELETE:
+            return "SYNC_DELETE";
+        case RequestNum::SYNC_GETPUBLICLINKURL:
+            return "SYNC_GETPUBLICLINKURL";
+        case RequestNum::SYNC_GETPRIVATELINKURL:
+            return "SYNC_GETPRIVATELINKURL";
+        case RequestNum::SYNC_ASKFORSTATUS:
+            return "SYNC_ASKFORSTATUS";
+        case RequestNum::SYNC_SETSUPPORTSVIRTUALFILES:
+            return "SYNC_SETSUPPORTSVIRTUALFILES";
+        case RequestNum::SYNC_SETROOTPINSTATE:
+            return "SYNC_SETROOTPINSTATE";
+        case RequestNum::SYNC_PROPAGATE_SYNCLIST_CHANGE:
+            return "SYNC_PROPAGATE_SYNCLIST_CHANGE";
+        case RequestNum::SYNCNODE_LIST:
+            return "SYNCNODE_LIST";
+        case RequestNum::SYNCNODE_SETLIST:
+            return "SYNCNODE_SETLIST";
+        case RequestNum::NODE_PATH:
+            return "NODE_PATH";
+        case RequestNum::NODE_INFO:
+            return "NODE_INFO";
+        case RequestNum::NODE_SUBFOLDERS:
+            return "NODE_SUBFOLDERS";
+        case RequestNum::NODE_SUBFOLDERS2:
+            return "NODE_SUBFOLDERS2";
+        case RequestNum::NODE_FOLDER_SIZE:
+            return "NODE_FOLDER_SIZE";
+        case RequestNum::NODE_CREATEMISSINGFOLDERS:
+            return "NODE_CREATEMISSINGFOLDERS";
+        case RequestNum::ERROR_INFOLIST:
+            return "ERROR_INFOLIST";
+        case RequestNum::ERROR_GET_CONFLICTS:
+            return "ERROR_GET_CONFLICTS";
+        case RequestNum::ERROR_DELETE_SERVER:
+            return "ERROR_DELETE_SERVER";
+        case RequestNum::ERROR_DELETE_SYNC:
+            return "ERROR_DELETE_SYNC";
+        case RequestNum::ERROR_DELETE_INVALIDTOKEN:
+            return "ERROR_DELETE_INVALIDTOKEN";
+        case RequestNum::ERROR_RESOLVE_CONFLICTS:
+            return "ERROR_RESOLVE_CONFLICTS";
+        case RequestNum::ERROR_RESOLVE_UNSUPPORTED_CHAR:
+            return "ERROR_RESOLVE_UNSUPPORTED_CHAR";
+        case RequestNum::EXCLTEMPL_GETEXCLUDED:
+            return "EXCLTEMPL_GETEXCLUDED";
+        case RequestNum::EXCLTEMPL_GETLIST:
+            return "EXCLTEMPL_GETLIST";
+        case RequestNum::EXCLTEMPL_SETLIST:
+            return "EXCLTEMPL_SETLIST";
+        case RequestNum::EXCLTEMPL_PROPAGATE_CHANGE:
+            return "EXCLTEMPL_PROPAGATE_CHANGE";
+#ifdef __APPLE__
+        case RequestNum::EXCLAPP_GETLIST:
+            return "EXCLAPP_GETLIST";
+        case RequestNum::EXCLAPP_SETLIST:
+            return "EXCLAPP_SETLIST";
+        case RequestNum::GET_FETCHING_APP_LIST:
+            return "GET_FETCHING_APP_LIST";
+#endif
+        case RequestNum::PARAMETERS_INFO:
+            return "PARAMETERS_INFO";
+        case RequestNum::PARAMETERS_UPDATE:
+            return "PARAMETERS_UPDATE";
+        case RequestNum::UTILITY_FINDGOODPATHFORNEWSYNC:
+            return "UTILITY_FINDGOODPATHFORNEWSYNC";
+        case RequestNum::UTILITY_BESTVFSAVAILABLEMODE:
+            return "UTILITY_BESTVFSAVAILABLEMODE";
+#ifdef WIN32
+        case RequestNum::UTILITY_SHOWSHORTCUT:
+            return "UTILITY_SHOWSHORTCUT";
+        case RequestNum::UTILITY_SETSHOWSHORTCUT:
+            return "UTILITY_SETSHOWSHORTCUT";
+#endif
+        case RequestNum::UTILITY_ACTIVATELOADINFO:
+            return "UTILITY_ACTIVATELOADINFO";
+        case RequestNum::UTILITY_CHECKCOMMSTATUS:
+            return "UTILITY_CHECKCOMMSTATUS";
+        case RequestNum::UTILITY_HASSYSTEMLAUNCHONSTARTUP:
+            return "UTILITY_HASSYSTEMLAUNCHONSTARTUP";
+        case RequestNum::UTILITY_HASLAUNCHONSTARTUP:
+            return "UTILITY_HASLAUNCHONSTARTUP";
+        case RequestNum::UTILITY_SETLAUNCHONSTARTUP:
+            return "UTILITY_SETLAUNCHONSTARTUP";
+        case RequestNum::UTILITY_SET_APPSTATE:
+            return "UTILITY_SET_APPSTATE";
+        case RequestNum::UTILITY_GET_APPSTATE:
+            return "UTILITY_GET_APPSTATE";
+        case RequestNum::UTILITY_SEND_LOG_TO_SUPPORT:
+            return "UTILITY_SEND_LOG_TO_SUPPORT";
+        case RequestNum::UTILITY_CANCEL_LOG_TO_SUPPORT:
+            return "UTILITY_CANCEL_LOG_TO_SUPPORT";
+        case RequestNum::UTILITY_GET_LOG_ESTIMATED_SIZE:
+            return "UTILITY_GET_LOG_ESTIMATED_SIZE";
+        case RequestNum::UPDATER_VERSION:
+            return "UPDATER_VERSION";
+        case RequestNum::UPDATER_ISKDCUPDATER:
+            return "UPDATER_ISKDCUPDATER";
+        case RequestNum::UPDATER_ISSPARKLEUPDATER:
+            return "UPDATER_ISSPARKLEUPDATER";
+        case RequestNum::UPDATER_STATUSSTRING:
+            return "UPDATER_STATUSSTRING";
+        case RequestNum::UPDATER_STATUS:
+            return "UPDATER_STATUS";
+        case RequestNum::UPDATER_DOWNLOADCOMPLETED:
+            return "UPDATER_DOWNLOADCOMPLETED";
+        case RequestNum::UPDATER_UPDATEFOUND:
+            return "UPDATER_UPDATEFOUND";
+        case RequestNum::UPDATER_STARTINSTALLER:
+            return "UPDATER_STARTINSTALLER";
+        case RequestNum::UPDATER_UPDATE_DIALOG_RESULT:
+            return "UPDATER_UPDATE_DIALOG_RESULT";
+        case RequestNum::RECONSIDER_SKIPPED_UPDATE:
+            return "RECONSIDER_SKIPPED_UPDATE";
+        case RequestNum::UTILITY_QUIT:
+            return "UTILITY_QUIT";
+        default:
+            return "No conversion to string available";
+    }
+}
 
 enum class SignalNum {
     // User
@@ -162,3 +329,67 @@ enum class SignalNum {
     UTILITY_SHOW_SYNTHESIS,
     UTILITY_LOG_UPLOAD_STATUS_UPDATED,
 };
+inline std::string toString(SignalNum e) {
+    switch (e) {
+        case SignalNum::USER_ADDED:
+            return "USER_ADDED";
+        case SignalNum::USER_UPDATED:
+            return "USER_UPDATED";
+        case SignalNum::USER_STATUSCHANGED:
+            return "USER_STATUSCHANGED";
+        case SignalNum::USER_REMOVED:
+            return "USER_REMOVED";
+        case SignalNum::ACCOUNT_ADDED:
+            return "ACCOUNT_ADDED";
+        case SignalNum::ACCOUNT_UPDATED:
+            return "ACCOUNT_UPDATED";
+        case SignalNum::ACCOUNT_REMOVED:
+            return "ACCOUNT_REMOVED";
+        case SignalNum::DRIVE_ADDED:
+            return "DRIVE_ADDED";
+        case SignalNum::DRIVE_UPDATED:
+            return "DRIVE_UPDATED";
+        case SignalNum::DRIVE_QUOTAUPDATED:
+            return "DRIVE_QUOTAUPDATED";
+        case SignalNum::DRIVE_REMOVED:
+            return "DRIVE_REMOVED";
+        case SignalNum::DRIVE_DELETE_FAILED:
+            return "DRIVE_DELETE_FAILED";
+        case SignalNum::SYNC_ADDED:
+            return "SYNC_ADDED";
+        case SignalNum::SYNC_UPDATED:
+            return "SYNC_UPDATED";
+        case SignalNum::SYNC_REMOVED:
+            return "SYNC_REMOVED";
+        case SignalNum::SYNC_PROGRESSINFO:
+            return "SYNC_PROGRESSINFO";
+        case SignalNum::SYNC_COMPLETEDITEM:
+            return "SYNC_COMPLETEDITEM";
+        case SignalNum::SYNC_VFS_CONVERSION_COMPLETED:
+            return "SYNC_VFS_CONVERSION_COMPLETED";
+        case SignalNum::SYNC_DELETE_FAILED:
+            return "SYNC_DELETE_FAILED";
+        case SignalNum::NODE_FOLDER_SIZE_COMPLETED:
+            return "NODE_FOLDER_SIZE_COMPLETED";
+        case SignalNum::NODE_FIX_CONFLICTED_FILES_COMPLETED:
+            return "NODE_FIX_CONFLICTED_FILES_COMPLETED";
+        case SignalNum::UPDATER_SHOW_DIALOG:
+            return "UPDATER_SHOW_DIALOG";
+        case SignalNum::UTILITY_SHOW_NOTIFICATION:
+            return "UTILITY_SHOW_NOTIFICATION";
+        case SignalNum::UTILITY_NEW_BIG_FOLDER:
+            return "UTILITY_NEW_BIG_FOLDER";
+        case SignalNum::UTILITY_ERROR_ADDED:
+            return "UTILITY_ERROR_ADDED";
+        case SignalNum::UTILITY_ERRORS_CLEARED:
+            return "UTILITY_ERRORS_CLEARED";
+        case SignalNum::UTILITY_SHOW_SETTINGS:
+            return "UTILITY_SHOW_SETTINGS";
+        case SignalNum::UTILITY_SHOW_SYNTHESIS:
+            return "UTILITY_SHOW_SYNTHESIS";
+        case SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED:
+            return "UTILITY_LOG_UPLOAD_STATUS_UPDATED";
+        default:
+            return "No conversion to string available";
+    }
+}

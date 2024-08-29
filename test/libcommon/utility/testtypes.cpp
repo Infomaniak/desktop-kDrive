@@ -19,6 +19,7 @@
 #include "config.h"
 #include "testutility.h"
 #include "libcommon/utility/utility.h"
+#include "libcommonserver/log/log.h"
 #include "testtypes.h"
 
 namespace KDC {
@@ -27,5 +28,33 @@ void KDC::TestTypes::testOtherSide() {
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Local, otherSide(ReplicaSide::Remote));
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Remote, otherSide(ReplicaSide::Local));
     CPPUNIT_ASSERT_EQUAL(ReplicaSide::Unknown, otherSide(ReplicaSide::Unknown));
+}
+void TestTypes::testStreamConversion() {
+    // Test enum class to string conversion with code
+    CPPUNIT_ASSERT_EQUAL(std::string("Unknown(0)"), toStringWithCode(NodeType::Unknown));
+    CPPUNIT_ASSERT_EQUAL(std::string("File(1)"), toStringWithCode(NodeType::File));
+    CPPUNIT_ASSERT_EQUAL(std::string("Directory(2)"), toStringWithCode(NodeType::Directory));
+
+    // Test stream operator for enum class without unicode
+    std::ostringstream os;
+    os << NodeType::Unknown;
+    CPPUNIT_ASSERT_EQUAL(std::string("Unknown(0)"), os.str());
+
+    // Test stream operator for enum class with unicode
+    std::wostringstream wos;
+    wos << NodeType::Unknown;
+    CPPUNIT_ASSERT(L"Unknown(0)" == wos.str());  // Can't use CPPUNIT_ASSERT_EQUAL because of issue with wchar_t in CPPUNIT
+
+    // Test Logging of enum class
+    LOG_WARN(Log::instance()->getLogger(), "Test log of enumClass: " << NodeType::Unknown);
+    std::ifstream is(Log::instance()->getLogFilePath().string());
+
+    // check that the last line of the log file contains the expected string
+    std::string line;
+    std::string previousLine;
+    while (std::getline(is, line)) {
+        previousLine = line;
+    }
+    CPPUNIT_ASSERT(previousLine.find("Test log of enumClass: Unknown(0)") != std::string::npos);
 }
 }  // namespace KDC

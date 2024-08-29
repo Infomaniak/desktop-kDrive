@@ -1900,7 +1900,7 @@ bool SyncDb::updateAllSyncNodes(SyncNodeType type, const std::unordered_set<Node
 
     // Delete existing SyncNodes
     ASSERT(queryResetAndClearBindings(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID));
-    ASSERT(queryBindValue(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, 1, enumClassToInt(type)));
+    ASSERT(queryBindValue(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, 1, toInt(type)));
     if (!queryExec(DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << DELETE_ALL_SYNC_NODE_BY_TYPE_REQUEST_ID);
         rollbackTransaction();
@@ -1911,7 +1911,7 @@ bool SyncDb::updateAllSyncNodes(SyncNodeType type, const std::unordered_set<Node
     for (const NodeId &nodeId : nodeIdSet) {
         ASSERT(queryResetAndClearBindings(INSERT_SYNC_NODE_REQUEST_ID));
         ASSERT(queryBindValue(INSERT_SYNC_NODE_REQUEST_ID, 1, nodeId));
-        ASSERT(queryBindValue(INSERT_SYNC_NODE_REQUEST_ID, 2, enumClassToInt(type)));
+        ASSERT(queryBindValue(INSERT_SYNC_NODE_REQUEST_ID, 2, toInt(type)));
         if (!queryExec(INSERT_SYNC_NODE_REQUEST_ID, errId, error)) {
             LOG_WARN(_logger, "Error running query: " << INSERT_SYNC_NODE_REQUEST_ID);
             rollbackTransaction();
@@ -1928,7 +1928,7 @@ bool SyncDb::selectAllSyncNodes(SyncNodeType type, std::unordered_set<NodeId> &n
     const std::lock_guard<std::mutex> lock(_mutex);
 
     ASSERT(queryResetAndClearBindings(SELECT_ALL_SYNC_NODE_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_ALL_SYNC_NODE_REQUEST_ID, 1, enumClassToInt(type)));
+    ASSERT(queryBindValue(SELECT_ALL_SYNC_NODE_REQUEST_ID, 1, toInt(type)));
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_SYNC_NODE_REQUEST_ID, found)) {

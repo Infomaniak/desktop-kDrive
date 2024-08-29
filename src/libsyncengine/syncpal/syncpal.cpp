@@ -949,14 +949,13 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 }
 
 ExitCode SyncPal::updateSyncNode() {
-    for (int syncNodeTypeIdx = enumClassToInt(SyncNodeType::WhiteList);
-         syncNodeTypeIdx <= enumClassToInt(SyncNodeType::UndecidedList); syncNodeTypeIdx++) {
+    for (int syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
+         syncNodeTypeIdx++) {
         SyncNodeType syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
 
         ExitCode exitCode = updateSyncNode(syncNodeType);
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in SyncPal::updateSyncNode for syncNodeType=" << enumClassToInt(syncNodeType));
+            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << toInt(syncNodeType));
             return exitCode;
         }
     }
@@ -964,7 +963,7 @@ ExitCode SyncPal::updateSyncNode() {
     return ExitCode::Ok;
 }
 
-std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
+std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) const {
     if (side == ReplicaSide::Unknown) {
         LOG_ERROR(_logger, "Call to SyncPal::snapshot with 'ReplicaSide::Unknown').");
         return nullptr;
@@ -976,7 +975,7 @@ std::shared_ptr<Snapshot> SyncPal::snapshot(ReplicaSide side, bool copy) {
     }
 }
 
-std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) {
+std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) const {
     if (side == ReplicaSide::Unknown) {
         LOG_ERROR(_logger, "Call to SyncPal::operationSet with 'ReplicaSide::Unknown').");
         return nullptr;
@@ -984,7 +983,7 @@ std::shared_ptr<FSOperationSet> SyncPal::operationSet(ReplicaSide side) {
     return (side == ReplicaSide::Local ? _localOperationSet : _remoteOperationSet);
 }
 
-std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) {
+std::shared_ptr<UpdateTree> SyncPal::updateTree(ReplicaSide side) const {
     if (side == ReplicaSide::Unknown) {
         LOG_ERROR(_logger, "Call to SyncPal::updateTree with 'ReplicaSide::Unknown').");
         return nullptr;
@@ -1287,7 +1286,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
                 std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, _driveDbId, "", uploadSessionToken.token());
             ExitCode exitCode = job->runSynchronously();
             if (exitCode != ExitCode::Ok) {
-                LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << enumClassToInt(exitCode));
+                LOG_SYNCPAL_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
                 if (exitCode == ExitCode::NetworkError) {
                     return exitCode;
                 }

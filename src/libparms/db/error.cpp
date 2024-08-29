@@ -109,17 +109,16 @@ std::string Error::errorString() const {
 
     switch (_level) {
         case ErrorLevel::Server:
-            errStream << "Level: Server - function: " << _functionName << " - exitCode: " << enumClassToInt(_exitCode)
-                      << " - exitCause: " << enumClassToInt(_exitCause);
+            errStream << "Level: Server - function: " << _functionName << " - exitCode: " << _exitCode
+                      << " - exitCause: " << _exitCause;
             break;
         case ErrorLevel::SyncPal:
-            errStream << "Level: SyncPal - worker: " << _workerName << " - exitCode: " << enumClassToInt(_exitCode)
-                      << " - exitCause: " << enumClassToInt(_exitCause);
+            errStream << "Level: SyncPal - worker: " << _workerName << " - exitCode: " << _exitCode
+                      << " - exitCause: " << _exitCause;
             break;
         case ErrorLevel::Node:
-            errStream << "Level: SyncPal - conflictType: " << enumClassToInt(_conflictType)
-                      << " - inconsistencyType: " << enumClassToInt(_inconsistencyType)
-                      << " - cancelType: " << enumClassToInt(_cancelType);
+            errStream << "Level: SyncPal - conflictType: " << _conflictType << " - inconsistencyType: " << _inconsistencyType
+                      << " - cancelType: " << _cancelType;
             break;
         default:
             errStream << "Level: Unknown";

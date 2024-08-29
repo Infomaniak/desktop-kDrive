@@ -413,7 +413,7 @@ bool AbstractUploadSession::closeSession() {
         const ExitCode exitCode = finishJob->runSynchronously();
         if (exitCode != ExitCode::Ok || finishJob->hasHttpError()) {
             LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously - exit code: "
-                                   << enumClassToInt(exitCode) << L", file: " << Path2WStr(_filePath.filename()).c_str());
+                                   << exitCode << L", file: " << Path2WStr(_filePath.filename()).c_str());
             return false;
         }
 
@@ -462,7 +462,7 @@ bool AbstractUploadSession::cancelSession() {
 
         const ExitCode exitCode = cancelJob->runSynchronously();
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << enumClassToInt(exitCode));
+            LOG_WARN(_logger, "Error in UploadSessionCancelJob::runSynchronously : " << exitCode);
             _exitCode = exitCode;
             return false;
         }

@@ -333,7 +333,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
     int syncDbId = 0;
     ExitCode exitCode = syncForPath(syncList, parentFolder, syncDbId);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath : " << enumClassToInt(exitCode));
+        LOG_WARN(Log::instance()->getLogger(), "Error in syncForPath : " << exitCode);
         return exitCode;
     }
 
@@ -348,7 +348,7 @@ ExitCode ServerRequests::findGoodPathForNewSync(int driveDbId, const QString &ba
     forever {
         exitCode = checkPathValidityForNewFolder(syncList, driveDbId, folder, error);
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder : " << enumClassToInt(exitCode));
+            LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityForNewFolder : " << exitCode);
             return exitCode;
         }
 
@@ -383,7 +383,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     Login login(keychainKey);
     exitCode = login.requestToken(code.toStdString(), codeVerifier.toStdString());
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken : " << enumClassToInt(exitCode));
+        LOG_WARN(Log::instance()->getLogger(), "Error in Login::requestToken : " << exitCode);
         error = login.error();
         errorDescr = login.errorDescr();
         return exitCode;
@@ -392,7 +392,7 @@ ExitCode ServerRequests::requestToken(QString code, QString codeVerifier, UserIn
     // Create or update user
     exitCode = processRequestTokenFinished(login, userInfo, userCreated);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished : " << enumClassToInt(exitCode));
+        LOG_WARN(Log::instance()->getLogger(), "Error in processRequestTokenFinished : " << exitCode);
         return exitCode;
     }
 
@@ -415,8 +415,8 @@ ExitCode ServerRequests::getNodeInfo(int userDbId, int driveId, const QString &n
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileInfoJob::runSynchronously for userDbId="
-                                                   << userDbId << " driveId=" << driveId << " nodeId="
-                                                   << nodeId.toStdString().c_str() << " : " << enumClassToInt(exitCode));
+                                                   << userDbId << " driveId=" << driveId
+                                                   << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
         return exitCode;
     }
 
@@ -478,7 +478,7 @@ ExitCode ServerRequests::getUserAvailableDrives(int userDbId, QHash<int, DriveAv
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " : " << enumClassToInt(exitCode));
+                 "Error in GetDrivesListJob::runSynchronously for userDbId=" << userDbId << " : " << exitCode);
         return exitCode;
     }
 
@@ -575,8 +575,8 @@ ExitCode ServerRequests::getSubFolders(int userDbId, int driveId, const QString 
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
         LOG_WARN(Log::instance()->getLogger(), "Error in GetFileListJob::runSynchronously for userDbId="
-                                                   << userDbId << " driveId=" << driveId << " nodeId="
-                                                   << nodeId.toStdString().c_str() << " : " << enumClassToInt(exitCode));
+                                                   << userDbId << " driveId=" << driveId
+                                                   << " nodeId=" << nodeId.toStdString().c_str() << " : " << exitCode);
         return exitCode;
     }
 
@@ -667,7 +667,7 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
     QList<NodeInfo> list;
     ExitCode exitCode = getSubFolders(userDbId, driveId, QString(), list);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders : " << enumClassToInt(exitCode));
+        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders : " << exitCode);
         return exitCode;
     }
 
@@ -695,7 +695,7 @@ ExitCode ServerRequests::getNodeIdByPath(int userDbId, int driveId, const SyncPa
             names.pop_back();
             exitCode = getSubFolders(userDbId, driveId, current.nodeId(), list);
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders : " << enumClassToInt(exitCode));
+                LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getSubFolders : " << exitCode);
                 return exitCode;
             }
         }
@@ -708,7 +708,7 @@ ExitCode ServerRequests::getPathByNodeId(int userDbId, int driveId, const QStrin
     NodeInfo nodeInfo;
     ExitCode exitCode = getNodeInfo(userDbId, driveId, nodeId, nodeInfo, true);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo : " << enumClassToInt(exitCode));
+        LOG_WARN(Log::instance()->getLogger(), "Error in Requests::getNodeInfo : " << exitCode);
         return exitCode;
     }
 
@@ -1023,7 +1023,7 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
 
     IoHelper::createDirectory(logUploadTempFolder, ioError);
     if (ioError == IoError::DirectoryExists) {  // If the directory already exists, we delete it and recreate it
-        IoHelper::deleteDirectory(logUploadTempFolder, ioError);
+        IoHelper::deleteItem(logUploadTempFolder, ioError);
         IoHelper::createDirectory(logUploadTempFolder, ioError);
     }
 
@@ -1042,14 +1042,14 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     exitCode = LogArchiver::generateLogsSupportArchive(includeArchivedLog, logUploadTempFolder, progressCallbackArchivingWrapper,
                                                        archivePath, exitCause);
     if (exitCause == ExitCause::OperationCanceled) {
-        IoHelper::deleteDirectory(logUploadTempFolder, ioError);
-        LOG_INFO(Log::instance()->getLogger(), "LogArchiver::generateLogsSupportArchive canceled: "
-                                                   << enumClassToInt(exitCode) << " : " << enumClassToInt(exitCause));
+        IoHelper::deleteItem(logUploadTempFolder, ioError);
+        LOG_INFO(Log::instance()->getLogger(),
+                 "LogArchiver::generateLogsSupportArchive canceled: " << exitCode << " : " << exitCause);
         return ExitCode::Ok;
     } else if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in LogArchiver::generateLogsSupportArchive: "
-                                                   << enumClassToInt(exitCode) << " : " << enumClassToInt(exitCause));
-        IoHelper::deleteDirectory(logUploadTempFolder, ioError);
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in LogArchiver::generateLogsSupportArchive: " << exitCode << " : " << exitCause);
+        IoHelper::deleteItem(logUploadTempFolder, ioError);
         return exitCode;
     }
 
@@ -1099,14 +1099,13 @@ ExitCode ServerRequests::sendLogToSupport(bool includeArchivedLog,
     }
 
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(),
-                 "Error during log upload: " << enumClassToInt(exitCode) << " : " << enumClassToInt(exitCause));
+        LOG_WARN(Log::instance()->getLogger(), "Error during log upload: " << exitCode << " : " << exitCause);
         // We do not delete the archive here. The path is stored in the app state so that the user can still try to upload it
         // manually.
         return exitCode;
     }
 
-    IoHelper::deleteDirectory(logUploadTempFolder, ioError);  // Delete temp folder if the upload was successful
+    IoHelper::deleteItem(logUploadTempFolder, ioError);  // Delete temp folder if the upload was successful
 
     if (exitCause != ExitCause::OperationCanceled) {
         std::string uploadDate = "";
@@ -1221,9 +1220,8 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
 
             exitCode = job2->runSynchronously();
             if (exitCode != ExitCode::Ok) {
-                LOG_WARN(Log::instance()->getLogger(),
-                         "Error in GetFileLinkJob::GetFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
-                                                                                  << " : " << enumClassToInt(exitCode));
+                LOG_WARN(Log::instance()->getLogger(), "Error in GetFileLinkJob::GetFileLinkJob for driveDbId="
+                                                           << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
                 return exitCode;
             }
 
@@ -1249,9 +1247,8 @@ ExitCode ServerRequests::getPublicLinkUrl(int driveDbId, const QString &fileId, 
 
             return ExitCode::Ok;
         } else {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in PostFileLinkJob::PostFileLinkJob for driveDbId=" << driveDbId << " nodeId=" << nodeId.c_str()
-                                                                                << " : " << enumClassToInt(exitCode));
+            LOG_WARN(Log::instance()->getLogger(), "Error in PostFileLinkJob::PostFileLinkJob for driveDbId="
+                                                       << driveDbId << " nodeId=" << nodeId.c_str() << " : " << exitCode);
             return exitCode;
         }
     }
@@ -1299,9 +1296,9 @@ ExitCode ServerRequests::getFolderSize(int userDbId, int driveId, const NodeId &
 
     ExitCode exitCode = job->runSynchronously();
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in GetSizeJob::runSynchronously for userDbId="
-                                                   << userDbId << " driveId=" << driveId << " nodeId=" << nodeId.c_str() << " : "
-                                                   << enumClassToInt(exitCode));
+        LOG_WARN(Log::instance()->getLogger(),
+                 "Error in GetSizeJob::runSynchronously for userDbId=" << userDbId << " driveId=" << driveId
+                                                                       << " nodeId=" << nodeId.c_str() << " : " << exitCode);
         return exitCode;
     }
 
@@ -2018,7 +2015,7 @@ ExitCode ServerRequests::checkPathValidityForNewFolder(const std::vector<Sync> &
                                                        QString &error) {
     ExitCode exitCode = checkPathValidityRecursive(path, error);
     if (exitCode != ExitCode::Ok) {
-        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive : " << enumClassToInt(exitCode));
+        LOG_WARN(Log::instance()->getLogger(), "Error in checkPathValidityRecursive : " << exitCode);
         return exitCode;
     }
 

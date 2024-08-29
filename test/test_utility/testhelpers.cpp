@@ -15,11 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#include <fstream>
 #include "testhelpers.h"
 
 #include "utility/utility.h"
-
 
 namespace KDC::testhelpers {
 
@@ -37,6 +36,12 @@ SyncName makeNfcSyncName() {
 #else
     return Utility::normalizedSyncName("ééé");
 #endif
+}
+
+void generateOrEditTestFile(const SyncPath& path) {
+    std::ofstream testFile(path);
+    testFile << "test" << std::endl;
+    testFile.close();
 }
 
 std::string loadEnvVariable(const std::string& key) {
