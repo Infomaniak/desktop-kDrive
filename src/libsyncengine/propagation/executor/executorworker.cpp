@@ -274,6 +274,7 @@ void ExecutorWorker::handleCreateOp(SyncOpPtr syncOp, std::shared_ptr<AbstractJo
     // 3. Update the update tree structures to ensure that follow-up operations can execute correctly, as they are based on the
     // information in these structures.
     SyncPath relativeLocalFilePath = syncOp->getPath(ReplicaSide::Local);
+    assert(!relativeLocalFilePath.empty());
     SyncPath absoluteLocalFilePath = _syncPal->localPath() / relativeLocalFilePath;
     if (isLiteSyncActivated() && !syncOp->omit()) {
         bool isDehydratedPlaceholder = false;

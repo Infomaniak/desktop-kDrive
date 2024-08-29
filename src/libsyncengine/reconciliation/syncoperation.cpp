@@ -31,8 +31,8 @@ SyncName SyncOperation::getName(ReplicaSide side) const {
 }
 
 SyncPath SyncOperation::getPath(const ReplicaSide side) const {
+    if (!correspondingNode()) return affectedNode()->getPath();  // If there is no corresponding node, ignore side.
     auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
-    if (!node) return {};
     return node->getPath();
 }
 
