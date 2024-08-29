@@ -18,18 +18,13 @@
 
 #include "testexecutorworker.h"
 
-#include "vfs.h"
-
 #include <memory>
 #include "propagation/executor/executorworker.h"
-#include "libcommonserver/io/testio.h"
-#include "server/vfs/mac/litesyncextconnector.h"
 #include "io/filestat.h"
+#include "io/iohelper.h"
 #include "keychainmanager/keychainmanager.h"
 #include "network/proxy.h"
-#include "server/vfs/mac/vfs_mac.h"
 #include "test_utility/testhelpers.h"
-#include "utility/utility.h"
 
 namespace KDC {
 
@@ -75,6 +70,14 @@ void TestExecutorWorker::setUp() {
     _syncPal = std::make_shared<SyncPal>(_sync.dbId(), "3.4.0");
     _syncPal->createWorkers();
     _syncPal->syncDb()->setAutoDelete(true);
+}
+
+void TestExecutorWorker::tearDown() {
+    ParmsDb::instance()->close();
+    ParmsDb::reset();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
+    }
 }
 
 void TestExecutorWorker::testCheckLiteSyncInfoForCreate() {

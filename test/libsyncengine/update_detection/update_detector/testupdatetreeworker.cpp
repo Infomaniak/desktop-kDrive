@@ -48,6 +48,7 @@ void TestUpdateTreeWorker::setUp() {
 }
 
 void TestUpdateTreeWorker::tearDown() {
+    ParmsDb::instance()->close();
     // The singleton ParmsDb calls KDC::Log()->instance() in its destructor.
     // As the two singletons are instantiated in different translation units, the order of their destructions is unknown.
     ParmsDb::reset();

@@ -18,12 +18,7 @@
 
 #include "testsnapshot.h"
 
-#include <memory>
-#include "update_detection/file_system_observer/snapshot/snapshot.h"
-#include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/utility.h"
 #include "db/syncdb.h"
-#include "db/parmsdb.h"
 #include "requests/parameterscache.h"
 
 using namespace CppUnit;

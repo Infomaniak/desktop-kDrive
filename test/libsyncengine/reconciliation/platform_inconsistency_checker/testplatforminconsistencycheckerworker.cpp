@@ -64,7 +64,7 @@ void TestPlatformInconsistencyCheckerWorker::setUp() {
 
     // Create SyncPal
     _syncPal = std::make_shared<SyncPal>(sync.dbId(), "3.4.0");
-    _syncPal->_syncDb->setAutoDelete(true);
+    _syncPal->syncDb()->setAutoDelete(true);
     _syncPal->_tmpBlacklistManager = std::make_shared<TmpBlacklistManager>(_syncPal);
 
     _syncPal->_platformInconsistencyCheckerWorker =

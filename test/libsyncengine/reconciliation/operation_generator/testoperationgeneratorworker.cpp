@@ -156,6 +156,7 @@ void KDC::TestOperationGeneratorWorker::setUp() {
 void KDC::TestOperationGeneratorWorker::tearDown() {
     LOGW_DEBUG(_logger, L"$$$$$ Tear Down $$$$$");
     ParmsDb::instance()->close();
+    ParmsDb::instance()->reset();
     _syncPal->syncDb()->close();
 }
 
