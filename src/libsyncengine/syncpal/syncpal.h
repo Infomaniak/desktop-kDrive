@@ -140,7 +140,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         inline const std::string &driveName() const { return _driveName; }
         inline VirtualFileMode vfsMode() const { return _vfsMode; }
         inline SyncPath localPath() const { return _localPath; }
+        void setLocalPath(const SyncPath &path) { _localPath = path; }
 
+        std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; };
         // TODO : not ideal, to be refactored
         bool existOnServer(const SyncPath &path) const;
         bool canShareItem(const SyncPath &path) const;
@@ -220,14 +222,6 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         virtual void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side);
         //! Makes copies of real-time snapshots to be used by synchronization workers.
         void copySnapshots();
-
-        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
-        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
-        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
-        inline std::shared_ptr<ComputeFSOperationWorker> computeFSOperationWorker() const { return _computeFSOperationsWorker; };
-
-        SyncPath getLocalPath() const { return _localPath; };
-        void setLocalPath(const SyncPath &path) { _localPath = path; };
 
     private:
         log4cplus::Logger _logger;
@@ -326,6 +320,10 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode listingCursor(std::string &value, int64_t &timestamp);
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
+        std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
+        const std::shared_ptr<const Snapshot> snapshotCopy(ReplicaSide side) { return snapshot(side, true); };
+        std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
+        std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
 
         // Progress info management
         void resetEstimateUpdates();

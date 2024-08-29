@@ -33,6 +33,7 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testDifferentEncoding_NFD_NFC);
         CPPUNIT_TEST(testDifferentEncoding_NFD_NFD);
         CPPUNIT_TEST(testDifferentEncoding_NFC_NFC);
+        CPPUNIT_TEST(testDeletionOfNestedFolders);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -45,7 +46,7 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
          */
         void testNoOps();
         /**
-         * Multiple operations of different types should be generated in this test.
+         * Multiple operations should be generated in this test: the types Create, Delete, Move and Edit are all expected.
          */
         void testMultipleOps();
         /**
@@ -64,6 +65,12 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         void testDifferentEncoding_NFD_NFD();
         // NFC in DB, NFC on FS
         void testDifferentEncoding_NFC_NFC();
+
+        /**
+         * The deletion of a local folders and their common parent should generate a Delete operation for each item.
+         * Deletion of a blacklisted subfolder should not generate any operation.
+         */
+        void testDeletionOfNestedFolders();
 
     private:
         std::shared_ptr<SyncPal> _syncPal;

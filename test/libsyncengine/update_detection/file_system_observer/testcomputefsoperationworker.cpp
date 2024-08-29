@@ -170,24 +170,44 @@ void TestComputeFSOperationWorker::setUp() {
 
     _syncPal->_computeFSOperationsWorker =
         std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP");
-    _syncPal->computeFSOperationWorker()->setTesting(true);
+    _syncPal->computeFSOperationsWorker()->setTesting(true);
     _syncPal->_localPath = testhelpers::localTestDirPath;
 }
 
 void TestComputeFSOperationWorker::tearDown() {
     ParmsDb::instance()->close();
-    ParmsDb::reset();
-
     if (_syncPal && _syncPal->syncDb()) {
         _syncPal->syncDb()->close();
     }
+    ParmsDb::reset();
 }
 
 void TestComputeFSOperationWorker::testNoOps() {
     _syncPal->copySnapshots();
-    _syncPal->computeFSOperationWorker()->execute();
+    _syncPal->computeFSOperationsWorker()->execute();
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
+
+void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
+    // Delete operations
+    _syncPal->_localSnapshot->removeItem("laa");  // Folder "AA" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("lab");  // Folder "AB" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("lac");  // Folder "AC" is contained in folder "A" but is blacklisted.
+    _syncPal->_localSnapshot->removeItem("la");
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("la", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("laa", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lab", OperationType::Delete, tmpOp));
+
+    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lac", OperationType::Delete, tmpOp));
+
+    CPPUNIT_ASSERT_EQUAL(uint64_t(3), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+}
+
 
 void TestComputeFSOperationWorker::testMultipleOps() {
     // On local replica
@@ -213,7 +233,7 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-renamed"));
 
     _syncPal->copySnapshots();
-    _syncPal->computeFSOperationWorker()->execute();
+    _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lad", OperationType::Create, tmpOp));
@@ -241,7 +261,7 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
 
     // File is excluded by template, it does not appear in snapshot
     _syncPal->copySnapshots();
-    _syncPal->computeFSOperationWorker()->execute();
+    _syncPal->computeFSOperationsWorker()->execute();
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->_localOperationSet->nbOps());
 }
 

@@ -50,6 +50,10 @@ class DbNode {
         inline SyncFileStatus status() const { return _status; }
         inline bool syncing() const { return _syncing; }
 
+        SyncTime lastModified(const ReplicaSide side) const;
+        NodeId nodeId(const ReplicaSide side) const;
+        SyncName name(const ReplicaSide side) const;
+
         inline void setNodeId(DbNodeId nodeId) { _nodeId = nodeId; }
         inline void setParentNodeId(std::optional<DbNodeId> parentNodeId) { _parentNodeId = parentNodeId; }
         virtual void setNameLocal(const SyncName &name);

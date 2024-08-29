@@ -152,7 +152,7 @@ bool Snapshot::removeItem(const NodeId &id) {
     return true;
 }
 
-NodeId Snapshot::itemId(const SyncPath &path) {
+NodeId Snapshot::itemId(const SyncPath &path) const {
     const std::scoped_lock lock(_mutex);
 
     NodeId ret;
@@ -183,7 +183,7 @@ NodeId Snapshot::itemId(const SyncPath &path) {
     return ret;
 }
 
-NodeId Snapshot::parentId(const NodeId &itemId) {
+NodeId Snapshot::parentId(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     NodeId ret;
     if (auto it = _items.find(itemId); it != _items.end()) {
@@ -244,7 +244,7 @@ bool Snapshot::path(const NodeId &itemId, SyncPath &path) const noexcept {
     return ok;
 }
 
-SyncName Snapshot::name(const NodeId &itemId) {
+SyncName Snapshot::name(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     SyncName ret;
 
@@ -268,7 +268,7 @@ bool Snapshot::setName(const NodeId &itemId, const SyncName &newName) {
     return false;
 }
 
-SyncTime Snapshot::createdAt(const NodeId &itemId) {
+SyncTime Snapshot::createdAt(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     SyncTime ret = 0;
     if (auto it = _items.find(itemId); it != _items.end()) {
@@ -290,7 +290,7 @@ bool Snapshot::setCreatedAt(const NodeId &itemId, SyncTime newTime) {
     return false;
 }
 
-SyncTime Snapshot::lastModified(const NodeId &itemId) {
+SyncTime Snapshot::lastModified(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     SyncTime ret = 0;
     if (auto it = _items.find(itemId); it != _items.end()) {
@@ -312,7 +312,7 @@ bool Snapshot::setLastModified(const NodeId &itemId, SyncTime newTime) {
     return false;
 }
 
-NodeType Snapshot::type(const NodeId &itemId) {
+NodeType Snapshot::type(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     NodeType ret = NodeType::Unknown;
     if (auto it = _items.find(itemId); it != _items.end()) {
@@ -321,7 +321,7 @@ NodeType Snapshot::type(const NodeId &itemId) {
     return ret;
 }
 
-int64_t Snapshot::size(const NodeId &itemId) {
+int64_t Snapshot::size(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     int64_t ret = 0;
     if (type(itemId) == NodeType::Directory) {
@@ -339,7 +339,7 @@ int64_t Snapshot::size(const NodeId &itemId) {
     return ret;
 }
 
-std::string Snapshot::contentChecksum(const NodeId &itemId) {
+std::string Snapshot::contentChecksum(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     std::string ret;
     if (auto it = _items.find(itemId); it != _items.end()) {
@@ -358,7 +358,7 @@ bool Snapshot::setContentChecksum(const NodeId &itemId, const std::string &newCh
     return false;
 }
 
-bool Snapshot::canWrite(const NodeId &itemId) {
+bool Snapshot::canWrite(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     bool ret = true;
     if (auto it = _items.find(itemId); it != _items.end()) {
@@ -367,7 +367,7 @@ bool Snapshot::canWrite(const NodeId &itemId) {
     return ret;
 }
 
-bool Snapshot::canShare(const NodeId &itemId) {
+bool Snapshot::canShare(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     bool ret = true;
     if (auto it = _items.find(itemId); it != _items.end()) {
@@ -381,7 +381,7 @@ bool Snapshot::clearContentChecksum(const NodeId &itemId) {
     return setContentChecksum(itemId, "");
 }
 
-bool Snapshot::exists(const NodeId &itemId) {
+bool Snapshot::exists(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     if (auto it = _items.find(itemId); it != _items.end() && !isOrphan(itemId)) {
         return true;
@@ -389,12 +389,12 @@ bool Snapshot::exists(const NodeId &itemId) {
     return false;
 }
 
-bool Snapshot::pathExists(const SyncPath &path) {
+bool Snapshot::pathExists(const SyncPath &path) const {
     const std::scoped_lock lock(_mutex);
     return !itemId(path).empty();
 }
 
-bool Snapshot::isLink(const NodeId &itemId) {
+bool Snapshot::isLink(const NodeId &itemId) const {
     const std::scoped_lock lock(_mutex);
     bool ret = false;
     if (auto it = _items.find(itemId); it != _items.end()) {
@@ -403,7 +403,7 @@ bool Snapshot::isLink(const NodeId &itemId) {
     return ret;
 }
 
-bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) {
+bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &childrenIds) const {
     const std::scoped_lock lock(_mutex);
     if (auto it = _items.find(itemId); it != _items.end()) {
         childrenIds = it->second.childrenIds();
@@ -412,7 +412,7 @@ bool Snapshot::getChildrenIds(const NodeId &itemId, std::unordered_set<NodeId> &
     return false;
 }
 
-void Snapshot::ids(std::unordered_set<NodeId> &ids) {
+void Snapshot::ids(std::unordered_set<NodeId> &ids) const {
     const std::scoped_lock lock(_mutex);
     ids.clear();
     for (const auto &[id, _] : _items) {
@@ -420,7 +420,7 @@ void Snapshot::ids(std::unordered_set<NodeId> &ids) {
     }
 }
 
-bool Snapshot::isAncestor(const NodeId &itemId, const NodeId &ancestorItemId) {
+bool Snapshot::isAncestor(const NodeId &itemId, const NodeId &ancestorItemId) const {
     const std::scoped_lock lock(_mutex);
     if (itemId == _rootFolderId) {
         // Root directory cannot have any ancestor
@@ -440,7 +440,7 @@ bool Snapshot::isAncestor(const NodeId &itemId, const NodeId &ancestorItemId) {
     return isAncestor(directParentId, ancestorItemId);
 }
 
-bool Snapshot::isOrphan(const NodeId &itemId) {
+bool Snapshot::isOrphan(const NodeId &itemId) const {
     if (itemId == _rootFolderId) {
         return false;
     }
@@ -462,17 +462,17 @@ bool Snapshot::isOrphan(const NodeId &itemId) {
     return false;
 }
 
-bool Snapshot::isEmpty() {
+bool Snapshot::isEmpty() const {
     const std::scoped_lock lock(_mutex);
     return _items.empty();
 }
 
-uint64_t Snapshot::nbItems() {
+uint64_t Snapshot::nbItems() const {
     const std::scoped_lock lock(_mutex);
     return _items.size();
 }
 
-bool Snapshot::isValid() {
+bool Snapshot::isValid() const {
     const std::scoped_lock lock(_mutex);
     return _isValid;
 }

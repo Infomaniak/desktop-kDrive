@@ -19,10 +19,6 @@
 #include "testsyncdb.h"
 #include "test_utility/testhelpers.h"
 
-#include "libcommonserver/utility/asserts.h"
-#include "libcommonserver/utility/utility.h"
-#include "libcommonserver/log/log.h"
-
 #include <time.h>
 
 using namespace CppUnit;
