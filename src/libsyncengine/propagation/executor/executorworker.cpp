@@ -142,7 +142,7 @@ void ExecutorWorker::execute() {
                 }
                 default: {
                     LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type: "
-                                                   << Utility::s2ws(Utility::opType2Str(syncOp->type())).c_str() << L" on file "
+                                                   << syncOp->type() << L" on file "
                                                    << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
                     _executorExitCode = ExitCode::DataError;
                     _executorExitCause = ExitCause::Unknown;
@@ -1833,8 +1833,8 @@ bool ExecutorWorker::handleFinishedJob(std::shared_ptr<AbstractJob> job, SyncOpP
             // Cancel all queued jobs
             _executorExitCode = job->exitCode();
             _executorExitCause = job->exitCause();
-            LOGW_SYNCPAL_WARN(_logger, L"Cancelling jobs. exit code: " << enumClassToInt(_executorExitCode) << L" exit cause: "
-                                                                       << enumClassToInt(_executorExitCause));
+            LOGW_SYNCPAL_WARN(_logger,
+                              L"Cancelling jobs. exit code: " << _executorExitCode << L" exit cause: " << _executorExitCause);
             cancelAllOngoingJobs();
             _syncPal->setProgressComplete(relativeLocalPath, SyncFileStatus::Error);
             return false;
@@ -2101,8 +2101,7 @@ bool ExecutorWorker::propagateChangeToDbAndTree(SyncOpPtr syncOp, std::shared_pt
             return propagateDeleteToDbAndTree(syncOp);
         }
         default: {
-            LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type " << Utility::s2ws(Utility::opType2Str(syncOp->type())).c_str()
-                                                                  << L" on file "
+            LOGW_SYNCPAL_WARN(_logger, L"Unknown operation type " << syncOp->type() << L" on file "
                                                                   << SyncName2WStr(syncOp->affectedNode()->name()).c_str());
         }
     }
@@ -2135,8 +2134,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
                                ? (syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : "")
                                : newNodeId;
     SyncName localName = syncOp->targetSide() == ReplicaSide::Local ? syncOp->newName() : syncOp->getName(ReplicaSide::Local);
-    SyncName remoteName = Utility::normalizedSyncName(
-        syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote));
+    SyncName remoteName = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote);
 
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
@@ -2162,7 +2160,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
                                << L" / createdAt="
                                << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
                                << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                               << enumClassToInt(syncOp->affectedNode()->type()));
+                               << syncOp->affectedNode()->type());
     }
 
     if (dbNode.nameLocal().empty() || dbNode.nameRemote().empty() || !dbNode.nodeIdLocal().has_value() ||
@@ -2284,8 +2282,8 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
     std::string remoteId = syncOp->targetSide() == ReplicaSide::Local
                                ? syncOp->affectedNode()->id().has_value() ? *syncOp->affectedNode()->id() : std::string()
                                : newNodeId;
-    SyncName localName = syncOp->getName(ReplicaSide::Local);
-    SyncName remoteName = Utility::normalizedSyncName(syncOp->getName(ReplicaSide::Remote));
+    const SyncName localName = syncOp->getName(ReplicaSide::Local);
+    const SyncName remoteName = syncOp->getName(ReplicaSide::Remote);
 
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
@@ -2314,7 +2312,7 @@ bool ExecutorWorker::propagateEditToDbAndTree(SyncOpPtr syncOp, const NodeId &ne
                              << (dbNode.parentNodeId().has_value() ? dbNode.parentNodeId().value() : -1) << L" / createdAt="
                              << (syncOp->affectedNode()->createdAt().has_value() ? *syncOp->affectedNode()->createdAt() : -1)
                              << L" / lastModTime=" << (newLastModTime.has_value() ? *newLastModTime : -1) << L" / type="
-                             << enumClassToInt(syncOp->affectedNode()->type()));
+                             << syncOp->affectedNode()->type());
     }
 
     if (!_syncPal->_syncDb->updateNode(dbNode, found)) {
@@ -2394,8 +2392,7 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                            : correspondingNode->id().has_value() ? *correspondingNode->id()
                                                                  : std::string();
     SyncName localName = syncOp->targetSide() == ReplicaSide::Local ? syncOp->newName() : syncOp->getName(ReplicaSide::Local);
-    SyncName remoteName = Utility::normalizedSyncName(
-        syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote));
+    SyncName remoteName = syncOp->targetSide() == ReplicaSide::Remote ? syncOp->newName() : syncOp->getName(ReplicaSide::Remote);
 
     if (localId.empty() || remoteId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, L"Empty " << (localId.empty() ? L"local" : L"remote") << L" id for item "
@@ -2423,7 +2420,7 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
                              << L" / lastModTime="
                              << (syncOp->affectedNode()->lastmodified().has_value() ? *syncOp->affectedNode()->lastmodified()
                                                                                     : -1)
-                             << L" / type=" << enumClassToInt(syncOp->affectedNode()->type()));
+                             << L" / type=" << syncOp->affectedNode()->type());
     }
 
     if (!_syncPal->_syncDb->updateNode(dbNode, found)) {

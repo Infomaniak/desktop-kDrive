@@ -79,7 +79,7 @@ bool OldSyncDb::selectAllSelectiveSync(std::list<std::pair<std::string, SyncNode
         int type = -1;
         ASSERT(queryIntValue(SELECT_ALL_SELECTIVESYNC_REQUEST_ID, 1, type));
 
-        selectiveSyncList.push_back(std::make_pair(path, intToEnumClass<SyncNodeType>(type)));
+        selectiveSyncList.push_back(std::make_pair(path, fromInt<SyncNodeType>(type)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_SELECTIVESYNC_REQUEST_ID));
 

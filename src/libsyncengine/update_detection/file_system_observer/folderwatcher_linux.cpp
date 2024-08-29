@@ -91,8 +91,7 @@ void FolderWatcher_linux::startWatching() {
                     if (_watchToPath.find(event->wd) != _watchToPath.end()) {
                         const SyncPath path = _watchToPath[event->wd] / SyncName(event->name);
                         if (ParametersCache::isExtendedLogEnabled()) {
-                            LOGW_DEBUG(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(opType)).c_str()
-                                                              << L" detected on item " << Path2WStr(path).c_str());
+                            LOGW_DEBUG(_logger, L"Operation " << opType << L" detected on item " << Path2WStr(path).c_str());
                         }
 
                         changeDetected(path, opType);

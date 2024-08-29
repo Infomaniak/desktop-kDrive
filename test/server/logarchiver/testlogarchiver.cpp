@@ -102,10 +102,10 @@ void TestLogArchiver::testCopyLogsTo() {
         CPPUNIT_ASSERT_EQUAL(true, IoHelper::copyFileOrDirectory(tempDir.path() / "test.log.gz", logDir / "test.log.gz", err));
         CPPUNIT_ASSERT_EQUAL(IoError::Success, err);
 
-        IoHelper::deleteDirectory(tempDir.path() / "test.log.gz", err);
+        IoHelper::deleteItem(tempDir.path() / "test.log.gz", err);
 
         exitCode = LogArchiver::copyLogsTo(tempDir.path(), false, cause);
-        IoHelper::deleteDirectory(logDir / "test.log.gz", err);
+        IoHelper::deleteItem(logDir / "test.log.gz", err);
 
         CPPUNIT_ASSERT_EQUAL(ExitCause::Unknown, cause);
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, exitCode);

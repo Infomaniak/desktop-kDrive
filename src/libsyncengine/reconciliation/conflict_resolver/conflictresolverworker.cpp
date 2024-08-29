@@ -56,8 +56,8 @@ void ConflictResolverWorker::execute() {
 }
 
 ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bool &continueSolving) {
-    LOGW_SYNCPAL_INFO(_logger, L"Solving " << Utility::s2ws(Utility::conflictType2Str(conflict.type())).c_str()
-                                           << L" conflict for items " << SyncName2WStr(conflict.node()->name()).c_str() << L" ("
+    LOGW_SYNCPAL_INFO(_logger, L"Solving " << conflict.type() << L" conflict for items "
+                                           << SyncName2WStr(conflict.node()->name()).c_str() << L" ("
                                            << Utility::s2ws(*conflict.node()->id()).c_str() << L") and "
                                            << SyncName2WStr(conflict.correspondingNode()->name()).c_str() << L" ("
                                            << Utility::s2ws(*conflict.correspondingNode()->id()).c_str() << ")");
@@ -82,11 +82,10 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             op->setNewName(newName);
             op->setConflict(conflict);
 
-            LOGW_SYNCPAL_INFO(_logger, L"Operation "
-                                           << Utility::s2ws(Utility::opType2Str(op->type())).c_str() << L" to be propagated on "
-                                           << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str() << L" replica for item "
-                                           << SyncName2WStr(op->correspondingNode()->name()).c_str() << L" ("
-                                           << Utility::s2ws(*op->correspondingNode()->id()).c_str() << L")");
+            LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated on " << op->targetSide()
+                                                     << L" replica for item "
+                                                     << SyncName2WStr(op->correspondingNode()->name()).c_str() << L" ("
+                                                     << Utility::s2ws(*op->correspondingNode()->id()).c_str() << L")");
 
             _syncPal->_syncOps->pushOp(op);
 
@@ -111,9 +110,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 moveOp->setNewParentNode(_syncPal->updateTree(deleteNode->side())->rootNode());
                 moveOp->setConflict(conflict);
 
-                LOGW_SYNCPAL_INFO(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(moveOp->type())).c_str()
-                                                         << L" to be propagated on "
-                                                         << Utility::s2ws(Utility::side2Str(moveOp->targetSide())).c_str()
+                LOGW_SYNCPAL_INFO(_logger, L"Operation " << moveOp->type() << L" to be propagated on " << moveOp->targetSide()
                                                          << L" replica for item "
                                                          << SyncName2WStr(moveOp->correspondingNode()->name()).c_str() << L" ("
                                                          << Utility::s2ws(*moveOp->correspondingNode()->id()).c_str() << L")");
@@ -130,10 +127,8 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 deleteOp->setOmit(true);  // Target side does not matter when we remove only in DB
                 deleteOp->setConflict(conflict);
 
-                LOGW_SYNCPAL_INFO(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(deleteOp->type())).c_str()
-                                                         << L" to be propagated in DB only on "
-                                                         << Utility::s2ws(Utility::side2Str(deleteOp->targetSide())).c_str()
-                                                         << L" replica for item "
+                LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated in DB only on "
+                                                         << deleteOp->targetSide() << L" replica for item "
                                                          << SyncName2WStr(deleteOp->correspondingNode()->name()).c_str() << L" ("
                                                          << Utility::s2ws(*deleteOp->correspondingNode()->id()).c_str() << L")");
 
@@ -149,8 +144,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 deleteOp->setOmit(true);  // Target side does not matter when we remove only in DB
                 deleteOp->setConflict(conflict);
 
-                LOGW_SYNCPAL_INFO(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(deleteOp->type())).c_str()
-                                                         << L" to be propagated in DB only for item "
+                LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated in DB only for item "
                                                          << deleteOp->correspondingNode()->name().c_str() << L" ("
                                                          << Utility::s2ws(*deleteOp->correspondingNode()->id()).c_str() << L")");
 
@@ -230,8 +224,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                         op->setNewParentNode(_syncPal->updateTree(orphanNode->side())->rootNode());
                         op->setConflict(conflict);
 
-                        LOGW_SYNCPAL_INFO(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(op->type())).c_str()
-                                                                 << L" to be propagated in DB only for orphan node "
+                        LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated in DB only for orphan node "
                                                                  << SyncName2WStr(op->correspondingNode()->name()).c_str()
                                                                  << L" (" << Utility::s2ws(*op->correspondingNode()->id()).c_str()
                                                                  << L")");
@@ -254,8 +247,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             op->setOmit(true);  // Target side does not matter when we remove only in DB
             op->setConflict(conflict);
 
-            LOGW_SYNCPAL_INFO(_logger, L"Operation " << Utility::s2ws(Utility::opType2Str(op->type())).c_str()
-                                                     << L" to be propagated in DB only for item "
+            LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated in DB only for item "
                                                      << SyncName2WStr(op->correspondingNode()->name()).c_str() << L" ("
                                                      << Utility::s2ws(*op->correspondingNode()->id()).c_str() << L")");
 
@@ -271,11 +263,10 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             }
             moveOp->setConflict(conflict);
 
-            LOGW_SYNCPAL_INFO(
-                _logger, L"Operation " << Utility::s2ws(Utility::opType2Str(moveOp->type())).c_str() << L" to be propagated on "
-                                       << Utility::s2ws(Utility::side2Str(moveOp->targetSide())).c_str() << L" replica for item "
-                                       << SyncName2WStr(moveOp->correspondingNode()->name()).c_str() << L" ("
-                                       << Utility::s2ws(*moveOp->correspondingNode()->id()).c_str() << L")");
+            LOGW_SYNCPAL_INFO(_logger, L"Operation " << moveOp->type() << L" to be propagated on " << moveOp->targetSide()
+                                                     << L" replica for item "
+                                                     << SyncName2WStr(moveOp->correspondingNode()->name()).c_str() << L" ("
+                                                     << Utility::s2ws(*moveOp->correspondingNode()->id()).c_str() << L")");
 
             _syncPal->_syncOps->pushOp(moveOp);
             break;
@@ -292,11 +283,9 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
 
             op->setTargetSide(correspondingNode->side());
             op->setConflict(conflict);
-            LOGW_SYNCPAL_INFO(_logger, L"Operation "
-                                           << Utility::s2ws(Utility::opType2Str(op->type())).c_str() << L" to be propagated on "
-                                           << Utility::s2ws(Utility::side2Str(op->targetSide())).c_str() << L" replica for item "
-                                           << SyncName2WStr(deleteNode->name()).c_str() << L" ("
-                                           << Utility::s2ws(*deleteNode->id()).c_str() << L")");
+            LOGW_SYNCPAL_INFO(_logger, L"Operation " << op->type() << L" to be propagated on " << op->targetSide()
+                                                     << L" replica for item " << SyncName2WStr(deleteNode->name()).c_str()
+                                                     << L" (" << Utility::s2ws(*deleteNode->id()).c_str() << L")");
 
             _syncPal->_syncOps->pushOp(op);
             break;
@@ -318,11 +307,10 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
             }
             moveOp->setConflict(conflict);
 
-            LOGW_SYNCPAL_INFO(
-                _logger, L"Operation " << Utility::s2ws(Utility::opType2Str(moveOp->type())).c_str() << L" to be propagated on "
-                                       << Utility::s2ws(Utility::side2Str(moveOp->targetSide())).c_str() << L" replica for item "
-                                       << SyncName2WStr(moveOp->correspondingNode()->name()).c_str() << L" ("
-                                       << Utility::s2ws(*moveOp->correspondingNode()->id()).c_str() << L")");
+            LOGW_SYNCPAL_INFO(_logger, L"Operation " << moveOp->type() << L" to be propagated on " << moveOp->targetSide()
+                                                     << L" replica for item "
+                                                     << SyncName2WStr(moveOp->correspondingNode()->name()).c_str() << L" ("
+                                                     << Utility::s2ws(*moveOp->correspondingNode()->id()).c_str() << L")");
 
             _syncPal->_syncOps->pushOp(moveOp);
             break;
@@ -334,16 +322,15 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 return res;
             }
             moveOp->setConflict(conflict);
-            LOGW_SYNCPAL_INFO(
-                _logger, L"Operation " << Utility::s2ws(Utility::opType2Str(moveOp->type())).c_str() << L" to be propagated on "
-                                       << Utility::s2ws(Utility::side2Str(moveOp->targetSide())).c_str() << L" replica for item "
-                                       << SyncName2WStr(moveOp->correspondingNode()->name()).c_str() << L" ("
-                                       << Utility::s2ws(*moveOp->correspondingNode()->id()).c_str() << L")");
+            LOGW_SYNCPAL_INFO(_logger, L"Operation " << moveOp->type() << L" to be propagated on " << moveOp->targetSide()
+                                                     << L" replica for item "
+                                                     << SyncName2WStr(moveOp->correspondingNode()->name()).c_str() << L" ("
+                                                     << Utility::s2ws(*moveOp->correspondingNode()->id()).c_str() << L")");
             _syncPal->_syncOps->pushOp(moveOp);
             break;
         }
         default: {
-            LOG_SYNCPAL_WARN(_logger, "Unknown conflict type: " << enumClassToInt(conflict.type()));
+            LOG_SYNCPAL_WARN(_logger, "Unknown conflict type: " << conflict.type());
             return ExitCode::DataError;
         }
     }

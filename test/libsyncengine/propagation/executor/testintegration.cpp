@@ -98,7 +98,7 @@ void TestIntegration::setUp() {
     Drive drive(_driveDbId, driveId, account.dbId(), std::string(), 0, std::string());
     ParmsDb::instance()->insertDrive(drive);
 
-    _localPath = testVariables.localPath;
+    _localPath = _localTmpDir.path();
     _remotePath = testVariables.remotePath;
     Sync sync(1, drive.dbId(), _localPath, _remotePath);
     ParmsDb::instance()->insertSync(sync);

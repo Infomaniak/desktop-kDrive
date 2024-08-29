@@ -117,8 +117,7 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
 
     const NodeId &nodeId = dbNode.nodeId(side);
     if (nodeId.empty()) {
-        LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(side)).c_str()
-                                       << L" node ID empty for for dbId=" << dbNode.nodeId());
+        LOGW_SYNCPAL_WARN(_logger, side << L" node ID empty for for dbId=" << dbNode.nodeId());
         setExitCause(ExitCause::DbEntryNotFound);
         return ExitCode::DataError;
     }
@@ -411,7 +410,7 @@ ExitCode ComputeFSOperationWorker::exploreSnapshotTree(ReplicaSide side, const N
     NodeIdSet remainingDbIds;
     snapshot->ids(remainingDbIds);
     if (remainingDbIds.empty()) {
-        LOG_SYNCPAL_DEBUG(_logger, "No items found in snapshot on side " << Utility::side2Str(side).c_str());
+        LOG_SYNCPAL_DEBUG(_logger, "No items found in snapshot on side " << side);
         return ExitCode::Ok;
     }
 
@@ -537,9 +536,7 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
     }
 
     if (fsOp->operationType() == OperationType::Move) {
-        LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                                                 << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str())
-                                                 << L" FS operation from "
+        LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << side << L" " << fsOp->operationType() << L" FS operation from "
                                                  << (fsOp->objectType() == NodeType::Directory ? L"dir with " : L"file with ")
                                                  << Utility::formatSyncPath(fsOp->path()).c_str() << L" to "
                                                  << Utility::formatSyncPath(fsOp->destinationPath()).c_str() << L" ("
@@ -547,66 +544,72 @@ void ComputeFSOperationWorker::logOperationGeneration(const ReplicaSide side, co
         return;
     }
 
-    LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << Utility::s2ws(Utility::side2Str(side)).c_str() << L" "
-                                             << Utility::s2ws(Utility::opType2Str(fsOp->operationType()).c_str())
-                                             << L" FS operation on "
+    LOGW_SYNCPAL_DEBUG(_logger, L"Generate " << side << L" " << fsOp->operationType() << L" FS operation on "
                                              << (fsOp->objectType() == NodeType::Directory ? L"dir with " : L"file with ")
                                              << Utility::formatSyncPath(fsOp->path()).c_str() << L" ("
                                              << Utility::s2ws(fsOp->nodeId()).c_str() << L")");
 }
 
 ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
-    if (dbNode.type() == NodeType::File && dbNode.nodeIdLocal().has_value() && dbNode.nodeIdRemote().has_value() &&
-        dbNode.lastModifiedLocal().has_value()) {
-        if (_fileSizeMismatchMap.find(dbNode.nodeIdLocal().value()) != _fileSizeMismatchMap.end()) {
-            // Size mismatch already detected
-            return ExitCode::Ok;
+    if (dbNode.type() != NodeType::File) {
+        return ExitCode::Ok;
+    }
+
+    if (!CommonUtility::isFileSizeMismatchDetectionEnabled()) {
+        return ExitCode::Ok;
+    }
+
+    if (!dbNode.nodeIdLocal().has_value() || !dbNode.nodeIdRemote().has_value() || !dbNode.lastModifiedLocal().has_value()) {
+        return ExitCode::Ok;
+    }
+
+    if (_fileSizeMismatchMap.contains(dbNode.nodeIdLocal().value())) {
+        // Size mismatch already detected
+        return ExitCode::Ok;
+    }
+
+    if (!_syncPal->snapshot(ReplicaSide::Local, true)->exists(dbNode.nodeIdLocal().value()) ||
+        !_syncPal->snapshot(ReplicaSide::Remote, true)->exists(dbNode.nodeIdRemote().value())) {
+        // Ignore if item does not exist
+        return ExitCode::Ok;
+    }
+
+    if (const bool localSnapshotIsLink = _syncPal->snapshot(ReplicaSide::Local, true)->isLink(dbNode.nodeIdLocal().value());
+        localSnapshotIsLink) {
+        // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
+        return ExitCode::Ok;
+    }
+
+    int64_t localSnapshotSize = _syncPal->snapshot(ReplicaSide::Local, true)->size(dbNode.nodeIdLocal().value());
+    int64_t remoteSnapshotSize = _syncPal->snapshot(ReplicaSide::Remote, true)->size(dbNode.nodeIdRemote().value());
+    SyncTime localSnapshotLastModified = _syncPal->snapshot(ReplicaSide::Local, true)->lastModified(dbNode.nodeIdLocal().value());
+    SyncTime remoteSnapshotLastModified =
+        _syncPal->snapshot(ReplicaSide::Remote, true)->lastModified(dbNode.nodeIdRemote().value());
+
+    // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
+    if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
+        localSnapshotLastModified == remoteSnapshotLastModified) {
+        SyncPath localSnapshotPath;
+        if (!_syncPal->snapshot(ReplicaSide::Local, true)->path(dbNode.nodeIdLocal().value(), localSnapshotPath)) {
+            LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
+                                           << SyncName2WStr(dbNode.nameLocal()).c_str() << L" ("
+                                           << Utility::s2ws(dbNode.nodeIdLocal().value()).c_str() << L")");
+            setExitCause(ExitCause::InvalidSnapshot);
+            return ExitCode::DataError;
         }
 
-        if (!_syncPal->snapshotCopy(ReplicaSide::Local)->exists(dbNode.nodeIdLocal().value()) ||
-            !_syncPal->snapshotCopy(ReplicaSide::Remote)->exists(dbNode.nodeIdRemote().value())) {
-            // Ignore if item does not exist
-            return ExitCode::Ok;
-        }
+        // OS might fail to notify all delete events, therefor we check that the file still exists
+        SyncPath absoluteLocalPath = _syncPal->_localPath / localSnapshotPath;
 
-        if (const bool localSnapshotIsLink = _syncPal->snapshotCopy(ReplicaSide::Local)->isLink(dbNode.nodeIdLocal().value());
-            localSnapshotIsLink) {
-            // Local and remote links sizes are not always the same (macOS aliases, Windows junctions)
-            return ExitCode::Ok;
-        }
-
-        int64_t localSnapshotSize = _syncPal->snapshotCopy(ReplicaSide::Local)->size(dbNode.nodeIdLocal().value());
-        int64_t remoteSnapshotSize = _syncPal->snapshotCopy(ReplicaSide::Remote)->size(dbNode.nodeIdRemote().value());
-        SyncTime localSnapshotLastModified =
-            _syncPal->snapshotCopy(ReplicaSide::Local)->lastModified(dbNode.nodeIdLocal().value());
-        SyncTime remoteSnapshotLastModified =
-            _syncPal->snapshotCopy(ReplicaSide::Remote)->lastModified(dbNode.nodeIdRemote().value());
-
-        // A mismatch is detected if all timestamps are equal but the sizes in snapshots differ.
-        if (localSnapshotSize != remoteSnapshotSize && localSnapshotLastModified == dbNode.lastModifiedLocal().value() &&
-            localSnapshotLastModified == remoteSnapshotLastModified) {
-            SyncPath localSnapshotPath;
-            if (!_syncPal->snapshotCopy(ReplicaSide::Local)->path(dbNode.nodeIdLocal().value(), localSnapshotPath)) {
-                LOGW_SYNCPAL_WARN(_logger, L"Failed to retrieve path from snapshot for item "
-                                               << SyncName2WStr(dbNode.nameLocal()).c_str() << L" ("
-                                               << Utility::s2ws(dbNode.nodeIdLocal().value()).c_str() << L")");
-                setExitCause(ExitCause::InvalidSnapshot);
-                return ExitCode::DataError;
-            }
-
-            // OS might fail to notify all delete events, therefor we check that the file still exists
-            SyncPath absoluteLocalPath = _syncPal->localPath() / localSnapshotPath;
-
-            // No operations detected on this file but its size is not the same between remote and local replica
-            // Remove it from local replica and download the remote version
-            LOGW_SYNCPAL_DEBUG(_logger, L"File size mismatch for " << Utility::formatSyncPath(absoluteLocalPath).c_str()
-                                                                   << L". Remote version will be downloaded again.");
-            _fileSizeMismatchMap.insert({dbNode.nodeIdLocal().value(), absoluteLocalPath});
+        // No operations detected on this file but its size is not the same between remote and local replica
+        // Remove it from local replica and download the remote version
+        LOGW_SYNCPAL_DEBUG(_logger, L"File size mismatch for \"" << Path2WStr(absoluteLocalPath).c_str()
+                                                                 << L"\". Remote version will be downloaded again.");
+        _fileSizeMismatchMap.insert({dbNode.nodeIdLocal().value(), absoluteLocalPath});
 #ifdef NDEBUG
-            sentry_capture_event(sentry_value_new_message_event(
-                SENTRY_LEVEL_WARNING, "ComputeFSOperationWorker::inferChangesFromDb", "File size mismatch detected"));
+        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "ComputeFSOperationWorker::exploreDbTree",
+                                                            "File size mismatch detected"));
 #endif
-        }
     }
 
     return ExitCode::Ok;

@@ -146,8 +146,7 @@ bool Snapshot::removeItem(const NodeId &id) {
     _items.erase(id);
 
     if (ParametersCache::isExtendedLogEnabled()) {
-        LOG_DEBUG(Log::instance()->getLogger(),
-                  "Item " << id.c_str() << " removed from " << Utility::side2Str(_side).c_str() << " snapshot.");
+        LOG_DEBUG(Log::instance()->getLogger(), "Item " << id.c_str() << " removed from " << _side << " snapshot.");
     }
 
     return true;
