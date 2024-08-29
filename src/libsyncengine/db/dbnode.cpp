@@ -65,4 +65,37 @@ void DbNode::setNameRemote(const SyncName &name) {
     _nameRemote = name;
 }
 
+SyncTime DbNode::lastModified(const ReplicaSide side) const {
+    switch (side) {
+        case ReplicaSide::Local:
+            return lastModifiedLocal() ? *lastModifiedLocal() : 0;
+        case ReplicaSide::Remote:
+            return lastModifiedRemote() ? *lastModifiedRemote() : 0;
+        default:
+            return 0;
+    }
+}
+
+NodeId DbNode::nodeId(const ReplicaSide side) const {
+    switch (side) {
+        case ReplicaSide::Local:
+            return nodeIdLocal() ? *nodeIdLocal() : NodeId{};
+        case ReplicaSide::Remote:
+            return nodeIdRemote() ? *nodeIdRemote() : NodeId{};
+        default:
+            return {};
+    }
+}
+
+SyncName DbNode::name(const ReplicaSide side) const {
+    switch (side) {
+        case ReplicaSide::Local:
+            return nameLocal();
+        case ReplicaSide::Remote:
+            return nameRemote();
+        default:
+            return {};
+    }
+}
+
 }  // namespace KDC

@@ -110,49 +110,12 @@ void ComputeFSOperationWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
 }
 
-namespace {
-
-
-SyncTime getLastModified(const ReplicaSide side, const DbNode &dbNode) {
-    switch (side) {
-        case ReplicaSide::Local:
-            return dbNode.lastModifiedLocal() ? *dbNode.lastModifiedLocal() : 0;
-        case ReplicaSide::Remote:
-            return dbNode.lastModifiedRemote() ? *dbNode.lastModifiedRemote() : 0;
-        default:
-            return 0;
-    }
-}
-
-NodeId getNodeId(const ReplicaSide side, const DbNode &dbNode) {
-    switch (side) {
-        case ReplicaSide::Local:
-            return dbNode.nodeIdLocal() ? *dbNode.nodeIdLocal() : NodeId{};
-        case ReplicaSide::Remote:
-            return dbNode.nodeIdRemote() ? *dbNode.nodeIdRemote() : NodeId{};
-        default:
-            return {};
-    }
-}
-
-SyncName getName(const ReplicaSide side, const DbNode &dbNode) {
-    switch (side) {
-        case ReplicaSide::Local:
-            return dbNode.nameLocal();
-        case ReplicaSide::Remote:
-            return dbNode.nameRemote();
-        default:
-            return {};
-    }
-}
-
-}  // namespace
 
 ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode,
                                                          const SyncPath &localDbPath, const SyncPath &remoteDbPath) {
     assert(side != ReplicaSide::Unknown);
 
-    const NodeId nodeId = getNodeId(side, dbNode);
+    const NodeId &nodeId = dbNode.nodeId(side);
     if (nodeId.empty()) {
         LOGW_SYNCPAL_WARN(_logger, Utility::s2ws(Utility::side2Str(side)).c_str()
                                        << L" node ID empty for for dbId=" << dbNode.nodeId());
@@ -160,9 +123,8 @@ ExitCode ComputeFSOperationWorker::inferChangeFromDbNode(const ReplicaSide side,
         return ExitCode::DataError;
     }
 
-    const SyncTime dbLastModified = getLastModified(side, dbNode);
-
-    const SyncName dbName = getName(side, dbNode);
+    const SyncTime dbLastModified = dbNode.lastModified(side);
+    const SyncName dbName = dbNode.name(side);
     const SyncPath &dbPath = side == ReplicaSide::Local ? localDbPath : remoteDbPath;
     const auto snapshot = _syncPal->snapshotCopy(side);
     std::shared_ptr<FSOperationSet> opSet = _syncPal->operationSet(side);
