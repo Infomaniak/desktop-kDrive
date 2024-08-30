@@ -31,6 +31,7 @@ std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
 std::shared_ptr<SentryHandler> SentryHandler::instance() {
     if (!_instance) {
         assert(false && "SentryHandler must be initialized before calling instance");
+        // TODO: When the logger will be moved to the common library, add a log here.
         return std::shared_ptr<SentryHandler>(new SentryHandler());  // Create a dummy instance to avoid crash but should never
                                                                      // happen (the sentry will not be send)
     }
