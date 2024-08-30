@@ -20,8 +20,10 @@
 #include "test_utility/testhelpers.h"
 #include "test_utility/localtemporarydirectory.h"
 
+#include "libcommonserver/io/iohelper.h"
 #include "libparms/db/parmsdb.h"
 
+#include <algorithm>
 #include <time.h>
 
 using namespace CppUnit;
@@ -68,7 +70,7 @@ void TestSyncDb::setUp() {
     std::filesystem::remove(syncDbPath);
 
     // Create DB
-    _testObj = new SyncDb(syncDbPath.string(), "3.4.0");
+    _testObj = new SyncDbMock(syncDbPath.string(), "3.4.0");
     _testObj->setAutoDelete(true);
 }
 
@@ -100,7 +102,12 @@ void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
     ParmsDb::instance()->insertSync(sync);
 }
 
-std::vector<SyncName> createSyncFiles(const SyncPath &localPath) {
+struct SyncFilesInfo {
+        std::vector<SyncName> localFileNames;
+        std::vector<NodeId> nodeIds;
+};
+
+SyncFilesInfo createSyncFiles(const SyncPath &localPath) {
     /**
      * FS tree:
      *      *      Root
@@ -111,24 +118,38 @@ std::vector<SyncName> createSyncFiles(const SyncPath &localPath) {
      *          `-- nfc
      */
 
-    std::filesystem::create_directories(localPath / "a");  // file1
-    std::filesystem::create_directories(localPath / "b");  // file4
-
     const auto nfc = testhelpers::makeNfcSyncName();
     const auto nfd = testhelpers::makeNfdSyncName();
 
-    std::ofstream file2{localPath / "a" / "c"};
-    std::ofstream file3{localPath / "a" / nfc};
-    std::ofstream file5{localPath / "b" / nfd};
+    const SyncPath path0 = localPath / "a";
+    const SyncPath path1 = path0 / "c";
+    const SyncPath path2 = path0 / nfc;
+    const SyncPath path3 = localPath / "b";
+    const SyncPath path4 = path3 / nfd;
 
-#ifndef _WIN32
-    return {"a", "c", nfc, "b", nfd};
-#else
-    return {L"a", L"c", nfc, L"b", nfd};
-#endif
+    std::filesystem::create_directories(path0);
+    std::filesystem::create_directories(path3);
+    std::ofstream file1{path1};
+    std::ofstream file2{path2};
+    std::ofstream file4{path4};
+
+
+    SyncFilesInfo syncFilesInfo;
+    const std::vector<SyncPath> paths = {path0, path1, path2, path3, path4};
+
+    std::transform(paths.cbegin(), paths.cend(), std::back_inserter(syncFilesInfo.nodeIds), [](const SyncPath &path) -> NodeId {
+        NodeId nodeId;
+        IoHelper::getNodeId(path, nodeId);
+        return nodeId;
+    });
+
+    std::transform(paths.cbegin(), paths.cend(), std::back_inserter(syncFilesInfo.localFileNames),
+                   [](const SyncPath &path) -> SyncName { return path.filename(); });
+
+    return syncFilesInfo;
 }
 
-std::vector<DbNode> TestSyncDb::setupSyncDb_3_6_5() {
+std::vector<DbNode> TestSyncDb::setupSyncDb_3_6_5(const std::vector<NodeId> &localNodeIds) {
     const time_t tLoc = std::time(0);
     const time_t tDrive = std::time(0);
     const auto rootId = _testObj->rootNode().nodeId();
@@ -136,11 +157,11 @@ std::vector<DbNode> TestSyncDb::setupSyncDb_3_6_5() {
     const auto nfc = testhelpers::makeNfcSyncName();
     const auto nfd = testhelpers::makeNfdSyncName();
 
-    DbNode node1(rootId, "a", "A", "id loc 1", "id drive 1", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
-    DbNodeTest node2(rootId, "c", nfd, "id loc 2", "id drive 2", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
-    DbNodeTest node3(rootId, nfd, "a", "id loc 3", "id drive 3", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
-    DbNode node4(rootId, "b", "B", "id loc 4", "id drive 4", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
-    DbNodeTest node5(rootId, nfc, nfd, "id loc 5", "id drive 5", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
+    DbNode node0(rootId, "a", "A", localNodeIds[0], "id drive 0", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
+    DbNodeTest node1(rootId, "c", nfd, localNodeIds[1], "id drive 1", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
+    DbNodeTest node2(rootId, nfd, "a", localNodeIds[2], "id drive 2", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
+    DbNode node3(rootId, "b", "B", localNodeIds[3], "id drive 3", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
+    DbNodeTest node4(rootId, nfc, nfd, localNodeIds[4], "id drive 4", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
 
     {
         /**
@@ -155,26 +176,26 @@ std::vector<DbNode> TestSyncDb::setupSyncDb_3_6_5() {
         bool constraintError = false;
         DbNodeId dbNodeId;
 
+        _testObj->insertNode(node0, dbNodeId, constraintError);
+        node0.setNodeId(dbNodeId);
+        node1.setParentNodeId(dbNodeId);
+        node2.setParentNodeId(dbNodeId);
+
         _testObj->insertNode(node1, dbNodeId, constraintError);
         node1.setNodeId(dbNodeId);
-        node2.setParentNodeId(dbNodeId);
-        node3.setParentNodeId(dbNodeId);
 
         _testObj->insertNode(node2, dbNodeId, constraintError);
         node2.setNodeId(dbNodeId);
 
         _testObj->insertNode(node3, dbNodeId, constraintError);
         node3.setNodeId(dbNodeId);
+        node4.setParentNodeId(dbNodeId);
 
         _testObj->insertNode(node4, dbNodeId, constraintError);
         node4.setNodeId(dbNodeId);
-        node5.setParentNodeId(dbNodeId);
-
-        _testObj->insertNode(node5, dbNodeId, constraintError);
-        node5.setNodeId(dbNodeId);
     }
 
-    return {node1, node2, node3, node4, node5};
+    return {node0, node1, node2, node3, node4};
 }
 
 void TestSyncDb::testUpgradeTo3_6_5_checkNodeMap() {
@@ -184,19 +205,19 @@ void TestSyncDb::testUpgradeTo3_6_5_checkNodeMap() {
     _testObj->selectNamesWithDistinctEncodings(namedNodeMap);
 
     CPPUNIT_ASSERT_EQUAL(size_t(2), namedNodeMap.size());
-    CPPUNIT_ASSERT_EQUAL(DbNodeId(4), namedNodeMap.at("id loc 3").dbNodeId);
-    CPPUNIT_ASSERT_EQUAL(DbNodeId(6), namedNodeMap.at("id loc 5").dbNodeId);
+    CPPUNIT_ASSERT_EQUAL(DbNodeId(4), namedNodeMap.at("4").dbNodeId);
+    CPPUNIT_ASSERT_EQUAL(DbNodeId(6), namedNodeMap.at("6").dbNodeId);
 }
 
 void TestSyncDb::testUpgradeTo3_6_5() {
     LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_4");
     createParmsDb(_testObj->dbPath(), localTmpDir.path());
-    const auto localFileNames = createSyncFiles(localTmpDir.path());
-    const auto initialDbNodes = setupSyncDb_3_6_5();
+    const auto syncFilesInfo = createSyncFiles(localTmpDir.path());
+    const auto initialDbNodes = setupSyncDb_3_6_5(syncFilesInfo.nodeIds);
 
     _testObj->upgrade("3.6.4", "3.6.5");
 
-    CPPUNIT_ASSERT_EQUAL(initialDbNodes.size(), localFileNames.size());
+    CPPUNIT_ASSERT_EQUAL(initialDbNodes.size(), syncFilesInfo.localFileNames.size());
     for (int i = 0; i < initialDbNodes.size(); ++i) {
         SyncName localName, remoteName;
         bool found = false;
@@ -205,7 +226,7 @@ void TestSyncDb::testUpgradeTo3_6_5() {
         // On MacOSX, the std::filesystem API creates files with NFC encoded names only.
         CPPUNIT_ASSERT(localName == Utility::normalizedSyncName(localFileNames[i]));
 #else
-        CPPUNIT_ASSERT(localName == localFileNames[i]);
+        CPPUNIT_ASSERT(localName == syncFilesInfo.localFileNames[i]);
 #endif
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, *initialDbNodes[i].nodeIdRemote(), remoteName, found) && found);
         CPPUNIT_ASSERT(remoteName == Utility::normalizedSyncName(initialDbNodes[i].nameRemote()));

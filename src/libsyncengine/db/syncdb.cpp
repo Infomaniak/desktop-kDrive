@@ -647,7 +647,14 @@ bool SyncDb::initData() {
     return true;
 }
 
+void SyncDb::updateNames(const char *queryId, const SyncName &localName, const SyncName &remoteName) {
+    ASSERT(queryBindValue(queryId, 2, Utility::normalizedSyncName(localName)));
+    ASSERT(queryBindValue(queryId, 3, Utility::normalizedSyncName(remoteName)));
+}
+
 bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraintError) {
+    const char *queryId = INSERT_NODE_REQUEST_ID;
+
     const std::lock_guard<std::mutex> lock(_mutex);
 
     if ((node.nodeIdLocal() ? node.nodeIdLocal().value() : "").empty() ||
@@ -664,27 +671,26 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(INSERT_NODE_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 1,
-                          (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 2, Utility::normalizedSyncName(node.nameLocal())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
+    ASSERT(queryResetAndClearBindings(queryId));
+    ASSERT(queryBindValue(queryId, 1, (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
+
+
+    updateNames(queryId, node.nameLocal(), node.nameRemote());
+
+    ASSERT(queryBindValue(queryId, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
+    ASSERT(queryBindValue(queryId, 5, (node.nodeIdRemote() ? dbtype(node.nodeIdRemote().value()) : std::monostate())));
+    ASSERT(queryBindValue(queryId, 6, (node.created() ? dbtype(node.created().value()) : std::monostate())));
+    ASSERT(queryBindValue(queryId, 7, (node.lastModifiedLocal() ? dbtype(node.lastModifiedLocal().value()) : std::monostate())));
     ASSERT(
-        queryBindValue(INSERT_NODE_REQUEST_ID, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 5,
-                          (node.nodeIdRemote() ? dbtype(node.nodeIdRemote().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 6, (node.created() ? dbtype(node.created().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 7,
-                          (node.lastModifiedLocal() ? dbtype(node.lastModifiedLocal().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 8,
-                          (node.lastModifiedRemote() ? dbtype(node.lastModifiedRemote().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 9, static_cast<int>(node.type())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 10, node.size()));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 11, (node.checksum() ? dbtype(node.checksum().value()) : std::monostate())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 12, static_cast<int>(node.status())));
-    ASSERT(queryBindValue(INSERT_NODE_REQUEST_ID, 13, static_cast<int>(node.syncing())));
-    if (!queryExecAndGetRowId(INSERT_NODE_REQUEST_ID, dbNodeId, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << INSERT_NODE_REQUEST_ID);
+        queryBindValue(queryId, 8, (node.lastModifiedRemote() ? dbtype(node.lastModifiedRemote().value()) : std::monostate())));
+    ASSERT(queryBindValue(queryId, 9, static_cast<int>(node.type())));
+    ASSERT(queryBindValue(queryId, 10, node.size()));
+    ASSERT(queryBindValue(queryId, 11, (node.checksum() ? dbtype(node.checksum().value()) : std::monostate())));
+    ASSERT(queryBindValue(queryId, 12, static_cast<int>(node.status())));
+    ASSERT(queryBindValue(queryId, 13, static_cast<int>(node.syncing())));
+
+    if (!queryExecAndGetRowId(queryId, dbNodeId, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << queryId);
         constraintError = (errId == SQLITE_CONSTRAINT);
         return false;
     }

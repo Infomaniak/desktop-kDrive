@@ -98,6 +98,9 @@ class SyncDb : public Db {
 
         bool setTargetNodeId(const std::string &targetNodeId, bool &found);
 
+    protected:
+        virtual void updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
+
     private:
         static DbNode _driveRootNode;
         DbNode _rootNode;
