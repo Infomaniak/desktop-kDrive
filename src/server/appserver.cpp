@@ -312,6 +312,7 @@ AppServer::AppServer(int &argc, char **argv)
         userEmail = userList[userList.size() - 1].email();
     }
     SentryHandler::instance()->setAuthenticatedUser(SentryHandler::SentryUser(userEmail, userName, userId));
+
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
     handleCrashRecovery(shouldQuit);

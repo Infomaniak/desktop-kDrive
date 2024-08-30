@@ -17,8 +17,10 @@
  */
 #include <sentry.h>
 #include <string>
-#include "utility/types.h"
 #include <mutex>
+
+#include "utility/types.h"
+#include "sentryuser.h"
 
 namespace KDC {
 
@@ -45,42 +47,17 @@ inline std::string toString(SentryLevel level) {
     }
 };
 
-
-enum class SentryProject { Server, Client };
-
 class SentryHandler {
     public:
+        enum class SentryProject { Server, Client };  // Only used for initialization, don't need to be in types.h
+
         ~SentryHandler();
-
-        enum class SentryUserType {
-            Anonymous,      // The sentry will not be able to identify the user (no ip, no email, no username, ...)
-            Unknown,        // The sentry will be able to uniquely identify the user with his IP address but nothing else.
-            Authenticated,  // The sentry will contains information about the last user connected to the application. (email,
-                            // username, user id, ...)
-            Specific        // The sentry will contains information about a specific user given in parameter.
-        };
-
-        struct SentryUser {
-            public:
-                SentryUser() = default;
-                SentryUser(const std::string_view &email, const std::string_view &username, const std::string_view &userId)
-                    : email(email), username(username), userId(userId) {}
-
-                inline std::string_view getEmail() const { return email; };
-                inline std::string_view getUsername() const { return username; };
-                inline std::string_view getUserId() const { return userId; };
-
-            private:
-                std::string email = "Not set";
-                std::string username = "Not set";
-                std::string userId = "Not set";
-        };
-
         static std::shared_ptr<SentryHandler> instance();
         static void init(SentryProject project, int breadCrumbsSize = 100);
         void setAuthenticatedUser(const SentryUser &user);
+        void setGlobalConfidentialityLevel(SentryConfidentialityLevel level);
         void captureMessage(SentryLevel level, const std::string &title, std::string message,
-                            SentryUserType userType = SentryUserType::Authenticated,
+                            SentryConfidentialityLevel confidentialityLevel = SentryConfidentialityLevel::Auto,
                             const SentryUser &user = SentryUser() /*Only for UserType::Specific*/);
 
     private:
@@ -93,29 +70,33 @@ class SentryHandler {
 
         sentry_value_t toSentryValue(const SentryUser &user);
 
-    private:
         struct SentryEvent {
-                SentryEvent(const std::string &title, const std::string &message, SentryLevel level, SentryUserType userType,
-                            const SentryUser &user);
+                using time_point = std::chrono::system_clock::time_point;
 
-                bool operator==(const SentryEvent &other) const {
-                    return title == other.title && message == other.message && level == other.level &&
-                           userType == other.userType && userId == other.userId;
-                }
-
+                SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
+                            SentryConfidentialityLevel userType, const SentryUser &user);
+                std::string getHash() const { return title + message + (char)toInt(level) + userId; };
                 std::string title;
                 std::string message;
                 SentryLevel level;
-                SentryUserType userType;
+                SentryConfidentialityLevel confidentialityLevel = SentryConfidentialityLevel::Anonymous;
                 std::string userId;
-                using time_point = std::chrono::system_clock::time_point;
                 time_point lastCapture;
                 time_point lastUpload;
                 unsigned int captureCount = 0;
         };
         std::mutex _mutex;
         SentryUser _authenticatedUser;
-        std::vector<SentryEvent> _events;  // TODO: see if there is a better way to store the events
-        SentryUserType _lastUserType = SentryUserType::Specific; 
+        struct StringHash {
+                using is_transparent = void;  // Enables heterogeneous operations.
+                std::size_t operator()(std::string_view sv) const {
+                    std::hash<std::string_view> hasher;
+                    return hasher(sv);
+                }
+        };
+
+        std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
+        SentryConfidentialityLevel _globalConfidentialityLevel = SentryConfidentialityLevel::Anonymous;  // Default value
+        SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::Specific;
 };
 }  // namespace KDC

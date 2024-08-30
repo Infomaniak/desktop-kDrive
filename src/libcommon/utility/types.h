@@ -404,6 +404,16 @@ struct VersionInfo {
         }
 };
 
+enum class SentryConfidentialityLevel {
+    Auto,           // The sentry will fetch the global confidentiality level.
+    Anonymous,      // The sentry will not be able to identify the user (no ip, no email, no username, ...)
+    Unknown,        // The sentry will be able to uniquely identify the user with his IP address but nothing else.
+    Authenticated,  // The sentry will contains information about the last user connected to the application. (email,
+                    // username, user id, ...)
+    Specific        // The sentry will contains information about a specific user given in parameter.
+};
+std::string toString(SentryConfidentialityLevel e);
+
 // Adding a new types here requires to add it in stringToAppStateValue and appStateValueToString in libcommon/utility/utility.cpp
 using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
 

@@ -775,4 +775,20 @@ std::string toString(Platform e) {
             return "No conversion to string available";
     }
 }
+std::string toString(SentryConfidentialityLevel e) {
+    switch (e) {
+        case SentryConfidentialityLevel::Auto:
+            return "Auto";
+        case SentryConfidentialityLevel::Authenticated:
+            return "Authenticated";
+        case SentryConfidentialityLevel::Specific:
+            return "Specific";
+        case SentryConfidentialityLevel::Unknown:
+            return "Uknown";
+        case SentryConfidentialityLevel::Anonymous:
+            return "Anonymous";
+        default:
+            return "No conversion to string available";
+    }
+}
 }  // namespace KDC

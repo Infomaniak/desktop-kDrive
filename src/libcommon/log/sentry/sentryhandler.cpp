@@ -7,7 +7,7 @@
 
 namespace KDC {
 
-constexpr const int SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT = 10;
+constexpr const int SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT = 1;
 constexpr const int SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT = 10;
 std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
 
@@ -74,26 +74,32 @@ void SentryHandler::setAuthenticatedUser(const SentryUser &user) {
     _authenticatedUser = user;
 }
 
-void SentryHandler::captureMessage(SentryLevel level, const std::string &title, /*Copy needed*/ std::string message,
-                                   SentryUserType userType, const SentryUser &user) {
+void SentryHandler::setGlobalConfidentialityLevel(SentryConfidentialityLevel level) {
+    assert(level != SentryConfidentialityLevel::Specific && "Specific user type is not allowed as global confidentiality level");
     std::scoped_lock lock(_mutex);
-    SentryEvent event(title, message, level, userType, user);
+    _globalConfidentialityLevel = level;
+}
 
-    if (auto it = std::ranges::find(_events, event); it != _events.end()) {  // If the event is already in the list
-        it->captureCount++;
-        if (it->lastCapture + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) <
+void SentryHandler::captureMessage(SentryLevel level, const std::string &title, /*Copy needed*/ std::string message,
+                                   SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) {
+    std::scoped_lock lock(_mutex);
+    SentryEvent event(title, message, level, confidentialityLevel, user);
+    if (auto it = _events.find(event.getHash()); it != _events.end()) {
+        auto storedEvent = it->second;
+        storedEvent.captureCount++;
+        if (storedEvent.lastCapture + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) <
             std::chrono::system_clock::now()) {  // Reset the capture count if the last capture was more than 10 minutes ago
-            it->captureCount = 0;
-        } else if (it->captureCount >= SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT) {
+            storedEvent.captureCount = 0;
+        } else if (storedEvent.captureCount >= SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT) {
             event.lastCapture = std::chrono::system_clock::now();
-            if (it->lastUpload + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) >
+            if (storedEvent.lastUpload + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) >
                     std::chrono::system_clock::now() &&
-                it->captureCount != SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT) {  // Rate limit reached for this event wait 10
+                storedEvent.captureCount != SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT) {  // Rate limit reached for this event wait 10
                                                                                    // minutes before sending it again
                 return;
             } else {
-                it->lastUpload = std::chrono::system_clock::now();
-                message += " (Rate limit reached: " + std::to_string(it->captureCount) +
+                storedEvent.lastUpload = std::chrono::system_clock::now();
+                message += " (Rate limit reached: " + std::to_string(storedEvent.captureCount) +
                            " captures since last app start. Level escalated from " + toString(level) + " to Error)";
                 level = SentryLevel::Error;
             }
@@ -103,23 +109,24 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
     } else {
         event.lastCapture = std::chrono::system_clock::now();
         event.lastUpload = std::chrono::system_clock::now();
-        _events.push_back(event);
+        _events.try_emplace(event.getHash(), event);
+        //assert(_events.size() < 100 && "SentryHandler::captureMessage: Too many events in the list");
     }
 
-    if (userType != _lastUserType || userType == SentryUserType::Specific) {
-        _lastUserType = userType;
+    if (confidentialityLevel != _lastConfidentialityLevel || confidentialityLevel == SentryConfidentialityLevel::Specific) {
+        _lastConfidentialityLevel = confidentialityLevel;
         sentry_value_t userValue;
-        switch (userType) {
-            case KDC::SentryHandler::SentryUserType::Unknown:
+        switch (confidentialityLevel) {
+            case KDC::SentryHandler::SentryConfidentialityLevel::Unknown:
                 userValue = toSentryValue(SentryUser());
                 sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
                 sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Unknown"));
                 break;
-            case KDC::SentryHandler::SentryUserType::Authenticated:
-                userValue = toSentryValue(_authenticatedUser);  // TODO: Change this to not copy the value
+            case KDC::SentryHandler::SentryConfidentialityLevel::Authenticated:
+                userValue = toSentryValue(_authenticatedUser);
                 sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
                 break;
-            case KDC::SentryHandler::SentryUserType::Specific:
+            case KDC::SentryHandler::SentryConfidentialityLevel::Specific:
                 userValue = toSentryValue(user);
                 sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
                 sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
@@ -135,7 +142,7 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
         sentry_remove_user();
         sentry_set_user(userValue);
     }
-    sentry_capture_event(sentry_value_new_message_event((sentry_level_t)toInt(level), title.c_str(), message.c_str()));
+   // sentry_capture_event(sentry_value_new_message_event((sentry_level_t)toInt(level), title.c_str(), message.c_str()));
 }
 
 sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) {
@@ -153,6 +160,6 @@ SentryHandler::~SentryHandler() {
 }
 
 SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
-                                        SentryUserType userType, const SentryUser &user)
-    : title(title), message(message), level(level), userType(userType), userId(user.getUserId()) {}
+                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user)
+    : title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.getUserId()) {}
 }  // namespace KDC
