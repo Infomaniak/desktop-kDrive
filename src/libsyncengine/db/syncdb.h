@@ -125,7 +125,7 @@ class SyncDb : public Db {
         // Fix issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node.
         bool normalizeRemoteNames();
         // Use the actual encoding of local file names in DB.
-        bool resintateEncodingOfLocalNames(const std::string &dbFromVersionNumber);
+        bool reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber);
 
         friend class TestSyncDb;
 };

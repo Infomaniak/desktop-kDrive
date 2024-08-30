@@ -591,7 +591,7 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVer
         queryFree(ALTER_NODE_TABLE_FK_ID);
     }
 
-    if (!resintateEncodingOfLocalNames(dbFromVersionNumber)) return false;
+    if (!reinstateEncodingOfLocalNames(dbFromVersionNumber)) return false;
 
     LOG_DEBUG(_logger, "Upgrade of Sync DB successfully completed.");
 
@@ -2393,7 +2393,7 @@ bool SyncDb::normalizeRemoteNames() {
     return true;
 }
 
-bool SyncDb::resintateEncodingOfLocalNames(const std::string &dbFromVersionNumber) {
+bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber) {
     if (!CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.5")) return true;
 
     LOG_DEBUG(_logger, "Upgrade < 3.6.5 DB");
