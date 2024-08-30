@@ -622,6 +622,8 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVer
     if (!normalizeRemoteNames(dbFromVersionNumber)) return false;
     if (!resintateEncodingOfLocalNames(dbFromVersionNumber)) return false;
 
+    LOG_DEBUG(_logger, "Upgrade of Sync DB successfully completed.");
+
     return true;
 }
 

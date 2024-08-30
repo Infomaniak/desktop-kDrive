@@ -237,7 +237,7 @@ void TestSyncDb::testUpgradeTo3_6_5() {
 
     const auto actualSystemFileNames = getActualSystemFileNames(localTmpDir.path());
     for (int i = 0; i < initialDbNodes.size(); ++i) {
-        SyncName localName, remoteName;
+        SyncName localName, remoteName;  // From the sync database.
         bool found = false;
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, *initialDbNodes[i].nodeIdLocal(), localName, found) && found);
 
