@@ -67,7 +67,7 @@ void BlacklistPropagator::runJob() {
 ExitCode BlacklistPropagator::checkNodes() {
     ExitCode exitCode(ExitCode::Unknown);
 
-    _syncPal->_syncHasFullyCompleted = false;
+    _syncPal->setSyncHasFullyCompleted(false);
 
     std::unordered_set<NodeId> blackList;
     SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), SyncNodeType::BlackList, blackList);
@@ -140,7 +140,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
     SyncPath absolutePath = _sync.localPath() / localPath;
 
     // Cancel hydration
-    const bool liteSyncActivated = _syncPal->_vfsMode != VirtualFileMode::Off;
+    const bool liteSyncActivated = _syncPal->vfsMode() != VirtualFileMode::Off;
     if (liteSyncActivated) {
         try {
             std::error_code ec;
@@ -235,7 +235,7 @@ ExitCode BlacklistPropagator::removeItem(const NodeId &localNodeId, const NodeId
                                                                  << L") on local replica because it is blacklisted.");
         }
 
-        LocalDeleteJob job(_syncPal->driveDbId(), _syncPal->_localPath, localPath, liteSyncActivated, remoteNodeId);
+        LocalDeleteJob job(_syncPal->syncInfo(), localPath, liteSyncActivated, remoteNodeId);
         job.setBypassCheck(true);
         job.runSynchronously();
         if (job.exitCode() != ExitCode::Ok) {

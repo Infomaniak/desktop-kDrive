@@ -19,30 +19,54 @@
 #pragma once
 
 #include "jobs/abstractjob.h"
+#include "syncpal/syncpal.h"
+
 
 namespace KDC {
 
 class LocalDeleteJob : public AbstractJob {
     public:
-        LocalDeleteJob(int driveDbId, const SyncPath &syncPath, const SyncPath &relativePath, bool isDehydratedPlaceholder,
-                       NodeId remoteId, bool forceToTrash = false);
-        // Delete without checks
-        LocalDeleteJob(const SyncPath &absolutePath);
+        LocalDeleteJob(const SyncPalInfo &syncInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder, NodeId remoteId,
+                       bool forceToTrash = false);
+        LocalDeleteJob(const SyncPath &absolutePath);  // To delete without checks
         ~LocalDeleteJob();
+
+        const SyncPalInfo &syncInfo() const { return _syncInfo; };
+
+        //! Returns `true` if `localRelativePath` and `remoteRelativePath` indicate the same synchronised item.
+        /*!
+          \param targetPath is the path of the remote sync folder if the sync is advanced; it is empty otherwise.
+          \param localRelativePath is the path of the item relative to the local sync folder.
+          \param remoteRelativePath is the path of the item relative to the remote drive root folder.
+          \return true if the two relative paths indicate the same synchronised item.
+        */
+        static bool matchRelativePaths(const SyncPath &targetPath, const SyncPath &localRelativePath,
+                                       const SyncPath &remoteRelativePath);
+
 
     protected:
         virtual bool canRun() override;
+        virtual bool findRemoteItem(SyncPath &remoteItemPath) const;
 
     private:
         virtual void runJob() override;
 
-        int _driveDbId = 0;
-        SyncPath _syncPath;
+        SyncPalInfo _syncInfo;
         SyncPath _relativePath;
         SyncPath _absolutePath;
         bool _isDehydratedPlaceholder = false;
         NodeId _remoteNodeId;
         bool _forceToTrash = false;
+
+        struct Path {
+                Path(const SyncPath &path);
+                bool endsWith(SyncPath &&ending) const;
+
+            private:
+                SyncPath _path;
+        };
+
+        friend class TestLocalJobs;
 };
 
 }  // namespace KDC
