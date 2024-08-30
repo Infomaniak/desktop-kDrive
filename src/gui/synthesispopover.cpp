@@ -28,7 +28,7 @@
 #include "parameterscache.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
-#include "libcommon/log/sentry/sentryHandler.h"
+#include "libcommon/log/sentry/sentryhandler.h"
 #include "updater/updaterclient.h"
 
 #undef CONSOLE_DEBUG
