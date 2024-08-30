@@ -121,7 +121,8 @@ class SyncDb : public Db {
                 DbNodeId dbNodeId{-1};
                 SyncName localName;
         };
-        using NamedNodeMap = std::map<NodeId, NamedNode>;
+        using IntNodeId = long long;
+        using NamedNodeMap = std::map<IntNodeId, NamedNode>;
         bool selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap);
         using SyncNameMap = std::map<DbNodeId, SyncName>;
         bool updateNamesWithDistinctEncodings(const SyncNameMap &localNames);

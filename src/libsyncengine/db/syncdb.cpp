@@ -2375,7 +2375,9 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
         NodeId nodeIdLocal;
         ASSERT(queryStringValue(requestId, 3, nodeIdLocal));
 
-        namedNodeMap.insert({nodeIdLocal, NamedNode{dbNodeId, nameLocal}});
+        const IntNodeId intNodeId = std::stoll(nodeIdLocal);
+
+        namedNodeMap.insert({intNodeId, NamedNode{dbNodeId, nameLocal}});
     }
     ASSERT(queryResetAndClearBindings(requestId));
 
@@ -2427,13 +2429,15 @@ bool SyncDb::resintateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
         if (!IoHelper::getNodeId(dirEntry.path(), nodeId)) {
             LOGW_WARN(_logger,
                       L"Could not retrieve the node id of item with" << Utility::formatSyncPath(dirEntry.path()).c_str());
-        } else {
-            if (!namedNodeMap.contains(nodeId)) continue;
+            continue;
         }
 
-        SyncName syncName(dirEntry.path().filename().c_str());
-        if (syncName != namedNodeMap[nodeId].localName) {
-            localNames.insert({namedNodeMap[nodeId].dbNodeId, std::move(syncName)});
+        const IntNodeId intNodeId = std::stoll(nodeId);
+        if (!namedNodeMap.contains(intNodeId)) continue;
+
+        SyncName actualLocalName(dirEntry.path().filename().c_str());
+        if (actualLocalName != namedNodeMap[intNodeId].localName) {
+            localNames.insert({namedNodeMap[intNodeId].dbNodeId, std::move(actualLocalName)});
         }
     }
 
