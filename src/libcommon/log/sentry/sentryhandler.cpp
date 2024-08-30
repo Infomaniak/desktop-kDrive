@@ -19,23 +19,20 @@
 #include "sentryhandler.h"
 #include "config.h"
 #include "version.h"
-
 #include "utility/utility.h"
 #include <asserts.h>
 
 namespace KDC {
-
-constexpr const int SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT = 1;
-constexpr const int SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT = 10;
+constexpr const int SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT = 10;  // Number of captures of the same event before rate limiting
+constexpr const int SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT =
+    10;  // Number of minutes to wait before sending the event again after rate limiting
 std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
 
 std::shared_ptr<SentryHandler> SentryHandler::instance() {
     if (!_instance) {
         assert(false && "SentryHandler must be initialized before calling instance");
         return std::shared_ptr<SentryHandler>(new SentryHandler());  // Create a dummy instance to avoid crash but should never
-                                                                     // happen (the sentry
-                                                                     // will
-                                                                     // not be send)
+                                                                     // happen (the sentry will not be send)
     }
     return _instance;
 }
@@ -69,7 +66,7 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
     // Set the environment
     bool isSet = false;
     if (std::string environment = CommonUtility::envVarValue("KDRIVE_SENTRY_ENVIRONMENT", isSet); !isSet) {
-        // TODO: When the intern/beta update channel will be available, we will have to create a new environment for it.
+        // TODO: When the intern/beta update channel will be available, we will have to create a new environment for each.
 #ifdef NDEBUG
         sentry_options_set_environment(options, "production");
 #else
