@@ -58,8 +58,7 @@ class SentryHandler {
         void setAuthenticatedUser(const SentryUser &user);
         void setGlobalConfidentialityLevel(SentryConfidentialityLevel level);
         void captureMessage(SentryLevel level, const std::string &title, std::string message,
-                            SentryConfidentialityLevel confidentialityLevel = SentryConfidentialityLevel::Auto,
-                            const SentryUser &user = SentryUser() /*Only for UserType::Specific*/);
+                            const SentryUser &user = SentryUser());
 
     private:
         static std::shared_ptr<SentryHandler> _instance;
@@ -100,6 +99,6 @@ class SentryHandler {
 
         std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
         SentryConfidentialityLevel _globalConfidentialityLevel = SentryConfidentialityLevel::Anonymous;  // Default value
-        SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::Specific;
+        SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::None;
 };
 }  // namespace KDC

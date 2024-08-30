@@ -94,16 +94,15 @@ void SentryHandler::setAuthenticatedUser(const SentryUser &user) {
 }
 
 void SentryHandler::setGlobalConfidentialityLevel(SentryConfidentialityLevel level) {
-    assert(level != SentryConfidentialityLevel::Specific && "Specific user type is not allowed as global confidentiality level");
     std::scoped_lock lock(_mutex);
     _globalConfidentialityLevel = level;
 }
 
-void SentryHandler::captureMessage(SentryLevel level, const std::string &title, /*Copy needed*/ std::string message,
-                                   SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) {
+void SentryHandler::captureMessage(SentryLevel level, const std::string &title, std::string message /*Copy needed*/,
+                                   const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
     if (!_isSentryActivated) return;
     std::scoped_lock lock(_mutex);
-    SentryEvent event(title, message, level, confidentialityLevel, user);
+    SentryEvent event(title, message, level, _globalConfidentialityLevel, user);
     if (auto it = _events.find(event.getHash()); it != _events.end()) {
         auto storedEvent = it->second;
         storedEvent.captureCount++;
@@ -133,30 +132,17 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
         _events.try_emplace(event.getHash(), event);
     }
 
-    if (confidentialityLevel != _lastConfidentialityLevel || confidentialityLevel == SentryConfidentialityLevel::Specific) {
-        _lastConfidentialityLevel = confidentialityLevel;
+    if (_globalConfidentialityLevel != _lastConfidentialityLevel || !user.isDefault()) {
+        _lastConfidentialityLevel = _globalConfidentialityLevel;
         sentry_value_t userValue;
-        switch (confidentialityLevel) {
-            case SentryConfidentialityLevel::Unknown:
-                userValue = toSentryValue(SentryUser());
-                sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
-                sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Unknown"));
-                break;
-            case SentryConfidentialityLevel::Authenticated:
-                userValue = toSentryValue(_authenticatedUser);
-                sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
-                break;
-            case SentryConfidentialityLevel::Specific:
-                userValue = toSentryValue(user);
-                sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
-                sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
-
-                break;
-            default:  // SentryConfidentialityLevel::Anonymous
-                userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
-                sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("-1.-1.-1.-1"));
-                sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
-                break;
+        if (_globalConfidentialityLevel == SentryConfidentialityLevel::Authenticated) {
+            userValue = toSentryValue(_authenticatedUser);
+            sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
+            sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
+        } else {  // Anonymous
+            userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
+            sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("-1.-1.-1.-1"));
+            sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
         }
 
         sentry_remove_user();

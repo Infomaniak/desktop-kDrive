@@ -405,12 +405,10 @@ struct VersionInfo {
 };
 
 enum class SentryConfidentialityLevel {
-    Auto,           // The sentry will fetch the global confidentiality level.
     Anonymous,      // The sentry will not be able to identify the user (no ip, no email, no username, ...)
-    Unknown,        // The sentry will be able to uniquely identify the user with his IP address but nothing else.
     Authenticated,  // The sentry will contains information about the last user connected to the application. (email,
                     // username, user id, ...)
-    Specific        // The sentry will contains information about a specific user given in parameter.
+    None // Not initialized
 };
 std::string toString(SentryConfidentialityLevel e);
 
@@ -486,12 +484,12 @@ inline bool bitWiseEnumToBool(const C a) {
 namespace typesUtility {
 std::wstring stringToWideString(const std::string &str);  // Convert string to wstring (We can't use the s2ws of Utility because
                                                           // it's in libCommonServer and it includes types.h)
-} // namespace typesUtility
+}  // namespace typesUtility
 
 // Stream Operator (toString)
 template <PrintableEnum C>
 std::string toStringWithCode(C e) {
-    return toString(e) + "(" + std::to_string(toInt(e)) + ")"; // Example: "Ok(1)"
+    return toString(e) + "(" + std::to_string(toInt(e)) + ")";  // Example: "Ok(1)"
 }
 
 template <PrintableEnum C>
