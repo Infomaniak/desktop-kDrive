@@ -327,7 +327,7 @@ void ParametersDialog::reset() {
     _noDrivePagewidget->setVisible(true);
 }
 
-QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const noexcept {
+QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause) const {
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
     // TODO: USELESS CODE : this switch should be simplified !!!!
     switch (exitCode) {
@@ -418,7 +418,7 @@ QString ParametersDialog::getAppErrorText(QString fctCode, ExitCode exitCode, Ex
     return {};
 }
 
-QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const noexcept {
+QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCause exitCause) const {
     switch (exitCause) {
         case ExitCause::NoSearchPermission:
             return tr("The item misses search permission (error %1).<br>"
@@ -478,7 +478,7 @@ QString ParametersDialog::getSyncPalSystemErrorText(const QString &err, ExitCaus
     }
 }
 
-QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const noexcept {
+QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause exitCause, bool userIsAdmin) const {
     switch (exitCause) {
         case ExitCause::DriveMaintenance:
             return tr(
@@ -510,8 +510,7 @@ QString ParametersDialog::getSyncPalBackErrorText(const QString &err, ExitCause 
     }
 }
 
-QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause,
-                                              bool userIsAdmin) const noexcept {
+QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode, ExitCause exitCause, bool userIsAdmin) const {
     const QString err = QString("%1:%2:%3").arg(fctCode).arg(toInt(exitCode)).arg(toInt(exitCause));
 
     switch (exitCode) {
@@ -607,7 +606,7 @@ QString ParametersDialog::getSyncPalErrorText(QString fctCode, ExitCode exitCode
     return {};
 }
 
-QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const noexcept {
+QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTypeResolution resolution) const {
     switch (conflictType) {
         case ConflictType::None:
             break;
@@ -680,7 +679,7 @@ QString ParametersDialog::getConflictText(ConflictType conflictType, ConflictTyp
     return {};
 }
 
-QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const noexcept {
+QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyType) const {
     const auto inconsistencyTypeInt = static_cast<int>(inconsistencyType);
     QString text;
 
@@ -730,7 +729,7 @@ QString ParametersDialog::getInconsistencyText(InconsistencyType inconsistencyTy
 }
 
 QString ParametersDialog::getCancelText(CancelType cancelType, const QString &path,
-                                        const QString &destinationPath /*= ""*/) const noexcept {
+                                        const QString &destinationPath /*= ""*/) const {
     switch (cancelType) {
         case CancelType::Create: {
             return tr(
@@ -794,7 +793,7 @@ QString ParametersDialog::getCancelText(CancelType cancelType, const QString &pa
     return {};
 }
 
-QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noexcept {
+QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const {
     switch (errorInfo.exitCause()) {
         case ExitCause::HttpErrForbidden: {
             return tr(
@@ -821,7 +820,7 @@ QString ParametersDialog::getBackErrorText(const ErrorInfo &errorInfo) const noe
     }
 }
 
-QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const noexcept {
+QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) const {
     if (errorInfo.conflictType() != ConflictType::None) {
         return getConflictText(errorInfo.conflictType(), ConflictTypeResolution::None);
     }
@@ -855,7 +854,7 @@ QString ParametersDialog::getErrorLevelNodeText(const ErrorInfo &errorInfo) cons
     }
 }
 
-QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const noexcept {
+QString ParametersDialog::getErrorMessage(const ErrorInfo &errorInfo) const {
     switch (errorInfo.level()) {
         case ErrorLevel::Unknown: {
             return tr(
