@@ -453,6 +453,11 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             emit logUploadStatusUpdated(status, progress);
             break;
         }
+        case SignalNum::UTILITY_QUIT: {
+            qCInfo(lcAppClient) << "Application exit";
+            quit();
+            break;
+        }
         default: {
             qCDebug(lcAppClient) << "Signal not implemented!";
             break;

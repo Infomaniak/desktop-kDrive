@@ -31,10 +31,12 @@
 @protected
     KDC::DownloadState _state;
     NSString *_availableVersion;
+    KDC::QuitCallback _quitCallback;
 }
 - (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)bundle;
 - (KDC::DownloadState)downloadState;
 - (NSString *)availableVersion;
+- (void)setQuitCallback:(KDC::QuitCallback)quitCallback;
 @end
 
 @implementation DelegateUpdaterObject  //(SUUpdaterDelegateInformalProtocol)
@@ -61,6 +63,10 @@
     return _availableVersion;
 }
 
+- (void)setQuitCallback:(KDC::QuitCallback)quitCallback {
+    _quitCallback = quitCallback;
+}
+
 // Sent when a valid update is found by the update driver.
 - (void)updater:(SPUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)update {
     Q_UNUSED(updater)
@@ -85,6 +91,7 @@
                             !found) {  // Desactivate the selfRestarter
         LOG_ERROR(KDC::Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
+    _quitCallback;
 }
 
 - (void)updater:(SPUUpdater *)updater didAbortWithError:(NSError *)error {
@@ -133,6 +140,7 @@ SparkleUpdater::SparkleUpdater(const QUrl &appCastUrl) : UpdaterServer() {
     d = new Private;
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
+    [d->updaterDelegate setQuitCallback:_quitCallback];
     [d->updaterDelegate retain];
 
     d->delegateUserDriverObject = [[DelegateUserDriverObject alloc] init];

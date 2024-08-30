@@ -269,6 +269,10 @@ AppServer::AppServer(int &argc, char **argv)
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
+    // Init Updater
+    std::function<void()> quitCallback = std::bind(&AppServer::sendQuit, this);
+    UpdaterServer::instance()->setQuitCallback(quitCallback);
+
     // Update checks
     UpdaterScheduler *updaterScheduler = new UpdaterScheduler(this);
     connect(updaterScheduler, &UpdaterScheduler::requestRestart, this, &AppServer::onScheduleAppRestart);
@@ -309,7 +313,6 @@ AppServer::AppServer(int &argc, char **argv)
         return;
     }
 
-
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
 
@@ -318,7 +321,6 @@ AppServer::AppServer(int &argc, char **argv)
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
     }
-
 
     if (auto logUploadState = std::get<LogUploadState>(appStateValue);
         logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
@@ -1990,6 +1992,12 @@ void AppServer::sendErrorsCleared(int syncDbId) {
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
     paramsStream << syncDbId;
     CommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
+}
+
+void AppServer::sendQuit() {
+    int id;
+
+    CommServer::instance()->sendSignal(SignalNum::UTILITY_QUIT, QByteArray(), id);
 }
 
 void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
