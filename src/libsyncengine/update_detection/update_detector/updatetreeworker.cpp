@@ -306,10 +306,8 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
                                            << L" update tree: Operation Create already exists on item with "
                                            << Utility::formatSyncPath(createOp->path()).c_str());
 
-#ifdef NDEBUG
-            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "UpdateTreeWorker::step4",
-                                                                "2 Create operations detected on the same item"));
-#endif
+            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "UpdateTreeWorker::step4",
+                                                      "2 Create operations detected on the same item");
 
             if (_syncPal) {  // `_syncPal`can be set with `nullptr` in tests.
                 _syncPal->increaseErrorCount(createOp->nodeId(), createOp->objectType(), createOp->path(), _side);

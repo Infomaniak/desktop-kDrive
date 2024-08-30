@@ -28,13 +28,13 @@
 #include "parameterscache.h"
 #include "config.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/sentryHandler.h"
 #include "updater/updaterclient.h"
 
 #undef CONSOLE_DEBUG
 #ifdef CONSOLE_DEBUG
 #include <iostream>
 #endif
-#include <sentry.h>
 #include <QActionGroup>
 #include <QApplication>
 #include <QBoxLayout>
@@ -500,8 +500,7 @@ void SynthesisPopover::initUI() {
     mainVBox->setStretchFactor(_stackedWidget, 1);
 
     setSynchronizedDefaultPage(&_defaultSynchronizedPageWidget, this);
-    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized),
-                                 _defaultSynchronizedPageWidget);
+    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized), _defaultSynchronizedPageWidget);
 
     _notImplementedLabel = new QLabel(this);
     _notImplementedLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -833,8 +832,7 @@ void SynthesisPopover::handleRemovedDrives() {
 
     if (syncInfoMap.empty()) _statusBarWidget->reset();
 
-    for (int widgetIndex = toInt(DriveInfoClient::SynthesisStackedWidget::FirstAdded);
-         widgetIndex < _stackedWidget->count();) {
+    for (int widgetIndex = toInt(DriveInfoClient::SynthesisStackedWidget::FirstAdded); widgetIndex < _stackedWidget->count();) {
         QWidget *widget = _stackedWidget->widget(widgetIndex);
         bool driveIsFound = false;
         for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {
@@ -1097,10 +1095,9 @@ void SynthesisPopover::onUpdateAvailabalityChange() {
         default:
             _lockedAppUpdateButton->setText(tr("Unavailable"));
             _lockedAppUpdateOptionalLabel->setText(statusString);
-            sentry_capture_event(sentry_value_new_message_event(
-                SENTRY_LEVEL_FATAL,  // FATAL as the app is not usable
-                "AppLocked",
-                (std::string("406 Error received but unable to fetch an update: ") + statusString.toStdString()).c_str()));
+            SentryHandler::instance()->captureMessage(
+                SentryLevel::Fatal, "AppLocked",
+                "406 Error received but unable to fetch an update: " + statusString.toStdString());
             break;
     }
     connect(_lockedAppUpdateButton, &QPushButton::clicked, this, &SynthesisPopover::onStartInstaller, Qt::UniqueConnection);

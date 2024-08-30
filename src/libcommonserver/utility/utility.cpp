@@ -278,9 +278,7 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
                                     const Poco::Net::HTTPResponse &httpResponse) {
     std::string errorMsg = formatGenericServerError(inputStream, httpResponse);
-#ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, errorTitle.c_str(), errorMsg.c_str()));
-#endif
+    SentryHandler::instance()->captureMessage(SentryLevel::Warning, errorTitle, errorMsg);
     LOG_WARN(logger, errorTitle.c_str() << ": " << errorMsg.c_str());
 }
 
@@ -589,11 +587,8 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
                 // Real error, not buffer error
                 LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
                                                                    << std::to_wstring(dwError));
-
-#ifdef NDEBUG
-                sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_FATAL, "Utility::normalizedSyncName",
-                                                                    "Failed to normalize string"));
-#endif
+                SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
+                                                          "Failed to normalize string");
 
                 throw std::runtime_error("Failed to normalize string");
             }
@@ -607,12 +602,8 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
         DWORD dwError = GetLastError();
         LOGW_WARN(logger(), L"Failed to normalize string " << SyncName2WStr(name).c_str() << L" - error code: "
                                                            << std::to_wstring(dwError));
-
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_FATAL, "Utility::normalizedSyncName", "Failed to normalize string"));
-#endif
-
+        SentryHandler::instance()->captureMessage(SentryLevel::Fatal, "Utility::normalizedSyncName",
+                                                  "Failed to normalize string");
         throw std::runtime_error("Failed to normalize string");
     }
 

@@ -51,9 +51,7 @@ bool UpdateTree::deleteNode(std::shared_ptr<Node> node, int depth) {
 
     if (depth > MAX_DEPTH) {
         assert(false);
-#ifdef NDEBUG
-        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "UpdateTree::deleteNode", "UpdateTree loop"));
-#endif
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "UpdateTree::deleteNode", "UpdateTree loop");
         return false;
     }
 

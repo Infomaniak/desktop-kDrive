@@ -98,12 +98,9 @@ bool DeleteJob::canRun() {
                                       << L" exists on local replica with another ID (" << Utility::s2ws(_localItemId).c_str()
                                       << L"/" << Utility::s2ws(otherNodeId).c_str() << L")");
 
-#ifdef NDEBUG
         std::stringstream ss;
         ss << "File exists with another ID (" << _localItemId << "/" << otherNodeId << ")";
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "IoHelper::checkIfPathExistsWithSameNodeId", ss.str().c_str()));
-#endif
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "IoHelper::checkIfPathExistsWithSameNodeId", ss.str());
     }
 
     return true;

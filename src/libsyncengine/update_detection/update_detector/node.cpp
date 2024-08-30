@@ -62,10 +62,7 @@ bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
     // Check that the parent is not a descendant
     if (!isParentValid(parentNode)) {
         assert(false);
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Node::setParentNode", "Parent is a descendant"));
-#endif
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "Node::setParentNode", "Parent is a descendant");
         return false;
     }
 
@@ -118,10 +115,7 @@ bool Node::insertChildren(std::shared_ptr<Node> child) {
         while (tmpNode->parentNode() != nullptr) {
             if (child == tmpNode) {
                 assert(false);
-#ifdef NDEBUG
-                sentry_capture_event(
-                    sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Node::insertChildren", "Child is an ancestor"));
-#endif
+                SentryHandler::instance()->captureMessage(SentryLevel::Warning, "Node::insertChildren", "Child is an ancestor");
                 return false;
             }
 

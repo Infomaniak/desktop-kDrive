@@ -391,10 +391,7 @@ bool DownloadJob::handleResponse(std::istream &is) {
                                    std::make_optional<KDC::SyncTime>(_modtimeIn), isLink, exists)) {
             LOGW_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(_localpath).c_str());
             // Do nothing (remote file will be updated during the next sync)
-#ifdef NDEBUG
-            sentry_capture_event(
-                sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "DownloadJob::handleResponse", "Unable to set file dates"));
-#endif
+            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
         } else if (!exists) {
             LOGW_INFO(_logger, L"Item does not exist anymore. Restarting sync: " << Utility::formatSyncPath(_localpath).c_str());
             _exitCode = ExitCode::DataError;

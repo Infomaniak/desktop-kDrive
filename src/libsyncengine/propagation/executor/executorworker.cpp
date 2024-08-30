@@ -1011,11 +1011,7 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                                                << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
                 _executorExitCode = ExitCode::DataError;
                 _executorExitCause = ExitCause::Unknown;
-
-#ifdef NDEBUG
-                sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "ExecutorWorker::generateEditJob",
-                                                                    "Edit operation with empty corresponding node id"));
-#endif
+                SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ExecutorWorker::generateEditJob", "Edit operation with empty corresponding node id");
 
                 return false;
             }

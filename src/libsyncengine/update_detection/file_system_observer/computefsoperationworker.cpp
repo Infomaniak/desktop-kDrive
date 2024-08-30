@@ -621,10 +621,8 @@ ExitCode ComputeFSOperationWorker::checkFileIntegrity(const DbNode &dbNode) {
         LOGW_SYNCPAL_DEBUG(_logger, L"File size mismatch for \"" << Path2WStr(absoluteLocalPath).c_str()
                                                                  << L"\". Remote version will be downloaded again.");
         _fileSizeMismatchMap.insert({dbNode.nodeIdLocal().value(), absoluteLocalPath});
-#ifdef NDEBUG
-        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "ComputeFSOperationWorker::exploreDbTree",
-                                                            "File size mismatch detected"));
-#endif
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ComputeFSOperationWorker::exploreDbTree",
+                                                   "File size mismatch detected");
     }
 
     return ExitCode::Ok;
@@ -884,10 +882,9 @@ ExitCode ComputeFSOperationWorker::checkIfOkToDelete(ReplicaSide side, const Syn
 
     LOGW_SYNCPAL_DEBUG(_logger, L"Item " << Path2WStr(absolutePath).c_str()
                                          << L" still exists on local replica. Snapshot not up to date, restarting sync.");
-#ifdef NDEBUG
-    sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "ComputeFSOperationWorker::checkIfOkToDelete",
-                                                        "Unwanted local delete operation averted"));
-#endif
+
+    SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ComputeFSOperationWorker::checkIfOkToDelete",
+                                               "Unwanted local delete operation averted");
 
     setExitCause(ExitCause::InvalidSnapshot);
 

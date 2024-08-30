@@ -3874,10 +3874,7 @@ void AppServer::addError(const Error &error) {
         // Manage sockets defuncted error
         LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", "Sockets defuncted error"));
-#endif
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", "Sockets defuncted error");
 
         // Decrease upload session max parallel jobs
         ParametersCache::instance()->decreaseUploadSessionParallelThreads();
@@ -3886,24 +3883,12 @@ void AppServer::addError(const Error &error) {
         JobManager::instance()->decreasePoolCapacity();
     }
 
-#ifdef NDEBUG
     if (!ServerRequests::isAutoResolvedError(error)) {
         // Send error to sentry only for technical errors
-        sentry_value_t sentryUser = sentry_value_new_object();
-        sentry_value_set_by_key(sentryUser, "ip_address", sentry_value_new_string("{{auto}}"));
-        if (user.dbId()) {
-            sentry_value_set_by_key(sentryUser, "id", sentry_value_new_string(std::to_string(user.userId()).c_str()));
-            sentry_value_set_by_key(sentryUser, "name", sentry_value_new_string(user.name().c_str()));
-            sentry_value_set_by_key(sentryUser, "email", sentry_value_new_string(user.email().c_str()));
-        }
-        sentry_set_user(sentryUser);
-
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", error.errorString().c_str()));
-
-        sentry_remove_user();
+        SentryUser sentryUser(user.email().c_str(), user.name().c_str(), std::to_string(user.userId()).c_str());
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString().c_str(), sentryUser);
     }
-#endif
+
 }
 
 void AppServer::sendUserAdded(const UserInfo &userInfo) {
