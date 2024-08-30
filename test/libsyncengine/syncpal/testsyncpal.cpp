@@ -162,7 +162,7 @@ void TestSyncPal::testAll() {
     CPPUNIT_ASSERT(_syncPal->isRunning());
 
     // Wait for end of 1st sync
-    while (!_syncPal->_syncHasFullyCompleted) {
+    while (!_syncPal->syncHasFullyCompleted()) {
         Utility::msleep(1000);
     }
     Utility::msleep(60000);

@@ -325,18 +325,31 @@ void TestNetworkJobs::testGetDriveList() {
 }
 
 void TestNetworkJobs::testGetFileInfo() {
-    GetFileInfoJob job(_driveDbId, testFileRemoteId);
-    ExitCode exitCode = job.runSynchronously();
-    CPPUNIT_ASSERT(exitCode == ExitCode::Ok);
-
-    // Extract file ID
-    Poco::JSON::Object::Ptr resObj = job.jsonRes();
-    Poco::JSON::Object::Ptr dataObj = resObj->getObject(dataKey);
-    std::string name;
-    if (dataObj) {
-        name = dataObj->get(nameKey).toString();
+    {
+        GetFileInfoJob job(_driveDbId, testFileRemoteId);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, job.runSynchronously());
+        CPPUNIT_ASSERT(job.jsonRes());
+        CPPUNIT_ASSERT(job.path().empty());
     }
-    CPPUNIT_ASSERT(name == "test_download.txt");
+
+    // The returned path is relative to the remote drive root.
+    {
+        GetFileInfoJob jobWithPath(_driveDbId, testFileRemoteId);
+        jobWithPath.setWithPath(true);
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, jobWithPath.runSynchronously());
+
+        const auto expectedPath =
+            SyncPath("Common documents") / "Test kDrive" / "test_ci" / "test_networkjobs" / "test_download.txt";
+        CPPUNIT_ASSERT_EQUAL(expectedPath, jobWithPath.path());
+    }
+
+    // The returned path is empty if the job requests info on the remote drive root.
+    {
+        GetFileInfoJob jobWithPath(_driveDbId, "1");  // The identifier of the remote root drive is always 1.
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, jobWithPath.runSynchronously());
+        jobWithPath.setWithPath(true);
+        CPPUNIT_ASSERT(jobWithPath.path().empty());
+    }
 }
 
 void TestNetworkJobs::testGetFileList() {
@@ -826,4 +839,5 @@ bool TestNetworkJobs::createTestFiles() {
 
     return true;
 }
+
 }  // namespace KDC

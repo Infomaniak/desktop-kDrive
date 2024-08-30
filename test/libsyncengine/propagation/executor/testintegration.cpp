@@ -171,7 +171,7 @@ void TestIntegration::testAll() {
     CPPUNIT_ASSERT(_syncPal->isRunning());
 
     // Wait for end of 1st sync
-    while (!_syncPal->_syncHasFullyCompleted) {
+    while (!_syncPal->syncHasFullyCompleted()) {
         Utility::msleep(1000);
     }
 
@@ -1074,8 +1074,9 @@ void TestIntegration::testMoveDeleteConflict1() {
     // On local replica
     // Delete S
     {
-        LocalDeleteJob localDeleteJob(_driveDbId, _localPath, testExecutorFolderRelativePath / testConflictFolderName / "A/S",
-                                      false, sRemoteId);
+        const SyncPalInfo syncPalInfo(_driveDbId, _localPath);
+        LocalDeleteJob localDeleteJob(syncPalInfo, testExecutorFolderRelativePath / testConflictFolderName / "A/S", false,
+                                      sRemoteId);
         localDeleteJob.setBypassCheck(true);
         localDeleteJob.runSynchronously();
     }
@@ -1209,8 +1210,8 @@ void TestIntegration::testMoveDeleteConflict2() {
 
     // On local replica
     // Delete A
-    LocalDeleteJob localDeleteJob(_driveDbId, _localPath, testExecutorFolderRelativePath / testConflictFolderName / "A", false,
-                                  aRemoteId);
+    LocalDeleteJob localDeleteJob(SyncPalInfo{_driveDbId, _localPath},
+                                  testExecutorFolderRelativePath / testConflictFolderName / "A", false, aRemoteId);
     localDeleteJob.setBypassCheck(true);
     localDeleteJob.runSynchronously();
 
@@ -1494,8 +1495,8 @@ void TestIntegration::testMoveDeleteConflict4() {
                               _localPath / testExecutorFolderRelativePath / testConflictFolderName / "S");
     setupMoveJob.runSynchronously();
 
-    LocalDeleteJob setupDeleteJob(_driveDbId, _localPath, testExecutorFolderRelativePath / testConflictFolderName / "A", false,
-                                  aRemoteId);
+    LocalDeleteJob setupDeleteJob(SyncPalInfo{_driveDbId, _localPath},
+                                  testExecutorFolderRelativePath / testConflictFolderName / "A", false, aRemoteId);
     setupDeleteJob.setBypassCheck(true);
     setupDeleteJob.runSynchronously();
 
@@ -1687,8 +1688,8 @@ void TestIntegration::testMoveParentDeleteConflict() {
 
     // On local replica
     // Delete R
-    LocalDeleteJob setupDeleteJob(_driveDbId, _localPath, testExecutorFolderRelativePath / testConflictFolderName / "A/R", false,
-                                  aRemoteId);
+    LocalDeleteJob setupDeleteJob(SyncPalInfo{_driveDbId, _localPath},
+                                  testExecutorFolderRelativePath / testConflictFolderName / "A/R", false, aRemoteId);
     setupDeleteJob.setBypassCheck(true);
     setupDeleteJob.runSynchronously();
 
