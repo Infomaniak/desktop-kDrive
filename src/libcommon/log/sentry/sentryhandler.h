@@ -86,7 +86,9 @@ class SentryHandler {
                 time_point lastUpload;
                 unsigned int captureCount = 0;
         };
+
         std::mutex _mutex;
+        bool _isSentryActivated = false;
         SentryUser _authenticatedUser;
         struct StringHash {
                 using is_transparent = void;  // Enables heterogeneous operations.

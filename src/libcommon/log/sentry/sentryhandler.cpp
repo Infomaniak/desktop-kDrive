@@ -74,6 +74,8 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
         sentry_options_set_environment(options, "dev_unknown");
 #endif
     } else if (environment.empty()) {  // Disable sentry
+        _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
+        _instance->_isSentryActivated = false;
         return;
     } else {
         environment = "dev_" + environment;  // We add a prefix to avoid any conflict with the sentry environment.
@@ -83,6 +85,7 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
     // Init sentry
     ASSERT(sentry_init(options) == 0);
     _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
+    _instance->_isSentryActivated = true;
 }
 
 void SentryHandler::setAuthenticatedUser(const SentryUser &user) {
@@ -98,6 +101,7 @@ void SentryHandler::setGlobalConfidentialityLevel(SentryConfidentialityLevel lev
 
 void SentryHandler::captureMessage(SentryLevel level, const std::string &title, /*Copy needed*/ std::string message,
                                    SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) {
+    if (!_isSentryActivated) return;
     std::scoped_lock lock(_mutex);
     SentryEvent event(title, message, level, confidentialityLevel, user);
     if (auto it = _events.find(event.getHash()); it != _events.end()) {
