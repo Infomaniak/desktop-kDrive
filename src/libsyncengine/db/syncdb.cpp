@@ -2421,7 +2421,7 @@ bool SyncDb::resintateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
         return false;
     }
 
-    std::map<DbNodeId, SyncName> localNames;
+    SyncNameMap localNames;
     for (const auto &dirEntry : dirIt) {
         NodeId nodeId;
         if (!IoHelper::getNodeId(dirEntry.path(), nodeId)) {

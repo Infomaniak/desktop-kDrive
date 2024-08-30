@@ -29,7 +29,7 @@ class TestSyncDb : public CppUnit::TestFixture {
         // CPPUNIT_TEST(testSyncNodes);
         // CPPUNIT_TEST(testCorrespondingNodeId);
         CPPUNIT_TEST(testUpdateLocalName);
-        CPPUNIT_TEST(testUpgradeTo3_6_5_checkNodeMap);
+        CPPUNIT_TEST(testUpgradeTo3_6_5CheckNodeMap);
         CPPUNIT_TEST(testUpgradeTo3_6_5);
         CPPUNIT_TEST_SUITE_END();
 
@@ -43,7 +43,7 @@ class TestSyncDb : public CppUnit::TestFixture {
         void testCorrespondingNodeId();
         void testUpdateLocalName();
         void testUpgradeTo3_6_5();
-        void testUpgradeTo3_6_5_checkNodeMap();
+        void testUpgradeTo3_6_5CheckNodeMap();
 
     private:
         class SyncDbMock : public SyncDb {
@@ -60,7 +60,7 @@ class TestSyncDb : public CppUnit::TestFixture {
 
         SyncDbMock *_testObj;
         // Note: the node ID value "1" is reserved for the root node of synchronisation for both local and remote sides.
-        std::vector<DbNode> setupSyncDb_3_6_5(const std::vector<NodeId> &localNodeIds = {"2", "3", "4", "5", "6"});
+        std::vector<DbNode> setupSyncDb3_6_5(const std::vector<NodeId> &localNodeIds = {"2", "3", "4", "5", "6"});
 };
 
 }  // namespace KDC

@@ -102,10 +102,27 @@ void createParmsDb(const SyncPath &syncDbPath, const SyncPath &localPath) {
     ParmsDb::instance()->insertSync(sync);
 }
 
+// Get file names as actually encoded by the local file system.
+std::map<NodeId, SyncName> getActualSystemFileNames(const SyncPath &localPath) {
+    using namespace std::filesystem;
+    std::error_code ec;
+    const auto dirIt = recursive_directory_iterator(localPath, directory_options::skip_permission_denied, ec);
+
+    std::map<NodeId, SyncName> localNames;
+    for (const auto &dirEntry : dirIt) {
+        NodeId nodeId;
+        IoHelper::getNodeId(dirEntry.path(), nodeId);
+        localNames.insert({nodeId, dirEntry.path().filename()});
+    }
+
+    return localNames;
+}
+
 struct SyncFilesInfo {
-        std::vector<SyncName> localFileNames;
+        std::vector<SyncName> localCreationFileNames;
         std::vector<NodeId> nodeIds;
 };
+
 
 SyncFilesInfo createSyncFiles(const SyncPath &localPath) {
     /**
@@ -143,13 +160,13 @@ SyncFilesInfo createSyncFiles(const SyncPath &localPath) {
         return nodeId;
     });
 
-    std::transform(paths.cbegin(), paths.cend(), std::back_inserter(syncFilesInfo.localFileNames),
+    std::transform(paths.cbegin(), paths.cend(), std::back_inserter(syncFilesInfo.localCreationFileNames),
                    [](const SyncPath &path) -> SyncName { return path.filename(); });
 
     return syncFilesInfo;
 }
 
-std::vector<DbNode> TestSyncDb::setupSyncDb_3_6_5(const std::vector<NodeId> &localNodeIds) {
+std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &localNodeIds) {
     const time_t tLoc = std::time(0);
     const time_t tDrive = std::time(0);
     const auto rootId = _testObj->rootNode().nodeId();
@@ -198,8 +215,8 @@ std::vector<DbNode> TestSyncDb::setupSyncDb_3_6_5(const std::vector<NodeId> &loc
     return {node0, node1, node2, node3, node4};
 }
 
-void TestSyncDb::testUpgradeTo3_6_5_checkNodeMap() {
-    setupSyncDb_3_6_5();
+void TestSyncDb::testUpgradeTo3_6_5CheckNodeMap() {
+    setupSyncDb3_6_5();
 
     SyncDb::NamedNodeMap namedNodeMap;
     _testObj->selectNamesWithDistinctEncodings(namedNodeMap);
@@ -213,21 +230,23 @@ void TestSyncDb::testUpgradeTo3_6_5() {
     LocalTemporaryDirectory localTmpDir("testUpgradeTo3_6_4");
     createParmsDb(_testObj->dbPath(), localTmpDir.path());
     const auto syncFilesInfo = createSyncFiles(localTmpDir.path());
-    const auto initialDbNodes = setupSyncDb_3_6_5(syncFilesInfo.nodeIds);
+    const auto initialDbNodes = setupSyncDb3_6_5(syncFilesInfo.nodeIds);
 
     _testObj->upgrade("3.6.4", "3.6.5");
 
-    CPPUNIT_ASSERT_EQUAL(initialDbNodes.size(), syncFilesInfo.localFileNames.size());
+    CPPUNIT_ASSERT_EQUAL(initialDbNodes.size(), syncFilesInfo.localCreationFileNames.size());
+
+    const auto actualSystemFileNames = getActualSystemFileNames(localTmpDir.path());
     for (int i = 0; i < initialDbNodes.size(); ++i) {
         SyncName localName, remoteName;
         bool found = false;
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, *initialDbNodes[i].nodeIdLocal(), localName, found) && found);
-#ifdef __APPLE__
-        // On MacOSX, the std::filesystem API creates files with NFC encoded names only.
-        CPPUNIT_ASSERT(localName == Utility::normalizedSyncName(localFileNames[i]));
-#else
-        CPPUNIT_ASSERT(localName == syncFilesInfo.localFileNames[i]);
-#endif
+
+        CPPUNIT_ASSERT(localName ==
+                       syncFilesInfo.localCreationFileNames[i]);  // Name as used with the std API to create the file.
+        const auto &actualLocalName = actualSystemFileNames.at(*initialDbNodes[i].nodeIdLocal());
+        CPPUNIT_ASSERT(localName == actualLocalName);  // Actual name on disk
+
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, *initialDbNodes[i].nodeIdRemote(), remoteName, found) && found);
         CPPUNIT_ASSERT(remoteName == Utility::normalizedSyncName(initialDbNodes[i].nameRemote()));
     }
