@@ -184,8 +184,8 @@ void TestSyncDb::testUpgradeTo3_6_5_checkNodeMap() {
     _testObj->selectNamesWithDistinctEncodings(namedNodeMap);
 
     CPPUNIT_ASSERT_EQUAL(size_t(2), namedNodeMap.size());
-    CPPUNIT_ASSERT_EQUAL(DbNodeId(4), namedNodeMap.at("id loc 3").id);
-    CPPUNIT_ASSERT_EQUAL(DbNodeId(6), namedNodeMap.at("id loc 5").id);
+    CPPUNIT_ASSERT_EQUAL(DbNodeId(4), namedNodeMap.at("id loc 3").dbNodeId);
+    CPPUNIT_ASSERT_EQUAL(DbNodeId(6), namedNodeMap.at("id loc 5").dbNodeId);
 }
 
 void TestSyncDb::testUpgradeTo3_6_5() {

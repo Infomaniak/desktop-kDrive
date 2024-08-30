@@ -111,12 +111,12 @@ class SyncDb : public Db {
         // Fixes
 
         // Fix issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node.
-        bool normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber);
+        bool normalizeRemoteNames(const std::string &dbFromVersionNumber);
 
         bool updateNodeLocalName(DbNodeId nodeId, const SyncName &localName, bool &found);
         struct NamedNode {
-                DbNodeId id{-1};
-                SyncName name;
+                DbNodeId dbNodeId{-1};
+                SyncName localName;
         };
         using NamedNodeMap = std::map<NodeId, NamedNode>;
         bool selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap);
