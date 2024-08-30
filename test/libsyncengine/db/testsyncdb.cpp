@@ -150,7 +150,6 @@ SyncFilesInfo createSyncFiles(const SyncPath &localPath) {
     std::ofstream file2{path2};
     std::ofstream file4{path4};
 
-
     SyncFilesInfo syncFilesInfo;
     const std::vector<SyncPath> paths = {path0, path1, path2, path3, path4};
 
@@ -174,10 +173,10 @@ std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &loca
     const auto nfc = testhelpers::makeNfcSyncName();
     const auto nfd = testhelpers::makeNfdSyncName();
 
-    DbNode node0(rootId, "a", "A", localNodeIds[0], "id drive 0", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
-    DbNodeTest node1(rootId, "c", nfd, localNodeIds[1], "id drive 1", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
-    DbNodeTest node2(rootId, nfd, "a", localNodeIds[2], "id drive 2", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
-    DbNode node3(rootId, "b", "B", localNodeIds[3], "id drive 3", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
+    DbNode node0(rootId, Str("a"), Str("A"), localNodeIds[0], "id drive 0", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
+    DbNodeTest node1(rootId, Str("c"), nfd, localNodeIds[1], "id drive 1", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
+    DbNodeTest node2(rootId, nfd, Str("a"), localNodeIds[2], "id drive 2", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
+    DbNode node3(rootId, Str("b"), Str("B"), localNodeIds[3], "id drive 3", tLoc, tLoc, tDrive, NodeType::Directory, 0, "cs 2.2");
     DbNodeTest node4(rootId, nfc, nfd, localNodeIds[4], "id drive 4", tLoc, tLoc, tDrive, NodeType::File, 0, "cs 2.2");
 
     {
