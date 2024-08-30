@@ -300,18 +300,7 @@ AppServer::AppServer(int &argc, char **argv)
     }
 
     // Set sentry user
-    std::vector<User> userList;
-    ParmsDb::instance()->selectAllUsers(userList);
-
-    std::string userId = "No user in db";
-    std::string userName = "No user in db";
-    std::string userEmail = "No user in db";
-    if (!userList.empty()) {
-        userId = std::to_string(userList[userList.size() - 1].dbId());
-        userName = userList[userList.size() - 1].name();
-        userEmail = userList[userList.size() - 1].email();
-    }
-    SentryHandler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
+    updateSentryUser();
 
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
@@ -479,6 +468,21 @@ void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexc
     LOG_INFO(_logger, msg.c_str());
 }
 
+void AppServer::updateSentryUser() const {
+    User user;
+    bool found = false;
+    ParmsDb::instance()->selectLastConnectedUser(user, found);
+    std::string userId = "No user in db";
+    std::string userName = "No user in db";
+    std::string userEmail = "No user in db";
+    if (found) {
+        userId = std::to_string(user.dbId());
+        userName = user.name();
+        userEmail = user.email();
+    }
+    SentryHandler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
+}
+
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
@@ -499,7 +503,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 LOG_WARN(_logger, "Error in Requests::requestToken : " << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
-
+            updateSentryUser();
             if (userCreated) {
                 sendUserAdded(userInfo);
             } else {

@@ -45,6 +45,7 @@
 #include <stdlib.h>
 
 #include <sentry.h>
+#include <log/sentry/sentryhandler.h>
 
 #define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
 
@@ -132,7 +133,8 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
         startServerAndDie(true);
         return;
     }
-
+    // Update Sentry user
+    updateSentryUser();
 
     // Init ParametersCache
     ParametersCache::instance();
@@ -637,6 +639,26 @@ bool AppClient::connectToServer() {
         return false;
     }
     return true;
+}
+
+void AppClient::updateSentryUser() const {
+    /* static ExitCode getUserInfoList(QList<UserInfo> & list);
+    static ExitCode getUserIdFromUserDbId(int userDbId, int &userId);*/
+    QList<UserInfo> userInfoList;
+    ExitCode exitCode = GuiRequests::getUserInfoList(userInfoList);
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcAppClient) << "Error in Requests::getUserInfoList";
+        return;
+    }
+    int userId = 0;
+    exitCode = GuiRequests::getUserIdFromUserDbId(userInfoList.last().dbId(), userId);
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcAppClient) << "Error in Requests::getUserIdFromUserDbId";
+        return;
+    }
+
+    SentryUser user(userInfoList.last().email().toStdString(), userInfoList.last().name().toStdString(), std::to_string(userId));
+    SentryHandler::instance()->setAuthenticatedUser(user);
 }
 
 void AppClient::onUseMonoIconsChanged(bool) {
