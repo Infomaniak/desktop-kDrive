@@ -542,34 +542,6 @@ bool SyncDb::createAndPrepareRequest(const char *requestId, const char *query) {
     return true;
 }
 
-bool SyncDb::normalizeRemoteNames(const std::string &dbFromVersionNumber) {
-    if (!CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.5")) return true;
-
-    LOG_DEBUG(_logger, "Upgrade 3.6.3 DB");
-
-    static const char *requestId = "normalize_remote_names";
-    static const char *query =
-        "UPDATE node "
-        "SET nameDrive = normalizeSyncName(nameDrive);";
-
-    if (_sqliteDb->createNormalizeSyncNameFunc() != SQLITE_OK) {
-        return false;
-    }
-
-    if (!createAndPrepareRequest(requestId, query)) return false;
-
-    int errId = 0;
-    std::string error;
-
-    if (!queryExec(requestId, errId, error)) {
-        queryFree(requestId);
-        return sqlFail(requestId, error);
-    }
-    queryFree(requestId);
-
-    return true;
-}
-
 bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVersion*/) {
     const std::string dbFromVersionNumber = CommonUtility::dbVersionNumber(fromVersion);
 
@@ -619,7 +591,6 @@ bool SyncDb::upgrade(const std::string &fromVersion, const std::string & /*toVer
         queryFree(ALTER_NODE_TABLE_FK_ID);
     }
 
-    if (!normalizeRemoteNames(dbFromVersionNumber)) return false;
     if (!resintateEncodingOfLocalNames(dbFromVersionNumber)) return false;
 
     LOG_DEBUG(_logger, "Upgrade of Sync DB successfully completed.");
@@ -2398,11 +2369,36 @@ bool SyncDb::updateNamesWithDistinctEncodings(const SyncNameMap &localNames) {
     return true;
 }
 
+bool SyncDb::normalizeRemoteNames() {
+    static const char *requestId = "normalize_remote_names";
+    static const char *query =
+        "UPDATE node "
+        "SET nameDrive = normalizeSyncName(nameDrive);";
+
+    if (_sqliteDb->createNormalizeSyncNameFunc() != SQLITE_OK) {
+        return false;
+    }
+
+    if (!createAndPrepareRequest(requestId, query)) return false;
+
+    int errId = 0;
+    std::string error;
+
+    if (!queryExec(requestId, errId, error)) {
+        queryFree(requestId);
+        return sqlFail(requestId, error);
+    }
+    queryFree(requestId);
+
+    return true;
+}
+
 bool SyncDb::resintateEncodingOfLocalNames(const std::string &dbFromVersionNumber) {
     if (!CommonUtility::isVersionLower(dbFromVersionNumber, "3.6.5")) return true;
 
-    const auto msg = "Upgrade < " + dbFromVersionNumber + " DB";
-    LOG_DEBUG(_logger, msg.c_str());
+    LOG_DEBUG(_logger, "Upgrade < 3.6.5 DB");
+
+    normalizeRemoteNames();
 
     Sync sync;
     bool found = false;
