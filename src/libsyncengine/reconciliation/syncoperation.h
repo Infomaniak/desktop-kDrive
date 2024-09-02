@@ -31,34 +31,33 @@ class SyncOperation {
     public:
         SyncOperation();
 
-        inline OperationType type() const { return _type; }
-        inline void setType(OperationType newType) { _type = newType; }
-        inline const std::shared_ptr<Node> &affectedNode() const { return _affectedNode; }
-        inline void setAffectedNode(const std::shared_ptr<Node> &node) { _affectedNode = node; }
-        inline const std::shared_ptr<Node> &correspondingNode() const { return _correspondingNode; }
-        inline void setCorrespondingNode(const std::shared_ptr<Node> &node) { _correspondingNode = node; }
-        inline ReplicaSide targetSide() const { return _targetSide; }
-        inline void setTargetSide(ReplicaSide newSide) { _targetSide = newSide; }
-        inline bool omit() const { return _omit; }
-        inline void setOmit(bool newOmit) { _omit = newOmit; }
-        inline const SyncName &newName() const { return _newName; }
-        inline void setNewName(const SyncName &newNewName) { _newName = newNewName; }
-        inline const std::shared_ptr<Node> &newParentNode() const { return _newParentNode; }
-        inline void setNewParentNode(const std::shared_ptr<Node> &newParentNode) { _newParentNode = newParentNode; }
-        inline bool hasConflict() { return _conflict.type() != ConflictType::None; }
-        inline const Conflict &conflict() const { return _conflict; }
-        inline void setConflict(const Conflict &newConflict) { _conflict = newConflict; }
+        [[nodiscard]] OperationType type() const { return _type; }
+        void setType(const OperationType newType) { _type = newType; }
+        [[nodiscard]] const std::shared_ptr<Node> &affectedNode() const { return _affectedNode; }
+        void setAffectedNode(const std::shared_ptr<Node> &node) { _affectedNode = node; }
+        [[nodiscard]] const std::shared_ptr<Node> &correspondingNode() const { return _correspondingNode; }
+        void setCorrespondingNode(const std::shared_ptr<Node> &node) { _correspondingNode = node; }
+        [[nodiscard]] ReplicaSide targetSide() const { return _targetSide; }
+        void setTargetSide(ReplicaSide newSide) { _targetSide = newSide; }
+        [[nodiscard]] bool omit() const { return _omit; }
+        void setOmit(bool newOmit) { _omit = newOmit; }
+        [[nodiscard]] const SyncName &newName() const { return _newName; }
+        void setNewName(const SyncName &newNewName) { _newName = newNewName; }
+        [[nodiscard]] const std::shared_ptr<Node> &newParentNode() const { return _newParentNode; }
+        void setNewParentNode(const std::shared_ptr<Node> &newParentNode) { _newParentNode = newParentNode; }
+        [[nodiscard]] bool hasConflict() const { return _conflict.type() != ConflictType::None; }
+        [[nodiscard]] const Conflict &conflict() const { return _conflict; }
+        void setConflict(const Conflict &newConflict) { _conflict = newConflict; }
 
-        [[nodiscard]] SyncName getName(ReplicaSide side) const;
-        [[nodiscard]] SyncPath getPath(ReplicaSide side) const;
+        [[nodiscard]] SyncName nodeName(ReplicaSide side) const;
+        [[nodiscard]] SyncPath nodePath(ReplicaSide side) const;
 
         bool operator==(const SyncOperation &other) const;
-        inline bool operator!=(const SyncOperation &other) const { return !(*this == other); }
 
-        inline UniqueId id() const { return _id; }
-        inline UniqueId parentId() const { return _parentId; }
-        inline void setParentId(UniqueId newParentId) { _parentId = newParentId; }
-        inline bool hasParentOp() const { return _parentId > -1; }
+        [[nodiscard]] UniqueId id() const { return _id; }
+        [[nodiscard]] UniqueId parentId() const { return _parentId; }
+        void setParentId(UniqueId newParentId) { _parentId = newParentId; }
+        [[nodiscard]] bool hasParentOp() const { return _parentId > -1; }
 
     private:
         OperationType _type = OperationType::None;
@@ -93,9 +92,9 @@ class SyncOperationList : public SharedObject {
         void setOpList(const std::list<SyncOpPtr> &opList);
 
         SyncOpPtr getOp(UniqueId id);
-        inline const std::list<UniqueId> &opSortedList() const { return _opSortedList; }
-        inline const std::unordered_set<UniqueId> &opListIdByType(OperationType type) { return _opListByType[type]; }
-        inline const std::list<UniqueId> &getOpIdsFromNodeId(const NodeId &nodeId) { return _node2op[nodeId]; }
+        [[nodiscard]] const std::list<UniqueId> &opSortedList() const { return _opSortedList; }
+        const std::unordered_set<UniqueId> &opListIdByType(const OperationType type) { return _opListByType[type]; }
+        const std::list<UniqueId> &getOpIdsFromNodeId(const NodeId &nodeId) { return _node2op[nodeId]; }
 
         void pushOp(SyncOpPtr op);
         void insertOp(std::list<UniqueId>::const_iterator pos, SyncOpPtr op);

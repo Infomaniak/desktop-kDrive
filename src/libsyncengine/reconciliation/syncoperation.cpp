@@ -24,13 +24,13 @@ UniqueId SyncOperation::_nextId = 0;
 
 SyncOperation::SyncOperation() : _id(_nextId++) {}
 
-SyncName SyncOperation::getName(ReplicaSide side) const {
+SyncName SyncOperation::nodeName(ReplicaSide side) const {
     auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
     if (!node) return {};
     return node->name();
 }
 
-SyncPath SyncOperation::getPath(const ReplicaSide side) const {
+SyncPath SyncOperation::nodePath(const ReplicaSide side) const {
     if (!correspondingNode()) return affectedNode()->getPath();  // If there is no corresponding node, ignore side.
     auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
     return node->getPath();
