@@ -211,4 +211,4 @@ class ClientGui : public QObject, public std::enable_shared_from_this<ClientGui>
         void retranslateUi();
 };
 
-} // namespace KDC
+}  // namespace KDC

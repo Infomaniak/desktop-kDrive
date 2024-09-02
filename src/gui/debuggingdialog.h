@@ -87,4 +87,4 @@ class DebuggingDialog : public CustomDialog {
         void onLogUploadStatusUpdated(LogUploadState state, int progress);
 };
 
-} // namespace KDC
+}  // namespace KDC

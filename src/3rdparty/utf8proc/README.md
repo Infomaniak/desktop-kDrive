@@ -1,16 +1,15 @@
 # utf8proc
-
 [![CI](https://github.com/NanoComp/meep/actions/workflows/build-ci.yml/badge.svg)](https://github.com/JuliaStrings/utf8proc/actions/workflows/build-ci.yml)
 [![AppVeyor status](https://ci.appveyor.com/api/projects/status/ivaa0v6ikxrmm5r6?svg=true)](https://ci.appveyor.com/project/StevenGJohnson/utf8proc)
 
 [utf8proc](http://juliastrings.github.io/utf8proc/) is a small, clean C
 library that provides Unicode normalization, case-folding, and other
 operations for data in the [UTF-8
-encoding](http://en.wikipedia.org/wiki/UTF-8). It was [initially
+encoding](http://en.wikipedia.org/wiki/UTF-8).  It was [initially
 developed](http://www.public-software-group.org/utf8proc) by Jan
 Behrens and the rest of the [Public Software
 Group](http://www.public-software-group.org/), who deserve *nearly all
-of the credit* for this package. With the blessing of the Public
+of the credit* for this package.  With the blessing of the Public
 Software Group, the [Julia developers](http://julialang.org/) have
 taken over development of utf8proc, since the original developers have
 moved to other projects.
@@ -32,15 +31,11 @@ the included `LICENSE.md` file for more detailed information.
 
 ## Quick Start
 
-Typical users should download a [utf8proc release](http://juliastrings.github.io/utf8proc/releases/) rather than cloning
-directly from github.
+Typical users should download a [utf8proc release](http://juliastrings.github.io/utf8proc/releases/) rather than cloning directly from github.
 
-For compilation of the C library, run `make`. You can also install the library and header file with `make install` (by
-default into `/usr/local/lib` and `/usr/local/bin`, but this can be changed by `make prefix=/some/dir`).  `make check`
-runs some tests, and `make clean` deletes all of the generated files.
+For compilation of the C library, run `make`.  You can also install the library and header file with `make install` (by default into `/usr/local/lib` and `/usr/local/bin`, but this can be changed by `make prefix=/some/dir`).  `make check` runs some tests, and `make clean` deletes all of the generated files.
 
 Alternatively, you can compile with `cmake`, e.g. by
-
 ```sh
 mkdir build
 cmake -S . -B build
@@ -48,21 +43,15 @@ cmake --build build
 ```
 
 ### Using other compilers
+The included `Makefile` supports GNU/Linux flavors and MacOS with `gcc`-like compilers; Windows users will typically use `cmake`.
 
-The included `Makefile` supports GNU/Linux flavors and MacOS with `gcc`-like compilers; Windows users will typically
-use `cmake`.
-
-For other Unix-like systems and other compilers, you may need to pass modified settings to `make` in order to use the
-correct compilation flags for building shared libraries on your system.
+For other Unix-like systems and other compilers, you may need to pass modified settings to `make` in order to use the correct compilation flags for building shared libraries on your system.
 
 For HP-UX with HP's `aCC` compiler and GNU Make (installed as `gmake`), you can compile with
-
 ```
 gmake CC=/opt/aCC/bin/aCC CFLAGS="+O2" PICFLAG="+z" C99FLAG="-Ae" WCFLAGS="+w" LDFLAG_SHARED="-b" SOFLAG="-Wl,+h"
 ```
-
-To run `gmake install` you will need GNU coreutils for the `install` command, and you may want to
-pass `prefix=/opt libdir=/opt/lib/hpux32` or similar to change the installation location.
+To run `gmake install` you will need GNU coreutils for the `install` command, and you may want to pass `prefix=/opt libdir=/opt/lib/hpux32` or similar to change the installation location.
 
 ## General Information
 
@@ -96,5 +85,4 @@ the [utf8proc issues page on Github](https://github.com/JuliaLang/utf8proc/issue
 
 ## See also
 
-An independent Lua translation of this library, [lua-mojibake](https://github.com/differentprogramming/lua-mojibake), is
-also available.
+An independent Lua translation of this library, [lua-mojibake](https://github.com/differentprogramming/lua-mojibake), is also available.

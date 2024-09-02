@@ -22,8 +22,8 @@
 
 namespace KDC {
 
-OperationProcessor::OperationProcessor(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName) :
-    ISyncWorker(syncPal, name, shortName) {}
+OperationProcessor::OperationProcessor(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName)
+    : ISyncWorker(syncPal, name, shortName) {}
 
 bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::shared_ptr<Node> correspondingNode) {
     if (!node || !node->hasChangeEvent() || !correspondingNode || !correspondingNode->hasChangeEvent()) {
@@ -53,7 +53,7 @@ bool OperationProcessor::isPseudoConflict(std::shared_ptr<Node> node, std::share
     }
 
     bool useContentChecksum =
-            !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
+        !snapshot->contentChecksum(*node->id()).empty() && !otherSnapshot->contentChecksum(*correspondingNode->id()).empty();
     bool sameSizeAndDate = snapshot->lastModified(*node->id()) == otherSnapshot->lastModified(*correspondingNode->id()) &&
                            snapshot->size(*node->id()) == otherSnapshot->size(*correspondingNode->id());
     if (node->type() == NodeType::File && correspondingNode->type() == node->type() &&
@@ -182,4 +182,4 @@ bool OperationProcessor::isABelowB(std::shared_ptr<Node> a, std::shared_ptr<Node
     return false;
 }
 
-} // namespace KDC
+}  // namespace KDC

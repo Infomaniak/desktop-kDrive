@@ -12,30 +12,30 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ ubuntu-latest, macOS-latest ]
+        os: [ubuntu-latest, macOS-latest]
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
-      # TODO: update makefile to check MANIFEST
-      # - name: Install dependencies (MacOS)
-      #   if: matrix.config.os == 'macos-latest'
-      #   run: brew install ruby findutils
+    - uses: actions/checkout@v2
+    # TODO: update makefile to check MANIFEST
+    # - name: Install dependencies (MacOS)
+    #   if: matrix.config.os == 'macos-latest'
+    #   run: brew install ruby findutils
 
-      - name: Check MANIFEST
-        if: matrix.config.os == 'ubuntu-latest'
-        run: make manifest && diff MANIFEST.new MANIFEST
-      - name: Run Test
-        run: make check
-      - name: Check utf8proc_data.c
-        run: make data && diff data/utf8proc_data.c.new utf8proc_data.c
-      - name: Clean
-        run: make clean && git status --ignored --porcelain && test -z "$(git status --ignored --porcelain)"
+    - name: Check MANIFEST
+      if: matrix.config.os == 'ubuntu-latest'
+      run: make manifest && diff MANIFEST.new MANIFEST
+    - name: Run Test
+      run: make check
+    - name: Check utf8proc_data.c
+      run: make data && diff data/utf8proc_data.c.new utf8proc_data.c
+    - name: Clean
+      run: make clean && git status --ignored --porcelain && test -z "$(git status --ignored --porcelain)"
 
-      - name: Make lib
-        run: make
-      - name: Upload shared lib
-        uses: actions/upload-artifact@v2
-        with:
-          name: make-${{ matrix.os }}
-          path: libutf8proc.*
+    - name: Make lib
+      run: make
+    - name: Upload shared lib
+      uses: actions/upload-artifact@v2
+      with:
+        name: make-${{ matrix.os }}
+        path: libutf8proc.*

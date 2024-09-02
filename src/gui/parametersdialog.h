@@ -131,4 +131,4 @@ class ParametersDialog : public CustomDialog {
         void onClearErrors(int syncDbId, bool autoResolved);
 };
 
-} // namespace KDC
+}  // namespace KDC
