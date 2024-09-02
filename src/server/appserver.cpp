@@ -269,9 +269,11 @@ AppServer::AppServer(int &argc, char **argv)
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
+#ifdef Q_OS_MACOS
     // Init Updater
     std::function<void()> quitCallback = std::bind(&AppServer::sendQuit, this);
     UpdaterServer::instance()->setQuitCallback(quitCallback);
+#endif
 
     // Update checks
     UpdaterScheduler *updaterScheduler = new UpdaterScheduler(this);
