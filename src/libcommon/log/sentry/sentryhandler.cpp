@@ -110,7 +110,7 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
     std::scoped_lock lock(_mutex);
     SentryEvent event(title, message, level, _globalConfidentialityLevel, user);
     if (auto it = _events.find(event.getStr()); it != _events.end()) {
-        auto storedEvent = it->second;
+        auto& storedEvent = it->second;
         storedEvent.captureCount++;
         if (storedEvent.lastCapture + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) <
             std::chrono::system_clock::now()) {  // Reset the capture count if the last capture was more than 10 minutes ago
