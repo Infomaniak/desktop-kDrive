@@ -192,6 +192,8 @@ std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &loca
         bool constraintError = false;
         DbNodeId dbNodeId;
 
+        _testObj->setNormalizationEnabled(false);  // Will not normalize names in DB automatically.
+
         _testObj->insertNode(node0, dbNodeId, constraintError);
         node0.setNodeId(dbNodeId);
         node1.setParentNodeId(dbNodeId);
@@ -237,7 +239,7 @@ void TestSyncDb::testUpgradeTo3_6_5() {
 
     const auto actualSystemFileNames = getActualSystemFileNames(localTmpDir.path());
     for (int i = 0; i < initialDbNodes.size(); ++i) {
-        SyncName localName, remoteName;  // From the sync database.
+        SyncName localName;  // From the sync database.
         bool found = false;
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, *initialDbNodes[i].nodeIdLocal(), localName, found) && found);
 
@@ -246,6 +248,7 @@ void TestSyncDb::testUpgradeTo3_6_5() {
         const auto &actualLocalName = actualSystemFileNames.at(*initialDbNodes[i].nodeIdLocal());
         CPPUNIT_ASSERT(localName == actualLocalName);  // Actual name on disk
 
+        SyncName remoteName;  // From the sync database.
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, *initialDbNodes[i].nodeIdRemote(), remoteName, found) && found);
         CPPUNIT_ASSERT(remoteName == Utility::normalizedSyncName(initialDbNodes[i].nameRemote()));
     }
@@ -299,16 +302,16 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->insertNode(nodeDir2, dbNodeIdDir2, constraintError));
     CPPUNIT_ASSERT(_testObj->insertNode(nodeDir3, dbNodeIdDir3, constraintError));
 
-    DbNode nodeFile1(0, dbNodeIdDir1, Str("File loc 1.1"), Str("File drive 1.1"), "id loc 1.1", "id drive 1.1", tLoc, tLoc,
-                     tDrive, NodeType::File, 0, "cs 1.1");
-    DbNode nodeFile2(0, dbNodeIdDir1, Str("File loc 1.2"), Str("File drive 1.2"), "id loc 1.2", "id drive 1.2", tLoc, tLoc,
-                     tDrive, NodeType::File, 0, "cs 1.2");
-    DbNode nodeFile3(0, dbNodeIdDir1, Str("File loc 1.3"), Str("File drive 1.3"), "id loc 1.3", "id drive 1.3", tLoc, tLoc,
-                     tDrive, NodeType::File, 0, "cs 1.3");
-    DbNode nodeFile4(0, dbNodeIdDir1, Str("File loc 1.4"), Str("File drive 1.4"), "id loc 1.4", "id drive 1.4", tLoc, tLoc,
-                     tDrive, NodeType::File, 0, "cs 1.4");
-    DbNode nodeFile5(0, dbNodeIdDir1, Str("File loc 1.5"), Str("File drive 1.5"), "id loc 1.5", "id drive 1.5", tLoc, tLoc,
-                     tDrive, NodeType::File, 0, "cs 1.5");
+    DbNode nodeFile1(dbNodeIdDir1, Str("File loc 1.1"), Str("File drive 1.1"), "id loc 1.1", "id drive 1.1", tLoc, tLoc, tDrive,
+                     NodeType::File, 0, "cs 1.1");
+    DbNode nodeFile2(dbNodeIdDir1, Str("File loc 1.2"), Str("File drive 1.2"), "id loc 1.2", "id drive 1.2", tLoc, tLoc, tDrive,
+                     NodeType::File, 0, "cs 1.2");
+    DbNode nodeFile3(dbNodeIdDir1, Str("File loc 1.3"), Str("File drive 1.3"), "id loc 1.3", "id drive 1.3", tLoc, tLoc, tDrive,
+                     NodeType::File, 0, "cs 1.3");
+    DbNode nodeFile4(dbNodeIdDir1, Str("File loc 1.4"), Str("File drive 1.4"), "id loc 1.4", "id drive 1.4", tLoc, tLoc, tDrive,
+                     NodeType::File, 0, "cs 1.4");
+    DbNode nodeFile5(dbNodeIdDir1, Str("File loc 1.5"), Str("File drive 1.5"), "id loc 1.5", "id drive 1.5", tLoc, tLoc, tDrive,
+                     NodeType::File, 0, "cs 1.5");
     DbNodeId dbNodeIdFile1;
     DbNodeId dbNodeIdFile2;
     DbNodeId dbNodeIdFile3;
@@ -320,8 +323,8 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile4, dbNodeIdFile4, constraintError));
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile5, dbNodeIdFile5, constraintError));
 
-    DbNode nodeFile6(0, dbNodeIdDir2, Str("File loc 2.1"), Str("File drive 2.1"), "id loc 2.1", "id drive 2.1", tLoc, tLoc,
-                     tDrive, NodeType::File, 0, "cs 2.1");
+    DbNode nodeFile6(dbNodeIdDir2, Str("File loc 2.1"), Str("File drive 2.1"), "id loc 2.1", "id drive 2.1", tLoc, tLoc, tDrive,
+                     NodeType::File, 0, "cs 2.1");
     DbNodeId dbNodeIdFile6;
     CPPUNIT_ASSERT(_testObj->insertNode(nodeFile6, dbNodeIdFile6, constraintError));
 
@@ -738,7 +741,7 @@ void TestSyncDb::testCorrespondingNodeId() {
     CPPUNIT_ASSERT(_testObj->correspondingNodeId(ReplicaSide::Remote, "id dir drive 2", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
 
-    // Unknow side case
+    // Unknown side case
     CPPUNIT_ASSERT(!_testObj->correspondingNodeId(ReplicaSide::Unknown, "id dir loc 1", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
 }
