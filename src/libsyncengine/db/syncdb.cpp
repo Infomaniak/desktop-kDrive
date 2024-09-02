@@ -2340,7 +2340,7 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
         ASSERT(queryStringValue(requestId, 3, nodeIdLocal));
 
         const IntNodeId intNodeId = std::stoll(nodeIdLocal);
-        namedNodeMap.insert({intNodeId, NamedNode{dbNodeId, nameLocal}});
+        namedNodeMap.try_emplace(intNodeId, NamedNode{dbNodeId, nameLocal});
     }
     ASSERT(queryResetAndClearBindings(requestId));
 
@@ -2427,7 +2427,7 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
 
         SyncName actualLocalName(entry.path().filename().c_str());
         if (actualLocalName != namedNodeMap[intNodeId].localName) {
-            localNames.insert({namedNodeMap[intNodeId].dbNodeId, std::move(actualLocalName)});
+            localNames.try_emplace(namedNodeMap[intNodeId].dbNodeId, std::move(actualLocalName));
         }
     }
 
