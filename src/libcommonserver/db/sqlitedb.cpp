@@ -151,7 +151,7 @@ void SqliteDb::close() {
         if (!std::filesystem::remove(_dbPath, ec)) {
             if (ec) {
                 LOGW_WARN(_logger, L"Failed to check if  " << Utility::formatSyncPath(_dbPath).c_str() << L" exists: "
-                                                           << Utility::s2ws(ec.message()).c_str() << L" (" << ec.value() << L")");
+                                                           << Utility::formatStdError(ec).c_str());
             }
 
             LOG_WARN(_logger, "Failed to remove db file.");
