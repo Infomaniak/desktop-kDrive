@@ -265,7 +265,7 @@ void OperationGeneratorWorker::generateMoveOperation(std::shared_ptr<Node> curre
                                L"Move operation "
                                    << op->id() << L" to be propagated on " << op->targetSide() << L" replica from \""
                                    << (currentNode->moveOrigin() ? Path2WStr(currentNode->moveOrigin().value()).c_str() : L"")
-                                   << L"\" to \"" << Path2WStr(currentNode->getPath()).c_str() << L"\" (ID: "
+                                   << L"' to '" << Utility::formatSyncPath(currentNode->getPath()).c_str() << L"' (ID: "
                                    << Utility::s2ws(currentNode->id() ? currentNode->id().value() : "-1").c_str() << L")");
         }
     }
