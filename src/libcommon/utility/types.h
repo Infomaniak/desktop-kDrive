@@ -406,7 +406,7 @@ struct VersionInfo {
 
 enum class SentryConfidentialityLevel {
     Anonymous,      // The sentry will not be able to identify the user (no ip, no email, no username, ...)
-    Authenticated,  // The sentry will contains information about the last user connected to the application. (email,
+    Authenticated,  // The sentry will contain information about the last user connected to the application. (email,
                     // username, user id, ...)
     None // Not initialized
 };

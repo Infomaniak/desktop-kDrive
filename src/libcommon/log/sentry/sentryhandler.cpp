@@ -31,9 +31,9 @@ std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
 std::shared_ptr<SentryHandler> SentryHandler::instance() {
     if (!_instance) {
         assert(false && "SentryHandler must be initialized before calling instance");
-        // TODO: When the logger will be moved to the common library, add a log here.
+        // TODO: When the logger will be moved to the common library, add a log there.
         return std::shared_ptr<SentryHandler>(new SentryHandler());  // Create a dummy instance to avoid crash but should never
-                                                                     // happen (the sentry will not be send)
+                                                                     // happen (the sentry will not be sent)
     }
     return _instance;
 }
@@ -54,7 +54,7 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
     sentry_options_t *options = sentry_options_new();
     sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
-    SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
+    const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
 #endif
 
     SyncPath appSupportPath = CommonUtility::getAppSupportDir();
