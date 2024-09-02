@@ -625,21 +625,26 @@ void SyncDb::updateNames(const char *queryId, const SyncName &localName, const S
     ASSERT(queryBindValue(queryId, 3, Utility::normalizedSyncName(remoteName)));
 }
 
+bool SyncDb::checkNodeIds(const DbNode &node) {
+    if (!node.hasLocalNodeId() || !node.hasRemoteNodeId()) {
+        LOG_WARN(_logger, "nodeIdLocal and nodeIdRemote cannot be empty");
+        return false;
+    }
+
+    if (node.nodeId() != _rootNode.nodeId() && !node.parentNodeId()) {
+        LOG_WARN(_logger, "parentNodeId cannot be empty");
+        return false;
+    }
+
+    return true;
+}
+
 bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraintError) {
     const char *queryId = INSERT_NODE_REQUEST_ID;
 
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    if ((node.nodeIdLocal() ? node.nodeIdLocal().value() : "").empty() ||
-        (node.nodeIdRemote() ? node.nodeIdRemote().value() : "").empty()) {
-        LOG_WARN(_logger, "nodeId cannot be empty");
-        return false;
-    }
-
-    if (node.nodeId() != _rootNode.nodeId() && !node.parentNodeId().has_value()) {
-        LOG_WARN(_logger, "parentNodeId cannot be empty");
-        return false;
-    }
+    if (!checkNodeIds(node)) return false;
 
     int errId;
     std::string error;
@@ -674,19 +679,7 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
 bool SyncDb::updateNode(const DbNode &node, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 
-    if ((node.nodeIdLocal() ? node.nodeIdLocal().value() : "").empty() ||
-        (node.nodeIdRemote() ? node.nodeIdRemote().value() : "").empty()) {
-        LOG_WARN(_logger, "nodeId cannot be empty");
-        return false;
-    }
-
-    if (node.nodeId() != _rootNode.nodeId() && !node.parentNodeId().has_value()) {
-        LOG_WARN(_logger, "parentNodeId cannot be empty");
-        return false;
-    }
-
-    int errId;
-    std::string error;
+    if (!checkNodeIds(node)) return false;
 
     ASSERT(queryResetAndClearBindings(UPDATE_NODE_REQUEST_ID));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 1,
@@ -708,6 +701,9 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 12, static_cast<int>(node.status())));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 13, static_cast<int>(node.syncing())));
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 14, node.nodeId()));
+
+    int errId = -1;
+    std::string error;
     if (!queryExec(UPDATE_NODE_REQUEST_ID, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << UPDATE_NODE_REQUEST_ID);
         return false;
@@ -2340,16 +2336,10 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
         SyncName nameDrive;
         ASSERT(querySyncNameValue(requestId, 2, nameDrive));
 
-        bool ok = false;
-        ASSERT(queryIsNullValue(requestId, 3, ok));
-
-        if (ok) continue;
-
         NodeId nodeIdLocal;
         ASSERT(queryStringValue(requestId, 3, nodeIdLocal));
 
         const IntNodeId intNodeId = std::stoll(nodeIdLocal);
-
         namedNodeMap.insert({intNodeId, NamedNode{dbNodeId, nameLocal}});
     }
     ASSERT(queryResetAndClearBindings(requestId));

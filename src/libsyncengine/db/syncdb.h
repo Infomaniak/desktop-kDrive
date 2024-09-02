@@ -110,6 +110,7 @@ class SyncDb : public Db {
 
         // Helpers
         bool createAndPrepareRequest(const char *requestId, const char *query);
+        bool checkNodeIds(const DbNode &node);
 
         // Fixes
         bool updateNodeLocalName(DbNodeId nodeId, const SyncName &localName, bool &found);
@@ -118,9 +119,9 @@ class SyncDb : public Db {
                 SyncName localName;
         };
         using IntNodeId = long long;
-        using NamedNodeMap = std::map<IntNodeId, NamedNode>;
+        using NamedNodeMap = std::unordered_map<IntNodeId, NamedNode>;
         bool selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap);
-        using SyncNameMap = std::map<DbNodeId, SyncName>;
+        using SyncNameMap = std::unordered_map<DbNodeId, SyncName>;
         bool updateNamesWithDistinctEncodings(const SyncNameMap &localNames);
         // Fix issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node.
         bool normalizeRemoteNames();

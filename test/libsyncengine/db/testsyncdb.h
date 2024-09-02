@@ -25,9 +25,9 @@ namespace KDC {
 
 class TestSyncDb : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSyncDb);
-        // CPPUNIT_TEST(testNodes);
-        // CPPUNIT_TEST(testSyncNodes);
-        // CPPUNIT_TEST(testCorrespondingNodeId);
+        CPPUNIT_TEST(testNodes);
+        CPPUNIT_TEST(testSyncNodes);
+        CPPUNIT_TEST(testCorrespondingNodeId);
         CPPUNIT_TEST(testUpdateLocalName);
         CPPUNIT_TEST(testUpgradeTo3_6_5CheckNodeMap);
         CPPUNIT_TEST(testUpgradeTo3_6_5);
