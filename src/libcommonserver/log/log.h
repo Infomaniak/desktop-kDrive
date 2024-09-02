@@ -182,4 +182,4 @@ class COMMONSERVER_EXPORT Log {
         SyncPath _filePath;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -56,4 +56,4 @@ class TestSyncPal : public CppUnit::TestFixture {
         bool check_case_6_4();
 };
 
-}  // namespace KDC
+} // namespace KDC
