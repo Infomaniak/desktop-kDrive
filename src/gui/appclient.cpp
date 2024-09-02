@@ -218,6 +218,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> userInfo;
 
             emit userAdded(userInfo);
+            updateSentryUser();
             break;
         }
         case SignalNum::USER_UPDATED: {
@@ -225,6 +226,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> userInfo;
 
             emit userUpdated(userInfo);
+            updateSentryUser();
             break;
         }
         case SignalNum::USER_STATUSCHANGED: {
@@ -236,6 +238,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> connexionError;
 
             emit userStatusChanged(userDbId, connected, connexionError);
+            updateSentryUser();
             break;
         }
         case SignalNum::USER_REMOVED: {
@@ -243,6 +246,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> userDbId;
 
             emit userRemoved(userDbId);
+            updateSentryUser();
             break;
         }
         case SignalNum::ACCOUNT_ADDED: {
@@ -250,6 +254,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> accountInfo;
 
             emit accountAdded(accountInfo);
+            updateSentryUser();
             break;
         }
         case SignalNum::ACCOUNT_UPDATED: {
@@ -257,6 +262,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> accountInfo;
 
             emit accountUpdated(accountInfo);
+            updateSentryUser();
             break;
         }
         case SignalNum::ACCOUNT_REMOVED: {
@@ -264,6 +270,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> accountDbId;
 
             emit accountRemoved(accountDbId);
+            updateSentryUser();
             break;
         }
         case SignalNum::DRIVE_ADDED: {
@@ -642,8 +649,6 @@ bool AppClient::connectToServer() {
 }
 
 void AppClient::updateSentryUser() const {
-    /* static ExitCode getUserInfoList(QList<UserInfo> & list);
-    static ExitCode getUserIdFromUserDbId(int userDbId, int &userId);*/
     QList<UserInfo> userInfoList;
     ExitCode exitCode = GuiRequests::getUserInfoList(userInfoList);
     if (exitCode != ExitCode::Ok) {
