@@ -259,6 +259,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Workers
         std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; };
+        void setComputeFSOperationsWorker(std::shared_ptr<ComputeFSOperationWorker> worker) {
+            _computeFSOperationsWorker = worker;
+        }
 
     private:
         log4cplus::Logger _logger;

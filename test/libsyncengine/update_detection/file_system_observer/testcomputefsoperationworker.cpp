@@ -168,8 +168,8 @@ void TestComputeFSOperationWorker::setUp() {
     /// Activate big folder limit
     ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(true);
 
-    _syncPal->_computeFSOperationsWorker =
-        std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP");
+    _syncPal->setComputeFSOperationsWorker(
+        std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
     _syncPal->computeFSOperationsWorker()->setTesting(true);
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
 }
@@ -208,6 +208,21 @@ void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
     CPPUNIT_ASSERT_EQUAL(uint64_t(3), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
+void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings() {
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfc", "la", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
+                                                      testhelpers::defaultTime, NodeType::File, 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfd", "la", testhelpers::makeNfdSyncName(), testhelpers::defaultTime,
+                                                      testhelpers::defaultTime, NodeType::File, 123));
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("la_nfc", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("la_nfd", OperationType::Create, tmpOp));
+
+    CPPUNIT_ASSERT_EQUAL(uint64_t(2), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+}
 
 void TestComputeFSOperationWorker::testMultipleOps() {
     // On local replica
@@ -279,7 +294,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
                                                       testhelpers::defaultFileSize));
 
     _syncPal->copySnapshots();
-    _syncPal->_computeFSOperationsWorker->execute();
+    _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
 }
@@ -298,7 +313,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
                                                       testhelpers::defaultFileSize));
 
     _syncPal->copySnapshots();
-    _syncPal->_computeFSOperationsWorker->execute();
+    _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
 }
@@ -317,7 +332,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
                                                       testhelpers::defaultFileSize));
 
     _syncPal->copySnapshots();
-    _syncPal->_computeFSOperationsWorker->execute();
+    _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
@@ -337,7 +352,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
                                                       testhelpers::defaultFileSize));
 
     _syncPal->copySnapshots();
-    _syncPal->_computeFSOperationsWorker->execute();
+    _syncPal->computeFSOperationsWorker()->execute();
     FSOpPtr tmpOp = nullptr;
     CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
