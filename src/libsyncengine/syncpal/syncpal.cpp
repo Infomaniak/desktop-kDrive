@@ -54,8 +54,8 @@
 
 namespace KDC {
 
-SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted)
-    : _logger(Log::instance()->getLogger()) {
+SyncPal::SyncPal(const SyncPath &syncDbPath, const std::string &version, const bool hasFullyCompleted) :
+    _logger(Log::instance()->getLogger()) {
     _syncInfo.syncHasFullyCompleted = hasFullyCompleted;
     LOGW_SYNCPAL_DEBUG(_logger, L"SyncPal init : " << Utility::formatSyncPath(syncDbPath).c_str());
 
@@ -493,7 +493,7 @@ bool SyncPal::wipeOldPlaceholders() {
     std::vector<SyncPath> failedToRemovePlaceholders;
     if (!virtualFileCleaner.removeDehydratedPlaceholders(failedToRemovePlaceholders)) {
         LOG_SYNCPAL_WARN(_logger, "Error in VirtualFilesCleaner::removeDehydratedPlaceholders");
-        for (auto &failedItem : failedToRemovePlaceholders) {
+        for (auto &failedItem: failedToRemovePlaceholders) {
             addError(Error(syncDbId(), "", "", NodeType::File, failedItem, ConflictType::None, InconsistencyType::None,
                            CancelType::None, "", virtualFileCleaner.exitCode(), virtualFileCleaner.exitCause()));
         }
@@ -545,29 +545,29 @@ void SyncPal::resetSharedObjects() {
 void SyncPal::createWorkers() {
 #if defined(_WIN32)
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-        new LocalFileSystemObserverWorker_win(shared_from_this(), "Local File System Observer", "LFSO"));
+            new LocalFileSystemObserverWorker_win(shared_from_this(), "Local File System Observer", "LFSO"));
 #else
     _localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-        new LocalFileSystemObserverWorker_unix(shared_from_this(), "Local File System Observer", "LFSO"));
+            new LocalFileSystemObserverWorker_unix(shared_from_this(), "Local File System Observer", "LFSO"));
 #endif
     _remoteFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-        new RemoteFileSystemObserverWorker(shared_from_this(), "Remote File System Observer", "RFSO"));
+            new RemoteFileSystemObserverWorker(shared_from_this(), "Remote File System Observer", "RFSO"));
     _computeFSOperationsWorker = std::shared_ptr<ComputeFSOperationWorker>(
-        new ComputeFSOperationWorker(shared_from_this(), "Compute FS Operations", "COOP"));
+            new ComputeFSOperationWorker(shared_from_this(), "Compute FS Operations", "COOP"));
     _localUpdateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
-        new UpdateTreeWorker(shared_from_this(), "Local Tree Updater", "LTRU", ReplicaSide::Local));
+            new UpdateTreeWorker(shared_from_this(), "Local Tree Updater", "LTRU", ReplicaSide::Local));
     _remoteUpdateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
-        new UpdateTreeWorker(shared_from_this(), "Remote Tree Updater", "RTRU", ReplicaSide::Remote));
+            new UpdateTreeWorker(shared_from_this(), "Remote Tree Updater", "RTRU", ReplicaSide::Remote));
     _platformInconsistencyCheckerWorker = std::shared_ptr<PlatformInconsistencyCheckerWorker>(
-        new PlatformInconsistencyCheckerWorker(shared_from_this(), "Platform Inconsistency Checker", "PICH"));
+            new PlatformInconsistencyCheckerWorker(shared_from_this(), "Platform Inconsistency Checker", "PICH"));
     _conflictFinderWorker =
-        std::shared_ptr<ConflictFinderWorker>(new ConflictFinderWorker(shared_from_this(), "Conflict Finder", "COFD"));
+            std::shared_ptr<ConflictFinderWorker>(new ConflictFinderWorker(shared_from_this(), "Conflict Finder", "COFD"));
     _conflictResolverWorker =
-        std::shared_ptr<ConflictResolverWorker>(new ConflictResolverWorker(shared_from_this(), "Conflict Resolver", "CORE"));
+            std::shared_ptr<ConflictResolverWorker>(new ConflictResolverWorker(shared_from_this(), "Conflict Resolver", "CORE"));
     _operationsGeneratorWorker = std::shared_ptr<OperationGeneratorWorker>(
-        new OperationGeneratorWorker(shared_from_this(), "Operation Generator", "OPGE"));
+            new OperationGeneratorWorker(shared_from_this(), "Operation Generator", "OPGE"));
     _operationsSorterWorker =
-        std::shared_ptr<OperationSorterWorker>(new OperationSorterWorker(shared_from_this(), "Operation Sorter", "OPSO"));
+            std::shared_ptr<OperationSorterWorker>(new OperationSorterWorker(shared_from_this(), "Operation Sorter", "OPSO"));
     _executorWorker = std::shared_ptr<ExecutorWorker>(new ExecutorWorker(shared_from_this(), "Executor", "EXEC"));
     _syncPalWorker = std::shared_ptr<SyncPalWorker>(new SyncPalWorker(shared_from_this(), "Main", "MAIN"));
 
@@ -781,31 +781,31 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
     if (vfsMode() == VirtualFileMode::Mac || vfsMode() == VirtualFileMode::Win) {
         // Set callbacks
         std::function<bool(const SyncPath &, const SyncPath &, int64_t, bool &, bool &)> vfsUpdateFetchStatusCallback =
-            std::bind(&SyncPal::vfsUpdateFetchStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-                      std::placeholders::_4, std::placeholders::_5);
+                std::bind(&SyncPal::vfsUpdateFetchStatus, this, std::placeholders::_1, std::placeholders::_2,
+                          std::placeholders::_3, std::placeholders::_4, std::placeholders::_5);
         job->setVfsUpdateFetchStatusCallback(vfsUpdateFetchStatusCallback);
 
 #ifdef __APPLE__
         // Not done in Windows case: the pin state and the status must not be set by the download job because hydration could be
         // asked for a move and so, the file place will change just after the dl.
         std::function<bool(const SyncPath &, PinState)> vfsSetPinStateCallback =
-            std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);
+                std::bind(&SyncPal::vfsSetPinState, this, std::placeholders::_1, std::placeholders::_2);
         job->setVfsSetPinStateCallback(vfsSetPinStateCallback);
 
         std::function<bool(const SyncPath &, bool, int, bool)> vfsForceStatusCallback =
-            std::bind(&SyncPal::vfsForceStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-                      std::placeholders::_4);
+                std::bind(&SyncPal::vfsForceStatus, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
+                          std::placeholders::_4);
         job->setVfsForceStatusCallback(vfsForceStatusCallback);
 #endif
 
         std::function<bool(const SyncPath &, const SyncTime &, const SyncTime &, const int64_t, const NodeId &, std::string &)>
-            vfsUpdateMetadataCallback =
-                std::bind(&SyncPal::vfsUpdateMetadata, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3,
-                          std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
+                vfsUpdateMetadataCallback =
+                        std::bind(&SyncPal::vfsUpdateMetadata, this, std::placeholders::_1, std::placeholders::_2,
+                                  std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6);
         job->setVfsUpdateMetadataCallback(vfsUpdateMetadataCallback);
 
         std::function<bool(const SyncPath &)> vfsCancelHydrateCallback =
-            std::bind(&SyncPal::vfsCancelHydrate, this, std::placeholders::_1);
+                std::bind(&SyncPal::vfsCancelHydrate, this, std::placeholders::_1);
         job->setVfsCancelHydrateCallback(vfsCancelHydrateCallback);
     }
 
@@ -822,7 +822,7 @@ ExitCode SyncPal::addDlDirectJob(const SyncPath &relativePath, const SyncPath &l
 }
 
 ExitCode SyncPal::cancelDlDirectJobs(const std::list<SyncPath> &fileList) {
-    for (const auto &filePath : fileList) {
+    for (const auto &filePath: fileList) {
         const std::lock_guard<std::mutex> lock(_directDownloadJobsMapMutex);
         auto itId = _syncPathToDownloadJobMap.find(filePath);
         if (itId != _syncPathToDownloadJobMap.end()) {
@@ -842,7 +842,7 @@ ExitCode SyncPal::cancelAllDlDirectJobs(bool quit) {
     LOG_SYNCPAL_INFO(_logger, "Cancelling all direct download jobs");
 
     const std::lock_guard<std::mutex> lock(_directDownloadJobsMapMutex);
-    for (auto &directDownloadJobsMapElt : _directDownloadJobsMap) {
+    for (auto &directDownloadJobsMapElt: _directDownloadJobsMap) {
         LOG_SYNCPAL_DEBUG(_logger, "Cancelling download job " << directDownloadJobsMapElt.first);
         if (quit) {
             // Reset callbacks
@@ -948,14 +948,13 @@ ExitCode SyncPal::updateSyncNode(SyncNodeType syncNodeType) {
 }
 
 ExitCode SyncPal::updateSyncNode() {
-    for (int syncNodeTypeIdx = toInt(SyncNodeType::WhiteList);
-         syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList); syncNodeTypeIdx++) {
+    for (int syncNodeTypeIdx = toInt(SyncNodeType::WhiteList); syncNodeTypeIdx <= toInt(SyncNodeType::UndecidedList);
+         syncNodeTypeIdx++) {
         SyncNodeType syncNodeType = static_cast<SyncNodeType>(syncNodeTypeIdx);
 
         ExitCode exitCode = updateSyncNode(syncNodeType);
         if (exitCode != ExitCode::Ok) {
-            LOG_WARN(Log::instance()->getLogger(),
-                     "Error in SyncPal::updateSyncNode for syncNodeType=" << toInt(syncNodeType));
+            LOG_WARN(Log::instance()->getLogger(), "Error in SyncPal::updateSyncNode for syncNodeType=" << toInt(syncNodeType));
             return exitCode;
         }
     }
@@ -1110,10 +1109,10 @@ ExitCode SyncPal::fixConflictingFiles(bool keepLocalVersion, std::vector<Error> 
 }
 
 ExitCode SyncPal::fixCorruptedFile(const std::unordered_map<NodeId, SyncPath> &localFileMap) {
-    for (const auto &localFileInfo : localFileMap) {
+    for (const auto &localFileInfo: localFileMap) {
         SyncPath destPath;
         if (ExitCode exitCode = PlatformInconsistencyCheckerUtility::renameLocalFile(
-                localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixTypeConflict, &destPath);
+                    localFileInfo.second, PlatformInconsistencyCheckerUtility::SuffixTypeConflict, &destPath);
             exitCode != ExitCode::Ok) {
             LOGW_SYNCPAL_WARN(_logger, L"Fail to rename " << Path2WStr(localFileInfo.second).c_str() << L" into "
                                                           << Path2WStr(destPath).c_str());
@@ -1280,7 +1279,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
         return ExitCode::DbError;
     }
 
-    for (auto &uploadSessionToken : uploadSessionTokenList) {
+    for (auto &uploadSessionToken: uploadSessionTokenList) {
         try {
             auto job = std::make_shared<UploadSessionCancelJob>(UploadSessionType::Standard, driveDbId(), "",
                                                                 uploadSessionToken.token());
@@ -1315,7 +1314,7 @@ bool SyncPal::isDownloadOngoing(const SyncPath &localPath) {
         return true;
     }
 
-    for (const auto &[path, _] : _syncPathToDownloadJobMap) {
+    for (const auto &[path, _]: _syncPathToDownloadJobMap) {
         if (CommonUtility::isSubDir(localPath, path)) {
             return true;
         }
@@ -1341,7 +1340,7 @@ void SyncPal::fixInconsistentFileNames() {
         }
 
         LOG_DEBUG(KDC::Log::instance()->getLogger(), "Delete " << dbNodeList.size() << " files");
-        for (DbNode &dbNode : dbNodeList) {
+        for (DbNode &dbNode: dbNodeList) {
             SyncPath oldLocalPath;
             SyncPath remotePath;
             bool found;
@@ -1408,4 +1407,4 @@ void SyncPal::copySnapshots() {
     _remoteSnapshot->startRead();
 }
 
-}  // namespace KDC
+} // namespace KDC

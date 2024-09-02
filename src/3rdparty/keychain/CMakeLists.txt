@@ -6,65 +6,65 @@ option(BUILD_TESTS "Build tests for ${PROJECT_NAME}" OFF)
 
 add_library(${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME}
-    PUBLIC
+        PUBLIC
         "include"
-    PRIVATE
+        PRIVATE
         "src"
         "include/keychain")
 
 set_target_properties(${PROJECT_NAME}
-    PROPERTIES PUBLIC_HEADER "include/keychain/keychain.h")
+        PROPERTIES PUBLIC_HEADER "include/keychain/keychain.h")
 
 target_compile_features(${PROJECT_NAME}
-    PUBLIC
+        PUBLIC
         cxx_std_11)
 
 target_compile_options(${PROJECT_NAME}
-    PRIVATE
+        PRIVATE
         $<$<CXX_COMPILER_ID:MSVC>:/W2 /WX>
         $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>)
 
 if (WIN32)
     target_compile_definitions(${PROJECT_NAME}
-        PUBLIC
+            PUBLIC
             -DKEYCHAIN_WINDOWS=1)
 
     target_sources(${PROJECT_NAME}
-        PRIVATE
+            PRIVATE
             "src/keychain_win.cpp")
 
     target_link_libraries(${PROJECT_NAME}
-        PRIVATE
+            PRIVATE
             crypt32)
 elseif (APPLE)
     target_compile_definitions(${PROJECT_NAME}
-        PUBLIC
+            PUBLIC
             -DKEYCHAIN_MACOS=1)
 
     target_sources(${PROJECT_NAME}
-        PRIVATE
+            PRIVATE
             "src/keychain_mac.cpp")
 
     # We're using the deprecated "Legacy Password Storage" API
     # (SecKeychainFindGenericPassword and friends)
     target_compile_options(${PROJECT_NAME}
-        PRIVATE
+            PRIVATE
             "-Wno-error=deprecated-declarations")
 
     find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
     find_library(SECURITY_LIBRARY Security REQUIRED)
 
     target_link_libraries(${PROJECT_NAME}
-        PRIVATE
+            PRIVATE
             ${COREFOUNDATION_LIBRARY}
             ${SECURITY_LIBRARY})
 else () # assuming Linux
     target_compile_definitions(${PROJECT_NAME}
-        PUBLIC
+            PUBLIC
             -DKEYCHAIN_LINUX=1)
 
     target_sources(${PROJECT_NAME}
-        PRIVATE
+            PRIVATE
             "src/keychain_linux.cpp")
 
     find_package(PkgConfig REQUIRED)
@@ -72,7 +72,7 @@ else () # assuming Linux
     pkg_check_modules(LIBSECRET IMPORTED_TARGET libsecret-1)
 
     target_link_libraries(${PROJECT_NAME}
-        PRIVATE
+            PRIVATE
             PkgConfig::GLIB2
             PkgConfig::LIBSECRET)
 endif ()
@@ -88,9 +88,9 @@ if (CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif ()
 
 install(TARGETS ${PROJECT_NAME}
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib
-    PUBLIC_HEADER DESTINATION include/keychain)
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include/keychain)
 
 if (BUILD_TESTS)
     add_subdirectory("test")

@@ -45,7 +45,7 @@ install(TARGETS "${libsyncengine_NAME}_vfs_mac"
         RUNTIME DESTINATION "${vfs_installdir}"
 )
 
-if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
+if (BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     set(ENV_DEST_DIR $ENV{DESTDIR})
 
     install(CODE "

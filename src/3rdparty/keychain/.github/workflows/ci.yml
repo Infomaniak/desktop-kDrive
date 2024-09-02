@@ -12,7 +12,7 @@ jobs:
     runs-on: windows-2022
     strategy:
       matrix:
-        config: [Debug, Release]
+        config: [ Debug, Release ]
     steps:
       - uses: actions/checkout@v2
       - name: Run cmake
@@ -24,8 +24,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-12]
-        config: [Debug, Release, Coverage]
+        os: [ ubuntu-22.04, macos-12 ]
+        config: [ Debug, Release, Coverage ]
     steps:
       - uses: actions/checkout@v2
 

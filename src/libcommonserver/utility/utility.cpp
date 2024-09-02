@@ -102,12 +102,12 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 #if defined(__APPLE__)
     struct statvfs stat;
     if (statvfs(path.c_str(), &stat) == 0) {
-        return (int64_t)stat.f_bavail * stat.f_frsize;
+        return (int64_t) stat.f_bavail * stat.f_frsize;
     }
 #elif defined(__unix__)
     struct statvfs64 stat;
     if (statvfs64(path.c_str(), &stat) == 0) {
-        return (int64_t)stat.f_bavail * stat.f_frsize;
+        return (int64_t) stat.f_bavail * stat.f_frsize;
     }
 #elif defined(_WIN32)
     ULARGE_INTEGER freeBytes;
@@ -120,7 +120,7 @@ int64_t Utility::freeDiskSpace(const SyncPath &path) {
 }
 
 int64_t Utility::freeDiskSpaceLimit() {
-    static int64_t limit = 250 * 1000 * 1000LL;  // 250MB
+    static int64_t limit = 250 * 1000 * 1000LL; // 250MB
     return limit;
 }
 
@@ -272,7 +272,7 @@ std::string Utility::formatGenericServerError(std::istream &inputStream, const P
         errorStream << ", encoding: " << encoding.c_str();
     }
 
-    return errorStream.str();  // str() return a copy of the underlying string
+    return errorStream.str(); // str() return a copy of the underlying string
 }
 
 void Utility::logGenericServerError(const log4cplus::Logger &logger, const std::string &errorTitle, std::istream &inputStream,
@@ -445,7 +445,7 @@ std::string Utility::joinStr(const std::vector<std::string> &strList, char sep /
 std::string Utility::list2str(std::unordered_set<std::string> inList) {
     bool first = true;
     std::string out;
-    for (const auto &str : inList) {
+    for (const auto &str: inList) {
         if (!first) {
             out += ",";
         }
@@ -460,7 +460,7 @@ std::string Utility::list2str(std::unordered_set<std::string> inList) {
 std::string Utility::list2str(std::list<std::string> inList) {
     bool first = true;
     std::string out;
-    for (const auto &str : inList) {
+    for (const auto &str: inList) {
         if (!first) {
             out += ",";
         }
@@ -553,7 +553,7 @@ std::string Utility::toUpper(const std::string &str) {
 
 std::string Utility::_errId(const char *file, int line) {
     std::string err =
-        Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
+            Utility::toUpper(std::filesystem::path(file).filename().stem().string().substr(0, 3)) + ":" + std::to_string(line);
     return err;
 }
 
@@ -575,12 +575,12 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
         if (strResult) {
             HeapFree(hHeap, 0, strResult);
         }
-        strResult = (LPWSTR)HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
+        strResult = (LPWSTR) HeapAlloc(hHeap, 0, iSizeEstimated * sizeof(WCHAR));
         iSizeEstimated = NormalizeString(normalization == UnicodeNormalization::NFD ? NormalizationD : NormalizationC,
                                          name.c_str(), -1, strResult, iSizeEstimated);
 
         if (iSizeEstimated > 0) {
-            break;  // success
+            break; // success
         }
 
         if (iSizeEstimated <= 0) {
@@ -610,7 +610,7 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
 
 #ifdef NDEBUG
         sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_FATAL, "Utility::normalizedSyncName", "Failed to normalize string"));
+                sentry_value_new_message_event(SENTRY_LEVEL_FATAL, "Utility::normalizedSyncName", "Failed to normalize string"));
 #endif
 
         throw std::runtime_error("Failed to normalize string");
@@ -631,14 +631,14 @@ SyncName Utility::normalizedSyncName(const SyncName &name, UnicodeNormalization 
         str = reinterpret_cast<char *>(utf8proc_NFC(reinterpret_cast<const uint8_t *>(name.c_str())));
     }
 
-    if (!str) {  // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion has
-                 // failed. e.g.: Linux can sometime send filesystem events with strange character in the path
-        return "";  // TODO : we should return a boolean value to explicitly say that the conversion has failed. Output value
-                    // should be passed by reference as a parameter.
+    if (!str) { // Some special characters seem to be not supported, therefore a null pointer is returned if the conversion has
+                // failed. e.g.: Linux can sometime send filesystem events with strange character in the path
+        return ""; // TODO : we should return a boolean value to explicitly say that the conversion has failed. Output value
+                   // should be passed by reference as a parameter.
     }
 
     SyncName syncName(str);
-    std::free((void *)str);
+    std::free((void *) str);
     return syncName;
 #endif
 }
@@ -785,11 +785,11 @@ bool Utility::cpuUsage(uint64_t &lastTotalUser, uint64_t &lastTotalUserLow, uint
 #ifdef __unix__
     return cpuUsage_private(lastTotalUser, lastTotalUserLow, lastTotalSys, lastTotalIdle, percent);
 #else
-    (void)(lastTotalUser);
-    (void)(lastTotalUserLow);
-    (void)(lastTotalSys);
-    (void)(lastTotalIdle);
-    (void)(percent);
+    (void) (lastTotalUser);
+    (void) (lastTotalUserLow);
+    (void) (lastTotalSys);
+    (void) (lastTotalIdle);
+    (void) (percent);
 #endif
     return false;
 }
@@ -798,9 +798,9 @@ bool Utility::cpuUsage(uint64_t &previousTotalTicks, uint64_t &previousIdleTicks
 #ifdef __APPLE__
     return cpuUsage_private(previousTotalTicks, previousIdleTicks, percent);
 #else
-    (void)(previousTotalTicks);
-    (void)(previousIdleTicks);
-    (void)(percent);
+    (void) (previousTotalTicks);
+    (void) (previousIdleTicks);
+    (void) (percent);
 #endif
     return false;
 }
@@ -816,4 +816,4 @@ SyncPath Utility::commonDocumentsFolderName() {
 SyncPath Utility::sharedFolderName() {
     return Str2SyncName(SHARED_FOLDER);
 }
-}  // namespace KDC
+} // namespace KDC

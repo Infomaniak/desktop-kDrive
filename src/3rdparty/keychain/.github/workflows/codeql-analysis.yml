@@ -21,28 +21,28 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-12, windows-2022]
+        os: [ ubuntu-22.04, macos-12, windows-2022 ]
         language: [ 'cpp' ]
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Initialize CodeQL
-      uses: github/codeql-action/init@v2
-      with:
-        languages: ${{ matrix.language }}
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: ${{ matrix.language }}
 
-    - name: Autobuild Linux and macOS
-      uses: github/codeql-action/autobuild@v2
-      if: matrix.os != 'windows-2022'
+      - name: Autobuild Linux and macOS
+        uses: github/codeql-action/autobuild@v2
+        if: matrix.os != 'windows-2022'
 
-    - name: Windows build
-      if: matrix.os == 'windows-2022'
-      run: |
-        cmake -G "Visual Studio 17" . -DBUILD_TESTS=no -DCODE_COVERAGE=no
-        cmake --build . --config Debug
+      - name: Windows build
+        if: matrix.os == 'windows-2022'
+        run: |
+          cmake -G "Visual Studio 17" . -DBUILD_TESTS=no -DCODE_COVERAGE=no
+          cmake --build . --config Debug
 
-    - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
 
