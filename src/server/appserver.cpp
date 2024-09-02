@@ -271,7 +271,7 @@ AppServer::AppServer(int &argc, char **argv)
 
 #ifdef Q_OS_MACOS
     // Init Updater
-    std::function<void()> quitCallback = std::bind(&AppServer::sendQuit, this);
+    std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
     UpdaterServer::instance()->setQuitCallback(quitCallback);
 #endif
 
