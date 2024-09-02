@@ -38,7 +38,7 @@ void KDC::TestOperationGeneratorWorker::setUp() {
     _syncPal->syncDb()->setAutoDelete(true);
 
     _syncPal->_operationsGeneratorWorker =
-        std::shared_ptr<OperationGeneratorWorker>(new OperationGeneratorWorker(_syncPal, "Operation Generator", "OPGE"));
+            std::shared_ptr<OperationGeneratorWorker>(new OperationGeneratorWorker(_syncPal, "Operation Generator", "OPGE"));
 
     /**
      * Initial update tree:
@@ -84,65 +84,65 @@ void KDC::TestOperationGeneratorWorker::setUp() {
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
-    std::shared_ptr<Node> lNodeA = std::shared_ptr<Node>(
-        new Node(dbNodeIdA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"), NodeType::Directory, OperationType::None,
-                 "lA", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    std::shared_ptr<Node> lNodeA = std::shared_ptr<Node>(new Node(
+            dbNodeIdA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"), NodeType::Directory, OperationType::None, "lA",
+            createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(lNodeA));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeA);
-    std::shared_ptr<Node> lNodeB = std::shared_ptr<Node>(
-        new Node(dbNodeIdB, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("B"), NodeType::Directory, OperationType::None,
-                 "lB", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
+    std::shared_ptr<Node> lNodeB = std::shared_ptr<Node>(new Node(
+            dbNodeIdB, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("B"), NodeType::Directory, OperationType::None, "lB",
+            createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Local)->rootNode()));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Local)->rootNode()->insertChildren(lNodeB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeB);
-    std::shared_ptr<Node> lNodeAA =
-        std::shared_ptr<Node>(new Node(dbNodeIdAA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AA"),
-                                       NodeType::Directory, OperationType::None, "lAA", createdAt, lastmodified, size, lNodeA));
+    std::shared_ptr<Node> lNodeAA = std::shared_ptr<Node>(new Node(dbNodeIdAA, _syncPal->updateTree(ReplicaSide::Local)->side(),
+                                                                   Str("AA"), NodeType::Directory, OperationType::None, "lAA",
+                                                                   createdAt, lastmodified, size, lNodeA));
     CPPUNIT_ASSERT(lNodeA->insertChildren(lNodeAA));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeAA);
-    std::shared_ptr<Node> lNodeAB =
-        std::shared_ptr<Node>(new Node(dbNodeIdAB, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AB"),
-                                       NodeType::Directory, OperationType::None, "lAB", createdAt, lastmodified, size, lNodeA));
+    std::shared_ptr<Node> lNodeAB = std::shared_ptr<Node>(new Node(dbNodeIdAB, _syncPal->updateTree(ReplicaSide::Local)->side(),
+                                                                   Str("AB"), NodeType::Directory, OperationType::None, "lAB",
+                                                                   createdAt, lastmodified, size, lNodeA));
     CPPUNIT_ASSERT(lNodeA->insertChildren(lNodeAB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeAB);
-    std::shared_ptr<Node> lNodeBA =
-        std::shared_ptr<Node>(new Node(dbNodeIdBA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("BA"),
-                                       NodeType::Directory, OperationType::None, "lBA", createdAt, lastmodified, size, lNodeB));
+    std::shared_ptr<Node> lNodeBA = std::shared_ptr<Node>(new Node(dbNodeIdBA, _syncPal->updateTree(ReplicaSide::Local)->side(),
+                                                                   Str("BA"), NodeType::Directory, OperationType::None, "lBA",
+                                                                   createdAt, lastmodified, size, lNodeB));
     CPPUNIT_ASSERT(lNodeB->insertChildren(lNodeBA));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeBA);
     std::shared_ptr<Node> lNodeAAA =
-        std::shared_ptr<Node>(new Node(dbNodeIdAAA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AAA"), NodeType::File,
-                                       OperationType::None, "lAAA", createdAt, lastmodified, size, lNodeAA));
+            std::shared_ptr<Node>(new Node(dbNodeIdAAA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AAA"),
+                                           NodeType::File, OperationType::None, "lAAA", createdAt, lastmodified, size, lNodeAA));
     CPPUNIT_ASSERT(lNodeAA->insertChildren(lNodeAAA));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeAAA);
 
-    std::shared_ptr<Node> rNodeA = std::shared_ptr<Node>(
-        new Node(dbNodeIdA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"), NodeType::Directory, OperationType::None,
-                 "rA", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
+    std::shared_ptr<Node> rNodeA = std::shared_ptr<Node>(new Node(
+            dbNodeIdA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"), NodeType::Directory, OperationType::None,
+            "rA", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeA));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeA);
-    std::shared_ptr<Node> rNodeB = std::shared_ptr<Node>(
-        new Node(dbNodeIdB, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"), NodeType::Directory, OperationType::None,
-                 "rB", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
+    std::shared_ptr<Node> rNodeB = std::shared_ptr<Node>(new Node(
+            dbNodeIdB, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"), NodeType::Directory, OperationType::None,
+            "rB", createdAt, lastmodified, size, _syncPal->updateTree(ReplicaSide::Remote)->rootNode()));
     CPPUNIT_ASSERT(_syncPal->updateTree(ReplicaSide::Remote)->rootNode()->insertChildren(rNodeB));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeB);
-    std::shared_ptr<Node> rNodeAA =
-        std::shared_ptr<Node>(new Node(dbNodeIdAA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AA"),
-                                       NodeType::Directory, OperationType::None, "rAA", createdAt, lastmodified, size, rNodeA));
+    std::shared_ptr<Node> rNodeAA = std::shared_ptr<Node>(new Node(dbNodeIdAA, _syncPal->updateTree(ReplicaSide::Remote)->side(),
+                                                                   Str("AA"), NodeType::Directory, OperationType::None, "rAA",
+                                                                   createdAt, lastmodified, size, rNodeA));
     CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeAA));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeAA);
-    std::shared_ptr<Node> rNodeAB =
-        std::shared_ptr<Node>(new Node(dbNodeIdAB, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AB"),
-                                       NodeType::Directory, OperationType::None, "rAB", createdAt, lastmodified, size, rNodeA));
+    std::shared_ptr<Node> rNodeAB = std::shared_ptr<Node>(new Node(dbNodeIdAB, _syncPal->updateTree(ReplicaSide::Remote)->side(),
+                                                                   Str("AB"), NodeType::Directory, OperationType::None, "rAB",
+                                                                   createdAt, lastmodified, size, rNodeA));
     CPPUNIT_ASSERT(rNodeA->insertChildren(rNodeAB));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeAB);
-    std::shared_ptr<Node> rNodeBA =
-        std::shared_ptr<Node>(new Node(dbNodeIdBA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("BA"),
-                                       NodeType::Directory, OperationType::None, "rBA", createdAt, lastmodified, size, rNodeB));
+    std::shared_ptr<Node> rNodeBA = std::shared_ptr<Node>(new Node(dbNodeIdBA, _syncPal->updateTree(ReplicaSide::Remote)->side(),
+                                                                   Str("BA"), NodeType::Directory, OperationType::None, "rBA",
+                                                                   createdAt, lastmodified, size, rNodeB));
     CPPUNIT_ASSERT(rNodeB->insertChildren(rNodeBA));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeBA);
     std::shared_ptr<Node> rNodeAAA =
-        std::shared_ptr<Node>(new Node(dbNodeIdAAA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAA"), NodeType::File,
-                                       OperationType::None, "rAAA", createdAt, lastmodified, size, rNodeAA));
+            std::shared_ptr<Node>(new Node(dbNodeIdAAA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAA"),
+                                           NodeType::File, OperationType::None, "rAAA", createdAt, lastmodified, size, rNodeAA));
     CPPUNIT_ASSERT(rNodeAA->insertChildren(rNodeAAA));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeAAA);
 }
@@ -160,9 +160,9 @@ void TestOperationGeneratorWorker::testCreateOp() {
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
     std::shared_ptr<Node> lNodeAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA");
-    std::shared_ptr<Node> lNodeAAB =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AAB"), NodeType::File,
-                                       OperationType::Create, "lAAB", createdAt, lastmodified, size, lNodeAA));
+    std::shared_ptr<Node> lNodeAAB = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AAB"), NodeType::File,
+                     OperationType::Create, "lAAB", createdAt, lastmodified, size, lNodeAA));
     CPPUNIT_ASSERT(lNodeAA->insertChildren(lNodeAAB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeAAB);
 
@@ -184,16 +184,16 @@ void TestOperationGeneratorWorker::testCreateOpWithPseudoConflict() {
     int64_t size = 12345;
 
     std::shared_ptr<Node> lNodeAA = _syncPal->updateTree(ReplicaSide::Local)->getNodeById("lAA");
-    std::shared_ptr<Node> lNodeAAB =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AAB"), NodeType::File,
-                                       OperationType::Create, "lAAB", createdAt, lastmodified, size, lNodeAA));
+    std::shared_ptr<Node> lNodeAAB = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("AAB"), NodeType::File,
+                     OperationType::Create, "lAAB", createdAt, lastmodified, size, lNodeAA));
     CPPUNIT_ASSERT(lNodeAA->insertChildren(lNodeAAB));
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(lNodeAAB);
 
     std::shared_ptr<Node> rNodeAA = _syncPal->updateTree(ReplicaSide::Remote)->getNodeById("rAA");
-    std::shared_ptr<Node> rNodeAAB =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAB"),
-                                       NodeType::File, OperationType::Create, "rAAB", createdAt, lastmodified, size, rNodeAA));
+    std::shared_ptr<Node> rNodeAAB = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("AAB"), NodeType::File,
+                     OperationType::Create, "rAAB", createdAt, lastmodified, size, rNodeAA));
     CPPUNIT_ASSERT(rNodeAA->insertChildren(rNodeAAB));
     _syncPal->updateTree(ReplicaSide::Remote)->insertNode(rNodeAAB);
 
@@ -346,7 +346,7 @@ void TestOperationGeneratorWorker::testMoveEditOps() {
 
     bool hasMoveOp = false;
     bool hasEditOp = false;
-    for (auto &opId : _syncPal->_syncOps->opSortedList()) {
+    for (auto &opId: _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
         if (op->type() == OperationType::Move) {
             hasMoveOp = true;
@@ -364,4 +364,4 @@ void TestOperationGeneratorWorker::testMoveEditOps() {
     CPPUNIT_ASSERT(op->omit() == false);
 }
 
-}  // namespace KDC
+} // namespace KDC
