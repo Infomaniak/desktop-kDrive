@@ -2403,34 +2403,35 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
     NamedNodeMap namedNodeMap;
     if (!selectNamesWithDistinctEncodings(namedNodeMap)) return false;
 
-    using namespace std::filesystem;
-    std::error_code ec;
-    const auto dirIt = recursive_directory_iterator(localDrivePath, directory_options::skip_permission_denied, ec);
-    if (ec) {
-        LOGW_WARN(_logger, L"Error in reinstateEncodingOfLocalNames: " << Utility::formatStdError(ec).c_str());
-        return false;
+    IoHelper::DirectoryIterator dir;
+    IoError ioError = IoError::Success;
+    IoHelper::getDirectoryIterator(localDrivePath, true, ioError, dir);
+    if (ioError != IoError::Success) {
+        LOGW_WARN(_logger, L"Error in DirectoryIterator for " << Utility::formatIoError(localDrivePath, ioError).c_str());
+        return IoHelper::isExpectedError(ioError);
     }
 
     SyncNameMap localNames;
-    for (const auto &dirEntry : dirIt) {
+    DirectoryEntry entry;
+    bool endOfDirectory = false;
+
+    while (dir.next(entry, endOfDirectory, ioError) && !endOfDirectory) {
         NodeId nodeId;
-        if (!IoHelper::getNodeId(dirEntry.path(), nodeId)) {
-            LOGW_WARN(_logger,
-                      L"Could not retrieve the node id of item with" << Utility::formatSyncPath(dirEntry.path()).c_str());
+        if (!IoHelper::getNodeId(entry.path(), nodeId)) {
+            LOGW_WARN(_logger, L"Could not retrieve the node id of item with " << Utility::formatSyncPath(entry.path()).c_str());
             continue;
         }
 
         const IntNodeId intNodeId = std::stoll(nodeId);
         if (!namedNodeMap.contains(intNodeId)) continue;
 
-        SyncName actualLocalName(dirEntry.path().filename().c_str());
+        SyncName actualLocalName(entry.path().filename().c_str());
         if (actualLocalName != namedNodeMap[intNodeId].localName) {
             localNames.insert({namedNodeMap[intNodeId].dbNodeId, std::move(actualLocalName)});
         }
     }
 
     if (!updateNamesWithDistinctEncodings(localNames)) return false;
-
 
     return true;
 }
