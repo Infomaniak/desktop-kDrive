@@ -25,6 +25,7 @@
 #include "testincludes.h"
 #include "utility/types.h"
 #include "jobs/abstractjob.h"
+#include "test_utility/testhelpers.h"
 
 #include <mutex>
 #include <unordered_map>
@@ -74,8 +75,7 @@ class TestJobManager : public CppUnit::TestFixture {
         void generateBigFiles(const SyncPath &dirPath, int size, int count);
 
     private:
-        int _driveDbId;
-        NodeId _dirId;
+        const testhelpers::TestVariables _testVariables;
         SyncPath _localDirPath;
 
         std::unordered_map<uint64_t, std::shared_ptr<AbstractJob>> _ongoingJobs;
