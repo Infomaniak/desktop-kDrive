@@ -2484,9 +2484,9 @@ bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
         LOG_WARN(_logger, "Error getting query result: " << requestId);
         return false;
     }
-    if (!found) {
-        return true;
-    }
+
+    if (!found) return true;
+
 
     fillSyncWithQueryResult(sync, requestId);
 

@@ -220,17 +220,24 @@ void TestParmsDb::testDrive() {
     CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(drive3.dbId(), drive4, found) && !found);
 }
 
-void TestParmsDb::testSync() {
-    User user1(1, 5555555, "123");
+namespace {
+
+struct SyncSetupData {
+        std::array<Sync, 2> syncs;
+        std::array<Drive, 2> drives;
+};
+
+SyncSetupData createSyncs() {
+    const User user1(1, 5555555, "123");
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user1));
 
-    Account acc1(1, 12345678, user1.dbId());
+    const Account acc1(1, 12345678, user1.dbId());
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAccount(acc1));
 
-    Drive drive1(1, 99999991, acc1.dbId(), "Drive 1", 2000000000, "#000000");
-    Drive drive2(2, 99999992, acc1.dbId(), "Drive 2", 2000000000, "#000000");
+    const Drive drive1(1, 99999991, acc1.dbId(), "Drive 1", 2000000000, "#000000");
+    const Drive drive2(2, 99999992, acc1.dbId(), "Drive 2", 2000000000, "#000000");
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertDrive(drive1));
     CPPUNIT_ASSERT(ParmsDb::instance()->insertDrive(drive2));
@@ -239,30 +246,70 @@ void TestParmsDb::testSync() {
     Sync sync2(2, drive1.dbId(), "/Users/xxxxxx/Pictures", "Pictures",
                "/Users/xxxxxx/Library/Application Support/kDrive/.synczzzzzz.db");
 
-    CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync1));
-    CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync2));
+    sync2.setDbPath("/Users/me/Library/Application Support/kDrive/.parms.db");
 
-    sync2.setLocalPath("/Users/xxxxxx/Movies");
-    sync2.setPaused(true);
-    sync2.setNotificationsDisabled(true);
-    bool found;
-    CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, found) && found);
+    SyncSetupData data;
+    data.syncs = {sync1, sync2};
+    data.drives = {drive1, drive2};
 
-    Sync sync;
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbId(), sync, found) && found);
-    CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
-    CPPUNIT_ASSERT(sync.paused() == sync2.paused());
-    CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+    return data;
+}
+}  // namespace
 
-    std::vector<Sync> syncList;
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncs(drive1.dbId(), syncList));
-    CPPUNIT_ASSERT(syncList.size() == 2);
-    CPPUNIT_ASSERT(syncList[0].localPath() == sync1.localPath());
-    CPPUNIT_ASSERT(syncList[0].paused() == sync1.paused());
-    CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
+void TestParmsDb::testSync() {
+    auto data = createSyncs();
+    auto &sync1 = data.syncs.at(0);
+    auto &sync2 = data.syncs.at(1);
 
-    CPPUNIT_ASSERT(ParmsDb::instance()->deleteSync(sync2.dbId(), found) && found);
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbId(), sync, found) && !found);
+    // Insert Sync
+    {
+        CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync1));
+        CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync2));
+    }
+    // Update sync
+    {
+        sync2.setLocalPath("/Users/xxxxxx/Movies");
+        sync2.setPaused(true);
+        sync2.setNotificationsDisabled(true);
+        bool syncIsFound = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, syncIsFound) && syncIsFound);
+    }
+    // Find sync by DB ID
+    {
+        Sync sync;
+        bool syncIsFound = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbId(), sync, syncIsFound) && syncIsFound);
+
+        CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
+        CPPUNIT_ASSERT(sync.paused() == sync2.paused());
+        CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+    }
+    // Find sync by DB path
+    {
+        Sync sync;
+        bool syncIsFound = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbPath(), sync, syncIsFound) && syncIsFound);
+        CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
+        CPPUNIT_ASSERT(sync.paused() == sync2.paused());
+        CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+    }
+    // Select all syncs
+    {
+        std::vector<Sync> syncList;
+        const Drive &drive1 = data.drives.at(0);
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncs(drive1.dbId(), syncList));
+        CPPUNIT_ASSERT(syncList.size() == 2);
+        CPPUNIT_ASSERT(syncList[0].localPath() == sync1.localPath());
+        CPPUNIT_ASSERT(syncList[0].paused() == sync1.paused());
+        CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
+    }
+    // Delete sync
+    {
+        Sync sync;
+        bool syncIsFound = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->deleteSync(sync2.dbId(), syncIsFound) && syncIsFound);
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbId(), sync, syncIsFound) && !syncIsFound);
+    }
 }
 
 void TestParmsDb::testExclusionTemplate() {
