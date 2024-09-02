@@ -2407,8 +2407,8 @@ bool SyncDb::reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumbe
     IoError ioError = IoError::Success;
     IoHelper::getDirectoryIterator(localDrivePath, true, ioError, dir);
     if (ioError != IoError::Success) {
-        LOGW_WARN(_logger, L"Error in DirectoryIterator for " << Utility::formatIoError(localDrivePath, ioError).c_str());
-        return IoHelper::isExpectedError(ioError);
+        LOGW_WARN(_logger, L"Error in DirectoryIterator: " << Utility::formatIoError(localDrivePath, ioError).c_str());
+        return false;
     }
 
     SyncNameMap localNames;
