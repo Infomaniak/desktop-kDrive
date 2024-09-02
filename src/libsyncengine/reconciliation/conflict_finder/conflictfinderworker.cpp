@@ -392,7 +392,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
             }
             if (!found) {
                 LOG_SYNCPAL_WARN(_logger,
-                                 "Node not found for id = " << localNode->id()->c_str() << " side = " << localNode->side());
+                                 "Node not found for id='" << localNode->id()->c_str() << "' side='" << localNode->side() << "'");
                 // break loop because localNode's path is not found
                 break;
             }
@@ -403,7 +403,7 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
             }
             if (!found) {
                 LOG_SYNCPAL_WARN(_logger,
-                                 "Node not found for id = " << remoteNode->id()->c_str() << " side = " << remoteNode->side());
+                                 "Node not found for id='" << remoteNode->id()->c_str() << "' side='" << remoteNode->side() << "'");
                 // continue loop because remoteNode's path is not found
                 continue;
             }
