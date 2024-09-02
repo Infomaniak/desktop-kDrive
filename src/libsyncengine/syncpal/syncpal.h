@@ -175,6 +175,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; };
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
+        [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
+
         // TODO : not ideal, to be refactored
         bool existOnServer(const SyncPath &path) const;
         bool canShareItem(const SyncPath &path) const;

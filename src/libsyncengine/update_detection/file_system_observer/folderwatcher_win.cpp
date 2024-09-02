@@ -161,14 +161,15 @@ void FolderWatcher_win::watchChanges() {
                 }
                 if (!isDirectory) {
                     if (ioError == IoError::NoSuchFileOrDirectory) {
-                        LOGW_DEBUG(_logger, L"Skip operation " << opType << L" detected on item " << Path2WStr(filepath).c_str()
+                        LOGW_DEBUG(_logger, L"Skip operation " << opType << L" detected on item with "
+                                                               << Utility::formatSyncPath(filepath).c_str()
                                                                << L" (item doesn't exist)");
                         skip = true;
                     }
                 } else {
                     if (ParametersCache::isExtendedLogEnabled()) {
-                        LOGW_DEBUG(_logger, L"Skip operation " << opType << L" detected on item " << Path2WStr(filepath).c_str()
-                                                               << L" (directory)");
+                        LOGW_DEBUG(_logger, L"Skip operation " << opType << L" detected on item with "
+                                                               << Utility::formatSyncPath(filepath).c_str() << L" (directory)");
                     }
                     skip = true;
                 }
@@ -182,7 +183,8 @@ void FolderWatcher_win::watchChanges() {
                     if (notFound) {
                         // Item doesn't exist anymore
                         LOGW_DEBUG(_logger, L"Skip operation " << opType << L" detected on item "
-                                                               << Path2WStr(longfilepath).c_str() << L" (item doesn't exist)");
+                                                               << Utility::formatSyncPath(longfilepath).c_str()
+                                                               << L" (item doesn't exist)");
                         skip = true;
                     } else {
                         // Keep original name
@@ -194,7 +196,8 @@ void FolderWatcher_win::watchChanges() {
 
             if (!skip) {
                 if (ParametersCache::isExtendedLogEnabled()) {
-                    LOGW_DEBUG(_logger, L"Operation " << opType << L" detected on item " << Path2WStr(longfilepath).c_str());
+                    LOGW_DEBUG(_logger, L"Operation " << opType << L" detected on item with "
+                                                      << Utility::formatSyncPath(longfilepath).c_str());
                 }
 
                 changeDetected(longfilepath, opType);

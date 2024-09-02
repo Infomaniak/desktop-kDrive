@@ -173,9 +173,9 @@ void TestOperationGeneratorWorker::testCreateOp() {
 
     _syncPal->_operationsGeneratorWorker->execute();
 
-    CPPUNIT_ASSERT(!_syncPal->_syncOps->isEmpty());
+    CPPUNIT_ASSERT(!_syncPal->syncOps()->isEmpty());
 
-    SyncOpPtr op = _syncPal->_syncOps->getOp(_syncPal->_syncOps->_opSortedList.front());
+    SyncOpPtr op = _syncPal->syncOps()->getOp(_syncPal->syncOps()->_opSortedList.front());
     CPPUNIT_ASSERT(op->type() == OperationType::Create);
     CPPUNIT_ASSERT(op->affectedNode() == lNodeAAB);
     CPPUNIT_ASSERT(op->omit() == false);
@@ -200,8 +200,8 @@ void TestOperationGeneratorWorker::testCreateOpWithPseudoConflict() {
 
     _syncPal->_operationsGeneratorWorker->execute();
 
-    CPPUNIT_ASSERT(!_syncPal->_syncOps->isEmpty());
-    SyncOpPtr op = _syncPal->_syncOps->getOp(_syncPal->_syncOps->_opSortedList.front());
+    CPPUNIT_ASSERT(!_syncPal->syncOps()->isEmpty());
+    SyncOpPtr op = _syncPal->syncOps()->getOp(_syncPal->syncOps()->_opSortedList.front());
     CPPUNIT_ASSERT(op->type() == OperationType::Create);
     CPPUNIT_ASSERT(op->omit() == true);
 }
@@ -222,8 +222,8 @@ void TestOperationGeneratorWorker::testMoveOp() {
 
     _syncPal->_operationsGeneratorWorker->execute();
 
-    CPPUNIT_ASSERT(!_syncPal->_syncOps->isEmpty());
-    SyncOpPtr op = _syncPal->_syncOps->getOp(_syncPal->_syncOps->_opSortedList.front());
+    CPPUNIT_ASSERT(!_syncPal->syncOps()->isEmpty());
+    SyncOpPtr op = _syncPal->syncOps()->getOp(_syncPal->syncOps()->_opSortedList.front());
     CPPUNIT_ASSERT(op->type() == OperationType::Move);
     CPPUNIT_ASSERT(op->affectedNode() == rNodeAA);
     CPPUNIT_ASSERT(op->omit() == false);
@@ -253,8 +253,8 @@ void TestOperationGeneratorWorker::testMoveOpWithPseudoConflict() {
 
     _syncPal->_operationsGeneratorWorker->execute();
 
-    CPPUNIT_ASSERT(!_syncPal->_syncOps->isEmpty());
-    SyncOpPtr op = _syncPal->_syncOps->getOp(_syncPal->_syncOps->_opSortedList.front());
+    CPPUNIT_ASSERT(!_syncPal->syncOps()->isEmpty());
+    SyncOpPtr op = _syncPal->syncOps()->getOp(_syncPal->syncOps()->_opSortedList.front());
     CPPUNIT_ASSERT(op->type() == OperationType::Move);
     CPPUNIT_ASSERT(op->omit() == true);
 }
@@ -285,8 +285,8 @@ void TestOperationGeneratorWorker::testMoveOpWithPseudoConflictButDifferentEncod
 
     _syncPal->_operationsGeneratorWorker->execute();
 
-    CPPUNIT_ASSERT(!_syncPal->_syncOps->isEmpty());
-    SyncOpPtr op = _syncPal->_syncOps->getOp(_syncPal->_syncOps->_opSortedList.front());
+    CPPUNIT_ASSERT(!_syncPal->syncOps()->isEmpty());
+    SyncOpPtr op = _syncPal->syncOps()->getOp(_syncPal->syncOps()->_opSortedList.front());
     CPPUNIT_ASSERT(op->type() == OperationType::Move);
     CPPUNIT_ASSERT(op->omit() == true);
 }
@@ -299,8 +299,8 @@ void TestOperationGeneratorWorker::testEditOp() {
 
     _syncPal->_operationsGeneratorWorker->execute();
 
-    CPPUNIT_ASSERT(!_syncPal->_syncOps->isEmpty());
-    SyncOpPtr op = _syncPal->_syncOps->getOp(_syncPal->_syncOps->_opSortedList.front());
+    CPPUNIT_ASSERT(!_syncPal->syncOps()->isEmpty());
+    SyncOpPtr op = _syncPal->syncOps()->getOp(_syncPal->syncOps()->_opSortedList.front());
     CPPUNIT_ASSERT(op->type() == OperationType::Edit);
     CPPUNIT_ASSERT(op->affectedNode() == lNodeAAA);
     CPPUNIT_ASSERT(op->omit() == false);
@@ -318,8 +318,8 @@ void TestOperationGeneratorWorker::testEditOpWithPseudoConflict() {
 
     _syncPal->_operationsGeneratorWorker->execute();
 
-    CPPUNIT_ASSERT(!_syncPal->_syncOps->isEmpty());
-    SyncOpPtr op = _syncPal->_syncOps->getOp(_syncPal->_syncOps->_opSortedList.front());
+    CPPUNIT_ASSERT(!_syncPal->syncOps()->isEmpty());
+    SyncOpPtr op = _syncPal->syncOps()->getOp(_syncPal->syncOps()->_opSortedList.front());
     CPPUNIT_ASSERT(op->type() == OperationType::Edit);
     CPPUNIT_ASSERT(op->omit() == true);
 }
@@ -334,8 +334,8 @@ void TestOperationGeneratorWorker::testDeleteOp() {
 
     _syncPal->_operationsGeneratorWorker->execute();
 
-    CPPUNIT_ASSERT(!_syncPal->_syncOps->isEmpty());
-    SyncOpPtr op = _syncPal->_syncOps->getOp(_syncPal->_syncOps->_opSortedList.front());
+    CPPUNIT_ASSERT(!_syncPal->syncOps()->isEmpty());
+    SyncOpPtr op = _syncPal->syncOps()->getOp(_syncPal->syncOps()->_opSortedList.front());
     CPPUNIT_ASSERT(op->type() == OperationType::Delete);
     CPPUNIT_ASSERT(op->affectedNode() == lNodeA);
     CPPUNIT_ASSERT(op->omit() == false);
@@ -353,8 +353,8 @@ void TestOperationGeneratorWorker::testDeleteOpWithPseudoConflict() {
 
     _syncPal->_operationsGeneratorWorker->execute();
 
-    CPPUNIT_ASSERT(!_syncPal->_syncOps->isEmpty());
-    SyncOpPtr op = _syncPal->_syncOps->getOp(_syncPal->_syncOps->_opSortedList.front());
+    CPPUNIT_ASSERT(!_syncPal->syncOps()->isEmpty());
+    SyncOpPtr op = _syncPal->syncOps()->getOp(_syncPal->syncOps()->_opSortedList.front());
     CPPUNIT_ASSERT(op->type() == OperationType::Delete);
     CPPUNIT_ASSERT(op->omit() == true);
 }
@@ -377,8 +377,8 @@ void TestOperationGeneratorWorker::testMoveEditOps() {
 
     bool hasMoveOp = false;
     bool hasEditOp = false;
-    for (auto &opId : _syncPal->_syncOps->opSortedList()) {
-        SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
+    for (auto &opId : _syncPal->syncOps()->opSortedList()) {
+        SyncOpPtr op = _syncPal->syncOps()->getOp(opId);
         if (op->type() == OperationType::Move) {
             hasMoveOp = true;
         }
@@ -387,11 +387,11 @@ void TestOperationGeneratorWorker::testMoveEditOps() {
         }
     }
 
-    CPPUNIT_ASSERT(_syncPal->_syncOps->size() == 2);
+    CPPUNIT_ASSERT(_syncPal->syncOps()->size() == 2);
     CPPUNIT_ASSERT(hasMoveOp);
     CPPUNIT_ASSERT(hasEditOp);
-    UniqueId opId = _syncPal->_syncOps->_opSortedList.front();
-    SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
+    UniqueId opId = _syncPal->syncOps()->_opSortedList.front();
+    SyncOpPtr op = _syncPal->syncOps()->getOp(opId);
     CPPUNIT_ASSERT(op->omit() == false);
 }
 

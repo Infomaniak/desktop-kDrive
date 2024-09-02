@@ -199,11 +199,11 @@ void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
     _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("la", OperationType::Delete, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("laa", OperationType::Delete, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lab", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("la", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("laa", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lab", OperationType::Delete, tmpOp));
 
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lac", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("lac", OperationType::Delete, tmpOp));
 
     CPPUNIT_ASSERT_EQUAL(uint64_t(3), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
@@ -236,18 +236,18 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lad", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("laa", OperationType::Edit, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lab", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lba", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lbb", OperationType::Delete, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lae", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lad", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("laa", OperationType::Edit, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lab", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lba", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lbb", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("lae", OperationType::Create, tmpOp));
 
     // On remote replica
     // Create operation but folder too big (should be ignored on local replica)
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("raf", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rafa", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rac", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("raf", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("rafa", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("rac", OperationType::Move, tmpOp));
 }
 
 void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
@@ -262,7 +262,7 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     // File is excluded by template, it does not appear in snapshot
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
-    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->_localOperationSet->nbOps());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
 void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
@@ -281,7 +281,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
     _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
 }
 
 void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
@@ -300,7 +300,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
     _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
 }
 
 void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
@@ -319,8 +319,8 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
     _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("ltest", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->nbOps() == 0);
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
 }
 
 void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
@@ -339,8 +339,8 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
     _syncPal->copySnapshots();
     _syncPal->_computeFSOperationsWorker->execute();
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("ltest", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->nbOps() == 0);
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
 }
 
 }  // namespace KDC
