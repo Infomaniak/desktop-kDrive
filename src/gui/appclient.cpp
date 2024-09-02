@@ -655,6 +655,12 @@ void AppClient::updateSentryUser() const {
         qCWarning(lcAppClient) << "Error in Requests::getUserInfoList";
         return;
     }
+
+    if (userInfoList.isEmpty()) {
+        qCWarning(lcAppClient) << "No user found in updateSentryUser()";
+        return;
+    }
+
     int userId = 0;
     exitCode = GuiRequests::getUserIdFromUserDbId(userInfoList.last().dbId(), userId);
     if (exitCode != ExitCode::Ok) {
