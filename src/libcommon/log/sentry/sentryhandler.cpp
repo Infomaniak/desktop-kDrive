@@ -44,6 +44,12 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
         return;
     }
 
+    if (project == SentryProject::Disable) {
+        _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
+        _instance->_isSentryActivated = false;
+        return;
+    }
+
     // Sentry init
     sentry_options_t *options = sentry_options_new();
     sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
@@ -103,7 +109,7 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
     if (!_isSentryActivated) return;
     std::scoped_lock lock(_mutex);
     SentryEvent event(title, message, level, _globalConfidentialityLevel, user);
-    if (auto it = _events.find(event.getHash()); it != _events.end()) {
+    if (auto it = _events.find(event.getStr()); it != _events.end()) {
         auto storedEvent = it->second;
         storedEvent.captureCount++;
         if (storedEvent.lastCapture + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) <
@@ -129,7 +135,7 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
     } else {
         event.lastCapture = std::chrono::system_clock::now();
         event.lastUpload = std::chrono::system_clock::now();
-        _events.try_emplace(event.getHash(), event);
+        _events.try_emplace(event.getStr(), event);
     }
 
     if (_globalConfidentialityLevel != _lastConfidentialityLevel || !user.isDefault()) {

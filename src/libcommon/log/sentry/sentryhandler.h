@@ -51,7 +51,7 @@ inline std::string toString(SentryLevel level) {
 
 class SentryHandler {
     public:
-        enum class SentryProject { Server, Client };  // Only used for initialization, don't need to be in types.h
+        enum class SentryProject { Server, Client, Disable };  // Only used for initialization, don't need to be in types.h
 
         ~SentryHandler();
         static std::shared_ptr<SentryHandler> instance();
@@ -76,7 +76,7 @@ class SentryHandler {
 
                 SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
                             SentryConfidentialityLevel userType, const SentryUser &user);
-                std::string getHash() const { return title + message + (char)toInt(level) + userId; };
+                std::string getStr() const { return title + message + (char)toInt(level) + userId; };
                 std::string title;
                 std::string message;
                 SentryLevel level;
