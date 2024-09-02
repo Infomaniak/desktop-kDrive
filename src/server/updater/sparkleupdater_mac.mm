@@ -22,6 +22,7 @@
 #include "libcommon/utility/utility.h"
 #include "sparkleupdater.h"
 #include "libcommonserver/log/log.h"
+#include "libcommonserver/utility/utility.h"
 #include "libparms/db/parmsdb.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -45,6 +46,7 @@
     if (self) {
         _state = KDC::Unknown;
         _availableVersion = @"";
+        _quitCallback = nullptr;
     }
     return self;
 }
@@ -64,6 +66,7 @@
 }
 
 - (void)setQuitCallback:(KDC::QuitCallback)quitCallback {
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Set quitCallback");
     _quitCallback = quitCallback;
 }
 
@@ -91,7 +94,11 @@
                             !found) {  // Desactivate the selfRestarter
         LOG_ERROR(KDC::Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
-    _quitCallback;
+    if (_quitCallback) {
+        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Ask client to quit");
+        _quitCallback();
+        KDC::Utility::msleep(1000);  // Sleep for 1s
+    }
 }
 
 - (void)updater:(SPUUpdater *)updater didAbortWithError:(NSError *)error {
@@ -140,7 +147,6 @@ SparkleUpdater::SparkleUpdater(const QUrl &appCastUrl) : UpdaterServer() {
     d = new Private;
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
-    [d->updaterDelegate setQuitCallback:_quitCallback];
     [d->updaterDelegate retain];
 
     d->delegateUserDriverObject = [[DelegateUserDriverObject alloc] init];
@@ -176,6 +182,10 @@ SparkleUpdater::~SparkleUpdater() {
 void SparkleUpdater::setUpdateUrl(const QUrl &url) {
     NSURL *nsurl = [NSURL URLWithString:[NSString stringWithUTF8String:url.toString().toUtf8().data()]];
     [d->updater setFeedURL:nsurl];
+}
+
+void SparkleUpdater::setQuitCallback(const QuitCallback &quitCallback) {
+    [d->updaterDelegate setQuitCallback:quitCallback];
 }
 
 bool SparkleUpdater::startUpdater() {

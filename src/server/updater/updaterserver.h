@@ -44,8 +44,6 @@ class UpdaterServer : public Updater {
         static UpdaterServer *instance();
         static QUrl updateUrl();
 
-        void setQuitCallback(QuitCallback quitCallback) { _quitCallback = quitCallback; }
-
         QString version() const override;
         bool isKDCUpdater() override;
         bool isSparkleUpdater() override;
@@ -58,11 +56,13 @@ class UpdaterServer : public Updater {
         virtual void backgroundCheckForUpdate() = 0;
         virtual bool handleStartup() = 0;
 
+#ifdef Q_OS_MACOS
+        virtual void setQuitCallback(const QuitCallback &quitCallback) = 0;
+#endif
+
     protected:
         static QString clientVersion();
         UpdaterServer() : Updater(nullptr) {}
-
-        QuitCallback _quitCallback = nullptr;
 
     private:
         static QString getSystemInfo();
