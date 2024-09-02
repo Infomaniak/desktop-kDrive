@@ -130,7 +130,7 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
                 level = SentryLevel::Error;
             }
         } else {
-            event.lastCapture = std::chrono::system_clock::now();
+            storedEvent.lastCapture = std::chrono::system_clock::now();
         }
     } else {
         event.lastCapture = std::chrono::system_clock::now();
