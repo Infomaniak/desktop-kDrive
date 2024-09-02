@@ -1220,13 +1220,13 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
 
     SyncPath relativeDestLocalFilePath;
     SyncPath absoluteDestLocalFilePath;
-    SyncPath relativeSourceLocalFilePath;
+    SyncPath relativeOriginLocalFilePath;
 
     if (syncOp->targetSide() == ReplicaSide::Local) {
         // Target side is local, so corresponding node is on local side.
         std::shared_ptr<Node> correspondingNode = syncOp->correspondingNode();
         if (!correspondingNode) {
-            LOGW_SYNCPAL_WARN(_logger, L"Corresponding node not found for item "
+            LOGW_SYNCPAL_WARN(_logger, L"Corresponding node not found for item with "
                                            << Utility::formatSyncPath(syncOp->affectedNode()->getPath()).c_str());
             return false;
         }
@@ -1235,16 +1235,16 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
         std::shared_ptr<Node> parentNode =
             syncOp->newParentNode() ? syncOp->newParentNode() : syncOp->affectedNode()->parentNode();
         if (!parentNode) {
-            LOGW_SYNCPAL_WARN(
-                _logger, L"Parent node not found for item " << Utility::formatSyncPath(correspondingNode->getPath()).c_str());
+            LOGW_SYNCPAL_WARN(_logger, L"Parent node not found for item with "
+                                           << Utility::formatSyncPath(correspondingNode->getPath()).c_str());
             return false;
         }
 
         relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
-        relativeSourceLocalFilePath = correspondingNode->getPath();
+        relativeOriginLocalFilePath = correspondingNode->getPath();
         absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
-        SyncPath absoluteSourceLocalFilePath = _syncPal->localPath() / relativeSourceLocalFilePath;
-        job = std::make_shared<LocalMoveJob>(absoluteSourceLocalFilePath, absoluteDestLocalFilePath);
+        SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
+        job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
     } else {
         try {
             // Target side is remote, so affected node is on local side.
@@ -1265,12 +1265,12 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
             }
 
             relativeDestLocalFilePath = parentNode->getPath() / syncOp->newName();
-            relativeSourceLocalFilePath = correspondingNode->getPath();
+            relativeOriginLocalFilePath = correspondingNode->getPath();
             absoluteDestLocalFilePath = _syncPal->localPath() / relativeDestLocalFilePath;
-            SyncPath absoluteSourceLocalFilePath = _syncPal->localPath() / relativeSourceLocalFilePath;
-            job = std::make_shared<LocalMoveJob>(absoluteSourceLocalFilePath, absoluteDestLocalFilePath);
+            SyncPath absoluteOriginLocalFilePath = _syncPal->localPath() / relativeOriginLocalFilePath;
+            job = std::make_shared<LocalMoveJob>(absoluteOriginLocalFilePath, absoluteDestLocalFilePath);
 
-            if (relativeSourceLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
+            if (relativeOriginLocalFilePath.parent_path() == relativeDestLocalFilePath.parent_path()) {
                 // This is just a rename
                 job = std::make_shared<RenameJob>(_syncPal->driveDbId(),
                                                   correspondingNode->id().has_value() ? *correspondingNode->id() : std::string(),
@@ -1349,7 +1349,7 @@ bool ExecutorWorker::generateMoveJob(SyncOpPtr syncOp) {
             _syncPal->addError(err);
         }
 
-        _syncPal->setProgressComplete(relativeSourceLocalFilePath, SyncFileStatus::Success);
+        _syncPal->setProgressComplete(relativeOriginLocalFilePath, SyncFileStatus::Success);
         return true;
     }
 
