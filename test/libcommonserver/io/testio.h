@@ -102,28 +102,29 @@ class TestIo : public CppUnit::TestFixture {
 #if defined(_WIN32)
         void testCreateJunction(void);
 #endif
-        void testCheckIfFileIsDehydrated(void);
-        void testCheckSetAndGetRights(void);
+        void testCheckIfFileIsDehydrated();
+        void testCheckSetAndGetRights();
 
     private:
-        void testGetItemTypeSimpleCases(void);
-        void testGetItemTypeEdgeCases(void);
-        void testGetItemTypeAllBranches(void);
+        void testGetItemTypeSimpleCases();
+        void testGetItemTypeEdgeCases();
+        void testGetItemTypeAllBranches();
 
-        void testGetFileSizeSimpleCases(void);
-        void testGetFileSizeAllBranches(void);
+        void testGetFileSizeSimpleCases();
+        void testGetFileSizeAllBranches();
 
-        void testCheckIfPathExistsSimpleCases(void);
+        void testCheckIfPathExistsSimpleCases();
+        void testCheckIfPathExistWithDistinctEncodings();
 
-        void testCheckIfPathExistsWithSameNodeIdSimpleCases(void);
+        void testCheckIfPathExistsWithSameNodeIdSimpleCases();
 
-        void testCheckDirectoryIteratorNonExistingPath(void);
-        void testCheckDirectoryIteratorExistingPath(void);
-        void testCheckDirectoryIteratotNextAfterEndOfDir(void);
-        void testCheckDirectoryIteratorPermission(void);
-        void testCheckDirectoryRecursive(void);
-        void testCheckDirectoryIteratorUnexpectedDelete(void);
-        void testCheckDirectoryPermissionLost(void);
+        void testCheckDirectoryIteratorNonExistingPath();
+        void testCheckDirectoryIteratorExistingPath();
+        void testCheckDirectoryIteratotNextAfterEndOfDir();
+        void testCheckDirectoryIteratorPermission();
+        void testCheckDirectoryRecursive();
+        void testCheckDirectoryIteratorUnexpectedDelete();
+        void testCheckDirectoryPermissionLost();
 
     private:
         IoHelperTests *_testObj;
