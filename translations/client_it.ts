@@ -1853,6 +1853,11 @@ Per favore, utilizza il seguente link per inviare i log al supporto: &lt;a style
         <translation>Il nome del file/directory coincide con il nome di un altro elemento nella stessa directory.&lt;br&gt;Questo elemento è temporaneamente inserito nella lista nera. Valuta la possibilità di rimuovere gli elementi duplicati.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="735"/>
+        <source>Either you are not allowed to create an item, or another item already exists with the same name.&lt;br&gt;The item has been excluded from synchronization.</source>
+        <translation>O non si è autorizzati a creare un elemento, oppure esiste già un altro elemento con lo stesso nome.&lt;br&gt;L&apos;elemento è stato escluso dalla sincronizzazione.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="740"/>
         <source>You are not allowed to edit item.&lt;br&gt;The file containing your modifications has been renamed and excluded from synchronization.</source>
         <translation>Non disponi dell&apos;autorizzazione per modificare l&apos;elemento.&lt;br&gt;Il file contenente le tue modifiche è stato rinominato ed escluso dalla sincronizzazione.</translation>
@@ -1916,11 +1921,6 @@ Per favore, utilizza il seguente link per inviare i log al supporto: &lt;a style
         <location filename="../src/gui/parametersdialog.cpp" line="813"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Hai superato la tua quota. Aumenta la tua quota di spazio per riattivare il caricamento dei file.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="735"/>
-        <source>You are not allowed to create item or another one already exist with the same name.&lt;br&gt;The item has been excluded from synchronization.</source>
-        <translation>Non è consentito creare un elemento o ne esiste già un altro con lo stesso nome.&lt;br&gt;L&apos;elemento è stato escluso dalla sincronizzazione.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="765"/>

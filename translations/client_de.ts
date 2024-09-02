@@ -1855,6 +1855,11 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <translation>Der Datei-/Verzeichnisname stimmt mit dem Namen eines anderen Elements im selben Verzeichnis überein.&lt;br&gt;Dieses Element steht vorübergehend auf der schwarzen Liste. Ziehen Sie in Erwägung, doppelte Elemente zu entfernen.</translation>
     </message>
     <message>
+        <location filename="../src/gui/parametersdialog.cpp" line="735"/>
+        <source>Either you are not allowed to create an item, or another item already exists with the same name.&lt;br&gt;The item has been excluded from synchronization.</source>
+        <translation>Entweder ist es Ihnen nicht erlaubt, einen Eintrag zu erstellen, oder es existiert bereits ein anderer Eintrag mit demselben Namen.&lt;br&gt;Der Eintrag wurde von der Synchronisierung ausgeschlossen.</translation>
+    </message>
+    <message>
         <location filename="../src/gui/parametersdialog.cpp" line="740"/>
         <source>You are not allowed to edit item.&lt;br&gt;The file containing your modifications has been renamed and excluded from synchronization.</source>
         <translation>Sie dürfen keine Elemente bearbeiten. &lt;br/&gt;Die Datei mit Ihren Änderungen wurde umbenannt und von der Synchronisierung ausgeschlossen.</translation>
@@ -1918,11 +1923,6 @@ Bitte verwenden Sie den folgenden Link, um die Protokolle an den Support zu send
         <location filename="../src/gui/parametersdialog.cpp" line="813"/>
         <source>You have exceeded your quota. Increase your space quota to re-enable file upload.</source>
         <translation>Sie haben Ihr Kontingent überschritten. Erhöhen Sie Ihr Speicherplatzkontingent, um den Datei-Upload wieder zu aktivieren.</translation>
-    </message>
-    <message>
-        <location filename="../src/gui/parametersdialog.cpp" line="735"/>
-        <source>You are not allowed to create item or another one already exist with the same name.&lt;br&gt;The item has been excluded from synchronization.</source>
-        <translation>Es ist nicht erlaubt, ein Element zu erstellen, oder es existiert bereits ein anderes Element mit demselben Namen.&lt;br&gt;Das Element wurde von der Synchronisierung ausgeschlossen.</translation>
     </message>
     <message>
         <location filename="../src/gui/parametersdialog.cpp" line="765"/>
