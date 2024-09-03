@@ -272,15 +272,14 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
         FSOpPtr createOp;
         _operationSet->getOp(createOpId, createOp);
-        const auto normalizedPath = createOp->path();
 
         std::pair<FSOpPtrMap::iterator, bool> insertionResult;
         switch (createOp->objectType()) {
             case NodeType::File:
-                insertionResult = _createFileOperationSet.try_emplace(normalizedPath, createOp);
+                insertionResult = _createFileOperationSet.try_emplace(createOp->path(), createOp);
                 break;
             case NodeType::Directory:
-                insertionResult = createDirectoryOperationSet.try_emplace(normalizedPath, createOp);
+                insertionResult = createDirectoryOperationSet.try_emplace(createOp->path(), createOp);
                 break;
             default:
                 break;
@@ -288,14 +287,9 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
 
         if (!insertionResult.second) {
             // Failed to insert Create operation. A full rebuild of the snapshot is required.
-            //
-            // Two issues have been identified:
-            // - Either (1) the operating system missed a delete operation, in which case a snapshot rebuild is both
-            // required and sufficient.
-            // - Or (2) the file system allows file or directory names with different encodings but the same normalization,
-            // in which case an action of the user is required. In such a situation, we trigger a snapshot rebuild
-            // on the first pass in this function. Then we temporarily blacklist the item during the second pass and
-            // display an error message.
+            // The following issue has been identified: the operating system missed a delete operation, in which case a snapshot
+            // rebuild is both required and sufficient.
+
 
             LOGW_SYNCPAL_WARN(_logger, _side << L" update tree: Operation Create already exists on item with "
                                              << Utility::formatSyncPath(createOp->path()).c_str());
@@ -304,18 +298,6 @@ ExitCode UpdateTreeWorker::handleCreateOperationsWithSamePath() {
             sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "UpdateTreeWorker::step4",
                                                                 "2 Create operations detected on the same item"));
 #endif
-
-            if (_syncPal) {  // `_syncPal`can be set with `nullptr` in tests.
-                _syncPal->increaseErrorCount(createOp->nodeId(), createOp->objectType(), createOp->path(), _side);
-                if (_syncPal->getErrorCount(createOp->nodeId(), _side) > 1) {
-                    // We are in situation (2), i.e. duplicate normalized names.
-                    // We display to the user an explicit error message about item name inconsistency.
-                    Error err(_syncPal->syncDbId(), "", createOp->nodeId(), createOp->objectType(), createOp->path(),
-                              ConflictType::None, InconsistencyType::DuplicateNames, CancelType::None);
-                    _syncPal->addError(err);
-                }
-            }
-
             isSnapshotRebuildRequired = true;
         }
     }
