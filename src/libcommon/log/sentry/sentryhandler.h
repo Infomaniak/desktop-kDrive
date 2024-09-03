@@ -91,9 +91,9 @@ class SentryHandler {
         void handleEventsRateLimit(SentryEvent &event, bool &toUpload);
 
         // Return true if last capture is older than minUploadInterval
-        bool eventLastCaptureIsOld(const SentryEvent &event) const;
+        bool lastEventCaptureIsOutdated(const SentryEvent &event) const;
         // Return true if last upload is older than minUploadInterval
-        bool eventLastUploadIsOld(const SentryEvent &event) const;
+        bool lastEventUploadIsOutdated(const SentryEvent &event) const;
 
         // Escalate error level
         void escalateErrorLevel(SentryEvent &event);

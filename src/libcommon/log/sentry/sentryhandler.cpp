@@ -144,7 +144,7 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     auto &storedEvent = it->second;
     storedEvent.captureCount++;
 
-    if (eventLastCaptureIsOld(storedEvent)) {  // Reset the capture count if the last capture was more than 10 minutes ago
+    if (lastEventCaptureIsOutdated(storedEvent)) {  // Reset the capture count if the last capture was more than 10 minutes ago
         storedEvent.captureCount = 0;
         storedEvent.lastCapture = system_clock::now();
         return;
@@ -155,27 +155,21 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
         return;
     }
 
-    if (!eventLastUploadIsOld(storedEvent)) {  // Rate limit reached for this event wait 10 minutes before sending it again
+    if (!lastEventUploadIsOutdated(storedEvent)) {  // Rate limit reached for this event wait 10 minutes before sending it again
         toUpload = false;
         return;
     }
     escalateErrorLevel(storedEvent);
 }
 
-bool SentryHandler::eventLastCaptureIsOld(const SentryEvent &event) const {
+bool SentryHandler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    if (event.lastCapture + minutes(SentryMinUploadIntervaOnRateLimit) >= system_clock::now()) {
-        return true;
-    }
-    return false;
+    return (event.lastCapture + minutes(SentryMinUploadIntervaOnRateLimit)) >= system_clock::now();
 }
 
-bool SentryHandler::eventLastUploadIsOld(const SentryEvent &event) const {
+bool SentryHandler::lastEventUploadIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    if (event.lastUpload + minutes(SentryMinUploadIntervaOnRateLimit) >= system_clock::now()) {
-        return true;
-    }
-    return false;
+    return (event.lastUpload + minutes(SentryMinUploadIntervaOnRateLimit)) >= system_clock::now();
 }
 
 void SentryHandler::escalateErrorLevel(SentryEvent &event) {
