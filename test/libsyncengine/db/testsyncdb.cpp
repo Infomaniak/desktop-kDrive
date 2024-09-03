@@ -70,7 +70,7 @@ void TestSyncDb::setUp() {
     std::filesystem::remove(syncDbPath);
 
     // Create DB
-    _testObj = new SyncDbMock(syncDbPath.string(), "3.4.0");
+    _testObj = new SyncDb(syncDbPath.string(), "3.4.0");
     _testObj->setAutoDelete(true);
 }
 
@@ -191,8 +191,6 @@ std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &loca
          */
         bool constraintError = false;
         DbNodeId dbNodeId;
-
-        _testObj->setNormalizationEnabled(false); // Will not normalize names in DB automatically.
 
         _testObj->insertNode(node0, dbNodeId, constraintError);
         node0.setNodeId(dbNodeId);
