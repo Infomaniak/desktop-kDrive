@@ -44,6 +44,14 @@ DbNode::DbNode(int64_t nodeId, std::optional<DbNodeId> parentNodeId, const SyncN
     assert(nameRemote == Utility::normalizedSyncName(nameRemote));
 }
 
+DbNode::DbNode(std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
+               const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
+               std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
+               std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
+               const std::optional<std::string> &checksum, SyncFileStatus status, bool syncing)
+    : DbNode(0, parentNodeId, nameLocal, nameRemote, nodeIdLocal, nodeIdRemote, created, lastModifiedLocal, lastModifiedRemote,
+             type, size, checksum, status, syncing) {}
+
 DbNode::DbNode()
     : _nodeId(0),
       _parentNodeId(0),
