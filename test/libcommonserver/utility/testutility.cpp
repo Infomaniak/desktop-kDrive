@@ -398,6 +398,7 @@ void TestUtility::testNormalizedSyncName() {
 
 #ifdef _WIN32
     // The two Unicode normalizations coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName(L"") == Utility::normalizedSyncName(L"", Utility::UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(Utility::normalizedSyncName(L"a") == Utility::normalizedSyncName(L"a", Utility::UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(Utility::normalizedSyncName(L"@") == Utility::normalizedSyncName(L"@", Utility::UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(Utility::normalizedSyncName(L"$") == Utility::normalizedSyncName(L"$", Utility::UnicodeNormalization::NFD));
@@ -422,6 +423,7 @@ void TestUtility::testNormalizedSyncName() {
                    Utility::normalizedSyncName(L"aöe", Utility::UnicodeNormalization::NFD));
 #else
     // The two Unicode normalizations coincide.
+    CPPUNIT_ASSERT(Utility::normalizedSyncName("") == Utility::normalizedSyncName("", Utility::UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(Utility::normalizedSyncName("a") == Utility::normalizedSyncName("a", Utility::UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(Utility::normalizedSyncName("@") == Utility::normalizedSyncName("@", Utility::UnicodeNormalization::NFD));
     CPPUNIT_ASSERT(Utility::normalizedSyncName("$") == Utility::normalizedSyncName("$", Utility::UnicodeNormalization::NFD));
