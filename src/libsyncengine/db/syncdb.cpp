@@ -649,23 +649,19 @@ bool SyncDb::insertNode(const DbNode &node, DbNodeId &dbNodeId, bool &constraint
     int errId;
     std::string error;
 
-    ASSERT(queryResetAndClearBindings(queryId));
-    ASSERT(queryBindValue(queryId, 1, (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
-
-
+    ASSERT(queryResetAndClearBindings(queryId))
+    ASSERT(queryBindValue(queryId, 1, (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())))
     updateNames(queryId, node.nameLocal(), node.nameRemote());
-
-    ASSERT(queryBindValue(queryId, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())));
-    ASSERT(queryBindValue(queryId, 5, (node.nodeIdRemote() ? dbtype(node.nodeIdRemote().value()) : std::monostate())));
-    ASSERT(queryBindValue(queryId, 6, (node.created() ? dbtype(node.created().value()) : std::monostate())));
-    ASSERT(queryBindValue(queryId, 7, (node.lastModifiedLocal() ? dbtype(node.lastModifiedLocal().value()) : std::monostate())));
-    ASSERT(queryBindValue(queryId, 8,
-                          (node.lastModifiedRemote() ? dbtype(node.lastModifiedRemote().value()) : std::monostate())));
-    ASSERT(queryBindValue(queryId, 9, static_cast<int>(node.type())));
-    ASSERT(queryBindValue(queryId, 10, node.size()));
-    ASSERT(queryBindValue(queryId, 11, (node.checksum() ? dbtype(node.checksum().value()) : std::monostate())));
-    ASSERT(queryBindValue(queryId, 12, static_cast<int>(node.status())));
-    ASSERT(queryBindValue(queryId, 13, static_cast<int>(node.syncing())));
+    ASSERT(queryBindValue(queryId, 4, (node.nodeIdLocal() ? dbtype(node.nodeIdLocal().value()) : std::monostate())))
+    ASSERT(queryBindValue(queryId, 5, (node.nodeIdRemote() ? dbtype(node.nodeIdRemote().value()) : std::monostate())))
+    ASSERT(queryBindValue(queryId, 6, (node.created() ? dbtype(node.created().value()) : std::monostate())))
+    ASSERT(queryBindValue(queryId, 7, (node.lastModifiedLocal() ? dbtype(node.lastModifiedLocal().value()) : std::monostate())))
+    ASSERT(queryBindValue(queryId, 8, (node.lastModifiedRemote() ? dbtype(node.lastModifiedRemote().value()) : std::monostate())))
+    ASSERT(queryBindValue(queryId, 9, static_cast<int>(node.type())))
+    ASSERT(queryBindValue(queryId, 10, node.size()))
+    ASSERT(queryBindValue(queryId, 11, (node.checksum() ? dbtype(node.checksum().value()) : std::monostate())))
+    ASSERT(queryBindValue(queryId, 12, static_cast<int>(node.status())))
+    ASSERT(queryBindValue(queryId, 13, static_cast<int>(node.syncing())))
 
     if (!queryExecAndGetRowId(queryId, dbNodeId, errId, error)) {
         LOG_WARN(_logger, "Error running query: " << queryId);
@@ -681,11 +677,7 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
 
     if (!checkNodeIds(node)) return false;
 
-    ASSERT(queryResetAndClearBindings(UPDATE_NODE_REQUEST_ID));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 1,
-                          (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, Utility::normalizedSyncName(node.nameLocal())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 3, Utility::normalizedSyncName(node.nameRemote())));
+    ASSERT(queryResetAndClearBindings(UPDATE_NODE_REQUEST_ID))
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 1,
                           (node.parentNodeId() ? dbtype(node.parentNodeId().value()) : std::monostate())))
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 2, node.nameLocal()))
@@ -698,13 +690,13 @@ bool SyncDb::updateNode(const DbNode &node, bool &found) {
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 7,
                           (node.lastModifiedLocal() ? dbtype(node.lastModifiedLocal().value()) : std::monostate())))
     ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 8,
-                          (node.lastModifiedRemote() ? dbtype(node.lastModifiedRemote().value()) : std::monostate())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 9, static_cast<int>(node.type())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 10, node.size()));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 11, (node.checksum() ? dbtype(node.checksum().value()) : std::monostate())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 12, static_cast<int>(node.status())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 13, static_cast<int>(node.syncing())));
-    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 14, node.nodeId()));
+                          (node.lastModifiedRemote() ? dbtype(node.lastModifiedRemote().value()) : std::monostate())))
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 9, static_cast<int>(node.type())))
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 10, node.size()))
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 11, (node.checksum() ? dbtype(node.checksum().value()) : std::monostate())))
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 12, static_cast<int>(node.status())))
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 13, static_cast<int>(node.syncing())))
+    ASSERT(queryBindValue(UPDATE_NODE_REQUEST_ID, 14, node.nodeId()))
 
     int errId = -1;
     std::string error;
