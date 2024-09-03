@@ -26,7 +26,7 @@
 
 namespace KDC {
 
-enum class SentryLevel {  // Not defined in types.h as we don't want to include sentry.h in types.h
+enum class SentryLevel { // Not defined in types.h as we don't want to include sentry.h in types.h
     Debug = SENTRY_LEVEL_DEBUG,
     Info = SENTRY_LEVEL_INFO,
     Warning = SENTRY_LEVEL_WARNING,
@@ -51,13 +51,24 @@ inline std::string toString(SentryLevel level) {
 
 class SentryHandler {
     public:
-        enum class SentryProject { Server, Client, Deactivated };  // Only used for initialization, don't need to be in types.h
+        enum class SentryProject { Server, Client, Deactivated }; // Only used for initialization, don't need to be in types.h
 
         ~SentryHandler();
         static std::shared_ptr<SentryHandler> instance();
         static void init(SentryProject project, int breadCrumbsSize = 100);
         void setAuthenticatedUser(const SentryUser &user);
         void setGlobalConfidentialityLevel(SentryConfidentialityLevel level);
+        /*   If the same event has been captured more than 10 times in the last 10 minutes, it will be flagged as a rate limited
+         *     event.
+         *   If a rate limited event is not seen for 10 minutes, it will be unflagged.
+         * 
+         *   Rate limited events:
+         *   - Will see their level escalated to Error
+         *   - Will be upload to Sentry only if the last upload is older than 10 minutes else it will just increment the capture
+         *      count.
+         *   - The event sent to Sentry will have a message indicating that the event has been rate limited.(see:
+         *      void SentryHandler::escalateSentryEvent(SentryEvent &event))
+         */
         void captureMessage(SentryLevel level, const std::string &title, std::string message,
                             const SentryUser &user = SentryUser());
 
@@ -87,7 +98,10 @@ class SentryHandler {
                 unsigned int captureCount = 0;
         };
 
-        // Set Update event counter, if needed the event.message/errorLevel will be updated (escalated)
+        /* This method is called before uploading an event to Sentry.
+         *  It will check if the event should be uploaded or not. (see: void SentryHandler::captureMessage(...))
+         *  The event passed as parameter will be updated if it is rate limited (level and message).
+         */
         void handleEventsRateLimit(SentryEvent &event, bool &toUpload);
 
         // Return true if last capture is older than minUploadInterval
@@ -96,7 +110,7 @@ class SentryHandler {
         bool lastEventUploadIsOutdated(const SentryEvent &event) const;
 
         // Escalate error level
-        void escalateErrorLevel(SentryEvent &event);
+        void escalateSentryEvent(SentryEvent &event);
 
         /* Update the effective sentry user.
         If authentication type is Anonymous, the user parameter will be ignored and the
@@ -110,7 +124,7 @@ class SentryHandler {
         bool _isSentryActivated = false;
         SentryUser _authenticatedUser;
         struct StringHash {
-                using is_transparent = void;  // Enables heterogeneous operations.
+                using is_transparent = void; // Enables heterogeneous operations.
                 std::size_t operator()(std::string_view sv) const {
                     std::hash<std::string_view> hasher;
                     return hasher(sv);
@@ -118,7 +132,7 @@ class SentryHandler {
         };
 
         std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
-        SentryConfidentialityLevel _globalConfidentialityLevel = SentryConfidentialityLevel::Anonymous;  // Default value
+        SentryConfidentialityLevel _globalConfidentialityLevel = SentryConfidentialityLevel::Anonymous; // Default value
         SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::None;
 };
-}  // namespace KDC
+} // namespace KDC

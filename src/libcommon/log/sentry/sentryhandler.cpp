@@ -147,11 +147,13 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     if (lastEventCaptureIsOutdated(storedEvent)) {  // Reset the capture count if the last capture was more than 10 minutes ago
         storedEvent.captureCount = 0;
         storedEvent.lastCapture = system_clock::now();
+        it->second.lastUpload = system_clock::now();
         return;
     }
 
     storedEvent.lastCapture = system_clock::now();
     if (storedEvent.captureCount < SentryMaxCaptureCountBeforeRateLimit) {  // Rate limit not reached, we can send the event
+        it->second.lastUpload = system_clock::now();
         return;
     }
 
@@ -159,7 +161,8 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
         toUpload = false;
         return;
     }
-    escalateErrorLevel(storedEvent);
+    it->second.lastUpload = system_clock::now();
+    escalateSentryEvent(storedEvent);
 }
 
 bool SentryHandler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
@@ -172,7 +175,7 @@ bool SentryHandler::lastEventUploadIsOutdated(const SentryEvent &event) const {
     return (event.lastUpload + minutes(SentryMinUploadIntervaOnRateLimit)) >= system_clock::now();
 }
 
-void SentryHandler::escalateErrorLevel(SentryEvent &event) {
+void SentryHandler::escalateSentryEvent(SentryEvent &event) {
     event.level = SentryLevel::Error;
     event.message += " (Rate limit reached: " + std::to_string(event.captureCount) +
                      " captures since last app start. Level escalated from " + toString(event.level) + " to Error)";
