@@ -44,8 +44,9 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
         return;
     }
 
+    _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
+
     if (project == SentryProject::Disable) {
-        _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
         _instance->_isSentryActivated = false;
         return;
     }
@@ -80,7 +81,6 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
         sentry_options_set_environment(options, "dev_unknown");
 #endif
     } else if (environment.empty()) {  // Disable sentry
-        _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
         _instance->_isSentryActivated = false;
         return;
     } else {
@@ -90,7 +90,6 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
 
     // Init sentry
     ASSERT(sentry_init(options) == 0);
-    _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
     _instance->_isSentryActivated = true;
 }
 
