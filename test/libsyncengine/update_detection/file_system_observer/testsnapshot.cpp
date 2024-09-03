@@ -17,6 +17,7 @@
  */
 
 #include "testsnapshot.h"
+#include "test_utility/testhelpers.h"
 
 #include "db/syncdb.h"
 #include "requests/parameterscache.h"
@@ -113,6 +114,31 @@ void TestSnapshot::testSnapshot() {
     // Reset snapshot
     snapshot.init();
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), snapshot.nbItems());
+}
+
+void TestSnapshot::testSnapshotInsertionWithDifferentEncodings() {
+    const NodeId rootNodeId = *SyncDb::driveRootNode().nodeIdLocal();
+
+    const DbNode dummyRootNode(0, std::nullopt, Str("Local Drive"), SyncName(), "1", "1", std::nullopt, std::nullopt,
+                               std::nullopt, NodeType::Directory, 0, std::nullopt);
+    Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
+
+    const SnapshotItem nfcItem("A", rootNodeId, testhelpers::makeNfcSyncName(), 1640995201, -1640995201, NodeType::Directory,
+                               123);
+    const SnapshotItem nfdItem("B", rootNodeId, testhelpers::makeNfdSyncName(), 1640995201, -1640995201, NodeType::Directory,
+                               123);
+    {
+        snapshot.updateItem(nfcItem);
+        SyncPath syncPath;
+        snapshot.path("A", syncPath);
+        CPPUNIT_ASSERT_EQUAL(SyncPath(testhelpers::makeNfcSyncName()), syncPath);
+    }
+    {
+        snapshot.updateItem(nfdItem);
+        SyncPath syncPath;
+        snapshot.path("B", syncPath);
+        CPPUNIT_ASSERT_EQUAL(SyncPath(testhelpers::makeNfdSyncName()), syncPath);
+    }
 }
 
 }  // namespace KDC

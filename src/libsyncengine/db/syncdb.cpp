@@ -1817,7 +1817,7 @@ bool SyncDb::ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nod
     return true;
 }
 
-// Returns database ID for the ID nodeId of snapshot
+// Returns database ID for the ID nodeId of the snapshot from replica `side`
 bool SyncDb::dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found) {
     const std::scoped_lock lock(_mutex);
     found = false;
@@ -1845,7 +1845,7 @@ bool SyncDb::dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bo
     return true;
 }
 
-// Returns the ID of snapshot for the database ID dbNodeId
+// Returns the ID of the `side` snapshot for the database ID dbNodeId
 bool SyncDb::id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found) {
     const std::lock_guard<std::mutex> lock(_mutex);
 

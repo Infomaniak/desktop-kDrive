@@ -17,6 +17,7 @@
  */
 
 #include "testupdatetreeworker.h"
+#include "test_utility/testhelpers.h"
 
 #include <requests/parameterscache.h>
 
@@ -320,16 +321,34 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
 void TestUpdateTreeWorker::testHandleCreateOperationsWithSamePath() {
     setUpUpdateTree();
 
-    // Regular case: success
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id51", NodeType::File, 1654798336, 1654798336,
-                                                          12345, "Dir 5/File 5.1"));
-    CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->handleCreateOperationsWithSamePath());
+    {  // Regular case: success
+        _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id51", NodeType::File, 1654798336,
+                                                              1654798336, 12345, "Dir 5/File 5.1"));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->handleCreateOperationsWithSamePath());
 
 
-    // Duplicate paths imply failure
-    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id51bis", NodeType::File, 1654798336,
-                                                          1654798336, 12345, "Dir 5/File 5.1"));
-    CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, _updateTreeWorker->handleCreateOperationsWithSamePath());
+        // Duplicate paths imply failure
+        _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id51bis", NodeType::File, 1654798336,
+                                                              1654798336, 12345, "Dir 5/File 5.1"));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::DataError, _updateTreeWorker->handleCreateOperationsWithSamePath());
+    }
+
+    {
+        _operationSet->clear();
+
+        // Regular case: success
+        _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id6nfc", NodeType::File, 1654798336,
+                                                              1654798336, 12345,
+                                                              SyncPath("Dir 6") / testhelpers::makeNfcSyncName()));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->handleCreateOperationsWithSamePath());
+
+
+        // Duplicate paths but distinct name encodings: success
+        _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id6nfd", NodeType::File, 1654798336,
+                                                              1654798336, 12345,
+                                                              SyncPath("Dir 6") / testhelpers::makeNfdSyncName()));
+        CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->handleCreateOperationsWithSamePath());
+    }
 }
 
 
