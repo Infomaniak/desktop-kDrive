@@ -157,7 +157,7 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
         return;
     }
 
-    if (!lastEventUploadIsOutdated(storedEvent)) {  // Rate limit reached for this event wait 10 minutes before sending it again
+    if (!lastEventUploadIsOutdated(storedEvent)) {  // Rate limit reached for this event: wait 10 minutes before sending it again
         toUpload = false;
         return;
     }
