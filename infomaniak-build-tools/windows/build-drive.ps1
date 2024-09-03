@@ -303,7 +303,7 @@ $cmake = ('cmake {0}'-f($args -Join ' '))
 Write-Host $cmake
 Invoke-Expression $cmake
 
-$buildArgs += @('--build -j6', $buildPath, '--target all install')
+$buildArgs += @('--build', $buildPath, '-j 8 --target all install')
 $buildCall = ('cmake {0}' -f ($buildArgs -Join ' '))
 
 Write-Host $buildCall
