@@ -175,6 +175,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; };
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
+        [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
+
         // TODO : not ideal, to be refactored
         bool existOnServer(const SyncPath &path) const;
         bool canShareItem(const SyncPath &path) const;
@@ -257,6 +259,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Workers
         std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; };
+        void setComputeFSOperationsWorker(std::shared_ptr<ComputeFSOperationWorker> worker) {
+            _computeFSOperationsWorker = worker;
+        }
 
     private:
         log4cplus::Logger _logger;
@@ -344,6 +349,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
         std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
+        const std::shared_ptr<const Snapshot> snapshotCopy(ReplicaSide side) { return snapshot(side, true); };
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
 

@@ -19,11 +19,12 @@
 #pragma once
 
 #include "testincludes.h"
-#include "update_detection/update_detector/updatetreeworker.h"
 
 using namespace CppUnit;
 
 namespace KDC {
+class UpdateTree;
+class FSOperationSet;
 
 class TestUpdateTree : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestUpdateTree);
@@ -31,6 +32,7 @@ class TestUpdateTree : public CppUnit::TestFixture {
         CPPUNIT_TEST(testIsParentValid);
         CPPUNIT_TEST(testAll);
         CPPUNIT_TEST(testChangeEvents);
+        CPPUNIT_TEST(testInsertionOfFileNamesWithDifferentEncodings);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -42,6 +44,7 @@ class TestUpdateTree : public CppUnit::TestFixture {
         void testIsParentValid();
         void testAll();
         void testChangeEvents();
+        void testInsertionOfFileNamesWithDifferentEncodings();
 
     private:
         UpdateTree *_myTree;

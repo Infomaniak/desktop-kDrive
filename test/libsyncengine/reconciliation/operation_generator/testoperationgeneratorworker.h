@@ -31,6 +31,7 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST(testCreateOpWithPseudoConflict);
         CPPUNIT_TEST(testMoveOp);
         CPPUNIT_TEST(testMoveOpWithPseudoConflict);
+        CPPUNIT_TEST(testMoveOpWithPseudoConflictButDifferentEncoding);
         CPPUNIT_TEST(testEditOp);
         CPPUNIT_TEST(testEditOpWithPseudoConflict);
         CPPUNIT_TEST(testDeleteOp);
@@ -47,6 +48,7 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture {
         void testCreateOpWithPseudoConflict();
         void testMoveOp();
         void testMoveOpWithPseudoConflict();
+        void testMoveOpWithPseudoConflictButDifferentEncoding();
         void testEditOp();
         void testEditOpWithPseudoConflict();
         void testDeleteOp();

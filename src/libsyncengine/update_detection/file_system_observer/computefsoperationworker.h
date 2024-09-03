@@ -45,22 +45,32 @@ class ComputeFSOperationWorker : public ISyncWorker {
         virtual void execute() override;
 
     private:
-        ExitCode exploreDbTree(std::unordered_set<NodeId> &localIdsSet, std::unordered_set<NodeId> &remoteIdsSet);
+        using NodeIdSet = std::unordered_set<NodeId>;
+        using DbNodeIdSet = std::unordered_set<DbNodeId>;
+        // Detect changes based on the database records: delete, move and edit operations
+        ExitCode inferChangesFromDb(NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet);
+        ExitCode inferChangesFromDb(const NodeType nodeType, NodeIdSet &localIdsSet, NodeIdSet &remoteIdsSet,
+                                    DbNodeIdSet &remainingDbIds);  // Restrict change detection to a node type.
+        ExitCode inferChangeFromDbNode(const ReplicaSide side, const DbNode &dbNode, const SyncPath &localDbPath,
+                                       const SyncPath &remoteDbPath);  // Detect change for a single node on a specific side.
+
+        // Detect changes based on the snapshot records: create operations
         ExitCode exploreSnapshotTree(ReplicaSide side, const std::unordered_set<NodeId> &idsSet);
+
         ExitCode checkFileIntegrity(const DbNode &dbNode);
 
-        bool isExcludedFromSync(const std::shared_ptr<Snapshot> snapshot, const ReplicaSide side, const NodeId &nodeId,
+        bool isExcludedFromSync(const std::shared_ptr<const Snapshot> snapshot, const ReplicaSide side, const NodeId &nodeId,
                                 const SyncPath &path, NodeType type, int64_t size);
-        bool isInUnsyncedList(const NodeId &nodeId, const ReplicaSide side);  // Search parent in DB
-        bool isInUnsyncedList(const std::shared_ptr<Snapshot> snapshot, const NodeId &nodeId, const ReplicaSide side,
-                              bool tmpListOnly = false);  // Search parent in snapshot
-        bool isWhitelisted(const std::shared_ptr<Snapshot> snapshot, const NodeId &nodeId);
-        bool isTooBig(const std::shared_ptr<Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
-        bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type);
+        bool isInUnsyncedList(const NodeId &nodeId, const ReplicaSide side) const;  // Search parent in DB
+        bool isInUnsyncedList(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId, const ReplicaSide side,
+                              bool tmpListOnly = false) const;  // Search parent in snapshot
+        bool isWhitelisted(const std::shared_ptr<const Snapshot> snapshot, const NodeId &nodeId) const;
+        bool isTooBig(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId, int64_t size);
+        bool isPathTooLong(const SyncPath &path, const NodeId &nodeId, NodeType type) const;
 
         ExitCode checkIfOkToDelete(ReplicaSide side, const SyncPath &relativePath, const NodeId &nodeId, bool &isExcluded);
 
-        void deleteChildOpRecursively(const std::shared_ptr<Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
+        void deleteChildOpRecursively(const std::shared_ptr<const Snapshot> remoteSnapshot, const NodeId &remoteNodeId,
                                       std::unordered_set<NodeId> &tmpTooBigList);
 
         void updateUnsyncedList();
@@ -72,13 +82,14 @@ class ComputeFSOperationWorker : public ISyncWorker {
         const std::shared_ptr<Snapshot> _remoteSnapshot;
         Sync _sync;
 
-        std::unordered_set<NodeId> _remoteUnsyncedList;
-        std::unordered_set<NodeId> _remoteTmpUnsyncedList;
-        std::unordered_set<NodeId> _localTmpUnsyncedList;
+        NodeIdSet _remoteUnsyncedList;
+        NodeIdSet _remoteTmpUnsyncedList;
+        NodeIdSet _localTmpUnsyncedList;
 
         std::unordered_set<SyncPath, hashPathFunction> _dirPathToDeleteSet;
 
-        std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap; // File size mismatch checks are only enabled when env var: KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
+        std::unordered_map<NodeId, SyncPath> _fileSizeMismatchMap;  // File size mismatch checks are only enabled when env var:
+                                                                    // KDRIVE_ENABLE_FILE_SIZE_MISMATCH_DETECTION is set
 
         void addFolderToDelete(const SyncPath &path);
         bool pathInDeletedFolder(const SyncPath &path);

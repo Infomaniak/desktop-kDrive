@@ -124,7 +124,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
         bool selectAppState(AppStateKey key, AppStateValue &value, bool &found);
-        bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found);  // update or insert
+        bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found); // update or insert
 
     private:
         friend class TestParmsDb;
@@ -148,4 +148,4 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool updateExclusionApps();
 #endif
 };
-}  // namespace KDC
+} // namespace KDC

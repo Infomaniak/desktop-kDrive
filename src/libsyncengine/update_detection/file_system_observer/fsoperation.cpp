@@ -34,7 +34,7 @@ FSOperation::FSOperation(OperationType operationType, const NodeId &nodeId, Node
       _createdAt(createdAt),
       _lastModified(lastModified),
       _size(size),
-      _path(Utility::normalizedSyncPath(path)),
-      _destinationPath(Utility::normalizedSyncPath(destinationPath)) {}
+      _path(path),
+      _destinationPath(destinationPath) {}
 
 }  // namespace KDC

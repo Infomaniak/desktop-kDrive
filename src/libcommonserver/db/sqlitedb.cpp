@@ -149,13 +149,12 @@ void SqliteDb::close() {
         // Delete DB
         std::error_code ec;
         if (!std::filesystem::remove(_dbPath, ec)) {
-            if (ec.value() != 0) {
-                LOGW_WARN(_logger, L"Failed to check if path exists " << Path2WStr(_dbPath).c_str() << L": "
-                                                                      << Utility::s2ws(ec.message()).c_str() << L" ("
-                                                                      << ec.value() << L")");
+            if (ec) {
+                LOGW_WARN(_logger, L"Failed to check if  " << Utility::formatSyncPath(_dbPath).c_str() << L" exists: "
+                                                           << Utility::formatStdError(ec).c_str());
             }
 
-            LOG_WARN(_logger, "Failed to remove db file");
+            LOG_WARN(_logger, "Failed to remove db file.");
         }
     }
 }

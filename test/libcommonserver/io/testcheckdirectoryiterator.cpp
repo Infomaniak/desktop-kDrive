@@ -323,4 +323,4 @@ void TestIo::testCheckDirectoryPermissionLost() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC
