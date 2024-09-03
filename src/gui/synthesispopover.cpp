@@ -500,8 +500,7 @@ void SynthesisPopover::initUI() {
     mainVBox->setStretchFactor(_stackedWidget, 1);
 
     setSynchronizedDefaultPage(&_defaultSynchronizedPageWidget, this);
-    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized),
-                                 _defaultSynchronizedPageWidget);
+    _stackedWidget->insertWidget(toInt(DriveInfoClient::SynthesisStackedWidget::Synchronized), _defaultSynchronizedPageWidget);
 
     _notImplementedLabel = new QLabel(this);
     _notImplementedLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -833,8 +832,7 @@ void SynthesisPopover::handleRemovedDrives() {
 
     if (syncInfoMap.empty()) _statusBarWidget->reset();
 
-    for (int widgetIndex = toInt(DriveInfoClient::SynthesisStackedWidget::FirstAdded);
-         widgetIndex < _stackedWidget->count();) {
+    for (int widgetIndex = toInt(DriveInfoClient::SynthesisStackedWidget::FirstAdded); widgetIndex < _stackedWidget->count();) {
         QWidget *widget = _stackedWidget->widget(widgetIndex);
         bool driveIsFound = false;
         for (auto &[driveId, driveInfo] : _gui->driveInfoMap()) {

@@ -51,12 +51,11 @@ void ConflictFinderWorker::findConflicts() {
     if (moveMoveCycleList) {
         for (const Conflict &c : *moveMoveCycleList) {
             _syncPal->_conflictQueue->push(c);
-            LOGW_SYNCPAL_INFO(_logger, c.type()
-                                           << L" conflict found between local node "
-                                           << SyncName2WStr(c.localNode()->name()).c_str() << L" ("
-                                           << Utility::s2ws(*c.localNode()->id()).c_str() << L") and remote node "
-                                           << SyncName2WStr(c.remoteNode()->name()).c_str() << L" ("
-                                           << Utility::s2ws(*c.remoteNode()->id()).c_str() << L")");
+            LOGW_SYNCPAL_INFO(_logger, c.type() << L" conflict found between local node "
+                                                << SyncName2WStr(c.localNode()->name()).c_str() << L" ("
+                                                << Utility::s2ws(*c.localNode()->id()).c_str() << L") and remote node "
+                                                << SyncName2WStr(c.remoteNode()->name()).c_str() << L" ("
+                                                << Utility::s2ws(*c.remoteNode()->id()).c_str() << L")");
         }
     }
 }
@@ -392,8 +391,8 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 return std::nullopt;
             }
             if (!found) {
-                LOG_SYNCPAL_WARN(_logger, "Node not found for id = " << localNode->id()->c_str()
-                                                                     << " side = " << localNode->side());
+                LOG_SYNCPAL_WARN(_logger,
+                                 "Node not found for id='" << localNode->id()->c_str() << "' side='" << localNode->side() << "'");
                 // break loop because localNode's path is not found
                 break;
             }
@@ -403,8 +402,8 @@ std::optional<std::vector<Conflict>> ConflictFinderWorker::determineMoveMoveCycl
                 return std::nullopt;
             }
             if (!found) {
-                LOG_SYNCPAL_WARN(_logger, "Node not found for id = " << remoteNode->id()->c_str()
-                                                                     << " side = " << remoteNode->side());
+                LOG_SYNCPAL_WARN(_logger,
+                                 "Node not found for id='" << remoteNode->id()->c_str() << "' side='" << remoteNode->side() << "'");
                 // continue loop because remoteNode's path is not found
                 continue;
             }

@@ -58,6 +58,10 @@ class DbNode {
         inline bool hasLocalNodeId() const noexcept { return nodeIdLocal() ? !nodeIdLocal()->empty() : false; }
         inline bool hasRemoteNodeId() const noexcept { return nodeIdRemote() ? !nodeIdRemote()->empty() : false; }
 
+        SyncTime lastModified(const ReplicaSide side) const;
+        NodeId nodeId(const ReplicaSide side) const;
+        SyncName name(const ReplicaSide side) const;
+
         inline void setNodeId(DbNodeId nodeId) { _nodeId = nodeId; }
         inline void setParentNodeId(std::optional<DbNodeId> parentNodeId) { _parentNodeId = parentNodeId; }
         virtual void setNameLocal(const SyncName &name);
@@ -80,8 +84,8 @@ class DbNode {
     protected:
         DbNodeId _nodeId;
         std::optional<DbNodeId> _parentNodeId;
-        SyncName _nameLocal;   // /!\ Must be in NFC form
-        SyncName _nameRemote;  // /!\ Must be in NFC form
+        SyncName _nameLocal; // /!\ Must be in NFC form
+        SyncName _nameRemote; // /!\ Must be in NFC form
         std::optional<NodeId> _nodeIdLocal;
         std::optional<NodeId> _nodeIdRemote;
         std::optional<SyncTime> _created;
@@ -94,4 +98,4 @@ class DbNode {
         bool _syncing;
 };
 
-}  // namespace KDC
+} // namespace KDC

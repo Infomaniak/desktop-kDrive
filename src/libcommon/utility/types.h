@@ -476,12 +476,12 @@ inline bool bitWiseEnumToBool(const C a) {
 namespace typesUtility {
 std::wstring stringToWideString(const std::string &str);  // Convert string to wstring (We can't use the s2ws of Utility because
                                                           // it's in libCommonServer and it includes types.h)
-} // namespace typesUtility
+}  // namespace typesUtility
 
 // Stream Operator (toString)
 template <PrintableEnum C>
 std::string toStringWithCode(C e) {
-    return toString(e) + "(" + std::to_string(toInt(e)) + ")"; // Example: "Ok(1)"
+    return toString(e) + "(" + std::to_string(toInt(e)) + ")";  // Example: "Ok(1)"
 }
 
 template <PrintableEnum C>
