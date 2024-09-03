@@ -23,8 +23,8 @@
 #include <asserts.h>
 
 namespace KDC {
-constexpr const int SentryMaxCaptureCountBeforeRateLimit = 10;  // Number of captures of the same event before rate limiting
-constexpr const int SentryMinUploadIntervaOnRateLimit =
+static constexpr int SentryMaxCaptureCountBeforeRateLimit = 10;  // Number of captures of the same event before rate limiting
+static constexpr int SentryMinUploadIntervaOnRateLimit =
     10;  // Number of minutes to wait before sending the event again after rate limiting
 std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
 
