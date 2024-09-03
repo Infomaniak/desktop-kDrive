@@ -60,17 +60,16 @@ class SyncOperation {
     private:
         OperationType _type = OperationType::None;
         std::shared_ptr<Node> _affectedNode = nullptr;
-        std::shared_ptr<Node> _correspondingNode = nullptr;  // The node on which we will apply the operation
-        ReplicaSide _targetSide = ReplicaSide::Unknown;      // The side on which we will apply the operation
-        bool _omit = false;                                  // If true, apply change only in DB
-        SyncName _newName;  // New name on the replica on which we will apply the operation. Only for create and move operation
+        std::shared_ptr<Node> _correspondingNode = nullptr; // The node on which we will apply the operation
+        ReplicaSide _targetSide = ReplicaSide::Unknown; // The side on which we will apply the operation
+        bool _omit = false; // If true, apply change only in DB
+        SyncName _newName; // New name on the replica on which we will apply the operation. Only for create and move operation
         std::shared_ptr<Node> _newParentNode =
-            nullptr;  // New parent on the replica on which we will apply the operation. Only for move operation
+                nullptr; // New parent on the replica on which we will apply the operation. Only for move operation
         Conflict _conflict;
 
         UniqueId _id = -1;
-        UniqueId _parentId =
-            -1;  // ID of that parent operation i.e. the operation that must be completed before starting this one
+        UniqueId _parentId = -1; // ID of that parent operation i.e. the operation that must be completed before starting this one
 
         static UniqueId _nextId;
 };
@@ -80,11 +79,9 @@ typedef std::shared_ptr<SyncOperation> SyncOpPtr;
 class SyncOperationList : public SharedObject {
     public:
         SyncOperationList() {}
-        SyncOperationList(const SyncOperationList &other)
-            : _allOps(other._allOps),
-              _opSortedList(other._opSortedList),
-              _opListByType(other._opListByType),
-              _node2op(other._node2op) {}
+        SyncOperationList(const SyncOperationList &other) :
+            _allOps(other._allOps), _opSortedList(other._opSortedList), _opListByType(other._opListByType),
+            _node2op(other._node2op) {}
         ~SyncOperationList();
 
         void setOpList(const std::list<SyncOpPtr> &opList);
@@ -114,4 +111,4 @@ class SyncOperationList : public SharedObject {
         friend class TestOperationGeneratorWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC
