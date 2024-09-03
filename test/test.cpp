@@ -29,7 +29,7 @@ int runTestSuite(const std::string &logFileName) {
 
 
     //Disable sentry
-    KDC::SentryHandler::init(KDC::SentryHandler::SentryProject::Desactivated);
+    KDC::SentryHandler::init(KDC::SentryHandler::SentryProject::Deactivated);
     // Setup log4cplus
     log4cplus::Initializer initializer;
     std::time_t now = std::time(nullptr);

@@ -46,7 +46,7 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
 
     _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
 
-    if (project == SentryProject::Desactivated) {
+    if (project == SentryProject::Deactivated) {
         _instance->_isSentryActivated = false;
         return;
     }

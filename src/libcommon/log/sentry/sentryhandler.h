@@ -51,7 +51,7 @@ inline std::string toString(SentryLevel level) {
 
 class SentryHandler {
     public:
-        enum class SentryProject { Server, Client, Desactivated };  // Only used for initialization, don't need to be in types.h
+        enum class SentryProject { Server, Client, Deactivated };  // Only used for initialization, don't need to be in types.h
 
         ~SentryHandler();
         static std::shared_ptr<SentryHandler> instance();
