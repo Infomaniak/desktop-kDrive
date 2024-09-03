@@ -621,8 +621,8 @@ bool SyncDb::initData() {
 }
 
 void SyncDb::updateNames(const char *queryId, const SyncName &localName, const SyncName &remoteName) {
-    ASSERT(queryBindValue(queryId, 2, Utility::normalizedSyncName(localName)));
-    ASSERT(queryBindValue(queryId, 3, Utility::normalizedSyncName(remoteName)));
+    ASSERT(queryBindValue(queryId, 2, localName))
+    ASSERT(queryBindValue(queryId, 3, Utility::normalizedSyncName(remoteName)))
 }
 
 bool SyncDb::checkNodeIds(const DbNode &node) {
