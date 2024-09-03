@@ -408,7 +408,8 @@ enum class SentryConfidentialityLevel {
     Anonymous,      // The sentry will not be able to identify the user (no ip, no email, no username, ...)
     Authenticated,  // The sentry will contain information about the last user connected to the application. (email,
                     // username, user id, ...)
-    None // Not initialized
+    Specific,       // The sentry will contain information about the user passed as a parameter of the call to captureMessage.
+    None            // Not initialized
 };
 std::string toString(SentryConfidentialityLevel e);
 

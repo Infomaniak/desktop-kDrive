@@ -105,63 +105,106 @@ void SentryHandler::setGlobalConfidentialityLevel(SentryConfidentialityLevel lev
 
 void SentryHandler::captureMessage(SentryLevel level, const std::string &title, std::string message /*Copy needed*/,
                                    const SentryUser &user /*Apply only if confidentiallity level is Authenticated*/) {
-    if (!_isSentryActivated) return;
     std::scoped_lock lock(_mutex);
+    if (!_isSentryActivated) return;
+
     SentryEvent event(title, message, level, _globalConfidentialityLevel, user);
-    if (auto it = _events.find(event.getStr()); it != _events.end()) {
-        auto &storedEvent = it->second;
-        storedEvent.captureCount++;
-        if (storedEvent.lastCapture + std::chrono::minutes(SentryMinUploadIntervaOnRateLimit) <
-            std::chrono::system_clock::now()) {  // Reset the capture count if the last capture was more than 10 minutes ago
-            storedEvent.captureCount = 0;
-        } else if (storedEvent.captureCount >= SentryMaxCaptureCountBeforeRateLimit) {
-            event.lastCapture = std::chrono::system_clock::now();
-            if (storedEvent.lastUpload + std::chrono::minutes(SentryMinUploadIntervaOnRateLimit) >
-                    std::chrono::system_clock::now() &&
-                storedEvent.captureCount !=
-                    SentryMaxCaptureCountBeforeRateLimit) {  // Rate limit reached for this event wait 10
-                                                                   // minutes before sending it again
-                return;
-            } else {
-                storedEvent.lastUpload = std::chrono::system_clock::now();
-                message += " (Rate limit reached: " + std::to_string(storedEvent.captureCount) +
-                           " captures since last app start. Level escalated from " + toString(level) + " to Error)";
-                level = SentryLevel::Error;
-            }
-        } else {
-            storedEvent.lastCapture = std::chrono::system_clock::now();
-        }
-    } else {
-        event.lastCapture = std::chrono::system_clock::now();
-        event.lastUpload = std::chrono::system_clock::now();
-        _events.try_emplace(event.getStr(), event);
-    }
+    bool toUpload = false;
+    handleEventsRateLimit(event, toUpload);
+    if (!toUpload) return;
 
-    if (_globalConfidentialityLevel != _lastConfidentialityLevel || !user.isDefault()) {
-        _lastConfidentialityLevel = _globalConfidentialityLevel;
-        sentry_value_t userValue;
-        if (_globalConfidentialityLevel == SentryConfidentialityLevel::Authenticated) {
-            userValue = toSentryValue(_authenticatedUser);
-            sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
-            sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
-        } else {  // Anonymous
-            userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
-            sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("-1.-1.-1.-1"));
-            sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
-        }
+    updateEffectiveSentryUser(user);
 
-        sentry_remove_user();
-        sentry_set_user(userValue);
-    }
-    sentry_capture_event(sentry_value_new_message_event((sentry_level_t)toInt(level), title.c_str(), message.c_str()));
+    sentry_capture_event(
+        sentry_value_new_message_event((sentry_level_t)toInt(event.level), event.title.c_str(), event.message.c_str()));
 }
 
-sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) {
+sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {
     sentry_value_t userValue = sentry_value_new_object();
     sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.getEmail().data()));
     sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.getUsername().data()));
     sentry_value_set_by_key(userValue, "id", sentry_value_new_string(user.getUserId().data()));
     return userValue;
+}
+
+void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
+    using namespace std::chrono;
+    std::scoped_lock lock(_mutex);
+
+    toUpload = true;
+
+    auto it = _events.find(event.getStr());
+    if (it == _events.end()) {
+        it->second.lastCapture = system_clock::now();
+        it->second.lastUpload = system_clock::now();
+        _events.try_emplace(event.getStr(), event);
+        return;
+    }
+
+    auto &storedEvent = it->second;
+    storedEvent.captureCount++;
+
+    if (eventLastCaptureIsOld(storedEvent)) {  // Reset the capture count if the last capture was more than 10 minutes ago
+        storedEvent.captureCount = 0;
+        storedEvent.lastCapture = system_clock::now();
+        return;
+    }
+
+    storedEvent.lastCapture = system_clock::now();
+    if (storedEvent.captureCount < SentryMaxCaptureCountBeforeRateLimit) {  // Rate limit not reached, we can send the event
+        return;
+    }
+
+    if (!eventLastUploadIsOld(storedEvent)) {  // Rate limit reached for this event wait 10 minutes before sending it again
+        toUpload = false;
+        return;
+    }
+    escalateErrorLevel(storedEvent);
+}
+
+bool SentryHandler::eventLastCaptureIsOld(const SentryEvent &event) const {
+    using namespace std::chrono;
+    if (event.lastCapture + minutes(SentryMinUploadIntervaOnRateLimit) >= system_clock::now()) {
+        return true;
+    }
+    return false;
+}
+
+bool SentryHandler::eventLastUploadIsOld(const SentryEvent &event) const {
+    using namespace std::chrono;
+    if (event.lastUpload + minutes(SentryMinUploadIntervaOnRateLimit) >= system_clock::now()) {
+        return true;
+    }
+    return false;
+}
+
+void SentryHandler::escalateErrorLevel(SentryEvent &event) {
+    event.level = SentryLevel::Error;
+    event.message += " (Rate limit reached: " + std::to_string(event.captureCount) +
+                     " captures since last app start. Level escalated from " + toString(event.level) + " to Error)";
+}
+
+void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
+    if (_globalConfidentialityLevel == _lastConfidentialityLevel && user.isDefault()) return;
+    _lastConfidentialityLevel = user.isDefault() ? _globalConfidentialityLevel : SentryConfidentialityLevel::Specific;
+
+    sentry_value_t userValue;
+    if (!user.isDefault()) {
+        userValue = toSentryValue(user);
+        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
+        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Specific"));
+    } else if (_globalConfidentialityLevel == SentryConfidentialityLevel::Authenticated) {
+        userValue = toSentryValue(_authenticatedUser);
+        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
+        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
+    } else {  // Anonymous
+        userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
+        sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("-1.-1.-1.-1"));
+        sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
+    }
+
+    sentry_remove_user();
+    sentry_set_user(userValue);
 }
 
 SentryHandler::~SentryHandler() {

@@ -69,7 +69,7 @@ class SentryHandler {
         SentryHandler(SentryHandler &&) = delete;
         SentryHandler &operator=(SentryHandler &&) = delete;
 
-        sentry_value_t toSentryValue(const SentryUser &user);
+        sentry_value_t toSentryValue(const SentryUser &user) const;
 
         struct SentryEvent {
                 using time_point = std::chrono::system_clock::time_point;
@@ -87,7 +87,27 @@ class SentryHandler {
                 unsigned int captureCount = 0;
         };
 
-        std::mutex _mutex;
+
+        // Set Update event counter, if needed the event.message/errorLevel will be updated (escalated)
+        void handleEventsRateLimit(SentryEvent &event, bool &toUpload);
+
+        // Return true if last capture is older than minUploadInterval
+        bool eventLastCaptureIsOld(const SentryEvent &event) const;
+        // Return true if last upload is older than minUploadInterval
+        bool eventLastUploadIsOld(const SentryEvent &event) const;
+
+        // Escalate error level
+        void escalateErrorLevel(SentryEvent &event);
+
+        /* Update the effective sentry user.
+        If authentication type is Anonymous, the user parameter will be ignored and the
+        effective user will be set to Anonymous.
+        If authentication type is Authenticated, the user parameter will be used.
+        If no user is provided (the user provided is the default user), the effective user will be set to Anonymous.
+        */
+        void updateEffectiveSentryUser(const SentryUser &user = SentryUser());
+
+        std::recursive_mutex _mutex;
         bool _isSentryActivated = false;
         SentryUser _authenticatedUser;
         struct StringHash {
