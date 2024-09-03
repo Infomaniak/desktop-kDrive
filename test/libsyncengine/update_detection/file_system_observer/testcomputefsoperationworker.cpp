@@ -117,19 +117,19 @@ void TestComputeFSOperationWorker::setUp() {
 
     /// Init test snapshot
     //// Insert dir in snapshot
-    _syncPal->_localSnapshot->updateItem(
-        SnapshotItem(nodeDirA.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
-                     nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123));
-    _syncPal->_localSnapshot->updateItem(
-        SnapshotItem(nodeDirB.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
-                     nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeDirA.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
+            nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeDirB.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
+            nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123));
 
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-        nodeDirA.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
-        nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123));
+            nodeDirA.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
+            nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-        nodeDirB.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
-        nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123));
+            nodeDirB.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
+            nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123));
 
     //// Insert files in snapshot
     _syncPal->_localSnapshot->updateItem(SnapshotItem(nodeFileAA.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(),
@@ -169,7 +169,7 @@ void TestComputeFSOperationWorker::setUp() {
     ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(true);
 
     _syncPal->setComputeFSOperationsWorker(
-        std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
+            std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
     _syncPal->computeFSOperationsWorker()->setTesting(true);
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
 }
@@ -190,9 +190,9 @@ void TestComputeFSOperationWorker::testNoOps() {
 
 void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
     // Delete operations
-    _syncPal->_localSnapshot->removeItem("laa");  // Folder "AA" is contained in folder "A".
-    _syncPal->_localSnapshot->removeItem("lab");  // Folder "AB" is contained in folder "A".
-    _syncPal->_localSnapshot->removeItem("lac");  // Folder "AC" is contained in folder "A" but is blacklisted.
+    _syncPal->_localSnapshot->removeItem("laa"); // Folder "AA" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("lab"); // Folder "AB" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("lac"); // Folder "AC" is contained in folder "A" but is blacklisted.
     _syncPal->_localSnapshot->removeItem("la");
 
     _syncPal->copySnapshots();
@@ -228,7 +228,7 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     // On local replica
     // Create operation
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 123));
+            SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 123));
     // Edit operation
     _syncPal->_localSnapshot->setLastModified("laa", testhelpers::defaultTime + 60);
     // Move operation
@@ -239,11 +239,11 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     _syncPal->_localSnapshot->removeItem("lbb");
 
     // Create operation on a too big directory
-    _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("raf", "ra", Str("AF_too_big"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("raf", "ra", Str("AF_too_big"), testhelpers::defaultTime,
+                                                       testhelpers::defaultTime, NodeType::Directory, 0));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rafa", "raf", Str("AFA"), testhelpers::defaultTime,
                                                        testhelpers::defaultTime, NodeType::File,
-                                                       550 * 1024 * 1024));  // File size: 550MB
+                                                       550 * 1024 * 1024)); // File size: 550MB
     // Rename operation on a blacklisted directory
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-renamed"));
 
@@ -358,4 +358,4 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
     CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
 }
 
-}  // namespace KDC
+} // namespace KDC

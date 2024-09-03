@@ -25,37 +25,23 @@ DbNode::DbNode(int64_t nodeId, std::optional<DbNodeId> parentNodeId, const SyncN
                const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
                std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
                std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
-               const std::optional<std::string> &checksum, SyncFileStatus status, bool syncing)
-    : _nodeId(nodeId),
-      _parentNodeId(parentNodeId),
-      _nameLocal(nameLocal),
-      _nameRemote(nameRemote),
-      _nodeIdLocal(nodeIdLocal),
-      _nodeIdRemote(nodeIdRemote),
-      _created(created),
-      _lastModifiedLocal(lastModifiedLocal),
-      _lastModifiedRemote(lastModifiedRemote),
-      _type(type),
-      _size(size),
-      _checksum(checksum),
-      _status(status),
-      _syncing(syncing) {}
+               const std::optional<std::string> &checksum, SyncFileStatus status, bool syncing) :
+    _nodeId(nodeId), _parentNodeId(parentNodeId), _nameLocal(nameLocal), _nameRemote(nameRemote), _nodeIdLocal(nodeIdLocal),
+    _nodeIdRemote(nodeIdRemote), _created(created), _lastModifiedLocal(lastModifiedLocal),
+    _lastModifiedRemote(lastModifiedRemote), _type(type), _size(size), _checksum(checksum), _status(status), _syncing(syncing) {}
 
-DbNode::DbNode()
-    : _nodeId(0),
-      _parentNodeId(0),
-      _nameLocal(SyncName()),
-      _nameRemote(SyncName()),
-      _nodeIdLocal(std::string()),
-      _nodeIdRemote(std::string()),
-      _created(0),
-      _lastModifiedLocal(0),
-      _lastModifiedRemote(0),
-      _type(NodeType::Unknown),
-      _size(0),
-      _checksum(std::string()),
-      _status(SyncFileStatus::Unknown),
-      _syncing(false) {}
+DbNode::DbNode(std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
+               const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
+               std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
+               std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
+               const std::optional<std::string> &checksum, SyncFileStatus status, bool syncing) :
+    DbNode(0, parentNodeId, nameLocal, nameRemote, nodeIdLocal, nodeIdRemote, created, lastModifiedLocal, lastModifiedRemote,
+           type, size, checksum, status, syncing) {}
+
+DbNode::DbNode() :
+    _nodeId(0), _parentNodeId(0), _nameLocal(SyncName()), _nameRemote(SyncName()), _nodeIdLocal(std::string()),
+    _nodeIdRemote(std::string()), _created(0), _lastModifiedLocal(0), _lastModifiedRemote(0), _type(NodeType::Unknown), _size(0),
+    _checksum(std::string()), _status(SyncFileStatus::Unknown), _syncing(false) {}
 
 void DbNode::setNameLocal(const SyncName &name) {
     _nameLocal = name;
@@ -98,4 +84,4 @@ SyncName DbNode::name(const ReplicaSide side) const {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

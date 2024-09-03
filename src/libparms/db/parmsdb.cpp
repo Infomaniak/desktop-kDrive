@@ -301,9 +301,16 @@
 
 #define SELECT_SYNC_REQUEST_ID "select_sync"
 #define SELECT_SYNC_REQUEST                                                                                           \
-    "SELECT driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "            \
+    "SELECT dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "      \
     "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync " \
     "WHERE dbId=?1;"
+
+#define SELECT_SYNC_BY_PATH_REQUEST_ID "select_sync_by_path"
+#define SELECT_SYNC_BY_PATH_REQUEST                                                                                   \
+    "SELECT dbId, driveDbId, localPath, targetPath, targetNodeId, dbPath, paused, supportVfs, virtualFileMode, "      \
+    "notificationsDisabled, hasFullyCompleted, navigationPaneClsid, listingCursor, listingCursorTimestamp FROM sync " \
+    "WHERE dbPath=?1;"
+
 
 #define SELECT_ALL_SYNCS_REQUEST_ID "select_syncs"
 #define SELECT_ALL_SYNCS_REQUEST                                                                                      \
@@ -406,7 +413,7 @@
     "CREATE TABLE IF NOT EXISTS error("      \
     "dbId INTEGER PRIMARY KEY,"              \
     "time INTEGER,"                          \
-    "level INTEGER,"     /* Server level */  \
+    "level INTEGER," /* Server level */      \
     "functionName TEXT," /* SyncPal level */ \
     "syncDbId INTEGER,"                      \
     "workerName TEXT,"                       \
@@ -522,8 +529,8 @@ void ParmsDb::reset() {
     }
 }
 
-ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test)
-    : Db(dbPath), _test(test) {
+ParmsDb::ParmsDb(const std::filesystem::path &dbPath, const std::string &version, bool autoDelete, bool test) :
+    Db(dbPath), _test(test) {
     setAutoDelete(autoDelete);
 
     if (!checkConnect(version)) {
@@ -625,9 +632,9 @@ bool ParmsDb::updateExclusionTemplates() {
         return false;
     }
 
-    for (const auto &templDb : exclusionTemplateDbList) {
+    for (const auto &templDb: exclusionTemplateDbList) {
         bool exists = false;
-        for (const auto &templFile : exclusionTemplateFileList) {
+        for (const auto &templFile: exclusionTemplateFileList) {
             if (templFile == templDb.templ()) {
                 exists = true;
                 break;
@@ -649,16 +656,16 @@ bool ParmsDb::updateExclusionTemplates() {
         return false;
     }
 
-    for (const auto &templFile : exclusionTemplateFileList) {
+    for (const auto &templFile: exclusionTemplateFileList) {
         bool exists = false;
-        for (const auto &templDb : exclusionTemplateDbList) {
+        for (const auto &templDb: exclusionTemplateDbList) {
             if (templDb.templ() == templFile) {
                 exists = true;
                 break;
             }
         }
         if (!exists) {
-            for (const auto &userTempDb : exclusionTemplateUserDbList) {
+            for (const auto &userTempDb: exclusionTemplateUserDbList) {
                 if (templFile == userTempDb.templ()) {
                     bool found = false;
                     if (!deleteExclusionTemplate(userTempDb.templ(), found)) {
@@ -712,13 +719,13 @@ bool ParmsDb::updateExclusionApps() {
         return false;
     }
 
-    for (const auto &templDb : exclusionAppDbList) {
+    for (const auto &templDb: exclusionAppDbList) {
         if (templDb.def() == false) {
             continue;
         }
 
         bool exists = false;
-        for (const auto &templFile : exclusionAppFileList) {
+        for (const auto &templFile: exclusionAppFileList) {
             if (templFile.first == templDb.appId()) {
                 exists = true;
                 break;
@@ -734,10 +741,10 @@ bool ParmsDb::updateExclusionApps() {
         }
     }
 
-    for (const auto &templFile : exclusionAppFileList) {
+    for (const auto &templFile: exclusionAppFileList) {
         bool exists = false;
         bool def = false;
-        for (const auto &templDb : exclusionAppDbList) {
+        for (const auto &templDb: exclusionAppDbList) {
             if (templDb.appId() == templFile.first) {
                 exists = true;
                 def = templDb.def();
@@ -1074,6 +1081,12 @@ bool ParmsDb::prepare() {
     if (!queryPrepare(SELECT_SYNC_REQUEST_ID, SELECT_SYNC_REQUEST, false, errId, error)) {
         queryFree(SELECT_SYNC_REQUEST_ID);
         return sqlFail(SELECT_SYNC_REQUEST_ID, error);
+    }
+
+    ASSERT(queryCreate(SELECT_SYNC_BY_PATH_REQUEST_ID));
+    if (!queryPrepare(SELECT_SYNC_BY_PATH_REQUEST_ID, SELECT_SYNC_BY_PATH_REQUEST, false, errId, error)) {
+        queryFree(SELECT_SYNC_BY_PATH_REQUEST_ID);
+        return sqlFail(SELECT_SYNC_BY_PATH_REQUEST_ID, error);
     }
 
     ASSERT(queryCreate(SELECT_ALL_SYNCS_REQUEST_ID));
@@ -1769,7 +1782,7 @@ bool ParmsDb::getNewUserDbId(int &dbId) {
     }
 
     dbId = 1;
-    for (const User &user : userList) {
+    for (const User &user: userList) {
         // NB: userList is sorted by dbId
         if (user.dbId() > dbId) {
             break;
@@ -1940,7 +1953,7 @@ bool ParmsDb::accountDbId(int userDbId, int accountId, int &dbId) {
     }
 
     dbId = 0;
-    for (const Account &account : accountList) {
+    for (const Account &account: accountList) {
         if (account.accountId() == accountId) {
             dbId = account.dbId();
             break;
@@ -1958,7 +1971,7 @@ bool ParmsDb::getNewAccountDbId(int &dbId) {
     }
 
     dbId = 1;
-    for (const Account &account : accountList) {
+    for (const Account &account: accountList) {
         // NB: accountList is sorted by dbId
         if (account.dbId() > dbId) {
             break;
@@ -2159,8 +2172,8 @@ bool ParmsDb::selectAllDrives(std::vector<Drive> &driveList) {
         int admin;
         ASSERT(queryIntValue(SELECT_ALL_DRIVES_REQUEST_ID, 7, admin));
 
-        driveList.push_back(
-            Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications), static_cast<bool>(admin)));
+        driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
+                                  static_cast<bool>(admin)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_DRIVES_REQUEST_ID));
 
@@ -2200,8 +2213,8 @@ bool ParmsDb::selectAllDrives(int accountDbId, std::vector<Drive> &driveList) {
         int admin;
         ASSERT(queryIntValue(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID, 6, admin));
 
-        driveList.push_back(
-            Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications), static_cast<bool>(admin)));
+        driveList.push_back(Drive(id, driveId, accountDbId, driveName, size, color, static_cast<bool>(notifications),
+                                  static_cast<bool>(admin)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_DRIVES_BY_ACCOUNT_REQUEST_ID));
 
@@ -2216,7 +2229,7 @@ bool ParmsDb::driveDbId(int accountDbId, int driveId, int &dbId) {
     }
 
     dbId = 0;
-    for (const Drive &drive : driveList) {
+    for (const Drive &drive: driveList) {
         if (drive.driveId() == driveId) {
             dbId = drive.dbId();
             break;
@@ -2234,7 +2247,7 @@ bool ParmsDb::getNewDriveDbId(int &dbId) {
     }
 
     dbId = 1;
-    for (const Drive &drive : driveList) {
+    for (const Drive &drive: driveList) {
         // NB: driveList is sorted by dbId
         if (drive.dbId() > dbId) {
             break;
@@ -2246,33 +2259,35 @@ bool ParmsDb::getNewDriveDbId(int &dbId) {
 }
 
 bool ParmsDb::insertSync(const Sync &sync) {
+    const char *requestId = INSERT_SYNC_REQUEST_ID;
+
     const std::scoped_lock lock(_mutex);
 
     std::string listingCursor;
-    int64_t listingCursorTimestamp;
+    int64_t listingCursorTimestamp{0};
     sync.listingCursor(listingCursor, listingCursorTimestamp);
 
     // Insert sync record
-    int errId;
-    std::string error;
+    ASSERT(queryResetAndClearBindings(requestId));
+    ASSERT(queryBindValue(requestId, 1, sync.dbId()));
+    ASSERT(queryBindValue(requestId, 2, sync.driveDbId()));
+    ASSERT(queryBindValue(requestId, 3, sync.localPath().native()));
+    ASSERT(queryBindValue(requestId, 4, sync.targetPath().native()));
+    ASSERT(queryBindValue(requestId, 5, sync.targetNodeId()));
+    ASSERT(queryBindValue(requestId, 6, sync.dbPath().native()));
+    ASSERT(queryBindValue(requestId, 7, static_cast<int>(sync.paused())));
+    ASSERT(queryBindValue(requestId, 8, static_cast<int>(sync.supportVfs())));
+    ASSERT(queryBindValue(requestId, 9, static_cast<int>(sync.virtualFileMode())));
+    ASSERT(queryBindValue(requestId, 10, static_cast<int>(sync.notificationsDisabled())));
+    ASSERT(queryBindValue(requestId, 11, static_cast<int>(sync.hasFullyCompleted())));
+    ASSERT(queryBindValue(requestId, 12, sync.navigationPaneClsid()));
+    ASSERT(queryBindValue(requestId, 13, listingCursor));
+    ASSERT(queryBindValue(requestId, 14, listingCursorTimestamp));
 
-    ASSERT(queryResetAndClearBindings(INSERT_SYNC_REQUEST_ID));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 1, sync.dbId()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 2, sync.driveDbId()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 3, sync.localPath().native()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 4, sync.targetPath().native()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 5, sync.targetNodeId()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 6, sync.dbPath().native()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 7, static_cast<int>(sync.paused())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 8, static_cast<int>(sync.supportVfs())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 9, static_cast<int>(sync.virtualFileMode())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 10, static_cast<int>(sync.notificationsDisabled())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 11, static_cast<int>(sync.hasFullyCompleted())));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 12, sync.navigationPaneClsid()));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 13, listingCursor));
-    ASSERT(queryBindValue(INSERT_SYNC_REQUEST_ID, 14, listingCursorTimestamp));
-    if (!queryExec(INSERT_SYNC_REQUEST_ID, errId, error)) {
-        LOG_WARN(_logger, "Error running query: " << INSERT_SYNC_REQUEST_ID);
+    int errId = -1;
+    std::string error;
+    if (!queryExec(requestId, errId, error)) {
+        LOG_WARN(_logger, "Error running query: " << requestId);
         return false;
     }
 
@@ -2386,64 +2401,96 @@ bool ParmsDb::deleteSync(int dbId, bool &found) {
     return true;
 }
 
-bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
-    const std::scoped_lock lock(_mutex);
+void ParmsDb::fillSyncWithQueryResult(Sync &sync, const char *requestId) {
+    assert(std::string(requestId) == std::string(SELECT_SYNC_BY_PATH_REQUEST_ID) ||
+           std::string(requestId) == std::string(SELECT_SYNC_REQUEST_ID));
 
-    ASSERT(queryResetAndClearBindings(SELECT_SYNC_REQUEST_ID));
-    ASSERT(queryBindValue(SELECT_SYNC_REQUEST_ID, 1, dbId));
-    if (!queryNext(SELECT_SYNC_REQUEST_ID, found)) {
-        LOG_WARN(_logger, "Error getting query result: " << SELECT_SYNC_REQUEST_ID);
-        return false;
-    }
-    if (!found) {
-        return true;
-    }
+    int intResult = -1;
+    ASSERT(queryIntValue(requestId, 0, intResult));
+    sync.setDbId(intResult);
 
-    sync.setDbId(dbId);
-
-    int intResult;
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 0, intResult));
+    ASSERT(queryIntValue(requestId, 1, intResult));
     sync.setDriveDbId(intResult);
 
     SyncName syncNameResult;
-    ASSERT(querySyncNameValue(SELECT_SYNC_REQUEST_ID, 1, syncNameResult));
+    ASSERT(querySyncNameValue(requestId, 2, syncNameResult));
     sync.setLocalPath(SyncPath(syncNameResult));
 
-    ASSERT(querySyncNameValue(SELECT_SYNC_REQUEST_ID, 2, syncNameResult));
+    ASSERT(querySyncNameValue(requestId, 3, syncNameResult));
     sync.setTargetPath(SyncPath(syncNameResult));
 
     std::string strResult;
-    ASSERT(queryStringValue(SELECT_SYNC_REQUEST_ID, 3, strResult));
+    ASSERT(queryStringValue(requestId, 4, strResult));
     sync.setTargetNodeId(strResult);
 
-    ASSERT(querySyncNameValue(SELECT_SYNC_REQUEST_ID, 4, syncNameResult));
+    ASSERT(querySyncNameValue(requestId, 5, syncNameResult));
     sync.setDbPath(SyncPath(syncNameResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 5, intResult));
+    ASSERT(queryIntValue(requestId, 6, intResult));
     sync.setPaused(static_cast<bool>(intResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 6, intResult));
+    ASSERT(queryIntValue(requestId, 7, intResult));
     sync.setSupportVfs(static_cast<bool>(intResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 7, intResult));
+    ASSERT(queryIntValue(requestId, 8, intResult));
     sync.setVirtualFileMode(static_cast<VirtualFileMode>(intResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 8, intResult));
+    ASSERT(queryIntValue(requestId, 9, intResult));
     sync.setNotificationsDisabled(static_cast<bool>(intResult));
 
-    ASSERT(queryIntValue(SELECT_SYNC_REQUEST_ID, 9, intResult));
+    ASSERT(queryIntValue(requestId, 10, intResult));
     sync.setHasFullyCompleted(static_cast<bool>(intResult));
 
-    ASSERT(queryStringValue(SELECT_SYNC_REQUEST_ID, 10, strResult));
+    ASSERT(queryStringValue(requestId, 11, strResult));
     sync.setNavigationPaneClsid(strResult);
 
-    ASSERT(queryStringValue(SELECT_SYNC_REQUEST_ID, 11, strResult));
+    ASSERT(queryStringValue(requestId, 12, strResult));
 
     int64_t int64Result;
-    ASSERT(queryInt64Value(SELECT_SYNC_REQUEST_ID, 12, int64Result));
+    ASSERT(queryInt64Value(requestId, 13, int64Result));
     sync.setListingCursor(strResult, int64Result);
+}
 
-    ASSERT(queryResetAndClearBindings(SELECT_SYNC_REQUEST_ID));
+bool ParmsDb::selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found) {
+    static const char *requestId = SELECT_SYNC_BY_PATH_REQUEST_ID;
+
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(requestId));
+    ASSERT(queryBindValue(requestId, 1, syncDbPath));
+    if (!queryNext(requestId, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << requestId);
+        return false;
+    }
+
+    if (!found) return true;
+
+
+    fillSyncWithQueryResult(sync, requestId);
+
+    ASSERT(queryResetAndClearBindings(requestId));
+
+    return true;
+}
+
+bool ParmsDb::selectSync(int dbId, Sync &sync, bool &found) {
+    static const char *requestId = SELECT_SYNC_REQUEST_ID;
+
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(requestId));
+    ASSERT(queryBindValue(requestId, 1, dbId));
+    if (!queryNext(requestId, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << requestId);
+        return false;
+    }
+
+    if (!found) return true;
+
+
+    fillSyncWithQueryResult(sync, requestId);
+
+    ASSERT(queryResetAndClearBindings(requestId));
 
     return true;
 }
@@ -2565,7 +2612,7 @@ bool ParmsDb::getNewSyncDbId(int &dbId) {
     }
 
     dbId = 1;
-    for (const Sync &sync : syncList) {
+    for (const Sync &sync: syncList) {
         // NB: syncList is sorted by dbId
         if (sync.dbId() > dbId) {
             break;
@@ -2670,7 +2717,7 @@ bool ParmsDb::selectAllExclusionTemplates(std::vector<ExclusionTemplate> &exclus
         ASSERT(queryIntValue(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID, 3, deleted));
 
         exclusionTemplateList.push_back(
-            ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
+                ExclusionTemplate(templ, static_cast<bool>(warning), static_cast<bool>(def), static_cast<bool>(deleted)));
     }
     ASSERT(queryResetAndClearBindings(SELECT_ALL_EXCLUSION_TEMPLATE_REQUEST_ID));
 
@@ -2726,7 +2773,7 @@ bool ParmsDb::updateAllExclusionTemplates(bool def, const std::vector<ExclusionT
     }
 
     // Insert new ExclusionTemplates
-    for (const ExclusionTemplate &exclusionTemplate : exclusionTemplateList) {
+    for (const ExclusionTemplate &exclusionTemplate: exclusionTemplateList) {
         ASSERT(queryResetAndClearBindings(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID));
         ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 1, exclusionTemplate.templ()));
         ASSERT(queryBindValue(INSERT_EXCLUSION_TEMPLATE_REQUEST_ID, 2, exclusionTemplate.warning()));
@@ -2887,7 +2934,7 @@ bool ParmsDb::updateAllExclusionApps(bool def, const std::vector<ExclusionApp> &
     }
 
     // Insert new ExclusionApps
-    for (const ExclusionApp &exclusionApp : exclusionAppList) {
+    for (const ExclusionApp &exclusionApp: exclusionAppList) {
         ASSERT(queryResetAndClearBindings(INSERT_EXCLUSION_APP_REQUEST_ID));
         ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 1, exclusionApp.appId()));
         ASSERT(queryBindValue(INSERT_EXCLUSION_APP_REQUEST_ID, 2, exclusionApp.description()));
@@ -2923,7 +2970,7 @@ bool ParmsDb::insertError(const Error &err) {
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 9, err.remoteNodeId()));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 10, toInt(err.nodeType())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 11, err.path().native()));
-    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 12, 0));  // TODO : Not used anymore
+    ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 12, 0)); // TODO : Not used anymore
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 13, toInt(err.conflictType())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 14, toInt(err.inconsistencyType())));
     ASSERT(queryBindValue(INSERT_ERROR_REQUEST_ID, 15, toInt(err.cancelType())));
@@ -3199,4 +3246,4 @@ bool ParmsDb::selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync
 
     return true;
 }
-}  // namespace KDC
+} // namespace KDC

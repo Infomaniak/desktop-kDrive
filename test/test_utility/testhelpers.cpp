@@ -44,4 +44,4 @@ std::string loadEnvVariable(const std::string& key) {
     return val;
 }
 
-}  // namespace KDC::testhelpers
+} // namespace KDC::testhelpers

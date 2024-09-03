@@ -40,7 +40,7 @@ class SyncDb : public Db {
         bool initData();
 
         bool insertNode(const DbNode &node, DbNodeId &dbNodeId,
-                        bool &constraintError);  // The local and remote names of an inserted node are normalized.
+                        bool &constraintError); // The local and remote names of an inserted node are normalized.
         bool updateNode(const DbNode &node, bool &found);
         bool updateNodeStatus(DbNodeId nodeId, SyncFileStatus status, bool &found);
         bool updateNodesSyncing(bool syncing);
@@ -98,6 +98,9 @@ class SyncDb : public Db {
 
         bool setTargetNodeId(const std::string &targetNodeId, bool &found);
 
+    protected:
+        virtual void updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName);
+
     private:
         static DbNode _driveRootNode;
         DbNode _rootNode;
@@ -105,8 +108,27 @@ class SyncDb : public Db {
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
         bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
 
-        // Fixes an issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node
-        bool normalizeLocalAndRemoteNames(const std::string &dbFromVersionNumber);
+        // Helpers
+        bool createAndPrepareRequest(const char *requestId, const char *query);
+        bool checkNodeIds(const DbNode &node);
+
+        // Fixes
+        bool updateNodeLocalName(DbNodeId nodeId, const SyncName &localName, bool &found);
+        struct NamedNode {
+                DbNodeId dbNodeId{-1};
+                SyncName localName;
+        };
+        using IntNodeId = long long;
+        using NamedNodeMap = std::unordered_map<IntNodeId, NamedNode>;
+        bool selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap);
+        using SyncNameMap = std::unordered_map<DbNodeId, SyncName>;
+        bool updateNamesWithDistinctEncodings(const SyncNameMap &localNames);
+        // Fix issue introduced in version 3.6.3: re-normalize all file and directory names of a DB node.
+        bool normalizeRemoteNames();
+        // Use the actual encoding of local file names in DB.
+        bool reinstateEncodingOfLocalNames(const std::string &dbFromVersionNumber);
+
+        friend class TestSyncDb;
 };
 
-}  // namespace KDC
+} // namespace KDC

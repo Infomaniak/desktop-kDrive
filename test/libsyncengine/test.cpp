@@ -67,7 +67,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestOperationGeneratorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExecutorWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSyncPal);
 // CPPUNIT_TEST_SUITE_REGISTRATION(TestIntegration);
-}  // namespace KDC
+} // namespace KDC
 
 int main(int, char **) {
     return runTestSuite("_kDriveTestSyncEngine.log");
