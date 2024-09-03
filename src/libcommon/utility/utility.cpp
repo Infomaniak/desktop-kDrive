@@ -791,7 +791,7 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
 }
 
 std::string CommonUtility::envVarValue(const std::string &name) {
-    bool isSet;
+    bool isSet = false;
     return envVarValue(name, isSet);
 }
 
