@@ -116,7 +116,7 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
     updateEffectiveSentryUser(user);
 
     sentry_capture_event(
-        sentry_value_new_message_event((sentry_level_t)toInt(event.level), event.title.c_str(), event.message.c_str()));
+        sentry_value_new_message_event(static_cast<sentry_level_t>(event.level), event.title.c_str(), event.message.c_str()));
 }
 
 sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {

@@ -76,7 +76,7 @@ class SentryHandler {
 
                 SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
                             SentryConfidentialityLevel userType, const SentryUser &user);
-                std::string getStr() const { return title + message + (char)toInt(level) + userId; };
+                std::string getStr() const { return title + message + static_cast<char>(level) + userId; };
                 std::string title;
                 std::string message;
                 SentryLevel level;
