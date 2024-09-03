@@ -24,16 +24,16 @@ struct SentryUser {
     public:
         SentryUser() = default;
         SentryUser(const std::string_view &email, const std::string_view &username, const std::string_view &userId)
-            : email(email), username(username), userId(userId), defaultUser(false) {}
+            : _email(email), _username(username), _userId(userId), defaultUser(false) {}
         explicit operator bool() const { return !defaultUser; }
-        inline std::string_view getEmail() const { return email; };
-        inline std::string_view getUsername() const { return username; };
-        inline std::string_view getUserId() const { return userId; };
+        inline std::string_view email() const { return _email; };
+        inline std::string_view username() const { return _username; };
+        inline std::string_view userId() const { return _userId; };
         inline bool isDefault() const { return defaultUser; };
     private:
-        std::string email = "Not set";
-        std::string username = "Not set";
-        std::string userId = "Not set";
+        std::string _email = "Not set";
+        std::string _username = "Not set";
+        std::string _userId = "Not set";
         bool defaultUser = true;
 };
 }  // namespace KDC

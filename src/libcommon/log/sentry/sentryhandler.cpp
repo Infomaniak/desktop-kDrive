@@ -121,9 +121,9 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
 
 sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {
     sentry_value_t userValue = sentry_value_new_object();
-    sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.getEmail().data()));
-    sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.getUsername().data()));
-    sentry_value_set_by_key(userValue, "id", sentry_value_new_string(user.getUserId().data()));
+    sentry_value_set_by_key(userValue, "email", sentry_value_new_string(user.email().data()));
+    sentry_value_set_by_key(userValue, "name", sentry_value_new_string(user.username().data()));
+    sentry_value_set_by_key(userValue, "id", sentry_value_new_string(user.userId().data()));
     return userValue;
 }
 
@@ -215,5 +215,5 @@ SentryHandler::~SentryHandler() {
 
 SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
                                         SentryConfidentialityLevel confidentialityLevel, const SentryUser &user)
-    : title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.getUserId()) {}
+    : title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 }  // namespace KDC

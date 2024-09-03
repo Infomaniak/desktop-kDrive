@@ -87,7 +87,6 @@ class SentryHandler {
                 unsigned int captureCount = 0;
         };
 
-
         // Set Update event counter, if needed the event.message/errorLevel will be updated (escalated)
         void handleEventsRateLimit(SentryEvent &event, bool &toUpload);
 
