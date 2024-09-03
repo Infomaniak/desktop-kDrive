@@ -35,7 +35,7 @@ class SparkleUpdater : public UpdaterServer {
         ~SparkleUpdater() override;
 
         void setUpdateUrl(const QUrl &url);
-        void setQuitCallback(const QuitCallback &quitCallback);
+        void setQuitCallback(const QuitCallback &quitCallback) override;
         bool startUpdater();
 
         // unused in this updater

@@ -3012,7 +3012,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
         !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
         shouldQuit = false;
-    } else if (std::get<int64_t>(lastServerRestartDate) == SELF_RESTARTE_DISABLE_VALUE) {
+    } else if (std::get<int64_t>(lastServerRestartDate) == SELF_RESTARTER_DISABLE_VALUE) {
         LOG_INFO(_logger, "Last session requested to not restart the server.");
         shouldQuit = _crashRecovered;
         if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {

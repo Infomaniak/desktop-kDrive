@@ -369,7 +369,7 @@ enum class AppStateKey {
 };
 std::string toString(AppStateKey e);
 
-constexpr int64_t SELF_RESTARTE_DISABLE_VALUE = -1;
+constexpr int64_t SELF_RESTARTER_DISABLE_VALUE = -1;
 constexpr int64_t SELF_RESTARTER_NO_CRASH_DETECTED = 0;
 
 enum class LogUploadState { None, Archiving, Uploading, Success, Failed, CancelRequested, Canceled };

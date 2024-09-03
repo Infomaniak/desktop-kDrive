@@ -454,7 +454,8 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             break;
         }
         case SignalNum::UTILITY_QUIT: {
-            qCInfo(lcAppClient) << "Application exit";
+            qCInfo(lcAppClient) << "Quit app client at the request of the app server";
+            _quitInProcess = true;
             quit();
             break;
         }
@@ -472,6 +473,7 @@ void AppClient::onLogTooBig() {
 }
 
 void AppClient::onQuit() {
+    qCInfo(lcAppClient) << "Quit app client at the request of the user";
     _quitInProcess = true;
     if (CommClient::isConnected()) {
         QByteArray results;

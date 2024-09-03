@@ -22,7 +22,6 @@
 #include "libcommon/utility/utility.h"
 #include "sparkleupdater.h"
 #include "libcommonserver/log/log.h"
-#include "libcommonserver/utility/utility.h"
 #include "libparms/db/parmsdb.h"
 
 #include <log4cplus/loggingmacros.h>
@@ -34,7 +33,9 @@
     NSString *_availableVersion;
     KDC::QuitCallback _quitCallback;
 }
-- (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)bundle;
+- (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)updater;
+- (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater;
+- (void)updaterWillRelaunchApplication:(SPUUpdater *)updater;
 - (KDC::DownloadState)downloadState;
 - (NSString *)availableVersion;
 - (void)setQuitCallback:(KDC::QuitCallback)quitCallback;
@@ -51,10 +52,32 @@
     return self;
 }
 
-- (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)bundle {
-    Q_UNUSED(bundle)
+- (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)updater {
+    (void)updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "may check: YES");
     return YES;
+}
+
+- (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater {
+    (void)updater;
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Updater should relaunch app: YES");
+    return YES;
+}
+
+- (void)updaterWillRelaunchApplication:(SPUUpdater *)updater {
+    (void)updater;
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Updater will relaunch app");
+
+    if (bool found = false; !KDC::ParmsDb::instance()->updateAppState(KDC::AppStateKey::LastServerSelfRestartDate,
+                                                                      KDC::SELF_RESTARTER_DISABLE_VALUE, found) ||
+                            !found) {  // Desactivate the selfRestarter
+        LOG_ERROR(KDC::Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
+    }
+
+    if (_quitCallback) {
+        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Ask app client to quit");
+        _quitCallback();
+    }
 }
 
 - (KDC::DownloadState)downloadState {
@@ -72,7 +95,7 @@
 
 // Sent when a valid update is found by the update driver.
 - (void)updater:(SPUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)update {
-    Q_UNUSED(updater)
+    (void)updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version: " << update.versionString);
     _state = KDC::FindValidUpdate;
     _availableVersion = [update.versionString copy];
@@ -80,29 +103,19 @@
 
 // Sent when a valid update is not found.
 - (void)updaterDidNotFindUpdate:(SPUUpdater *)update {
-    Q_UNUSED(update)
+    (void)update;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "No valid update found");
     _state = KDC::DidNotFindUpdate;
 }
 
 // Sent immediately before installing the specified update.
 - (void)updater:(SPUUpdater *)updater willInstallUpdate:(SUAppcastItem *)update {
-    Q_UNUSED(updater)
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Install update");
-    if (bool found = false; !KDC::ParmsDb::instance()->updateAppState(KDC::AppStateKey::LastServerSelfRestartDate,
-                                                                      KDC::SELF_RESTARTE_DISABLE_VALUE, found) ||
-                            !found) {  // Desactivate the selfRestarter
-        LOG_ERROR(KDC::Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
-    }
-    if (_quitCallback) {
-        LOG_DEBUG(KDC::Log::instance()->getLogger(), "Ask client to quit");
-        _quitCallback();
-        KDC::Utility::msleep(1000);  // Sleep for 1s
-    }
+    (void)updater;
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Updater will install update");
 }
 
 - (void)updater:(SPUUpdater *)updater didAbortWithError:(NSError *)error {
-    Q_UNUSED(updater)
+    (void)updater;
     if ([error code] != SUNoUpdateError) {
         LOG_WARN(KDC::Log::instance()->getLogger(), "Error: " << [error code]);
         _state = KDC::AbortWithError;
@@ -110,8 +123,8 @@
 }
 
 - (void)updater:(SPUUpdater *)updater didFinishLoadingAppcast:(SUAppcast *)appcast {
-    Q_UNUSED(updater)
-    Q_UNUSED(appcast)
+    (void)updater;
+    (void)appcast;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Finish loading Appcast");
 }
 @end
