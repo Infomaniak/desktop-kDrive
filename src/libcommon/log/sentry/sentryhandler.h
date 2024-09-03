@@ -61,7 +61,7 @@ class SentryHandler {
         /*   If the same event has been captured more than 10 times in the last 10 minutes, it will be flagged as a rate limited
          *     event.
          *   If a rate limited event is not seen for 10 minutes, it will be unflagged.
-         * 
+         *
          *   Rate limited events:
          *   - Will see their level escalated to Error
          *   - Will be upload to Sentry only if the last upload is older than 10 minutes else it will just increment the capture
@@ -109,7 +109,8 @@ class SentryHandler {
         // Return true if last upload is older than minUploadInterval
         bool lastEventUploadIsOutdated(const SentryEvent &event) const;
 
-        // Escalate error level
+        // Escalate a sentry event. The event level will be set to Error and the message will be updated to indicate that the
+        // event has been rate limited.
         void escalateSentryEvent(SentryEvent &event);
 
         /* Update the effective sentry user.
