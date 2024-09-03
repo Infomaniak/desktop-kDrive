@@ -38,7 +38,7 @@
 
 #define PRAGMA_LOCKING_MODE_ID "db2"
 // #define PRAGMA_LOCKING_MODE             "PRAGMA locking_mode=EXCLUSIVE;"
-#define PRAGMA_LOCKING_MODE "PRAGMA locking_mode=NORMAL;"  // For debugging
+#define PRAGMA_LOCKING_MODE "PRAGMA locking_mode=NORMAL;" // For debugging
 
 #define PRAGMA_JOURNAL_MODE_ID "db3"
 #define PRAGMA_JOURNAL_MODE "PRAGMA journal_mode="
@@ -90,19 +90,15 @@ static std::string defaultJournalMode(const std::string &dbPath) {
         return "DELETE";
     }
 #else
-    (void)dbPath;
+    (void) dbPath;
 #endif
 
     return "WAL";
 }
 
-Db::Db(const std::filesystem::path &dbPath)
-    : _logger(Log::instance()->getLogger()),
-      _sqliteDb(new SqliteDb()),
-      _dbPath(dbPath),
-      _transaction(false),
-      _journalMode(defaultJournalMode(dbPath.string())),
-      _fromVersion(std::string()) {}
+Db::Db(const std::filesystem::path &dbPath) :
+    _logger(Log::instance()->getLogger()), _sqliteDb(new SqliteDb()), _dbPath(dbPath), _transaction(false),
+    _journalMode(defaultJournalMode(dbPath.string())), _fromVersion(std::string()) {}
 
 Db::~Db() {
     close();
@@ -710,4 +706,4 @@ bool Db::selectVersion(std::string &version, bool &found) {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

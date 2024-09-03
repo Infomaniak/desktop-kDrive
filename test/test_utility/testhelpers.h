@@ -54,4 +54,4 @@ struct TestVariables {
 
 void generateOrEditTestFile(const SyncPath &path);
 
-}  // namespace KDC::testhelpers
+} // namespace KDC::testhelpers
