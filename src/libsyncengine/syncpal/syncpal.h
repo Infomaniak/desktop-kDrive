@@ -77,8 +77,8 @@ class GetSizeJob;
 
 struct SyncPalInfo {
         SyncPalInfo() = default;
-        SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {})
-            : driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
+        SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
+            driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
 
         int syncDbId{0};
         int driveDbId{0};
@@ -299,12 +299,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Shared objects
         std::shared_ptr<bool> _interruptSync{new bool(false)};
-        std::shared_ptr<Snapshot> _localSnapshot{nullptr};   // Real time local snapshot
-        std::shared_ptr<Snapshot> _remoteSnapshot{nullptr};  // Real time remote snapshot
+        std::shared_ptr<Snapshot> _localSnapshot{nullptr}; // Real time local snapshot
+        std::shared_ptr<Snapshot> _remoteSnapshot{nullptr}; // Real time remote snapshot
         std::shared_ptr<Snapshot> _localSnapshotCopy{
-            nullptr};  // Copy of the real time local snapshot that is used by synchronization workers
+                nullptr}; // Copy of the real time local snapshot that is used by synchronization workers
         std::shared_ptr<Snapshot> _remoteSnapshotCopy{
-            nullptr};  // Copy of the real time remote snapshot that is used by synchronization workers
+                nullptr}; // Copy of the real time remote snapshot that is used by synchronization workers
         std::shared_ptr<FSOperationSet> _localOperationSet{nullptr};
         std::shared_ptr<FSOperationSet> _remoteOperationSet{nullptr};
         std::shared_ptr<UpdateTree> _localUpdateTree{nullptr};
@@ -396,4 +396,4 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestIntegration;
 };
 
-}  // namespace KDC
+} // namespace KDC

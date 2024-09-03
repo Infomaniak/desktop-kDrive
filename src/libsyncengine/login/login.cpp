@@ -62,7 +62,7 @@ ExitCode Login::requestToken(const std::string &authorizationCode, const std::st
     std::string errorDescr;
     if (job.hasErrorApi(&errorCode, &errorDescr)) {
         LOGW_WARN(_logger, L"Failed to retrieve authentification token. Error : "
-                               << KDC::Utility::s2ws(errorCode).c_str() << L" - " << KDC::Utility::s2ws(errorDescr).c_str());
+                                   << KDC::Utility::s2ws(errorCode).c_str() << L" - " << KDC::Utility::s2ws(errorDescr).c_str());
         _error = errorCode;
         _errorDescr = errorDescr;
         return ExitCode::BackError;
@@ -102,6 +102,11 @@ long Login::tokenUpdateDurationFromNow() const {
 ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken, std::string &error, std::string &errorDescr) {
     LOG_DEBUG(Log::instance()->getLogger(), "Try to refresh token...");
 
+    if (apiToken.refreshToken().empty()) {
+        LOG_INFO(Log::instance()->getLogger(), "No refresh token available, user will be asked to log in once again.");
+        return ExitCode::InvalidToken;
+    }
+
     std::chrono::time_point<std::chrono::steady_clock> tokenLastUpdate = _info[apiToken.userId()]._lastTokenUpdateTime;
 
     const std::lock_guard<std::mutex> lock(_info[apiToken.userId()]._mutex);
@@ -114,7 +119,7 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
     LOG_DEBUG(Log::instance()->getLogger(), "Start token refresh request");
 
     if (!KeyChainManager::instance()->writeDummyTest()) {
-        error = "Test writting into the keychain failed. Token not refreshed.";
+        error = "Test writing into the keychain failed. Token not refreshed.";
         return ExitCode::SystemError;
     }
 
@@ -130,17 +135,17 @@ ExitCode Login::refreshToken(const std::string &keychainKey, ApiToken &apiToken,
 
     if (job.hasErrorApi(&error, &errorDescr)) {
         LOG_WARN(Log::instance()->getLogger(),
-                 "Failed to retrieve authentification token. Error : " << error.c_str() << " - " << errorDescr.c_str());
+                 "Failed to retrieve authentication token. Error : " << error.c_str() << " - " << errorDescr.c_str());
         return ExitCode::NetworkError;
     }
 
     apiToken = job.apiToken();
 
-    LOG_DEBUG(Log::instance()->getLogger(), "Token succesfully refreshed");
+    LOG_DEBUG(Log::instance()->getLogger(), "Token successfully refreshed");
 
     if (!KeyChainManager::instance()->writeToken(keychainKey, apiToken.rawData())) {
-        LOG_WARN(Log::instance()->getLogger(), "Failed to write authentification token into keychain");
-        error = std::string("Failed to write authentification token into keychain");
+        LOG_WARN(Log::instance()->getLogger(), "Failed to write authentication token into keychain");
+        error = std::string("Failed to write authentication token into keychain");
         errorDescr = std::string();
         return ExitCode::SystemError;
     }
@@ -164,4 +169,4 @@ Login::LoginInfo &Login::LoginInfo::operator=(const LoginInfo &info) {
     return *this;
 }
 
-}  // namespace KDC
+} // namespace KDC
