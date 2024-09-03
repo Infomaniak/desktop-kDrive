@@ -23,8 +23,8 @@
 #include <asserts.h>
 
 namespace KDC {
-constexpr const int SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT = 10;  // Number of captures of the same event before rate limiting
-constexpr const int SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT =
+constexpr const int SentryMaxCaptureCountBeforeRateLimit = 10;  // Number of captures of the same event before rate limiting
+constexpr const int SentryMinUploadIntervaOnRateLimit =
     10;  // Number of minutes to wait before sending the event again after rate limiting
 std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
 
@@ -109,17 +109,17 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
     std::scoped_lock lock(_mutex);
     SentryEvent event(title, message, level, _globalConfidentialityLevel, user);
     if (auto it = _events.find(event.getStr()); it != _events.end()) {
-        auto& storedEvent = it->second;
+        auto &storedEvent = it->second;
         storedEvent.captureCount++;
-        if (storedEvent.lastCapture + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) <
+        if (storedEvent.lastCapture + std::chrono::minutes(SentryMinUploadIntervaOnRateLimit) <
             std::chrono::system_clock::now()) {  // Reset the capture count if the last capture was more than 10 minutes ago
             storedEvent.captureCount = 0;
-        } else if (storedEvent.captureCount >= SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT) {
+        } else if (storedEvent.captureCount >= SentryMaxCaptureCountBeforeRateLimit) {
             event.lastCapture = std::chrono::system_clock::now();
-            if (storedEvent.lastUpload + std::chrono::minutes(SENTRY_MINUTES_BETWEEN_UPLOAD_ON_RATE_LIMIT) >
+            if (storedEvent.lastUpload + std::chrono::minutes(SentryMinUploadIntervaOnRateLimit) >
                     std::chrono::system_clock::now() &&
                 storedEvent.captureCount !=
-                    SENTRY_MAX_CAPTURE_COUNT_BEFORE_RATE_LIMIT) {  // Rate limit reached for this event wait 10
+                    SentryMaxCaptureCountBeforeRateLimit) {  // Rate limit reached for this event wait 10
                                                                    // minutes before sending it again
                 return;
             } else {
