@@ -17,10 +17,6 @@
  */
 
 #include "testparmsdb.h"
-#include "libcommonserver/utility/asserts.h"
-#include "libcommonserver/log/log.h"
-
-#include <time.h>
 
 using namespace CppUnit;
 
@@ -28,10 +24,9 @@ namespace KDC {
 
 void TestParmsDb::setUp() {
     // Create a temp parmsDb
-    bool alreadyExists;
+    bool alreadyExists = false;
     std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 }
 
 void TestParmsDb::tearDown() {
@@ -82,7 +77,7 @@ void TestParmsDb::testParameters() {
     parameters2.setDarkTheme(true);
     std::string geometryStr("XXXXXXXXXX");
     parameters2.setDialogGeometry(
-        std::shared_ptr<std::vector<char>>(new std::vector<char>(geometryStr.begin(), geometryStr.end())));
+            std::shared_ptr<std::vector<char>>(new std::vector<char>(geometryStr.begin(), geometryStr.end())));
     CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters2, found) && found);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
@@ -224,17 +219,24 @@ void TestParmsDb::testDrive() {
     CPPUNIT_ASSERT(ParmsDb::instance()->selectDrive(drive3.dbId(), drive4, found) && !found);
 }
 
-void TestParmsDb::testSync() {
-    User user1(1, 5555555, "123");
+namespace {
+
+struct SyncSetupData {
+        std::array<Sync, 2> syncs;
+        std::array<Drive, 2> drives;
+};
+
+SyncSetupData createSyncs() {
+    const User user1(1, 5555555, "123");
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertUser(user1));
 
-    Account acc1(1, 12345678, user1.dbId());
+    const Account acc1(1, 12345678, user1.dbId());
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAccount(acc1));
 
-    Drive drive1(1, 99999991, acc1.dbId(), "Drive 1", 2000000000, "#000000");
-    Drive drive2(2, 99999992, acc1.dbId(), "Drive 2", 2000000000, "#000000");
+    const Drive drive1(1, 99999991, acc1.dbId(), "Drive 1", 2000000000, "#000000");
+    const Drive drive2(2, 99999992, acc1.dbId(), "Drive 2", 2000000000, "#000000");
 
     CPPUNIT_ASSERT(ParmsDb::instance()->insertDrive(drive1));
     CPPUNIT_ASSERT(ParmsDb::instance()->insertDrive(drive2));
@@ -243,30 +245,70 @@ void TestParmsDb::testSync() {
     Sync sync2(2, drive1.dbId(), "/Users/xxxxxx/Pictures", "Pictures",
                "/Users/xxxxxx/Library/Application Support/kDrive/.synczzzzzz.db");
 
-    CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync1));
-    CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync2));
+    sync2.setDbPath("/Users/me/Library/Application Support/kDrive/.parms.db");
 
-    sync2.setLocalPath("/Users/xxxxxx/Movies");
-    sync2.setPaused(true);
-    sync2.setNotificationsDisabled(true);
-    bool found;
-    CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, found) && found);
+    SyncSetupData data;
+    data.syncs = {sync1, sync2};
+    data.drives = {drive1, drive2};
 
-    Sync sync;
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbId(), sync, found) && found);
-    CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
-    CPPUNIT_ASSERT(sync.paused() == sync2.paused());
-    CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+    return data;
+}
+} // namespace
 
-    std::vector<Sync> syncList;
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncs(drive1.dbId(), syncList));
-    CPPUNIT_ASSERT(syncList.size() == 2);
-    CPPUNIT_ASSERT(syncList[0].localPath() == sync1.localPath());
-    CPPUNIT_ASSERT(syncList[0].paused() == sync1.paused());
-    CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
+void TestParmsDb::testSync() {
+    auto data = createSyncs();
+    auto &sync1 = data.syncs.at(0);
+    auto &sync2 = data.syncs.at(1);
 
-    CPPUNIT_ASSERT(ParmsDb::instance()->deleteSync(sync2.dbId(), found) && found);
-    CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbId(), sync, found) && !found);
+    // Insert Sync
+    {
+        CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync1));
+        CPPUNIT_ASSERT(ParmsDb::instance()->insertSync(sync2));
+    }
+    // Update sync
+    {
+        sync2.setLocalPath("/Users/xxxxxx/Movies");
+        sync2.setPaused(true);
+        sync2.setNotificationsDisabled(true);
+        bool syncIsFound = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->updateSync(sync2, syncIsFound) && syncIsFound);
+    }
+    // Find sync by DB ID
+    {
+        Sync sync;
+        bool syncIsFound = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbId(), sync, syncIsFound) && syncIsFound);
+
+        CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
+        CPPUNIT_ASSERT(sync.paused() == sync2.paused());
+        CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+    }
+    // Find sync by DB path
+    {
+        Sync sync;
+        bool syncIsFound = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbPath(), sync, syncIsFound) && syncIsFound);
+        CPPUNIT_ASSERT(sync.localPath() == sync2.localPath());
+        CPPUNIT_ASSERT(sync.paused() == sync2.paused());
+        CPPUNIT_ASSERT(sync.notificationsDisabled() == sync2.notificationsDisabled());
+    }
+    // Select all syncs
+    {
+        std::vector<Sync> syncList;
+        const Drive &drive1 = data.drives.at(0);
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectAllSyncs(drive1.dbId(), syncList));
+        CPPUNIT_ASSERT(syncList.size() == 2);
+        CPPUNIT_ASSERT(syncList[0].localPath() == sync1.localPath());
+        CPPUNIT_ASSERT(syncList[0].paused() == sync1.paused());
+        CPPUNIT_ASSERT(syncList[0].notificationsDisabled() == sync1.notificationsDisabled());
+    }
+    // Delete sync
+    {
+        Sync sync;
+        bool syncIsFound = false;
+        CPPUNIT_ASSERT(ParmsDb::instance()->deleteSync(sync2.dbId(), syncIsFound) && syncIsFound);
+        CPPUNIT_ASSERT(ParmsDb::instance()->selectSync(sync2.dbId(), sync, syncIsFound) && !syncIsFound);
+    }
 }
 
 void TestParmsDb::testExclusionTemplate() {
@@ -305,10 +347,10 @@ void TestParmsDb::testAppState(void) {
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAppState(AppStateKey::LogUploadState, "__DEFAULT_IS_EMPTY__"));
 
     CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(AppStateKey::Unknown, std::string("value"),
-                                                       found));  // Test for unknown key (not in db)
+                                                       found)); // Test for unknown key (not in db)
     CPPUNIT_ASSERT(!found);
 
-    AppStateValue value = "";  // Test for unknown key (not in db)
+    AppStateValue value = ""; // Test for unknown key (not in db)
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::Unknown, value, found));
     CPPUNIT_ASSERT(!found);
 
@@ -325,7 +367,7 @@ void TestParmsDb::testAppState(void) {
     CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), std::string("test"), found));
     CPPUNIT_ASSERT(found);
 
-    AppStateValue valueStrRes = "";  // Test for string value
+    AppStateValue valueStrRes = ""; // Test for string value
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), valueStrRes, found));
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT_EQUAL(std::string("test"), std::get<std::string>(valueStrRes));
@@ -334,14 +376,14 @@ void TestParmsDb::testAppState(void) {
     CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), LogUploadState::None, found));
     CPPUNIT_ASSERT(found);
 
-    AppStateValue valueLogUploadStateRes = LogUploadState::None;  // Test for LogUploadState value
+    AppStateValue valueLogUploadStateRes = LogUploadState::None; // Test for LogUploadState value
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), valueLogUploadStateRes, found));
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT_EQUAL(LogUploadState::None, std::get<LogUploadState>(valueLogUploadStateRes));
 
     int i = 0;
     while (true) {
-        AppStateKey key = static_cast<AppStateKey>(i);  // Test for all known keys
+        AppStateKey key = static_cast<AppStateKey>(i); // Test for all known keys
         if (key == AppStateKey::Unknown) {
             break;
         }
@@ -397,4 +439,4 @@ void TestParmsDb::testError() {
     CPPUNIT_ASSERT(!ParmsDb::instance()->insertError(error3));
 }
 
-}  // namespace KDC
+} // namespace KDC

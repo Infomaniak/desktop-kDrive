@@ -77,8 +77,8 @@ class GetSizeJob;
 
 struct SyncPalInfo {
         SyncPalInfo() = default;
-        SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {})
-            : driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
+        SyncPalInfo(const int driveDbId_, const SyncPath &localPath_, const SyncPath targetPath_ = {}) :
+            driveDbId(driveDbId_), localPath(localPath_), targetPath(targetPath_) {}
 
         int syncDbId{0};
         int driveDbId{0};
@@ -175,6 +175,8 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         void setVfsMode(const VirtualFileMode mode) { _syncInfo.vfsMode = mode; };
         void setIsPaused(const bool paused) { _syncInfo.isPaused = paused; }
 
+        [[nodiscard]] const std::shared_ptr<SyncOperationList> &syncOps() const { return _syncOps; }
+
         // TODO : not ideal, to be refactored
         bool existOnServer(const SyncPath &path) const;
         bool canShareItem(const SyncPath &path) const;
@@ -257,6 +259,9 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Workers
         std::shared_ptr<ComputeFSOperationWorker> computeFSOperationsWorker() const { return _computeFSOperationsWorker; };
+        void setComputeFSOperationsWorker(std::shared_ptr<ComputeFSOperationWorker> worker) {
+            _computeFSOperationsWorker = worker;
+        }
 
     private:
         log4cplus::Logger _logger;
@@ -299,12 +304,12 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
 
         // Shared objects
         std::shared_ptr<bool> _interruptSync{new bool(false)};
-        std::shared_ptr<Snapshot> _localSnapshot{nullptr};   // Real time local snapshot
-        std::shared_ptr<Snapshot> _remoteSnapshot{nullptr};  // Real time remote snapshot
+        std::shared_ptr<Snapshot> _localSnapshot{nullptr}; // Real time local snapshot
+        std::shared_ptr<Snapshot> _remoteSnapshot{nullptr}; // Real time remote snapshot
         std::shared_ptr<Snapshot> _localSnapshotCopy{
-            nullptr};  // Copy of the real time local snapshot that is used by synchronization workers
+                nullptr}; // Copy of the real time local snapshot that is used by synchronization workers
         std::shared_ptr<Snapshot> _remoteSnapshotCopy{
-            nullptr};  // Copy of the real time remote snapshot that is used by synchronization workers
+                nullptr}; // Copy of the real time remote snapshot that is used by synchronization workers
         std::shared_ptr<FSOperationSet> _localOperationSet{nullptr};
         std::shared_ptr<FSOperationSet> _remoteOperationSet{nullptr};
         std::shared_ptr<UpdateTree> _localUpdateTree{nullptr};
@@ -344,6 +349,7 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         ExitCode updateSyncNode(SyncNodeType syncNodeType);
         ExitCode updateSyncNode();
         std::shared_ptr<Snapshot> snapshot(ReplicaSide side, bool copy = false) const;
+        const std::shared_ptr<const Snapshot> snapshotCopy(ReplicaSide side) { return snapshot(side, true); };
         std::shared_ptr<FSOperationSet> operationSet(ReplicaSide side) const;
         std::shared_ptr<UpdateTree> updateTree(ReplicaSide side) const;
 
@@ -396,4 +402,4 @@ class SYNCENGINE_EXPORT SyncPal : public std::enable_shared_from_this<SyncPal> {
         friend class TestIntegration;
 };
 
-}  // namespace KDC
+} // namespace KDC

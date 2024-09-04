@@ -8,6 +8,7 @@ set(testcommonserver_NAME ${APPLICATION_NAME}_test_common_server)
 set(testcommonserver_SRCS
         ../test.cpp
         ../test_utility/localtemporarydirectory.cpp
+        ../test_utility/testhelpers.h ../test_utility/testhelpers.cpp
 
         test.cpp
         # Utility

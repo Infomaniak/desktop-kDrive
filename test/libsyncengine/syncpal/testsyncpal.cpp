@@ -19,7 +19,6 @@
 #include "testsyncpal.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 #include "test_utility/testhelpers.h"
@@ -31,7 +30,7 @@ using namespace CppUnit;
 namespace KDC {
 
 // const std::string testExecutorFolderRemoteId = "75";        // In common documents
-const std::string testExecutorFolderRemoteId = "5007";  // In root
+const std::string testExecutorFolderRemoteId = "5007"; // In root
 
 void TestSyncPal::setUp() {
     const testhelpers::TestVariables testVariables;
@@ -46,11 +45,9 @@ void TestSyncPal::setUp() {
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    bool alreadyExists = false;
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 
     // Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
@@ -83,6 +80,7 @@ void TestSyncPal::setUp() {
 
 void TestSyncPal::tearDown() {
     // Stop SyncPal and delete sync DB
+    ParmsDb::instance()->close();
     if (_syncPal) {
         _syncPal->stop(false, true, true);
     }
@@ -197,77 +195,77 @@ void TestSyncPal::testAll() {
 
 void TestSyncPal::testConflictQueue() {
     std::shared_ptr<Node> localrootNode = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
-                 OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, nullptr));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
+                     OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, nullptr));
     std::shared_ptr<Node> remoterootNode = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
-                 OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, nullptr));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
+                     OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, nullptr));
 
     // Move_Move_Source & Move_ParentDelete
     std::shared_ptr<Node> localDirA = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"), NodeType::Directory,
-                 OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"), NodeType::Directory,
+                     OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
     std::shared_ptr<Node> localDirB = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("B"), NodeType::Directory,
-                 OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
-    std::shared_ptr<Node> localFileC1 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c1"), NodeType::File,
-                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirB, "A/c1"));
-    std::shared_ptr<Node> localFileC2 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c2"), NodeType::File,
-                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirB, "A/c2"));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("B"), NodeType::Directory,
+                     OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+    std::shared_ptr<Node> localFileC1 = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c1"), NodeType::File,
+                     OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirB, "A/c1"));
+    std::shared_ptr<Node> localFileC2 = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c2"), NodeType::File,
+                     OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirB, "A/c2"));
 
     std::shared_ptr<Node> remoteDirA = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"), NodeType::Directory,
-                 OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("A"), NodeType::Directory,
+                     OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
     std::shared_ptr<Node> remoteDirB = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"), NodeType::Directory,
-                 OperationType::Delete, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
-    std::shared_ptr<Node> remoteFileC1 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c1"), NodeType::File,
-                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode, "A/c1"));
-    std::shared_ptr<Node> remoteFileC2 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c2"), NodeType::File,
-                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode, "A/c2"));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("B"), NodeType::Directory,
+                     OperationType::Delete, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
+    std::shared_ptr<Node> remoteFileC1 = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c1"), NodeType::File,
+                     OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode, "A/c1"));
+    std::shared_ptr<Node> remoteFileC2 = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c2"), NodeType::File,
+                     OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode, "A/c2"));
 
     // Move_Create & Move_Delete
-    std::shared_ptr<Node> localFileC4 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c4"), NodeType::File,
-                                       OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localrootNode, "c3"));
+    std::shared_ptr<Node> localFileC4 = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c4"), NodeType::File,
+                     OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localrootNode, "c3"));
 
-    std::shared_ptr<Node> remoteFileC3 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c4"), NodeType::File,
-                                       OperationType::Create, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
-    std::shared_ptr<Node> remoteFileC4 =
-        std::shared_ptr<Node>(new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c3"), NodeType::File,
-                                       OperationType::Delete, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+    std::shared_ptr<Node> remoteFileC3 = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c4"), NodeType::File,
+                     OperationType::Create, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+    std::shared_ptr<Node> remoteFileC4 = std::shared_ptr<Node>(
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c3"), NodeType::File,
+                     OperationType::Delete, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
 
     // Move_Move_Cycle
     std::shared_ptr<Node> localDirC1 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c2"), NodeType::Directory,
-                 OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c2"), NodeType::Directory,
+                     OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
     std::shared_ptr<Node> localDirC2 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c2"), NodeType::Directory,
-                 OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("c2"), NodeType::Directory,
+                     OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, localrootNode));
     std::shared_ptr<Node> localDirD1 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("D1"), NodeType::Directory,
-                 OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirC1, "D1"));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("D1"), NodeType::Directory,
+                     OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirC1, "D1"));
     std::shared_ptr<Node> localDirD2 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("D2"), NodeType::Directory,
-                 OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirC2, "D2"));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("D2"), NodeType::Directory,
+                     OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, localDirC2, "D2"));
 
     std::shared_ptr<Node> remoteDirD1 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("D1"), NodeType::Directory,
-                 OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("D1"), NodeType::Directory,
+                     OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
     std::shared_ptr<Node> remoteDirD2 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("D2"), NodeType::Directory,
-                 OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("D2"), NodeType::Directory,
+                     OperationType::None, std::nullopt, 1234567890, 1234567890, 12345, remoterootNode));
     std::shared_ptr<Node> remoteDirC1 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c2"), NodeType::Directory,
-                 OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD1, "C1"));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c2"), NodeType::Directory,
+                     OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD1, "C1"));
     std::shared_ptr<Node> remoteDirC2 = std::shared_ptr<Node>(
-        new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c2"), NodeType::Directory,
-                 OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD2, "C2"));
+            new Node(std::nullopt, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("c2"), NodeType::Directory,
+                     OperationType::Move, std::nullopt, 1234567890, 1234567890, 12345, remoteDirD2, "C2"));
 
 
     _syncPal->updateTree(ReplicaSide::Local)->insertNode(localrootNode);
@@ -393,4 +391,4 @@ bool TestSyncPal::check_case_6_4() {
 
     return true;
 }
-}  // namespace KDC
+} // namespace KDC

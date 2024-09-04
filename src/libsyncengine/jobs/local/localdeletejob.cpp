@@ -57,13 +57,10 @@ bool LocalDeleteJob::matchRelativePaths(const SyncPath &targetPath, const SyncPa
 }
 
 LocalDeleteJob::LocalDeleteJob(const SyncPalInfo &syncPalInfo, const SyncPath &relativePath, bool isDehydratedPlaceholder,
-                               NodeId remoteId, bool forceToTrash /* = false */)
-    : _syncInfo(syncPalInfo),
-      _relativePath(relativePath),
-      _absolutePath(syncPalInfo.localPath / relativePath),
-      _isDehydratedPlaceholder(isDehydratedPlaceholder),
-      _remoteNodeId(remoteId),
-      _forceToTrash(forceToTrash) {}
+                               NodeId remoteId, bool forceToTrash /* = false */) :
+    _syncInfo(syncPalInfo),
+    _relativePath(relativePath), _absolutePath(syncPalInfo.localPath / relativePath),
+    _isDehydratedPlaceholder(isDehydratedPlaceholder), _remoteNodeId(remoteId), _forceToTrash(forceToTrash) {}
 
 LocalDeleteJob::LocalDeleteJob(const SyncPath &absolutePath) : _absolutePath(absolutePath) {
     setBypassCheck(true);
@@ -111,7 +108,7 @@ bool LocalDeleteJob::canRun() {
 
     if (!exists) {
         LOGW_DEBUG(_logger, L"Item does not exist anymore. Aborting current sync and restart: "
-                                << Utility::formatSyncPath(_absolutePath).c_str());
+                                    << Utility::formatSyncPath(_absolutePath).c_str());
         _exitCode = ExitCode::NeedRestart;
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
@@ -129,7 +126,7 @@ bool LocalDeleteJob::canRun() {
     SyncPath remoteRelativePath;
     const bool remotItemIsFound = findRemoteItem(remoteRelativePath);
 
-    if (!remotItemIsFound) return true;  // Safe deletion.
+    if (!remotItemIsFound) return true; // Safe deletion.
 
     // Check whether the remote item has been moved.
     // If the remote item has been moved into a blacklisted folder, then this Delete job is created and
@@ -140,7 +137,7 @@ bool LocalDeleteJob::canRun() {
         // Item is found at the same path on remote
         LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str()
                                           << L" still exists on remote replica. Aborting current sync and restarting.");
-        _exitCode = ExitCode::DataError;  // We need to rebuild the remote snapshot from scratch
+        _exitCode = ExitCode::DataError; // We need to rebuild the remote snapshot from scratch
         _exitCause = ExitCause::InvalidSnapshot;
         return false;
     }
@@ -148,37 +145,45 @@ bool LocalDeleteJob::canRun() {
     return true;
 }
 
-void LocalDeleteJob::runJob() {
-    if (!canRun()) {
+void LocalDeleteJob::handleTrashMoveOutcome(bool success) {
+    if (!success) {
+        LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" to trash");
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::MoveToTrashFailed;
         return;
-    }
-
-    if ((ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash) {
-        const bool success = Utility::moveItemToTrash(_absolutePath);
-        _exitCode = ExitCode::Ok;
-        if (!success) {
-            LOGW_WARN(_logger, L"Failed to move item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" to trash");
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::MoveToTrashFailed;
-            return;
-        }
-        if (ParametersCache::isExtendedLogEnabled()) {
-            LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" was moved to trash");
-        }
-    } else {
-        LOGW_DEBUG(_logger, L"Delete item: " << Utility::formatSyncPath(_absolutePath).c_str());
-        std::error_code ec;
-        std::filesystem::remove_all(_absolutePath, ec);
-        if (ec.value() != 0) {
-            LOGW_WARN(_logger, L"Failed to delete: " << Utility::formatStdError(_absolutePath, ec).c_str());
-            _exitCode = ExitCode::SystemError;
-            _exitCause = ExitCause::FileAccessError;
-            return;
-        }
-
-        LOGW_INFO(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" deleted");
-        _exitCode = ExitCode::Ok;
+    } else if (ParametersCache::isExtendedLogEnabled()) {
+        LOGW_DEBUG(_logger, L"Item with " << Utility::formatSyncPath(_absolutePath).c_str() << L" was moved to trash");
     }
 }
 
-}  // namespace KDC
+void LocalDeleteJob::moveToTrash() {
+    const bool success = Utility::moveItemToTrash(_absolutePath);
+    handleTrashMoveOutcome(success);
+}
+
+void LocalDeleteJob::runJob() {
+    if (!canRun()) return;
+
+    const bool tryMoveToTrash =
+            (ParametersCache::instance()->parameters().moveToTrash() && !_isDehydratedPlaceholder) || _forceToTrash;
+
+    _exitCode = ExitCode::Ok;
+    if (tryMoveToTrash) {
+        moveToTrash();
+        return;
+    }
+
+    LOGW_DEBUG(_logger, L"Delete item with " << Utility::formatSyncPath(_absolutePath).c_str());
+    std::error_code ec;
+    std::filesystem::remove_all(_absolutePath, ec);
+    if (ec) {
+        LOGW_WARN(_logger, L"Failed to delete item with path " << Utility::formatStdError(_absolutePath, ec).c_str());
+        _exitCode = ExitCode::SystemError;
+        _exitCause = ExitCause::FileAccessError;
+        return;
+    }
+
+    LOGW_INFO(_logger, L"Item: " << Utility::formatSyncPath(_absolutePath).c_str() << L" deleted");
+}
+
+} // namespace KDC

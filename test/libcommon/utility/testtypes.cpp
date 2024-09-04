@@ -48,7 +48,7 @@ void TestTypes::testStreamConversion() {
     // Test Logging of enum class
     LOG_WARN(Log::instance()->getLogger(), "Test log of enumClass: " << NodeType::Unknown);
     std::ifstream is(Log::instance()->getLogFilePath().string());
-    
+
     // check that the last line of the log file contains the expected string
     std::string line;
     std::string previousLine;

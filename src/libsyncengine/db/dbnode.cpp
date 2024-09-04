@@ -25,49 +25,63 @@ DbNode::DbNode(int64_t nodeId, std::optional<DbNodeId> parentNodeId, const SyncN
                const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
                std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
                std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
-               const std::optional<std::string> &checksum, SyncFileStatus status, bool syncing)
-    : _nodeId(nodeId),
-      _parentNodeId(parentNodeId),
-      _nameLocal(nameLocal),
-      _nameRemote(nameRemote),
-      _nodeIdLocal(nodeIdLocal),
-      _nodeIdRemote(nodeIdRemote),
-      _created(created),
-      _lastModifiedLocal(lastModifiedLocal),
-      _lastModifiedRemote(lastModifiedRemote),
-      _type(type),
-      _size(size),
-      _checksum(checksum),
-      _status(status),
-      _syncing(syncing) {
-    assert(nameLocal == Utility::normalizedSyncName(nameLocal));
-    assert(nameRemote == Utility::normalizedSyncName(nameRemote));
-}
+               const std::optional<std::string> &checksum, SyncFileStatus status, bool syncing) :
+    _nodeId(nodeId), _parentNodeId(parentNodeId), _nameLocal(nameLocal), _nameRemote(nameRemote), _nodeIdLocal(nodeIdLocal),
+    _nodeIdRemote(nodeIdRemote), _created(created), _lastModifiedLocal(lastModifiedLocal),
+    _lastModifiedRemote(lastModifiedRemote), _type(type), _size(size), _checksum(checksum), _status(status), _syncing(syncing) {}
 
-DbNode::DbNode()
-    : _nodeId(0),
-      _parentNodeId(0),
-      _nameLocal(SyncName()),
-      _nameRemote(SyncName()),
-      _nodeIdLocal(std::string()),
-      _nodeIdRemote(std::string()),
-      _created(0),
-      _lastModifiedLocal(0),
-      _lastModifiedRemote(0),
-      _type(NodeType::Unknown),
-      _size(0),
-      _checksum(std::string()),
-      _status(SyncFileStatus::Unknown),
-      _syncing(false) {}
+DbNode::DbNode(std::optional<DbNodeId> parentNodeId, const SyncName &nameLocal, const SyncName &nameRemote,
+               const std::optional<NodeId> &nodeIdLocal, const std::optional<NodeId> &nodeIdRemote,
+               std::optional<SyncTime> created, std::optional<SyncTime> lastModifiedLocal,
+               std::optional<SyncTime> lastModifiedRemote, NodeType type, int64_t size,
+               const std::optional<std::string> &checksum, SyncFileStatus status, bool syncing) :
+    DbNode(0, parentNodeId, nameLocal, nameRemote, nodeIdLocal, nodeIdRemote, created, lastModifiedLocal, lastModifiedRemote,
+           type, size, checksum, status, syncing) {}
+
+DbNode::DbNode() :
+    _nodeId(0), _parentNodeId(0), _nameLocal(SyncName()), _nameRemote(SyncName()), _nodeIdLocal(std::string()),
+    _nodeIdRemote(std::string()), _created(0), _lastModifiedLocal(0), _lastModifiedRemote(0), _type(NodeType::Unknown), _size(0),
+    _checksum(std::string()), _status(SyncFileStatus::Unknown), _syncing(false) {}
 
 void DbNode::setNameLocal(const SyncName &name) {
-    assert(name == Utility::normalizedSyncName(name));
     _nameLocal = name;
 }
 
 void DbNode::setNameRemote(const SyncName &name) {
-    assert(name == Utility::normalizedSyncName(name));
     _nameRemote = name;
 }
 
-}  // namespace KDC
+SyncTime DbNode::lastModified(const ReplicaSide side) const {
+    switch (side) {
+        case ReplicaSide::Local:
+            return lastModifiedLocal() ? *lastModifiedLocal() : 0;
+        case ReplicaSide::Remote:
+            return lastModifiedRemote() ? *lastModifiedRemote() : 0;
+        default:
+            return 0;
+    }
+}
+
+NodeId DbNode::nodeId(const ReplicaSide side) const {
+    switch (side) {
+        case ReplicaSide::Local:
+            return nodeIdLocal() ? *nodeIdLocal() : NodeId{};
+        case ReplicaSide::Remote:
+            return nodeIdRemote() ? *nodeIdRemote() : NodeId{};
+        default:
+            return {};
+    }
+}
+
+SyncName DbNode::name(const ReplicaSide side) const {
+    switch (side) {
+        case ReplicaSide::Local:
+            return nameLocal();
+        case ReplicaSide::Remote:
+            return nameRemote();
+        default:
+            return {};
+    }
+}
+
+} // namespace KDC

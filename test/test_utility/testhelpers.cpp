@@ -23,19 +23,11 @@
 namespace KDC::testhelpers {
 
 SyncName makeNfdSyncName() {
-#ifdef _WIN32
-    return Utility::normalizedSyncName(L"ééé", Utility::UnicodeNormalization::NFD);
-#else
-    return Utility::normalizedSyncName("ééé", Utility::UnicodeNormalization::NFD);
-#endif
+    return Utility::normalizedSyncName(Str("ééé"), Utility::UnicodeNormalization::NFD);
 }
 
 SyncName makeNfcSyncName() {
-#ifdef _WIN32
-    return Utility::normalizedSyncName(L"ééé");
-#else
-    return Utility::normalizedSyncName("ééé");
-#endif
+    return Utility::normalizedSyncName(Str("ééé"), Utility::UnicodeNormalization::NFC);
 }
 
 void generateOrEditTestFile(const SyncPath& path) {
@@ -52,4 +44,4 @@ std::string loadEnvVariable(const std::string& key) {
     return val;
 }
 
-}  // namespace KDC::testhelpers
+} // namespace KDC::testhelpers

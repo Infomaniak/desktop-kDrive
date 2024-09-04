@@ -18,6 +18,8 @@
 
 #include "testio.h"
 
+#include "test_utility/testhelpers.h"
+
 #include <filesystem>
 
 using namespace CppUnit;
@@ -218,11 +220,6 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
         CPPUNIT_ASSERT(ioError == IoError::Success);
     }
 #endif
-}
-
-void TestIo::testCheckIfPathExists() {
-    testCheckIfPathExistsSimpleCases();
-    testCheckIfPathExistsWithSameNodeIdSimpleCases();
 }
 
 void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
@@ -469,4 +466,79 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     }
 #endif
 }
+
+void TestIo::testCheckIfPathExistWithDistinctEncodings() {
+    // Create two files in the same directory, with the same name, up-to to encoding. First NFC, then NFD.
+    // Two distinct files should exist, except on MacOSX.
+    {
+        LocalTemporaryDirectory temporaryDirectory("TestIo");
+        const auto nfc = testhelpers::makeNfcSyncName();
+        const auto nfd = testhelpers::makeNfdSyncName();
+        const SyncPath nfcPath = temporaryDirectory.path() / nfc;
+        const SyncPath nfdPath = temporaryDirectory.path() / nfd;
+
+        {
+            std::ofstream{nfcPath};
+            std::ofstream{nfdPath};
+        }
+
+        CPPUNIT_ASSERT(std::filesystem::exists(nfcPath));
+        CPPUNIT_ASSERT(std::filesystem::exists(nfdPath));
+
+        bool exists = false;
+        IoError ioError = IoError::Unknown;
+
+        CPPUNIT_ASSERT(_testObj->checkIfPathExists(nfcPath, exists, ioError) && exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExists(nfdPath, exists, ioError) && exists);
+
+        NodeId nfcNodeId, nfdNodeId;
+        IoHelper::getNodeId(nfcPath, nfcNodeId);
+        IoHelper::getNodeId(nfdPath, nfdNodeId);
+
+#ifdef __APPLE__
+        CPPUNIT_ASSERT_EQUAL(nfcNodeId, nfdNodeId);
+#else
+        CPPUNIT_ASSERT(nfcNodeId != nfdNodeId);
+#endif
+    }
+
+    // Create two files in the same directory, with the same name, up-to to encoding. First NFD, then NFC.
+    // Both files should exist, except on MacOSX.
+    {
+        LocalTemporaryDirectory temporaryDirectory("TestIo");
+        const SyncPath nfcPath = temporaryDirectory.path() / testhelpers::makeNfcSyncName();
+        const SyncPath nfdPath = temporaryDirectory.path() / testhelpers::makeNfdSyncName();
+
+        {
+            std::ofstream{nfdPath};
+            std::ofstream{nfcPath};
+        }
+
+        CPPUNIT_ASSERT(std::filesystem::exists(nfcPath));
+        CPPUNIT_ASSERT(std::filesystem::exists(nfdPath));
+
+        bool exists = false;
+        IoError ioError = IoError::Unknown;
+
+        CPPUNIT_ASSERT(_testObj->checkIfPathExists(nfcPath, exists, ioError) && exists);
+        CPPUNIT_ASSERT(_testObj->checkIfPathExists(nfdPath, exists, ioError) && exists);
+
+        NodeId nfcNodeId, nfdNodeId;
+        IoHelper::getNodeId(nfcPath, nfcNodeId);
+        IoHelper::getNodeId(nfdPath, nfdNodeId);
+
+#ifdef __APPLE__
+        CPPUNIT_ASSERT_EQUAL(nfcNodeId, nfdNodeId);
+#else
+        CPPUNIT_ASSERT(nfcNodeId != nfdNodeId);
+#endif
+    }
+}
+
+void TestIo::testCheckIfPathExists() {
+    testCheckIfPathExistsSimpleCases();
+    testCheckIfPathExistsWithSameNodeIdSimpleCases();
+    testCheckIfPathExistWithDistinctEncodings();
+}
+
 }  // namespace KDC

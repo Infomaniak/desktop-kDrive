@@ -70,20 +70,20 @@ class PARMS_EXPORT Sync {
         }
 
     private:
-        int _dbId;
-        int _driveDbId;
+        int _dbId{0};
+        int _driveDbId{0};
         std::filesystem::path _localPath;
         std::filesystem::path _targetPath;
         NodeId _targetNodeId;
-        bool _paused;
-        bool _supportVfs;
-        VirtualFileMode _virtualFileMode;
-        bool _notificationsDisabled;
+        bool _paused{false};
+        bool _supportVfs{false};
+        VirtualFileMode _virtualFileMode{VirtualFileMode::Off};
+        bool _notificationsDisabled{false};
         std::filesystem::path _dbPath;
-        bool _hasFullyCompleted;
+        bool _hasFullyCompleted{false};
         std::string _navigationPaneClsid;
         std::string _listingCursor;
-        int64_t _listingCursorTimestamp;
+        int64_t _listingCursorTimestamp{0};
 };
 
-}  // namespace KDC
+} // namespace KDC

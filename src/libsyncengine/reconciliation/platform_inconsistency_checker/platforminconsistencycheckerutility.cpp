@@ -134,8 +134,8 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
 }
 #endif
 
-bool PlatformInconsistencyCheckerUtility::checkNameSize(const SyncPath &name) {
-    if (name.native().size() > MAX_NAME_LENGTH) {
+bool PlatformInconsistencyCheckerUtility::checkNameSize(const SyncName &name) {
+    if (name.size() > MAX_NAME_LENGTH) {
         return true;
     }
 
@@ -144,29 +144,28 @@ bool PlatformInconsistencyCheckerUtility::checkNameSize(const SyncPath &name) {
 
 // return false if the file name is ok
 // true if the file name has been fixed
-bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncPath &name) {
+bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &name) {
     if (name.empty()) {
         return false;
     }
 
-    SyncName nameStr(name.native());
-    if (nameStr == Str("..") || nameStr == Str(".")) {
+    if (name == Str("..") || name == Str(".")) {
         return true;
     }
 
 #ifdef WIN32
     // Can't have only dots
-    if (std::ranges::count(nameStr, '.') == nameStr.size()) {
+    if (std::ranges::count(name, '.') == name.size()) {
         return true;
     }
 
     // Can't finish with a '.'
-    if (nameStr[nameStr.size() - 1] == '.') {
+    if (name[name.size() - 1] == '.') {
         return true;
     }
 
     for (const auto &reserved : reservedWinNames) {
-        if (Utility::startsWithInsensitive(nameStr, Str2SyncName(reserved)) && nameStr.size() == reserved.size()) {
+        if (Utility::startsWithInsensitive(name, Str2SyncName(reserved)) && name.size() == reserved.size()) {
             return true;
         }
     }

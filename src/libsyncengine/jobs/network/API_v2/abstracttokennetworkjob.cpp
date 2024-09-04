@@ -38,15 +38,15 @@ constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG[] = "Failed to create Abstr
 constexpr char ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG_INVALID_TOKEN[] = "Invalid Token";
 constexpr char ABSTRACTTOKENNETWORKJOB_EXEC_ERROR_MSG[] = "Failed to execute AbstractTokenNetworkJob!";
 
-constexpr int TOKEN_LIFETIME = 7200;  // 2 hours
+constexpr int TOKEN_LIFETIME = 7200; // 2 hours
 
 namespace KDC {
 std::unordered_map<int, std::pair<std::shared_ptr<Login>, int>> AbstractTokenNetworkJob::_userToApiKeyMap;
 std::unordered_map<int, std::pair<int, int>> AbstractTokenNetworkJob::_driveToApiKeyMap;
 
 AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, int userId, int driveDbId, int driveId,
-                                                 bool returnJson /*= true*/)
-    : _apiType(apiType), _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
+                                                 bool returnJson /*= true*/) :
+    _apiType(apiType), _userDbId(userDbId), _userId(userId), _driveDbId(driveDbId), _driveId(driveId), _returnJson(returnJson) {
     if (!ParmsDb::instance()) {
         LOG_WARN(_logger, "ParmsDb must be initialized!");
         throw std::runtime_error(ABSTRACTTOKENNETWORKJOB_NEW_ERROR_MSG);
@@ -64,8 +64,8 @@ AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, int userDbId, 
     addRawHeader("Authorization", "Bearer " + _token);
 }
 
-AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, bool returnJson /*= true*/)
-    : AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, returnJson) {}
+AbstractTokenNetworkJob::AbstractTokenNetworkJob(ApiType apiType, bool returnJson /*= true*/) :
+    AbstractTokenNetworkJob(apiType, 0, 0, 0, 0, returnJson) {}
 
 ExitCause AbstractTokenNetworkJob::getExitCause() {
     if (_exitCause == ExitCause::Unknown) {
@@ -157,14 +157,14 @@ bool AbstractTokenNetworkJob::handleUnauthorizedResponse() {
 
 bool AbstractTokenNetworkJob::defaultBackErrorHandling(NetworkErrorCode errorCode, const Poco::URI &uri) {
     static const std::map<NetworkErrorCode, AbstractTokenNetworkJob::ExitHandler> errorCodeHandlingMap = {
-        {NetworkErrorCode::validationFailed, ExitHandler{ExitCause::InvalidName, "Invalid file or directory name"}},
-        {NetworkErrorCode::uploadNotTerminatedError, ExitHandler{ExitCause::UploadNotTerminated, "Upload not terminated"}},
-        {NetworkErrorCode::uploadError, ExitHandler{ExitCause::ApiErr, "Upload failed"}},
-        {NetworkErrorCode::destinationAlreadyExists, ExitHandler{ExitCause::FileAlreadyExist, "Operation refused"}},
-        {NetworkErrorCode::conflictError, ExitHandler{ExitCause::FileAlreadyExist, "Operation refused"}},
-        {NetworkErrorCode::accessDenied, ExitHandler{ExitCause::HttpErrForbidden, "Access denied"}},
-        {NetworkErrorCode::fileTooBigError, ExitHandler{ExitCause::FileTooBig, "File too big"}},
-        {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}}};
+            {NetworkErrorCode::validationFailed, ExitHandler{ExitCause::InvalidName, "Invalid file or directory name"}},
+            {NetworkErrorCode::uploadNotTerminatedError, ExitHandler{ExitCause::UploadNotTerminated, "Upload not terminated"}},
+            {NetworkErrorCode::uploadError, ExitHandler{ExitCause::ApiErr, "Upload failed"}},
+            {NetworkErrorCode::destinationAlreadyExists, ExitHandler{ExitCause::FileAlreadyExist, "Operation refused"}},
+            {NetworkErrorCode::conflictError, ExitHandler{ExitCause::FileAlreadyExist, "Operation refused"}},
+            {NetworkErrorCode::accessDenied, ExitHandler{ExitCause::HttpErrForbidden, "Access denied"}},
+            {NetworkErrorCode::fileTooBigError, ExitHandler{ExitCause::FileTooBig, "File too big"}},
+            {NetworkErrorCode::quotaExceededError, ExitHandler{ExitCause::QuotaExceeded, "Quota exceeded"}}};
 
     const auto &errorHandling = errorCodeHandlingMap.find(errorCode);
     if (errorHandling == errorCodeHandlingMap.cend()) {
@@ -455,7 +455,7 @@ bool AbstractTokenNetworkJob::refreshToken() {
 
             KeyChainManager::instance()->deleteToken(user.keychainKey());
 
-            user.setKeychainKey("");  // Clear the keychainKey
+            user.setKeychainKey(""); // Clear the keychainKey
             ParmsDb::instance()->updateUser(user, found);
             if (!found) {
                 LOG_WARN(_logger, "User not found for userDbId=" << _userDbId);
@@ -489,4 +489,4 @@ long AbstractTokenNetworkJob::tokenUpdateDurationFromNow() {
         return 0;
     }
 }
-}  // namespace KDC
+} // namespace KDC

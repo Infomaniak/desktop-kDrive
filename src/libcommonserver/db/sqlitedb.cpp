@@ -149,13 +149,12 @@ void SqliteDb::close() {
         // Delete DB
         std::error_code ec;
         if (!std::filesystem::remove(_dbPath, ec)) {
-            if (ec.value() != 0) {
-                LOGW_WARN(_logger, L"Failed to check if path exists " << Path2WStr(_dbPath).c_str() << L": "
-                                                                      << Utility::s2ws(ec.message()).c_str() << L" ("
-                                                                      << ec.value() << L")");
+            if (ec) {
+                LOGW_WARN(_logger, L"Failed to check if  " << Utility::formatSyncPath(_dbPath).c_str() << L" exists: "
+                                                           << Utility::formatStdError(ec).c_str());
             }
 
-            LOG_WARN(_logger, "Failed to remove db file");
+            LOG_WARN(_logger, "Failed to remove db file.");
         }
     }
 }
@@ -306,7 +305,7 @@ bool SqliteDb::queryBlobValue(const std::string &id, int index, std::shared_ptr<
         if (queryInfo._result._hasData) {
             size_t blobSize = queryInfo._query->blobSize(index);
             if (blobSize) {
-                const unsigned char *blob = (const unsigned char *)queryInfo._query->blobValue(index);
+                const unsigned char *blob = (const unsigned char *) queryInfo._query->blobValue(index);
                 value = std::shared_ptr<std::vector<char>>(new std::vector<char>(blob, blob + blobSize));
                 if (!value) {
                     LOG_WARN(_logger, "Memory allocation error");
@@ -411,7 +410,7 @@ namespace details {
 
 SyncName makeSyncName(sqlite3_value *value) {
 #ifdef _WIN32
-    auto wvalue = (wchar_t *)sqlite3_value_text16(value);
+    auto wvalue = (wchar_t *) sqlite3_value_text16(value);
     return wvalue ? reinterpret_cast<const wchar_t *>(wvalue) : SyncName();
 #else
     auto charValue = reinterpret_cast<const char *>(sqlite3_value_text(value));
@@ -433,11 +432,11 @@ static void normalizeSyncName(sqlite3_context *context, int argc, sqlite3_value 
     }
     sqlite3_result_null(context);
 }
-}  // namespace details
+} // namespace details
 
 int SqliteDb::createNormalizeSyncNameFunc() {
     return sqlite3_create_function(_sqlite3Db.get(), "normalizeSyncName", 1, SQLITE_UTF8, nullptr, &details::normalizeSyncName,
                                    nullptr, nullptr);
 }
 
-}  // namespace KDC
+} // namespace KDC

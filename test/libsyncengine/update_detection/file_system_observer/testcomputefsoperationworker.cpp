@@ -55,8 +55,7 @@ void TestComputeFSOperationWorker::setUp() {
 
     /// Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
 
     /// Insert user, account, drive & sync
@@ -118,19 +117,19 @@ void TestComputeFSOperationWorker::setUp() {
 
     /// Init test snapshot
     //// Insert dir in snapshot
-    _syncPal->_localSnapshot->updateItem(
-        SnapshotItem(nodeDirA.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
-                     nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123));
-    _syncPal->_localSnapshot->updateItem(
-        SnapshotItem(nodeDirB.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
-                     nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeDirA.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
+            nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeDirB.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
+            nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123));
 
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-        nodeDirA.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
-        nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123));
+            nodeDirA.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
+            nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
-        nodeDirB.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
-        nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123));
+            nodeDirB.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
+            nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123));
 
     //// Insert files in snapshot
     _syncPal->_localSnapshot->updateItem(SnapshotItem(nodeFileAA.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(),
@@ -169,15 +168,17 @@ void TestComputeFSOperationWorker::setUp() {
     /// Activate big folder limit
     ParametersCache::instance()->parameters().setUseBigFolderSizeLimit(true);
 
-    _syncPal->_computeFSOperationsWorker =
-        std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP");
+    _syncPal->setComputeFSOperationsWorker(
+            std::make_shared<ComputeFSOperationWorker>(_syncPal, "Test Compute FS Operations", "TCOP"));
     _syncPal->computeFSOperationsWorker()->setTesting(true);
     _syncPal->setLocalPath(testhelpers::localTestDirPath);
-    _syncPal->copySnapshots();
-    _syncPal->computeFSOperationsWorker()->execute();
 }
 
 void TestComputeFSOperationWorker::tearDown() {
+    ParmsDb::instance()->close();
+    if (_syncPal && _syncPal->syncDb()) {
+        _syncPal->syncDb()->close();
+    }
     ParmsDb::reset();
 }
 
@@ -187,11 +188,47 @@ void TestComputeFSOperationWorker::testNoOps() {
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
+void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
+    // Delete operations
+    _syncPal->_localSnapshot->removeItem("laa"); // Folder "AA" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("lab"); // Folder "AB" is contained in folder "A".
+    _syncPal->_localSnapshot->removeItem("lac"); // Folder "AC" is contained in folder "A" but is blacklisted.
+    _syncPal->_localSnapshot->removeItem("la");
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("la", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("laa", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lab", OperationType::Delete, tmpOp));
+
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("lac", OperationType::Delete, tmpOp));
+
+    CPPUNIT_ASSERT_EQUAL(uint64_t(3), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+}
+
+void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings() {
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfc", "la", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
+                                                      testhelpers::defaultTime, NodeType::File, 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfd", "la", testhelpers::makeNfdSyncName(), testhelpers::defaultTime,
+                                                      testhelpers::defaultTime, NodeType::File, 123));
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("la_nfc", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("la_nfd", OperationType::Create, tmpOp));
+
+    CPPUNIT_ASSERT_EQUAL(uint64_t(2), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
+}
+
 void TestComputeFSOperationWorker::testMultipleOps() {
     // On local replica
     // Create operation
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 123));
+            SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 123));
     // Edit operation
     _syncPal->_localSnapshot->setLastModified("laa", testhelpers::defaultTime + 60);
     // Move operation
@@ -202,11 +239,11 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     _syncPal->_localSnapshot->removeItem("lbb");
 
     // Create operation on a too big directory
-    _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("raf", "ra", Str("AF_too_big"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory, 0));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem("raf", "ra", Str("AF_too_big"), testhelpers::defaultTime,
+                                                       testhelpers::defaultTime, NodeType::Directory, 0));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rafa", "raf", Str("AFA"), testhelpers::defaultTime,
                                                        testhelpers::defaultTime, NodeType::File,
-                                                       550 * 1024 * 1024));  // File size: 550MB
+                                                       550 * 1024 * 1024)); // File size: 550MB
     // Rename operation on a blacklisted directory
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-renamed"));
 
@@ -214,18 +251,18 @@ void TestComputeFSOperationWorker::testMultipleOps() {
     _syncPal->computeFSOperationsWorker()->execute();
 
     FSOpPtr tmpOp = nullptr;
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lad", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("laa", OperationType::Edit, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lab", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lba", OperationType::Move, tmpOp));
-    CPPUNIT_ASSERT(_syncPal->_localOperationSet->findOp("lbb", OperationType::Delete, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("lae", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lad", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("laa", OperationType::Edit, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lab", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lba", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("lbb", OperationType::Delete, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("lae", OperationType::Create, tmpOp));
 
     // On remote replica
     // Create operation but folder too big (should be ignored on local replica)
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("raf", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rafa", OperationType::Create, tmpOp));
-    CPPUNIT_ASSERT(!_syncPal->_localOperationSet->findOp("rac", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("raf", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("rafa", OperationType::Create, tmpOp));
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("rac", OperationType::Move, tmpOp));
 }
 
 void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
@@ -240,7 +277,85 @@ void TestComputeFSOperationWorker::testLnkFileAlreadySynchronized() {
     // File is excluded by template, it does not appear in snapshot
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
-    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->_localOperationSet->nbOps());
+    CPPUNIT_ASSERT_EQUAL(uint64_t(0), _syncPal->operationSet(ReplicaSide::Local)->nbOps());
 }
 
-}  // namespace KDC
+void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
+    // NFC in DB, NFD on FS
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                    testhelpers::defaultFileSize, std::nullopt);
+    DbNodeId dbNodeIdTest;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
+
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                                      testhelpers::defaultFileSize));
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
+}
+
+void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
+    // NFD in DB, NFC on FS
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                    testhelpers::defaultFileSize, std::nullopt);
+    DbNodeId dbNodeIdTest;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
+
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                                      testhelpers::defaultFileSize));
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
+}
+
+void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
+    // NFD in DB, NFD on FS
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                    testhelpers::defaultFileSize, std::nullopt);
+    DbNodeId dbNodeIdTest;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
+
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                                      testhelpers::defaultFileSize));
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
+}
+
+void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
+    // NFC in DB, NFC on FS
+    DbNode nodeTest(0, _syncPal->syncDb()->rootNode().nodeId(), Str("testé.txt"), Str("testé.txt"), "ltest", "rtest",
+                    testhelpers::defaultTime, testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                    testhelpers::defaultFileSize, std::nullopt);
+    DbNodeId dbNodeIdTest;
+    bool constraintError = false;
+    _syncPal->syncDb()->insertNode(nodeTest, dbNodeIdTest, constraintError);
+
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
+                                                      testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
+                                                      testhelpers::defaultFileSize));
+
+    _syncPal->copySnapshots();
+    _syncPal->computeFSOperationsWorker()->execute();
+    FSOpPtr tmpOp = nullptr;
+    CPPUNIT_ASSERT(!_syncPal->operationSet(ReplicaSide::Local)->findOp("ltest", OperationType::Move, tmpOp));
+    CPPUNIT_ASSERT(_syncPal->operationSet(ReplicaSide::Local)->nbOps() == 0);
+}
+
+} // namespace KDC

@@ -31,8 +31,8 @@ void TestFsOperation::testConstructor() {
     const SyncPath destPath = testhelpers::makeNfdSyncName();
     const auto op = FSOperation(OperationType::Create, "node_1", NodeType::File, 10, -10, 0, syncPath, destPath);
 
-    CPPUNIT_ASSERT(op.path() == Utility::normalizedSyncPath(syncPath));
-    CPPUNIT_ASSERT(op.destinationPath() == Utility::normalizedSyncPath(destPath));
+    CPPUNIT_ASSERT(op.path() == syncPath);
+    CPPUNIT_ASSERT(op.destinationPath() == destPath);
 }
 
 

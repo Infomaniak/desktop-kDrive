@@ -90,6 +90,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool setSyncHasFullyCompleted(int dbId, bool value, bool &found);
         bool deleteSync(int dbId, bool &found);
         bool selectSync(int dbId, Sync &sync, bool &found);
+        bool selectSync(const SyncPath &syncDbPath, Sync &sync, bool &found);
         bool selectAllSyncs(std::vector<Sync> &syncList);
         bool selectAllSyncs(int driveDbId, std::vector<Sync> &syncList);
         bool getNewSyncDbId(int &dbId);
@@ -123,7 +124,7 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool selectAllMigrationSelectiveSync(std::vector<MigrationSelectiveSync> &migrationSelectiveSyncList);
 
         bool selectAppState(AppStateKey key, AppStateValue &value, bool &found);
-        bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found);  // update or insert
+        bool updateAppState(AppStateKey key, const AppStateValue &value, bool &found); // update or insert
 
     private:
         friend class TestParmsDb;
@@ -141,8 +142,10 @@ class PARMS_EXPORT ParmsDb : public Db {
         bool createAppState();
         bool prepareAppState();
 
+        void fillSyncWithQueryResult(Sync &sync, const char *requestId);
+
 #ifdef __APPLE__
         bool updateExclusionApps();
 #endif
 };
-}  // namespace KDC
+} // namespace KDC

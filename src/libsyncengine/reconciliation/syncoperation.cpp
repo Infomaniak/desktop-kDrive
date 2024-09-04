@@ -24,6 +24,18 @@ UniqueId SyncOperation::_nextId = 0;
 
 SyncOperation::SyncOperation() : _id(_nextId++) {}
 
+SyncName SyncOperation::nodeName(ReplicaSide side) const {
+    auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
+    if (!node) return {};
+    return node->name();
+}
+
+SyncPath SyncOperation::nodePath(const ReplicaSide side) const {
+    if (!correspondingNode()) return affectedNode()->getPath(); // If there is no corresponding node, ignore side.
+    auto node = affectedNode()->side() == side ? affectedNode() : correspondingNode();
+    return node->getPath();
+}
+
 bool SyncOperation::operator==(const SyncOperation &other) const {
     return _id == other.id();
 }
@@ -35,7 +47,7 @@ SyncOperationList::~SyncOperationList() {
 void SyncOperationList::setOpList(const std::list<SyncOpPtr> &opList) {
     clear();
 
-    for (auto &op : opList) {
+    for (auto &op: opList) {
         pushOp(op);
     }
 }
@@ -98,7 +110,7 @@ void SyncOperationList::operator=(const SyncOperationList &other) {
 void SyncOperationList::getMapIndexToOp(std::unordered_map<UniqueId, int> &map,
                                         OperationType typeFilter /*= OperationType::Unknown*/) {
     int index = 0;
-    for (const auto &opId : _opSortedList) {
+    for (const auto &opId: _opSortedList) {
         SyncOpPtr syncOp = getOp(opId);
         if (syncOp != nullptr) {
             if (typeFilter == OperationType::None) {
@@ -112,4 +124,4 @@ void SyncOperationList::getMapIndexToOp(std::unordered_map<UniqueId, int> &map,
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

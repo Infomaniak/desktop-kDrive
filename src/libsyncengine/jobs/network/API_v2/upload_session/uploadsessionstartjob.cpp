@@ -58,7 +58,6 @@ void UploadSessionStartJob::setData(bool &canceled) {
             if (_fileId.empty()) {
                 json.set("file_name", _filename);
                 json.set("directory_id", _remoteParentDirId);
-                json.set("conflict", "version");
             } else {
                 json.set("file_id", _fileId);
             }

@@ -35,6 +35,7 @@ class TestExecutorWorker : public CppUnit::TestFixture {
 
     public:
         void setUp() override;
+        void tearDown() override;
 
     private:
         void testCheckLiteSyncInfoForCreate();

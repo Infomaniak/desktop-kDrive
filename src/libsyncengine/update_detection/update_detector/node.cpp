@@ -29,7 +29,7 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
            std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId)
     : _idb(idb),
       _side(side),
-      _name(Utility::normalizedSyncName(name)),
+      _name(name),
       _type(type),
       _changeEvents(changeEvents),
       _id(id),
@@ -43,17 +43,13 @@ Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const Sy
 }
 
 Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode)
-    : _side(side), _name(Utility::normalizedSyncName(name)), _type(type), _isTmp(true) {
+    : _side(side), _name(name), _type(type), _isTmp(true) {
     _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
     setParentNode(parentNode);
 }
 
 bool Node::operator==(const Node &n) const {
     return n._idb == _idb && n._name == _name;
-}
-
-void Node::setName(const SyncName &name) {
-    _name = Utility::normalizedSyncName(name);
 }
 
 bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
