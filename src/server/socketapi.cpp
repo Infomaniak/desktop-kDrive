@@ -259,7 +259,7 @@ void SocketApi::slotReadSocket() {
                           L"Failed to parse SocketAPI message - msg=" << line.toStdWString().c_str() << L" socket=" << socket);
                 return;
             }
-            line.append(QString::fromUtf8(socket->readLine()).normalized(QString::NormalizationForm_C));
+            line.append(socket->readLine());
         }
         line.chop(QUERY_END_SEPARATOR.length());  // remove the separator
         LOGW_INFO(KDC::Log::instance()->getLogger(),
