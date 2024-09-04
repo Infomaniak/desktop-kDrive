@@ -49,6 +49,10 @@ class TmpBlacklistManager {
             assert(_syncPal);
             return _syncPal->syncDbId();
         };
+        void logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side, const SyncPath &path = "") const;
+        static SyncNodeType blackListType(const ReplicaSide side) {
+            return side == ReplicaSide::Local ? SyncNodeType::TmpLocalBlacklist : SyncNodeType::TmpRemoteBlacklist;
+        }
 
         std::unordered_map<NodeId, TmpErrorInfo> _localErrors;
         std::unordered_map<NodeId, TmpErrorInfo> _remoteErrors;
