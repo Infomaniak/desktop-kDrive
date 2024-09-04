@@ -45,10 +45,14 @@ class TmpBlacklistManager {
     private:
         void insertInBlacklist(const NodeId &nodeId, ReplicaSide side);
         void removeFromDB(const NodeId &nodeId, ReplicaSide side);
+        int syncDbId() const noexcept {
+            assert(_syncPal);
+            return _syncPal->syncDbId();
+        };
 
         std::unordered_map<NodeId, TmpErrorInfo> _localErrors;
         std::unordered_map<NodeId, TmpErrorInfo> _remoteErrors;
         std::shared_ptr<SyncPal> _syncPal;
 };
 
-}  // namespace KDC
+} // namespace KDC
