@@ -167,12 +167,12 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
 
 bool SentryHandler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastCapture + minutes(SentryMinUploadIntervaOnRateLimit)) >= system_clock::now();
+    return (event.lastCapture + minutes(SentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
 }
 
 bool SentryHandler::lastEventUploadIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastUpload + minutes(SentryMinUploadIntervaOnRateLimit)) >= system_clock::now();
+    return (event.lastUpload + minutes(SentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
 }
 
 void SentryHandler::escalateSentryEvent(SentryEvent &event) {
