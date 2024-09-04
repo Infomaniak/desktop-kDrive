@@ -236,8 +236,8 @@ sudo make install
 
 ## Sparkle
 
-Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.4) version `2.6.4` and copy the Sparkle directory in `~` and name it `Sparkle`.  
-Copy and paste **Sparkle.Frameworks** in `~/Library/Frameworks` (create this directory if needed).
+Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.4) version `2.6.4` and copy the `Sparkle` directory in `~` and name it `Sparkle`.  
+Copy and paste `Sparkle.Frameworks` in `~/Library/Frameworks` (create this directory if needed).
 
 ## Packages
 
