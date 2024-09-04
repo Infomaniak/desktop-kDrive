@@ -86,4 +86,4 @@ class PARMS_EXPORT Sync {
         int64_t _listingCursorTimestamp{0};
 };
 
-}  // namespace KDC
+} // namespace KDC

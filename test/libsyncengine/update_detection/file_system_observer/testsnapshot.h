@@ -28,6 +28,7 @@ namespace KDC {
 class TestSnapshot : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSnapshot);
         CPPUNIT_TEST(testSnapshot);
+        CPPUNIT_TEST(testSnapshotInsertionWithDifferentEncodings);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -36,6 +37,7 @@ class TestSnapshot : public CppUnit::TestFixture {
 
     private:
         void testSnapshot();
+        void testSnapshotInsertionWithDifferentEncodings();
 };
 
 }  // namespace KDC

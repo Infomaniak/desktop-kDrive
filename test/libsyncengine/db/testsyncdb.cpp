@@ -40,8 +40,8 @@ class DbNodeTest : public DbNode {
                    bool syncing = false) {
             _nodeId = 0;
             _parentNodeId = parentNodeId;
-            _nameLocal = nameLocal;    // Don't check normalization
-            _nameRemote = nameRemote;  // Don't check normalization
+            _nameLocal = nameLocal; // Don't check normalization
+            _nameRemote = nameRemote; // Don't check normalization
             _nodeIdLocal = nodeIdLocal;
             _nodeIdRemote = nodeIdRemote;
             _created = created;
@@ -55,10 +55,10 @@ class DbNodeTest : public DbNode {
         }
 
         inline void setNameLocal(const SyncName &name) override {
-            _nameLocal = name;  // Don't check normalization
+            _nameLocal = name; // Don't check normalization
         }
         inline void setNameRemote(const SyncName &name) override {
-            _nameRemote = name;  // Don't check normalization
+            _nameRemote = name; // Don't check normalization
         }
 };
 
@@ -70,7 +70,7 @@ void TestSyncDb::setUp() {
     std::filesystem::remove(syncDbPath);
 
     // Create DB
-    _testObj = new SyncDbMock(syncDbPath.string(), "3.4.0");
+    _testObj = new SyncDb(syncDbPath.string(), "3.4.0");
     _testObj->setAutoDelete(true);
 }
 
@@ -109,7 +109,7 @@ std::map<NodeId, SyncName> getActualSystemFileNames(const SyncPath &localPath) {
     const auto dirIt = recursive_directory_iterator(localPath, directory_options::skip_permission_denied, ec);
 
     std::map<NodeId, SyncName> localNames;
-    for (const auto &dirEntry : dirIt) {
+    for (const auto &dirEntry: dirIt) {
         NodeId nodeId;
         IoHelper::getNodeId(dirEntry.path(), nodeId);
         localNames.insert({nodeId, dirEntry.path().filename()});
@@ -192,8 +192,6 @@ std::vector<DbNode> TestSyncDb::setupSyncDb3_6_5(const std::vector<NodeId> &loca
         bool constraintError = false;
         DbNodeId dbNodeId;
 
-        _testObj->setNormalizationEnabled(false);  // Will not normalize names in DB automatically.
-
         _testObj->insertNode(node0, dbNodeId, constraintError);
         node0.setNodeId(dbNodeId);
         node1.setParentNodeId(dbNodeId);
@@ -239,16 +237,15 @@ void TestSyncDb::testUpgradeTo3_6_5() {
 
     const auto actualSystemFileNames = getActualSystemFileNames(localTmpDir.path());
     for (int i = 0; i < initialDbNodes.size(); ++i) {
-        SyncName localName;  // From the sync database.
+        SyncName localName; // From the sync database.
         bool found = false;
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, *initialDbNodes[i].nodeIdLocal(), localName, found) && found);
 
-        CPPUNIT_ASSERT(localName ==
-                       syncFilesInfo.localCreationFileNames[i]);  // Name as used with the std API to create the file.
+        CPPUNIT_ASSERT(localName == syncFilesInfo.localCreationFileNames[i]); // Name as used with the std API to create the file.
         const auto &actualLocalName = actualSystemFileNames.at(*initialDbNodes[i].nodeIdLocal());
-        CPPUNIT_ASSERT(localName == actualLocalName);  // Actual name on disk
+        CPPUNIT_ASSERT(localName == actualLocalName); // Actual name on disk
 
-        SyncName remoteName;  // From the sync database.
+        SyncName remoteName; // From the sync database.
         CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, *initialDbNodes[i].nodeIdRemote(), remoteName, found) && found);
         CPPUNIT_ASSERT(remoteName == Utility::normalizedSyncName(initialDbNodes[i].nameRemote()));
     }
@@ -337,13 +334,13 @@ void TestSyncDb::testNodes() {
 
     SyncName localName;
     SyncName remoteName;
-    bool found;
+    bool found = false;
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, nodeFile7.nodeIdLocal().value(), localName, found) && found);
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, nodeFile7.nodeIdRemote().value(), remoteName, found) && found);
 
     const SyncName nfcEncodedName = testhelpers::makeNfcSyncName();
-    CPPUNIT_ASSERT(localName == nfcEncodedName);
-    CPPUNIT_ASSERT(remoteName == nfcEncodedName);
+    CPPUNIT_ASSERT(localName == nfdEncodedName); // Local name is not normalized.
+    CPPUNIT_ASSERT(remoteName == nfcEncodedName); // Remote name is normalized.
 
     // Update node
     nodeFile6.setNodeId(dbNodeIdFile6);
@@ -377,8 +374,8 @@ void TestSyncDb::testNodes() {
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Local, nodeFile7.nodeIdLocal().value(), localName, found) && found);
     CPPUNIT_ASSERT(_testObj->name(ReplicaSide::Remote, nodeFile7.nodeIdRemote().value(), remoteName, found) && found);
 
-    CPPUNIT_ASSERT(localName == nfcEncodedName);
-    CPPUNIT_ASSERT(remoteName == nfcEncodedName);
+    CPPUNIT_ASSERT(localName == nfdEncodedName); // Local name is not normalized.
+    CPPUNIT_ASSERT(remoteName == nfcEncodedName); // Remote name is normalized.
 
     // Delete node
     CPPUNIT_ASSERT(_testObj->deleteNode(dbNodeIdFile6, found) && found);
@@ -745,4 +742,4 @@ void TestSyncDb::testCorrespondingNodeId() {
     CPPUNIT_ASSERT(!_testObj->correspondingNodeId(ReplicaSide::Unknown, "id dir loc 1", correspondingNodeId, found));
     CPPUNIT_ASSERT(!found);
 }
-}  // namespace KDC
+} // namespace KDC

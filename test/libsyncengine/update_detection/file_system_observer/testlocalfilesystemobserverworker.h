@@ -21,7 +21,6 @@
 #include "testincludes.h"
 #include "test_utility/localtemporarydirectory.h"
 
-#include "db/parmsdb.h"
 #include "syncpal/syncpal.h"
 
 #include <log4cplus/logger.h>
@@ -36,6 +35,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
         CPPUNIT_TEST(testFolderWatcherWithInitialSnapshot);
         CPPUNIT_TEST(testFolderWatcherWithFiles);
+        CPPUNIT_TEST(testFolderWatcherWithDuplicateFileNames);
         CPPUNIT_TEST(testFolderWatcherDeleteDir);
         CPPUNIT_TEST(testFolderWatcherWithDirs);
         CPPUNIT_TEST(testFolderWatcherWithSpecialCases1);
@@ -60,6 +60,7 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
 
         void testFolderWatcherWithInitialSnapshot();
         void testFolderWatcherWithFiles();
+        void testFolderWatcherWithDuplicateFileNames();
         void testFolderWatcherWithDirs();
         void testFolderWatcherDeleteDir();
         void testFolderWatcherWithSpecialCases1();

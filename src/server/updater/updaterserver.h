@@ -30,6 +30,8 @@ namespace KDC {
 
 Q_DECLARE_LOGGING_CATEGORY(lcUpdater)
 
+using QuitCallback = std::function<void()>;
+
 class UpdaterServer : public Updater {
         Q_OBJECT
     public:
@@ -53,6 +55,10 @@ class UpdaterServer : public Updater {
         virtual void checkForUpdate() = 0;
         virtual void backgroundCheckForUpdate() = 0;
         virtual bool handleStartup() = 0;
+
+#ifdef Q_OS_MACOS
+        virtual void setQuitCallback(const QuitCallback &quitCallback) = 0;
+#endif
 
     protected:
         static QString clientVersion();

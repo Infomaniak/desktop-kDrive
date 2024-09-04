@@ -105,6 +105,25 @@ std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*
     return tmp;
 }
 
+std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
+    static const char charArray[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz"
+        "-._~";
+
+    static std::uniform_int_distribution<int> distrib(
+        0, sizeof(charArray) - 2);  // -2 in order to avoid the null terminating character
+
+    std::string tmp;
+    tmp.reserve(length);
+    for (int i = 0; i < length; ++i) {
+        tmp += charArray[distrib(gen)];
+    }
+
+    return tmp;
+}
+
 void CommonUtility::crash() {
     volatile int *a = (int *)(NULL);
     *a = 1;
@@ -197,25 +216,6 @@ bool CommonUtility::setFolderCustomIcon(const QString &folderPath, IconType icon
 
     return true;
 #endif
-}
-
-std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
-    static const char charArray[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz"
-        "-._~";
-
-    static std::uniform_int_distribution<int> distrib(
-        0, sizeof(charArray) - 2);  // -2 in order to avoid the null terminating character
-
-    std::string tmp;
-    tmp.reserve(length);
-    for (int i = 0; i < length; ++i) {
-        tmp += charArray[distrib(gen)];
-    }
-
-    return tmp;
 }
 
 qint64 CommonUtility::freeDiskSpace(const QString &path) {

@@ -19,7 +19,6 @@
 #include "testsyncpal.h"
 #include "libsyncengine/jobs/network/API_v2/movejob.h"
 #include "libcommon/keychainmanager/keychainmanager.h"
-#include "libcommon/utility/utility.h"
 #include "libcommonserver/utility/utility.h"
 #include "libcommonserver/network/proxy.h"
 #include "test_utility/testhelpers.h"
@@ -46,11 +45,9 @@ void TestSyncPal::setUp() {
     KeyChainManager::instance()->writeToken(keychainKey, apiToken.reconstructJsonString());
 
     // Create parmsDb
-    bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    bool alreadyExists = false;
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 
     // Insert user, account, drive & sync
     int userId = atoi(testVariables.userId.c_str());
@@ -83,6 +80,7 @@ void TestSyncPal::setUp() {
 
 void TestSyncPal::tearDown() {
     // Stop SyncPal and delete sync DB
+    ParmsDb::instance()->close();
     if (_syncPal) {
         _syncPal->stop(false, true, true);
     }

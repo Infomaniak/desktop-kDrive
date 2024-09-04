@@ -46,30 +46,9 @@ class TestSyncDb : public CppUnit::TestFixture {
         void testUpgradeTo3_6_5CheckNodeMap();
 
     private:
-        class SyncDbMock : public SyncDb {
-            public:
-                SyncDbMock(const std::string &dbPath, const std::string &version, const std::string &targetNodeId = {})
-                    : SyncDb(dbPath, version, targetNodeId){};
-                void setNormalizationEnabled(bool enabled) { _normalizeNames = enabled; };
-
-            protected:
-                void updateNames(const char *requestId, const SyncName &localName, const SyncName &remoteName) override {
-                    SyncName inputLocalName = localName, inputRemoteName = remoteName;
-                    if (_normalizeNames) {
-                        inputLocalName = Utility::normalizedSyncName(inputLocalName);
-                        inputRemoteName = Utility::normalizedSyncName(inputRemoteName);
-                    }
-                    queryBindValue(requestId, 2, inputLocalName);
-                    queryBindValue(requestId, 3, inputRemoteName);
-                };
-
-            private:
-                bool _normalizeNames = true;
-        };
-
-        SyncDbMock *_testObj;
+        SyncDb *_testObj;
         // Note: the node ID value "1" is reserved for the root node of any synchronisation for both local and remote sides.
         std::vector<DbNode> setupSyncDb3_6_5(const std::vector<NodeId> &localNodeIds = {"2", "3", "4", "5", "6"});
 };
 
-}  // namespace KDC
+} // namespace KDC

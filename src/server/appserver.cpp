@@ -267,6 +267,12 @@ AppServer::AppServer(int &argc, char **argv)
 #endif
     if (KDC::isVfsPluginAvailable(VirtualFileMode::Suffix, error)) LOG_INFO(_logger, "VFS suffix plugin is available");
 
+#ifdef Q_OS_MACOS
+    // Init Updater
+    const QuitCallback quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    UpdaterServer::instance()->setQuitCallback(quitCallback);
+#endif
+
     // Update checks
     UpdaterScheduler *updaterScheduler = new UpdaterScheduler(this);
     connect(updaterScheduler, &UpdaterScheduler::requestRestart, this, &AppServer::onScheduleAppRestart);
@@ -310,7 +316,6 @@ AppServer::AppServer(int &argc, char **argv)
         return;
     }
 
-
     // Start syncs
     QTimer::singleShot(0, [=]() { startSyncPals(); });
 
@@ -319,7 +324,6 @@ AppServer::AppServer(int &argc, char **argv)
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::LogUploadState, appStateValue, found) || !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
     }
-
 
     if (auto logUploadState = std::get<LogUploadState>(appStateValue);
         logUploadState == LogUploadState::Archiving || logUploadState == LogUploadState::Uploading) {
@@ -2000,7 +2004,7 @@ ExitCode AppServer::clearErrors(int syncDbId, bool autoResolved /*= false*/) {
 }
 
 void AppServer::sendErrorsCleared(int syncDbId) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -2008,8 +2012,14 @@ void AppServer::sendErrorsCleared(int syncDbId) {
     CommServer::instance()->sendSignal(SignalNum::UTILITY_ERRORS_CLEARED, params, id);
 }
 
+void AppServer::sendQuit() {
+    int id = 0;
+
+    CommServer::instance()->sendSignal(SignalNum::UTILITY_QUIT, QByteArray(), id);
+}
+
 void AppServer::sendLogUploadStatusUpdated(LogUploadState status, int percent) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -2148,7 +2158,7 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
                 alreadyAsked = true;
 
                 // Notify client
-                int id;
+                int id = 0;
 
                 QString targetVersion;
                 QString targetVersionString;
@@ -2211,7 +2221,7 @@ void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObj
 
 void AppServer::sendShowNotification(const QString &title, const QString &message) {
     // Notify client
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -2221,7 +2231,7 @@ void AppServer::sendShowNotification(const QString &title, const QString &messag
 }
 
 void AppServer::sendNewBigFolder(int syncDbId, const QString &path) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -2231,7 +2241,7 @@ void AppServer::sendNewBigFolder(int syncDbId, const QString &path) {
 }
 
 void AppServer::sendErrorAdded(bool serverLevel, ExitCode exitCode, int syncDbId) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3018,7 +3028,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
         !found) {
         LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
         shouldQuit = false;
-    } else if (std::get<int64_t>(lastServerRestartDate) == SELF_RESTARTE_DISABLE_VALUE) {
+    } else if (std::get<int64_t>(lastServerRestartDate) == selfRestarterDisableValue) {
         LOG_INFO(_logger, "Last session requested to not restart the server.");
         shouldQuit = _crashRecovered;
         if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, 0, found) || !found) {
@@ -3047,7 +3057,7 @@ void AppServer::handleCrashRecovery(bool &shouldQuit) {
             std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
         timestampStr = std::to_string(timestamp);
     } else {
-        timestampStr = std::to_string(SELF_RESTARTER_NO_CRASH_DETECTED);
+        timestampStr = std::to_string(selfRestarterNoCrashDetected);
     }
 
     KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastServerSelfRestartDate, timestampStr, found);
@@ -3896,7 +3906,7 @@ void AppServer::addError(const Error &error) {
 }
 
 void AppServer::sendUserAdded(const UserInfo &userInfo) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3906,7 +3916,7 @@ void AppServer::sendUserAdded(const UserInfo &userInfo) {
 }
 
 void AppServer::sendUserUpdated(const UserInfo &userInfo) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3916,7 +3926,7 @@ void AppServer::sendUserUpdated(const UserInfo &userInfo) {
 }
 
 void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString connexionError) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3928,7 +3938,7 @@ void AppServer::sendUserStatusChanged(int userDbId, bool connected, QString conn
 }
 
 void AppServer::sendUserRemoved(int userDbId) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3938,7 +3948,7 @@ void AppServer::sendUserRemoved(int userDbId) {
 }
 
 void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3948,7 +3958,7 @@ void AppServer::sendAccountAdded(const AccountInfo &accountInfo) {
 }
 
 void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3958,7 +3968,7 @@ void AppServer::sendAccountUpdated(const AccountInfo &accountInfo) {
 }
 
 void AppServer::sendAccountRemoved(int accountDbId) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3968,7 +3978,7 @@ void AppServer::sendAccountRemoved(int accountDbId) {
 }
 
 void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3978,7 +3988,7 @@ void AppServer::sendDriveAdded(const DriveInfo &driveInfo) {
 }
 
 void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -3988,7 +3998,7 @@ void AppServer::sendDriveUpdated(const DriveInfo &driveInfo) {
 }
 
 void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -4000,7 +4010,7 @@ void AppServer::sendDriveQuotaUpdated(int driveDbId, qint64 total, qint64 used) 
 }
 
 void AppServer::sendDriveRemoved(int driveDbId) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -4010,7 +4020,7 @@ void AppServer::sendDriveRemoved(int driveDbId) {
 }
 
 void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -4020,7 +4030,7 @@ void AppServer::sendSyncUpdated(const SyncInfo &syncInfo) {
 }
 
 void AppServer::sendSyncRemoved(int syncDbId) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -4046,7 +4056,7 @@ void AppServer::sendDriveDeletionFailed(int driveDbId) {
 
 
 void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -4058,7 +4068,7 @@ void AppServer::sendGetFolderSizeCompleted(const QString &nodeId, qint64 size) {
 
 void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep step, int64_t currentFile, int64_t totalFiles,
                                      int64_t completedSize, int64_t totalSize, int64_t estimatedRemainingTime) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -4074,7 +4084,7 @@ void AppServer::sendSyncProgressInfo(int syncDbId, SyncStatus status, SyncStep s
 }
 
 void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &itemInfo) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -4084,7 +4094,7 @@ void AppServer::sendSyncCompletedItem(int syncDbId, const SyncFileItemInfo &item
 }
 
 void AppServer::sendVfsConversionCompleted(int syncDbId) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);
@@ -4093,7 +4103,7 @@ void AppServer::sendVfsConversionCompleted(int syncDbId) {
 }
 
 void AppServer::sendSyncAdded(const SyncInfo &syncInfo) {
-    int id;
+    int id = 0;
 
     QByteArray params;
     QDataStream paramsStream(&params, QIODevice::WriteOnly);

@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testupdatetree.h"
 
-#include <memory>
+#include "testupdatetree.h"
+#include "test_utility/testhelpers.h"
+
+#include "update_detection/update_detector/updatetreeworker.h"
 
 
 using namespace CppUnit;
@@ -34,13 +36,8 @@ void TestUpdateTree::tearDown() {
 }
 
 void TestUpdateTree::testConstructors() {
-#ifdef _WIN32
-    const SyncName nfdName = Utility::normalizedSyncName(L"éàè", Utility::UnicodeNormalization::NFD);
-    const SyncName nfcName = Utility::normalizedSyncName(L"éàè");
-#else
-    const SyncName nfdName = Utility::normalizedSyncName("éàè", Utility::UnicodeNormalization::NFD);
-    const SyncName nfcName = Utility::normalizedSyncName("éàè");
-#endif
+    const SyncName nfdName = testhelpers::makeNfcSyncName();
+    const SyncName nfcName = testhelpers::makeNfdSyncName();
 
     {
         Node node(std::nullopt, ReplicaSide::Remote, nfcName, NodeType::Directory, OperationType::None, "1", 0, 0, 123, nullptr);
@@ -49,7 +46,7 @@ void TestUpdateTree::testConstructors() {
 
     {
         Node node(std::nullopt, ReplicaSide::Remote, nfdName, NodeType::Directory, OperationType::None, "1", 0, 0, 123, nullptr);
-        CPPUNIT_ASSERT(node.name() == nfcName);
+        CPPUNIT_ASSERT(node.name() == nfdName);
     }
 
     {
@@ -59,14 +56,14 @@ void TestUpdateTree::testConstructors() {
 
     {
         Node node(ReplicaSide::Remote, nfdName, NodeType::Directory, nullptr);
-        CPPUNIT_ASSERT(node.name() == nfcName);
+        CPPUNIT_ASSERT(node.name() == nfdName);
     }
 
     {
         Node node(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None, "l1", 0, 0, 12345,
                   _myTree->rootNode());
         node.setName(nfdName);
-        CPPUNIT_ASSERT(node.name() == nfcName);
+        CPPUNIT_ASSERT(node.name() == nfdName);
     }
 }
 
@@ -78,6 +75,20 @@ void TestUpdateTree::testIsParentValid() {
 
     CPPUNIT_ASSERT(node11->isParentValid(node1));
     CPPUNIT_ASSERT(!node1->isParentValid(node11));
+}
+
+void TestUpdateTree::testInsertionOfFileNamesWithDifferentEncodings() {
+    CPPUNIT_ASSERT(_myTree->_nodes.empty());
+    auto node1 = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None,
+                                        "l1", 0, 0, 12345, _myTree->rootNode());
+
+    const auto node2 = std::make_shared<Node>(std::nullopt, _myTree->side(), testhelpers::makeNfcSyncName(), NodeType::Directory,
+                                              OperationType::None, "l2", 0, 0, 12345, node1);
+    const auto node3 = std::make_shared<Node>(std::nullopt, _myTree->side(), testhelpers::makeNfdSyncName(), NodeType::Directory,
+                                              OperationType::None, "l3", 0, 0, 12345, node1);
+
+    CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1") / testhelpers::makeNfcSyncName(), node2->getPath());
+    CPPUNIT_ASSERT_EQUAL(SyncPath("Dir 1") / testhelpers::makeNfdSyncName(), node3->getPath());
 }
 
 void TestUpdateTree::testAll() {

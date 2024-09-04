@@ -211,6 +211,48 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
     LOGW_DEBUG(_logger, L"Tests for files successful!");
 }
 
+void TestLocalFileSystemObserverWorker::testFolderWatcherWithDuplicateFileNames() {
+    // Create two files with the same name, up to encoding (NFC vs NFC).
+    // On Windows and Linux systems, we expect to find two distinct items in the local snapshot.
+    // On MacOSX, a single item is expected as the system creates a single file (overwrite).
+    {
+        using namespace testhelpers;
+
+        LOGW_DEBUG(_logger, L"***** test create file with NFC-encoded name *****");
+        generateOrEditTestFile(_rootFolderPath / makeNfcSyncName());
+        LOGW_DEBUG(_logger, L"***** test create file with NFD-encoded name *****");
+        generateOrEditTestFile(_rootFolderPath / makeNfdSyncName());
+
+        Utility::msleep(1000);  // Wait 1sec
+
+        FileStat fileStat;
+        bool exists = false;
+        IoHelper::getFileStat(_rootFolderPath / makeNfcSyncName(), &fileStat, exists);
+        const NodeId nfcNamedItemId = std::to_string(fileStat.inode);
+
+        IoHelper::getFileStat(_rootFolderPath / makeNfdSyncName(), &fileStat, exists);
+        const NodeId nfdNamedItemId = std::to_string(fileStat.inode);
+
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfcNamedItemId));
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(nfdNamedItemId));
+        SyncPath testSyncPath;
+#ifdef __APPLE__
+        const bool foundNfcItem =
+            _syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath) && testSyncPath == makeNfcSyncName();
+        const bool foundNfdItem =
+            _syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath) && testSyncPath == makeNfdSyncName();
+
+        CPPUNIT_ASSERT(foundNfcItem || foundNfdItem);
+#else
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath) &&
+                       testSyncPath == makeNfcSyncName());
+        CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath) &&
+                       testSyncPath == makeNfdSyncName());
+#endif
+    }
+}
+
+
 void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
     NodeId itemId;
     SyncName dirname = Str("test_dir");
