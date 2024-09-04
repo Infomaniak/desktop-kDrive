@@ -153,9 +153,9 @@ cd openssl.x86_64
 make
 ```
 
-If you have an AMD architecture, run `sudo make install` then continue.
+If you have an `AMD` architecture, run `sudo make install` then continue.
 
-The configuration for the ARM architecture goes as follows:
+The configuration for the `ARM` architecture goes as follows:
 
 ```bash
 cd ~/Projects/openssl.arm64
@@ -163,7 +163,7 @@ cd ~/Projects/openssl.arm64
 make
 ```
 
-If you have an ARM architecture, run `sudo make install` then continue.
+If you have an `ARM` architecture, run `sudo make install` then continue.
 
 ```bash
 cd ~/Projects
