@@ -76,9 +76,7 @@
 		NSLog(@"[KD] ERROR: Could not determine file type of %@", [url path]);
 		isDir = NO;
 	}
-
-	NSString* normalizedPath = [[url path] decomposedStringWithCanonicalMapping];
-	[_xpcClientProxy askForStatus:normalizedPath isDirectory:isDir];
+	[_xpcClientProxy askForStatus:[url path] isDirectory:isDir];
 }
 
 - (NSString*) selectedPathsSeparatedByRecordSeparator
@@ -89,8 +87,7 @@
 		if (string.length > 0) {
 			[string appendString:@"\x1e"]; // record separator
 		}
-		NSString* normalizedPath = [[obj path] decomposedStringWithCanonicalMapping];
-		[string appendString:normalizedPath];
+		[string appendString:[obj path]];
 	}];
 	return string;
 }
@@ -161,8 +158,7 @@
 // XPCClientProxyDelegate protocol implementation
 - (void)setResultForPath:(NSString*)path result:(NSString*)result
 {
-	NSString *normalizedPath = [path decomposedStringWithCanonicalMapping];
-	[[FIFinderSyncController defaultController] setBadgeIdentifier:result forURL:[NSURL fileURLWithPath:normalizedPath]];
+	[[FIFinderSyncController defaultController] setBadgeIdentifier:result forURL:[NSURL fileURLWithPath:path]];
 }
 
 - (void)registerPath:(NSString*)path
