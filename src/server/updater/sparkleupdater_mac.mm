@@ -69,8 +69,8 @@
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "Updater will relaunch app");
 
     if (bool found = false; !KDC::ParmsDb::instance()->updateAppState(KDC::AppStateKey::LastServerSelfRestartDate,
-                                                                      KDC::SELF_RESTARTER_DISABLE_VALUE, found) ||
-                            !found) {  // Desactivate the selfRestarter
+                                                                      KDC::selfRestarterDisableValue, found) ||
+                            !found) {  // Deactivate the selfRestarter
         LOG_ERROR(KDC::Log::instance()->getLogger(), "Error in ParmsDb::updateAppState");
     }
 
