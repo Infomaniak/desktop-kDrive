@@ -299,9 +299,7 @@ bool AbstractUploadSession::sendChunks() {
         const std::streamsize actualChunkSize = file.gcount();
         if (actualChunkSize <= 0) {
             LOG_ERROR(_logger, "Chunk size is 0");
-#ifdef NDEBUG
-            sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "Upload chunk error", "Chunk size is 0"));
-#endif
+            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "Upload chunk error", "Chunk size is 0");
             readError = true;
             break;
         }

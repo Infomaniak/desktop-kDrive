@@ -152,6 +152,8 @@
     "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user " \
     "ORDER BY dbId;"
 
+#define SELECT_LAST_CONNECTED_USER_REQUEST_ID "select_last_connected_user"
+#define SELECT_LAST_CONNECTED_USER_REQUEST "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
 //
 // account
 //
@@ -966,6 +968,12 @@ bool ParmsDb::prepare() {
         return sqlFail(SELECT_ALL_USERS_REQUEST_ID, error);
     }
 
+    ASSERT(queryCreate(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
+    if (!queryPrepare(SELECT_LAST_CONNECTED_USER_REQUEST_ID, SELECT_LAST_CONNECTED_USER_REQUEST, false, errId, error)) {
+        queryFree(SELECT_LAST_CONNECTED_USER_REQUEST_ID);
+        return sqlFail(SELECT_LAST_CONNECTED_USER_REQUEST_ID, error);
+    }
+
     // Account
     ASSERT(queryCreate(INSERT_ACCOUNT_REQUEST_ID));
     if (!queryPrepare(INSERT_ACCOUNT_REQUEST_ID, INSERT_ACCOUNT_REQUEST, false, errId, error)) {
@@ -1731,6 +1739,50 @@ bool ParmsDb::selectUserFromDriveDbId(int dbId, User &user, bool &found) {
     }
 
     return selectUserFromAccountDbId(drive.accountDbId(), user, found);
+}
+
+bool ParmsDb::selectLastConnectedUser(User &user, bool &found) {
+    const std::scoped_lock lock(_mutex);
+
+    ASSERT(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
+    if (!queryNext(SELECT_LAST_CONNECTED_USER_REQUEST_ID, found)) {
+        LOG_WARN(_logger, "Error getting query result: " << SELECT_LAST_CONNECTED_USER_REQUEST_ID);
+        return false;
+    }
+    if (!found) {
+        return true;
+    }
+
+    int intResult;
+    ASSERT(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 0, intResult));
+    user.setDbId(intResult);
+
+    ASSERT(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 1, intResult));
+    user.setUserId(intResult);
+
+    std::string strResult;
+    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 2, strResult));
+    user.setKeychainKey(strResult);
+
+    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 3, strResult));
+    user.setName(strResult);
+
+    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 4, strResult));
+    user.setEmail(strResult);
+
+    ASSERT(queryStringValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 5, strResult));
+    user.setAvatarUrl(strResult);
+
+    std::shared_ptr<std::vector<char>> blobResult;
+    ASSERT(queryBlobValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 6, blobResult));
+    user.setAvatar(blobResult);
+
+    ASSERT(queryIntValue(SELECT_LAST_CONNECTED_USER_REQUEST_ID, 7, intResult));
+    user.setToMigrate(static_cast<bool>(intResult));
+
+    ASSERT(queryResetAndClearBindings(SELECT_LAST_CONNECTED_USER_REQUEST_ID));
+
+    return true;
 }
 
 bool ParmsDb::selectAllUsers(std::vector<User> &userList) {

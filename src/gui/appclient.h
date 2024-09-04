@@ -109,6 +109,7 @@ class AppClient : public SharedTools::QtSingleApplication {
 
         void startServerAndDie(bool serverCrashDetected);
         bool connectToServer();
+        void updateSentryUser() const;
 
         std::shared_ptr<ClientGui> _gui = nullptr;
 

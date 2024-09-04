@@ -24,6 +24,7 @@
 #include "cocoainitializer.h"
 #include "libcommon/theme/theme.h"
 #include "libcommon/utility/utility.h"
+#include "libcommon/log/sentry/sentryhandler.h"
 #include "libcommongui/utility/utility.h"
 
 #include <QtGlobal>
@@ -39,8 +40,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
-
-#include <sentry.h>
 
 Q_LOGGING_CATEGORY(lcMain, "gui.mainclient", QtInfoMsg)
 
@@ -77,31 +76,8 @@ int main(int argc, char **argv) {
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
-
-#ifdef NDEBUG
-    // Sentry init
-    sentry_options_t *options = sentry_options_new();
-    sentry_options_set_dsn(options, SENTRY_CLIENT_DSN);
-#if defined(QT_DEBUG) && defined(Q_OS_MAC)
-    KDC::SyncPath appWorkingPath =
-        KDC::CommonUtility::getAppWorkingDir() / "kDrive.app/Contents/MacOS" / SENTRY_CRASHPAD_HANDLER_NAME;
-#else
-    KDC::SyncPath appWorkingPath = KDC::CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
-#endif
-    KDC::SyncPath appSupportPath = KDC::CommonUtility::getAppSupportDir() / SENTRY_CLIENT_DB_PATH;
-#ifdef Q_OS_WIN
-    sentry_options_set_handler_pathw(options, appWorkingPath.c_str());
-    sentry_options_set_database_pathw(options, appSupportPath.c_str());
-#else
-    sentry_options_set_handler_path(options, appWorkingPath.c_str());
-    sentry_options_set_database_path(options, appSupportPath.c_str());
-#endif
-    sentry_options_set_release(options, KDRIVE_VERSION_STRING);
-    sentry_options_set_debug(options, false);
-    sentry_options_set_max_breadcrumbs(options, 1000);
-    fprintf(stderr, "appWorkingPath=%s\n", appWorkingPath.native().c_str());
-    ASSERT(sentry_init(options) == 0);
-#endif
+    KDC::SentryHandler::init(KDC::SentryHandler::SentryProject::Client);
+    KDC::SentryHandler::instance()->setGlobalConfidentialityLevel(KDC::SentryConfidentialityLevel::Authenticated);
 
 #ifdef Q_OS_LINUX
     // Bug with multi-screen
@@ -201,9 +177,6 @@ int main(int argc, char **argv) {
             }
         }
     }
-
-    // Make sure everything flushes
-    auto sentryClose = qScopeGuard([] { sentry_close(); });
 
     return app.exec();
 }

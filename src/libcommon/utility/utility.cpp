@@ -17,6 +17,7 @@
  */
 
 #include "utility.h"
+#include "libcommon/log/sentry/sentryhandler.h"
 #include "config.h"
 #include "version.h"
 
@@ -289,12 +290,8 @@ bool CommonUtility::stringToAppStateValue(const std::string &stringFrom, AppStat
     }
 
     if (!res) {
-        sentry_value_t event = sentry_value_new_event();
         std::string message = "Failed to convert string (" + stringFrom + ") to AppStateValue of type " + appStateValueType + ".";
-        sentry_value_t exc = sentry_value_new_exception("CommonUtility::stringToAppStateValue", message.c_str());
-        sentry_value_set_stacktrace(exc, NULL, 0);
-        sentry_event_add_exception(event, exc);
-        sentry_capture_event(event);
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "CommonUtility::stringToAppStateValue", message);
     }
 
     return res;
@@ -794,17 +791,24 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
 }
 
 std::string CommonUtility::envVarValue(const std::string &name) {
+    bool isSet = false;
+    return envVarValue(name, isSet);
+}
+
+std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
 #ifdef _WIN32
     char *value = nullptr;
-    size_t sz = 0;
-    if (_dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
+    isSet = false;
+    if (size_t sz = 0; _dupenv_s(&value, &sz, name.c_str()) == 0 && value != nullptr) {
         std::string valueStr(value);
         free(value);
+        isSet = true;
         return valueStr;
     }
 #else
     char *value = std::getenv(name.c_str());
     if (value) {
+        isSet = true;
         return std::string(value);
         // Don't free "value"
     }
