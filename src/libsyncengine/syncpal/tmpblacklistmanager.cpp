@@ -28,7 +28,7 @@ static const int oneHour = 3600;
 namespace KDC {
 
 TmpBlacklistManager::TmpBlacklistManager(std::shared_ptr<SyncPal> syncPal) : _syncPal(syncPal) {
-    LOG_DEBUG(Log::instance()->getLogger(), "TmpBlacklistManager created");
+    LOG_SYNCPAL_DEBUG(Log::instance()->getLogger(), "TmpBlacklistManager created");
 }
 
 TmpBlacklistManager::~TmpBlacklistManager() {
@@ -44,8 +44,8 @@ int TmpBlacklistManager::getErrorCount(const NodeId &nodeId, ReplicaSide side) c
 
 void logMessage(const std::wstring &msg, const NodeId &id, const ReplicaSide side, const SyncPath &path = "") {
     LOGW_INFO(Log::instance()->getLogger(), msg.c_str()
-                                                << L" - node ID='" << Utility::s2ws(id).c_str() << L"' - side='" << side
-                                                << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path)).c_str()));
+                                                    << L" - node ID='" << Utility::s2ws(id).c_str() << L"' - side='" << side
+                                                    << (path.empty() ? L"'" : (L"' - " + Utility::formatSyncPath(path)).c_str()));
 }
 
 void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type, const SyncPath &relativePath,
@@ -58,7 +58,7 @@ void TmpBlacklistManager::increaseErrorCount(const NodeId &nodeId, NodeType type
         errorItem->second.lastErrorTime = std::chrono::steady_clock::now();
         logMessage(L"Error counter increased", nodeId, side, relativePath);
 
-        if (errorItem->second.count >= 1) {  // We try only once. TODO: If we keep this logic, no need to keep _count
+        if (errorItem->second.count >= 1) { // We try only once. TODO: If we keep this logic, no need to keep _count
             insertInBlacklist(nodeId, side);
 
             SentryHandler::instance()->captureMessage(SentryLevel::Warning, "TmpBlacklistManager::increaseErrorCount",
@@ -104,7 +104,7 @@ void TmpBlacklistManager::refreshBlacklist() {
                 logMessage(L"Removing item from tmp blacklist", errorIt->first, side);
 
                 SyncNodeType blacklistType =
-                    side == ReplicaSide::Local ? SyncNodeType::TmpLocalBlacklist : SyncNodeType::TmpRemoteBlacklist;
+                        side == ReplicaSide::Local ? SyncNodeType::TmpLocalBlacklist : SyncNodeType::TmpRemoteBlacklist;
 
                 std::unordered_set<NodeId> tmp;
                 SyncNodeCache::instance()->syncNodes(_syncPal->syncDbId(), blacklistType, tmp);
@@ -136,7 +136,7 @@ void TmpBlacklistManager::removeItemFromTmpBlacklist(const NodeId &nodeId, Repli
 
 bool TmpBlacklistManager::isTmpBlacklisted(const SyncPath &path, ReplicaSide side) const {
     auto &errors = side == ReplicaSide::Local ? _localErrors : _remoteErrors;
-    for (const auto &errorInfo : errors) {
+    for (const auto &errorInfo: errors) {
         if (Utility::startsWith(path, errorInfo.second.path)) {
             return true;
         }
@@ -175,4 +175,4 @@ void TmpBlacklistManager::removeFromDB(const NodeId &nodeId, const ReplicaSide s
     }
 }
 
-}  // namespace KDC
+} // namespace KDC
