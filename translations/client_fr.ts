@@ -2935,7 +2935,7 @@ Veuillez utiliser le lien suivant pour envoyer les logs au support: &lt;a style=
         <source>Sync in progress (%1 of %2)
 %3 left...</source>
         <translation>Synchronisation en cours (%1 sur %2)
-%3 restant...</translation>
+%3 restantes...</translation>
     </message>
     <message>
         <location filename="../src/gui/guiutility.cpp" line="348"/>
