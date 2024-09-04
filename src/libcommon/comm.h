@@ -328,7 +328,9 @@ enum class SignalNum {
     UTILITY_SHOW_SETTINGS,
     UTILITY_SHOW_SYNTHESIS,
     UTILITY_LOG_UPLOAD_STATUS_UPDATED,
+    UTILITY_QUIT
 };
+
 inline std::string toString(SignalNum e) {
     switch (e) {
         case SignalNum::USER_ADDED:
@@ -389,6 +391,8 @@ inline std::string toString(SignalNum e) {
             return "UTILITY_SHOW_SYNTHESIS";
         case SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED:
             return "UTILITY_LOG_UPLOAD_STATUS_UPDATED";
+        case SignalNum::UTILITY_QUIT:
+            return "UTILITY_QUIT";
         default:
             return "No conversion to string available";
     }

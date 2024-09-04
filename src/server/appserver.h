@@ -186,6 +186,7 @@ class AppServer : public SharedTools::QtSingleApplication {
         void sendGetFolderSizeCompleted(const QString &nodeId, qint64 size);
         void sendNewBigFolder(int syncDbId, const QString &path);
         void sendErrorsCleared(int syncDbId);
+        void sendQuit();  // Ask client to quit
 
         // See types.h -> AppStateKey for the possible values of status
         void cancelLogUpload();
