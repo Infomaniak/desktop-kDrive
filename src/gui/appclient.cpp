@@ -133,8 +133,6 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
         startServerAndDie(true);
         return;
     }
-    // Update Sentry user
-    updateSentryUser();
 
     // Init ParametersCache
     ParametersCache::instance();
@@ -197,6 +195,10 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
             }
         }
     }
+
+    // Update Sentry user
+    updateSentryUser();
+    connect(_gui.get(), &ClientGui::userListRefreshed, this, &AppClient::updateSentryUser);
 }
 
 AppClient::~AppClient() {
@@ -218,7 +220,6 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> userInfo;
 
             emit userAdded(userInfo);
-            updateSentryUser();
             break;
         }
         case SignalNum::USER_UPDATED: {
@@ -226,7 +227,6 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> userInfo;
 
             emit userUpdated(userInfo);
-            updateSentryUser();
             break;
         }
         case SignalNum::USER_STATUSCHANGED: {
@@ -238,7 +238,6 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> connexionError;
 
             emit userStatusChanged(userDbId, connected, connexionError);
-            updateSentryUser();
             break;
         }
         case SignalNum::USER_REMOVED: {
@@ -246,7 +245,6 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> userDbId;
 
             emit userRemoved(userDbId);
-            updateSentryUser();
             break;
         }
         case SignalNum::ACCOUNT_ADDED: {
@@ -254,7 +252,6 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> accountInfo;
 
             emit accountAdded(accountInfo);
-            updateSentryUser();
             break;
         }
         case SignalNum::ACCOUNT_UPDATED: {
@@ -262,7 +259,6 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> accountInfo;
 
             emit accountUpdated(accountInfo);
-            updateSentryUser();
             break;
         }
         case SignalNum::ACCOUNT_REMOVED: {
@@ -270,7 +266,6 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
             paramsStream >> accountDbId;
 
             emit accountRemoved(accountDbId);
-            updateSentryUser();
             break;
         }
         case SignalNum::DRIVE_ADDED: {
@@ -649,26 +644,16 @@ bool AppClient::connectToServer() {
 }
 
 void AppClient::updateSentryUser() const {
-    QList<UserInfo> userInfoList;
-    ExitCode exitCode = GuiRequests::getUserInfoList(userInfoList);
-    if (exitCode != ExitCode::Ok) {
-        qCWarning(lcAppClient) << "Error in Requests::getUserInfoList";
-        return;
-    }
-
-    if (userInfoList.isEmpty()) {
+    auto userInfo = _gui->userInfoMap().find(_gui->currentUserDbId());
+    if (userInfo == _gui->userInfoMap().end()) {
         qCWarning(lcAppClient) << "No user found in updateSentryUser()";
+        SentryUser user("No user logged", "No user logged", "No user logged");
+        SentryHandler::instance()->setAuthenticatedUser(user);
         return;
     }
 
-    int userId = 0;
-    exitCode = GuiRequests::getUserIdFromUserDbId(userInfoList.last().dbId(), userId);
-    if (exitCode != ExitCode::Ok) {
-        qCWarning(lcAppClient) << "Error in Requests::getUserIdFromUserDbId";
-        return;
-    }
-
-    SentryUser user(userInfoList.last().email().toStdString(), userInfoList.last().name().toStdString(), std::to_string(userId));
+    SentryUser user(userInfo->second.email().toStdString(), userInfo->second.name().toStdString(),
+                    std::to_string(userInfo->second.userId()));
     SentryHandler::instance()->setAuthenticatedUser(user);
 }
 

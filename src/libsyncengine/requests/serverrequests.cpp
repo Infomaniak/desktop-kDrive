@@ -2085,6 +2085,7 @@ ExitCode ServerRequests::syncForPath(const std::vector<Sync> &syncList, const QS
 
 void ServerRequests::userToUserInfo(const User &user, UserInfo &userInfo) {
     userInfo.setDbId(user.dbId());
+    userInfo.setUserId(user.userId());
     userInfo.setName(QString::fromStdString(user.name()));
     userInfo.setEmail(QString::fromStdString(user.email()));
     if (user.avatar()) {
