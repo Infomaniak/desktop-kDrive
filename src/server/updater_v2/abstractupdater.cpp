@@ -57,10 +57,7 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
     if (_getAppVersionJob->hasErrorApi(&errorCode, &errorDescr)) {
         std::stringstream ss;
         ss << errorCode.c_str() << " - " << errorDescr;
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AbstractUpdater::checkUpdateAvailable", ss.str().c_str()));
-#endif
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(_logger, ss.str().c_str());
         return ExitCode::UpdateFailed;
     }
@@ -68,10 +65,7 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
     _versionInfo = _getAppVersionJob->getVersionInfo(DistributionChannel::Prod);
     if (!_versionInfo.isValid()) {
         std::string error = "Invalid version info!";
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AbstractUpdater::checkUpdateAvailable", error.c_str()));
-#endif
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
         LOG_ERROR(_logger, error.c_str());
         return ExitCode::UpdateFailed;
     }

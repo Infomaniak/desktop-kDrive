@@ -47,11 +47,7 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
                 if (mandatory) {
                     std::string msg = "Fail to extract value for key=" + key;
                     LOG_WARN(Log::instance()->getLogger(), msg.c_str());
-#ifdef NDEBUG
-                    sentry_capture_event(
-                        sentry_value_new_message_event(SENTRY_LEVEL_ERROR, "JsonParserUtility::extractValue", msg.c_str()));
-#endif
-
+                    SentryHandler::instance()->captureMessage(SentryLevel::Error, "JsonParserUtility::extractValue", msg);
                     return false;
                 }
             }

@@ -239,6 +239,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
+        void updateSentryUser() const;
+
     private slots:
         void onLoadInfo();
         void onUpdateSyncsProgress();

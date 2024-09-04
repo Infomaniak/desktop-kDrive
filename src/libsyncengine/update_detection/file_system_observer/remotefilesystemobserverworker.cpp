@@ -743,11 +743,8 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     bool resetTimer = elapsedTime.count() > 3600;  // 1h
     if (_listingFullCounter > 60) {
         // If there is more then 1 listing/full request per minute for an hour -> send a sentry
-#ifdef NDEBUG
-        sentry_capture_event(sentry_value_new_message_event(SENTRY_LEVEL_WARNING,
-                                                            "RemoteFileSystemObserverWorker::generateInitialSnapshot",
-                                                            "Too many listing/full requests, sync is looping"));
-#endif
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "RemoteFileSystemObserverWorker::generateInitialSnapshot",
+                                                   "Too many listing/full requests, sync is looping");
         resetTimer = true;
     }
 

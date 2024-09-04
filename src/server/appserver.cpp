@@ -34,6 +34,7 @@
 #include "libcommon/info/driveavailableinfo.h"
 #include "libcommon/info/userinfo.h"
 #include "libcommon/info/exclusiontemplateinfo.h"
+#include "libcommon/log/sentry/sentryhandler.h"
 #include "libcommonserver/io/iohelper.h"
 #include "libcommonserver/log/log.h"
 #include "libcommonserver/network/proxy.h"
@@ -63,8 +64,6 @@
 #include <QStandardPaths>
 #include <QTimer>
 #include <QUuid>
-
-#include <sentry.h>
 
 #define QUIT_DELAY 1000                    // ms
 #define LOAD_PROGRESS_INTERVAL 1000        // ms
@@ -116,7 +115,6 @@ static void displayHelpText(const QString &t) {
 AppServer::AppServer(int &argc, char **argv)
     : SharedTools::QtSingleApplication(Theme::instance()->appName(), argc, argv), _theme(Theme::instance()) {
     _startedAt.start();
-
     setOrganizationDomain(QLatin1String(APPLICATION_REV_DOMAIN));
     setApplicationName(_theme->appName());
     setWindowIcon(_theme->applicationIcon());
@@ -307,6 +305,9 @@ AppServer::AppServer(int &argc, char **argv)
         }
     }
 
+    // Set sentry user
+    updateSentryUser();
+
     // Check last crash to avoid crash loop
     bool shouldQuit = false;
     handleCrashRecovery(shouldQuit);
@@ -471,6 +472,21 @@ void AppServer::logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexc
     LOG_INFO(_logger, msg.c_str());
 }
 
+void AppServer::updateSentryUser() const {
+    User user;
+    bool found = false;
+    ParmsDb::instance()->selectLastConnectedUser(user, found);
+    std::string userId = "No user in db";
+    std::string userName = "No user in db";
+    std::string userEmail = "No user in db";
+    if (found) {
+        userId = std::to_string(user.dbId());
+        userName = user.name();
+        userEmail = user.email();
+    }
+    SentryHandler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
+}
+
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
     QByteArray results = QByteArray();
     QDataStream resultStream(&results, QIODevice::WriteOnly);
@@ -491,7 +507,7 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
                 LOG_WARN(_logger, "Error in Requests::requestToken : " << exitCode);
                 addError(Error(errId(), exitCode, ExitCause::Unknown));
             }
-
+            updateSentryUser();
             if (userCreated) {
                 sendUserAdded(userInfo);
             } else {
@@ -3872,10 +3888,7 @@ void AppServer::addError(const Error &error) {
         // Manage sockets defuncted error
         LOG_WARN(Log::instance()->getLogger(), "Manage sockets defuncted error");
 
-#ifdef NDEBUG
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", "Sockets defuncted error"));
-#endif
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", "Sockets defuncted error");
 
         // Decrease upload session max parallel jobs
         ParametersCache::instance()->decreaseUploadSessionParallelThreads();
@@ -3884,24 +3897,12 @@ void AppServer::addError(const Error &error) {
         JobManager::instance()->decreasePoolCapacity();
     }
 
-#ifdef NDEBUG
     if (!ServerRequests::isAutoResolvedError(error)) {
         // Send error to sentry only for technical errors
-        sentry_value_t sentryUser = sentry_value_new_object();
-        sentry_value_set_by_key(sentryUser, "ip_address", sentry_value_new_string("{{auto}}"));
-        if (user.dbId()) {
-            sentry_value_set_by_key(sentryUser, "id", sentry_value_new_string(std::to_string(user.userId()).c_str()));
-            sentry_value_set_by_key(sentryUser, "name", sentry_value_new_string(user.name().c_str()));
-            sentry_value_set_by_key(sentryUser, "email", sentry_value_new_string(user.email().c_str()));
-        }
-        sentry_set_user(sentryUser);
-
-        sentry_capture_event(
-            sentry_value_new_message_event(SENTRY_LEVEL_WARNING, "AppServer::addError", error.errorString().c_str()));
-
-        sentry_remove_user();
+        SentryUser sentryUser(user.email().c_str(), user.name().c_str(), std::to_string(user.userId()).c_str());
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AppServer::addError", error.errorString().c_str(), sentryUser);
     }
-#endif
+
 }
 
 void AppServer::sendUserAdded(const UserInfo &userInfo) {
