@@ -53,7 +53,7 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
 
     // Sentry init
     sentry_options_t *options = sentry_options_new();
-    sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
+    sentry_options_set_dsn(options, ((project == SentryProject::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
     const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
 #endif
