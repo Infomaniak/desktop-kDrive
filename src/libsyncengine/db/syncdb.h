@@ -40,7 +40,7 @@ class SyncDb : public Db {
         bool initData();
 
         bool insertNode(const DbNode &node, DbNodeId &dbNodeId,
-                        bool &constraintError);  // The local and remote names of an inserted node are normalized.
+                        bool &constraintError); // The local and remote names of an inserted node are normalized.
         bool updateNode(const DbNode &node, bool &found);
         bool updateNodeStatus(DbNodeId nodeId, SyncFileStatus status, bool &found);
         bool updateNodesSyncing(bool syncing);
@@ -51,23 +51,23 @@ class SyncDb : public Db {
         bool clearNodes();
 
         // Getters with replica IDs
-        bool id(ReplicaSide snapshot, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found);
-        bool id(ReplicaSide snapshot, DbNodeId dbNodeId, NodeId &nodeId, bool &found);
-        bool type(ReplicaSide snapshot, const NodeId &nodeId, NodeType &type, bool &found);
-        bool size(ReplicaSide snapshot, const NodeId &nodeId, int64_t &size, bool &found);
-        bool created(ReplicaSide snapshot, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
-        bool lastModified(ReplicaSide snapshot, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
-        bool parent(ReplicaSide snapshot, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
-        bool path(ReplicaSide snapshot, const NodeId &nodeId, SyncPath &path, bool &found);
-        bool name(ReplicaSide snapshot, const NodeId &nodeId, SyncName &name, bool &found);
-        bool checksum(ReplicaSide snapshot, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);
-        bool ids(ReplicaSide snapshot, std::vector<NodeId> &ids, bool &found);
-        bool ids(ReplicaSide snapshot, std::unordered_set<NodeId> &ids, bool &found);
-        bool ancestor(ReplicaSide snapshot, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found);
-        bool dbId(ReplicaSide snapshot, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);
+        bool id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &nodeId, bool &found);
+        bool id(ReplicaSide side, DbNodeId dbNodeId, NodeId &nodeId, bool &found);
+        bool type(ReplicaSide side, const NodeId &nodeId, NodeType &type, bool &found);
+        bool size(ReplicaSide side, const NodeId &nodeId, int64_t &size, bool &found);
+        bool created(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
+        bool lastModified(ReplicaSide side, const NodeId &nodeId, std::optional<SyncTime> &time, bool &found);
+        bool parent(ReplicaSide side, const NodeId &nodeId, NodeId &parentNodeid, bool &found);
+        bool path(ReplicaSide side, const NodeId &nodeId, SyncPath &path, bool &found);
+        bool name(ReplicaSide side, const NodeId &nodeId, SyncName &name, bool &found);
+        bool checksum(ReplicaSide side, const NodeId &nodeId, std::optional<std::string> &cs, bool &found);
+        bool ids(ReplicaSide side, std::vector<NodeId> &ids, bool &found);
+        bool ids(ReplicaSide side, std::unordered_set<NodeId> &ids, bool &found);
+        bool ancestor(ReplicaSide side, const NodeId &nodeId1, const NodeId &nodeId2, bool &ret, bool &found);
+        bool dbId(ReplicaSide side, const NodeId &nodeId, DbNodeId &dbNodeId, bool &found);
         bool dbId(ReplicaSide side, const SyncPath &path, DbNodeId &dbNodeId, bool &found);
-        bool correspondingNodeId(ReplicaSide snapshot, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
-        bool node(ReplicaSide snapshot, const NodeId &nodeId, DbNode &dbNode, bool &found);
+        bool correspondingNodeId(ReplicaSide side, const NodeId &nodeIdIn, NodeId &nodeIdOut, bool &found);
+        bool node(ReplicaSide side, const NodeId &nodeId, DbNode &dbNode, bool &found);
 
         // Getters with db IDs
         bool dbIds(std::unordered_set<DbNodeId> &ids, bool &found);
@@ -105,8 +105,8 @@ class SyncDb : public Db {
         static DbNode _driveRootNode;
         DbNode _rootNode;
 
-        bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
-        bool pushChildIds(ReplicaSide snapshot, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
+        bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::vector<NodeId> &ids);
+        bool pushChildIds(ReplicaSide side, DbNodeId parentNodeDbId, std::unordered_set<NodeId> &ids);
 
         // Helpers
         bool createAndPrepareRequest(const char *requestId, const char *query);
@@ -131,4 +131,4 @@ class SyncDb : public Db {
         friend class TestSyncDb;
 };
 
-}  // namespace KDC
+} // namespace KDC

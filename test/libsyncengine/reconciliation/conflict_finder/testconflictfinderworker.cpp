@@ -27,10 +27,8 @@ const std::string version = "3.4.0";
 void TestConflictFinderWorker::setUp() {
     // Create SyncPal
     bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 
     SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists);
     std::filesystem::remove(syncDbPath);
@@ -46,6 +44,7 @@ void TestConflictFinderWorker::setUp() {
 
 void TestConflictFinderWorker::tearDown() {
     ParmsDb::instance()->close();
+    ParmsDb::reset();
     _syncPal->syncDb()->close();
 }
 

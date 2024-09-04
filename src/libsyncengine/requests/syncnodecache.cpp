@@ -94,8 +94,7 @@ ExitCode SyncNodeCache::initCache(int syncDbId, std::shared_ptr<SyncDb> syncDb) 
     _syncDbMap[syncDbId] = syncDb;
 
     // Load sync nodes for all sync node types
-    for (int typeInt = toInt(SyncNodeType::BlackList); typeInt <= toInt(SyncNodeType::TmpLocalBlacklist);
-         typeInt++) {
+    for (int typeInt = toInt(SyncNodeType::BlackList); typeInt <= toInt(SyncNodeType::TmpLocalBlacklist); typeInt++) {
         SyncNodeType type = fromInt<SyncNodeType>(typeInt);
         std::unordered_set<NodeId> nodeIdSet;
         if (!syncDb->selectAllSyncNodes(type, nodeIdSet)) {

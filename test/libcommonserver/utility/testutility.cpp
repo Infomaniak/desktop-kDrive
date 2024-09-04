@@ -20,7 +20,7 @@
 #include "test_utility/localtemporarydirectory.h"
 #include "config.h"
 
-#include "libcommon/utility/utility.h"  // CommonUtility::isSubDir
+#include "libcommon/utility/utility.h" // CommonUtility::isSubDir
 #include "Poco/URI.h"
 
 #include <climits>
@@ -65,7 +65,7 @@ void TestUtility::testIsCreationDateValid(void) {
     auto currentTimePoint = std::chrono::time_point_cast<std::chrono::seconds>(currentTime);
     auto currentTimestamp = currentTimePoint.time_since_epoch().count();
 
-    for (int i = 10; i < currentTimestamp; i += 2629743) {  // step of one month
+    for (int i = 10; i < currentTimestamp; i += 2629743) { // step of one month
         CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(i));
     }
     CPPUNIT_ASSERT_MESSAGE("Creation date should be valid.", _testObj->isCreationDateValid(currentTimestamp));
@@ -116,7 +116,7 @@ void TestUtility::testV2ws() {
     dbtype intValue(1234);
     CPPUNIT_ASSERT(_testObj->v2ws(intValue) == L"1234");
 
-    dbtype int64Value((int64_t)LLONG_MAX);
+    dbtype int64Value((int64_t) LLONG_MAX);
     CPPUNIT_ASSERT(_testObj->v2ws(int64Value) == L"9223372036854775807");
 
     dbtype doubleValue(123.456789);
@@ -257,15 +257,16 @@ void TestUtility::testPathDepth() {
 
 void TestUtility::testComputeMd5Hash() {
     std::vector<std::pair<std::string, std::string>> testCases = {
-        {"", "d41d8cd98f00b204e9800998ecf8427e"},
-        {"a", "0cc175b9c0f1b6a831c399e269772661"},
-        {"abc", "900150983cd24fb0d6963f7d28e17f72"},
-        {"abcdefghijklmnopqrstuvwxyz", "c3fcd3d76192e4007dfb496cca67e13b"},
-        {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", "d174ab98d277d9f5a5611c2c9f419d9f"},
-        {"12345678901234567890123456789012345678901234567890123456789012345678901234567890", "57edf4a22be3c955ac49da2e2107b67a"},
+            {"", "d41d8cd98f00b204e9800998ecf8427e"},
+            {"a", "0cc175b9c0f1b6a831c399e269772661"},
+            {"abc", "900150983cd24fb0d6963f7d28e17f72"},
+            {"abcdefghijklmnopqrstuvwxyz", "c3fcd3d76192e4007dfb496cca67e13b"},
+            {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", "d174ab98d277d9f5a5611c2c9f419d9f"},
+            {"12345678901234567890123456789012345678901234567890123456789012345678901234567890",
+             "57edf4a22be3c955ac49da2e2107b67a"},
     };
 
-    for (const auto &testCase : testCases) {
+    for (const auto &testCase: testCases) {
         CPPUNIT_ASSERT_EQUAL(testCase.second, _testObj->computeMd5Hash(testCase.first));
         CPPUNIT_ASSERT_EQUAL(testCase.second, _testObj->computeMd5Hash(testCase.first.c_str(), testCase.first.size()));
     }
@@ -458,4 +459,4 @@ void TestUtility::testNormalizedSyncPath() {
 #endif
 }
 
-}  // namespace KDC
+} // namespace KDC

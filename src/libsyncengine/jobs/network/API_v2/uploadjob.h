@@ -30,10 +30,10 @@ namespace KDC {
 
 class UploadJob : public AbstractTokenNetworkJob {
     public:
-        // Using file name and parent ID, for create or edit
+        // Using file name and parent ID, for file creation only.
         UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
                   SyncTime modtime);
-        // Using file ID, for edit only
+        // Using file ID, for file edition only.
         UploadJob(int driveDbId, const SyncPath &filepath, const NodeId &fileId, SyncTime modtime);
         ~UploadJob();
 

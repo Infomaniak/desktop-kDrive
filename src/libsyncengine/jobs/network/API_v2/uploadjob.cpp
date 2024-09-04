@@ -116,7 +116,6 @@ void UploadJob::setQueryParameters(Poco::URI &uri, bool &canceled) {
     if (_fileId.empty()) {
         uri.addQueryParameter("file_name", SyncName2Str(_filename));
         uri.addQueryParameter("directory_id", _remoteParentDirId);
-        uri.addQueryParameter("conflict", "version");
     } else {
         uri.addQueryParameter("file_id", _fileId);
     }

@@ -79,10 +79,8 @@ void TestIntegration::setUp() {
 
     // Create parmsDb
     bool alreadyExists;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists);
-    std::filesystem::remove(parmsDbPath);
+    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 
     // Insert user, account, drive & sync
     int userId(12321);
@@ -162,6 +160,7 @@ void TestIntegration::setUp() {
 void TestIntegration::tearDown() {
     _syncPal->stop(false, true, false);
     ParmsDb::instance()->close();
+    ParmsDb::reset();
 }
 
 void TestIntegration::testAll() {

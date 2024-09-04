@@ -27,7 +27,6 @@ void TestParmsDb::setUp() {
     bool alreadyExists = false;
     std::filesystem::path parmsDbPath = ParmsDb::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.6.1", true, true);
-    ParmsDb::instance()->setAutoDelete(true);
 }
 
 void TestParmsDb::tearDown() {
@@ -78,7 +77,7 @@ void TestParmsDb::testParameters() {
     parameters2.setDarkTheme(true);
     std::string geometryStr("XXXXXXXXXX");
     parameters2.setDialogGeometry(
-        std::shared_ptr<std::vector<char>>(new std::vector<char>(geometryStr.begin(), geometryStr.end())));
+            std::shared_ptr<std::vector<char>>(new std::vector<char>(geometryStr.begin(), geometryStr.end())));
     CPPUNIT_ASSERT(ParmsDb::instance()->updateParameters(parameters2, found) && found);
 
     CPPUNIT_ASSERT(ParmsDb::instance()->selectParameters(parameters, found) && found);
@@ -254,7 +253,7 @@ SyncSetupData createSyncs() {
 
     return data;
 }
-}  // namespace
+} // namespace
 
 void TestParmsDb::testSync() {
     auto data = createSyncs();
@@ -348,10 +347,10 @@ void TestParmsDb::testAppState(void) {
     CPPUNIT_ASSERT(ParmsDb::instance()->insertAppState(AppStateKey::LogUploadState, "__DEFAULT_IS_EMPTY__"));
 
     CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(AppStateKey::Unknown, std::string("value"),
-                                                       found));  // Test for unknown key (not in db)
+                                                       found)); // Test for unknown key (not in db)
     CPPUNIT_ASSERT(!found);
 
-    AppStateValue value = "";  // Test for unknown key (not in db)
+    AppStateValue value = ""; // Test for unknown key (not in db)
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(AppStateKey::Unknown, value, found));
     CPPUNIT_ASSERT(!found);
 
@@ -368,7 +367,7 @@ void TestParmsDb::testAppState(void) {
     CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), std::string("test"), found));
     CPPUNIT_ASSERT(found);
 
-    AppStateValue valueStrRes = "";  // Test for string value
+    AppStateValue valueStrRes = ""; // Test for string value
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), valueStrRes, found));
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT_EQUAL(std::string("test"), std::get<std::string>(valueStrRes));
@@ -377,14 +376,14 @@ void TestParmsDb::testAppState(void) {
     CPPUNIT_ASSERT(ParmsDb::instance()->updateAppState(static_cast<AppStateKey>(0), LogUploadState::None, found));
     CPPUNIT_ASSERT(found);
 
-    AppStateValue valueLogUploadStateRes = LogUploadState::None;  // Test for LogUploadState value
+    AppStateValue valueLogUploadStateRes = LogUploadState::None; // Test for LogUploadState value
     CPPUNIT_ASSERT(ParmsDb::instance()->selectAppState(static_cast<AppStateKey>(0), valueLogUploadStateRes, found));
     CPPUNIT_ASSERT(found);
     CPPUNIT_ASSERT_EQUAL(LogUploadState::None, std::get<LogUploadState>(valueLogUploadStateRes));
 
     int i = 0;
     while (true) {
-        AppStateKey key = static_cast<AppStateKey>(i);  // Test for all known keys
+        AppStateKey key = static_cast<AppStateKey>(i); // Test for all known keys
         if (key == AppStateKey::Unknown) {
             break;
         }
@@ -440,4 +439,4 @@ void TestParmsDb::testError() {
     CPPUNIT_ASSERT(!ParmsDb::instance()->insertError(error3));
 }
 
-}  // namespace KDC
+} // namespace KDC

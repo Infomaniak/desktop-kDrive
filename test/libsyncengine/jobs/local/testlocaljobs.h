@@ -19,7 +19,6 @@
 #pragma once
 
 #include "testincludes.h"
-#include "utility/types.h"
 #include "syncpal/syncpal.h"
 
 using namespace CppUnit;
@@ -31,6 +30,7 @@ class TestLocalJobs : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLocalJobs);
         CPPUNIT_TEST(testLocalJobs);
         CPPUNIT_TEST(testLocalDeleteJob);
+        CPPUNIT_TEST(testDeleteFilesWithDuplicateNames);
         CPPUNIT_TEST_SUITE_END();
 
     public:
@@ -39,10 +39,11 @@ class TestLocalJobs : public CppUnit::TestFixture {
     protected:
         void testLocalJobs();
         void testLocalDeleteJob();
+        void testDeleteFilesWithDuplicateNames();
 
     private:
         std::shared_ptr<SyncPal> _syncPal = nullptr;
         int _driveDbId;
 };
 
-}  // namespace KDC
+} // namespace KDC
