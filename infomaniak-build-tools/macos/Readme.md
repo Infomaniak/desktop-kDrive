@@ -58,18 +58,18 @@ sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 ## QT 6.2.3
 
 From the [Qt Installer](https://www.qt.io/download-qt-installer-oss?hsCtaTracking=99d9dd4f-5681-48d2-b096-470725510d34%7C074ddad0-fdef-4e53-8aa8-5e8a876d6ab4), tick the **Archive** box to see earlier Qt versions.  
-In QT 6.2.3, select :
+In `QT 6.2.3`, select:
 - macOS
 - Sources
 - QT 5 Compatibility Module
 
-In Qt 6.2.3 Additional Libraries, select :
+In `Qt 6.2.3 Additional Libraries`, select:
 - Qt WebEngine
 - Qt Positioning
 - Qt WebChannel
 - Qt WebView
 
-Add CMake in PATH (.zshrc):
+Add `CMake` in `PATH` by appending the following lines to your `.zshrc`:
 
 ```bash
 export PATH=$PATH:~/Qt/Tools/CMake/CMake.app/Contents/bin
@@ -79,7 +79,7 @@ export QTDIR=~/Qt/6.2.3/macos
 
 ## Sentry
 
-Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`)  
+Download [Sentry Sources](https://github.com/getsentry/sentry-native/releases) (you can download the released zip and extract it to `~/Projects`):
 
 ```bash
 cd ~/Projects/sentry-native
@@ -90,7 +90,7 @@ sudo cmake --install build
 
 ## log4cplus
 
-Download and build log4cplus :
+Download and build `log4cplus`:
 
 ```bash
 cd ~/Projects
@@ -112,7 +112,7 @@ git checkout v2.x
 
 ## CPPUnit
 
-Download and build CPPUnit :
+Download and build `CPPUnit`:
 
 You will probably need to install `automake` and `libtool`:
 ```
@@ -135,9 +135,9 @@ If the server does not reply to the `git clone` command, you can download the so
 
 ## OpenSSL
 
-Download and build OpenSSL :
+Download and build `OpenSSL`:
 
-Configure x86_64 :
+The configuration for the `x86_64` architecture is as follows:
 
 ```bash
 cd ~/Projects
