@@ -147,13 +147,19 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     if (lastEventCaptureIsOutdated(storedEvent)) {  // Reset the capture count if the last capture was more than 10 minutes ago
         storedEvent.captureCount = 0;
         storedEvent.lastCapture = system_clock::now();
-        it->second.lastUpload = system_clock::now();
+        storedEvent.lastUpload = system_clock::now();
         return;
     }
 
     storedEvent.lastCapture = system_clock::now();
     if (storedEvent.captureCount < SentryMaxCaptureCountBeforeRateLimit) {  // Rate limit not reached, we can send the event
-        it->second.lastUpload = system_clock::now();
+        storedEvent.lastUpload = system_clock::now();
+        return;
+    }
+
+    if (storedEvent.captureCount == SentryMaxCaptureCountBeforeRateLimit) { // Rate limit reached, we send this event and we will wait 10 minutes before sending it again
+        storedEvent.lastUpload = system_clock::now();
+        escalateSentryEvent(storedEvent);
         return;
     }
 
@@ -161,7 +167,7 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
         toUpload = false;
         return;
     }
-    it->second.lastUpload = system_clock::now();
+    storedEvent.lastUpload = system_clock::now();
     escalateSentryEvent(storedEvent);
 }
 
