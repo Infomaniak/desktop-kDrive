@@ -232,7 +232,7 @@ endif()
 
 if (APPLE)
     set_target_properties(${APPLICATION_CLIENT_EXECUTABLE} PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY  ${INSTALL_OUTPUT_DIRECTORY}
+        RUNTIME_OUTPUT_DIRECTORY  ${BIN_OUTPUT_DIRECTORY}
         INSTALL_RPATH "@executable_path/../Frameworks"
     )
 else()
