@@ -207,6 +207,12 @@ void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
 SentryHandler::~SentryHandler() {
     if (this == _instance.get()) {
         _instance.reset();
+        try {
+            sentry_close();
+        }
+        catch (...) {
+            // Do nothing
+        }
     }
 }
 
