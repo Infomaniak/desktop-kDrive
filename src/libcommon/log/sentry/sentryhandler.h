@@ -20,6 +20,7 @@
 #include <sentry.h>
 #include <string>
 #include <mutex>
+#include <unordered_map>
 
 #include "utility/types.h"
 #include "sentryuser.h"

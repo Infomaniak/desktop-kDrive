@@ -236,7 +236,7 @@ sudo make install
 
 ## Sparkle
 
-Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.2) version 2.6.2 and copy the Sparkle directory in `~` and name it "Sparkle"  
+Download [Sparkle](https://github.com/sparkle-project/Sparkle/releases/tag/2.6.4) version 2.6.4 and copy the Sparkle directory in `~` and name it "Sparkle"  
 Copy and paste **Sparkle.Frameworks** in `~/Library/Frameworks` (create the directory is needed)
 
 ## Packages
@@ -314,7 +314,7 @@ In the project build settings, paste the following lines in the Initial Configur
 -DAPPLICATION_CLIENT_EXECUTABLE=kdrive
 -DSOCKETAPI_TEAM_IDENTIFIER_PREFIX=<team id>
 -DKDRIVE_THEME_DIR=/Users/<user>/Projects/desktop-kDrive/infomaniak
--DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/bin
+-DCMAKE_INSTALL_PREFIX=/Users/<user>/Projects/build-desktop-kDrive-Qt_6_2_3_for_macOS-Debug/install
 -DBUILD_TESTING=OFF
 %{CMAKE_OSX_ARCHITECTURES:DefaultFlag}
 ```
@@ -323,8 +323,14 @@ Build - Build Steps - Build :
 `cmake --build . --target all install`
 
 Build - Build Steps - Custom Process Step 1 :  
+`Command    : %{Qt:QT_INSTALL_BINS}/macdeployqt`  
+`Arguments    : %{buildDir}/bin/kDrive.app -no-strip -executable=%{buildDir}/bin/kDrive.app/Contents/MacOS/kDrive_client`
+`Working directory  : %{buildDir}`
+
+Build - Build Steps - Custom Process Step 2 :  
 `Command	: /Users/<user name>/Projects/kdrive/admin/osx/sign_app_debug.sh`  
-`Arguments	: %{ActiveProject:RunConfig:Executable:FileName} %{buildDir}/bin/kDrive.app "Developer ID Application: Infomaniak Network SA (864VDCS2QY)" "864VDCS2QY" "com.infomaniak.drive.desktopclient" 2>&1 1>/dev/null`
+`Arguments	: %{ActiveProject:RunConfig:Executable:FileName} %{buildDir}/install/kDrive.app "Developer ID Application: Infomaniak Network SA (864VDCS2QY)" "864VDCS2QY" "com.infomaniak.drive.desktopclient" 2>&1 1>/dev/null`
+`Working directory  : %{buildDir}`
 
 Run CMake again and start building the project.
 
