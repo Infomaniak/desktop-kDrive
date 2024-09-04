@@ -135,8 +135,8 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
 
     auto it = _events.find(event.getStr());
     if (it == _events.end()) {
-        it->second.lastCapture = system_clock::now();
-        it->second.lastUpload = system_clock::now();
+        event.lastCapture = system_clock::now();
+        event.lastUpload = system_clock::now();
         _events.try_emplace(event.getStr(), event);
         return;
     }
