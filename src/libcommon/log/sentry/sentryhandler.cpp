@@ -53,7 +53,7 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
 
     // Sentry init
     sentry_options_t *options = sentry_options_new();
-    sentry_options_set_dsn(options, SENTRY_SERVER_DSN);
+    sentry_options_set_dsn(options, ((project == SentryProject::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
     const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
 #endif
@@ -147,13 +147,19 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     if (lastEventCaptureIsOutdated(storedEvent)) {  // Reset the capture count if the last capture was more than 10 minutes ago
         storedEvent.captureCount = 0;
         storedEvent.lastCapture = system_clock::now();
-        it->second.lastUpload = system_clock::now();
+        storedEvent.lastUpload = system_clock::now();
         return;
     }
 
     storedEvent.lastCapture = system_clock::now();
     if (storedEvent.captureCount < SentryMaxCaptureCountBeforeRateLimit) {  // Rate limit not reached, we can send the event
-        it->second.lastUpload = system_clock::now();
+        storedEvent.lastUpload = system_clock::now();
+        return;
+    }
+
+    if (storedEvent.captureCount == SentryMaxCaptureCountBeforeRateLimit) { // Rate limit reached, we send this event and we will wait 10 minutes before sending it again
+        storedEvent.lastUpload = system_clock::now();
+        escalateSentryEvent(storedEvent);
         return;
     }
 
@@ -161,18 +167,18 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
         toUpload = false;
         return;
     }
-    it->second.lastUpload = system_clock::now();
+    storedEvent.lastUpload = system_clock::now();
     escalateSentryEvent(storedEvent);
 }
 
 bool SentryHandler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastCapture + minutes(SentryMinUploadIntervaOnRateLimit)) >= system_clock::now();
+    return (event.lastCapture + minutes(SentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
 }
 
 bool SentryHandler::lastEventUploadIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastUpload + minutes(SentryMinUploadIntervaOnRateLimit)) >= system_clock::now();
+    return (event.lastUpload + minutes(SentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
 }
 
 void SentryHandler::escalateSentryEvent(SentryEvent &event) {
