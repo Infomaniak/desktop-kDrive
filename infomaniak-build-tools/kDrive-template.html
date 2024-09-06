@@ -19,13 +19,15 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Release notes - kDrive 3.6.4</h1>
+<h1>Release notes - kDrive 3.6.5</h1>
 <h2><b>Bug fixes</b></h2>
   <ul>
-    <li>Fixed a sync issue occurring  with file modification dates < 1970</li>
-    <li>Fixed a sync issue with NFD encoded names</li>
-    <li>Fixed sync of files with double quote in their names</li>
-    <li>Fixed issue when trying to upload a file whose size exceedes the maximum allowed size</li>
+    <li>Fixed a sync issue occurring on files whose name contains a special character</li>
+    <li>Corrected behaviour in the event of disconnection</li>
+    <li>Fixed empty file list retrieved in case of poor network connection</li>
+    <li>Fixed issue generating lots of conflicted files while using specific software</li>
+    <li>Fixed a sync issue generating infinite loop</li>
+    <li>Windows - Code optimization to reduce duration of step 1 and 2</li>
   </ul>
 </body>
 </html>
