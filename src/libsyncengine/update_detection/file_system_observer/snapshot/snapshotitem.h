@@ -31,7 +31,7 @@ class SnapshotItem {
         SnapshotItem();
         SnapshotItem(const NodeId &id);
         SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt, SyncTime lastModified,
-                     NodeType type, int64_t size, bool isLink = false, bool canWrite = true, bool canShare = true);
+                     NodeType type, int64_t size, bool isLink, bool canWrite, bool canShare);
         SnapshotItem(const SnapshotItem &other);
 
         inline const NodeId &id() const { return _id; }
@@ -81,4 +81,4 @@ class SnapshotItem {
         std::unordered_set<NodeId> _childrenIds;
 };
 
-}  // namespace KDC
+} // namespace KDC

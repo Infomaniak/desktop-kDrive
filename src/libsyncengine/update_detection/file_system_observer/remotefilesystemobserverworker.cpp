@@ -44,8 +44,8 @@
 namespace KDC {
 
 RemoteFileSystemObserverWorker::RemoteFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                                               const std::string &shortName)
-    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote), _driveDbId(syncPal->driveDbId()) {}
+                                                               const std::string &shortName) :
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Remote), _driveDbId(syncPal->driveDbId()) {}
 
 RemoteFileSystemObserverWorker::~RemoteFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~RemoteFileSystemObserverWorker");
@@ -100,8 +100,8 @@ ExitCode RemoteFileSystemObserverWorker::generateInitialSnapshot() {
     const std::chrono::duration<double> elapsedSeconds = end - start;
     if (exitCode == ExitCode::Ok && !stopAsked()) {
         _snapshot->setValid(true);
-        LOG_SYNCPAL_INFO(
-            _logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for " << _snapshot->nbItems() << " items");
+        LOG_SYNCPAL_INFO(_logger, "Remote snapshot generated in: " << elapsedSeconds.count() << "s for " << _snapshot->nbItems()
+                                                                   << " items");
     } else {
         invalidateSnapshot();
         LOG_SYNCPAL_WARN(_logger, "Remote snapshot generation stopped or failed after: " << elapsedSeconds.count() << "s");
@@ -175,7 +175,7 @@ ExitCode RemoteFileSystemObserverWorker::processEvents() {
             job = std::make_shared<ContinueFileListWithCursorJob>(_driveDbId, _cursor);
         } catch (std::exception const &e) {
             LOG_SYNCPAL_WARN(_logger, "Error in ContinueFileListWithCursorJob::ContinueFileListWithCursorJob for driveDbId="
-                                          << _driveDbId << " : " << e.what());
+                                              << _driveDbId << " : " << e.what());
             exitCode = ExitCode::DataError;
             break;
         }
@@ -272,7 +272,7 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
     } catch (std::exception const &e) {
         std::string what = e.what();
         LOG_SYNCPAL_WARN(_logger, "Error in InitFileListWithCursorJob::InitFileListWithCursorJob for driveDbId="
-                                      << _driveDbId << " what =" << what.c_str());
+                                          << _driveDbId << " what =" << what.c_str());
         if (what == invalidToken) {
             return ExitCode::InvalidToken;
         }
@@ -364,11 +364,11 @@ ExitCode RemoteFileSystemObserverWorker::getItemsInDir(const NodeId &dirId, cons
         if (_snapshot->updateItem(item)) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in remote snapshot: name:"
-                                                << SyncName2WStr(item.name()).c_str() << L", inode:"
-                                                << Utility::s2ws(item.id()).c_str() << L", parent inode:"
-                                                << Utility::s2ws(item.parentId()).c_str() << L", createdAt:" << item.createdAt()
-                                                << L", modtime:" << item.lastModified() << L", isDir:"
-                                                << (item.type() == NodeType::Directory) << L", size:" << item.size());
+                                                    << SyncName2WStr(item.name()).c_str() << L", inode:"
+                                                    << Utility::s2ws(item.id()).c_str() << L", parent inode:"
+                                                    << Utility::s2ws(item.parentId()).c_str() << L", createdAt:"
+                                                    << item.createdAt() << L", modtime:" << item.lastModified() << L", isDir:"
+                                                    << (item.type() == NodeType::Directory) << L", size:" << item.size());
             }
         }
     }
@@ -413,8 +413,8 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
 
             {
                 const std::lock_guard<std::mutex> lock(_mutex);
-                if (_updating) {  // We want to update snapshot immediately, cancel LongPoll job and send a listing/continue
-                                  // request
+                if (_updating) { // We want to update snapshot immediately, cancel LongPoll job and send a listing/continue
+                                 // request
                     notifyJob->abort();
                     changes = true;
                     return ExitCode::Ok;
@@ -436,10 +436,10 @@ ExitCode RemoteFileSystemObserverWorker::sendLongPoll(bool &changes) {
             if (notifyJob->getStatusCode() == Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY) {
                 // Ignore this error and check for changes anyway
                 LOG_SYNCPAL_INFO(_logger, "Notify changes request failed with error "
-                                              << Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY
-                                              << "for drive: " << std::to_string(_driveDbId).c_str()
-                                              << " and cursor: " << _cursor.c_str() << ". Check for changes anyway.");
-                changes = true;  // TODO: perhaps not a good idea... what if longpoll crashed and not reachable for a long time???
+                                                  << Poco::Net::HTTPResponse::HTTP_BAD_GATEWAY
+                                                  << "for drive: " << std::to_string(_driveDbId).c_str()
+                                                  << " and cursor: " << _cursor.c_str() << ". Check for changes anyway.");
+                changes = true; // TODO: perhaps not a good idea... what if longpoll crashed and not reachable for a long time???
             } else {
                 LOG_SYNCPAL_WARN(_logger, "Notify changes request failed for drive: " << std::to_string(_driveDbId).c_str()
                                                                                       << " and cursor: " << _cursor.c_str());
@@ -538,13 +538,13 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
     if (!JsonParserUtility::extractValue(actionObj, pathKey, actionInfo.path)) {
         return ExitCode::BackError;
     }
-    actionInfo.name = actionInfo.path.substr(actionInfo.path.find_last_of('/') + 1);  // +1 to ignore the last "/"
+    actionInfo.name = actionInfo.path.substr(actionInfo.path.find_last_of('/') + 1); // +1 to ignore the last "/"
 
     SyncName tmpSyncName;
     if (!JsonParserUtility::extractValue(actionObj, destinationKey, tmpSyncName, false)) {
         return ExitCode::BackError;
     }
-    actionInfo.destName = tmpSyncName.substr(tmpSyncName.find_last_of('/') + 1);  // +1 to ignore the last "/"
+    actionInfo.destName = tmpSyncName.substr(tmpSyncName.find_last_of('/') + 1); // +1 to ignore the last "/"
 
     if (!JsonParserUtility::extractValue(actionObj, createdAtKey, actionInfo.createdAt, false)) {
         return ExitCode::BackError;
@@ -565,6 +565,12 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
         }
     }
 
+    std::string tmp;
+    if (!JsonParserUtility::extractValue(actionObj, symbolicLinkKey, tmp, false)) {
+        return ExitCode::BackError;
+    }
+    actionInfo.isLink = !tmp.empty();
+
     Poco::JSON::Object::Ptr capabilitiesObj = actionObj->getObject(capabilitiesKey);
     if (capabilitiesObj) {
         if (!JsonParserUtility::extractValue(capabilitiesObj, canWriteKey, actionInfo.canWrite)) {
@@ -578,7 +584,7 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName, const ActionInfo &actionInfo,
                                                        std::set<NodeId, std::less<>> &movedItems) {
     SnapshotItem item(actionInfo.nodeId, actionInfo.parentNodeId, usedName, actionInfo.createdAt, actionInfo.modtime,
-                      actionInfo.type, actionInfo.size, actionInfo.canWrite);
+                      actionInfo.type, actionInfo.size, actionInfo.isLink, actionInfo.canWrite, true);
 
     // Process action
     switch (actionInfo.actionCode) {
@@ -595,7 +601,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             if (ExitCode exitCode = checkRightsAndUpdateItem(actionInfo.nodeId, rightsOk, item); exitCode != ExitCode::Ok) {
                 return exitCode;
             }
-            if (!rightsOk) break;  // Current user does not have the right to access this item, ignore action.
+            if (!rightsOk) break; // Current user does not have the right to access this item, ignore action.
             [[fallthrough]];
         }
         case ActionCode::actionCodeMoveIn:
@@ -649,7 +655,7 @@ ExitCode RemoteFileSystemObserverWorker::processAction(const SyncName &usedName,
             if (ExitCode exitCode = checkRightsAndUpdateItem(actionInfo.nodeId, rightsOk, item); exitCode != ExitCode::Ok) {
                 return exitCode;
             }
-            if (rightsOk) break;  // Current user still have the right to access this item, ignore action.
+            if (rightsOk) break; // Current user still have the right to access this item, ignore action.
             [[fallthrough]];
         }
         case ActionCode::actionCodeMoveOut:
@@ -698,8 +704,8 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
         }
 
         LOGW_SYNCPAL_WARN(_logger, L"Error while determining access rights on item: "
-                                       << SyncName2WStr(snapshotItem.name()).c_str() << L" ("
-                                       << Utility::s2ws(snapshotItem.id()).c_str() << L")");
+                                           << SyncName2WStr(snapshotItem.name()).c_str() << L" ("
+                                           << Utility::s2ws(snapshotItem.id()).c_str() << L")");
         invalidateSnapshot();
         return ExitCode::BackError;
     }
@@ -707,6 +713,7 @@ ExitCode RemoteFileSystemObserverWorker::checkRightsAndUpdateItem(const NodeId &
     snapshotItem.setCreatedAt(job.creationTime());
     snapshotItem.setLastModified(job.modtime());
     snapshotItem.setSize(job.size());
+    snapshotItem.setIsLink(job.isLink());
     hasRights = true;
     return ExitCode::Ok;
 }
@@ -723,16 +730,16 @@ bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &na
 
     if (!valid) {
         LOGW_SYNCPAL_DEBUG(_logger, L"The file/directory name contains a character not yet supported by the filesystem "
-                                        << SyncName2WStr(name).c_str() << L". Item is ignored.");
+                                            << SyncName2WStr(name).c_str() << L". Item is ignored.");
 
         Error err(_syncPal->syncDbId(), "", nodeId, type, name, ConflictType::None, InconsistencyType::NotYetSupportedChar);
         _syncPal->addError(err);
         return true;
     }
 #else
-    (void)name;
-    (void)nodeId;
-    (void)type;
+    (void) name;
+    (void) nodeId;
+    (void) type;
 #endif
     return false;
 }
@@ -740,11 +747,11 @@ bool RemoteFileSystemObserverWorker::hasUnsupportedCharacters(const SyncName &na
 void RemoteFileSystemObserverWorker::countListingRequests() {
     const auto listingFullTimerEnd = std::chrono::steady_clock::now();
     const std::chrono::duration<double> elapsedTime = listingFullTimerEnd - _listingFullTimer;
-    bool resetTimer = elapsedTime.count() > 3600;  // 1h
+    bool resetTimer = elapsedTime.count() > 3600; // 1h
     if (_listingFullCounter > 60) {
         // If there is more then 1 listing/full request per minute for an hour -> send a sentry
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "RemoteFileSystemObserverWorker::generateInitialSnapshot",
-                                                   "Too many listing/full requests, sync is looping");
+                                                  "Too many listing/full requests, sync is looping");
         resetTimer = true;
     }
 
@@ -756,4 +763,4 @@ void RemoteFileSystemObserverWorker::countListingRequests() {
     _listingFullCounter++;
 }
 
-}  // namespace KDC
+} // namespace KDC

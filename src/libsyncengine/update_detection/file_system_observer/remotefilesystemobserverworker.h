@@ -57,6 +57,7 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
                 NodeType type{NodeType::Unknown};
                 int64_t size{0};
                 bool canWrite{true};
+                bool isLink{false};
         };
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
         ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
@@ -77,4 +78,4 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         friend class TestRemoteFileSystemObserverWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC
