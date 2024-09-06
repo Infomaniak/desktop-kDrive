@@ -169,6 +169,10 @@ if (UNIX)
     endif()
 endif()
 
+if(UNIX AND NOT APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts")
+endif()
+
 # Handle Translations, pick all client_* files from trans directory.
 file(GLOB TRANS_FILES ${CMAKE_SOURCE_DIR}/translations/client_*.ts)
 set(TRANSLATIONS ${TRANS_FILES})
