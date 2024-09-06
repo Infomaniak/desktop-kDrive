@@ -304,6 +304,13 @@ if(NOT BUILD_KDRIVE_OSX_BUNDLE AND NOT WIN32)
     endif(SharedMimeInfo_FOUND)
 endif()
 
+if(BUILD_KDRIVE_OSX_BUNDLE)
+    # Crashpad_handler
+    find_program(CRASHPAD_HANDLER_PROGRAM NAMES crashpad_handler NO_CACHE)
+    message(STATUS "crashpad_handler exe found in ${CRASHPAD_HANDLER_PROGRAM}")
+    install(PROGRAMS ${CRASHPAD_HANDLER_PROGRAM} DESTINATION ${BIN_OUTPUT_DIRECTORY})
+endif()
+
 if(BUILD_KDRIVE_OSX_BUNDLE AND NOT BUILD_LIBRARIES_ONLY)
     get_target_property (QT_QMAKE_EXECUTABLE Qt6::qmake IMPORTED_LOCATION)
 
