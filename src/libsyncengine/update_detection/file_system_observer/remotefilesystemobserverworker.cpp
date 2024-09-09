@@ -589,10 +589,6 @@ ExitCode RemoteFileSystemObserverWorker::extractActionInfo(const Poco::JSON::Obj
 }
 
 ExitCode RemoteFileSystemObserverWorker::processAction(ActionInfo &actionInfo, std::set<NodeId, std::less<>> &movedItems) {
-    // SnapshotItem item(actionInfo.snapshotItem.id(), actionInfo.parentNodeId, usedName, actionInfo.createdAt,
-    // actionInfo.modtime,
-    //                   actionInfo.type, actionInfo.size, actionInfo.isLink, actionInfo.canWrite, true);
-
     // Process action
     switch (actionInfo.actionCode) {
         // Item added
