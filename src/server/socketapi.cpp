@@ -93,8 +93,8 @@ struct ListenerHasSocketPred {
 };
 
 SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>> &syncPalMap,
-                     const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent)
-    : QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
+                     const std::unordered_map<int, std::shared_ptr<KDC::Vfs>> &vfsMap, QObject *parent) :
+    QObject(parent), _syncPalMap(syncPalMap), _vfsMap(vfsMap) {
     QString socketPath;
 
     if (OldUtility::isWindows()) {
@@ -103,7 +103,7 @@ SocketApi::SocketApi(const std::unordered_map<int, std::shared_ptr<KDC::SyncPal>
     } else if (OldUtility::isMac()) {
         socketPath = SOCKETAPI_TEAM_IDENTIFIER_PREFIX APPLICATION_REV_DOMAIN ".socketApi";
 #ifdef Q_OS_MAC
-        CFURLRef url = (CFURLRef)CFAutorelease((CFURLRef)CFBundleCopyBundleURL(CFBundleGetMainBundle()));
+        CFURLRef url = (CFURLRef) CFAutorelease((CFURLRef) CFBundleCopyBundleURL(CFBundleGetMainBundle()));
         QString bundlePath = QUrl::fromCFURL(url).path();
         QString cmd;
 
@@ -180,13 +180,13 @@ void SocketApi::executeCommand(const QString &commandLine, const SocketListener 
     argument.remove(0, command.length() + 1);
     if (functionWith2Arguments) {
         staticMetaObject.method(indexOfMethod)
-            .invoke(this, Q_ARG(QString, argument), Q_ARG(SocketListener *, const_cast<SocketListener *>(listener)));
+                .invoke(this, Q_ARG(QString, argument), Q_ARG(SocketListener *, const_cast<SocketListener *>(listener)));
     } else if (functionWith1Argument) {
         staticMetaObject.method(indexOfMethod).invoke(this, Q_ARG(QString, argument));
     } else {
         LOGW_WARN(KDC::Log::instance()->getLogger(), L"The command is not supported by this version of the client - cmd="
-                                                         << KDC::Utility::s2ws(command.toStdString()).c_str() << L" arg="
-                                                         << argument.toStdWString().c_str());
+                                                             << KDC::Utility::s2ws(command.toStdString()).c_str() << L" arg="
+                                                             << argument.toStdWString().c_str());
     }
 }
 
@@ -210,7 +210,7 @@ void SocketApi::slotNewConnection() {
         return;
     }
 
-    for (const KDC::Sync &sync : syncList) {
+    for (const KDC::Sync &sync: syncList) {
         if (!sync.paused()) {
             QString message = buildRegisterPathMessage(SyncName2QStr(sync.localPath().native()));
             listener.sendMessage(message);
@@ -261,7 +261,7 @@ void SocketApi::slotReadSocket() {
             }
             line.append(socket->readLine());
         }
-        line.chop(QUERY_END_SEPARATOR.length());  // remove the separator
+        line.chop(QUERY_END_SEPARATOR.length()); // remove the separator
         LOGW_INFO(KDC::Log::instance()->getLogger(),
                   L"Received SocketAPI message - msg=" << line.toStdWString().c_str() << L" socket=" << socket);
         executeCommand(line, listener);
@@ -269,7 +269,7 @@ void SocketApi::slotReadSocket() {
 }
 
 bool SocketApi::tryToRetrieveSync(const int syncDbId, KDC::Sync &sync) const {
-    if (!_registeredSyncs.contains(syncDbId)) return false;  // Make sure not to register twice to each connected client
+    if (!_registeredSyncs.contains(syncDbId)) return false; // Make sure not to register twice to each connected client
 
     bool found = false;
     if (!KDC::ParmsDb::instance()->selectSync(syncDbId, sync, found)) {
@@ -328,7 +328,7 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
         listener->registerMonitoredDirectory(static_cast<unsigned int>(qHash(directory)));
     }
 
-    KDC::SyncFileStatus status = KDC::SyncFileStatus::Unknown;
+    SyncFileStatus status = KDC::SyncFileStatus::Unknown;
     bool isPlaceholder = false;
     bool isHydrated = false;
     int progress = 0;
@@ -339,13 +339,13 @@ void SocketApi::command_RETRIEVE_FILE_STATUS(const QString &argument, SocketList
     }
 
     const QString message =
-        buildMessage(QString("STATUS"), fileData.localPath, socketAPIString(status, isPlaceholder, isHydrated, progress));
+            buildMessage(QString("STATUS"), fileData.localPath, socketAPIString(status, isPlaceholder, isHydrated, progress));
     listener->sendMessage(message);
 }
 
 void SocketApi::command_VERSION(const QString &, SocketListener *listener) {
     listener->sendMessage(
-        QString("VERSION%1%2%1%3").arg(MSG_CDE_SEPARATOR).arg(KDRIVE_VERSION_STRING, KDRIVE_SOCKET_API_VERSION));
+            QString("VERSION%1%2%1%3").arg(MSG_CDE_SEPARATOR).arg(KDRIVE_VERSION_STRING, KDRIVE_SOCKET_API_VERSION));
 }
 
 void SocketApi::command_COPY_PUBLIC_LINK(const QString &localFile, SocketListener *) {
@@ -498,7 +498,7 @@ bool SocketApi::addDownloadJob(const FileData &fileData) {
 
     // Create download job
     const KDC::ExitCode exitCode =
-        syncPalMapIt->second->addDlDirectJob(QStr2Path(fileData.relativePath), QStr2Path(fileData.localPath));
+            syncPalMapIt->second->addDlDirectJob(QStr2Path(fileData.relativePath), QStr2Path(fileData.localPath));
     if (exitCode != KDC::ExitCode::Ok) {
         LOGW_WARN(KDC::Log::instance()->getLogger(),
                   L"Error in SyncPal::addDownloadJob - " << Utility::formatPath(fileData.relativePath).c_str());
@@ -549,9 +549,9 @@ void SocketApi::command_MAKE_AVAILABLE_LOCALLY_DIRECT(const QString &filesArg) {
     std::list<KDC::SyncPath> fileListExpanded;
     processFileList(fileList, fileListExpanded);
 
-    for (const auto &filePath : qAsConst(fileListExpanded)) {
+    for (const auto &filePath: qAsConst(fileListExpanded)) {
 #else
-    for (const auto &str : qAsConst(fileList)) {
+    for (const auto &str: qAsConst(fileList)) {
         std::filesystem::path filePath = QStr2Path(str);
 #endif
         auto fileData = FileData::get(filePath);
@@ -617,7 +617,7 @@ bool SocketApi::syncForPath(const std::filesystem::path &path, KDC::Sync &sync) 
         return false;
     }
 
-    for (const KDC::Sync &tmpSync : syncList) {
+    for (const KDC::Sync &tmpSync: syncList) {
         if (KDC::CommonUtility::isSubDir(tmpSync.localPath(), path)) {
             sync = tmpSync;
             return true;
@@ -668,9 +668,9 @@ void SocketApi::command_MAKE_ONLINE_ONLY_DIRECT(const QString &filesArg, SocketL
     std::list<KDC::SyncPath> fileListExpanded;
     processFileList(fileList, fileListExpanded);
 
-    for (const auto &filePath : qAsConst(fileListExpanded)) {
+    for (const auto &filePath: qAsConst(fileListExpanded)) {
 #else
-    for (const auto &str : qAsConst(fileList)) {
+    for (const auto &str: qAsConst(fileList)) {
         std::filesystem::path filePath = QStr2Path(str);
 #endif
         if (_dehydrationCanceled) {
@@ -741,7 +741,7 @@ void SocketApi::command_CANCEL_HYDRATION_DIRECT(const QString &filesArg) {
     }
 
 #ifdef Q_OS_WIN32
-    for (const auto &p : qAsConst(fileList)) {
+    for (const auto &p: qAsConst(fileList)) {
         QString filePath = QDir::cleanPath(p);
         FileData fileData = FileData::get(filePath);
 
@@ -763,11 +763,11 @@ void SocketApi::openPrivateLink(const QString &link) {
 
 void SocketApi::command_GET_STRINGS(const QString &argument, SocketListener *listener) {
     static std::array<std::pair<const char *, QString>, 2> strings{{
-        {"CONTEXT_MENU_TITLE", KDC::Theme::instance()->appNameGUI()},
-        {"COPY_PRIVATE_LINK_MENU_TITLE", tr("Copy private share link")},
+            {"CONTEXT_MENU_TITLE", KDC::Theme::instance()->appNameGUI()},
+            {"COPY_PRIVATE_LINK_MENU_TITLE", tr("Copy private share link")},
     }};
     listener->sendMessage(QString("GET_STRINGS%1BEGIN").arg(MSG_CDE_SEPARATOR));
-    for (auto &[key, value] : strings) {
+    for (auto &[key, value]: strings) {
         if (argument.isEmpty() || argument == key) {
             listener->sendMessage(QString("STRING%1%2%1%3").arg(MSG_CDE_SEPARATOR).arg(key, value));
         }
@@ -853,7 +853,7 @@ void SocketApi::command_GET_THUMBNAIL(const QString &argument, SocketListener *l
     pixmap.save(&pixmapBuffer, "BMP");
 
     listener->sendMessage(
-        QString("%1%2%3").arg(QString::number(msgId)).arg(MSG_CDE_SEPARATOR).arg(QString(pixmapBuffer.data().toBase64())));
+            QString("%1%2%3").arg(QString::number(msgId)).arg(MSG_CDE_SEPARATOR).arg(QString(pixmapBuffer.data().toBase64())));
 }
 #endif
 
@@ -939,9 +939,9 @@ void SocketApi::sendSharingContextMenuOptions(const FileData &fileData, const So
     // If there is no permission to share for this file, add a disabled entry saying so
     if (isOnTheServer && !canShare) {
         listener->sendMessage(QString("MENU_ITEM%1DISABLED%1d%1%2")
-                                  .arg(MSG_CDE_SEPARATOR)
-                                  .arg(fileData.isDirectory ? tr("Resharing this file is not allowed")
-                                                            : tr("Resharing this folder is not allowed")));
+                                      .arg(MSG_CDE_SEPARATOR)
+                                      .arg(fileData.isDirectory ? tr("Resharing this file is not allowed")
+                                                                : tr("Resharing this folder is not allowed")));
     } else {
         // Do we have public links?
         bool publicLinksEnabled = theme->linkSharing();
@@ -950,17 +950,18 @@ void SocketApi::sendSharingContextMenuOptions(const FileData &fileData, const So
         bool canCreateDefaultPublicLink = publicLinksEnabled;
 
         if (canCreateDefaultPublicLink) {
-            listener->sendMessage(
-                QString("MENU_ITEM%1COPY_PUBLIC_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy public share link")));
+            listener->sendMessage(QString("MENU_ITEM%1COPY_PUBLIC_LINK%2")
+                                          .arg(MSG_CDE_SEPARATOR)
+                                          .arg(flagString + tr("Copy public share link")));
         } else if (publicLinksEnabled) {
             listener->sendMessage(QString("MENU_ITEM%1MANAGE_PUBLIC_LINKS%2")
-                                      .arg(MSG_CDE_SEPARATOR)
-                                      .arg(flagString + tr("Copy public share link")));
+                                          .arg(MSG_CDE_SEPARATOR)
+                                          .arg(flagString + tr("Copy public share link")));
         }
     }
 
     listener->sendMessage(
-        QString("MENU_ITEM%1COPY_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy private share link")));
+            QString("MENU_ITEM%1COPY_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Copy private share link")));
 }
 
 void SocketApi::addSharingContextMenuOptions(const FileData &fileData, QTextStream &response) {
@@ -983,9 +984,9 @@ void SocketApi::addSharingContextMenuOptions(const FileData &fileData, QTextStre
     // If there is no permission to share for this file, add a disabled entry saying so
     if (isOnTheServer && !canShare) {
         response << QString("%1DISABLED%1d%1%2")
-                        .arg(MSG_CDE_SEPARATOR)
-                        .arg(fileData.isDirectory ? tr("Resharing this file is not allowed")
-                                                  : tr("Resharing this folder is not allowed"));
+                            .arg(MSG_CDE_SEPARATOR)
+                            .arg(fileData.isDirectory ? tr("Resharing this file is not allowed")
+                                                      : tr("Resharing this folder is not allowed"));
     } else {
         // Do we have public links?
         bool publicLinksEnabled = theme->linkSharing();
@@ -1009,7 +1010,7 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
 
     // Find the common sync
     KDC::Sync sync;
-    for (const auto &file : qAsConst(files)) {
+    for (const auto &file: qAsConst(files)) {
         KDC::Sync tmpSync;
         if (!syncForPath(QStr2Path(file), tmpSync)) {
             return;
@@ -1058,7 +1059,7 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
         bool canHydrate = true;
         bool canDehydrate = true;
         bool canCancelHydration = false;
-        for (const auto &file : qAsConst(files)) {
+        for (const auto &file: qAsConst(files)) {
             bool isPlaceholder = false;
             bool isHydrated = false;
             bool isSyncing = false;
@@ -1077,25 +1078,25 @@ void SocketApi::command_GET_MENU_ITEMS(const QString &argument, SocketListener *
         // TODO: Should be a submenu, should use icons
         auto makePinContextMenu = [&](bool makeAvailableLocally, bool freeSpace, bool cancelDehydration, bool cancelHydration) {
             listener->sendMessage(QString("MENU_ITEM%1MAKE_AVAILABLE_LOCALLY_DIRECT%1%2%1%3")
-                                      .arg(MSG_CDE_SEPARATOR)
-                                      .arg(makeAvailableLocally ? QString() : QString("d"))
-                                      .arg(vfsPinActionText()));
+                                          .arg(MSG_CDE_SEPARATOR)
+                                          .arg(makeAvailableLocally ? QString() : QString("d"))
+                                          .arg(vfsPinActionText()));
             if (cancelHydration) {
                 listener->sendMessage(QString("MENU_ITEM%1CANCEL_HYDRATION_DIRECT%1%2%1%3")
-                                          .arg(MSG_CDE_SEPARATOR)
-                                          .arg(QString(""))
-                                          .arg(cancelHydrationText()));
+                                              .arg(MSG_CDE_SEPARATOR)
+                                              .arg(QString(""))
+                                              .arg(cancelHydrationText()));
             }
 
             listener->sendMessage(QString("MENU_ITEM%1MAKE_ONLINE_ONLY_DIRECT%1%2%1%3")
-                                      .arg(MSG_CDE_SEPARATOR)
-                                      .arg(freeSpace ? QString() : QString("d"))
-                                      .arg(vfsFreeSpaceActionText()));
+                                          .arg(MSG_CDE_SEPARATOR)
+                                          .arg(freeSpace ? QString() : QString("d"))
+                                          .arg(vfsFreeSpaceActionText()));
             if (cancelDehydration) {
                 listener->sendMessage(QString("MENU_ITEM%1CANCEL_DEHYDRATION_DIRECT%1%2%1%3")
-                                          .arg(MSG_CDE_SEPARATOR)
-                                          .arg(QString(""))
-                                          .arg(cancelDehydrationText()));
+                                              .arg(MSG_CDE_SEPARATOR)
+                                              .arg(QString(""))
+                                              .arg(cancelDehydrationText()));
             }
         };
 
@@ -1141,7 +1142,7 @@ void SocketApi::manageActionsOnSingleFile(SocketListener *listener, const QStrin
     if (sync.dbId()) {
         sendSharingContextMenuOptions(fileData, listener);
         listener->sendMessage(
-            QString("MENU_ITEM%1OPEN_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Open in browser")));
+                QString("MENU_ITEM%1OPEN_PRIVATE_LINK%2").arg(MSG_CDE_SEPARATOR).arg(flagString + tr("Open in browser")));
     }
 }
 
@@ -1158,7 +1159,7 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
 
     // Find the common sync
     KDC::Sync sync;
-    for (const auto &file : qAsConst(argumentList)) {
+    for (const auto &file: qAsConst(argumentList)) {
         KDC::Sync tmpSync;
         if (!syncForPath(QStr2Path(file), tmpSync)) {
             listener->sendMessage(responseStr);
@@ -1220,7 +1221,7 @@ void SocketApi::command_GET_ALL_MENU_ITEMS(const QString &argument, SocketListen
     if (sync.dbId() && sync.virtualFileMode() != KDC::VirtualFileMode::Off) {
         ENFORCE(!argumentList.isEmpty());
 
-        for (const auto &file : qAsConst(argumentList)) {
+        for (const auto &file: qAsConst(argumentList)) {
             auto fileData = FileData::get(file);
             if (syncPalMapIt->second->isDownloadOngoing(QStr2Path(fileData.relativePath))) {
                 canCancelHydration = true;
@@ -1250,14 +1251,14 @@ QString SocketApi::buildRegisterPathMessage(const QString &path) {
 
 void SocketApi::processFileList(const QStringList &inFileList, std::list<KDC::SyncPath> &outFileList) {
     // Process all files
-    for (const QString &path : qAsConst(inFileList)) {
+    for (const QString &path: qAsConst(inFileList)) {
         FileData fileData = FileData::get(path);
         if (fileData.virtualFileMode == KDC::VirtualFileMode::Mac) {
             QFileInfo info(path);
             if (info.isDir()) {
                 const QFileInfoList infoList = QDir(path).entryInfoList(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
                 QStringList fileList;
-                for (const auto &tmpInfo : qAsConst(infoList)) {
+                for (const auto &tmpInfo: qAsConst(infoList)) {
                     QString tmpPath(tmpInfo.filePath());
                     FileData tmpFileData = FileData::get(tmpPath);
 
@@ -1382,9 +1383,9 @@ FileData FileData::get(const KDC::SyncPath &path) {
                            L"Item doesn't exist - " << Utility::formatPath(data.localPath).c_str());
             } else {
                 LOGW_WARN(KDC::Log::instance()->getLogger(), L"Failed to check if the path is a directory - "
-                                                                 << Utility::formatPath(data.localPath).c_str() << L" err="
-                                                                 << KDC::Utility::s2ws(ec.message()).c_str() << L" ("
-                                                                 << ec.value() << L")");
+                                                                     << Utility::formatPath(data.localPath).c_str() << L" err="
+                                                                     << KDC::Utility::s2ws(ec.message()).c_str() << L" ("
+                                                                     << ec.value() << L")");
             }
             return FileData();
         }
@@ -1397,6 +1398,6 @@ FileData FileData::parentFolder() const {
     return FileData::get(QFileInfo(localPath).dir().path().toUtf8());
 }
 
-}  // namespace KDC
+} // namespace KDC
 
 #include "socketapi.moc"
