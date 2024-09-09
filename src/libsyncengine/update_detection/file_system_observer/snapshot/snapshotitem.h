@@ -29,35 +29,35 @@ namespace KDC {
 class SnapshotItem {
     public:
         SnapshotItem();
-        SnapshotItem(const NodeId &id);
+        explicit SnapshotItem(const NodeId &id);
         SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt, SyncTime lastModified,
                      NodeType type, int64_t size, bool isLink, bool canWrite, bool canShare);
         SnapshotItem(const SnapshotItem &other);
 
-        inline const NodeId &id() const { return _id; }
-        inline void setId(const NodeId &id) { _id = id; }
-        inline const NodeId &parentId() const { return _parentId; }
-        inline void setParentId(const NodeId &newParentId) { _parentId = newParentId; }
-        inline const std::unordered_set<NodeId> &childrenIds() const { return _childrenIds; }
-        inline void setChildrenIds(const std::unordered_set<NodeId> &newChildrenIds) { _childrenIds = newChildrenIds; }
-        inline const SyncName &name() const { return _name; }
-        inline void setName(const SyncName &newName) { _name = newName; }
-        inline SyncTime createdAt() const { return _createdAt; }
-        inline void setCreatedAt(SyncTime newCreatedAt) { _createdAt = newCreatedAt; }
-        inline SyncTime lastModified() const { return _lastModified; }
-        inline void setLastModified(SyncTime newLastModified) { _lastModified = newLastModified; }
-        inline NodeType type() const { return _type; }
-        inline void setType(NodeType type) { _type = type; }
-        inline int64_t size() const { return _size; }
-        inline void setSize(uint64_t newSize) { _size = newSize; }
-        inline bool isLink() const { return _isLink; }
-        inline void setIsLink(bool isLink) { _isLink = isLink; }
-        inline const std::string &contentChecksum() const { return _contentChecksum; }
-        inline void setContentChecksum(const std::string &newChecksum) { _contentChecksum = newChecksum; }
-        inline bool canWrite() const { return _canWrite; }
-        inline void setCanWrite(bool canWrite) { _canWrite = canWrite; }
-        inline bool canShare() const { return _canShare; }
-        inline void setCanShare(bool canShare) { _canShare = canShare; }
+        [[nodiscard]] const NodeId &id() const { return _id; }
+        void setId(const NodeId &id) { _id = id; }
+        [[nodiscard]] const NodeId &parentId() const { return _parentId; }
+        void setParentId(const NodeId &newParentId) { _parentId = newParentId; }
+        [[nodiscard]] const std::unordered_set<NodeId> &childrenIds() const { return _childrenIds; }
+        void setChildrenIds(const std::unordered_set<NodeId> &newChildrenIds) { _childrenIds = newChildrenIds; }
+        [[nodiscard]] const SyncName &name() const { return _name; }
+        void setName(const SyncName &newName) { _name = newName; }
+        [[nodiscard]] SyncTime createdAt() const { return _createdAt; }
+        void setCreatedAt(const SyncTime newCreatedAt) { _createdAt = newCreatedAt; }
+        [[nodiscard]] SyncTime lastModified() const { return _lastModified; }
+        void setLastModified(const SyncTime newLastModified) { _lastModified = newLastModified; }
+        [[nodiscard]] NodeType type() const { return _type; }
+        void setType(const NodeType type) { _type = type; }
+        [[nodiscard]] int64_t size() const { return _size; }
+        void setSize(const int64_t newSize) { _size = newSize; }
+        [[nodiscard]] bool isLink() const { return _isLink; }
+        void setIsLink(const bool isLink) { _isLink = isLink; }
+        [[nodiscard]] const std::string &contentChecksum() const { return _contentChecksum; }
+        void setContentChecksum(const std::string &newChecksum) { _contentChecksum = newChecksum; }
+        [[nodiscard]] bool canWrite() const { return _canWrite; }
+        void setCanWrite(const bool canWrite) { _canWrite = canWrite; }
+        [[nodiscard]] bool canShare() const { return _canShare; }
+        void setCanShare(bool canShare) { _canShare = canShare; }
         SnapshotItem &operator=(const SnapshotItem &other);
 
         void copyExceptChildren(const SnapshotItem &other);
