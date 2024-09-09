@@ -500,8 +500,8 @@ ExitCode RemoteFileSystemObserverWorker::processActions(Poco::JSON::Array::Ptr a
 
 #ifdef _WIN32
         SyncName newName;
-        if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(usedName, newName)) {
-            usedName = newName;
+        if (PlatformInconsistencyCheckerUtility::instance()->fixNameWithBackslash(actionInfo.snapshotItem.name(), newName)) {
+            actionInfo.snapshotItem.setName(newName);
         }
 #endif
 
