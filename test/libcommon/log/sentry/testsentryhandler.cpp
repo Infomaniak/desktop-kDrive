@@ -21,6 +21,8 @@
 #include "libcommon/log/sentry/sentryhandler.h"
 #include "libcommonserver/log/log.h"
 
+#include <thread>
+
 namespace KDC {
 void MockTestSentryHandler::sendEventToSentry(const SentryLevel level, const std::string& title,
                                               const std::string& message) const {
