@@ -63,6 +63,7 @@ class DebuggingDialog : public CustomDialog {
         bool _deleteLogs = false;
         bool _needToSave = false;
         bool _sendArchivedLogs = true;
+        QString _heavyLogLabelStr;
 
         void initUI();
         void initLogUploadLayout();
