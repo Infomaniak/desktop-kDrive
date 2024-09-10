@@ -54,7 +54,7 @@ class SentryHandler {
     public:
         enum class SentryProject { Server, Client, Deactivated }; // Only used for initialization, don't need to be in types.h
 
-        ~SentryHandler();
+        virtual ~SentryHandler();
         static std::shared_ptr<SentryHandler> instance();
         static void init(SentryProject project, int breadCrumbsSize = 100);
         void setAuthenticatedUser(const SentryUser &user);
