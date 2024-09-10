@@ -74,12 +74,10 @@ class SentryHandler {
                             const SentryUser &user = SentryUser());
 
     protected:
+        SentryHandler(int maxCaptureCountBeforeRateLimit, int minUploadIntervalOnRateLimit); // For testing purpose
         virtual void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const;
-        int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
-        const int _sentryMinUploadIntervaOnRateLimit =
-                10 * 60; // Number of seconds to wait before sending the event again after rate limiting
+
         static std::shared_ptr<SentryHandler> _instance;
-        SentryHandler(int maxCaptureCountBeforeRateLimit, int minUploadIntervalOnRateLimit): _sentryMaxCaptureCountBeforeRateLimit(maxCaptureCountBeforeRateLimit), _sentryMinUploadIntervaOnRateLimit(minUploadIntervalOnRateLimit) {}
         bool _isSentryActivated = false;
 
     private:
@@ -143,5 +141,7 @@ class SentryHandler {
         std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
         SentryConfidentialityLevel _globalConfidentialityLevel = SentryConfidentialityLevel::Anonymous; // Default value
         SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::None;
+        const int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
+        const int _sentryMinUploadIntervaOnRateLimit = 60; // Min. interval between two uploads of a rate limited event (seconds)
 };
 } // namespace KDC

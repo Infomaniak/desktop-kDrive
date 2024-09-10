@@ -29,8 +29,8 @@ std::shared_ptr<SentryHandler> SentryHandler::instance() {
     if (!_instance) {
         assert(false && "SentryHandler must be initialized before calling instance");
         // TODO: When the logger will be moved to the common library, add a log there.
-        return std::shared_ptr<SentryHandler>(new SentryHandler());  // Create a dummy instance to avoid crash but should never
-                                                                     // happen (the sentry will not be sent)
+        return std::shared_ptr<SentryHandler>(new SentryHandler()); // Create a dummy instance to avoid crash but should never
+                                                                    // happen (the sentry will not be sent)
     }
     return _instance;
 }
@@ -77,11 +77,11 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
 #else
         sentry_options_set_environment(options, "dev_unknown");
 #endif
-    } else if (environment.empty()) {  // Disable sentry
+    } else if (environment.empty()) { // Disable sentry
         _instance->_isSentryActivated = false;
         return;
     } else {
-        environment = "dev_" + environment;  // We add a prefix to avoid any conflict with the sentry environment.
+        environment = "dev_" + environment; // We add a prefix to avoid any conflict with the sentry environment.
         sentry_options_set_environment(options, environment.c_str());
     }
 
@@ -115,9 +115,13 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
     sendEventToSentry(event.level, event.title, event.message);
 }
 
-void SentryHandler::sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const{
+void SentryHandler::sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const {
     sentry_capture_event(sentry_value_new_message_event(static_cast<sentry_level_t>(level), title.c_str(), message.c_str()));
 }
+
+SentryHandler::SentryHandler(int maxCaptureCountBeforeRateLimit, int minUploadIntervalOnRateLimit) :
+    _sentryMaxCaptureCountBeforeRateLimit(maxCaptureCountBeforeRateLimit),
+    _sentryMinUploadIntervaOnRateLimit(minUploadIntervalOnRateLimit) {}
 
 sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {
     sentry_value_t userValue = sentry_value_new_object();
@@ -145,7 +149,7 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     storedEvent.captureCount++;
     event.captureCount = storedEvent.captureCount;
 
-    if (lastEventCaptureIsOutdated(storedEvent)) {  // Reset the capture count if the last capture was more than 10 minutes ago
+    if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
         storedEvent.captureCount = 1;
         storedEvent.lastCapture = system_clock::now();
         storedEvent.lastUpload = system_clock::now();
@@ -153,7 +157,7 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     storedEvent.lastCapture = system_clock::now();
-    if (storedEvent.captureCount < _sentryMaxCaptureCountBeforeRateLimit) {  // Rate limit not reached, we can send the event
+    if (storedEvent.captureCount < _sentryMaxCaptureCountBeforeRateLimit) { // Rate limit not reached, we can send the event
         storedEvent.lastUpload = system_clock::now();
         return;
     }
@@ -165,7 +169,7 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
         return;
     }
 
-    if (!lastEventUploadIsOutdated(storedEvent)) {  // Rate limit reached for this event: wait 10 minutes before sending it again
+    if (!lastEventUploadIsOutdated(storedEvent)) { // Rate limit reached for this event: wait 10 minutes before sending it again
         toUpload = false;
         return;
     }
@@ -207,7 +211,7 @@ void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
         userValue = toSentryValue(_authenticatedUser);
         sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("{{auto}}"));
         sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Authenticated"));
-    } else {  // Anonymous
+    } else { // Anonymous
         userValue = toSentryValue(SentryUser("Anonymous", "Anonymous", "Anonymous"));
         sentry_value_set_by_key(userValue, "ip_address", sentry_value_new_string("-1.-1.-1.-1"));
         sentry_value_set_by_key(userValue, "authentication", sentry_value_new_string("Anonymous"));
@@ -222,14 +226,14 @@ SentryHandler::~SentryHandler() {
         _instance.reset();
         try {
             sentry_close();
-        }
-        catch (...) {
+        } catch (...) {
             // Do nothing
         }
     }
 }
 
 SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
-                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user)
-    : title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
-}  // namespace KDC
+                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
+    title(title),
+    message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
+} // namespace KDC
