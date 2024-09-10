@@ -70,7 +70,7 @@ class SentryHandler {
          *   - The event sent to Sentry will have a message indicating that the event has been rate limited.(see:
          *      void SentryHandler::escalateSentryEvent(SentryEvent &event))
          */
-        virtual void captureMessage(SentryLevel level, const std::string &title, std::string message,
+        void captureMessage(SentryLevel level, const std::string &title, std::string message,
                             const SentryUser &user = SentryUser());
 
     protected:
