@@ -577,9 +577,6 @@ void DebuggingDialog::updateUI() {
 
     _deleteLogsCheckBox->setEnabled(_recordDebugging);
     _deleteLogsCheckBox->setChecked(_recordDebugging ? _deleteLogs : false);
-    _heavyLogLabelStr =
-            tr("The entire folder is large (> 100 MB) and may take some time to share. To reduce the sharing time, we recommend, "
-               "that you share only the last kDrive session.");
     if (_minLogLevel != LogLevel::Debug) {
         _extendedLogCheckBox->hide();
         _extendedLogHelpButton->hide();
