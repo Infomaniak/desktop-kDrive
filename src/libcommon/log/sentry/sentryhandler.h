@@ -77,9 +77,6 @@ class SentryHandler {
         SentryHandler(int maxCaptureCountBeforeRateLimit, int minUploadIntervalOnRateLimit); // For testing purpose
         virtual void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const;
 
-        static std::shared_ptr<SentryHandler> _instance;
-        bool _isSentryActivated = false;
-
     private:
         SentryHandler() = default;
         SentryHandler(const SentryHandler &) = delete;
@@ -129,6 +126,7 @@ class SentryHandler {
         void updateEffectiveSentryUser(const SentryUser &user = SentryUser());
 
         std::recursive_mutex _mutex;
+        static std::shared_ptr<SentryHandler> _instance;
         SentryUser _authenticatedUser;
         struct StringHash {
                 using is_transparent = void; // Enables heterogeneous operations.
@@ -143,5 +141,6 @@ class SentryHandler {
         SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::None;
         const int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
         const int _sentryMinUploadIntervaOnRateLimit = 60; // Min. interval between two uploads of a rate limited event (seconds)
+        bool _isSentryActivated = false;
 };
 } // namespace KDC

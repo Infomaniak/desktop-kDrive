@@ -26,7 +26,7 @@ namespace KDC {
 
 class MockTestSentryHandler : public SentryHandler {
     public:
-        MockTestSentryHandler() : SentryHandler(3, 2) { _isSentryActivated = true; }; // Max 3 events every 3 seconds
+        MockTestSentryHandler() : SentryHandler(3, 2){}; // Max 3 events every 3 seconds
         int sentryUploadedEventCount() const { return _sentryUploadedEventCount; }
 
     private:
