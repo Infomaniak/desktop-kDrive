@@ -26,18 +26,19 @@ namespace KDC {
 
 class MockTestSentryHandler : public SentryHandler {
     public:
-        MockTestSentryHandler() : SentryHandler(3, 3) { _isSentryActivated = true; }; // Max 3 events every 3 seconds
-        int sentrySendedEventCount() const { return _sentrySendedEventCount; }
+        MockTestSentryHandler() : SentryHandler(3, 2) { _isSentryActivated = true; }; // Max 3 events every 3 seconds
+        int sentryUploadedEventCount() const { return _sentryUploadedEventCount; }
 
     private:
-        virtual void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const final;
-        mutable int _sentrySendedEventCount = 0;
+        void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const final;
+        mutable int _sentryUploadedEventCount = 0;
 };
 
 
 class TestSentryHandler : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestSentryHandler);
         CPPUNIT_TEST(testMultipleSendEventForTheSameEvent);
+        CPPUNIT_TEST(testMultipleSendEventForDifferentEvent);
         CPPUNIT_TEST_SUITE_END();
 
     protected:

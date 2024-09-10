@@ -190,8 +190,8 @@ void SentryHandler::escalateSentryEvent(SentryEvent &event) {
         return;
     }
 
-    event.level = SentryLevel::Error;
     event.message += " Level escalated from " + toString(event.level) + " to Error)";
+    event.level = SentryLevel::Error;
 }
 
 void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
