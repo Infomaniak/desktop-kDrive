@@ -70,11 +70,19 @@ class SentryHandler {
          *   - The event sent to Sentry will have a message indicating that the event has been rate limited.(see:
          *      void SentryHandler::escalateSentryEvent(SentryEvent &event))
          */
-        void captureMessage(SentryLevel level, const std::string &title, std::string message,
+        virtual void captureMessage(SentryLevel level, const std::string &title, std::string message,
                             const SentryUser &user = SentryUser());
 
-    private:
+    protected:
+        virtual void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const;
+        int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
+        const int _sentryMinUploadIntervaOnRateLimit =
+                10 * 60; // Number of seconds to wait before sending the event again after rate limiting
         static std::shared_ptr<SentryHandler> _instance;
+        SentryHandler(int maxCaptureCountBeforeRateLimit, int minUploadIntervalOnRateLimit): _sentryMaxCaptureCountBeforeRateLimit(maxCaptureCountBeforeRateLimit), _sentryMinUploadIntervaOnRateLimit(minUploadIntervalOnRateLimit) {}
+        bool _isSentryActivated = false;
+
+    private:
         SentryHandler() = default;
         SentryHandler(const SentryHandler &) = delete;
         SentryHandler &operator=(const SentryHandler &) = delete;
@@ -96,7 +104,7 @@ class SentryHandler {
                 std::string userId;
                 time_point lastCapture;
                 time_point lastUpload;
-                unsigned int captureCount = 0;
+                unsigned int captureCount = 1;
         };
 
         /* This method is called before uploading an event to Sentry.
@@ -123,7 +131,6 @@ class SentryHandler {
         void updateEffectiveSentryUser(const SentryUser &user = SentryUser());
 
         std::recursive_mutex _mutex;
-        bool _isSentryActivated = false;
         SentryUser _authenticatedUser;
         struct StringHash {
                 using is_transparent = void; // Enables heterogeneous operations.

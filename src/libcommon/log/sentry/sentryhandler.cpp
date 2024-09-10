@@ -23,9 +23,6 @@
 #include <asserts.h>
 
 namespace KDC {
-static constexpr int SentryMaxCaptureCountBeforeRateLimit = 10;  // Number of captures of the same event before rate limiting
-static constexpr int SentryMinUploadIntervaOnRateLimit =
-    10;  // Number of minutes to wait before sending the event again after rate limiting
 std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
 
 std::shared_ptr<SentryHandler> SentryHandler::instance() {
@@ -115,8 +112,11 @@ void SentryHandler::captureMessage(SentryLevel level, const std::string &title, 
 
     updateEffectiveSentryUser(user);
 
-    sentry_capture_event(
-        sentry_value_new_message_event(static_cast<sentry_level_t>(event.level), event.title.c_str(), event.message.c_str()));
+    sendEventToSentry(event.level, event.title, event.message);
+}
+
+void SentryHandler::sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const{
+    sentry_capture_event(sentry_value_new_message_event(static_cast<sentry_level_t>(level), title.c_str(), message.c_str()));
 }
 
 sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {
@@ -143,23 +143,25 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
 
     auto &storedEvent = it->second;
     storedEvent.captureCount++;
+    event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) {  // Reset the capture count if the last capture was more than 10 minutes ago
-        storedEvent.captureCount = 0;
+        storedEvent.captureCount = 1;
         storedEvent.lastCapture = system_clock::now();
         storedEvent.lastUpload = system_clock::now();
         return;
     }
 
     storedEvent.lastCapture = system_clock::now();
-    if (storedEvent.captureCount < SentryMaxCaptureCountBeforeRateLimit) {  // Rate limit not reached, we can send the event
+    if (storedEvent.captureCount < _sentryMaxCaptureCountBeforeRateLimit) {  // Rate limit not reached, we can send the event
         storedEvent.lastUpload = system_clock::now();
         return;
     }
 
-    if (storedEvent.captureCount == SentryMaxCaptureCountBeforeRateLimit) { // Rate limit reached, we send this event and we will wait 10 minutes before sending it again
+    if (storedEvent.captureCount == _sentryMaxCaptureCountBeforeRateLimit) { // Rate limit reached, we send this event and we will
+                                                                             // wait 10 minutes before sending it again
         storedEvent.lastUpload = system_clock::now();
-        escalateSentryEvent(storedEvent);
+        escalateSentryEvent(event);
         return;
     }
 
@@ -168,23 +170,28 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
         return;
     }
     storedEvent.lastUpload = system_clock::now();
-    escalateSentryEvent(storedEvent);
+    escalateSentryEvent(event);
 }
 
 bool SentryHandler::lastEventCaptureIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastCapture + minutes(SentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
+    return (event.lastCapture + seconds(_sentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
 }
 
 bool SentryHandler::lastEventUploadIsOutdated(const SentryEvent &event) const {
     using namespace std::chrono;
-    return (event.lastUpload + minutes(SentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
+    return (event.lastUpload + seconds(_sentryMinUploadIntervaOnRateLimit)) <= system_clock::now();
 }
 
 void SentryHandler::escalateSentryEvent(SentryEvent &event) {
+    event.message += " (Rate limit reached: " + std::to_string(event.captureCount) + " captures.";
+    if (event.level == SentryLevel::Fatal || event.level == SentryLevel::Error) {
+        event.message += ")";
+        return;
+    }
+
     event.level = SentryLevel::Error;
-    event.message += " (Rate limit reached: " + std::to_string(event.captureCount) +
-                     " captures since last app start. Level escalated from " + toString(event.level) + " to Error)";
+    event.message += " Level escalated from " + toString(event.level) + " to Error)";
 }
 
 void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
