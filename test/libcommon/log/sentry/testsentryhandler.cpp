@@ -49,7 +49,7 @@ void TestSentryHandler::testMultipleSendEventForTheSameEvent() {
         mockSentryHandler.captureMessage(SentryLevel::Info, "Test", "Test message"); // Rate limit reached, should not be sent
         CPPUNIT_ASSERT_EQUAL(i, mockSentryHandler.sentryUploadedEventCount());
 
-        std::this_thread::sleep_for(std::chrono::seconds(1)); // Wait 2s more, the upload rate limit should be passed
+        std::this_thread::sleep_for(std::chrono::seconds(1)); // Wait 1s more, the upload rate limit should be passed
 
         mockSentryHandler.captureMessage(SentryLevel::Info, "Test",
                                          "Test message"); // Should be sent
