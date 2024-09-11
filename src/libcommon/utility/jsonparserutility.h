@@ -28,12 +28,12 @@
 namespace KDC {
 
 struct COMMONSERVER_EXPORT JsonParserUtility {
-        template<typename T>
-        static bool extractValue(const Poco::JSON::Object::Ptr obj, const std::string &key, T &val, const bool mandatory = true) {
+        template <typename T>
+        static bool extractValue(const Poco::JSON::Object::Ptr obj, const std::string &key, T &val, bool mandatory = true) {
             if (!obj) {
                 LOG_WARN(Log::instance()->getLogger(), "JSON object is NULL");
                 return false;
-            } // namespace KDC
+            }  // namespace KDC
 
             if (obj->has(key) && obj->isNull(key)) {
                 // Item exist in JSON but is null, this is ok
@@ -45,7 +45,7 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
                 var.convert(val);
             } catch (...) {
                 if (mandatory) {
-                    const std::string msg = "Fail to extract value for key=" + key;
+                    std::string msg = "Fail to extract value for key=" + key;
                     LOG_WARN(Log::instance()->getLogger(), msg.c_str());
                     SentryHandler::instance()->captureMessage(SentryLevel::Error, "JsonParserUtility::extractValue", msg);
                     return false;
@@ -84,4 +84,4 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
         }
 };
 
-} // namespace KDC
+}  // namespace KDC

@@ -233,7 +233,6 @@ SentryHandler::~SentryHandler() {
 }
 
 SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
-                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
-    title(title),
-    message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
+                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) 
+    : title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 } // namespace KDC

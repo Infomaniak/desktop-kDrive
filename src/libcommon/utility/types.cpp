@@ -21,13 +21,14 @@
 #include <Poco/UnicodeConverter.h>
 
 namespace KDC {
+
 namespace typesUtility {
 std::wstring stringToWideString(const std::string &str) {
     std::wstring wstr;
     Poco::UnicodeConverter::convert(str, wstr);
     return wstr;
 }
-} // namespace typesUtility
+}  // namespace typesUtility
 
 std::string toString(ReplicaSide e) {
     switch (e) {
@@ -67,8 +68,6 @@ std::string toString(OperationType e) {
             return "Delete";
         case OperationType::Rights:
             return "Rights";
-        default:
-            return "No conversion to string available";
     }
 }
 
@@ -201,7 +200,7 @@ std::string toString(ExitCause e) {
             return "No conversion to string available";
     }
 
-} // namespace KDC
+}  // namespace KDC
 
 std::string toString(ConflictType e) {
     switch (e) {
@@ -788,4 +787,27 @@ std::string toString(SentryConfidentialityLevel e) {
             return "No conversion to string available";
     }
 }
-} // namespace KDC
+
+std::string toString(AppType e) {
+    switch (e) {
+        case AppType::Server:
+            return "Server";
+        case AppType::Client:
+            return "Client";
+        default:
+            return "No conversion to string available";
+    }
+}
+
+std::string toString(SignalType e) {
+    switch (e) {
+        case SignalType::Kill:
+            return "Kill";
+        case SignalType::Crash:
+            return "Crash";
+        default:
+            return "No conversion to string available";
+    }
+}
+
+}  // namespace KDC

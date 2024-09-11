@@ -41,18 +41,26 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
 
         ExitCode initWithCursor();
         ExitCode exploreDirectory(const NodeId &nodeId);
-        ExitCode getItemsInDir(const NodeId &dirId, bool saveCursor);
+        ExitCode getItemsInDir(const NodeId &dirId, const bool saveCursor);
 
         ExitCode sendLongPoll(bool &changes);
 
         struct ActionInfo {
                 ActionCode actionCode{ActionCode::actionCodeUnknown};
-                SnapshotItem snapshotItem;
+                NodeId nodeId;
+                NodeId parentNodeId;
+                SyncName name;
                 SyncName path;
+                SyncName destName;
+                SyncTime createdAt{0};
+                SyncTime modtime{0};
+                NodeType type{NodeType::Unknown};
+                int64_t size{0};
+                bool canWrite{true};
         };
         ExitCode processActions(Poco::JSON::Array::Ptr filesArray);
-        ExitCode extractActionInfo(Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
-        ExitCode processAction(ActionInfo &actionInfo, std::set<NodeId, std::less<>> &movedItems);
+        ExitCode extractActionInfo(const Poco::JSON::Object::Ptr actionObj, ActionInfo &actionInfo);
+        ExitCode processAction(const SyncName &usedName, const ActionInfo &actionInfo, std::set<NodeId, std::less<>> &movedItems);
 
         ExitCode checkRightsAndUpdateItem(const NodeId &nodeId, bool &hasRights, SnapshotItem &snapshotItem);
 
@@ -69,4 +77,4 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         friend class TestRemoteFileSystemObserverWorker;
 };
 
-} // namespace KDC
+}  // namespace KDC
