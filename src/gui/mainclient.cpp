@@ -35,7 +35,6 @@
 #include <QDir>
 
 #include <signal.h>
-#include <fstream>
 
 #ifdef Q_OS_UNIX
 #include <sys/time.h>
@@ -55,38 +54,22 @@ void warnSystray() {
 }
 
 void signalHandler(int signum) {
-    fprintf(stderr, "Client stoped with signal %d\n", signum);
+    fprintf(stderr, "Server stoped with signal %d\n", signum);
 
-    KDC::SyncPath sigFilePath = std::filesystem::temp_directory_path();
-    if (signum == SIGSEGV || signum == SIGBUS || signum == SIGFPE || signum == SIGILL) {
-        // Crash
-        sigFilePath /= KDC::crashClientFileName;
-    } else {
-        // Kill
-        sigFilePath /= KDC::killClientFileName;
-    }
-
-    std::ofstream sigFile(sigFilePath);
-    if (sigFile) {
-        sigFile << signum << std::endl;
-        sigFile.close();
-    }
+    // Make sure everything flushes
+#ifdef NDEBUG
+    auto sentryClose = qScopeGuard([] { sentry_close(); });
+#endif
 
     exit(signum);
 }
 
 int main(int argc, char **argv) {
 #ifndef Q_OS_WIN
-    // Kills
-    signal(SIGTERM, signalHandler); // Termination request, sent to the program
-    signal(SIGABRT, signalHandler); // Abnormal termination condition, as is e.g. initiated by abort()
-    signal(SIGINT, signalHandler); // External interrupt, usually initiated by the user
-
-    // Crashes
-    signal(SIGSEGV, signalHandler); // Invalid memory access (segmentation fault)
-    signal(SIGBUS, signalHandler); // Access to an invalid address
-    signal(SIGFPE, signalHandler); // Erroneous arithmetic operation such as divide by zero
-    signal(SIGILL, signalHandler); // Invalid program image, such as invalid instruction
+    signal(SIGABRT, signalHandler);
+    signal(SIGKILL, signalHandler);
+    signal(SIGBUS, signalHandler);
+    signal(SIGSEGV, signalHandler);
 
     signal(SIGPIPE, SIG_IGN);
 #endif

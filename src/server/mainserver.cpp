@@ -22,7 +22,6 @@
 #include "common/utility.h"
 #include "libcommon/asserts.h"
 #include "updater/updaterserver.h"
-#include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/sentryhandler.h"
 #include "libcommonserver/log/log.h"
@@ -35,7 +34,6 @@
 
 #include <signal.h>
 #include <iostream>
-#include <fstream>
 
 #ifdef Q_OS_UNIX
 #include <sys/time.h>
@@ -57,36 +55,20 @@
 void signalHandler(int signum) {
     std::cerr << "Server stoped with signal " << signum << std::endl;
 
-    KDC::SyncPath sigFilePath = std::filesystem::temp_directory_path();
-    if (signum == SIGSEGV || signum == SIGBUS || signum == SIGFPE || signum == SIGILL) {
-        // Crash
-        sigFilePath /= KDC::crashServerFileName;
-    } else {
-        // Kill
-        sigFilePath /= KDC::killServerFileName;
-    }
-
-    std::ofstream sigFile(sigFilePath);
-    if (sigFile) {
-        sigFile << signum << std::endl;
-        sigFile.close();
-    }
+    // Make sure everything flushes
+#ifdef NDEBUG
+    auto sentryClose = qScopeGuard([] { sentry_close(); });
+#endif
 
     exit(signum);
 }
 
 int main(int argc, char **argv) {
 #ifndef Q_OS_WIN
-    // Kills
-    signal(SIGTERM, signalHandler); // Termination request, sent to the program
-    signal(SIGABRT, signalHandler); // Abnormal termination condition, as is e.g. initiated by abort()
-    signal(SIGINT, signalHandler); // External interrupt, usually initiated by the user
-
-    // Crashes
-    signal(SIGSEGV, signalHandler); // Invalid memory access (segmentation fault)
-    signal(SIGBUS, signalHandler); // Access to an invalid address
-    signal(SIGFPE, signalHandler); // Erroneous arithmetic operation such as divide by zero
-    signal(SIGILL, signalHandler); // Invalid program image, such as invalid instruction
+    signal(SIGABRT, signalHandler);
+    signal(SIGKILL, signalHandler);
+    signal(SIGBUS, signalHandler);
+    signal(SIGSEGV, signalHandler);
 
     signal(SIGPIPE, SIG_IGN);
 #endif
