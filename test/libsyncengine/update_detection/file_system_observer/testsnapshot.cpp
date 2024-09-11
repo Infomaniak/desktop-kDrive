@@ -53,7 +53,7 @@ void TestSnapshot::testSnapshot() {
     Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
 
     // Insert node A
-    const SnapshotItem itemA("a", rootNodeId, Str("A"), 1640995201, -1640995201, NodeType::Directory, 123);
+    const SnapshotItem itemA("a", rootNodeId, Str("A"), 1640995201, -1640995201, NodeType::Directory, 123, false, true, true);
     snapshot.updateItem(itemA);
     CPPUNIT_ASSERT(snapshot.exists("a"));
     CPPUNIT_ASSERT_EQUAL(std::string("A"), SyncName2Str(snapshot.name("a")));
@@ -63,24 +63,25 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT(childrenIds.contains("a"));
 
     // Update node A
-    snapshot.updateItem(SnapshotItem("a", rootNodeId, Str("A*"), 1640995202, 1640995202, NodeType::Directory, 123));
+    snapshot.updateItem(
+            SnapshotItem("a", rootNodeId, Str("A*"), 1640995202, 1640995202, NodeType::Directory, 123, false, true, true));
     CPPUNIT_ASSERT_EQUAL(std::string("A*"), SyncName2Str(snapshot.name("a")));
 
     // Insert node B
-    const SnapshotItem itemB("b", rootNodeId, Str("B"), 1640995203, 1640995203, NodeType::Directory, 123);
+    const SnapshotItem itemB("b", rootNodeId, Str("B"), 1640995203, 1640995203, NodeType::Directory, 123, false, true, true);
     snapshot.updateItem(itemB);
     CPPUNIT_ASSERT(snapshot.exists("b"));
     snapshot.getChildrenIds(rootNodeId, childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("b"));
 
     // Insert child nodes
-    const SnapshotItem itemAA("aa", "a", Str("AA"), 1640995204, 1640995204, NodeType::Directory, 123);
+    const SnapshotItem itemAA("aa", "a", Str("AA"), 1640995204, 1640995204, NodeType::Directory, 123, false, true, true);
     snapshot.updateItem(itemAA);
     CPPUNIT_ASSERT(snapshot.exists("aa"));
     snapshot.getChildrenIds("a", childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("aa"));
 
-    const SnapshotItem itemAAA("aaa", "aa", Str("AAA"), 1640995205, 1640995205, NodeType::File, 123);
+    const SnapshotItem itemAAA("aaa", "aa", Str("AAA"), 1640995205, 1640995205, NodeType::File, 123, false, true, true);
     snapshot.updateItem(itemAAA);
     CPPUNIT_ASSERT(snapshot.exists("aaa"));
     snapshot.getChildrenIds("aa", childrenIds);
@@ -92,11 +93,11 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(snapshot.name("aaa")));
     CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(1640995205), snapshot.lastModified("aaa"));
     CPPUNIT_ASSERT_EQUAL(NodeType::File, snapshot.type("aaa"));
-    CPPUNIT_ASSERT(snapshot.contentChecksum("aaa").empty());  // Checksum never computed for now
+    CPPUNIT_ASSERT(snapshot.contentChecksum("aaa").empty()); // Checksum never computed for now
     CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), snapshot.itemId(std::filesystem::path("A*/AA/AAA")));
 
     // Move node AA under B
-    snapshot.updateItem(SnapshotItem("aa", "b", Str("AA"), 1640995204, -1640995204, NodeType::Directory, 123));
+    snapshot.updateItem(SnapshotItem("aa", "b", Str("AA"), 1640995204, -1640995204, NodeType::Directory, 123, false, true, true));
     CPPUNIT_ASSERT(snapshot.parentId("aa") == "b");
     snapshot.getChildrenIds("b", childrenIds);
     CPPUNIT_ASSERT(childrenIds.contains("aa"));
@@ -123,10 +124,10 @@ void TestSnapshot::testSnapshotInsertionWithDifferentEncodings() {
                                std::nullopt, NodeType::Directory, 0, std::nullopt);
     Snapshot snapshot(ReplicaSide::Local, dummyRootNode);
 
-    const SnapshotItem nfcItem("A", rootNodeId, testhelpers::makeNfcSyncName(), 1640995201, -1640995201, NodeType::Directory,
-                               123);
-    const SnapshotItem nfdItem("B", rootNodeId, testhelpers::makeNfdSyncName(), 1640995201, -1640995201, NodeType::Directory,
-                               123);
+    const SnapshotItem nfcItem("A", rootNodeId, testhelpers::makeNfcSyncName(), 1640995201, -1640995201, NodeType::Directory, 123,
+                               false, true, true);
+    const SnapshotItem nfdItem("B", rootNodeId, testhelpers::makeNfdSyncName(), 1640995201, -1640995201, NodeType::Directory, 123,
+                               false, true, true);
     {
         snapshot.updateItem(nfcItem);
         SyncPath syncPath;
@@ -141,4 +142,4 @@ void TestSnapshot::testSnapshotInsertionWithDifferentEncodings() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC
