@@ -66,23 +66,6 @@ static const QList<QString> fontFiles = QList<QString>() << QString(":/client/re
                                                          << QString(":/client/resources/fonts/SuisseIntl-Black.otf");
 // static const QString defaultFontFamily("Suisse Int'l");
 
-#ifdef Q_OS_WIN
-static void displayHelpText(const QString &t)  // No console on Windows.
-{
-    static const QString spaces(80, ' ');  // Add a line of non-wrapped space to make the messagebox wide enough.
-    const QString text = QLatin1String("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() +
-                         QLatin1String("</pre><pre>") + spaces + QLatin1String("</pre></qt>");
-    QMessageBox::information(0, Theme::instance()->appClientName() + "_HelpText", text);
-}
-
-#else
-
-static void displayHelpText(const QString &t) {
-    std::cout << qUtf8Printable(t);
-}
-#endif
-
-
 AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(Theme::instance()->appClientName(), argc, argv) {
     _startedAt.start();
 
@@ -112,8 +95,10 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
 #else
     // Read comm port value from argument list
     if (!parseOptions(arguments())) {
-        // Start the server and die (the server will restart the client)
-        startServerAndDie(false);
+        QMessageBox msgBox;
+        msgBox.setText(tr("kDrive client is run with bad parameters!"));
+        msgBox.exec();
+        QTimer::singleShot(0, qApp, SLOT(quit()));
         return;
     }
 #endif
@@ -125,12 +110,12 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
         QTimer::singleShot(0, qApp, SLOT(quit()));
         return;
     }
+
     // Connect to server
     if (connectToServer()) {
         qCInfo(lcAppClient) << "Connected to server";
     } else {
         qCCritical(lcAppClient) << "Failed to connect to server";
-        startServerAndDie(true);
         return;
     }
 
@@ -162,6 +147,24 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
 
     // Setup translations
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parametersInfo().language());
+
+    // Clear crash & kill files
+    int sig = 0;
+    CommonUtility::clearSignalFile(AppType::Server, SignalType::Crash, sig);
+    if (sig) {
+        qCInfo(lcAppClient) << "Restarting after a " << SignalType::Crash << " with signal " << sig;
+    }
+
+    CommonUtility::clearSignalFile(AppType::Server, SignalType::Kill, sig);
+    if (sig) {
+        qCInfo(lcAppClient) << "Restarting after a " << SignalType::Kill << " with signal " << sig;
+    }
+
+    // Setup debug crash mode
+    bool isSet = false;
+    if (CommonUtility::envVarValue("KDRIVE_DEBUG_CRASH", isSet); isSet) {
+        _debugCrash = true;
+    }
 
     // Setup Gui
     _gui = std::shared_ptr<ClientGui>(new ClientGui(this));
@@ -490,19 +493,23 @@ void AppClient::onQuit() {
 }
 
 void AppClient::onServerDisconnected() {
-#if NDEBUG
     if (!_quitInProcess) {
-        startServerAndDie(true);
-        qCCritical(lcAppClient) << "The server was unexpectedly disconnected. The application will be restarted.";
-    } else {
-        qCInfo(lcAppClient) << "Server disconnected while the client is closing: this is expected.";
-    }
+#if NDEBUG
+        if (serverHasCrashed()) {
+            qCCritical(lcAppClient) << "Server disconnected (has crashed)";
+            // Restart server and die
+            startServerAndDie();
+        } else {
+            qCInfo(lcAppClient) << "Server disconnected (has been killed)";
+            QTimer::singleShot(0, qApp, SLOT(quit()));
+        }
 #else
-    const auto msg = QStringLiteral("The server got disconnected. As the app is in debug mode, it will not be restarted.");
-    displayHelpText(msg);
-    QTimer::singleShot(0, qApp, SLOT(quit()));
-    qCCritical(lcAppClient) << msg;
+        qCInfo(lcAppClient) << "Server disconnected";
+        QTimer::singleShot(0, qApp, SLOT(quit()));
 #endif
+    } else {
+        qCInfo(lcAppClient) << "Server disconnected (has been exited)";
+    }
 }
 
 void AppClient::onCleanup() {
@@ -510,7 +517,16 @@ void AppClient::onCleanup() {
 }
 
 void AppClient::onCrash() {
+    // SIGSEGV crash
     KDC::CommonUtility::crash();
+}
+
+void AppClient::onCrashServer() {
+    ExitCode exitCode;
+    exitCode = GuiRequests::crash();
+    if (exitCode != ExitCode::Ok) {
+        qCWarning(lcAppClient) << "Error in Requests::crash";
+    }
 }
 
 void AppClient::onCrashEnforce() {
@@ -578,14 +594,21 @@ void AppClient::setupLogging() {
     connect(logger, &KDC::Logger::showNotification, this, &AppClient::showNotification);
 
     qCInfo(lcAppClient) << QString::fromLatin1("################## %1 locale:[%2] ui_lang:[%3] version:[%4] os:[%5]")
-                               .arg(_theme->appClientName())
-                               .arg(QLocale::system().name())
-                               .arg(property("ui_lang").toString())
-                               .arg(_theme->version())
-                               .arg(KDC::CommonUtility::platformName());
+                                   .arg(_theme->appClientName())
+                                   .arg(QLocale::system().name())
+                                   .arg(property("ui_lang").toString())
+                                   .arg(_theme->version())
+                                   .arg(KDC::CommonUtility::platformName());
 }
 
-void AppClient::startServerAndDie(bool serverCrashDetected) {
+bool AppClient::serverHasCrashed() {
+    // Check if a crash file exists
+    KDC::SyncPath sigFilePath = std::filesystem::temp_directory_path() / crashServerFileName;
+    std::error_code ec;
+    return std::filesystem::exists(sigFilePath, ec);
+}
+
+void AppClient::startServerAndDie() {
     // Start the client
     QString pathToExecutable = QCoreApplication::applicationDirPath();
 
@@ -596,12 +619,10 @@ void AppClient::startServerAndDie(bool serverCrashDetected) {
 #endif
 
     auto serverProcess = new QProcess(this);
-    if (serverCrashDetected) {
-        QStringList arguments;
-        arguments << QStringLiteral("--crashRecovered");
-        serverProcess->setProgram(pathToExecutable);
-        serverProcess->setArguments(arguments);
-    }
+    QStringList arguments;
+    arguments << QStringLiteral("--crashRecovered");
+    serverProcess->setProgram(pathToExecutable);
+    serverProcess->setArguments(arguments);
     serverProcess->setProgram(pathToExecutable);
     serverProcess->startDetached();
 
@@ -611,8 +632,8 @@ void AppClient::startServerAndDie(bool serverCrashDetected) {
 bool AppClient::connectToServer() {
     // Check if a commPort is provided
     if (_commPort == 0) {
-        qCCritical(lcAppClient()) << "No comm port provided to the client at startup, failed to connect to server!";
-        startServerAndDie(false);
+        // Should not happen (checked before)
+        qCCritical(lcAppClient()) << "Comm port is not set";
         return false;
     }
 
@@ -684,8 +705,8 @@ bool AppClient::parseOptions(const QStringList &options) {
     return true;
 }
 
-bool AppClient::debugMode() {
-    return _debugMode;
+bool AppClient::debugCrash() {
+    return _debugCrash;
 }
 
 void AppClient::showParametersDialog() {
