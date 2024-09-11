@@ -1015,19 +1015,16 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
 }
 
 bool SyncPal::existOnServer(const SyncPath &path) const {
-    // Path is normalized on server side
-    const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
-    const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
+    NodeId nodeId = _remoteSnapshot->itemId(path);
     return !nodeId.empty();
 }
 
 bool SyncPal::canShareItem(const SyncPath &path) const {
-    // Path is normalized on server side
-    const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
-    const NodeId nodeId = _remoteSnapshot->itemId(path);
+    NodeId nodeId = _remoteSnapshot->itemId(path);
     if (!nodeId.empty()) {
         return _remoteSnapshot->canShare(nodeId);
     }
+
     return false;
 }
 

@@ -25,8 +25,8 @@
 
 namespace KDC {
 
-FolderWatcher_mac::FolderWatcher_mac(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
-    FolderWatcher(parent, path), _stream(nullptr) {}
+FolderWatcher_mac::FolderWatcher_mac(LocalFileSystemObserverWorker *parent, const SyncPath &path)
+    : FolderWatcher(parent, path), _stream(nullptr) {}
 
 FolderWatcher_mac::~FolderWatcher_mac() {}
 
@@ -40,17 +40,17 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
     }
 
     static const FSEventStreamEventFlags interestingFlags =
-            kFSEventStreamEventFlagItemCreated // for new folder/file
-            | kFSEventStreamEventFlagItemRemoved // for rm
-            | kFSEventStreamEventFlagItemInodeMetaMod // for mtime change
-            | kFSEventStreamEventFlagItemRenamed // also coming for moves to trash in finder
-            | kFSEventStreamEventFlagItemModified // for content change
-            | kFSEventStreamEventFlagItemChangeOwner; // for rights change
+        kFSEventStreamEventFlagItemCreated         // for new folder/file
+        | kFSEventStreamEventFlagItemRemoved       // for rm
+        | kFSEventStreamEventFlagItemInodeMetaMod  // for mtime change
+        | kFSEventStreamEventFlagItemRenamed       // also coming for moves to trash in finder
+        | kFSEventStreamEventFlagItemModified      // for content change
+        | kFSEventStreamEventFlagItemChangeOwner;  // for rights change
 
     std::list<std::pair<std::filesystem::path, OperationType>> paths;
-    CFArrayRef eventPaths = (CFArrayRef) eventPathsVoid;
+    CFArrayRef eventPaths = (CFArrayRef)eventPathsVoid;
     for (int i = 0; i < static_cast<int>(numEvents); ++i) {
-        OperationType opType = OperationType::None;
+        OperationType opType;
         if (eventFlags[i] & kFSEventStreamEventFlagItemRemoved) {
             opType = OperationType::Delete;
         } else if (eventFlags[i] & kFSEventStreamEventFlagItemCreated) {
@@ -64,11 +64,6 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
             opType = OperationType::Rights;
         }
 
-        if (!(eventFlags[i] & interestingFlags)) {
-            // Ignore changes that does not appear in interestingFlags
-            continue;
-        }
-
         CFStringRef pathRef = reinterpret_cast<CFStringRef>(CFArrayGetValueAtIndex(eventPaths, i));
         const char *pathPtr = CFStringGetCStringPtr(pathRef, kCFStringEncodingUTF8);
         if (ParametersCache::isExtendedLogEnabled()) {
@@ -76,12 +71,17 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
                        L"Operation " << opType << L" detected on item " << Utility::s2ws(pathPtr ? pathPtr : "").c_str());
         }
 
+        if (!(eventFlags[i] & interestingFlags)) {
+            // Ignore changes that does not appear in interestingFlags
+            continue;
+        }
+
         char *pathBuf = nullptr;
         if (!pathPtr) {
             // Manage the case when CFStringGetCStringPtr returns NULL (for instance if the string contains accented characters)
             CFIndex pathLength = CFStringGetLength(pathRef);
             CFIndex pathMaxSize = CFStringGetMaximumSizeForEncoding(pathLength, kCFStringEncodingUTF8) + 1;
-            pathBuf = (char *) malloc(pathMaxSize);
+            pathBuf = (char *)malloc(pathMaxSize);
             CFStringGetCString(pathRef, pathBuf, pathMaxSize, kCFStringEncodingUTF8);
         }
 
@@ -107,14 +107,14 @@ void FolderWatcher_mac::startWatching() {
     LOG_DEBUG(_logger, "File system format: " << Utility::fileSystemName(_folder).c_str());
 
     CFStringRef path = CFStringCreateWithCString(nullptr, _folder.c_str(), kCFStringEncodingUTF8);
-    CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **) &path, 1, nullptr);
+    CFArrayRef pathsToWatch = CFArrayCreate(nullptr, (const void **)&path, 1, nullptr);
 
     FSEventStreamContext ctx = {0, this, nullptr, nullptr, nullptr};
 
     _stream = FSEventStreamCreate(
-            nullptr, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
-            0, // latency
-            kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents /*| kFSEventStreamCreateFlagIgnoreSelf*/);
+        nullptr, &callback, &ctx, pathsToWatch, kFSEventStreamEventIdSinceNow,
+        0,  // latency
+        kFSEventStreamCreateFlagUseCFTypes | kFSEventStreamCreateFlagFileEvents /*| kFSEventStreamCreateFlagIgnoreSelf*/);
     // TODO : try kFSEventStreamCreateFlagUseExtendedData to get inode directly from event
 
     CFRelease(pathsToWatch);
@@ -140,4 +140,4 @@ void KDC::FolderWatcher_mac::stopWatching() {
     }
 }
 
-} // namespace KDC
+}  // namespace KDC

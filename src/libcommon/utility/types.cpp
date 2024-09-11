@@ -28,7 +28,7 @@ std::wstring stringToWideString(const std::string &str) {
     Poco::UnicodeConverter::convert(str, wstr);
     return wstr;
 }
-} // namespace typesUtility
+}  // namespace typesUtility
 
 std::string toString(ReplicaSide e) {
     switch (e) {
@@ -68,8 +68,6 @@ std::string toString(OperationType e) {
             return "Delete";
         case OperationType::Rights:
             return "Rights";
-        default:
-            return "No conversion to string available";
     }
 }
 
@@ -202,7 +200,7 @@ std::string toString(ExitCause e) {
             return "No conversion to string available";
     }
 
-} // namespace KDC
+}  // namespace KDC
 
 std::string toString(ConflictType e) {
     switch (e) {
