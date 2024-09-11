@@ -46,10 +46,6 @@ static const int recordDebuggingBoxVMargin = 20;
 static const int debugLevelLabelBoxVMargin = 10;
 static const int debugLevelSelectBoxVMargin = 20;
 static const QString debuggingFolderLink = "debuggingFolderLink";
-static const QString heavyLogLabelStr = QObject::tr(
-        "The entire folder is large (> 100 MB) and may take some time to share. To reduce the sharing time, we recommend that "
-        "you "
-        "share only the last kDrive session.");
 Q_LOGGING_CATEGORY(lcDebuggingDialog, "gui.debuggingdialog", QtInfoMsg)
 
 std::map<LogLevel, std::pair<int, QString>> DebuggingDialog::_logLevelMap = {{LogLevel::Debug, {0, QString(tr("Debug"))}},
@@ -243,7 +239,7 @@ void DebuggingDialog::initUI() {
     // Log upload | Main box | heavy log box | Label (normalTextLabel)
     _heavyLogLabel = new QLabel();
     _heavyLogLabel->setObjectName("largeNormalTextLabel");
-    _heavyLogLabel->setText(heavyLogLabelStr);
+    _heavyLogLabel->setText(_heavyLogLabelStr);
     _heavyLogBox->hide(); // show only if the log dir is large, see at the end of the function
     _heavyLogLabel->setWordWrap(true);
     heavyLogHBox->addWidget(_heavyLogLabel);
@@ -412,7 +408,7 @@ void DebuggingDialog::displayHeavyLogBox() {
         _sendLogButton->setEnabled(sendLogButtonEnabled);
         return;
     }
-    _heavyLogLabel->setText(heavyLogLabelStr);
+    _heavyLogLabel->setText(_heavyLogLabelStr);
     _sendLogButton->setText(sendLogButtonText);
     _sendLogButton->setEnabled(sendLogButtonEnabled);
 }
@@ -581,7 +577,6 @@ void DebuggingDialog::updateUI() {
 
     _deleteLogsCheckBox->setEnabled(_recordDebugging);
     _deleteLogsCheckBox->setChecked(_recordDebugging ? _deleteLogs : false);
-
     if (_minLogLevel != LogLevel::Debug) {
         _extendedLogCheckBox->hide();
         _extendedLogHelpButton->hide();
