@@ -122,6 +122,7 @@ enum class RequestNum {
     UPDATER_STARTINSTALLER,
     UPDATER_UPDATE_DIALOG_RESULT,
     RECONSIDER_SKIPPED_UPDATE,
+    UTILITY_CRASH,
     UTILITY_QUIT,
 };
 inline std::string toString(RequestNum e) {
@@ -284,6 +285,8 @@ inline std::string toString(RequestNum e) {
             return "UPDATER_UPDATE_DIALOG_RESULT";
         case RequestNum::RECONSIDER_SKIPPED_UPDATE:
             return "RECONSIDER_SKIPPED_UPDATE";
+        case RequestNum::UTILITY_CRASH:
+            return "UTILITY_CRASH";
         case RequestNum::UTILITY_QUIT:
             return "UTILITY_QUIT";
         default:

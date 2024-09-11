@@ -54,7 +54,7 @@ class CommServer : public QObject {
 
     signals:
         void requestReceived(int id, RequestNum num, const QByteArray &params);
-        void startClient();
+        void restartClient();
 
     private:
         static std::shared_ptr<CommServer> _instance;

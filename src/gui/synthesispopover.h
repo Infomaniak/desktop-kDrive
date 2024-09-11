@@ -57,7 +57,7 @@ class SynthesisPopover : public QDialog {
         static const std::map<NotificationsDisabled, QString> _notificationsDisabledMap;
         static const std::map<NotificationsDisabled, QString> _notificationsDisabledForPeriodMap;
 
-        explicit SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugMode, QWidget *parent = nullptr);
+        explicit SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent = nullptr);
         ~SynthesisPopover();
 
         void setPosition(const QRect &sysTrayIconRect);
@@ -70,6 +70,7 @@ class SynthesisPopover : public QDialog {
         void disableNotifications(NotificationsDisabled type, QDateTime dateTime);
         void applyStyle();
         void crash();
+        void crashServer();
         void crashEnforce();
         void crashFatal();
         void cannotSelect(bool cannotSelect);
@@ -90,7 +91,7 @@ class SynthesisPopover : public QDialog {
 
     private:
         std::shared_ptr<ClientGui> _gui;
-        bool _debugMode;
+        bool _debugCrash;
         QRect _sysTrayIconRect;
 
         QColor _backgroundMainColor;
@@ -157,6 +158,7 @@ class SynthesisPopover : public QDialog {
         void onDisplayHelp(bool checked = false);
         void onExit(bool checked = false);
         void onCrash(bool checked = false);
+        void onCrashServer(bool checked = false);
         void onCrashEnforce(bool checked = false);
         void onCrashFatal(bool checked = false);
         void onDriveSelected(int driveDbId);

@@ -22,6 +22,7 @@
 #include "common/utility.h"
 #include "libcommon/asserts.h"
 #include "updater/updaterserver.h"
+#include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/sentryhandler.h"
 #include "libcommonserver/log/log.h"
@@ -34,6 +35,7 @@
 
 #include <signal.h>
 #include <iostream>
+#include <fstream>
 
 #ifdef Q_OS_UNIX
 #include <sys/time.h>

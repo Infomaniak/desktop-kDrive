@@ -416,13 +416,14 @@ void ClientGui::setupSynthesisPopover() {
         return;
     }
 
-    _synthesisPopover.reset(new SynthesisPopover(shared_from_this(), _app->debugMode()));
+    _synthesisPopover.reset(new SynthesisPopover(shared_from_this(), _app->debugCrash()));
     connect(_synthesisPopover.get(), &SynthesisPopover::showParametersDialog, this, &ClientGui::onShowParametersDialog);
     connect(_synthesisPopover.get(), &SynthesisPopover::exit, _app, &AppClient::onQuit);
     connect(_synthesisPopover.get(), &SynthesisPopover::addDrive, this, &ClientGui::onNewDriveWizard);
     connect(_synthesisPopover.get(), &SynthesisPopover::disableNotifications, this, &ClientGui::onDisableNotifications);
     connect(_synthesisPopover.get(), &SynthesisPopover::applyStyle, this, &ClientGui::onApplyStyle);
     connect(_synthesisPopover.get(), &SynthesisPopover::crash, _app, &AppClient::onCrash);
+    connect(_synthesisPopover.get(), &SynthesisPopover::crashServer, _app, &AppClient::onCrashServer);
     connect(_synthesisPopover.get(), &SynthesisPopover::crashEnforce, _app, &AppClient::onCrashEnforce);
     connect(_synthesisPopover.get(), &SynthesisPopover::crashFatal, _app, &AppClient::onCrashFatal);
     connect(_synthesisPopover.get(), &SynthesisPopover::executeSyncAction, this, &ClientGui::onExecuteSyncAction);
