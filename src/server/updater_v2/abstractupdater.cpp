@@ -79,8 +79,7 @@ bool AbstractUpdater::isUpdateDownloaded() {
 }
 
 ExitCode AbstractUpdater::downloadUpdate() {
-    std::error_code ec;
-    if (std::filesystem::exists(_targetFile, ec)) {
+    if (std::filesystem::exists(_targetFile)) {
         return ExitCode::Ok;
     }
 
