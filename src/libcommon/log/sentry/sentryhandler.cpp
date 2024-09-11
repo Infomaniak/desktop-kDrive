@@ -119,9 +119,15 @@ void SentryHandler::sendEventToSentry(const SentryLevel level, const std::string
     sentry_capture_event(sentry_value_new_message_event(static_cast<sentry_level_t>(level), title.c_str(), message.c_str()));
 }
 
-SentryHandler::SentryHandler(int maxCaptureCountBeforeRateLimit, int minUploadIntervalOnRateLimit) :
-    _sentryMaxCaptureCountBeforeRateLimit(maxCaptureCountBeforeRateLimit),
-    _sentryMinUploadIntervaOnRateLimit(minUploadIntervalOnRateLimit), _isSentryActivated(true) {}
+void SentryHandler::setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit) {
+    assert(maxCaptureCountBeforeRateLimit > 0 && "Max capture count before rate limit must be greater than 0");
+    _sentryMaxCaptureCountBeforeRateLimit = std::max(1, maxCaptureCountBeforeRateLimit);
+}
+
+void SentryHandler::setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit) {
+    assert(minUploadIntervalOnRateLimit > 0 && "Min upload interval on rate limit must be greater than 0");
+    _sentryMinUploadIntervaOnRateLimit = std::max(1, minUploadIntervalOnRateLimit);
+}
 
 sentry_value_t SentryHandler::toSentryValue(const SentryUser &user) const {
     sentry_value_t userValue = sentry_value_new_object();

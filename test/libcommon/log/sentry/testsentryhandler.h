@@ -26,7 +26,7 @@ namespace KDC {
 
 class MockTestSentryHandler : public SentryHandler {
     public:
-        MockTestSentryHandler() : SentryHandler(3, 1){}; // Max 3 events per second
+        MockTestSentryHandler(); 
         int sentryUploadedEventCount() const { return _sentryUploadedEventCount; }
 
     private:

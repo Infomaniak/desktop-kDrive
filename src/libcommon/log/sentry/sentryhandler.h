@@ -74,11 +74,13 @@ class SentryHandler {
                             const SentryUser &user = SentryUser());
 
     protected:
-        SentryHandler(int maxCaptureCountBeforeRateLimit, int minUploadIntervalOnRateLimit); // For testing purpose
+        SentryHandler() = default;
+        void setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit);
+        void setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit);
+        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; } 
         virtual void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const;
 
     private:
-        SentryHandler() = default;
         SentryHandler(const SentryHandler &) = delete;
         SentryHandler &operator=(const SentryHandler &) = delete;
         SentryHandler(SentryHandler &&) = delete;
@@ -139,8 +141,8 @@ class SentryHandler {
         std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
         SentryConfidentialityLevel _globalConfidentialityLevel = SentryConfidentialityLevel::Anonymous; // Default value
         SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::None;
-        const int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
-        const int _sentryMinUploadIntervaOnRateLimit = 60; // Min. interval between two uploads of a rate limited event (seconds)
+        int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
+        int _sentryMinUploadIntervaOnRateLimit = 60; // Min. interval between two uploads of a rate limited event (seconds)
         bool _isSentryActivated = false;
 };
 } // namespace KDC

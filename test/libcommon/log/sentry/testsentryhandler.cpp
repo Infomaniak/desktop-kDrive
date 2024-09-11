@@ -24,6 +24,11 @@
 #include <thread>
 
 namespace KDC {
+MockTestSentryHandler::MockTestSentryHandler(): SentryHandler() {
+    SentryHandler::setIsSentryActivated(true);
+    SentryHandler::setMaxCaptureCountBeforeRateLimit(3);
+    SentryHandler::setMinUploadIntervalOnRateLimit(1);
+}
 void MockTestSentryHandler::sendEventToSentry(const SentryLevel level, const std::string& title,
                                               const std::string& message) const {
     _sentryUploadedEventCount++;
