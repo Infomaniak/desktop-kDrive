@@ -148,16 +148,16 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     // Setup translations
     CommonUtility::setupTranslations(this, ParametersCache::instance()->parametersInfo().language());
 
-    // Clear crash & kill files
-    int sig = 0;
-    CommonUtility::clearSignalFile(AppType::Server, SignalType::Crash, sig);
-    if (sig) {
-        qCInfo(lcAppClient) << "Restarting after a " << SignalType::Crash << " with signal " << sig;
+    // Remove the files that keep a record of former crash or kill events
+    SignalType signalType = SignalType::None;
+    CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Crash, signalType);
+    if (signalType != SignalType::None) {
+        qCInfo(lcAppClient) << "Restarting after a " << SignalCategory::Crash << " with signal " << signalType;
     }
 
-    CommonUtility::clearSignalFile(AppType::Server, SignalType::Kill, sig);
-    if (sig) {
-        qCInfo(lcAppClient) << "Restarting after a " << SignalType::Kill << " with signal " << sig;
+    CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Kill, signalType);
+    if (signalType != SignalType::None) {
+        qCInfo(lcAppClient) << "Restarting after a " << SignalCategory::Kill << " with signal " << signalType;
     }
 
     // Setup debug crash mode
@@ -496,11 +496,11 @@ void AppClient::onServerDisconnected() {
     if (!_quitInProcess) {
 #if NDEBUG
         if (serverHasCrashed()) {
-            qCCritical(lcAppClient) << "Server disconnected (has crashed)";
+            qCCritical(lcAppClient) << "Server disconnected because it has crashed.";
             // Restart server and die
             startServerAndDie();
         } else {
-            qCInfo(lcAppClient) << "Server disconnected (has been killed)";
+            qCInfo(lcAppClient) << "Server disconnected because it was killed.";
             QTimer::singleShot(0, qApp, SLOT(quit()));
         }
 #else
@@ -508,7 +508,7 @@ void AppClient::onServerDisconnected() {
         QTimer::singleShot(0, qApp, SLOT(quit()));
 #endif
     } else {
-        qCInfo(lcAppClient) << "Server disconnected (has been exited)";
+        qCInfo(lcAppClient) << "Server disconnected because the user quitted.";
     }
 }
 
@@ -522,9 +522,7 @@ void AppClient::onCrash() {
 }
 
 void AppClient::onCrashServer() {
-    ExitCode exitCode;
-    exitCode = GuiRequests::crash();
-    if (exitCode != ExitCode::Ok) {
+    if (const auto exitCode = GuiRequests::crash(); exitCode != ExitCode::Ok) {
         qCWarning(lcAppClient) << "Error in Requests::crash";
     }
 }
@@ -603,7 +601,7 @@ void AppClient::setupLogging() {
 
 bool AppClient::serverHasCrashed() {
     // Check if a crash file exists
-    KDC::SyncPath sigFilePath = std::filesystem::temp_directory_path() / crashServerFileName;
+    const auto sigFilePath = std::filesystem::temp_directory_path() / serverCrashFileName;
     std::error_code ec;
     return std::filesystem::exists(sigFilePath, ec);
 }

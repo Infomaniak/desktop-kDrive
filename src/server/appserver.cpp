@@ -135,16 +135,16 @@ AppServer::AppServer(int &argc, char **argv)
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
 
-    // Clear crash & kill files
-    int sig = 0;
-    CommonUtility::clearSignalFile(AppType::Server, SignalType::Crash, sig);
-    if (sig) {
-        LOG_INFO(_logger, "Restarting after a " << SignalType::Crash << " with signal " << sig);
+    // Remove the files that keep a record of former crash or kill events
+    SignalType signalType = SignalType::None;
+    CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Crash, signalType);
+    if (signalType != SignalType::None) {
+        LOG_INFO(_logger, "Restarting after a " << SignalCategory::Crash << " with signal " << signalType);
     }
 
-    CommonUtility::clearSignalFile(AppType::Server, SignalType::Kill, sig);
-    if (sig) {
-        LOG_INFO(_logger, "Restarting after a " << SignalType::Kill << " with signal " << sig);
+    CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Kill, signalType);
+    if (signalType != SignalType::None) {
+        LOG_INFO(_logger, "Restarting after a " << SignalCategory::Kill << " with signal " << signalType);
     }
 
     // Init parms DB
@@ -502,7 +502,7 @@ void AppServer::updateSentryUser() const {
 
 bool AppServer::clientHasCrashed() {
     // Check if a crash file exists
-    KDC::SyncPath sigFilePath = std::filesystem::temp_directory_path() / crashClientFileName;
+    auto sigFilePath = std::filesystem::temp_directory_path() / clientCrashFileName;
     std::error_code ec;
     return std::filesystem::exists(sigFilePath, ec);
 }
@@ -2208,7 +2208,7 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
 void AppServer::onRestartClientReceived() {
 #if NDEBUG
     if (clientHasCrashed()) {
-        LOG_ERROR(_logger, "Client disconnected (has crashed)");
+        LOG_ERROR(_logger, "Client disconnected because it has crashed");
         if (clientCrashedRecently()) {
             LOG_FATAL(_logger, "Client has crashed twice in a short time, exiting");
 
@@ -2220,10 +2220,10 @@ void AppServer::onRestartClientReceived() {
             }
         } else {
             // Set client restart date in DB
-            long timestamp = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now())
-                                     .time_since_epoch()
-                                     .count();
-            std::string timestampStr = std::to_string(timestamp);
+            const long timestamp = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now())
+                                           .time_since_epoch()
+                                           .count();
+            const std::string timestampStr = std::to_string(timestamp);
             bool found = false;
             if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found) ||
                 !found) {
@@ -2244,7 +2244,7 @@ void AppServer::onRestartClientReceived() {
         QTimer::singleShot(0, this, &AppServer::quit);
         return;
     } else {
-        LOG_INFO(_logger, "Client disconnected (has been killed)");
+        LOG_INFO(_logger, "Client disconnected because it was killed");
         QTimer::singleShot(0, this, &AppServer::quit);
     }
 #else

@@ -55,19 +55,19 @@
 #endif
 
 void signalHandler(int signum) {
-    std::cerr << "Server stoped with signal " << signum << std::endl;
+    std::cerr << "Server stopped with signal " << static_cast<KDC::SignalType>(signum) << std::endl;
 
-    KDC::SyncPath sigFilePath = std::filesystem::temp_directory_path();
+    auto sigFilePath = std::filesystem::temp_directory_path();
     if (signum == SIGSEGV || signum == SIGFPE || signum == SIGILL
 #ifndef Q_OS_WIN
         || signum == SIGBUS
 #endif
     ) {
         // Crash
-        sigFilePath /= KDC::crashServerFileName;
+        sigFilePath /= KDC::serverCrashFileName;
     } else {
         // Kill
-        sigFilePath /= KDC::killServerFileName;
+        sigFilePath /= KDC::serverKillFileName;
     }
 
     std::ofstream sigFile(sigFilePath);

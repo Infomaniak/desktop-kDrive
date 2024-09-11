@@ -113,7 +113,7 @@ struct COMMON_EXPORT CommonUtility {
         static std::string envVarValue(const std::string &name);
         static std::string envVarValue(const std::string &name, bool &isSet);
 
-        static void clearSignalFile(const AppType appType, const SignalType sigType, int &sig);
+        static void clearSignalFile(const AppType appType, const SignalCategory signalCategory, SignalType &signalType) noexcept;
 
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);

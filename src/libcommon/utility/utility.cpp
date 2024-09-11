@@ -816,19 +816,21 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
     return std::string();
 }
 
-void CommonUtility::clearSignalFile(const AppType appType, const SignalType sigType, int &sig) {
-    sig = 0;
-    KDC::SyncPath sigFilePath =
-            std::filesystem::temp_directory_path() / (sigType == SignalType::Crash ? crashServerFileName : killServerFileName);
+void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory signalCategory, SignalType &signalType) noexcept {
+    signalType = SignalType::None;
+    auto sigFilePath = std::filesystem::temp_directory_path() /
+                       (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName);
     std::error_code ec;
     if (std::filesystem::exists(sigFilePath, ec)) {
         // Read signal value
+        int value;
         std::ifstream sigFile(sigFilePath);
-        sigFile >> sig;
+        sigFile >> value;
         sigFile.close();
 
+        signalType = static_cast<SignalType>(value);
+
         // Remove file
-        std::error_code ec;
         std::filesystem::remove(sigFilePath, ec);
     }
 }

@@ -35,6 +35,7 @@
 #include <QDir>
 
 #include <signal.h>
+#include <iostream>
 #include <fstream>
 
 #ifdef Q_OS_UNIX
@@ -55,19 +56,19 @@ void warnSystray() {
 }
 
 void signalHandler(int signum) {
-    fprintf(stderr, "Client stoped with signal %d\n", signum);
+    std::cerr << "Client stopped with signal " << static_cast<KDC::SignalType>(signum) << std::endl;
 
-    KDC::SyncPath sigFilePath = std::filesystem::temp_directory_path();
+    auto sigFilePath = std::filesystem::temp_directory_path();
     if (signum == SIGSEGV || signum == SIGFPE || signum == SIGILL
 #ifndef Q_OS_WIN
         || signum == SIGBUS
 #endif
     ) {
         // Crash
-        sigFilePath /= KDC::crashClientFileName;
+        sigFilePath /= KDC::clientCrashFileName;
     } else {
         // Kill
-        sigFilePath /= KDC::killClientFileName;
+        sigFilePath /= KDC::clientKillFileName;
     }
 
     std::ofstream sigFile(sigFilePath);
