@@ -90,7 +90,13 @@ class AppServer : public SharedTools::QtSingleApplication {
         void showAlreadyRunning();
 
         void showHint(std::string errorHint);
+        bool debugMode();
         bool startClient();
+
+    public slots:
+        void onCrash();
+        void onCrashEnforce();
+        void onCrashFatal();
 
     private:
         log4cplus::Logger _logger;
@@ -119,6 +125,9 @@ class AppServer : public SharedTools::QtSingleApplication {
         QTimer _restartSyncsTimer;
         std::unordered_map<int, SyncCache> _syncCacheMap;
         std::unordered_map<int, std::unordered_set<NodeId>> _undecidedListCacheMap;
+
+        // options from command line:
+        bool _debugMode{false};
 
         void parseOptions(const QStringList &);
         void initLogging() noexcept(false);
@@ -231,11 +240,6 @@ class AppServer : public SharedTools::QtSingleApplication {
         void logExtendedLogActivationMessage(bool isExtendedLogEnabled) noexcept;
 
         void updateSentryUser() const;
-
-        bool clientHasCrashed();
-
-        // For testing purpose
-        void crash() const;
 
     private slots:
         void onLoadInfo();

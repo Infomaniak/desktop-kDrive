@@ -35,7 +35,6 @@
 #include <QDir>
 
 #include <signal.h>
-#include <fstream>
 
 #ifdef Q_OS_UNIX
 #include <sys/time.h>
@@ -69,7 +68,7 @@ void signalHandler(int signum) {
         // Kill
         sigFilePath /= KDC::killClientFileName;
     }
-
+  
     std::ofstream sigFile(sigFilePath);
     if (sigFile) {
         sigFile << signum << std::endl;

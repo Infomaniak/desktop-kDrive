@@ -210,7 +210,7 @@ void CommServer::onErrorOccurred(QAbstractSocket::SocketError socketError) {
         // Restart comm server
         start();
         // Restart client
-        emit restartClient();
+        emit startClient();
         return;
     }
 

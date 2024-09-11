@@ -745,7 +745,7 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
     std::error_code ec;
 
     SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
-    if (!std::filesystem::exists(tmpDirPath, ec)) {
+    if (!std::filesystem::exists(tmpDirPath)) {
         std::filesystem::create_directory(tmpDirPath, ec);
         if (ec.value()) {
             return false;
@@ -769,8 +769,8 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
 
 // Check if dir name is valid by trying to create a tmp file
 bool CommonUtility::fileNameIsValid(const SyncName &name) {
-    std::error_code ec;
-    if (!std::filesystem::exists(std::filesystem::temp_directory_path() / tmpDirName, ec)) {
+    if (!std::filesystem::exists(std::filesystem::temp_directory_path() / tmpDirName)) {
+        std::error_code ec;
         std::filesystem::create_directory(std::filesystem::temp_directory_path() / tmpDirName, ec);
         if (ec.value()) {
             return false;
@@ -785,6 +785,7 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
 
     output.close();
 
+    std::error_code ec;
     std::filesystem::remove_all(tmpPath, ec);
     return true;
 }
@@ -814,23 +815,6 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
 #endif
 
     return std::string();
-}
-
-void CommonUtility::clearSignalFile(const AppType appType, const SignalType sigType, int &sig) {
-    sig = 0;
-    KDC::SyncPath sigFilePath =
-            std::filesystem::temp_directory_path() / (sigType == SignalType::Crash ? crashServerFileName : killServerFileName);
-    std::error_code ec;
-    if (std::filesystem::exists(sigFilePath, ec)) {
-        // Read signal value
-        std::ifstream sigFile(sigFilePath);
-        sigFile >> sig;
-        sigFile.close();
-
-        // Remove file
-        std::error_code ec;
-        std::filesystem::remove(sigFilePath, ec);
-    }
 }
 
 #ifdef __APPLE__
