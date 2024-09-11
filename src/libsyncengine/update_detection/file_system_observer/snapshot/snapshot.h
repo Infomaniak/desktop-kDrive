@@ -39,7 +39,7 @@ class Snapshot : public SharedObject {
 
         void init();
 
-        bool updateItem(const SnapshotItem &newItem);
+        bool updateItem(const SnapshotItem &item);
         bool removeItem(const NodeId &id);
 
         NodeId itemId(const SyncPath &path) const;
@@ -88,9 +88,9 @@ class Snapshot : public SharedObject {
 
         ReplicaSide _side = ReplicaSide::Unknown;
         NodeId _rootFolderId;
-        std::unordered_map<NodeId, SnapshotItem> _items; // key: id
+        std::unordered_map<NodeId, SnapshotItem> _items;  // key: id
         bool _isValid = false;
         mutable std::recursive_mutex _mutex;
 };
 
-} // namespace KDC
+}  // namespace KDC
