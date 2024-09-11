@@ -21,7 +21,6 @@
 #include <Poco/UnicodeConverter.h>
 
 namespace KDC {
-
 namespace typesUtility {
 std::wstring stringToWideString(const std::string &str) {
     std::wstring wstr;
@@ -787,27 +786,4 @@ std::string toString(SentryConfidentialityLevel e) {
             return "No conversion to string available";
     }
 }
-
-std::string toString(AppType e) {
-    switch (e) {
-        case AppType::Server:
-            return "Server";
-        case AppType::Client:
-            return "Client";
-        default:
-            return "No conversion to string available";
-    }
-}
-
-std::string toString(SignalType e) {
-    switch (e) {
-        case SignalType::Kill:
-            return "Kill";
-        case SignalType::Crash:
-            return "Crash";
-        default:
-            return "No conversion to string available";
-    }
-}
-
 }  // namespace KDC

@@ -92,8 +92,8 @@ const std::map<NotificationsDisabled, QString> SynthesisPopover::_notificationsD
 
 Q_LOGGING_CATEGORY(lcSynthesisPopover, "gui.synthesispopover", QtInfoMsg)
 
-SynthesisPopover::SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugCrash, QWidget *parent) :
-    QDialog(parent), _gui(gui), _debugCrash(debugCrash) {
+SynthesisPopover::SynthesisPopover(std::shared_ptr<ClientGui> gui, bool debugMode, QWidget *parent)
+    : QDialog(parent), _gui(gui), _debugMode(debugMode) {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::WindowStaysOnTopHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -1290,20 +1290,13 @@ void SynthesisPopover::onOpenMiscellaneousMenu(bool checked) {
     connect(exitAction, &QWidgetAction::triggered, this, &SynthesisPopover::onExit);
     menu->addAction(exitAction);
 
-    if (_debugCrash) {
+    if (_debugMode) {
         // Test crash
         QWidgetAction *crashAction = new QWidgetAction(this);
         MenuItemWidget *crashMenuItemWidget = new MenuItemWidget("Test crash");
         crashAction->setDefaultWidget(crashMenuItemWidget);
         connect(crashAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrash);
         menu->addAction(crashAction);
-
-        // Test crash server
-        QWidgetAction *crashServerAction = new QWidgetAction(this);
-        MenuItemWidget *crashServerMenuItemWidget = new MenuItemWidget("Test crash server");
-        crashServerAction->setDefaultWidget(crashServerMenuItemWidget);
-        connect(crashServerAction, &QWidgetAction::triggered, this, &SynthesisPopover::onCrashServer);
-        menu->addAction(crashServerAction);
 
         // Test crash enforce
         QWidgetAction *crashEnforceAction = new QWidgetAction(this);
@@ -1346,12 +1339,6 @@ void SynthesisPopover::onCrash(bool checked) {
     Q_UNUSED(checked)
 
     emit crash();
-}
-
-void SynthesisPopover::onCrashServer(bool checked) {
-    Q_UNUSED(checked)
-
-    emit crashServer();
 }
 
 void SynthesisPopover::onCrashEnforce(bool checked) {
