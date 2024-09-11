@@ -58,7 +58,11 @@ void signalHandler(int signum) {
     fprintf(stderr, "Client stoped with signal %d\n", signum);
 
     KDC::SyncPath sigFilePath = std::filesystem::temp_directory_path();
-    if (signum == SIGSEGV || signum == SIGBUS || signum == SIGFPE || signum == SIGILL) {
+    if (signum == SIGSEGV || signum == SIGFPE || signum == SIGILL
+#ifndef Q_OS_WIN
+        || signum == SIGBUS
+#endif
+    ) {
         // Crash
         sigFilePath /= KDC::crashClientFileName;
     } else {
@@ -76,7 +80,6 @@ void signalHandler(int signum) {
 }
 
 int main(int argc, char **argv) {
-#ifndef Q_OS_WIN
     // Kills
     signal(SIGTERM, signalHandler); // Termination request, sent to the program
     signal(SIGABRT, signalHandler); // Abnormal termination condition, as is e.g. initiated by abort()
@@ -84,9 +87,10 @@ int main(int argc, char **argv) {
 
     // Crashes
     signal(SIGSEGV, signalHandler); // Invalid memory access (segmentation fault)
-    signal(SIGBUS, signalHandler); // Access to an invalid address
     signal(SIGFPE, signalHandler); // Erroneous arithmetic operation such as divide by zero
     signal(SIGILL, signalHandler); // Invalid program image, such as invalid instruction
+#ifndef Q_OS_WIN
+    signal(SIGBUS, signalHandler); // Access to an invalid address
 
     signal(SIGPIPE, SIG_IGN);
 #endif
