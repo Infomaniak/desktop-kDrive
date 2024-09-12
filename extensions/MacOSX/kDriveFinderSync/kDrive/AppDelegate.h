@@ -30,4 +30,8 @@
 
 - (void)connectToLoginAgent;
 - (void)scheduleRetryToConnectToLoginAgent;
+
+- (IBAction) okButtonAction : (id) sender;
+
+
 @end

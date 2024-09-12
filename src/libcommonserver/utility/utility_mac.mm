@@ -58,6 +58,21 @@ bool preventSleeping(bool enable) {
     return (ret == kIOReturnSuccess);
 }
 
+void restartFinderExtension() {
+    NSString* bundleID = NSBundle.mainBundle.bundleIdentifier;
+    NSString* extBundleID = [NSString stringWithFormat:@"%@.Extension", bundleID];
+    NSArray<NSRunningApplication*>* apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:extBundleID];
+    for (NSRunningApplication* app: apps) {
+        NSString* killCommand = [NSString stringWithFormat:@"kill -s 9 %d", app.processIdentifier];
+        system(killCommand.UTF8String);
+    }
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t) (0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        NSString* runCommand = [NSString stringWithFormat:@"pluginkit -e use -i %@", extBundleID];
+        system(runCommand.UTF8String);
+    });
+}
+
 bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creationDate,
                   std::optional<KDC::SyncTime> modificationDate, bool symlink, bool &exists) {
     exists = true;
@@ -128,6 +143,5 @@ bool setFileDates(const SyncPath &filePath, std::optional<KDC::SyncTime> creatio
 
     return true;
 }
-
 
 }  // namespace KDC

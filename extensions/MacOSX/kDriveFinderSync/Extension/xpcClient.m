@@ -165,14 +165,28 @@
 {
 	assert(_registeredDirectories);
 	[_registeredDirectories addObject:[NSURL fileURLWithPath:path]];
-	[FIFinderSyncController defaultController].directoryURLs = _registeredDirectories;
+    @try {
+        [FIFinderSyncController defaultController].directoryURLs = [NSSet setWithSet:_registeredDirectories];
+    } @catch(NSException* e) {
+        // Do nothing and wait for invalidationHandler
+        NSLog(@"[KD] set directoryURLs error %@", e.name);
+    }
+    
+    NSLog(@"[KD] Registered path %@", path);
 }
 
 - (void)unregisterPath:(NSString*)path
 {
     assert(_registeredDirectories);
 	[_registeredDirectories removeObject:[NSURL fileURLWithPath:path]];
-	[FIFinderSyncController defaultController].directoryURLs = _registeredDirectories;
+    @try {
+        [FIFinderSyncController defaultController].directoryURLs = [NSSet setWithSet:_registeredDirectories];
+    } @catch(NSException* e) {
+        // Do nothing and wait for invalidationHandler
+        NSLog(@"[KD] set directoryURLs error %@", e.name);
+    }
+    
+    NSLog(@"[KD] Unregister path %@", path);
 }
 
 - (void)setString:(NSString*)key value:(NSString*)value
@@ -204,7 +218,7 @@
 	[FIFinderSyncController defaultController].directoryURLs = [NSSet setWithObject:[NSURL fileURLWithPath:@"/"]];
 	// This will tell Finder that this extension isn't attached to any directory
 	// until we can reconnect to the sync client.
-	[FIFinderSyncController defaultController].directoryURLs = nil;
+    [FIFinderSyncController defaultController].directoryURLs = nil;
 }
 
 @end

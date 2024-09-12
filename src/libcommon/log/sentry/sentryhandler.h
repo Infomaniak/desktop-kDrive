@@ -54,7 +54,7 @@ class SentryHandler {
     public:
         enum class SentryProject { Server, Client, Deactivated }; // Only used for initialization, don't need to be in types.h
 
-        ~SentryHandler();
+        virtual ~SentryHandler();
         static std::shared_ptr<SentryHandler> instance();
         static void init(SentryProject project, int breadCrumbsSize = 100);
         void setAuthenticatedUser(const SentryUser &user);
@@ -73,9 +73,14 @@ class SentryHandler {
         void captureMessage(SentryLevel level, const std::string &title, std::string message,
                             const SentryUser &user = SentryUser());
 
-    private:
-        static std::shared_ptr<SentryHandler> _instance;
+    protected:
         SentryHandler() = default;
+        void setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit);
+        void setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit);
+        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; } 
+        virtual void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const;
+
+    private:
         SentryHandler(const SentryHandler &) = delete;
         SentryHandler &operator=(const SentryHandler &) = delete;
         SentryHandler(SentryHandler &&) = delete;
@@ -96,7 +101,7 @@ class SentryHandler {
                 std::string userId;
                 time_point lastCapture;
                 time_point lastUpload;
-                unsigned int captureCount = 0;
+                unsigned int captureCount = 1;
         };
 
         /* This method is called before uploading an event to Sentry.
@@ -123,7 +128,7 @@ class SentryHandler {
         void updateEffectiveSentryUser(const SentryUser &user = SentryUser());
 
         std::recursive_mutex _mutex;
-        bool _isSentryActivated = false;
+        static std::shared_ptr<SentryHandler> _instance;
         SentryUser _authenticatedUser;
         struct StringHash {
                 using is_transparent = void; // Enables heterogeneous operations.
@@ -136,5 +141,8 @@ class SentryHandler {
         std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
         SentryConfidentialityLevel _globalConfidentialityLevel = SentryConfidentialityLevel::Anonymous; // Default value
         SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::None;
+        int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
+        int _sentryMinUploadIntervaOnRateLimit = 60; // Min. interval between two uploads of a rate limited event (seconds)
+        bool _isSentryActivated = false;
 };
 } // namespace KDC

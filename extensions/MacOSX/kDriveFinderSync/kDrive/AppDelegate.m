@@ -70,7 +70,7 @@
     }
     
     // Set exported interface
-    NSLog(@"[KD] Set exported interface for connection with ext");
+    NSLog(@"[KD] Set exported interface for connection with login agent");
     _loginItemAgentConnection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(XPCLoginItemRemoteProtocol)];
     _loginItemAgentConnection.exportedObject = self;
     
@@ -186,5 +186,12 @@
 - (void)appIsRunning:(NSXPCListenerEndpoint *)endPoint
 {
 }
+
+- (IBAction) okButtonAction : (id) sender {
+    NSLog(@"Button action here");
+    
+    // Add your test here
+}
+
 
 @end
