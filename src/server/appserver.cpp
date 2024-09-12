@@ -139,12 +139,12 @@ AppServer::AppServer(int &argc, char **argv)
     SignalType signalType = SignalType::None;
     CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Crash, signalType);
     if (signalType != SignalType::None) {
-        LOG_INFO(_logger, "Restarting after a " << SignalCategory::Crash << " with signal " << signalType);
+        LOG_INFO(_logger, "Restarting after a" << SignalCategory::Crash << "with signal" << signalType);
     }
 
     CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Kill, signalType);
     if (signalType != SignalType::None) {
-        LOG_INFO(_logger, "Restarting after a " << SignalCategory::Kill << " with signal " << signalType);
+        LOG_INFO(_logger, "Restarting after a" << SignalCategory::Kill << "with signal" << signalType);
     }
 
     // Init parms DB
@@ -503,6 +503,7 @@ void AppServer::updateSentryUser() const {
 bool AppServer::clientHasCrashed() const {
     // Check if a crash file exists
     auto sigFilePath(CommonUtility::signalFilePath(AppType::Client, SignalCategory::Crash));
+    LOGW_DEBUG(_logger, L"Check if a client crash file exists " << Utility::formatSyncPath(sigFilePath).c_str());
     std::error_code ec;
     return std::filesystem::exists(sigFilePath, ec);
 }
@@ -2011,7 +2012,8 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             break;
         }
         case RequestNum::UTILITY_CRASH: {
-            CommonUtility::crash();
+            resultStream << ExitCode::Ok;
+            QTimer::singleShot(QUIT_DELAY, []() { CommonUtility::crash(); });
             break;
         }
         case RequestNum::UTILITY_QUIT: {

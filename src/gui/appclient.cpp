@@ -152,12 +152,12 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     SignalType signalType = SignalType::None;
     CommonUtility::clearSignalFile(AppType::Client, SignalCategory::Crash, signalType);
     if (signalType != SignalType::None) {
-        qCInfo(lcAppClient) << "Restarting after a " << SignalCategory::Crash << " with signal " << signalType;
+        qCInfo(lcAppClient) << "Restarting after a" << SignalCategory::Crash << "with signal" << signalType;
     }
 
     CommonUtility::clearSignalFile(AppType::Client, SignalCategory::Kill, signalType);
     if (signalType != SignalType::None) {
-        qCInfo(lcAppClient) << "Restarting after a " << SignalCategory::Kill << " with signal " << signalType;
+        qCInfo(lcAppClient) << "Restarting after a" << SignalCategory::Kill << "with signal" << signalType;
     }
 
     // Setup debug crash mode
@@ -602,6 +602,7 @@ void AppClient::setupLogging() {
 bool AppClient::serverHasCrashed() {
     // Check if a crash file exists
     const auto sigFilePath(CommonUtility::signalFilePath(AppType::Server, SignalCategory::Crash));
+    qCDebug(lcAppClient) << "Check if a server crash file exists " << QString::fromStdString(sigFilePath.native());
     std::error_code ec;
     return std::filesystem::exists(sigFilePath, ec);
 }
