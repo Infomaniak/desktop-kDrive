@@ -150,12 +150,12 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
 
     // Remove the files that keep a record of former crash or kill events
     SignalType signalType = SignalType::None;
-    CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Crash, signalType);
+    CommonUtility::clearSignalFile(AppType::Client, SignalCategory::Crash, signalType);
     if (signalType != SignalType::None) {
         qCInfo(lcAppClient) << "Restarting after a " << SignalCategory::Crash << " with signal " << signalType;
     }
 
-    CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Kill, signalType);
+    CommonUtility::clearSignalFile(AppType::Client, SignalCategory::Kill, signalType);
     if (signalType != SignalType::None) {
         qCInfo(lcAppClient) << "Restarting after a " << SignalCategory::Kill << " with signal " << signalType;
     }
