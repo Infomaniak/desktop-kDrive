@@ -195,7 +195,6 @@
 	// Cut the trailing newline. We always only receive one line from the client.
 	answer = [answer substringToIndex:[answer length] - 1];
 	NSArray *chunks = [answer componentsSeparatedByString: @":"];
-	
 	if( [[chunks objectAtIndex:0] isEqualToString:@"STATUS"] ) {
 		NSString *result = [chunks objectAtIndex:1];
 		NSString *path = [chunks objectAtIndex:2];
