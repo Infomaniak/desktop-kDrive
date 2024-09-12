@@ -704,7 +704,7 @@ bool AppClient::parseOptions(const QStringList &options) {
     return true;
 }
 
-bool AppClient::debugCrash() {
+bool AppClient::debugCrash() const {
     return _debugCrash;
 }
 

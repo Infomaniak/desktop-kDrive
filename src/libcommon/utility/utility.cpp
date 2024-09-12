@@ -856,7 +856,7 @@ void CommonUtility::writeSignalFile(AppType appType, SignalType signalType) noex
     SyncPath sigFilePath(signalFilePath(appType, signalCategory));
     std::ofstream sigFile(sigFilePath);
     if (sigFile) {
-        sigFile << static_cast<int>(signalType) << std::endl;
+        sigFile << KDC::toInt(signalType) << std::endl;
         sigFile.close();
     }
 }
@@ -873,7 +873,7 @@ void CommonUtility::clearSignalFile(AppType appType, SignalCategory signalCatego
         sigFile >> value;
         sigFile.close();
 
-        signalType = static_cast<SignalType>(value);
+        signalType = KDC::fromInt<SignalType>(value);
 
         // Remove file
         std::filesystem::remove(sigFilePath, ec);

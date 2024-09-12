@@ -48,7 +48,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         explicit AppClient(int &argc, char **argv);
         ~AppClient();
 
-        bool debugCrash();
+        bool debugCrash() const;
 
         void showParametersDialog();
         void showSynthesisDialog();

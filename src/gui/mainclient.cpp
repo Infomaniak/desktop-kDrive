@@ -56,7 +56,7 @@ void warnSystray() {
 }
 
 void signalHandler(int signum) {
-    KDC::SignalType signalType = static_cast<KDC::SignalType>(signum);
+    KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(signum);
     std::cerr << "Client stopped with signal " << signalType << std::endl;
 
     KDC::CommonUtility::writeSignalFile(KDC::AppType::Client, signalType);
