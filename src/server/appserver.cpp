@@ -45,6 +45,7 @@
 #include "libsyncengine/jobs/network/API_v2/upload_session/uploadsessioncanceljob.h"
 
 #include <iostream>
+#include <fstream>
 #include <filesystem>
 #ifdef Q_OS_UNIX
 #include <sys/resource.h>
@@ -133,6 +134,18 @@ AppServer::AppServer(int &argc, char **argv) :
 
     // Setup single application: show the Settings or Synthesis window if the application is running.
     connect(this, &QtSingleApplication::messageReceived, this, &AppServer::onMessageReceivedFromAnotherProcess);
+
+    // Remove the files that keep a record of former crash or kill events
+    SignalType signalType = SignalType::None;
+    CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Crash, signalType);
+    if (signalType != SignalType::None) {
+        LOG_INFO(_logger, "Restarting after a " << SignalCategory::Crash << " with signal " << signalType);
+    }
+
+    CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Kill, signalType);
+    if (signalType != SignalType::None) {
+        LOG_INFO(_logger, "Restarting after a " << SignalCategory::Kill << " with signal " << signalType);
+    }
 
     // Init parms DB
     bool alreadyExist = false;
@@ -290,7 +303,7 @@ AppServer::AppServer(int &argc, char **argv) :
     // Start CommServer
     CommServer::instance();
     connect(CommServer::instance().get(), &CommServer::requestReceived, this, &AppServer::onRequestReceived);
-    connect(CommServer::instance().get(), &CommServer::startClient, this, &AppServer::onRestartClientReceived);
+    connect(CommServer::instance().get(), &CommServer::restartClient, this, &AppServer::onRestartClientReceived);
 
     // Update users/accounts/drives info
     ExitCode exitCode = updateAllUsersInfo();
@@ -485,6 +498,52 @@ void AppServer::updateSentryUser() const {
         userEmail = user.email();
     }
     SentryHandler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
+}
+
+bool AppServer::clientHasCrashed() const {
+    // Check if a crash file exists
+    auto sigFilePath(CommonUtility::signalFilePath(AppType::Client, SignalCategory::Crash));
+    std::error_code ec;
+    return std::filesystem::exists(sigFilePath, ec);
+}
+
+void AppServer::handleClientCrash(bool &quit) {
+    if (clientCrashedRecently()) {
+        LOG_FATAL(_logger, "Client has crashed twice in a short time, exiting");
+
+        // Reset client restart date in DB
+        bool found = false;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, 0, found) || !found) {
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        }
+
+        quit = true;
+    } else {
+        // Set client restart date in DB
+        const long timestamp =
+                std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        const std::string timestampStr = std::to_string(timestamp);
+        bool found = false;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found) || !found) {
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        }
+
+        // Restart client
+        if (!startClient()) {
+            LOG_WARN(_logger, "Error in AppServer::startClient");
+            quit = true;
+        } else {
+            LOG_INFO(_logger, "Client restarted");
+            quit = false;
+        }
+    }
+}
+
+void AppServer::crash() const {
+    // SIGSEGV crash
+    CommonUtility::crash();
 }
 
 void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &params) {
@@ -1958,6 +2017,11 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             updater->slotUnsetSeenVersion();
             break;
         }
+        case RequestNum::UTILITY_CRASH: {
+            resultStream << ExitCode::Ok;
+            QTimer::singleShot(QUIT_DELAY, []() { CommonUtility::crash(); });
+            break;
+        }
         case RequestNum::UTILITY_QUIT: {
             CommServer::instance()->setHasQuittedProperly(true);
             QTimer::singleShot(QUIT_DELAY, []() { quit(); });
@@ -2185,35 +2249,25 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
 }
 
 void AppServer::onRestartClientReceived() {
-    // Check last start time
-    if (clientCrashedRecently()) {
-        LOG_FATAL(_logger, "Client crashed twice in a short time, exiting");
-        bool found = false;
-        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, std::string("0"), found) ||
-            !found) {
-            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
-            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-        }
-        QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
-        QTimer::singleShot(0, this, &AppServer::quit);
-        return;
-    } else {
-        CommServer::instance()->setHasQuittedProperly(false);
-        long timestamp =
-                std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
-        std::string timestampStr = std::to_string(timestamp);
-        bool found = false;
-        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found) || !found) {
-            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
-            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+    bool quit = false;
+#if NDEBUG
+    if (clientHasCrashed()) {
+        LOG_ERROR(_logger, "Client disconnected because it has crashed");
+        handleClientCrash(quit);
+        if (quit) {
             QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
-            QTimer::singleShot(0, this, &AppServer::quit);
-            return;
         }
+    } else {
+        LOG_INFO(_logger, "Client disconnected because it was killed");
+        quit = true;
+    }
+#else
+    LOG_INFO(_logger, "Client disconnected");
+    quit = true;
+#endif
 
-        if (!startClient()) {
-            LOG_WARN(_logger, "Error in startClient");
-        }
+    if (quit) {
+        QTimer::singleShot(0, this, &AppServer::quit);
     }
 }
 
@@ -2996,19 +3050,6 @@ ExitCode AppServer::processMigratedSyncOnceConnected(int userDbId, int driveId, 
     return ExitCode::Ok;
 }
 
-
-void AppServer::onCrash() {
-    KDC::CommonUtility::crash();
-}
-
-void AppServer::onCrashEnforce() {
-    ENFORCE(1 == 0);
-}
-
-void AppServer::onCrashFatal() {
-    qFatal("la Qt fatale");
-}
-
 void AppServer::initLogging() {
     // Setup log4cplus
     IoError ioError = IoError::Success;
@@ -3335,11 +3376,9 @@ void AppServer::showHint(std::string errorHint) {
     std::exit(1);
 }
 
-bool AppServer::debugMode() {
-    return _debugMode;
-}
-
 bool AppServer::startClient() {
+    CommServer::instance()->setHasQuittedProperly(false);
+
     if (!CommServer::instance()->isListening()) {
         LOG_WARN(_logger, "Failed to start kDrive client (comm server isn't started)");
         return false;

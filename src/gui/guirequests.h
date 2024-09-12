@@ -126,5 +126,6 @@ struct GuiRequests {
         static ExitCode getLogDirEstimatedSize(uint64_t &size);
         static ExitCode sendLogToSupport(bool sendArchivedLogs);
         static ExitCode cancelLogUploadToSupport();
+        static ExitCode crash();
 };
 }  // namespace KDC

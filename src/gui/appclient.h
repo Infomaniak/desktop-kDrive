@@ -48,7 +48,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         explicit AppClient(int &argc, char **argv);
         ~AppClient();
 
-        bool debugMode();
+        bool debugCrash() const;
 
         void showParametersDialog();
         void showSynthesisDialog();
@@ -93,6 +93,7 @@ class AppClient : public SharedTools::QtSingleApplication {
     public slots:
         void onWizardDone(int);
         void onCrash();
+        void onCrashServer();
         void onCrashEnforce();
         void onCrashFatal();
 
@@ -107,7 +108,8 @@ class AppClient : public SharedTools::QtSingleApplication {
         bool parseOptions(const QStringList &);
         void setupLogging();
 
-        void startServerAndDie(bool serverCrashDetected);
+        bool serverHasCrashed();
+        void startServerAndDie();
         bool connectToServer();
         void updateSentryUser() const;
 
@@ -124,7 +126,7 @@ class AppClient : public SharedTools::QtSingleApplication {
         std::chrono::hours _logExpire = std::chrono::hours(0);
         bool _logFlush = false;
         bool _logDebug = false;
-        bool _debugMode = false;
+        bool _debugCrash = false;
         QScopedPointer<UpdaterClient> _updaterClient;
         bool _quitInProcess = false;
 

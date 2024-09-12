@@ -35,6 +35,8 @@
 #include <QDir>
 
 #include <signal.h>
+#include <iostream>
+#include <fstream>
 
 #ifdef Q_OS_UNIX
 #include <sys/time.h>
@@ -54,25 +56,18 @@ void warnSystray() {
 }
 
 void signalHandler(int signum) {
-    fprintf(stderr, "Server stoped with signal %d\n", signum);
+    KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(signum);
+    std::cerr << "Client stopped with signal " << signalType << std::endl;
 
-    // Make sure everything flushes
-#ifdef NDEBUG
-    auto sentryClose = qScopeGuard([] { sentry_close(); });
-#endif
+    KDC::CommonUtility::writeSignalFile(KDC::AppType::Client, signalType);
 
     exit(signum);
 }
 
 int main(int argc, char **argv) {
-#ifndef Q_OS_WIN
-    signal(SIGABRT, signalHandler);
-    signal(SIGKILL, signalHandler);
-    signal(SIGBUS, signalHandler);
-    signal(SIGSEGV, signalHandler);
+    KDC::CommonUtility::handleSignals(signalHandler);
 
-    signal(SIGPIPE, SIG_IGN);
-#endif
+    std::cout << "kDrive client starting" << std::endl;
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();

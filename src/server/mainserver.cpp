@@ -22,6 +22,7 @@
 #include "common/utility.h"
 #include "libcommon/asserts.h"
 #include "updater/updaterserver.h"
+#include "libcommon/utility/types.h"
 #include "libcommon/utility/utility.h"
 #include "libcommon/log/sentry/sentryhandler.h"
 #include "libcommonserver/log/log.h"
@@ -34,6 +35,7 @@
 
 #include <signal.h>
 #include <iostream>
+#include <fstream>
 
 #ifdef Q_OS_UNIX
 #include <sys/time.h>
@@ -53,25 +55,16 @@
 #endif
 
 void signalHandler(int signum) {
-    std::cerr << "Server stoped with signal " << signum << std::endl;
+    KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(signum);
+    std::cerr << "Server stopped with signal " << signalType << std::endl;
 
-    // Make sure everything flushes
-#ifdef NDEBUG
-    auto sentryClose = qScopeGuard([] { sentry_close(); });
-#endif
+    KDC::CommonUtility::writeSignalFile(KDC::AppType::Server, signalType);
 
     exit(signum);
 }
 
 int main(int argc, char **argv) {
-#ifndef Q_OS_WIN
-    signal(SIGABRT, signalHandler);
-    signal(SIGKILL, signalHandler);
-    signal(SIGBUS, signalHandler);
-    signal(SIGSEGV, signalHandler);
-
-    signal(SIGPIPE, SIG_IGN);
-#endif
+    KDC::CommonUtility::handleSignals(signalHandler);
 
     std::cout << "kDrive server starting" << std::endl;
 
