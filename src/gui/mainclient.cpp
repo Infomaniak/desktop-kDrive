@@ -56,45 +56,18 @@ void warnSystray() {
 }
 
 void signalHandler(int signum) {
-    std::cerr << "Client stopped with signal " << static_cast<KDC::SignalType>(signum) << std::endl;
+    KDC::SignalType signalType = static_cast<KDC::SignalType>(signum);
+    std::cerr << "Client stopped with signal " << signalType << std::endl;
 
-    auto sigFilePath = std::filesystem::temp_directory_path();
-    if (signum == SIGSEGV || signum == SIGFPE || signum == SIGILL
-#ifndef Q_OS_WIN
-        || signum == SIGBUS
-#endif
-    ) {
-        // Crash
-        sigFilePath /= KDC::clientCrashFileName;
-    } else {
-        // Kill
-        sigFilePath /= KDC::clientKillFileName;
-    }
-
-    std::ofstream sigFile(sigFilePath);
-    if (sigFile) {
-        sigFile << signum << std::endl;
-        sigFile.close();
-    }
+    KDC::CommonUtility::writeSignalFile(KDC::AppType::Client, signalType);
 
     exit(signum);
 }
 
 int main(int argc, char **argv) {
-    // Kills
-    signal(SIGTERM, signalHandler); // Termination request, sent to the program
-    signal(SIGABRT, signalHandler); // Abnormal termination condition, as is e.g. initiated by abort()
-    signal(SIGINT, signalHandler); // External interrupt, usually initiated by the user
+    KDC::CommonUtility::handleSignals(signalHandler);
 
-    // Crashes
-    signal(SIGSEGV, signalHandler); // Invalid memory access (segmentation fault)
-    signal(SIGFPE, signalHandler); // Erroneous arithmetic operation such as divide by zero
-    signal(SIGILL, signalHandler); // Invalid program image, such as invalid instruction
-#ifndef Q_OS_WIN
-    signal(SIGBUS, signalHandler); // Access to an invalid address
-
-    signal(SIGPIPE, SIG_IGN);
-#endif
+    std::cout << "kDrive client starting" << std::endl;
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();

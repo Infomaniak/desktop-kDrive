@@ -113,10 +113,14 @@ struct COMMON_EXPORT CommonUtility {
         static std::string envVarValue(const std::string &name);
         static std::string envVarValue(const std::string &name, bool &isSet);
 
-        static void clearSignalFile(const AppType appType, const SignalCategory signalCategory, SignalType &signalType) noexcept;
+        static void handleSignals(void (*sigHandler)(int));
+        static void writeSignalFile(AppType appType, SignalType signalType) noexcept;
+        static void clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept;
 
     private:
         static void extractIntFromStrVersion(const std::string &version, std::vector<int> &tabVersion);
+
+        static SyncPath signalFilePath(AppType appType, SignalCategory signalCategory);
 };
 
 struct ArgsReader {

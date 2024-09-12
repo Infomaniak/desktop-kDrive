@@ -55,45 +55,16 @@
 #endif
 
 void signalHandler(int signum) {
-    std::cerr << "Server stopped with signal " << static_cast<KDC::SignalType>(signum) << std::endl;
+    KDC::SignalType signalType = static_cast<KDC::SignalType>(signum);
+    std::cerr << "Server stopped with signal " << signalType << std::endl;
 
-    auto sigFilePath = std::filesystem::temp_directory_path();
-    if (signum == SIGSEGV || signum == SIGFPE || signum == SIGILL
-#ifndef Q_OS_WIN
-        || signum == SIGBUS
-#endif
-    ) {
-        // Crash
-        sigFilePath /= KDC::serverCrashFileName;
-    } else {
-        // Kill
-        sigFilePath /= KDC::serverKillFileName;
-    }
-
-    std::ofstream sigFile(sigFilePath);
-    if (sigFile) {
-        sigFile << signum << std::endl;
-        sigFile.close();
-    }
+    KDC::CommonUtility::writeSignalFile(KDC::AppType::Server, signalType);
 
     exit(signum);
 }
 
 int main(int argc, char **argv) {
-    // Kills
-    signal(SIGTERM, signalHandler); // Termination request, sent to the program
-    signal(SIGABRT, signalHandler); // Abnormal termination condition, as is e.g. initiated by abort()
-    signal(SIGINT, signalHandler); // External interrupt, usually initiated by the user
-
-    // Crashes
-    signal(SIGSEGV, signalHandler); // Invalid memory access (segmentation fault)
-    signal(SIGFPE, signalHandler); // Erroneous arithmetic operation such as divide by zero
-    signal(SIGILL, signalHandler); // Invalid program image, such as invalid instruction
-#ifndef Q_OS_WIN
-    signal(SIGBUS, signalHandler); // Access to an invalid address
-
-    signal(SIGPIPE, SIG_IGN);
-#endif
+    KDC::CommonUtility::handleSignals(signalHandler);
 
     std::cout << "kDrive server starting" << std::endl;
 
