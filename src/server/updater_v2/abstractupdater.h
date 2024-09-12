@@ -40,7 +40,7 @@ class AbstractUpdater {
 
         ExitCode checkUpdateAvailable(bool &available);
         bool isUpdateDownloaded();
-        ExitCode downloadUpdate();
+        ExitCode downloadUpdate() noexcept;
 
         void setGetAppVersionJob(GetAppVersionJob *getAppVersionJob) { _getAppVersionJob = getAppVersionJob; }
 

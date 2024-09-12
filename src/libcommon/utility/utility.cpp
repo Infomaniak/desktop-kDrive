@@ -25,13 +25,13 @@
 #include <sys/types.h>
 
 #ifdef Q_OS_UNIX
-
 #include <sys/statvfs.h>
-
 #endif
 
+#include <random>
 #include <fstream>
 #include <sstream>
+#include <signal.h>
 
 #ifdef _WIN32
 #include <Poco/Util/WinRegistryKey.h>
@@ -42,8 +42,6 @@
 #ifdef ZLIB_FOUND
 #include <zlib.h>
 #endif
-
-#include <random>
 
 #include <QDir>
 #include <QFileInfo>
@@ -714,6 +712,14 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
     } while (pos != std::string::npos);
 }
 
+SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
+    auto sigFilePath =
+            std::filesystem::temp_directory_path() /
+            (appType == AppType::Server ? (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName)
+                                        : (signalCategory == SignalCategory::Crash ? clientCrashFileName : clientKillFileName));
+    return sigFilePath;
+}
+
 bool CommonUtility::isVersionLower(const std::string &currentVersion, const std::string &targetVersion) {
     std::vector<int> currTabVersion;
     extractIntFromStrVersion(currentVersion, currTabVersion);
@@ -745,7 +751,7 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
     std::error_code ec;
 
     SyncPath tmpDirPath = std::filesystem::temp_directory_path() / tmpDirName;
-    if (!std::filesystem::exists(tmpDirPath)) {
+    if (!std::filesystem::exists(tmpDirPath, ec)) {
         std::filesystem::create_directory(tmpDirPath, ec);
         if (ec.value()) {
             return false;
@@ -769,8 +775,8 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
 
 // Check if dir name is valid by trying to create a tmp file
 bool CommonUtility::fileNameIsValid(const SyncName &name) {
-    if (!std::filesystem::exists(std::filesystem::temp_directory_path() / tmpDirName)) {
-        std::error_code ec;
+    std::error_code ec;
+    if (!std::filesystem::exists(std::filesystem::temp_directory_path() / tmpDirName, ec)) {
         std::filesystem::create_directory(std::filesystem::temp_directory_path() / tmpDirName, ec);
         if (ec.value()) {
             return false;
@@ -785,7 +791,6 @@ bool CommonUtility::fileNameIsValid(const SyncName &name) {
 
     output.close();
 
-    std::error_code ec;
     std::filesystem::remove_all(tmpPath, ec);
     return true;
 }
@@ -815,6 +820,64 @@ std::string CommonUtility::envVarValue(const std::string &name, bool &isSet) {
 #endif
 
     return std::string();
+}
+
+void CommonUtility::handleSignals(void (*sigHandler)(int)) {
+    // Kills
+    signal(SIGTERM, sigHandler); // Termination request, sent to the program
+    signal(SIGABRT, sigHandler); // Abnormal termination condition, as is e.g. initiated by abort()
+    signal(SIGINT, sigHandler); // External interrupt, usually initiated by the user
+
+    // Crashes
+    signal(SIGSEGV, sigHandler); // Invalid memory access (segmentation fault)
+    signal(SIGFPE, sigHandler); // Erroneous arithmetic operation such as divide by zero
+    signal(SIGILL, sigHandler); // Invalid program image, such as invalid instruction
+#ifndef Q_OS_WIN
+    signal(SIGBUS, sigHandler); // Access to an invalid address
+
+    signal(SIGPIPE, SIG_IGN);
+#endif
+}
+
+void CommonUtility::writeSignalFile(AppType appType, SignalType signalType) noexcept {
+    SignalCategory signalCategory;
+    if (signalType == SignalType::Segv || signalType == SignalType::Fpe || signalType == SignalType::Ill
+#ifndef Q_OS_WIN
+        || signalType == SignalType::Bus
+#endif
+    ) {
+        // Crash
+        signalCategory = SignalCategory::Crash;
+    } else {
+        // Kill
+        signalCategory = SignalCategory::Kill;
+    }
+
+    SyncPath sigFilePath(signalFilePath(appType, signalCategory));
+    std::ofstream sigFile(sigFilePath);
+    if (sigFile) {
+        sigFile << KDC::toInt(signalType) << std::endl;
+        sigFile.close();
+    }
+}
+
+void CommonUtility::clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept {
+    signalType = SignalType::None;
+
+    SyncPath sigFilePath(signalFilePath(appType, signalCategory));
+    std::error_code ec;
+    if (std::filesystem::exists(sigFilePath, ec)) {
+        // Read signal value
+        int value;
+        std::ifstream sigFile(sigFilePath);
+        sigFile >> value;
+        sigFile.close();
+
+        signalType = KDC::fromInt<SignalType>(value);
+
+        // Remove file
+        std::filesystem::remove(sigFilePath, ec);
+    }
 }
 
 #ifdef __APPLE__
