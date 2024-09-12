@@ -27,6 +27,7 @@
 #include <unordered_set>
 #include <variant>
 #include <qdebug.h>
+#include <signal.h>
 
 namespace KDC {
 
