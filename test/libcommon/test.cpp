@@ -21,11 +21,13 @@
 #include "api_token/testapitoken.h"
 #include "utility/testutility.h"
 #include "utility/testtypes.h"
+#include "log/sentry/testsentryhandler.h"
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestApiToken);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUtility);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestTypes);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestSentryHandler);
 }  // namespace KDC
 
 int main(int, char **) {
