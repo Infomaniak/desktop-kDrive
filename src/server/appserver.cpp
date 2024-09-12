@@ -500,11 +500,45 @@ void AppServer::updateSentryUser() const {
     SentryHandler::instance()->setAuthenticatedUser(SentryUser(userEmail, userName, userId));
 }
 
-bool AppServer::clientHasCrashed() {
+bool AppServer::clientHasCrashed() const {
     // Check if a crash file exists
     auto sigFilePath = std::filesystem::temp_directory_path() / clientCrashFileName;
     std::error_code ec;
     return std::filesystem::exists(sigFilePath, ec);
+}
+
+void AppServer::handleClientCrash(bool &quit) {
+    if (clientCrashedRecently()) {
+        LOG_FATAL(_logger, "Client has crashed twice in a short time, exiting");
+
+        // Reset client restart date in DB
+        bool found = false;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, 0, found) || !found) {
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        }
+
+        quit = true;
+    } else {
+        // Set client restart date in DB
+        const long timestamp =
+                std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()).time_since_epoch().count();
+        const std::string timestampStr = std::to_string(timestamp);
+        bool found = false;
+        if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found) || !found) {
+            addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
+            LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
+        }
+
+        // Restart client
+        if (!startClient()) {
+            LOG_WARN(_logger, "Error in AppServer::startClient");
+            quit = true;
+        } else {
+            LOG_INFO(_logger, "Client restarted");
+            quit = false;
+        }
+    }
 }
 
 void AppServer::crash() const {
@@ -2206,51 +2240,26 @@ void AppServer::onShowWindowsUpdateErrorDialog() {
 }
 
 void AppServer::onRestartClientReceived() {
+    bool quit = false;
 #if NDEBUG
     if (clientHasCrashed()) {
         LOG_ERROR(_logger, "Client disconnected because it has crashed");
-        if (clientCrashedRecently()) {
-            LOG_FATAL(_logger, "Client has crashed twice in a short time, exiting");
-
-            // Reset client restart date in DB
-            bool found = false;
-            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, 0, found) || !found) {
-                addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
-                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-            }
-        } else {
-            // Set client restart date in DB
-            const long timestamp = std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now())
-                                           .time_since_epoch()
-                                           .count();
-            const std::string timestampStr = std::to_string(timestamp);
-            bool found = false;
-            if (!KDC::ParmsDb::instance()->updateAppState(AppStateKey::LastClientSelfRestartDate, timestampStr, found) ||
-                !found) {
-                addError(Error(errId(), ExitCode::DbError, ExitCause::DbEntryNotFound));
-                LOG_WARN(_logger, "Error in ParmsDb::updateAppState");
-            }
-
-            // Restart client
-            if (!startClient()) {
-                LOG_WARN(_logger, "Error in AppServer::startClient");
-            } else {
-                LOG_INFO(_logger, "Client restarted");
-                return;
-            }
+        handleClientCrash(quit);
+        if (quit) {
+            QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
         }
-
-        QMessageBox::warning(0, QString(APPLICATION_NAME), crashMsg, QMessageBox::Ok);
-        QTimer::singleShot(0, this, &AppServer::quit);
-        return;
     } else {
         LOG_INFO(_logger, "Client disconnected because it was killed");
-        QTimer::singleShot(0, this, &AppServer::quit);
+        quit = true;
     }
 #else
     LOG_INFO(_logger, "Client disconnected");
-    QTimer::singleShot(0, this, &AppServer::quit);
+    quit = true;
 #endif
+
+    if (quit) {
+        QTimer::singleShot(0, this, &AppServer::quit);
+    }
 }
 
 void AppServer::onMessageReceivedFromAnotherProcess(const QString &message, QObject *) {

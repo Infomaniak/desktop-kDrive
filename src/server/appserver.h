@@ -232,7 +232,8 @@ class AppServer : public SharedTools::QtSingleApplication {
 
         void updateSentryUser() const;
 
-        bool clientHasCrashed();
+        bool clientHasCrashed() const;
+        void handleClientCrash(bool &quit);
 
         // For testing purpose
         void crash() const;
