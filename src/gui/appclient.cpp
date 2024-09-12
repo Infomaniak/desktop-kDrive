@@ -602,7 +602,6 @@ void AppClient::setupLogging() {
 bool AppClient::serverHasCrashed() {
     // Check if a crash file exists
     const auto sigFilePath(CommonUtility::signalFilePath(AppType::Server, SignalCategory::Crash));
-    qCDebug(lcAppClient) << "Check if a server crash file exists " << QString::fromStdString(sigFilePath.native());
     std::error_code ec;
     return std::filesystem::exists(sigFilePath, ec);
 }

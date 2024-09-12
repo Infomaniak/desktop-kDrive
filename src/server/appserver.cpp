@@ -503,7 +503,6 @@ void AppServer::updateSentryUser() const {
 bool AppServer::clientHasCrashed() const {
     // Check if a crash file exists
     auto sigFilePath(CommonUtility::signalFilePath(AppType::Client, SignalCategory::Crash));
-    LOGW_DEBUG(_logger, L"Check if a client crash file exists " << Utility::formatSyncPath(sigFilePath).c_str());
     std::error_code ec;
     return std::filesystem::exists(sigFilePath, ec);
 }
