@@ -601,7 +601,7 @@ void AppClient::setupLogging() {
 
 bool AppClient::serverHasCrashed() {
     // Check if a crash file exists
-    const auto sigFilePath = std::filesystem::temp_directory_path() / serverCrashFileName;
+    const auto sigFilePath(CommonUtility::signalFilePath(AppType::Server, SignalCategory::Crash));
     std::error_code ec;
     return std::filesystem::exists(sigFilePath, ec);
 }
