@@ -139,12 +139,12 @@ AppServer::AppServer(int &argc, char **argv) :
     SignalType signalType = SignalType::None;
     CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Crash, signalType);
     if (signalType != SignalType::None) {
-        LOG_INFO(_logger, "Restarting after a" << SignalCategory::Crash << "with signal" << signalType);
+        LOG_INFO(_logger, "Restarting after a " << SignalCategory::Crash << " with signal " << signalType);
     }
 
     CommonUtility::clearSignalFile(AppType::Server, SignalCategory::Kill, signalType);
     if (signalType != SignalType::None) {
-        LOG_INFO(_logger, "Restarting after a" << SignalCategory::Kill << "with signal" << signalType);
+        LOG_INFO(_logger, "Restarting after a " << SignalCategory::Kill << " with signal " << signalType);
     }
 
     // Init parms DB
