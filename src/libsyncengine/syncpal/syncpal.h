@@ -61,19 +61,19 @@ class GetSizeJob;
 #define LOG_SYNCDBID std::string("*" + std::to_string(SYNCDBID) + "*").c_str()
 
 #define LOG_SYNCPAL_DEBUG(logger, logEvent) LOG_DEBUG(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_DEBUG(logger, logEvent) LOGW_DEBUG(logger, Str2SyncName(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_DEBUG(logger, logEvent) LOGW_DEBUG(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 #define LOG_SYNCPAL_INFO(logger, logEvent) LOG_INFO(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_INFO(logger, logEvent) LOGW_INFO(logger, Str2SyncName(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_INFO(logger, logEvent) LOGW_INFO(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 #define LOG_SYNCPAL_WARN(logger, logEvent) LOG_WARN(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_WARN(logger, logEvent) LOGW_WARN(logger, Str2SyncName(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_WARN(logger, logEvent) LOGW_WARN(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 #define LOG_SYNCPAL_ERROR(logger, logEvent) LOG_ERROR(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_ERROR(logger, logEvent) LOGW_ERROR(logger, Str2SyncName(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_ERROR(logger, logEvent) LOGW_ERROR(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 #define LOG_SYNCPAL_FATAL(logger, logEvent) LOG_FATAL(logger, LOG_SYNCDBID << " " << logEvent)
-#define LOGW_SYNCPAL_FATAL(logger, logEvent) LOGW_FATAL(logger, Str2SyncName(LOG_SYNCDBID) << L" " << logEvent)
+#define LOGW_SYNCPAL_FATAL(logger, logEvent) LOGW_FATAL(logger, Utility::s2ws(LOG_SYNCDBID) << L" " << logEvent)
 
 struct SyncPalInfo {
         SyncPalInfo() = default;

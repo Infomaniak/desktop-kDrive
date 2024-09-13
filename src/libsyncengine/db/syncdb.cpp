@@ -1370,7 +1370,7 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
             ASSERT(queryBindValue(queryId, 1, nodeDbId));
             ASSERT(queryBindValue(queryId, 2, *nameIt));
             if (!queryNext(queryId, found)) {
-                LOGW_WARN(_logger, L"Error getting query result: " << SyncName2WStr(Str2SyncName(queryId.c_str()))
+                LOGW_WARN(_logger, L"Error getting query result: " << Utility::s2ws(queryId.c_str())
                                                                    << L" - parentNodeId="
                                                                    << nodeDbId
                                                                    << L" and name=" << (SyncName2WStr(*nameIt)).c_str());
