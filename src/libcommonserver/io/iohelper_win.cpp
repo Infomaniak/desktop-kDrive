@@ -384,17 +384,17 @@ void IoHelper::initRightsWindowsApi() {
         if (dwError == ERROR_NO_TOKEN) {
             if (!ImpersonateSelf(SecurityImpersonation)) {
                 dwError = GetLastError();
-                LOGW_WARN(logger(), "Error in ImpersonateSelf - err=" << dwError);
+                LOG_WARN(logger(), "Error in ImpersonateSelf - err=" << dwError);
                 return;
             }
 
             if (!OpenThreadToken(GetCurrentThread(), TOKEN_QUERY, TRUE, hToken)) {
                 dwError = GetLastError();
-                LOGW_WARN(logger(), "Error in OpenThreadToken - err=" << dwError);
+                LOG_WARN(logger(), "Error in OpenThreadToken - err=" << dwError);
                 return;
             }
         } else {
-            LOGW_WARN(logger(), "Error in OpenThreadToken - err=" << dwError);
+            LOG_WARN(logger(), "Error in OpenThreadToken - err=" << dwError);
             return;
         }
     }
@@ -403,19 +403,19 @@ void IoHelper::initRightsWindowsApi() {
     GetTokenInformation(*hToken, TokenUser, nullptr, 0, &dwLength);
     if (dwLength == 0) {
         DWORD dwError = GetLastError();
-        LOGW_WARN(logger(), "Error in GetTokenInformation 1 - err=" << dwError);
+        LOG_WARN(logger(), "Error in GetTokenInformation 1 - err=" << dwError);
         return;
     }
     auto pTokenUser_std = std::make_unique<TOKEN_USER[]>(dwLength);
     PTOKEN_USER pTokenUser = pTokenUser_std.get();
     if (pTokenUser == nullptr) {
-        LOGW_WARN(logger(), "Memory allocation error");
+        LOG_WARN(logger(), "Memory allocation error");
         return;
     }
 
     if (!GetTokenInformation(*hToken, TokenUser, pTokenUser, dwLength, &dwLength)) {
         DWORD dwError = GetLastError();
-        LOGW_WARN(logger(), "Error in GetTokenInformation 2 - err=" << dwError);
+        LOG_WARN(logger(), "Error in GetTokenInformation 2 - err=" << dwError);
         return;
     }
 
@@ -423,7 +423,7 @@ void IoHelper::initRightsWindowsApi() {
 
     if (!CopySid(GetLengthSid(pTokenUser->User.Sid), _psid.get(), pTokenUser->User.Sid)) {
         DWORD dwError = GetLastError();
-        LOGW_WARN(logger(), "Error in CopySid - err=" << dwError);
+        LOG_WARN(logger(), "Error in CopySid - err=" << dwError);
         _psid.reset();
         return;
     }
@@ -436,7 +436,7 @@ void IoHelper::initRightsWindowsApi() {
     SyncPath tmpDir;
     IoError ioError = IoError::Success;
     if (!IoHelper::tempDirectoryPath(tmpDir, ioError)) {
-        LOGW_WARN(logger(), "Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
+        LOGW_WARN(logger(), L"Error in IoHelper::tempDirectoryPath: " << Utility::formatIoError(tmpDir, ioError));
         return;
     }
 
@@ -447,7 +447,7 @@ void IoHelper::initRightsWindowsApi() {
     auto start = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < 10; i++) {
         if (!IoHelper::getRights(tmpDir, read, write, execute, ioError)) {
-            LOGW_WARN(logger(), "Error in IoHelper::getRights: " << Utility::formatIoError(tmpDir, ioError));
+            LOGW_WARN(logger(), L"Error in IoHelper::getRights: " << Utility::formatIoError(tmpDir, ioError));
             _getAndSetRightsMethod = 1;  // Fallback method
             return;
         }

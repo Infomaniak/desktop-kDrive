@@ -1370,7 +1370,8 @@ bool SyncDb::id(ReplicaSide side, const SyncPath &path, std::optional<NodeId> &n
             ASSERT(queryBindValue(queryId, 1, nodeDbId));
             ASSERT(queryBindValue(queryId, 2, *nameIt));
             if (!queryNext(queryId, found)) {
-                LOGW_WARN(_logger, L"Error getting query result: " << queryId.c_str() << L" - parentNodeId=" << nodeDbId
+                LOGW_WARN(_logger, L"Error getting query result: " << Str2SyncName(queryId.c_str()) << L" - parentNodeId="
+                                                                   << nodeDbId
                                                                    << L" and name=" << (SyncName2WStr(*nameIt)).c_str());
                 return false;
             }
@@ -1911,7 +1912,7 @@ bool SyncDb::selectAllSyncNodes(SyncNodeType type, std::unordered_set<NodeId> &n
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_SYNC_NODE_REQUEST_ID, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << SELECT_ALL_SYNC_NODE_REQUEST_ID);
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_SYNC_NODE_REQUEST_ID);
             return false;
         }
         if (!found) {
@@ -2118,7 +2119,7 @@ bool SyncDb::selectAllRenamedNodes(std::vector<DbNode> &dbNodeList, bool onlyCol
     bool found;
     for (;;) {
         if (!queryNext(requestId, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << requestId.c_str());
+            LOG_WARN(_logger, "Error getting query result: " << requestId.c_str());
             return false;
         }
         if (!found) {
@@ -2309,7 +2310,7 @@ bool SyncDb::selectNamesWithDistinctEncodings(NamedNodeMap &namedNodeMap) {
     bool found = false;
     for (;;) {
         if (!queryNext(requestId, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << requestId);
+            LOG_WARN(_logger, "Error getting query result: " << requestId);
             return false;
         }
 

@@ -60,7 +60,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                                            << SyncName2WStr(conflict.node()->name()).c_str() << L" ("
                                            << Utility::s2ws(*conflict.node()->id()).c_str() << L") and "
                                            << SyncName2WStr(conflict.correspondingNode()->name()).c_str() << L" ("
-                                           << Utility::s2ws(*conflict.correspondingNode()->id()).c_str() << ")");
+                                           << Utility::s2ws(*conflict.correspondingNode()->id()).c_str() << L")");
 
     continueSolving = false;
     switch (conflict.type()) {

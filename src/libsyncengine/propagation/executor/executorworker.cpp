@@ -2245,7 +2245,7 @@ bool ExecutorWorker::propagateCreateToDbAndTree(SyncOpPtr syncOp, const NodeId &
 
         if (!newCorrespondingParentNode->insertChildren(node)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << SyncName2WStr(node->name()).c_str() << " parent node name="
+                                               << SyncName2WStr(node->name()).c_str() << L" parent node name="
                                                << SyncName2WStr(newCorrespondingParentNode->name()).c_str());
             return false;
         }
@@ -2451,13 +2451,13 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
         if (!correspondingNode->setParentNode(parentNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
                                                << SyncName2WStr(parentNode->name()).c_str()
-                                               << " parent node name=" << SyncName2WStr(correspondingNode->name()).c_str());
+                                               << L" parent node name=" << SyncName2WStr(correspondingNode->name()).c_str());
             return false;
         }
 
         if (!correspondingNode->parentNode()->insertChildren(correspondingNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
-                                               << SyncName2WStr(correspondingNode->name()).c_str() << " parent node name="
+                                               << SyncName2WStr(correspondingNode->name()).c_str() << L" parent node name="
                                                << SyncName2WStr(correspondingNode->parentNode()->name()).c_str());
             return false;
         }
