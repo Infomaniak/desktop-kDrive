@@ -36,8 +36,8 @@ class CustomLogWStream : private std::wstringstream {
             std::wstringstream::operator<<(str.c_str());
             return *this;
         }
-        /* CustomLogWStream operator<<(int64_t i) {
-            std::wstringstream::operator<<(i);
+        CustomLogWStream &operator<<(const void* ptr) {
+            std::wstringstream::operator<<(ptr);
             return *this;
-        }*/
+        }
 };
