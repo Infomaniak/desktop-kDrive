@@ -145,7 +145,7 @@ ExitCode ConflictResolverWorker::generateOperations(const Conflict &conflict, bo
                 deleteOp->setConflict(conflict);
 
                 LOGW_SYNCPAL_INFO(_logger, L"Operation " << deleteOp->type() << L" to be propagated in DB only for item "
-                                                         << deleteOp->correspondingNode()->name().c_str() << L" ("
+                                                         << SyncName2WStr(deleteOp->correspondingNode()->name().c_str()) << L" ("
                                                          << Utility::s2ws(*deleteOp->correspondingNode()->id()).c_str() << L")");
 
                 _syncPal->_syncOps->pushOp(deleteOp);
