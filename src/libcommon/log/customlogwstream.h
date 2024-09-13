@@ -17,26 +17,27 @@
  */
 #pragma once
 #include <sstream>
+#include "libcommon/utility/types.h"
 
 class CustomLogWStream : private std::wstringstream {
     public:
         CustomLogWStream() = default;
         CustomLogWStream(const CustomLogWStream &wstr) : std::basic_stringstream<wchar_t>(wstr.str()) {}
         const std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
-        CustomLogWStream operator<<(const wchar_t *str) {
+        CustomLogWStream &operator<<(const wchar_t *str) {
             std::wstringstream::operator<<(str);
             return *this;
         }
-        CustomLogWStream operator<<(int i) {
+        CustomLogWStream &operator<<(int i) {
             std::wstringstream::operator<<(i);
             return *this;
         }
-        CustomLogWStream operator<<(const std::wstring &str) {
+        CustomLogWStream &operator<<(const std::wstring &str) {
             std::wstringstream::operator<<(str.c_str());
             return *this;
         }
-        CustomLogWStream operator<<(int64_t i) {
+        /* CustomLogWStream operator<<(int64_t i) {
             std::wstringstream::operator<<(i);
             return *this;
-        }
+        }*/
 };
