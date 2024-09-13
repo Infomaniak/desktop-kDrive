@@ -26,6 +26,7 @@
 
 #include <sentry.h>
 #include "libcommon/log/sentry/sentryhandler.h"
+#include "libcommon/log/customlogwstream.h"
 
 namespace KDC {
 
@@ -42,7 +43,7 @@ namespace KDC {
 
 #define LOGW_DEBUG(logger, logEvent)                                                                      \
     {                                                                                                     \
-        Log::CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                       \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("debug"));                        \
@@ -62,7 +63,7 @@ namespace KDC {
 
 #define LOGW_INFO(logger, logEvent)                                                                       \
     {                                                                                                     \
-        Log::CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                       \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("info"));                         \
@@ -82,7 +83,7 @@ namespace KDC {
 
 #define LOGW_WARN(logger, logEvent)                                                                       \
     {                                                                                                     \
-        Log::CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                       \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("warning"));                      \
@@ -102,7 +103,7 @@ namespace KDC {
 
 #define LOGW_ERROR(logger, logEvent)                                                                      \
     {                                                                                                     \
-        Log::CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                       \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("error"));                        \
@@ -122,7 +123,7 @@ namespace KDC {
 
 #define LOGW_FATAL(logger, logEvent)                                                                      \
     {                                                                                                     \
-        Log::CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                       \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                        \
@@ -174,24 +175,6 @@ class COMMONSERVER_EXPORT Log {
         static const std::wstring rfPattern;
         static const int rfMaxBackupIdx;
 
-        class CustomLogWStream : private std::wstringstream {
-            public:
-                CustomLogWStream() = default;
-                CustomLogWStream(const CustomLogWStream &wstr) : std::basic_stringstream<wchar_t>(wstr.str()) {}
-                const std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
-                CustomLogWStream operator<<(const wchar_t *str) {
-                    std::wstringstream::operator<<(str);
-                    return *this;
-                }
-                CustomLogWStream operator<<(int i) {
-                    std::wstringstream::operator<<(i);
-                    return *this;
-                }
-                CustomLogWStream operator<<(const std::wstring &str) {
-                    std::wstringstream::operator<<(str.c_str());
-                    return *this;
-                }
-        };
     private:
         friend class TestLog;
         friend class TestIo;
