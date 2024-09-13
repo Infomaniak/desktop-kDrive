@@ -28,6 +28,7 @@
 #include <variant>
 #include <qdebug.h>
 #include <signal.h>
+#include "libcommon/log/customlogwstream.h"
 
 namespace KDC {
 
@@ -530,6 +531,11 @@ inline std::wostream &operator<<(std::wostream &wos, C e) {
 
 template <PrintableEnum C>
 inline std::ostream &operator<<(std::ostream &os, C e) {
+    return os << toStringWithCode(e);
+}
+
+template<PrintableEnum C>
+inline CustomLogWStream &operator<<(CustomLogWStream &os, C e) {
     return os << toStringWithCode(e);
 }
 
