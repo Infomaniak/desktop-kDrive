@@ -248,6 +248,10 @@ std::wstring Utility::formatIoError(const SyncPath &path, IoError ioError) {
     return ss.str();
 }
 
+std::wstring Utility::formatIoError(const QString &path, IoError ioError) {
+    return formatIoError(QStr2Path(path), ioError);
+}
+
 std::string Utility::formatRequest(const Poco::URI &uri, const std::string &code, const std::string &description) {
     std::stringstream ss;
     ss << uri.toString().c_str() << " : " << code.c_str() << " - " << description.c_str();

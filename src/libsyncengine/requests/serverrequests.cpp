@@ -1498,7 +1498,7 @@ ExitCode ServerRequests::deleteErrorsForSync(int syncDbId, bool autoResolved) {
             const bool success = IoHelper::checkIfPathExists(dest, found, ioError);
             if (!success) {
                 LOGW_WARN(Log::instance()->getLogger(),
-                          "Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError).c_str());
+                          L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(dest, ioError).c_str());
                 return ExitCode::SystemError;
             }
 
