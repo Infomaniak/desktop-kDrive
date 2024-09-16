@@ -489,7 +489,7 @@ void CustomExtensionSetupWidget::onLinkActivated(const QString &link) const {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
         }
     } else if (link == clickHereLinkGeneral) {
-        const auto cmd = QString("open \"x-apple.systempreferences:com.apple.preference?General\"");
+        const auto cmd = QString("open \"x-apple.systempreferences:com.apple.LoginItems-Settings.extension\"");
         int status = system(cmd.toLocal8Bit());
         if (status != 0) {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
