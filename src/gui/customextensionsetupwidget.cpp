@@ -42,6 +42,9 @@ static const QSize logoTextIconSize = QSize(60, 42);
 static const int progressBarMin = 0;
 static const int progressBarMax = 5;
 
+static const QString clickHereLinkSecurity = "clickHereLinkSecurity";
+static const QString clickHereLinkFullDiskAccess = "clickHereLinkFullDiskAccess";
+static const QString clickHereLinkGeneral = "clickHereLinkGeneral";
 
 Q_LOGGING_CATEGORY(lcCustomExtensionSetupWidget, "gui.customextensionsetupwidget", QtInfoMsg)
 
@@ -67,7 +70,7 @@ void CustomExtensionSetupWidget::addDriveMainLayoutInit() {
     _mainLayout->addSpacing(logoBoxVMargin);
 
     auto *logoIconLabel = new QLabel(this);
-    logoIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
+    logoIconLabel->setPixmap(GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
                                      .pixmap(QSize(logoIconSize, logoIconSize)));
     logoHBox->addWidget(logoIconLabel);
     logoHBox->addSpacing(hLogoSpacing);
@@ -178,7 +181,7 @@ void CustomExtensionSetupWidget::setupDescription() {
     step1HBox->setStretchFactor(step1LeftVBox, 1);
 
     auto *step1PictureLabel = new QLabel(this);
-    step1PictureLabel->setPixmap(KDC::GuiUtility::getIconWithColor(picturePath(false)).pixmap(stepPictureSize));
+    step1PictureLabel->setPixmap(GuiUtility::getIconWithColor(picturePath(false)).pixmap(stepPictureSize));
     step1PictureLabel->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
     step1HBox->addWidget(step1PictureLabel);
 
@@ -189,8 +192,7 @@ void CustomExtensionSetupWidget::setupDescription() {
     step1LeftVBox->addLayout(step11HBox);
 
     auto *step11IconLabel = new QLabel(this);
-    step11IconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-1.svg").pixmap(stepIconSize));
+    step11IconLabel->setPixmap(GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-1.svg").pixmap(stepIconSize));
     step11IconLabel->setAlignment(Qt::AlignCenter);
     step11HBox->addWidget(step11IconLabel);
     step11HBox->addSpacing(stepIconHMargin);
@@ -198,21 +200,20 @@ void CustomExtensionSetupWidget::setupDescription() {
     auto *step11Label = new QLabel(this);
     step11Label->setObjectName("largeNormalTextLabel");
 
-    bool macOs13orLater = QSysInfo::productVersion().toDouble() >= 13.0;
-    bool macOs15orLater = QSysInfo::productVersion().toDouble() >= 15.0;
-
+    const bool macOs13orLater = QSysInfo::productVersion().toDouble() >= 13.0;
+    const bool macOs15orLater = QSysInfo::productVersion().toDouble() >= 15.0;
     if (macOs15orLater) {
         step11Label->setText(tr("Open your Mac's <b>General settings</b> or "
                                 " <a style=\"%1\" href=\"%2\">click here</a>")
-                                     .arg(CommonUtility::linkStyle, KDC::GuiUtility::clickHereLink));
+                                     .arg(CommonUtility::linkStyle, clickHereLinkGeneral));
     } else if (macOs13orLater) {
         step11Label->setText(tr("Open your Mac's <b>Privacy & Security settings</b> or "
                                 " <a style=\"%1\" href=\"%2\">click here</a>")
-                                     .arg(CommonUtility::linkStyle, KDC::GuiUtility::clickHereLink));
+                                     .arg(CommonUtility::linkStyle, clickHereLinkSecurity));
     } else {
         step11Label->setText(tr("Open your Mac's <b>Security & Privacy settings</b> or "
                                 " <a style=\"%1\" href=\"%2\">click here</a>")
-                                     .arg(CommonUtility::linkStyle, KDC::GuiUtility::clickHereLink));
+                                     .arg(CommonUtility::linkStyle, clickHereLinkSecurity));
     }
     step11Label->setWordWrap(true);
     step11HBox->addWidget(step11Label);
@@ -227,7 +228,7 @@ void CustomExtensionSetupWidget::setupDescription() {
 
         auto *step12IconLabel = new QLabel(this);
         step12IconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
+                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
         step12IconLabel->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
         step12HBox->addWidget(step12IconLabel);
         step12HBox->addSpacing(stepIconHMargin);
@@ -235,7 +236,7 @@ void CustomExtensionSetupWidget::setupDescription() {
         auto *step12Label = new QLabel(this);
         step12Label->setObjectName("largeNormalTextLabel");
         step12Label->setText(
-                tr("Go to <b>\"Login Items & Extensions\"</b> section and then to <b>\"Endpoint Security Extensions\"</b>"));
+                tr(R"(Go to <b>"Login Items & Extensions"</b> section and then to <b>"Endpoint Security Extensions"</b>)"));
         step12Label->setWordWrap(true);
         step12HBox->addWidget(step12Label);
         step12HBox->setStretchFactor(step12Label, 1);
@@ -248,7 +249,7 @@ void CustomExtensionSetupWidget::setupDescription() {
 
         auto *step13IconLabel = new QLabel(this);
         step13IconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-3.svg").pixmap(stepIconSize));
+                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-3.svg").pixmap(stepIconSize));
         step13IconLabel->setAlignment(Qt::AlignCenter);
         step13HBox->addWidget(step13IconLabel);
         step13HBox->addSpacing(stepIconHMargin);
@@ -268,7 +269,7 @@ void CustomExtensionSetupWidget::setupDescription() {
 
         auto *step12IconLabel = new QLabel(this);
         step12IconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
+                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
         step12IconLabel->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
         step12HBox->addWidget(step12IconLabel);
         step12HBox->addSpacing(stepIconHMargin);
@@ -288,7 +289,7 @@ void CustomExtensionSetupWidget::setupDescription() {
 
         auto *step13IconLabel = new QLabel(this);
         step13IconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-3.svg").pixmap(stepIconSize));
+                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-3.svg").pixmap(stepIconSize));
         step13IconLabel->setAlignment(Qt::AlignCenter);
         step13HBox->addWidget(step13IconLabel);
         step13HBox->addSpacing(stepIconHMargin);
@@ -308,7 +309,7 @@ void CustomExtensionSetupWidget::setupDescription() {
 
         auto *step12IconLabel = new QLabel(this);
         step12IconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
+                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
         step12IconLabel->setAlignment(Qt::AlignCenter);
         step12HBox->addWidget(step12IconLabel);
         step12HBox->addSpacing(stepIconHMargin);
@@ -316,7 +317,7 @@ void CustomExtensionSetupWidget::setupDescription() {
         auto *step12Label = new QLabel(this);
         step12Label->setObjectName("largeNormalTextLabel");
         step12Label->setText(
-                tr("Unlock the padlock <img src=\":/client/resources/icons/actions/lock.png\"> and authorize the kDrive "
+                tr(R"(Unlock the padlock <img src=":/client/resources/icons/actions/lock.png"> and authorize the kDrive )"
                    "application"));
         step12Label->setWordWrap(true);
         step12HBox->addWidget(step12Label);
@@ -345,7 +346,7 @@ void CustomExtensionSetupWidget::setupDescription() {
     step2HBox->setStretchFactor(step2LeftVBox, 1);
 
     auto *step2PictureLabel = new QLabel(this);
-    step2PictureLabel->setPixmap(KDC::GuiUtility::getIconWithColor(picturePath(true)).pixmap(stepPictureSize));
+    step2PictureLabel->setPixmap(GuiUtility::getIconWithColor(picturePath(true)).pixmap(stepPictureSize));
     step2PictureLabel->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
     step2HBox->addWidget(step2PictureLabel);
 
@@ -356,8 +357,7 @@ void CustomExtensionSetupWidget::setupDescription() {
     step2LeftVBox->addLayout(step21HBox);
 
     auto *step21IconLabel = new QLabel(this);
-    step21IconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-1.svg").pixmap(stepIconSize));
+    step21IconLabel->setPixmap(GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-1.svg").pixmap(stepIconSize));
     step21IconLabel->setAlignment(Qt::AlignCenter);
     step21HBox->addWidget(step21IconLabel);
     step21HBox->addSpacing(stepIconHMargin);
@@ -365,13 +365,13 @@ void CustomExtensionSetupWidget::setupDescription() {
     auto *step21Label = new QLabel(this);
     step21Label->setObjectName("largeNormalTextLabel");
     if (macOs13orLater) {
-        step21Label->setText(tr("Go to <b>\"Privacy & Security\"</b> section and click on <b>\"Full Disk Access\"</b> or"
-                                " <a style=\"%1\" href=\"%2\">click here</a>")
-                                     .arg(CommonUtility::linkStyle, KDC::GuiUtility::clickHereLink2));
+        step21Label->setText(tr(R"(Go to <b>"Privacy & Security"</b> section and click on <b>"Full Disk Access"</b> or)"
+                                R"( <a style="%1" href="%2">click here</a>)")
+                                     .arg(CommonUtility::linkStyle, clickHereLinkFullDiskAccess));
     } else {
-        step21Label->setText(tr("Still in the Security & Privacy settings, open the <b>\"Privacy\"</b> tab or"
-                                " <a style=\"%1\" href=\"%2\">click here</a>")
-                                     .arg(CommonUtility::linkStyle, KDC::GuiUtility::clickHereLink2));
+        step21Label->setText(tr(R"(Still in the Security & Privacy settings, open the <b>"Privacy"</b> tab or)"
+                                R"( <a style="%1" href="%2">click here</a>)")
+                                     .arg(CommonUtility::linkStyle, clickHereLinkFullDiskAccess));
     }
     step21Label->setWordWrap(true);
     step21HBox->addWidget(step21Label);
@@ -386,7 +386,7 @@ void CustomExtensionSetupWidget::setupDescription() {
 
         auto *step22IconLabel = new QLabel(this);
         step22IconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
+                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
         step22IconLabel->setAlignment(Qt::AlignCenter);
         step22HBox->addWidget(step22IconLabel);
         step22HBox->addSpacing(stepIconHMargin);
@@ -394,7 +394,7 @@ void CustomExtensionSetupWidget::setupDescription() {
         auto *step22Label = new QLabel(this);
         step22Label->setObjectName("largeNormalTextLabel");
         step22Label->setText(
-                tr("Check the \"kDrive LiteSync Extension\" box then the \"kDrive.app\" box (if not already checked)"));
+                tr(R"(Check the "kDrive LiteSync Extension" box then the "kDrive.app" box (if not already checked))"));
         step22Label->setWordWrap(true);
         step22HBox->addWidget(step22Label);
         step22HBox->setStretchFactor(step22Label, 1);
@@ -407,7 +407,7 @@ void CustomExtensionSetupWidget::setupDescription() {
 
         auto *step23IconLabel = new QLabel(this);
         step23IconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-3.svg").pixmap(stepIconSize));
+                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-3.svg").pixmap(stepIconSize));
         step23IconLabel->setAlignment(Qt::AlignCenter);
         step23HBox->addWidget(step23IconLabel);
         step23HBox->addSpacing(stepIconHMargin);
@@ -427,7 +427,7 @@ void CustomExtensionSetupWidget::setupDescription() {
 
         auto *step22IconLabel = new QLabel(this);
         step22IconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
+                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
         step22IconLabel->setAlignment(Qt::AlignCenter);
         step22HBox->addWidget(step22IconLabel);
         step22HBox->addSpacing(stepIconHMargin);
@@ -476,14 +476,20 @@ QString CustomExtensionSetupWidget::picturePath(const bool fullDiskAccess) const
 }
 
 void CustomExtensionSetupWidget::onLinkActivated(const QString &link) const {
-    if (link == GuiUtility::clickHereLink) {
-        const auto cmd = QString("open \"x-apple.systempreferences:com.apple.preference.security?Security\"");
+    if (link == clickHereLinkSecurity) {
+        const auto cmd = QString("open \"x-apple.systempreferences:com.apple.preference.security?Securiy\"");
         int status = system(cmd.toLocal8Bit());
         if (status != 0) {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
         }
-    } else if (link == KDC::GuiUtility::clickHereLink2) {
+    } else if (link == clickHereLinkFullDiskAccess) {
         const auto cmd = QString("open \"x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles\"");
+        int status = system(cmd.toLocal8Bit());
+        if (status != 0) {
+            qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
+        }
+    } else if (link == clickHereLinkGeneral) {
+        const auto cmd = QString("open \"x-apple.systempreferences:com.apple.preference?General\"");
         int status = system(cmd.toLocal8Bit());
         if (status != 0) {
             qCWarning(lcCustomExtensionSetupWidget()) << "Cannot open System Preferences window!";
@@ -493,8 +499,8 @@ void CustomExtensionSetupWidget::onLinkActivated(const QString &link) const {
 
 void CustomExtensionSetupWidget::setLogoColor(const QColor &color) {
     _logoColor = color;
-    _logoTextIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor)
-                                          .pixmap(logoTextIconSize));
+    _logoTextIconLabel->setPixmap(
+            GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor).pixmap(logoTextIconSize));
 }
 
 void CustomExtensionSetupWidget::onFinishedButtonTriggered(bool checked) {
