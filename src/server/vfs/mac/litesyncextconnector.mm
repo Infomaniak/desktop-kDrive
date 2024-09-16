@@ -1124,8 +1124,11 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
                 while (true) {
                     @autoreleasepool {
                         if ((buffer = [tmpFileHandle readDataUpToLength:COPY_CHUNK_SIZE error:&error]) == nil) {
-                            LOGW_ERROR(_logger, L"Error while reading tmp file - " << Utility::formatPath(tmpFilePath).c_str()
-                                                                                   << L" error=" << error);
+                            NSInteger errorCode = error ? error.code : 0;
+                            LOGW_ERROR(_logger,
+                                       L"Error while reading tmp file - "
+                                           << Utility::formatPath(tmpFilePath).c_str() << L" error="
+                                           << errorCode);
                             break;
                         }
 
