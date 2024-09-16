@@ -1795,7 +1795,7 @@ bool ParmsDb::selectAllUsers(std::vector<User> &userList) {
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_USERS_REQUEST_ID, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << SELECT_ALL_USERS_REQUEST_ID);
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_USERS_REQUEST_ID);
             return false;
         }
         if (!found) {
@@ -1946,7 +1946,7 @@ bool ParmsDb::selectAllAccounts(std::vector<Account> &accountList) {
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_ACCOUNTS_REQUEST_ID, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << SELECT_ALL_ACCOUNTS_REQUEST_ID);
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ACCOUNTS_REQUEST_ID);
             return false;
         }
         if (!found) {
@@ -1978,7 +1978,7 @@ bool ParmsDb::selectAllAccounts(int userDbId, std::vector<Account> &accountList)
     bool found;
     for (;;) {
         if (!queryNext(SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID, found)) {
-            LOGW_WARN(_logger, L"Error getting query result: " << SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID);
+            LOG_WARN(_logger, "Error getting query result: " << SELECT_ALL_ACCOUNTS_BY_USER_REQUEST_ID);
             return false;
         }
         if (!found) {

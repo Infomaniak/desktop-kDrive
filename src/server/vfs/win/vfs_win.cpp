@@ -523,7 +523,7 @@ bool VfsWin::forceStatus(const QString &absolutePath, bool isSyncing, int, bool)
     if (dwAttrs == INVALID_FILE_ATTRIBUTES) {
         DWORD errorCode = GetLastError();
         LOGW_WARN(logger(),
-                  L"Error in GetFileAttributesW: " << Utility::formatSyncPath(stdPath).c_str() << " code=" << errorCode);
+                  L"Error in GetFileAttributesW: " << Utility::formatSyncPath(stdPath).c_str() << L" code=" << errorCode);
         return false;
     }
 

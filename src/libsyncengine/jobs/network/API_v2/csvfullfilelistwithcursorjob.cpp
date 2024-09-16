@@ -156,7 +156,7 @@ void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::
             state.readingDoubleQuotedValue = false;
             state.prevCharDoubleQuotes = false;
             if (!updateSnapshotItem(state.tmp, state.index, item)) {
-                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << Utility::s2ws(line).c_str() << "L'.");
+                LOGW_WARN(_logger, L"Error in readSnapshotItemFields - line='" << Utility::s2ws(line).c_str() << L"'.");
                 error = true;
                 return;
             }
@@ -323,7 +323,7 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     _ss.seekg(0, std::ios_base::beg);
     if (lastChar != 0x0A) {
         LOGW_WARN(_logger, L"Reply " << jobId() << L" received with bad content - length=" << length
-                                     << " value=" << Utility::s2ws(_ss.str()).c_str());
+                                     << L" value=" << Utility::s2ws(_ss.str()).c_str());
         return false;
     }
 

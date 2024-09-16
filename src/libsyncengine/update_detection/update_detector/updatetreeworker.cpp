@@ -230,7 +230,7 @@ ExitCode UpdateTreeWorker::step3DeleteDirectory() {
                 if (!parentNode->insertChildren(newNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                                    << SyncName2WStr(newNode->name()).c_str()
-                                                   << " parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                                   << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
                     return ExitCode::DataError;
                 }
 
@@ -471,7 +471,7 @@ ExitCode UpdateTreeWorker::step4DeleteFile() {
                 if (!parentNode->insertChildren(newNode)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                                    << SyncName2WStr(newNode->name()).c_str()
-                                                   << " parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                                   << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
                     return ExitCode::DataError;
                 }
 
@@ -592,7 +592,7 @@ ExitCode UpdateTreeWorker::step6CreateFile() {
         if (!parentNode->insertChildren(newNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                            << SyncName2WStr(newNode->name()).c_str()
-                                           << " parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                           << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
             return ExitCode::DataError;
         }
 
@@ -680,7 +680,7 @@ ExitCode UpdateTreeWorker::step7EditFile() {
         if (!parentNode->insertChildren(newNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                            << SyncName2WStr(newNode->name()).c_str()
-                                           << " parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                           << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
             return ExitCode::DataError;
         }
 
@@ -801,7 +801,7 @@ ExitCode UpdateTreeWorker::step8CompleteUpdateTree() {
             if (!parentNode->insertChildren(newNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                                << SyncName2WStr(newNode->name()).c_str()
-                                               << " parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                               << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
@@ -885,7 +885,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             if (!currentNode->setParentNode(parentNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
                                                << SyncName2WStr(parentNode->name()).c_str()
-                                               << " parent node name=" << SyncName2WStr(currentNode->name()).c_str());
+                                               << L" parent node name=" << SyncName2WStr(currentNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
@@ -895,7 +895,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             if (!parentNode->insertChildren(currentNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                                << SyncName2WStr(currentNode->name()).c_str()
-                                               << " parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                               << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
@@ -953,7 +953,7 @@ ExitCode UpdateTreeWorker::createMoveNodes(const NodeType &nodeType) {
             if (!parentNode->insertChildren(newNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                                << SyncName2WStr(newNode->name()).c_str()
-                                               << " parent node name=" << SyncName2WStr(parentNode->name()).c_str());
+                                               << L" parent node name=" << SyncName2WStr(parentNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
@@ -981,7 +981,7 @@ bool UpdateTreeWorker::updateNodeId(std::shared_ptr<Node> node, const NodeId &ne
     if (!node->parentNode()->insertChildren(node)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                        << SyncName2WStr(node->name()).c_str()
-                                       << " parent node name=" << SyncName2WStr(node->parentNode()->name()).c_str());
+                                       << L" parent node name=" << SyncName2WStr(node->parentNode()->name()).c_str());
         return false;
     }
 
@@ -1037,7 +1037,7 @@ std::shared_ptr<Node> UpdateTreeWorker::getOrCreateNodeFromPath(const SyncPath &
             if (!tmpNode->insertChildren(tmpChildNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                                << SyncName2WStr(tmpChildNode->name()).c_str()
-                                               << " parent node name=" << SyncName2WStr(tmpNode->name()).c_str());
+                                               << L" parent node name=" << SyncName2WStr(tmpNode->name()).c_str());
                 return nullptr;
             }
         }
@@ -1062,14 +1062,14 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
         if (!child.second->setParentNode(realNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
                                            << SyncName2WStr(realNode->name()).c_str()
-                                           << " parent node name=" << SyncName2WStr(child.second->name()).c_str());
+                                           << L" parent node name=" << SyncName2WStr(child.second->name()).c_str());
             return false;
         }
 
         if (!realNode->insertChildren(child.second)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                            << SyncName2WStr(child.second->name()).c_str()
-                                           << " parent node name=" << SyncName2WStr(realNode->name()).c_str());
+                                           << L" parent node name=" << SyncName2WStr(realNode->name()).c_str());
             return false;
         }
     }
@@ -1082,7 +1082,7 @@ bool UpdateTreeWorker::mergingTempNodeToRealNode(std::shared_ptr<Node> tmpNode, 
     if (!realNode->parentNode()->insertChildren(realNode)) {
         LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                        << SyncName2WStr(realNode->name()).c_str()
-                                       << " parent node name=" << SyncName2WStr(realNode->parentNode()->name()).c_str());
+                                       << L" parent node name=" << SyncName2WStr(realNode->parentNode()->name()).c_str());
         return false;
     }
 
@@ -1329,7 +1329,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
             if (!tmpNode->insertChildren(childNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::insertChildren: node name="
                                                << SyncName2WStr(childNode->name()).c_str()
-                                               << " parent node name=" << SyncName2WStr(tmpNode->name()).c_str());
+                                               << L" parent node name=" << SyncName2WStr(tmpNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
@@ -1337,7 +1337,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
             if (!childNode->setParentNode(tmpNode)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
                                                << SyncName2WStr(tmpNode->name()).c_str()
-                                               << " parent node name=" << SyncName2WStr(childNode->name()).c_str());
+                                               << L" parent node name=" << SyncName2WStr(childNode->name()).c_str());
                 return ExitCode::DataError;
             }
 
@@ -1353,7 +1353,7 @@ ExitCode UpdateTreeWorker::updateTmpNode(const std::shared_ptr<Node> tmpNode) {
         if (tmpNode->changeEvents() != prevNode->changeEvents()) {
             tmpNode->setChangeEvents(prevNode->changeEvents());
             LOGW_SYNCPAL_DEBUG(
-                _logger, _side << L" update tree: Changed events to '" << prevNode->changeEvents() << "' for node '"
+                _logger, _side << L" update tree: Changed events to '" << prevNode->changeEvents() << L"' for node '"
                                << SyncName2WStr(tmpNode->name()).c_str() << L"' (node ID: '"
                                << Utility::s2ws((tmpNode->id().has_value() ? *tmpNode->id() : std::string())).c_str() << L"')");
         }
