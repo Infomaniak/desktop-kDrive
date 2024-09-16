@@ -741,7 +741,7 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
         }
 
         bool isLink = itemType.linkType != LinkType::None;
-        bool isDirectory;
+        bool isDirectory = true;
         if (isLink) {
             isDirectory = false;
         } else {

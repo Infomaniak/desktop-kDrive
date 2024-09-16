@@ -365,13 +365,29 @@ void TestUtility::testFormatStdError() {
 }
 
 void TestUtility::testFormatIoError() {
-    const IoError ioError = IoError::Success;
-    const SyncPath path = "A/AA";
-    const std::wstring result = _testObj->formatIoError(path, ioError);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''", result.find(L"err='Success'") != std::wstring::npos);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.", (result.length() - path.native().length()) > 20);
-    CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
-                           result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+    {
+        const IoError ioError = IoError::Success;
+        const SyncPath path = "A/AA";
+        const std::wstring result = _testObj->formatIoError(path, ioError);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
+                               result.find(L"err='Success'") != std::wstring::npos);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
+                               (result.length() - path.native().length()) > 20);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
+                               result.find(Utility::s2ws(path.string())) != std::wstring::npos);
+    }
+
+    {
+        const IoError ioError = IoError::Success;
+        const QString path = "A/AA";
+        const std::wstring result = _testObj->formatIoError(path, ioError);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain 'err='...''",
+                               result.find(L"err='Success'") != std::wstring::npos);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain a description.",
+                               (result.length() - path.toStdWString().length()) > 20);
+        CPPUNIT_ASSERT_MESSAGE("The error message should contain the path.",
+                               result.find(path.toStdWString()) != std::wstring::npos);
+    }
 }
 
 void TestUtility::testFormatPath() {
