@@ -592,7 +592,7 @@ Sélectionnez ceux que vous souhaitez synchroniser:</translation>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="368"/>
         <source>Go to &lt;b&gt;&quot;Privacy &amp; Security&quot;&lt;/b&gt; section and click on &lt;b&gt;&quot;Full Disk Access&quot;&lt;/b&gt; or &lt;a style=&quot;%1&quot; href=&quot;%2&quot;&gt;click here&lt;/a&gt;</source>
-        <translation>Allez dans la section &lt;b&gt;&quot;Confidentialité et sécurité&quot;&lt;/b&gt; et cliquez sur &lt;b&gt;&quot;Accès intégral au disque&quot;&lt;/b&gt; ou &lt;a style=%1 href=%2&gt;cliquez ici&lt;/a&gt;</translation>
+        <translation type="unfinished">Allez dans la section &lt;b&gt;&quot;Confidentialité et sécurité&quot;&lt;/b&gt; et cliquez sur &lt;b&gt;&quot;Accès complet au disque&quot;&lt;/b&gt; ou &lt;a style=%1 href=%2&gt;cliquez ici&lt;/a&gt;</translation>
     </message>
     <message>
         <location filename="../src/gui/customextensionsetupwidget.cpp" line="372"/>

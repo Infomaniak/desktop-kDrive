@@ -219,27 +219,29 @@ void CustomExtensionSetupWidget::setupDescription() {
     step11HBox->addWidget(step11Label);
     step11HBox->setStretchFactor(step11Label, 1);
 
-    if (macOs15orLater) {
-        // Step 1.2
-        auto *step12HBox = new QHBoxLayout();
-        step12HBox->setContentsMargins(0, 0, 0, 0);
-        step12HBox->setSpacing(boxHSpacing);
-        step1LeftVBox->addLayout(step12HBox);
+    // Step 1.2
+    auto *step12HBox = new QHBoxLayout();
+    step12HBox->setContentsMargins(0, 0, 0, 0);
+    step12HBox->setSpacing(boxHSpacing);
+    step1LeftVBox->addLayout(step12HBox);
 
-        auto *step12IconLabel = new QLabel(this);
+    auto *step12IconLabel = new QLabel(this);
+    step12HBox->addWidget(step12IconLabel);
+    step12HBox->addSpacing(stepIconHMargin);
+
+    auto *step12Label = new QLabel(this);
+    step12Label->setObjectName("largeNormalTextLabel");
+    step12Label->setWordWrap(true);
+    step12HBox->addWidget(step12Label);
+    step12HBox->setStretchFactor(step12Label, 1);
+
+    if (macOs15orLater) {
         step12IconLabel->setPixmap(
                 GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
         step12IconLabel->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-        step12HBox->addWidget(step12IconLabel);
-        step12HBox->addSpacing(stepIconHMargin);
 
-        auto *step12Label = new QLabel(this);
-        step12Label->setObjectName("largeNormalTextLabel");
         step12Label->setText(
                 tr(R"(Go to <b>"Login Items & Extensions"</b> section and then to <b>"Endpoint Security Extensions"</b>)"));
-        step12Label->setWordWrap(true);
-        step12HBox->addWidget(step12Label);
-        step12HBox->setStretchFactor(step12Label, 1);
 
         // Step 1.3
         auto *step13HBox = new QHBoxLayout();
@@ -261,25 +263,11 @@ void CustomExtensionSetupWidget::setupDescription() {
         step13HBox->addWidget(step13Label);
         step13HBox->setStretchFactor(step13Label, 1);
     } else if (macOs13orLater) {
-        // Step 1.2
-        auto *step12HBox = new QHBoxLayout();
-        step12HBox->setContentsMargins(0, 0, 0, 0);
-        step12HBox->setSpacing(boxHSpacing);
-        step1LeftVBox->addLayout(step12HBox);
-
-        auto *step12IconLabel = new QLabel(this);
         step12IconLabel->setPixmap(
                 GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
         step12IconLabel->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
-        step12HBox->addWidget(step12IconLabel);
-        step12HBox->addSpacing(stepIconHMargin);
 
-        auto *step12Label = new QLabel(this);
-        step12Label->setObjectName("largeNormalTextLabel");
         step12Label->setText(tr("Go to <b>\"Security\"</b> section"));
-        step12Label->setWordWrap(true);
-        step12HBox->addWidget(step12Label);
-        step12HBox->setStretchFactor(step12Label, 1);
 
         // Step 1.3
         auto *step13HBox = new QHBoxLayout();
@@ -301,27 +289,13 @@ void CustomExtensionSetupWidget::setupDescription() {
         step13HBox->addWidget(step13Label);
         step13HBox->setStretchFactor(step13Label, 1);
     } else {
-        // Step 1.2
-        auto *step12HBox = new QHBoxLayout();
-        step12HBox->setContentsMargins(0, 0, 0, 0);
-        step12HBox->setSpacing(boxHSpacing);
-        step1LeftVBox->addLayout(step12HBox);
-
-        auto *step12IconLabel = new QLabel(this);
         step12IconLabel->setPixmap(
                 GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
         step12IconLabel->setAlignment(Qt::AlignCenter);
-        step12HBox->addWidget(step12IconLabel);
-        step12HBox->addSpacing(stepIconHMargin);
 
-        auto *step12Label = new QLabel(this);
-        step12Label->setObjectName("largeNormalTextLabel");
         step12Label->setText(
                 tr(R"(Unlock the padlock <img src=":/client/resources/icons/actions/lock.png"> and authorize the kDrive )"
                    "application"));
-        step12Label->setWordWrap(true);
-        step12HBox->addWidget(step12Label);
-        step12HBox->setStretchFactor(step12Label, 1);
     }
 
     // Step 2
@@ -377,27 +351,27 @@ void CustomExtensionSetupWidget::setupDescription() {
     step21HBox->addWidget(step21Label);
     step21HBox->setStretchFactor(step21Label, 1);
 
+    // Step 2.2
+    auto *step22HBox = new QHBoxLayout();
+    step22HBox->setContentsMargins(0, 0, 0, 0);
+    step22HBox->setSpacing(boxHSpacing);
+    step2LeftVBox->addLayout(step22HBox);
+
+    auto *step22IconLabel = new QLabel(this);
+    step22IconLabel->setPixmap(GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
+    step22IconLabel->setAlignment(Qt::AlignCenter);
+    step22HBox->addWidget(step22IconLabel);
+    step22HBox->addSpacing(stepIconHMargin);
+
+    auto *step22Label = new QLabel(this);
+    step22Label->setObjectName("largeNormalTextLabel");
+    step22Label->setWordWrap(true);
+    step22HBox->addWidget(step22Label);
+    step22HBox->setStretchFactor(step22Label, 1);
+
     if (macOs13orLater) {
-        // Step 2.2
-        auto *step22HBox = new QHBoxLayout();
-        step22HBox->setContentsMargins(0, 0, 0, 0);
-        step22HBox->setSpacing(boxHSpacing);
-        step2LeftVBox->addLayout(step22HBox);
-
-        auto *step22IconLabel = new QLabel(this);
-        step22IconLabel->setPixmap(
-                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
-        step22IconLabel->setAlignment(Qt::AlignCenter);
-        step22HBox->addWidget(step22IconLabel);
-        step22HBox->addSpacing(stepIconHMargin);
-
-        auto *step22Label = new QLabel(this);
-        step22Label->setObjectName("largeNormalTextLabel");
         step22Label->setText(
                 tr(R"(Check the "kDrive LiteSync Extension" box then the "kDrive.app" box (if not already checked))"));
-        step22Label->setWordWrap(true);
-        step22HBox->addWidget(step22Label);
-        step22HBox->setStretchFactor(step22Label, 1);
 
         // Step 2.3
         auto *step23HBox = new QHBoxLayout();
@@ -419,26 +393,8 @@ void CustomExtensionSetupWidget::setupDescription() {
         step23HBox->addWidget(step23Label);
         step23HBox->setStretchFactor(step23Label, 1);
     } else {
-        // Step 2.2
-        auto *step22HBox = new QHBoxLayout();
-        step22HBox->setContentsMargins(0, 0, 0, 0);
-        step22HBox->setSpacing(boxHSpacing);
-        step2LeftVBox->addLayout(step22HBox);
-
-        auto *step22IconLabel = new QLabel(this);
-        step22IconLabel->setPixmap(
-                GuiUtility::getIconWithColor(":/client/resources/icons/actions/step-2.svg").pixmap(stepIconSize));
-        step22IconLabel->setAlignment(Qt::AlignCenter);
-        step22HBox->addWidget(step22IconLabel);
-        step22HBox->addSpacing(stepIconHMargin);
-
-        auto *step22Label = new QLabel(this);
-        step22Label->setObjectName("largeNormalTextLabel");
         step22Label->setText(
                 tr(R"(Check the "kDrive LiteSync Extension" box (and "kDrive.app" if it exists) in <b>"Full Disk Access"</b>)"));
-        step22Label->setWordWrap(true);
-        step22HBox->addWidget(step22Label);
-        step22HBox->setStretchFactor(step22Label, 1);
     }
 
     connect(step11Label, &QLabel::linkActivated, this, &CustomExtensionSetupWidget::onLinkActivated);
