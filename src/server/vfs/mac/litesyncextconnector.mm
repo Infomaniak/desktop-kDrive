@@ -1101,7 +1101,9 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
         NSDictionary<NSFileAttributeKey, id> *attributes =
             [[NSFileManager defaultManager] attributesOfItemAtPath:filePath.toNSString() error:&error];
         if (error) {
-            LOGW_WARN(_logger, L"Failed to get attributes - " << Utility::formatPath(filePath).c_str() << L" errno=" << error);
+            LOGW_WARN(_logger,
+                      L"Failed to get attributes - " << Utility::formatPath(filePath).c_str()
+                                                     << L" errno=" << error.code);
             return false;
         }
 
