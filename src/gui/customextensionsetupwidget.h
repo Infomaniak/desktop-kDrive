@@ -37,34 +37,34 @@ class CustomExtensionSetupWidget : public QWidget {
     public:
         explicit CustomExtensionSetupWidget(QWidget *parent = nullptr, bool addDriveSetup = true);
 
-        QString picturePath(bool fullDiskAccess);
-        void addDriveMainLayoutInit();
-        void dialogMainLayoutInit();
-
-        QPushButton *_finishedButton;
-
     signals:
         void finishedButtonTriggered();
 
     private:
-        QLabel *_logoTextIconLabel;
-        QLabel *_descriptionLabel;
+        QLabel *_logoTextIconLabel{nullptr};
+        QLabel *_descriptionLabel{nullptr};
         QColor _logoColor;
-        QLabel *_step1Label;
-        QLabel *_step2Label;
-        QTimer *_timer;
-        QVBoxLayout *_mainLayout;
+        QLabel *_step1Label{nullptr};
+        QLabel *_step2Label{nullptr};
+        QTimer *_timer{nullptr};
+        QVBoxLayout *_mainLayout{nullptr};
+        QPushButton *_finishedButton{nullptr};
 
-        bool _isAddDriveSetup;
+        bool _isAddDriveSetup{false};
 
         void initUI();
-        inline QColor logoColor() const { return _logoColor; };
+        void setupDescription();
+        [[nodiscard]] QString picturePath(bool fullDiskAccess) const;
+        [[nodiscard]] QColor logoColor() const { return _logoColor; };
         void setLogoColor(const QColor &color);
 
+        void addDriveMainLayoutInit();
+        void dialogMainLayoutInit();
+
     private slots:
-        void onLinkActivated(const QString &link);
-        void onUpdateProgress();
+        void onLinkActivated(const QString &link) const;
+        void onUpdateProgress() const;
         void onFinishedButtonTriggered(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC
