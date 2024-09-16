@@ -22,10 +22,9 @@
 class CustomLogWStream : private std::wstringstream {
     public:
         CustomLogWStream() = default;
-        CustomLogWStream(const CustomLogWStream &) = delete;
+        inline CustomLogWStream(const CustomLogWStream &wstr) : std::basic_stringstream<wchar_t>(wstr.str()) {}
         CustomLogWStream &operator=(const CustomLogWStream &) = delete;
 
-        CustomLogWStream(const CustomLogWStream &wstr) : std::basic_stringstream<wchar_t>(wstr.str()) {}
         std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
         CustomLogWStream &operator<<(const wchar_t *str) {
             std::wstringstream::operator<<(str);
