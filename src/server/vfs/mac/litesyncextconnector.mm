@@ -501,17 +501,17 @@ bool checkIoErrorAndLogIfNeeded(IoError ioError, const std::string &itemType, co
 
     std::wstring message;
     if (ioError == IoError::NoSuchFileOrDirectory) {
-        message = Utility::s2ws(itemType + " doesn't exist - path=");
+        message = Utility::s2ws(itemType + " doesn't exist - ");
     }
     if (ioError == IoError::AccessDenied) {
-        message = Utility::s2ws(itemType + " or some containing directory, misses a permission - path=");
+        message = Utility::s2ws(itemType + " or some containing directory, misses a permission - ");
     }
 
     switch (mode) {
         case LogMode::Debug:
-            LOGW_DEBUG(logger, message.c_str() << QStr2Path(path).c_str());
+            LOGW_DEBUG(logger, message.c_str() << Utility::formatPath(path).c_str());
         case LogMode::Warn:
-            LOGW_WARN(logger, message.c_str() << QStr2Path(path).c_str());
+            LOGW_WARN(logger, message.c_str() << Utility::formatPath(path).c_str());
     }
 
     return true;
