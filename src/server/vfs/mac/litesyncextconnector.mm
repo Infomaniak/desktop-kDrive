@@ -1100,10 +1100,11 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
         NSError *error = nil;
         NSDictionary<NSFileAttributeKey, id> *attributes =
             [[NSFileManager defaultManager] attributesOfItemAtPath:filePath.toNSString() error:&error];
+        NSInteger errorCode = error ? error.code : 0;
         if (error) {
             LOGW_WARN(_logger,
                       L"Failed to get attributes - " << Utility::formatPath(filePath).c_str()
-                                                     << L" errno=" << error.code);
+                                                     << L" errno=" << errorCode);
             return false;
         }
 
@@ -1124,22 +1125,23 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
                 while (true) {
                     @autoreleasepool {
                         if ((buffer = [tmpFileHandle readDataUpToLength:COPY_CHUNK_SIZE error:&error]) == nil) {
-                            NSInteger errorCode = error ? error.code : 0;
+                            errorCode = error ? error.code : 0;
                             LOGW_ERROR(_logger,
                                        L"Error while reading tmp file - "
                                            << Utility::formatPath(tmpFilePath).c_str() << L" error="
                                            << errorCode);
                             break;
                         }
-
+                        errorCode = error ? error.code : 0;
                         if (buffer.length == 0) {
                             // Nothing else to read
                             break;
                         }
 
                         if (![fileHandle writeData:buffer error:&error]) {
+                            errorCode = error ? error.code : 0;
                             LOGW_ERROR(_logger, L"Error while writing to file - " << Utility::formatPath(filePath).c_str()
-                                                                                  << L" error=" << error);
+                                                                                  << L" error=" << errorCode);
                             break;
                         }
                     }
@@ -1156,8 +1158,9 @@ bool LiteSyncExtConnector::vfsUpdateFetchStatus(const QString &tmpFilePath, cons
 
             // Set attributes
             if (![[NSFileManager defaultManager] setAttributes:attributes ofItemAtPath:filePath.toNSString() error:&error]) {
+                errorCode = error ? error.code : 0;
                 LOGW_WARN(_logger,
-                          L"Could not set attributes to file - " << Utility::formatPath(filePath).c_str() << L" errno=" << error);
+                          L"Could not set attributes to file - " << Utility::formatPath(filePath).c_str() << L" errno=" << errorCode);
                 return false;
             }
 
