@@ -20,10 +20,21 @@
 #include "config.h"
 #include "version.h"
 #include "utility/utility.h"
+
+#include <iostream>
 #include <asserts.h>
 
 namespace KDC {
 std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
+
+static sentry_value_t crash_cleanup(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
+    KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(0);
+    std::cerr << "Server stopped with signal " << signalType << std::endl;
+
+    KDC::CommonUtility::writeSignalFile(KDC::AppType::Server, signalType);
+
+    return event;
+}
 
 std::shared_ptr<SentryHandler> SentryHandler::instance() {
     if (!_instance) {
@@ -67,6 +78,9 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
     sentry_options_set_release(options, KDRIVE_VERSION_STRING);
     sentry_options_set_debug(options, false);
     sentry_options_set_max_breadcrumbs(options, breadCrumbsSize);
+#if defined(Q_OS_LINUX)
+    sentry_options_set_on_crash(options, crash_cleanup, NULL);
+#endif
 
     // Set the environment
     bool isSet = false;
