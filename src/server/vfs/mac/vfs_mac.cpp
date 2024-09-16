@@ -33,8 +33,8 @@ namespace KDC {
 
 const int s_nb_threads[NB_WORKERS] = {5, 5};
 
-VfsMac::VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent)
-    : Vfs(vfsSetupParams, parent), _localSyncPath{Path2QStr(_vfsSetupParams._localPath)} {
+VfsMac::VfsMac(KDC::VfsSetupParams &vfsSetupParams, QObject *parent) :
+    Vfs(vfsSetupParams, parent), _localSyncPath{Path2QStr(_vfsSetupParams._localPath)} {
     // Initialize LiteSync ext connector
     LOG_INFO(logger(), "Initialize LiteSyncExtConnector");
 
@@ -79,7 +79,7 @@ VfsMac::~VfsMac() {
 
     // Force threads to stop if needed
     for (int i = 0; i < NB_WORKERS; i++) {
-        for (QThread *thread : qAsConst(_workerInfo[i]._threadList)) {
+        for (QThread *thread: qAsConst(_workerInfo[i]._threadList)) {
             if (thread) {
                 thread->quit();
                 if (!thread->wait(1000)) {
@@ -142,10 +142,10 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
     QStringList filesToFix;
     if (isPlaceholder && isSyncing &&
         _connector->checkFilesAttributes(folderPath, _localSyncPath,
-                                         filesToFix)) {  // Verify that all files/folders are in the correct state
+                                         filesToFix)) { // Verify that all files/folders are in the correct state
         // Get the directories to fix
         QSet<QString> dirsToFix;
-        for (const auto &file : filesToFix) {
+        for (const auto &file: filesToFix) {
             const QFileInfo fileInfo(file);
             if (fileInfo.isDir()) {
                 dirsToFix.insert(file);
@@ -156,7 +156,7 @@ bool VfsMac::startImpl(bool &installationDone, bool &activationDone, bool &conne
 
         // Fix parent directories status
         bool ok = true;
-        for (const auto &dir : dirsToFix) {
+        for (const auto &dir: dirsToFix) {
             if (!_connector->vfsProcessDirStatus(dir, _localSyncPath)) {
                 LOGW_WARN(logger(), L"Error in vfsProcessDirStatus for " << Utility::formatPath(dir).c_str() << errno);
                 ok = false;
@@ -397,7 +397,7 @@ bool VfsMac::convertToPlaceholder(const QString &path, const SyncFileItem &item,
             isDirectory = itemType.nodeType == NodeType::Directory;
             if (!isDirectory && itemType.ioError != IoError::Success) {
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
-                                        << Utility::formatIoError(fullPath, itemType.ioError).c_str());
+                                            << Utility::formatIoError(fullPath, itemType.ioError).c_str());
                 return false;
             }
         }
@@ -414,7 +414,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
     try {
         std::error_code ec;
         auto dirIt = std::filesystem::recursive_directory_iterator(
-            QStr2Path(dirPath), std::filesystem::directory_options::skip_permission_denied, ec);
+                QStr2Path(dirPath), std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
             LOGW_WARN(logger(), L"Error in convertDirContentToPlaceholder: " << Utility::formatStdError(ec).c_str());
             return;
@@ -424,7 +424,7 @@ void VfsMac::convertDirContentToPlaceholder(const QString &dirPath, bool isHydra
             // skip_permission_denied doesn't work on Windows
             try {
                 bool dummy = dirIt->exists();
-                (void)(dummy);
+                (void) (dummy);
             } catch (std::filesystem::filesystem_error &) {
                 dirIt.disable_recursion_pending();
                 continue;
@@ -498,7 +498,7 @@ void VfsMac::resetLiteSyncConnector() {
 
 bool VfsMac::updateFetchStatus(const QString &tmpPath, const QString &path, qint64 received, bool &canceled, bool &finished) {
     if (extendedLog()) {
-        LOGW_INFO(logger(), L"updateFetchStatus file " << Utility::formatPath(path).c_str() << " - " << received);
+        LOGW_INFO(logger(), L"updateFetchStatus file " << Utility::formatPath(path).c_str() << L" - " << received);
     }
     if (tmpPath.isEmpty() || path.isEmpty()) {
         LOG_WARN(logger(), "Invalid parameters");
@@ -748,7 +748,7 @@ bool VfsMac::fileStatusChanged(const QString &path, SyncFileStatus status) {
             isDirectory = itemType.nodeType == NodeType::Directory;
             if (!isDirectory && itemType.ioError != IoError::Success) {
                 LOGW_WARN(logger(), L"Failed to check if the path is a directory: "
-                                        << Utility::formatIoError(fullPath, itemType.ioError).c_str());
+                                            << Utility::formatIoError(fullPath, itemType.ioError).c_str());
                 return false;
             }
         }
@@ -823,4 +823,4 @@ void Worker::start() {
     LOG_DEBUG(logger(), "Worker " << _type << " - " << _num << " ended");
 }
 
-}  // namespace KDC
+} // namespace KDC
