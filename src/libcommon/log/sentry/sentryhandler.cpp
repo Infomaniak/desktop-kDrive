@@ -202,7 +202,7 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
     sentry_options_set_database_path(options, appSupportPath.c_str());
 #endif
     sentry_options_set_release(options, KDRIVE_VERSION_STRING);
-    sentry_options_set_debug(options, true);
+    sentry_options_set_debug(options, false);
     sentry_options_set_max_breadcrumbs(options, breadCrumbsSize);
 
     bool isSet = false;
@@ -377,7 +377,7 @@ void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
 SentryHandler::~SentryHandler() {
     if (this == _instance.get()) {
         _instance.reset();
-#if defined(Q_OS_LINUX)
+#if !defined(Q_OS_LINUX)
         try {
             sentry_close();
         } catch (...) {
