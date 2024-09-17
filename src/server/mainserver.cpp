@@ -64,7 +64,10 @@ void signalHandler(int signum) {
 }
 
 int main(int argc, char **argv) {
+#if defined(__APPLE__) || defined(_WIN32)
+    // No sig handler on Linux as it interferes with Sentry
     KDC::CommonUtility::handleSignals(signalHandler);
+#endif
 
     std::cout << "kDrive server starting" << std::endl;
 

@@ -20,10 +20,147 @@
 #include "config.h"
 #include "version.h"
 #include "utility/utility.h"
+
+#include <iostream>
 #include <asserts.h>
 
 namespace KDC {
+
 std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
+
+/*
+ *  sentry_value_t reader implementation - begin
+ *  Used for debbuging
+ */
+
+#define TAG_MASK 0x3
+
+typedef struct {
+    union {
+        void *_ptr;
+        double _double;
+    } payload;
+    long refcount;
+    uint8_t type;
+} thing_t;
+
+typedef struct {
+    char *k;
+    sentry_value_t v;
+} obj_pair_t;
+
+typedef struct {
+    obj_pair_t *pairs;
+    size_t len;
+    size_t allocated;
+} obj_t;
+
+typedef struct {
+    sentry_value_t *items;
+    size_t len;
+    size_t allocated;
+} list_t;
+
+static thing_t *valueAsThing(sentry_value_t value)
+{
+    if (value._bits & TAG_MASK) {
+        return nullptr;
+    }
+    return (thing_t *)(size_t)value._bits;
+}
+
+static void readObject(const sentry_value_t event, int level = 0);
+static void readList(const sentry_value_t event, int level = 0);
+
+static void printValue(const sentry_value_t value, int level) {
+    switch (sentry_value_get_type(value)) {
+        case SENTRY_VALUE_TYPE_NULL:
+            std::cout << "NULL" << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_BOOL:
+            std::cout << (sentry_value_is_true(value) ? "true" : "false") << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_INT32:
+            std::cout << sentry_value_as_int32(value) << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_DOUBLE:
+            std::cout << sentry_value_as_double(value) << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_STRING:
+            std::cout << sentry_value_as_string(value) << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_LIST: {
+            std::cout << "LIST" << std::endl;
+            readList(value, level + 1);
+            break;
+        }
+        case SENTRY_VALUE_TYPE_OBJECT: {
+            std::cout << "OBJECT" << std::endl;
+            readObject(value, level + 1);
+            break;
+        }
+    }
+}
+
+static void readList(const sentry_value_t event, int level) {
+    if (sentry_value_get_type(event) != SENTRY_VALUE_TYPE_LIST) {
+        return;
+    }
+
+    const list_t *l = (list_t *)valueAsThing(event)->payload._ptr;
+    const std::string indent(level, ' ');
+    for (size_t i = 0; i < l->len; i++) {
+        std::cout << indent.c_str() << "val=";
+        printValue(l->items[i], level);
+    }
+}
+
+static void readObject(const sentry_value_t event, int level) {
+    if (sentry_value_get_type(event) != SENTRY_VALUE_TYPE_OBJECT) {
+        return;
+    }
+
+    const thing_t *thing = valueAsThing(event);
+    if (!thing) {
+        return;
+    }
+
+    const obj_t *obj = (obj_t *)thing->payload._ptr;
+    const std::string indent(level, ' ');
+    for (size_t i = 0; i < obj->len; i++) {
+        char *key = obj->pairs[i].k;
+        std::cout << indent.c_str() << "key=" << key << " val=";
+        printValue(obj->pairs[i].v, level);
+    }
+}
+
+/*
+ *  sentry_value_t reader implementation - end
+ */
+
+static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
+    (void)uctx;
+    (void)closure;
+
+    readObject(event);
+
+    // signum is unknown, all crashes will be considered as kills
+    KDC::SignalType signalType = KDC::fromInt<KDC::SignalType>(0);
+    std::cerr << "Server stopped with signal " << signalType << std::endl;
+
+    KDC::CommonUtility::writeSignalFile(KDC::AppType::Server, signalType);
+
+    return event;
+}
+
+sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closure) {
+    (void)hint;
+    (void)closure;
+
+    readObject(event);
+
+    return event;
+}
 
 std::shared_ptr<SentryHandler> SentryHandler::instance() {
     if (!_instance) {
@@ -68,8 +205,18 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
     sentry_options_set_debug(options, false);
     sentry_options_set_max_breadcrumbs(options, breadCrumbsSize);
 
-    // Set the environment
     bool isSet = false;
+#if defined(Q_OS_LINUX)
+    if (CommonUtility::envVarValue("KDRIVE_DEBUG_SENTRY_CRASH_CB", isSet); isSet) {
+        sentry_options_set_on_crash(options, crashCallback, NULL);
+    }
+    if (CommonUtility::envVarValue("KDRIVE_DEBUG_SENTRY_BEFORE_SEND_CB", isSet); isSet) {
+        sentry_options_set_before_send(options, beforeSendCallback, nullptr);
+    }
+#endif
+
+    // Set the environment
+    isSet = false;
     if (std::string environment = CommonUtility::envVarValue("KDRIVE_SENTRY_ENVIRONMENT", isSet); !isSet) {
         // TODO: When the intern/beta update channel will be available, we will have to create a new environment for each.
 #ifdef NDEBUG
@@ -230,11 +377,13 @@ void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
 SentryHandler::~SentryHandler() {
     if (this == _instance.get()) {
         _instance.reset();
+#if !defined(Q_OS_LINUX)
         try {
             sentry_close();
         } catch (...) {
             // Do nothing
         }
+#endif
     }
 }
 
