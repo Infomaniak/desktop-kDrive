@@ -79,7 +79,7 @@ void LocalCopyJob::runJob() {
         _exitCode = ExitCode::Ok;
     } catch (std::filesystem::filesystem_error &fsError) {
         LOGW_WARN(_logger, L"Failed to copy item " << Path2WStr(_source).c_str() << L" to " << Path2WStr(_dest).c_str() << L": "
-                                                   << Utility::s2ws(fsError.what()).c_str() << L" (" << fsError.code() << L")");
+                                                   << Utility::s2ws(fsError.what()).c_str() << L" (" << fsError.code().value() << L")");
         _exitCode = ExitCode::SystemError;
         _exitCause = ExitCause::FileAccessError;
     } catch (...) {

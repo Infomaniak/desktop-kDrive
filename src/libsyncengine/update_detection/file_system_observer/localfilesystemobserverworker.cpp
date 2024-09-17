@@ -852,7 +852,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
                                                     << Utility::formatSyncPath(absolutePath.filename()).c_str() << L" inode:"
-                                                    << nodeId.c_str() << L" parent inode:" << Utility::s2ws(parentNodeId).c_str()
+                                                    << Utility::s2ws(nodeId.c_str()) << L" parent inode:" << Utility::s2ws(parentNodeId).c_str()
                                                     << L" createdAt:" << fileStat.creationTime << L" modtime:" << fileStat.modtime
                                                     << L" isDir:" << (itemType.nodeType == NodeType::Directory) << L" size:"
                                                     << fileStat.size);

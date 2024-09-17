@@ -300,7 +300,7 @@ void JobManager::managePendingJobs(int uploadSessionCount) {
                                                                    << job->jobId() << " for execution");
                 } else {
                     LOGW_DEBUG(Log::instance()->getLogger(),
-                               "The thread pool has recovered capacity, queuing job " << job->jobId() << " for execution");
+                               L"The thread pool has recovered capacity, queuing job " << job->jobId() << L" for execution");
                 }
                 _queuedJobs.push(item.second);
             }

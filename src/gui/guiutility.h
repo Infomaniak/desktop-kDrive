@@ -41,8 +41,6 @@ class CustomToolTip;
 
 namespace GuiUtility {
 static const QString learnMoreLink = QString("learnMoreLink");
-static const QString clickHereLink = QString("clickHereLink");
-static const QString clickHereLink2 = QString("clickHereLink2");
 static const QString loginLink = QString("loginLink");
 
 enum systrayPosition { Top = 0, Bottom, Left, Right };
