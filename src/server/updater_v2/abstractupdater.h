@@ -27,6 +27,9 @@
 #include <thread>
 
 namespace KDC {
+
+class TestAbstractUpdater;
+
 /**
  * @brief Checks for new updates and manage installation.
  *
@@ -36,29 +39,32 @@ namespace KDC {
 
 class AbstractUpdater {
     public:
-        static AbstractUpdater *instance();
+        static AbstractUpdater *instance(bool test = false);
 
-        ExitCode checkUpdateAvailable(bool &available);
         bool isUpdateDownloaded();
-        ExitCode downloadUpdate() noexcept;
 
+        // For testing purpose
         void setGetAppVersionJob(GetAppVersionJob *getAppVersionJob) { _getAppVersionJob = getAppVersionJob; }
 
     private:
-        AbstractUpdater();
         ~AbstractUpdater();
 
         void run() noexcept;
 
+        ExitCode checkUpdateAvailable(bool &available);
+        ExitCode downloadUpdate() noexcept;
+
         static AbstractUpdater *_instance;
         log4cplus::Logger _logger;
-        std::unique_ptr<std::thread> _thread;
+        static std::unique_ptr<std::thread> _thread;
 
-        UpdateStateV2 _state{UpdateStateV2::UpToDate};  // Current state of the update process.
-        VersionInfo _versionInfo;  // A struct keeping all the informations about the currently available version.
-        SyncPath _targetFile;      // Path to the downloaded installer file.
+        UpdateStateV2 _state{UpdateStateV2::UpToDate}; // Current state of the update process.
+        VersionInfo _versionInfo; // A struct keeping all the informations about the currently available version.
+        SyncPath _targetFile; // Path to the downloaded installer file.
 
         GetAppVersionJob *_getAppVersionJob{nullptr};
+
+        friend TestAbstractUpdater;
 };
 
-}  // namespace KDC
+} // namespace KDC

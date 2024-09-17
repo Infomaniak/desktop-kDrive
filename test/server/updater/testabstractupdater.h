@@ -34,10 +34,9 @@ class TestAbstractUpdater : public CppUnit::TestFixture {
 
     public:
         void setUp() override;
-        void tearDown() override;
 
     protected:
         void testCheckUpdateAvailable();
         void testCurrentVersion();
 };
-}  // namespace KDC
+} // namespace KDC

@@ -20,21 +20,25 @@
 #include "abstractupdater.h"
 
 #include "db/parmsdb.h"
-#include "../../libsyncengine/jobs/network/API_v2/downloadjob.h"
 #include "jobs/network/getappversionjob.h"
+#include "jobs/network/API_v2/downloadjob.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
 #include "utility/utility.h"
 
 namespace KDC {
 
-#define ONE_HOUR 3600000
+constexpr size_t oneHour = 3600000;
 
 AbstractUpdater *AbstractUpdater::_instance = nullptr;
+std::unique_ptr<std::thread> AbstractUpdater::_thread;
 
-AbstractUpdater *AbstractUpdater::instance() {
+AbstractUpdater *AbstractUpdater::instance(bool test /*= false*/) {
     if (!_instance) {
         _instance = new AbstractUpdater();
+        if (!test) { // Do not start thread in test mode
+            _thread = std::make_unique<std::thread>(&AbstractUpdater::run, _instance);
+        }
     }
     return _instance;
 }
@@ -61,8 +65,8 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
         LOG_ERROR(_logger, ss.str().c_str());
         return ExitCode::UpdateFailed;
     }
-    // TODO : for now we support only Prod updates
-    _versionInfo = _getAppVersionJob->getVersionInfo(DistributionChannel::Prod);
+    // TODO : Support all update types
+    _versionInfo = _getAppVersionJob->getVersionInfo(DistributionChannel::Internal);
     if (!_versionInfo.isValid()) {
         std::string error = "Invalid version info!";
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
@@ -75,6 +79,7 @@ ExitCode AbstractUpdater::checkUpdateAvailable(bool &available) {
 }
 
 bool AbstractUpdater::isUpdateDownloaded() {
+    // To be implemented
     return true;
 }
 
@@ -93,15 +98,12 @@ ExitCode AbstractUpdater::downloadUpdate() noexcept {
     return ExitCode::Ok;
 }
 
-AbstractUpdater::AbstractUpdater() {
-    _thread = std::make_unique<std::thread>(&AbstractUpdater::run, _instance);
-}
-
 AbstractUpdater::~AbstractUpdater() {
     if (_getAppVersionJob) {
         delete _getAppVersionJob;
         _getAppVersionJob = nullptr;
     }
+    _thread->detach();
 }
 
 void AbstractUpdater::run() noexcept {
@@ -113,10 +115,11 @@ void AbstractUpdater::run() noexcept {
                 _state = UpdateStateV2::Error;
                 break;
             }
+
             if (updateAvailable) {
                 _state = UpdateStateV2::Available;
             } else {
-                Utility::msleep(ONE_HOUR);  // Sleep for 1h
+                Utility::msleep(oneHour); // Sleep for 1h
             }
             break;
         }
@@ -140,4 +143,4 @@ void AbstractUpdater::run() noexcept {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

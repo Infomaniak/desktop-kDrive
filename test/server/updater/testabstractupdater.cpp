@@ -34,35 +34,31 @@
 namespace KDC {
 
 static const std::string bigVersionJsonUpdateStr =
-    R"({"result":"success","data":{"application_id":27,"has_prod_next":false,"version":{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"99.99.99","next_version_rate":0,"published_versions":[{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]}]}}})";
+        R"({"result":"success","data":{"application_id":27,"has_prod_next":false,"version":{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"99.99.99","next_version_rate":0,"published_versions":[{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]},{"tag":"99.99.99","tag_updated_at":"2124-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"21240604","build_min_os_version":"21240604","download_link":"test","data":["[]"]}]}}})";
 static const std::string smallVersionJsonUpdateStr =
-    R"({"result":"success","data":{"application_id":27,"has_prod_next":false,"version":{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"1.1.1","next_version_rate":0,"published_versions":[{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]}]}}})";
+        R"({"result":"success","data":{"application_id":27,"has_prod_next":false,"version":{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"1.1.1","next_version_rate":0,"published_versions":[{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]}]}}})";
 
 void TestAbstractUpdater::setUp() {
-    LOG_DEBUG(Log::instance()->getLogger(), "$$$$$ Set Up");
-
     // Create parmsDb
     bool alreadyExists = false;
-    std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
 }
 
-void TestAbstractUpdater::tearDown() {}
-
 class TestGetAppVersionJob final : public GetAppVersionJob {
     public:
-        TestGetAppVersionJob(const Platform platform, const std::string &appID, const bool updateAvailable)
-            : GetAppVersionJob(platform, appID), _updateAvailable(updateAvailable) {}
+        TestGetAppVersionJob(const Platform platform, const std::string &appID, const bool updateShouldBeAvailable) :
+            GetAppVersionJob(platform, appID), _updateShoudBeAvailable(updateShouldBeAvailable) {}
 
         void runJob() noexcept override {
-            std::istringstream iss(_updateAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
+            const std::istringstream iss(_updateShoudBeAvailable ? bigVersionJsonUpdateStr : smallVersionJsonUpdateStr);
             std::istream is(iss.rdbuf());
             GetAppVersionJob::handleResponse(is);
         }
 
     private:
-        bool _updateAvailable{false};
+        bool _updateShoudBeAvailable{false};
 };
 
 void TestAbstractUpdater::testCheckUpdateAvailable() {
@@ -71,9 +67,9 @@ void TestAbstractUpdater::testCheckUpdateAvailable() {
     // Version is higher than current version
     {
         auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, true);
-        AbstractUpdater::instance()->setGetAppVersionJob(testJob);
+        AbstractUpdater::instance(true)->setGetAppVersionJob(testJob);
         bool updateAvailable = false;
-        AbstractUpdater::instance()->checkUpdateAvailable(updateAvailable);
+        AbstractUpdater::instance(true)->checkUpdateAvailable(updateAvailable);
         CPPUNIT_ASSERT(updateAvailable);
         delete testJob;
     }
@@ -81,9 +77,9 @@ void TestAbstractUpdater::testCheckUpdateAvailable() {
     // Version is lower than current version
     {
         auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, false);
-        AbstractUpdater::instance()->setGetAppVersionJob(testJob);
+        AbstractUpdater::instance(true)->setGetAppVersionJob(testJob);
         bool updateAvailable = false;
-        AbstractUpdater::instance()->checkUpdateAvailable(updateAvailable);
+        AbstractUpdater::instance(true)->checkUpdateAvailable(updateAvailable);
         CPPUNIT_ASSERT(!updateAvailable);
         delete testJob;
     }
@@ -98,4 +94,4 @@ void TestAbstractUpdater::testCurrentVersion() {
 #endif
 }
 
-}  // namespace KDC
+} // namespace KDC
