@@ -67,7 +67,7 @@ jobs:
           SONAR_HOST_URL: https://sonarcloud.io
         run: |
           sonar-scanner --define sonar.projectKey=Infomaniak_desktop-kDrive \
-            --define sonar.organization=Infomaniak \
+            --define sonar.organization=infomaniak \
             --define sonar.cfamily.bullseye.reportPath=coverage_report_dir
 
       - name: Upload tests logs artifacts
