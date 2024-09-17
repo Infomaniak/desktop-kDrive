@@ -78,6 +78,7 @@ cmake -B$BUILDDIR -H$BASEPATH \
     -DKDRIVE_THEME_DIR="$BASEPATH/infomaniak" \
     -DKDRIVE_VERSION_BUILD="$(date +%Y%m%d)" \
     -DBUILD_UNIT_TESTS=1 \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS="$CONTENTDIR/compile_commands"
     "${CMAKE_PARAMS[@]}" \
 
 make -j$(nproc)
