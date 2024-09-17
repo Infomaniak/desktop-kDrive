@@ -732,8 +732,7 @@ bool CommonUtility::isVersionLower(const std::string &currentVersion, const std:
         return false; // Should not happen
     }
 
-    return std::lexicographical_compare(currTabVersion.cbegin(), currTabVersion.cend(), targetTabVersion.cbegin(),
-                                        targetTabVersion.cend());
+    return std::ranges::lexicographical_compare(currTabVersion, targetTabVersion);
 }
 
 static std::string tmpDirName = "kdrive_" + CommonUtility::generateRandomStringAlphaNum();
