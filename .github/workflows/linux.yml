@@ -50,6 +50,7 @@ jobs:
       - name: Compute code coverage
         run : |
           PATH="/opt/BullseyeCoverage/bin/:${PATH}"
+          rm -f BullseyeCoverageExclusions
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
           covselect --import BullseyeCoverageExclusions
           covhtml -a coverage_report_dir
