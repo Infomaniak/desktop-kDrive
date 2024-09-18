@@ -55,4 +55,5 @@ else
     done
     echo -e "${NC}"
 fi
+
 exit $errors
