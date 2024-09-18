@@ -184,7 +184,7 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     if (useLockFile) out.seekp(0, std::ios_base::end);
 
     // Rotate log file if needed before appending to it.
-    if (out.tellp() > maxFileSize) customRollover(true);
+    if (out.tellp() > maxFileSize) rollover(true);
 
     try {
         RollingFileAppender::append(event);
@@ -196,7 +196,7 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     }
 
     // Rotate log file if needed after appending to it.
-    if (out.tellp() > maxFileSize) customRollover(true);
+    if (out.tellp() > maxFileSize) rollover(true);
 
     // Check for expired files at startup and every hour
     if (_lastExpireCheck == std::chrono::time_point<std::chrono::system_clock>() ||
@@ -205,7 +205,7 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     }
 }
 
-void CustomRollingFileAppender::customRollover(bool alreadyLocked) {
+void CustomRollingFileAppender::rollover(bool alreadyLocked) {
     log4cplus::helpers::LogLog &loglog = log4cplus::helpers::getLogLog();
     log4cplus::helpers::LockFileGuard guard;
 
