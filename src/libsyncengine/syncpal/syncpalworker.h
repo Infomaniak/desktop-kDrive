@@ -55,4 +55,4 @@ class SyncPalWorker : public ISyncWorker {
         bool resetVfsFilesStatus();
 };
 
-}  // namespace KDC
+} // namespace KDC

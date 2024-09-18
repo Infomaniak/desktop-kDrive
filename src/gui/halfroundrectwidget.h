@@ -52,4 +52,4 @@ class HalfRoundRectWidget : public QWidget {
         inline void setBottomCornersColor(const QColor &value) { _bottomCornersColor = value; }
 };
 
-}  // namespace KDC
+} // namespace KDC

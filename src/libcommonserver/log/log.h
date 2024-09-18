@@ -43,7 +43,7 @@ namespace KDC {
 
 #define LOGW_DEBUG(logger, logEvent)                                                                      \
     {                                                                                                     \
-        CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                          \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("debug"));                        \
@@ -63,7 +63,7 @@ namespace KDC {
 
 #define LOGW_INFO(logger, logEvent)                                                                       \
     {                                                                                                     \
-        CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                          \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("info"));                         \
@@ -83,7 +83,7 @@ namespace KDC {
 
 #define LOGW_WARN(logger, logEvent)                                                                       \
     {                                                                                                     \
-        CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                          \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("warning"));                      \
@@ -103,7 +103,7 @@ namespace KDC {
 
 #define LOGW_ERROR(logger, logEvent)                                                                      \
     {                                                                                                     \
-        CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                          \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("error"));                        \
@@ -123,7 +123,7 @@ namespace KDC {
 
 #define LOGW_FATAL(logger, logEvent)                                                                      \
     {                                                                                                     \
-        CustomLogWStream stream;                                                                       \
+        CustomLogWStream stream;                                                                          \
         stream << logEvent;                                                                               \
         sentry_value_t crumb = sentry_value_new_breadcrumb(nullptr, Utility::ws2s(stream.str()).c_str()); \
         sentry_value_set_by_key(crumb, "level", sentry_value_new_string("fatal"));                        \

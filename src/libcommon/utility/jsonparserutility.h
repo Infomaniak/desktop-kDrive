@@ -28,12 +28,12 @@
 namespace KDC {
 
 struct COMMONSERVER_EXPORT JsonParserUtility {
-        template <typename T>
+        template<typename T>
         static bool extractValue(const Poco::JSON::Object::Ptr obj, const std::string &key, T &val, bool mandatory = true) {
             if (!obj) {
                 LOG_WARN(Log::instance()->getLogger(), "JSON object is NULL");
                 return false;
-            }  // namespace KDC
+            } // namespace KDC
 
             if (obj->has(key) && obj->isNull(key)) {
                 // Item exist in JSON but is null, this is ok
@@ -84,4 +84,4 @@ struct COMMONSERVER_EXPORT JsonParserUtility {
         }
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -20,11 +20,11 @@
 
 namespace KDC {
 
-DriveAvailableInfo::DriveAvailableInfo(int driveId, int userId, int accountId, const QString &name, const QColor &color)
-    : _driveId(driveId), _userId(userId), _accountId(accountId), _name(name), _color(color), _userDbId(0) {}
+DriveAvailableInfo::DriveAvailableInfo(int driveId, int userId, int accountId, const QString &name, const QColor &color) :
+    _driveId(driveId), _userId(userId), _accountId(accountId), _name(name), _color(color), _userDbId(0) {}
 
-DriveAvailableInfo::DriveAvailableInfo()
-    : _driveId(0), _userId(0), _accountId(0), _name(QString()), _color(QString()), _userDbId(0) {}
+DriveAvailableInfo::DriveAvailableInfo() :
+    _driveId(0), _userId(0), _accountId(0), _name(QString()), _color(QString()), _userDbId(0) {}
 
 QDataStream &operator>>(QDataStream &in, DriveAvailableInfo &info) {
     in >> info._driveId >> info._userId >> info._accountId >> info._name >> info._color >> info._userDbId;
@@ -57,4 +57,4 @@ QDataStream &operator>>(QDataStream &in, QList<DriveAvailableInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -81,4 +81,4 @@ class SnapshotItem {
         std::unordered_set<NodeId> _childrenIds;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -77,7 +77,7 @@ class SentryHandler {
         SentryHandler() = default;
         void setMaxCaptureCountBeforeRateLimit(int maxCaptureCountBeforeRateLimit);
         void setMinUploadIntervalOnRateLimit(int minUploadIntervalOnRateLimit);
-        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; } 
+        void setIsSentryActivated(bool isSentryActivated) { _isSentryActivated = isSentryActivated; }
         virtual void sendEventToSentry(const SentryLevel level, const std::string &title, const std::string &message) const;
 
     private:

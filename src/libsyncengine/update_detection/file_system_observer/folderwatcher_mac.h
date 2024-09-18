@@ -40,4 +40,4 @@ class FolderWatcher_mac : public FolderWatcher {
         FSEventStreamRef _stream;
 };
 
-}  // namespace KDC
+} // namespace KDC

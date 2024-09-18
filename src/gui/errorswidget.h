@@ -94,4 +94,4 @@ class ErrorsWidget : public ClickableWidget {
         void onClick();
 };
 
-}  // namespace KDC
+} // namespace KDC

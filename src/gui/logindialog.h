@@ -44,4 +44,4 @@ class LoginDialog : public CustomDialog {
         void onExit();
 };
 
-}  // namespace KDC
+} // namespace KDC

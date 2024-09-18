@@ -80,4 +80,4 @@ class ErrorTabWidget : public QTabWidget {
         void showEvent(QShowEvent *) override;
 };
 
-}  // namespace KDC
+} // namespace KDC

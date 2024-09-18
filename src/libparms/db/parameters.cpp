@@ -19,7 +19,7 @@
 #include "parameters.h"
 
 #define DEFAULT_VERSION "1"
-#define DEFAULT_BIG_FOLDERS_SIZE_LIMIT 500  // MB
+#define DEFAULT_BIG_FOLDERS_SIZE_LIMIT 500 // MB
 
 #ifdef _WIN32
 #define UPLOAD_SESSION_PARALLEL_THREADS 3
@@ -38,29 +38,13 @@ namespace KDC {
 int Parameters::_uploadSessionParallelJobsDefault = UPLOAD_SESSION_PARALLEL_THREADS;
 int Parameters::_jobPoolCapacityFactorDefault = THREAD_POOL_CAPACITY_FACTOR;
 
-Parameters::Parameters()
-    : _language(Language::Default),
-      _monoIcons(false),
-      _autoStart(true),
-      _moveToTrash(true),
-      _notificationsDisabled(NotificationsDisabled::Never),
-      _useLog(true),
-      _logLevel(LogLevel::Debug),
-      _extendedLog(false),
-      _purgeOldLogs(true),
-      _syncHiddenFiles(false),
-      _proxyConfig(ProxyConfig()),
-      _useBigFolderSizeLimit(false),
-      _bigFolderSizeLimit(DEFAULT_BIG_FOLDERS_SIZE_LIMIT),
-      _darkTheme(false),
-      _showShortcuts(true),
-      _updateFileAvailable(std::string()),
-      _updateTargetVersion(std::string()),
-      _autoUpdateAttempted(false),
-      _seenVersion(std::string()),
-      _dialogGeometry(std::shared_ptr<std::vector<char>>()),
-      _maxAllowedCpu(50),
-      _uploadSessionParallelJobs(UPLOAD_SESSION_PARALLEL_THREADS),
-      _jobPoolCapacityFactor(THREAD_POOL_CAPACITY_FACTOR) {}
+Parameters::Parameters() :
+    _language(Language::Default), _monoIcons(false), _autoStart(true), _moveToTrash(true),
+    _notificationsDisabled(NotificationsDisabled::Never), _useLog(true), _logLevel(LogLevel::Debug), _extendedLog(false),
+    _purgeOldLogs(true), _syncHiddenFiles(false), _proxyConfig(ProxyConfig()), _useBigFolderSizeLimit(false),
+    _bigFolderSizeLimit(DEFAULT_BIG_FOLDERS_SIZE_LIMIT), _darkTheme(false), _showShortcuts(true),
+    _updateFileAvailable(std::string()), _updateTargetVersion(std::string()), _autoUpdateAttempted(false),
+    _seenVersion(std::string()), _dialogGeometry(std::shared_ptr<std::vector<char>>()), _maxAllowedCpu(50),
+    _uploadSessionParallelJobs(UPLOAD_SESSION_PARALLEL_THREADS), _jobPoolCapacityFactor(THREAD_POOL_CAPACITY_FACTOR) {}
 
-}  // namespace KDC
+} // namespace KDC

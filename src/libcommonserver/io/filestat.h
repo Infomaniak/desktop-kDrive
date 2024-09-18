@@ -33,4 +33,4 @@ struct FileStat {
         NodeType nodeType = NodeType::Unknown;
 };
 
-}  // namespace KDC
+} // namespace KDC

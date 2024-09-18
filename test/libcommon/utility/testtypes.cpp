@@ -43,7 +43,7 @@ void TestTypes::testStreamConversion() {
     // Test stream operator for enum class with unicode
     std::wostringstream wos;
     wos << NodeType::Unknown;
-    CPPUNIT_ASSERT(L"Unknown(0)" == wos.str());  // Can't use CPPUNIT_ASSERT_EQUAL because of issue with wchar_t in CPPUNIT
+    CPPUNIT_ASSERT(L"Unknown(0)" == wos.str()); // Can't use CPPUNIT_ASSERT_EQUAL because of issue with wchar_t in CPPUNIT
 
     // Test Logging of enum class
     LOG_WARN(Log::instance()->getLogger(), "Test log of enumClass: " << NodeType::Unknown);
@@ -57,4 +57,4 @@ void TestTypes::testStreamConversion() {
     }
     CPPUNIT_ASSERT(previousLine.find("Test log of enumClass: Unknown(0)") != std::string::npos);
 }
-}  // namespace KDC
+} // namespace KDC

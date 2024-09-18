@@ -77,4 +77,4 @@ class RemoteFileSystemObserverWorker : public FileSystemObserverWorker {
         friend class TestRemoteFileSystemObserverWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

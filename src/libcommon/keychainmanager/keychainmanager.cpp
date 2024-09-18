@@ -149,4 +149,4 @@ bool KeyChainManager::deleteToken(const std::string &keychainKey) {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

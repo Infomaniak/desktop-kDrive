@@ -21,8 +21,8 @@
 
 namespace KDC {
 
-ProgressInfo::ProgressInfo(std::shared_ptr<SyncPal> syncPal)
-    : _syncPal(syncPal), _totalSizeOfCompletedJobs(0), _maxFilesPerSecond(0), _maxBytesPerSecond(0), _update(false) {
+ProgressInfo::ProgressInfo(std::shared_ptr<SyncPal> syncPal) :
+    _syncPal(syncPal), _totalSizeOfCompletedJobs(0), _maxFilesPerSecond(0), _maxBytesPerSecond(0), _update(false) {
     reset();
 }
 
@@ -38,7 +38,7 @@ void ProgressInfo::reset() {
 
     // Historically, these starting estimates were way lower, but that lead
     // to gross overestimation of ETA when a good estimate wasn't available.
-    _maxBytesPerSecond = 2000000.0;  // 2 MB/s
+    _maxBytesPerSecond = 2000000.0; // 2 MB/s
     _maxFilesPerSecond = 10.0;
 
     _update = false;
@@ -65,7 +65,7 @@ void ProgressInfo::updateEstimates() {
     _fileProgress.update();
 
     // Update progress of all running items.
-    for (auto &item : _currentItems) {
+    for (auto &item: _currentItems) {
         if (item.second.empty()) {
             continue;
         }
@@ -166,7 +166,7 @@ Estimates ProgressInfo::totalProgress() const {
     double transU = 0.1;
     double transL = 0.01;
     double slowTransfer =
-        1.0 - std::max(0.0, std::min((trans - transL * _maxBytesPerSecond) / ((transU - transL) * _maxBytesPerSecond), 1.0));
+            1.0 - std::max(0.0, std::min((trans - transL * _maxBytesPerSecond) / ((transU - transL) * _maxBytesPerSecond), 1.0));
 
     double beOptimistic = nearMaxFps * slowTransfer;
     size.setEstimatedEta(int64_t((1.0 - beOptimistic) * size.estimatedEta() + beOptimistic * optimisticEta()));
@@ -194,7 +194,7 @@ Estimates ProgressInfo::fileProgress(const SyncFileItem &item) {
 
 void ProgressInfo::recomputeCompletedSize() {
     int64_t r = _totalSizeOfCompletedJobs;
-    for (auto &itemElt : _currentItems) {
+    for (auto &itemElt: _currentItems) {
         if (isSizeDependent(itemElt.second.front().item())) {
             r += itemElt.second.front().progress().completed();
         }
@@ -202,4 +202,4 @@ void ProgressInfo::recomputeCompletedSize() {
     _sizeProgress.setCompleted(r);
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -81,4 +81,4 @@ class AbstractFileItemWidget : public QWidget {
         QLabel *_pathLabel = nullptr;
 };
 
-}  // namespace KDC
+} // namespace KDC

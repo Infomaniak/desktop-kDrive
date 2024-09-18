@@ -39,8 +39,8 @@ static const int mainBoxVBMargin = 40;
 static const int boxHSpacing = 10;
 
 UpdateErrorDialog::UpdateErrorDialog(const QString &targetVersion, const QString &targetVersionString,
-                                     const QString &clientVersion, QWidget *parent)
-    : CustomDialog(false, parent) {
+                                     const QString &clientVersion, QWidget *parent) :
+    CustomDialog(false, parent) {
     KDC::GuiUtility::setStyle(qApp, false);
     initUi(targetVersion, targetVersionString, clientVersion);
 }
@@ -61,8 +61,8 @@ void UpdateErrorDialog::initUi(const QString &targetVersion, const QString &targ
     QLabel *lbl = new QLabel;
     QString txt = tr("<p>A new version of the %1 Client is available but the updating process failed.</p>"
                      "<p><b>%2</b> has been downloaded. The installed version is %3.</p>")
-                      .arg(KDC::CommonUtility::escape(Theme::instance()->appNameGUI()),
-                           KDC::CommonUtility::escape(targetVersionString), KDC::CommonUtility::escape(clientVersion));
+                          .arg(KDC::CommonUtility::escape(Theme::instance()->appNameGUI()),
+                               KDC::CommonUtility::escape(targetVersionString), KDC::CommonUtility::escape(clientVersion));
 
     lbl->setText(txt);
     lbl->setObjectName("textLabel");
@@ -118,4 +118,4 @@ void UpdateErrorDialog::initUi(const QString &targetVersion, const QString &targ
     subLayout->addLayout(hLayout);
 }
 
-}  // namespace KDC
+} // namespace KDC

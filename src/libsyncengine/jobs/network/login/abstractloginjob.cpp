@@ -118,4 +118,4 @@ bool AbstractLoginJob::handleError(std::istream &inputStream, const Poco::URI &u
     return false;
 }
 
-}  // namespace KDC
+} // namespace KDC

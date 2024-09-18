@@ -40,4 +40,4 @@ class TestAbstractUpdater : public CppUnit::TestFixture {
         void testCheckUpdateAvailable();
         void testCurrentVersion();
 };
-}  // namespace KDC
+} // namespace KDC

@@ -92,7 +92,7 @@ void TestSnapshot::testSnapshot() {
     CPPUNIT_ASSERT_EQUAL(std::string("AAA"), SyncName2Str(snapshot.name("aaa")));
     CPPUNIT_ASSERT_EQUAL(static_cast<SyncTime>(1640995205), snapshot.lastModified("aaa"));
     CPPUNIT_ASSERT_EQUAL(NodeType::File, snapshot.type("aaa"));
-    CPPUNIT_ASSERT(snapshot.contentChecksum("aaa").empty());  // Checksum never computed for now
+    CPPUNIT_ASSERT(snapshot.contentChecksum("aaa").empty()); // Checksum never computed for now
     CPPUNIT_ASSERT_EQUAL(NodeId("aaa"), snapshot.itemId(std::filesystem::path("A*/AA/AAA")));
 
     // Move node AA under B
@@ -141,4 +141,4 @@ void TestSnapshot::testSnapshotInsertionWithDifferentEncodings() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

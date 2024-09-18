@@ -36,4 +36,4 @@ class CustomProxyStyle : public QProxyStyle {
                            const QWidget *widget) const override;
 };
 
-}  // namespace KDC
+} // namespace KDC

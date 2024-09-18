@@ -29,10 +29,10 @@ struct CustomStateProvider : CustomStateProviderT<CustomStateProvider> {
         CustomStateProvider() = default;
 
         Windows::Foundation::Collections::IIterable<Windows::Storage::Provider::StorageProviderItemProperty> GetItemProperties(
-            _In_ hstring const& itemPath);
+                _In_ hstring const& itemPath);
 };
-}  // namespace winrt::FileExplorerExtension::implementation
+} // namespace winrt::FileExplorerExtension::implementation
 
 namespace winrt::FileExplorerExtension::factory_implementation {
 struct CustomStateProvider : CustomStateProviderT<CustomStateProvider, implementation::CustomStateProvider> {};
-}  // namespace winrt::FileExplorerExtension::factory_implementation
+} // namespace winrt::FileExplorerExtension::factory_implementation

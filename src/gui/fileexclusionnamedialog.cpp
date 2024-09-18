@@ -27,8 +27,8 @@ static const int boxHMargin = 40;
 static const int boxHSpacing = 10;
 static const int fileNameVMargin = 2;
 
-FileExclusionNameDialog::FileExclusionNameDialog(QWidget *parent)
-    : CustomDialog(true, parent), _fileNameLineEdit(nullptr), _validateButton(nullptr) {
+FileExclusionNameDialog::FileExclusionNameDialog(QWidget *parent) :
+    CustomDialog(true, parent), _fileNameLineEdit(nullptr), _validateButton(nullptr) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     // File name
@@ -87,4 +87,4 @@ void FileExclusionNameDialog::onValidateButtonTriggered(bool checked) {
     accept();
 }
 
-}  // namespace KDC
+} // namespace KDC

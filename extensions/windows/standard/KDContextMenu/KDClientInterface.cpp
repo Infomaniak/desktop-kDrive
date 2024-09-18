@@ -35,7 +35,7 @@
 
 using namespace std;
 
-#define PIPE_TIMEOUT 5 * 1000  // ms
+#define PIPE_TIMEOUT 5 * 1000 // ms
 #define QUERY_END_SEPARATOR L"\\/\n"
 
 KDClientInterface::ContextMenuInfo KDClientInterface::FetchInfo(const std::wstring &files) {
@@ -64,14 +64,14 @@ KDClientInterface::ContextMenuInfo KDClientInterface::FetchInfo(const std::wstri
     while (sleptCount < 5) {
         if (socket.ReadLine(&response)) {
             if (StringUtil::begins_with(response, wstring(L"REGISTER_PATH:"))) {
-                wstring responsePath = response.substr(14);  // length of REGISTER_PATH
+                wstring responsePath = response.substr(14); // length of REGISTER_PATH
                 info.watchedDirectories.push_back(responsePath);
             } else if (StringUtil::begins_with(response, wstring(L"STRING:"))) {
                 wstring stringName, stringValue;
                 if (!StringUtil::extractChunks(response, stringName, stringValue)) continue;
                 if (stringName == L"CONTEXT_MENU_TITLE") info.contextMenuTitle = std::move(stringValue);
             } else if (StringUtil::begins_with(response, wstring(L"VFS_MODE:"))) {
-                wstring vfsMode = response.substr(9);  // length of VFS_MODE
+                wstring vfsMode = response.substr(9); // length of VFS_MODE
                 vfsModeCompatible = (vfsMode.compare(L"off") == 0 || vfsMode.compare(L"suffix") == 0);
             } else if (StringUtil::begins_with(response, wstring(L"MENU_ITEM:"))) {
                 if (vfsModeCompatible) {
@@ -80,7 +80,7 @@ KDClientInterface::ContextMenuInfo KDClientInterface::FetchInfo(const std::wstri
                     info.menuItems.push_back({commandName, flags, title});
                 }
             } else if (StringUtil::begins_with(response, wstring(L"GET_MENU_ITEMS:END"))) {
-                break;  // Stop once we completely received the last sent request
+                break; // Stop once we completely received the last sent request
             }
         } else {
             Sleep(50);

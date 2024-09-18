@@ -37,4 +37,4 @@ class Estimates {
         int64_t _estimatedEta = 0;
 };
 
-}  // namespace KDC
+} // namespace KDC

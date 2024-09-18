@@ -39,4 +39,4 @@ class RemoteTemporaryDirectory {
         bool _isDeleted{false};
 };
 
-}  // namespace KDC
+} // namespace KDC

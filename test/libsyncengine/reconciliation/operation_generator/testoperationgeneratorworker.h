@@ -60,4 +60,4 @@ class TestOperationGeneratorWorker : public CppUnit::TestFixture {
         log4cplus::Logger _logger;
 };
 
-}  // namespace KDC
+} // namespace KDC

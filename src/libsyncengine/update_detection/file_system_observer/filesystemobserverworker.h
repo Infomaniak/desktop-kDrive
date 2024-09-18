@@ -62,4 +62,4 @@ class FileSystemObserverWorker : public ISyncWorker {
         friend class TestRemoteFileSystemObserverWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

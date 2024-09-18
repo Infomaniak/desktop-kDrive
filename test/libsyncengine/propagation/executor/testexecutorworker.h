@@ -47,4 +47,4 @@ class TestExecutorWorker : public CppUnit::TestFixture {
         LocalTemporaryDirectory _localTempDir{"TestExecutorWorker"};
 };
 
-}  // namespace KDC
+} // namespace KDC

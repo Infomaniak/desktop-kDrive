@@ -88,7 +88,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt"; // This file does not exist.
         const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -150,7 +150,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     // A dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         {
             std::ofstream ofs(targetPath);
@@ -191,7 +191,7 @@ void TestIo::testCheckIfPathExistsSimpleCases() {
     // A Windows junction on a non-existing target directory.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath targetPath = _localTestDirPath / "non_existing_dir";  // It doesn't exist.
+        const SyncPath targetPath = _localTestDirPath / "non_existing_dir"; // It doesn't exist.
         const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
         IoError ioError = IoError::Unknown;
@@ -304,7 +304,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt";  // This file does not exist.
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_test_file.txt"; // This file does not exist.
         const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -351,7 +351,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
             CPPUNIT_FAIL("Failed to set rights on the file");
         }
         bool checkIfPathExistsResult =
-            _testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError);
+                _testObj->checkIfPathExistsWithSameNodeId(path, nodeId, existsWithSameId, otherNodeId, ioError);
         IoHelper::setRights(path, true, true, true, ioError);
         CPPUNIT_ASSERT(checkIfPathExistsResult);
         CPPUNIT_ASSERT(existsWithSameId);
@@ -382,7 +382,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     // A dangling MacOSX Finder alias on a non-existing file.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png";  // This file will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "file_to_be_deleted.png"; // This file will be deleted.
         const SyncPath path = temporaryDirectory.path() / "dangling_file_alias";
         { std::ofstream ofs(targetPath); }
 
@@ -428,7 +428,7 @@ void TestIo::testCheckIfPathExistsWithSameNodeIdSimpleCases() {
     // A Windows junction on a non-existing target directory.
     {
         const LocalTemporaryDirectory temporaryDirectory("TestIo");
-        const SyncPath targetPath = _localTestDirPath / "non_existing_dir";  // It doesn't exist.
+        const SyncPath targetPath = _localTestDirPath / "non_existing_dir"; // It doesn't exist.
         const SyncPath path = temporaryDirectory.path() / "dir_junction";
 
         IoError ioError = IoError::Unknown;
@@ -541,4 +541,4 @@ void TestIo::testCheckIfPathExists() {
     testCheckIfPathExistWithDistinctEncodings();
 }
 
-}  // namespace KDC
+} // namespace KDC

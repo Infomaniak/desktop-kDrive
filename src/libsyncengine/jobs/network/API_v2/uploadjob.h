@@ -68,4 +68,4 @@ class UploadJob : public AbstractTokenNetworkJob {
         NodeType _targetType = NodeType::File;
 };
 
-}  // namespace KDC
+} // namespace KDC

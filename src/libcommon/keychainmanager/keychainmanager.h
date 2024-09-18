@@ -53,4 +53,4 @@ class COMMON_EXPORT KeyChainManager : public QObject {
         KeyChainManager(bool testing);
 };
 
-}  // namespace KDC
+} // namespace KDC

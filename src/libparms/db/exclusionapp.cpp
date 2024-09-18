@@ -22,7 +22,7 @@ namespace KDC {
 
 ExclusionApp::ExclusionApp() : _appId(std::string()), _description(std::string()), _def(false) {}
 
-ExclusionApp::ExclusionApp(const std::string &appId, const std::string &description, bool def)
-    : _appId(appId), _description(description), _def(def) {}
+ExclusionApp::ExclusionApp(const std::string &appId, const std::string &description, bool def) :
+    _appId(appId), _description(description), _def(def) {}
 
-}  // namespace KDC
+} // namespace KDC

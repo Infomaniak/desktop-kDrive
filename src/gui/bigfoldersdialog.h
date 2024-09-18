@@ -68,4 +68,4 @@ class BigFoldersDialog : public CustomDialog {
         void setFolderIcon();
 };
 
-}  // namespace KDC
+} // namespace KDC

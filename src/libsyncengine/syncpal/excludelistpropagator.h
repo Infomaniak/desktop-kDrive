@@ -38,4 +38,4 @@ class ExcludeListPropagator : public AbstractPropagatorJob {
         ExitCode checkItems();
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -95,4 +95,4 @@ class COMMONSERVER_EXPORT Db {
         bool selectVersion(std::string &version, bool &found);
 };
 
-}  // namespace KDC
+} // namespace KDC

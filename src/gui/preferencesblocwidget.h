@@ -85,4 +85,4 @@ class PreferencesBlocWidget : public LargeWidgetWithCustomToolTip {
         void onActionIconSizeChanged();
 };
 
-}  // namespace KDC
+} // namespace KDC

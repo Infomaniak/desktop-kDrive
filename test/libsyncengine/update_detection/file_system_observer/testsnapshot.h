@@ -40,4 +40,4 @@ class TestSnapshot : public CppUnit::TestFixture {
         void testSnapshotInsertionWithDifferentEncodings();
 };
 
-}  // namespace KDC
+} // namespace KDC

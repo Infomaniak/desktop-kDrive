@@ -89,4 +89,4 @@ class AddDriveListWidget : public QWidget {
         void onUserSelected(int userDbId);
 };
 
-}  // namespace KDC
+} // namespace KDC

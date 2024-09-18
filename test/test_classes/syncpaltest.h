@@ -25,8 +25,8 @@ namespace KDC {
 class SyncPalTest final : public SyncPal {
     public:
         SyncPalTest() = delete;
-        SyncPalTest(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted)
-            : SyncPal(syncDbPath, version, hasFullyCompleted) {}
+        SyncPalTest(const SyncPath &syncDbPath, const std::string &version, bool hasFullyCompleted) :
+            SyncPal(syncDbPath, version, hasFullyCompleted) {}
         SyncPalTest(int syncDbId, const std::string &version) : SyncPal(syncDbId, version) {}
 
     private:
@@ -38,4 +38,4 @@ class SyncPalTest final : public SyncPal {
         void removeItemFromTmpBlacklist(const NodeId &nodeId, ReplicaSide side) override {}
 };
 
-}  // namespace KDC
+} // namespace KDC

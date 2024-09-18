@@ -67,4 +67,4 @@ class SyncInfo {
         QString _navigationPaneClsid;
 };
 
-}  // namespace KDC
+} // namespace KDC

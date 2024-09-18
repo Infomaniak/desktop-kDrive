@@ -41,4 +41,4 @@ class Proxy {
         Proxy(const ProxyConfig &proxyConfig);
 };
 
-}  // namespace KDC
+} // namespace KDC

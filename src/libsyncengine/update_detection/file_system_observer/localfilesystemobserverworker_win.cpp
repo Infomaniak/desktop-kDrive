@@ -23,9 +23,9 @@
 namespace KDC {
 
 LocalFileSystemObserverWorker_win::LocalFileSystemObserverWorker_win(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                                                     const std::string &shortName)
-    : LocalFileSystemObserverWorker(syncPal, name, shortName) {
+                                                                     const std::string &shortName) :
+    LocalFileSystemObserverWorker(syncPal, name, shortName) {
     _folderWatcher.reset(new FolderWatcher_win(this, syncPal->localPath()));
 }
 
-}  // namespace KDC
+} // namespace KDC

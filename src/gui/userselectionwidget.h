@@ -88,4 +88,4 @@ class UserSelectionWidget : public QPushButton {
         void onSelectUserActionTriggered(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

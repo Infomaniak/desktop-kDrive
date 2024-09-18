@@ -71,4 +71,4 @@ class UpdaterServer : public Updater {
         static UpdaterServer *_instance;
 };
 
-}  // namespace KDC
+} // namespace KDC

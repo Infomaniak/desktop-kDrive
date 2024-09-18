@@ -126,9 +126,9 @@ static void loglog_opening_result(helpers::LogLog &loglog, log4cplus::tostream c
     }
 }
 
-}  // namespace
+} // namespace
 
-}  // namespace log4cplus
+} // namespace log4cplus
 
 /***********************************/
 /********** namespace KDC **********/
@@ -172,11 +172,12 @@ static void rolloverFiles(const log4cplus::tstring &filename, unsigned int maxBa
 }
 
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::tstring &filename, long maxFileSize, int maxBackupIndex,
-                                                     bool immediateFlush, bool createDirs)
-    : RollingFileAppender(filename, maxFileSize, maxBackupIndex, immediateFlush, createDirs), _lastExpireCheck() {}
+                                                     bool immediateFlush, bool createDirs) :
+    RollingFileAppender(filename, maxFileSize, maxBackupIndex, immediateFlush, createDirs),
+    _lastExpireCheck() {}
 
-CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties)
-    : RollingFileAppender(properties), _lastExpireCheck() {}
+CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties) :
+    RollingFileAppender(properties), _lastExpireCheck() {}
 
 void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEvent &event) {
     // Seek to the end of log file so that tellp() below returns the
@@ -328,4 +329,4 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         }
     }
 }
-}  // namespace KDC
+} // namespace KDC

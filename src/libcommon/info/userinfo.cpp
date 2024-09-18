@@ -20,10 +20,10 @@
 
 namespace KDC {
 
-UserInfo::UserInfo(int dbId, int userId, const QString &name, const QString &email, const QImage &avatar, bool connected)
-    : _dbId(dbId), _userId(userId), _name(name), _email(email), _avatar(avatar), _connected(connected) {}
+UserInfo::UserInfo(int dbId, int userId, const QString &name, const QString &email, const QImage &avatar, bool connected) :
+    _dbId(dbId), _userId(userId), _name(name), _email(email), _avatar(avatar), _connected(connected) {}
 
-UserInfo::UserInfo(){}
+UserInfo::UserInfo() {}
 
 QDataStream &operator>>(QDataStream &in, UserInfo &userInfo) {
     in >> userInfo._dbId >> userInfo._userId >> userInfo._name >> userInfo._email >> userInfo._avatar >> userInfo._connected;
@@ -56,4 +56,4 @@ QDataStream &operator>>(QDataStream &in, QList<UserInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

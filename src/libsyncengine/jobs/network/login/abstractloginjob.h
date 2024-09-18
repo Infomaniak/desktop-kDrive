@@ -47,4 +47,4 @@ class AbstractLoginJob : public AbstractNetworkJob {
         std::string _errorDescr;
 };
 
-}  // namespace KDC
+} // namespace KDC

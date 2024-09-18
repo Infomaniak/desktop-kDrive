@@ -84,7 +84,7 @@ void TestOperationSorterWorker::testMoveFirstAfterSecond() {
     int opFirstId;
     int opSecondId;
     int i = 1;
-    for (const auto &opId : _syncPal->_syncOps->opSortedList()) {
+    for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
         if (op == op2) {
             opFirstId = i;
@@ -99,7 +99,7 @@ void TestOperationSorterWorker::testMoveFirstAfterSecond() {
     // nothing moved bc op5 is at 5 and op2 at 4
     _syncPal->_operationsSorterWorker->moveFirstAfterSecond(op5, op2);
     i = 1;
-    for (const auto &opId : _syncPal->_syncOps->opSortedList()) {
+    for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
         if (op == op5) {
             opFirstId = i;
@@ -114,7 +114,7 @@ void TestOperationSorterWorker::testMoveFirstAfterSecond() {
     // op4 is moved at 5 and op5 at 4
     _syncPal->_operationsSorterWorker->moveFirstAfterSecond(op4, op5);
     i = 1;
-    for (const auto &opId : _syncPal->_syncOps->opSortedList()) {
+    for (const auto &opId: _syncPal->_syncOps->opSortedList()) {
         SyncOpPtr op = _syncPal->_syncOps->getOp(opId);
         if (op == op4) {
             opFirstId = i;
@@ -169,9 +169,10 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(
-        _syncPal->syncDb()->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->syncDb()->rootNode().nodeId(),
+                                            _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
+                                            OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt,
+                                            lastmodified, size, nullptr));
     std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1"),
                                          NodeType::Directory, OperationType::None, "d1", createdAt, lastmodified, size,
                                          rootNode));
@@ -191,9 +192,10 @@ void TestOperationSorterWorker::testFixDeleteBeforeMove() {
                                          NodeType::Directory, OperationType::None, "4", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 5"),
                                          NodeType::Directory, OperationType::None, "5", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(
-        _syncPal->syncDb()->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rrootNode(new Node(_syncPal->syncDb()->rootNode().nodeId(),
+                                             _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
+                                             OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt,
+                                             lastmodified, size, nullptr));
     std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1"),
                                           NodeType::Directory, OperationType::None, "r1", createdAt, lastmodified, size,
                                           rrootNode));
@@ -312,8 +314,8 @@ void TestOperationSorterWorker::testFixMoveBeforeCreate() {
     std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 5"),
                                          NodeType::Directory, OperationType::None, "5", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> rrootNode(
-        new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""), NodeType::Directory,
-                 OperationType::None, _syncPal->_syncDb->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
+            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""), NodeType::Directory,
+                     OperationType::None, _syncPal->_syncDb->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
     std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1"),
                                           NodeType::Directory, OperationType::None, "r1", createdAt, lastmodified, size,
                                           rrootNode));
@@ -414,9 +416,10 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(
-        _syncPal->syncDb()->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->syncDb()->rootNode().nodeId(),
+                                            _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
+                                            OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt,
+                                            lastmodified, size, nullptr));
     std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1"),
                                          NodeType::Directory, OperationType::None, "d1", createdAt, lastmodified, size,
                                          rootNode));
@@ -436,9 +439,10 @@ void TestOperationSorterWorker::testFixMoveBeforeDelete() {
                                          NodeType::Directory, OperationType::None, "4", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 5"),
                                          NodeType::Directory, OperationType::None, "5", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(
-        _syncPal->syncDb()->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rrootNode(new Node(_syncPal->syncDb()->rootNode().nodeId(),
+                                             _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
+                                             OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt,
+                                             lastmodified, size, nullptr));
     std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1"),
                                           NodeType::Directory, OperationType::None, "r1", createdAt, lastmodified, size,
                                           rrootNode));
@@ -537,8 +541,8 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     int64_t size = 12345;
 
     std::shared_ptr<Node> rootNode(
-        new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""), NodeType::Directory,
-                 OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt, lastmodified, size, nullptr));
+            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_localUpdateTree->side(), Str(""), NodeType::Directory,
+                     OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt, lastmodified, size, nullptr));
     std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1"),
                                          NodeType::Directory, OperationType::None, "d1", createdAt, lastmodified, size,
                                          rootNode));
@@ -559,8 +563,8 @@ void TestOperationSorterWorker::testFixCreateBeforeMove() {
     std::shared_ptr<Node> node5(new Node(dbnodeIdDir5, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 5"),
                                          NodeType::Directory, OperationType::None, "5", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> rrootNode(
-        new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""), NodeType::Directory,
-                 OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
+            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""), NodeType::Directory,
+                     OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
     std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1"),
                                           NodeType::Directory, OperationType::None, "r1", createdAt, lastmodified, size,
                                           rrootNode));
@@ -633,15 +637,16 @@ void TestOperationSorterWorker::testFixCreateBeforeMoveBis() {
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(
-        _syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(),
+                                            _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
+                                            OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt,
+                                            lastmodified, size, nullptr));
     std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir A"),
                                          NodeType::Directory, OperationType::Move, "dA", createdAt, lastmodified, size,
                                          rootNode));
     std::shared_ptr<Node> rrootNode(
-        new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""), NodeType::Directory,
-                 OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
+            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""), NodeType::Directory,
+                     OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
     std::shared_ptr<Node> rNodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir A"),
                                           NodeType::Directory, OperationType::None, "rdA", createdAt, lastmodified, size,
                                           rrootNode));
@@ -711,9 +716,10 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(
-        _syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(),
+                                            _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
+                                            OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt,
+                                            lastmodified, size, nullptr));
     std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1"),
                                          NodeType::Directory, OperationType::None, "d1", createdAt, lastmodified, size,
                                          rootNode));
@@ -730,8 +736,8 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 3"),
                                          NodeType::Directory, OperationType::None, "3", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> rrootNode(
-        new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""), NodeType::Directory,
-                 OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
+            new Node(_syncPal->_syncDb->rootNode().nodeId(), _syncPal->_remoteUpdateTree->side(), Str(""), NodeType::Directory,
+                     OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
     std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1"),
                                           NodeType::Directory, OperationType::None, "r1", createdAt, lastmodified, size,
                                           rrootNode));
@@ -754,11 +760,11 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     _syncPal->_localSnapshot->updateItem(SnapshotItem("d1", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("Dir 1"),
                                                       createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("11", "d1", Str("Dir 1.1"), createdAt, lastmodified, NodeType::Directory, size));
+            SnapshotItem("11", "d1", Str("Dir 1.1"), createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("111", "11", Str("Dir 1.1.1"), createdAt, lastmodified, NodeType::Directory, size));
+            SnapshotItem("111", "11", Str("Dir 1.1.1"), createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_localSnapshot->updateItem(
-        SnapshotItem("1111c", "111", Str("File 1.1.1.1"), createdAt, lastmodified, NodeType::Directory, size));
+            SnapshotItem("1111c", "111", Str("File 1.1.1.1"), createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_localSnapshot->updateItem(SnapshotItem("2", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("Dir 2"),
                                                       createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_localSnapshot->updateItem(SnapshotItem("3", _syncPal->syncDb()->rootNode().nodeIdLocal().value(), Str("Dir 3"),
@@ -767,11 +773,11 @@ void TestOperationSorterWorker::testFixDeleteBeforeCreate() {
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r1", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("Dir 1"),
                                                        createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("r11", "r1", Str("Dir 1.1"), createdAt, lastmodified, NodeType::Directory, size));
+            SnapshotItem("r11", "r1", Str("Dir 1.1"), createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("r111", "r11", Str("Dir 1.1.1"), createdAt, lastmodified, NodeType::Directory, size));
+            SnapshotItem("r111", "r11", Str("Dir 1.1.1"), createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_remoteSnapshot->updateItem(
-        SnapshotItem("r1111", "r111", Str("File 1.1.1.1"), createdAt, lastmodified, NodeType::Directory, size));
+            SnapshotItem("r1111", "r111", Str("File 1.1.1.1"), createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r2", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("Dir 2"),
                                                        createdAt, lastmodified, NodeType::Directory, size));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("r3", _syncPal->syncDb()->rootNode().nodeIdRemote().value(), Str("Dir 3"),
@@ -846,9 +852,10 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveOccupied() {
                                          NodeType::Directory, OperationType::None, "2", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 3"),
                                          NodeType::Directory, OperationType::None, "3", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(
-        _syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(),
+                                             _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
+                                             OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt,
+                                             lastmodified, size, nullptr));
     std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1"),
                                           NodeType::Directory, OperationType::None, "r1", createdAt, lastmodified, size,
                                           rrootNode));
@@ -952,9 +959,10 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
     SyncTime createdAt = 1654788079;
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
-    std::shared_ptr<Node> rootNode(new Node(
-        _syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(),
+                                            _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
+                                            OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt,
+                                            lastmodified, size, nullptr));
     std::shared_ptr<Node> nodeA(new Node(dbNodeIdDirA, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("A"),
                                          NodeType::Directory, OperationType::Create, "a", createdAt, lastmodified, size,
                                          rootNode));
@@ -1014,7 +1022,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
         // Expected order: A AA AAA AAB AB B
         Console << Str("Initial ops order : ");
-        for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
+        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
             Console << op->affectedNode()->name().c_str() << Str(" ");
         }
@@ -1025,7 +1033,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
         Console << Str("Final ops order : ");
-        for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
+        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
             Console << op->affectedNode()->name().c_str() << Str(" ");
         }
@@ -1050,7 +1058,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
         // Expected order: A AB AA AAB AAA B
         Console << Str("Initial ops order : ");
-        for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
+        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
             Console << op->affectedNode()->name().c_str() << Str(" ");
         }
@@ -1060,7 +1068,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
         Console << Str("Final ops order : ");
-        for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
+        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
             Console << op->affectedNode()->name().c_str() << Str(" ");
         }
@@ -1085,7 +1093,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_operationsSorterWorker->_unsortedList = *_syncPal->_syncOps;
         // Expected order: B A AB AA AAB AAA
         Console << Str("Initial ops order : ");
-        for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
+        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
             Console << op->affectedNode()->name().c_str() << Str(" ");
         }
@@ -1095,7 +1103,7 @@ void TestOperationSorterWorker::testFixCreateBeforeCreate() {
         _syncPal->_operationsSorterWorker->fixCreateBeforeCreate();
 
         Console << Str("Final ops order : ");
-        for (const auto &opId : _syncPal->_syncOps->_opSortedList) {
+        for (const auto &opId: _syncPal->_syncOps->_opSortedList) {
             SyncOpPtr op = _syncPal->_syncOps->_allOps[opId];
             Console << op->affectedNode()->name().c_str() << Str(" ");
         }
@@ -1134,9 +1142,10 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFilp() {
     SyncTime lastmodified = 1654788079;
     int64_t size = 12345;
 
-    std::shared_ptr<Node> rootNode(new Node(
-        _syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(),
+                                            _syncPal->updateTree(ReplicaSide::Local)->side(), Str(""), NodeType::Directory,
+                                            OperationType::None, _syncPal->syncDb()->rootNode().nodeIdLocal(), createdAt,
+                                            lastmodified, size, nullptr));
     std::shared_ptr<Node> node1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 1"),
                                          NodeType::Directory, OperationType::Create, "d1", createdAt, lastmodified, size,
                                          rootNode));
@@ -1147,9 +1156,10 @@ void TestOperationSorterWorker::testFixMoveBeforeMoveParentChildFilp() {
                                          NodeType::Directory, OperationType::None, "2", createdAt, lastmodified, size, rootNode));
     std::shared_ptr<Node> node3(new Node(dbNodeIdDir3, _syncPal->updateTree(ReplicaSide::Local)->side(), Str("Dir 3"),
                                          NodeType::Directory, OperationType::None, "3", createdAt, lastmodified, size, rootNode));
-    std::shared_ptr<Node> rrootNode(new Node(
-        _syncPal->_syncDb->rootNode().nodeId(), _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
-        OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt, lastmodified, size, nullptr));
+    std::shared_ptr<Node> rrootNode(new Node(_syncPal->_syncDb->rootNode().nodeId(),
+                                             _syncPal->updateTree(ReplicaSide::Remote)->side(), Str(""), NodeType::Directory,
+                                             OperationType::None, _syncPal->syncDb()->rootNode().nodeIdRemote(), createdAt,
+                                             lastmodified, size, nullptr));
     std::shared_ptr<Node> rNode1(new Node(dbNodeIdDir1, _syncPal->updateTree(ReplicaSide::Remote)->side(), Str("Dir 1"),
                                           NodeType::Directory, OperationType::None, "r1", createdAt, lastmodified, size,
                                           rrootNode));
@@ -1519,4 +1529,4 @@ void TestOperationSorterWorker::testBreakCycleEx2() {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

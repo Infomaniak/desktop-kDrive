@@ -51,7 +51,7 @@ Result compare(const SnapshotItem &lhs, const SnapshotItem &rhs) noexcept {
 
     return {};
 }
-}  // namespace snapshotitem_checker
+} // namespace snapshotitem_checker
 
 void TestSnapshotItemHandler::setUp() {}
 
@@ -85,7 +85,7 @@ void TestSnapshotItemHandler::testUpdateItem() {
         CPPUNIT_ASSERT(handler.updateSnapshotItem("124", SnapshotItemHandler::CsvIndexModtime, item));
         CPPUNIT_ASSERT_EQUAL(SyncTime(124), item.lastModified());
         CPPUNIT_ASSERT(handler.updateSnapshotItem("-1", SnapshotItemHandler::CsvIndexModtime,
-                                                  item));  // We can have negative values! (for dates before 1970)
+                                                  item)); // We can have negative values! (for dates before 1970)
         CPPUNIT_ASSERT_EQUAL(int64_t(-1), item.lastModified());
 
         CPPUNIT_ASSERT(handler.updateSnapshotItem("1", SnapshotItemHandler::CsvIndexCanWrite, item));
@@ -156,11 +156,11 @@ std::string toCsvString(const std::string &name) {
     bool encloseInDoubleQuotes = false;
     bool prevCharBackslash = false;
 
-    for (char c : name) {
+    for (char c: name) {
         if (c == '"') {
-            if (!prevCharBackslash) {  // If a double quote is preceded by a comma, do not insert a second double quote.
+            if (!prevCharBackslash) { // If a double quote is preceded by a comma, do not insert a second double quote.
                 encloseInDoubleQuotes = true;
-                ss << '"';  // Insert 2 double quotes instead of one
+                ss << '"'; // Insert 2 double quotes instead of one
             }
         }
 
@@ -394,8 +394,8 @@ void TestSnapshotItemHandler::testGetItem() {
             CPPUNIT_ASSERT(!ignore);
             CPPUNIT_ASSERT(!error);
         }
-        CPPUNIT_ASSERT_EQUAL(2, counter);  // There should be 2 valid items
+        CPPUNIT_ASSERT_EQUAL(2, counter); // There should be 2 valid items
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

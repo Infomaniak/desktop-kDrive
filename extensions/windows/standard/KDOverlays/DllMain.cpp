@@ -56,7 +56,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv) {
     HRESULT hResult = CLASS_E_CLASSNOTAVAILABLE;
     GUID guid;
 
-    hResult = CLSIDFromString(OVERLAY_GUID_ERROR, (LPCLSID)&guid);
+    hResult = CLSIDFromString(OVERLAY_GUID_ERROR, (LPCLSID) &guid);
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
@@ -64,7 +64,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv) {
         return CreateFactory(riid, ppv, State_Error);
     }
 
-    hResult = CLSIDFromString(OVERLAY_GUID_OK, (LPCLSID)&guid);
+    hResult = CLSIDFromString(OVERLAY_GUID_OK, (LPCLSID) &guid);
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
@@ -72,7 +72,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv) {
         return CreateFactory(riid, ppv, State_OK);
     }
 
-    hResult = CLSIDFromString(OVERLAY_GUID_SYNC, (LPCLSID)&guid);
+    hResult = CLSIDFromString(OVERLAY_GUID_SYNC, (LPCLSID) &guid);
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
@@ -80,7 +80,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void **ppv) {
         return CreateFactory(riid, ppv, State_Sync);
     }
 
-    hResult = CLSIDFromString(OVERLAY_GUID_WARNING, (LPCLSID)&guid);
+    hResult = CLSIDFromString(OVERLAY_GUID_WARNING, (LPCLSID) &guid);
     if (!SUCCEEDED(hResult)) {
         return hResult;
     }
@@ -99,7 +99,7 @@ HRESULT RegisterCLSID(LPCOLESTR guidStr, PCWSTR overlayStr, PCWSTR szModule) {
     HRESULT hResult = S_OK;
 
     GUID guid;
-    hResult = CLSIDFromString(guidStr, (LPCLSID)&guid);
+    hResult = CLSIDFromString(guidStr, (LPCLSID) &guid);
 
     if (hResult != S_OK) {
         return hResult;
@@ -120,7 +120,7 @@ HRESULT UnregisterCLSID(LPCOLESTR guidStr, PCWSTR overlayStr) {
     HRESULT hResult = S_OK;
     GUID guid;
 
-    hResult = CLSIDFromString(guidStr, (LPCLSID)&guid);
+    hResult = CLSIDFromString(guidStr, (LPCLSID) &guid);
 
     if (hResult != S_OK) {
         return hResult;

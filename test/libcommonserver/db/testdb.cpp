@@ -280,7 +280,7 @@ std::vector<TestDb::Test> TestDb::MyTestDb::selectTest() {
     return tests;
 }
 
-TestDb::Test::Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue)
-    : id(id), intValue(intValue), int64Value(int64Value), doubleValue(doubleValue), textValue(textValue) {}
+TestDb::Test::Test(int64_t id, int intValue, int64_t int64Value, double doubleValue, const std::string &textValue) :
+    id(id), intValue(intValue), int64Value(int64Value), doubleValue(doubleValue), textValue(textValue) {}
 
-}  // namespace KDC
+} // namespace KDC

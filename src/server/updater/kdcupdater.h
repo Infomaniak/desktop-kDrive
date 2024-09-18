@@ -172,4 +172,4 @@ class PassiveUpdateNotifier : public KDCUpdater {
     private:
         void versionInfoArrived(const UpdateInfo &info) Q_DECL_OVERRIDE;
 };
-}  // namespace KDC
+} // namespace KDC

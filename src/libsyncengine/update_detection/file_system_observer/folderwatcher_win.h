@@ -45,7 +45,7 @@ class FolderWatcher_win : public FolderWatcher {
 
     private:
         /// Set to true once the WatcherThread is capturing events.
-        bool _ready = false;  // TODO : mutex???
+        bool _ready = false; // TODO : mutex???
 
         HANDLE _directoryHandle = nullptr;
         HANDLE _resultEventHandle = nullptr;
@@ -57,4 +57,4 @@ class FolderWatcher_win : public FolderWatcher {
         OperationType operationFromAction(DWORD action);
 };
 
-}  // namespace KDC
+} // namespace KDC

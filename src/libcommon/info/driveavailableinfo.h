@@ -59,4 +59,4 @@ class DriveAvailableInfo {
         int _userDbId;
 };
 
-}  // namespace KDC
+} // namespace KDC

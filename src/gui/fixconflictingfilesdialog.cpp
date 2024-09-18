@@ -42,13 +42,14 @@ static const int titleBoxVMargin = 14;
 
 static const QString learnMoreLink = "learnMoreLink";
 
-FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *parent /*= nullptr*/)
-    : CustomDialog(true, parent), _driveDbId(driveDbId) {
+FixConflictingFilesDialog::FixConflictingFilesDialog(int driveDbId, QWidget *parent /*= nullptr*/) :
+    CustomDialog(true, parent), _driveDbId(driveDbId) {
     setModal(true);
     setResizable(true);
     GuiRequests::getConflictList(
-        _driveDbId, {ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest},
-        _conflictList);
+            _driveDbId,
+            {ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest},
+            _conflictList);
     initUi();
 }
 
@@ -114,7 +115,7 @@ void FixConflictingFilesDialog::initUi() {
     auto selectionLabel = new QLabel(this);
     selectionLabel->setObjectName("descriptionLabel");
     selectionLabel->setText(tr("<b>What do you want to do with the %1 conflicted item(s) that is(are) not synced in kDrive?</b>")
-                                .arg(_conflictList.length()));
+                                    .arg(_conflictList.length()));
 
     _keepLocalButton = new CustomRadioButton(this);
     _keepLocalButton->setText(tr("Synchronize the local version of my item(s) in kDrive."));
@@ -197,19 +198,19 @@ void FixConflictingFilesDialog::initUi() {
 
 QString FixConflictingFilesDialog::descriptionText() const {
     QString str;
-    str =
-        tr("When an item has been modified on both the computer and the kDrive or when an item has been created on the computer "
-           "with a name that already exists on the kDrive, "
-           "kDrive renames your local item and downloads kDrive's version on your computer so as not to lose any data.<br>");
+    str = tr(
+            "When an item has been modified on both the computer and the kDrive or when an item has been created on the computer "
+            "with a name that already exists on the kDrive, "
+            "kDrive renames your local item and downloads kDrive's version on your computer so as not to lose any data.<br>");
     str += tr("The local version of your item <b>is not synced</b> with kDrive. <a style=\"color: #489EF3\" href=\"%1\">Learn "
               "more</a>")
-               .arg(learnMoreLink);
+                   .arg(learnMoreLink);
 
     return str;
 }
 
 void FixConflictingFilesDialog::insertFileItems(const int nbItems) {
-    uint64_t max = std::min(_fileListWidget->count() + nbItems, (int)_conflictList.size());
+    uint64_t max = std::min(_fileListWidget->count() + nbItems, (int) _conflictList.size());
     for (uint64_t i = _fileListWidget->count(); i < max; i++) {
         auto w = new FileItemWidget(_conflictList[i].destinationPath(), _conflictList[i].nodeType(), this);
 
@@ -223,4 +224,4 @@ void FixConflictingFilesDialog::insertFileItems(const int nbItems) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

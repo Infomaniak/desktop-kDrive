@@ -28,4 +28,4 @@ class LocalFileSystemObserverWorker_win : public LocalFileSystemObserverWorker {
                                           const std::string &shortName);
 };
 
-}  // namespace KDC
+} // namespace KDC

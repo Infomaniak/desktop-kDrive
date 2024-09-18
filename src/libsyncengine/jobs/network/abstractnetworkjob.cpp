@@ -36,7 +36,7 @@
 #include <Poco/InflatingStream.h>
 #include <Poco/Error.h>
 
-#include <iostream>  // std::ios, std::istream, std::cout, std::cerr
+#include <iostream> // std::ios, std::istream, std::cout, std::cerr
 #include <functional>
 #include <Poco/JSON/Parser.h>
 
@@ -61,7 +61,7 @@ AbstractNetworkJob::AbstractNetworkJob() {
         for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
             try {
                 _context =
-                    new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
+                        new Poco::Net::Context(Poco::Net::Context::TLS_CLIENT_USE, "", "", "", Poco::Net::Context::VERIFY_NONE);
                 _context->requireMinimumProtocol(Poco::Net::Context::PROTO_TLSV1_2);
             } catch (Poco::Exception const &e) {
                 if (trials < _trials) {
@@ -118,7 +118,7 @@ void AbstractNetworkJob::runJob() noexcept {
     Poco::URI uri;
     for (int trials = 1; trials <= std::min(_trials, MAX_TRIALS); trials++) {
         if (trials > 1) {
-            Utility::msleep(500);  // Sleep for 0.5s
+            Utility::msleep(500); // Sleep for 0.5s
         }
 
         uri = Poco::URI(url);
@@ -136,7 +136,7 @@ void AbstractNetworkJob::runJob() noexcept {
         }
 
         bool canceled = false;
-        setData(canceled);  // Must be called before setQueryParameters
+        setData(canceled); // Must be called before setQueryParameters
         if (canceled) {
             LOG_WARN(_logger, "Job " << jobId() << " is cancelled");
             _exitCode = ExitCode::DataError;
@@ -219,7 +219,7 @@ void AbstractNetworkJob::runJob() noexcept {
 
         if (_exitCode == ExitCode::TokenRefreshed || _exitCode == ExitCode::RateLimited) {
             _exitCode = ExitCode::Ok;
-            _trials++;  // Add one more chance
+            _trials++; // Add one more chance
             continue;
         } else if (isManagedError(_exitCode, _exitCause)) {
             break;
@@ -344,7 +344,7 @@ bool AbstractNetworkJob::sendRequest(const Poco::URI &uri) {
     // Set headers
     req.set("User-Agent", _userAgent);
     req.setContentType(contentType);
-    for (const auto &header : _rawHeaders) {
+    for (const auto &header: _rawHeaders) {
         req.add(header.first, header.second);
     }
 
@@ -685,4 +685,4 @@ unsigned int AbstractNetworkJob::TimeoutHelper::count() {
     return static_cast<int>(_eventsQueue.size());
 }
 
-}  // namespace KDC
+} // namespace KDC

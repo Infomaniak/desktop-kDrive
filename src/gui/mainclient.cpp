@@ -52,7 +52,7 @@ void warnSystray() {
                                           "If you are running XFCE, please follow "
                                           "<a href=\"http://docs.xfce.org/xfce/xfce4-panel/systray\">these instructions</a>. "
                                           "Otherwise, please install a system tray application such as 'trayer' and try again.")
-                              .arg(KDC::Theme::instance()->appNameGUI()));
+                                  .arg(KDC::Theme::instance()->appNameGUI()));
 }
 
 void signalHandler(int signum) {
@@ -101,7 +101,7 @@ int main(int argc, char **argv) {
 #endif
 
 #ifdef Q_OS_MAC
-    Mac::CocoaInitializer cocoaInit;  // RIIA
+    Mac::CocoaInitializer cocoaInit; // RIIA
 #endif
 
     Q_INIT_RESOURCE(client);

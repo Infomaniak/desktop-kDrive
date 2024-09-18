@@ -59,4 +59,4 @@ class AddDriveLoginWidget : public QWidget {
         void onErrorReceived(const QString error, const QString errorDescr);
 };
 
-}  // namespace KDC
+} // namespace KDC

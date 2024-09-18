@@ -55,7 +55,7 @@ void TestFsOperationSet::testGetOpsByType() {
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
 
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         for (int i = 0; i < 3; i++) {
             std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByType(type);
             CPPUNIT_ASSERT_EQUAL(size_t(i), ops.size());
@@ -72,7 +72,7 @@ void TestFsOperationSet::testGetOpsByNodeId() {
     FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
     std::vector<UniqueId> opsIds;
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         auto op = std::make_shared<FSOperation>(type, nodeId);
         fsOperationSet.insertOp(op);
         opsIds.push_back(op->id());
@@ -85,7 +85,7 @@ void TestFsOperationSet::testGetOpsByNodeId() {
     // Test with an existing node
     ops = fsOperationSet.getOpsByNodeId(nodeId);
     CPPUNIT_ASSERT_EQUAL(size_t(6), ops.size());
-    for (auto id : opsIds) {
+    for (auto id: opsIds) {
         CPPUNIT_ASSERT(ops.contains(id));
     }
 
@@ -100,7 +100,7 @@ void TestFsOperationSet::testNbOpsByType() {
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
 
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         for (int i = 0; i < 3; i++) {
             uint64_t nbOps = 0;
             nbOps = fsOperationSet.nbOpsByType(type);
@@ -119,7 +119,7 @@ void TestFsOperationSet::testClear() {
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
 
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         for (int i = 1; i <= 2; i++) {
             auto op = std::make_shared<FSOperation>(type, nodeId + nodeIdSuffix);
             nodeIdSuffix++;
@@ -132,7 +132,7 @@ void TestFsOperationSet::testClear() {
 
     nodeIdSuffix = '0';
     CPPUNIT_ASSERT_EQUAL(uint64_t(0), fsOperationSet.nbOps());
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         CPPUNIT_ASSERT_EQUAL(uint64_t(0), fsOperationSet.nbOpsByType(type));
         for (int i = 1; i <= 2; i++) {
             std::unordered_set<UniqueId> ops = fsOperationSet.getOpsByNodeId(nodeId + nodeIdSuffix);
@@ -147,7 +147,7 @@ void TestFsOperationSet::testInsertOp() {
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = 0;
 
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         for (int i = 0; i < 3; i++) {
             auto op = std::make_shared<FSOperation>(type, nodeId + nodeIdSuffix);
             fsOperationSet.insertOp(op);
@@ -199,12 +199,12 @@ void TestFsOperationSet::testfindOp() {
     FSOperationSet fsOperationSet(ReplicaSide::Unknown);
     NodeId nodeId = "nodeId";
 
-    for (auto type : _operationTypes) {
+    for (auto type: _operationTypes) {
         auto op = std::make_shared<FSOperation>(type, nodeId);
         fsOperationSet.insertOp(op);
     }
 
-    for (auto type : _operationTypes) {
+    for (auto type: _operationTypes) {
         FSOpPtr res;
         CPPUNIT_ASSERT(fsOperationSet.findOp(nodeId, type, res));
         CPPUNIT_ASSERT(res->operationType() == type);
@@ -224,7 +224,7 @@ void TestFsOperationSet::testOperatorEqual() {
 
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = '0';
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         for (int i = 0; i < 3; i++) {
             auto op = std::make_shared<FSOperation>(type, nodeId + nodeIdSuffix);
             nodeIdSuffix++;
@@ -240,19 +240,19 @@ void TestFsOperationSet::testOperatorEqual() {
     std::unordered_map<UniqueId, FSOpPtr> ops2;
     ops1 = fsOperationSet1.getAllOps();
     ops2 = fsOperationSet2.getAllOps();
-    for (const auto &[key, value] : ops2) {
+    for (const auto &[key, value]: ops2) {
         CPPUNIT_ASSERT(ops2.contains(key));
     }
 
     /// getOpsByType() and getOpsByNodeId()
     nodeIdSuffix = '0';
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         std::unordered_set<UniqueId> opsByType1;
         std::unordered_set<UniqueId> opsByType2;
         opsByType1 = fsOperationSet1.getOpsByType(type);
         opsByType2 = fsOperationSet2.getOpsByType(type);
         CPPUNIT_ASSERT_EQUAL(opsByType2.size(), opsByType1.size());
-        for (const auto &id : opsByType2) {
+        for (const auto &id: opsByType2) {
             CPPUNIT_ASSERT(opsByType1.contains(id));
         }
 
@@ -262,7 +262,7 @@ void TestFsOperationSet::testOperatorEqual() {
             opsByNodeId1 = fsOperationSet1.getOpsByNodeId(nodeId + nodeIdSuffix);
             opsByNodeId2 = fsOperationSet2.getOpsByNodeId(nodeId + nodeIdSuffix);
             CPPUNIT_ASSERT_EQUAL(opsByNodeId2.size(), opsByNodeId1.size());
-            for (const auto &id : opsByNodeId2) {
+            for (const auto &id: opsByNodeId2) {
                 CPPUNIT_ASSERT(opsByNodeId1.contains(id));
             }
             nodeIdSuffix++;
@@ -278,7 +278,7 @@ void TestFsOperationSet::testCopyConstructor() {
     NodeId nodeId = "nodeId";
     char nodeIdSuffix = 0;
 
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         for (int i = 0; i < 3; i++) {
             auto op = std::make_shared<FSOperation>(type, nodeId + nodeIdSuffix);
             nodeIdSuffix++;
@@ -293,16 +293,16 @@ void TestFsOperationSet::testCopyConstructor() {
     ops = fsOperationSetCopy.getAllOps();
     opsCopy = fsOperationSetCopy.getAllOps();
     CPPUNIT_ASSERT_EQUAL(ops.size(), opsCopy.size());
-    for (const auto &[key, value] : ops) {
+    for (const auto &[key, value]: ops) {
         CPPUNIT_ASSERT(opsCopy.contains(key));
     }
     /// getOpsByType() and getOpsByNodeId()
     nodeIdSuffix = '0';
-    for (OperationType type : _operationTypes) {
+    for (OperationType type: _operationTypes) {
         std::unordered_set<UniqueId> opsByType1 = fsOperationSet.getOpsByType(type);
         std::unordered_set<UniqueId> opsByType2 = fsOperationSetCopy.getOpsByType(type);
         CPPUNIT_ASSERT_EQUAL(opsByType2.size(), opsByType1.size());
-        for (const auto &id : opsByType2) {
+        for (const auto &id: opsByType2) {
             CPPUNIT_ASSERT(opsByType1.contains(id));
         }
 
@@ -310,7 +310,7 @@ void TestFsOperationSet::testCopyConstructor() {
             std::unordered_set<UniqueId> opsByNodeId1 = fsOperationSet.getOpsByNodeId(nodeId + nodeIdSuffix);
             std::unordered_set<UniqueId> opsByNodeId2 = fsOperationSetCopy.getOpsByNodeId(nodeId + nodeIdSuffix);
             CPPUNIT_ASSERT_EQUAL(opsByNodeId2.size(), opsByNodeId1.size());
-            for (const auto &id : opsByNodeId2) {
+            for (const auto &id: opsByNodeId2) {
                 CPPUNIT_ASSERT(opsByNodeId1.contains(id));
             }
             nodeIdSuffix++;
@@ -319,4 +319,4 @@ void TestFsOperationSet::testCopyConstructor() {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

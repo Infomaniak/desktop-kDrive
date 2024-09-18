@@ -155,20 +155,20 @@ void TestUpdateTree::testChangeEvents() {
     std::shared_ptr<Node> node = std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 0"), NodeType::Directory,
                                                         OperationType::None, "0", 0, 0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeCreate =
-        std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::Create, "l1", 0,
-                               0, 12345, _myTree->rootNode());
+            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::Create, "l1",
+                                   0, 0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeEdit =
-        std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::Edit, "l2", 0, 0,
-                               12345, _myTree->rootNode());
+            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::Edit, "l2", 0,
+                                   0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeMove =
-        std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::Move, "l3", 0, 0,
-                               12345, _myTree->rootNode());
+            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::Move, "l3", 0,
+                                   0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeDelete =
-        std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::Delete, "l4", 0,
-                               0, 12345, _myTree->rootNode());
+            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::Delete, "l4",
+                                   0, 0, 12345, _myTree->rootNode());
     const std::shared_ptr<Node> nodeMoveEdit =
-        std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 5"), NodeType::Directory,
-                               OperationType::Move | OperationType::Edit, "l5", 0, 0, 12345, _myTree->rootNode());
+            std::make_shared<Node>(std::nullopt, _myTree->side(), Str("Dir 5"), NodeType::Directory,
+                                   OperationType::Move | OperationType::Edit, "l5", 0, 0, 12345, _myTree->rootNode());
 
     CPPUNIT_ASSERT(!node->hasChangeEvent());
     CPPUNIT_ASSERT(!node->hasChangeEvent(OperationType::Create));
@@ -181,4 +181,4 @@ void TestUpdateTree::testChangeEvents() {
     CPPUNIT_ASSERT(nodeMoveEdit->hasChangeEvent(OperationType::Move));
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -72,8 +72,8 @@ class ExplorerCommandHandlerEnumerator : public IEnumExplorerCommand {
         // IUnknown
         IFACEMETHODIMP QueryInterface(REFIID riid, void **ppv) {
             static const QITAB qit[] = {
-                QITABENT(ExplorerCommandHandlerEnumerator, IEnumExplorerCommand),
-                {0},
+                    QITABENT(ExplorerCommandHandlerEnumerator, IEnumExplorerCommand),
+                    {0},
             };
             return QISearch(this, qit, riid, ppv);
         }
@@ -96,8 +96,8 @@ class ExplorerCommandHandlerEnumerator : public IEnumExplorerCommand {
             return E_NOTIMPL;
         }
 
-        ExplorerCommandHandlerEnumerator(const ContextMenuInfo &contextMenuInfo)
-            : _cRef(1), _ullCurrent(0), _contextMenuInfo(contextMenuInfo) {}
+        ExplorerCommandHandlerEnumerator(const ContextMenuInfo &contextMenuInfo) :
+            _cRef(1), _ullCurrent(0), _contextMenuInfo(contextMenuInfo) {}
 
     private:
         ~ExplorerCommandHandlerEnumerator() {}

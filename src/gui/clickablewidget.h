@@ -35,4 +35,4 @@ class ClickableWidget : public QWidget {
         bool event(QEvent *event) override;
 };
 
-}  // namespace KDC
+} // namespace KDC

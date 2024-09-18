@@ -76,7 +76,7 @@ class SyncFileItem {
 
     private:
         NodeType _type;
-        SyncPath _path;  // Sync folder relative filesystem path
+        SyncPath _path; // Sync folder relative filesystem path
         std::optional<SyncPath> _newPath;
         std::optional<NodeId> _localNodeId;
         std::optional<NodeId> _remoteNodeId;
@@ -95,4 +95,4 @@ class SyncFileItem {
         SyncTime _timestamp;
 };
 
-}  // namespace KDC
+} // namespace KDC

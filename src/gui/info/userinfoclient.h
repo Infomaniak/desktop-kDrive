@@ -34,4 +34,4 @@ class UserInfoClient : public UserInfo {
         QString _connectionError;
 };
 
-}  // namespace KDC
+} // namespace KDC

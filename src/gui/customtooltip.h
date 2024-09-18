@@ -44,4 +44,4 @@ class CustomToolTip : public QDialog {
         inline void setBackgroundColor(const QColor &color) { _backgroundColor = color; }
 };
 
-}  // namespace KDC
+} // namespace KDC

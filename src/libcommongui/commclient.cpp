@@ -42,12 +42,9 @@ std::shared_ptr<CommClient> CommClient::instance(QObject *parent) {
     return _instance;
 }
 
-CommClient::CommClient(QObject *parent)
-    : QObject(parent),
-      _requestWorkerThread(new QThread()),
-      _requestWorker(new Worker()),
-      _tcpConnection(new QTcpSocket()),
-      _buffer(QByteArray()) {
+CommClient::CommClient(QObject *parent) :
+    QObject(parent), _requestWorkerThread(new QThread()), _requestWorker(new Worker()), _tcpConnection(new QTcpSocket()),
+    _buffer(QByteArray()) {
     // Start worker thread
     _requestWorker->moveToThread(_requestWorkerThread);
     connect(_requestWorkerThread, &QThread::started, _requestWorker, &Worker::onStart);
@@ -147,18 +144,18 @@ void CommClient::onReadyRead() {
 
         while (_buffer.size()) {
             // Read size
-            if (_buffer.size() < (int)sizeof(qint32)) {
+            if (_buffer.size() < (int) sizeof(qint32)) {
                 break;
             }
 
-            int size = CommonUtility::toInt(_buffer.mid(0, (qint32)sizeof(qint32)));
+            int size = CommonUtility::toInt(_buffer.mid(0, (qint32) sizeof(qint32)));
 
             // Read data
-            if (_buffer.size() < (int)sizeof(qint32) + size) {
+            if (_buffer.size() < (int) sizeof(qint32) + size) {
                 break;
             }
 
-            _buffer.remove(0, (int)sizeof(qint32));
+            _buffer.remove(0, (int) sizeof(qint32));
             QByteArray data = _buffer.mid(0, size);
             _buffer.remove(0, size);
 
@@ -398,4 +395,4 @@ void Worker::onStart() {
     qCDebug(lcCommClient) << "Worker ended";
 }
 
-}  // namespace KDC
+} // namespace KDC

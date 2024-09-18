@@ -32,4 +32,4 @@ class GetDrivesListJob : public AbstractTokenNetworkJob {
         virtual std::string getSpecificUrl() override;
 };
 
-}  // namespace KDC
+} // namespace KDC

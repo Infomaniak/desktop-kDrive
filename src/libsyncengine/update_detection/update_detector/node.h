@@ -120,7 +120,7 @@ class Node {
     private:
         std::optional<DbNodeId> _idb = std::nullopt;
         ReplicaSide _side = ReplicaSide::Unknown;
-        SyncName _name;  // This name is NFC-normalized by constructors and setters.
+        SyncName _name; // This name is NFC-normalized by constructors and setters.
         InconsistencyType _inconsistencyType = InconsistencyType::None;
         NodeType _type = NodeType::Unknown;
         OperationType _changeEvents = OperationType::None;
@@ -129,12 +129,12 @@ class Node {
         std::optional<SyncTime> _createdAt = std::nullopt;
         std::optional<SyncTime> _lastModified = std::nullopt;
         int64_t _size = 0;
-        NodeStatus _status = NodeStatus::Unprocessed;  // node was already processed during reconciliation
+        NodeStatus _status = NodeStatus::Unprocessed; // node was already processed during reconciliation
         std::unordered_map<NodeId, std::shared_ptr<Node>> _childrenById;
         std::shared_ptr<Node> _parentNode;
         // For moved items
-        std::optional<SyncPath> _moveOrigin = std::nullopt;            // path before it was moved
-        std::optional<DbNodeId> _moveOriginParentDbId = std::nullopt;  // parent dir id before it was moved
+        std::optional<SyncPath> _moveOrigin = std::nullopt; // path before it was moved
+        std::optional<DbNodeId> _moveOriginParentDbId = std::nullopt; // parent dir id before it was moved
         // For conflicts resolutions
         std::vector<ConflictType> _conflictsAlreadyConsidered;
 
@@ -144,4 +144,4 @@ class Node {
         friend class TestUpdateTree;
 };
 
-}  // namespace KDC
+} // namespace KDC

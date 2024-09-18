@@ -67,4 +67,4 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         void testFolderWatcherWithSpecialCases2();
 };
 
-}  // namespace KDC
+} // namespace KDC

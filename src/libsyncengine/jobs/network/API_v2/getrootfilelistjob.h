@@ -40,4 +40,4 @@ class GetRootFileListJob : public AbstractTokenNetworkJob {
         bool _withPath = false;
 };
 
-}  // namespace KDC
+} // namespace KDC

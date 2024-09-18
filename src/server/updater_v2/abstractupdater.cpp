@@ -116,7 +116,7 @@ void AbstractUpdater::run() noexcept {
             if (updateAvailable) {
                 _state = UpdateStateV2::Available;
             } else {
-                Utility::msleep(ONE_HOUR);  // Sleep for 1h
+                Utility::msleep(ONE_HOUR); // Sleep for 1h
             }
             break;
         }
@@ -140,4 +140,4 @@ void AbstractUpdater::run() noexcept {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

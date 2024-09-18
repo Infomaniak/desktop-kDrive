@@ -72,8 +72,8 @@ static const QString italianCode = "it";
 
 Q_LOGGING_CATEGORY(lcPreferencesWidget, "gui.preferenceswidget", QtInfoMsg)
 
-LargeFolderConfirmation::LargeFolderConfirmation(QBoxLayout *folderConfirmationBox)
-    : _label{new QLabel()}, _amountLabel{new QLabel()}, _amountLineEdit{new QLineEdit()}, _switch{new CustomSwitch()} {
+LargeFolderConfirmation::LargeFolderConfirmation(QBoxLayout *folderConfirmationBox) :
+    _label{new QLabel()}, _amountLabel{new QLabel()}, _amountLineEdit{new QLineEdit()}, _switch{new CustomSwitch()} {
     QHBoxLayout *folderConfirmation1HBox = new QHBoxLayout();
     folderConfirmation1HBox->setContentsMargins(0, 0, 0, 0);
     folderConfirmation1HBox->setSpacing(0);
@@ -116,12 +116,9 @@ void LargeFolderConfirmation::setAmountLineEditEnabled(bool enabled) {
     _amountLineEdit->setEnabled(enabled);
 }
 
-VersionWidget::VersionWidget(QBoxLayout *parentBox, const QString &versionNumberLabel)
-    : _versionLabel{new QLabel()},
-      _updateStatusLabel{new QLabel()},
-      _showReleaseNoteLabel{new QLabel()},
-      _versionNumberLabel{new QLabel(versionNumberLabel)},
-      _updateButton{new QPushButton()} {
+VersionWidget::VersionWidget(QBoxLayout *parentBox, const QString &versionNumberLabel) :
+    _versionLabel{new QLabel()}, _updateStatusLabel{new QLabel()}, _showReleaseNoteLabel{new QLabel()},
+    _versionNumberLabel{new QLabel(versionNumberLabel)}, _updateButton{new QPushButton()} {
     _versionLabel->setObjectName("blocLabel");
     parentBox->addWidget(_versionLabel);
 
@@ -183,21 +180,12 @@ void VersionWidget::setUpdateButtonText(const QString &text) {
     _updateButton->setText(text);
 }
 
-PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : LargeWidgetWithCustomToolTip(parent),
-      _gui(gui),
-      _languageSelectorComboBox{new CustomComboBox()},
-      _generalLabel{new QLabel()},
-      _monochromeLabel{new QLabel()},
-      _launchAtStartupLabel{new QLabel()},
-      _moveToTrashLabel{new QLabel()},
-      _languageSelectorLabel{new QLabel()},
-      _advancedLabel{new QLabel()},
-      _debuggingLabel{new QLabel()},
-      _debuggingFolderLabel{new QLabel()},
-      _filesToExcludeLabel{new QLabel()},
-      _proxyServerLabel{new QLabel()},
-      _displayErrorsWidget{new ActionWidget(":/client/resources/icons/actions/warning.svg", "")} {
+PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    LargeWidgetWithCustomToolTip(parent), _gui(gui), _languageSelectorComboBox{new CustomComboBox()}, _generalLabel{new QLabel()},
+    _monochromeLabel{new QLabel()}, _launchAtStartupLabel{new QLabel()}, _moveToTrashLabel{new QLabel()},
+    _languageSelectorLabel{new QLabel()}, _advancedLabel{new QLabel()}, _debuggingLabel{new QLabel()},
+    _debuggingFolderLabel{new QLabel()}, _filesToExcludeLabel{new QLabel()}, _proxyServerLabel{new QLabel()},
+    _displayErrorsWidget{new ActionWidget(":/client/resources/icons/actions/warning.svg", "")} {
     setContentsMargins(0, 0, 0, 0);
 
     /*
@@ -428,7 +416,7 @@ PreferencesWidget::PreferencesWidget(std::shared_ptr<ClientGui> gui, QWidget *pa
 
     // Version
     static const QString versionNumberLinkText =
-        tr(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING);
+            tr(R"(<a style="%1" href="%2">%3</a>)").arg(CommonUtility::linkStyle, versionLink, KDRIVE_VERSION_STRING);
     _versionWidget = std::unique_ptr<VersionWidget>(new VersionWidget(vBox, versionNumberLinkText));
 
     vBox->addStretch();
@@ -476,7 +464,7 @@ void PreferencesWidget::showEvent(QShowEvent *event) {
 }
 
 void PreferencesWidget::clearUndecidedLists() {
-    for (const auto &syncInfoMapElt : _gui->syncInfoMap()) {
+    for (const auto &syncInfoMapElt: _gui->syncInfoMap()) {
         // Clear the undecided list
         ExitCode exitCode = GuiRequests::setSyncIdSet(syncInfoMapElt.first, SyncNodeType::UndecidedList, QSet<QString>());
         if (exitCode != ExitCode::Ok) {
@@ -492,7 +480,7 @@ void PreferencesWidget::clearUndecidedLists() {
 
 void PreferencesWidget::updateStatus(QString status, bool updateAvailable) {
     static const QString releaseNoteLinkText =
-        tr("<a style=\"%1\" href=\"%2\">Show release note</a>").arg(CommonUtility::linkStyle, releaseNoteLink);
+            tr("<a style=\"%1\" href=\"%2\">Show release note</a>").arg(CommonUtility::linkStyle, releaseNoteLink);
     _versionWidget->updateStatus(status, updateAvailable, releaseNoteLinkText);
 }
 
@@ -637,8 +625,7 @@ void PreferencesWidget::onLinkActivated(const QString &link) {
 
         QString os;
 #ifdef Q_OS_MAC
-        os =
-            "";  // In order to works with Sparkle, the URL must have the same name as the package. So do not add the os for macOS
+        os = ""; // In order to works with Sparkle, the URL must have the same name as the package. So do not add the os for macOS
 #endif
 
 #ifdef Q_OS_WIN
@@ -760,7 +747,7 @@ void PreferencesWidget::retranslateUi() {
     _languageSelectorLabel->setText(tr("Language"));
     _moveToTrashLabel->setText(tr("Move deleted files to trash"));
 
-    _languageSelectorComboBox->blockSignals(true);  // To avoid triggering more LanguageChange events
+    _languageSelectorComboBox->blockSignals(true); // To avoid triggering more LanguageChange events
     _languageSelectorComboBox->clear();
     _languageSelectorComboBox->addItem(tr("Default"), toInt(Language::Default));
     _languageSelectorComboBox->addItem(tr("English"), toInt(Language::English));
@@ -769,7 +756,7 @@ void PreferencesWidget::retranslateUi() {
     _languageSelectorComboBox->addItem(tr("Spanish"), toInt(Language::Spanish));
     _languageSelectorComboBox->addItem(tr("Italian"), toInt(Language::Italian));
     const int languageIndex =
-        _languageSelectorComboBox->findData(toInt(ParametersCache::instance()->parametersInfo().language()));
+            _languageSelectorComboBox->findData(toInt(ParametersCache::instance()->parametersInfo().language()));
     _languageSelectorComboBox->setCurrentIndex(languageIndex);
     _languageSelectorComboBox->blockSignals(false);
 
@@ -779,7 +766,7 @@ void PreferencesWidget::retranslateUi() {
     _advancedLabel->setText(tr("Advanced"));
     _debuggingLabel->setText(tr("Debugging information"));
     _debuggingFolderLabel->setText(
-        tr("<a style=\"%1\" href=\"%2\">Open debugging folder</a>").arg(CommonUtility::linkStyle, debuggingFolderLink));
+            tr("<a style=\"%1\" href=\"%2\">Open debugging folder</a>").arg(CommonUtility::linkStyle, debuggingFolderLink));
     _filesToExcludeLabel->setText(tr("Files to exclude"));
     _proxyServerLabel->setText(tr("Proxy server"));
 #ifdef Q_OS_MAC
@@ -835,4 +822,4 @@ void PreferencesWidget::retranslateUi() {
     _versionWidget->setUpdateButtonText(tr("UPDATE"));
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -1293,7 +1293,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
 
             if (job->hasHttpError()) {
                 LOG_SYNCPAL_WARN(_logger, "Upload Session Token: " << uploadSessionToken.token().c_str()
-                                                                     << " has already been canceled or has expired.");
+                                                                   << " has already been canceled or has expired.");
             }
         } catch (std::exception const &e) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob: " << e.what());

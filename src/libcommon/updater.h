@@ -41,4 +41,4 @@ class Updater : public QObject {
         virtual UpdateState updateState() const = 0;
 };
 
-}  // namespace KDC
+} // namespace KDC
