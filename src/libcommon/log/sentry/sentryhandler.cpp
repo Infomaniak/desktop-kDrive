@@ -299,7 +299,7 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount++;
+    storedEvent.captureCount = std::min(storedEvent.captureCount + 1, UINT_MAX);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
