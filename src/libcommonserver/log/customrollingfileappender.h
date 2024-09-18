@@ -36,8 +36,8 @@ class CustomRollingFileAppender : public log4cplus::RollingFileAppender {
             _lastExpireCheck = std::chrono::system_clock::time_point();  // Force check on next append
         }
 
-        inline void setMaxFileSize(long newMaxFileSize) { maxFileSize = newMaxFileSize; }
-        inline int getMaxFileSize() const { return maxFileSize; }
+        inline void setMaxFileSize(long newMaxFileSize) { _maxFileSize = newMaxFileSize; }
+        inline int getMaxFileSize() const { return _maxFileSize; }
 
     protected:
         void append(const log4cplus::spi::InternalLoggingEvent &event) override;
