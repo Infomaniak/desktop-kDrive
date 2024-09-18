@@ -53,7 +53,7 @@ jobs:
           rm -f BullseyeCoverageExclusions
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
           covselect --import BullseyeCoverageExclusions
-          covhtml -a coverage_report_dir
+          covxml -f test.cov -o coverage.xml
 
       - name: Install sonar-scanner
         uses: sonarsource/sonarqube-github-c-cpp@v1
@@ -70,7 +70,7 @@ jobs:
             --define sonar.organization=infomaniak \
             --define sonar.sources=src \
             --define sonar.cfamily.compile-commands="build-linux/build/compile_commands.json" \
-            --define sonar.cfamily.bullseye.reportPath=coverage_report_dir
+            --define sonar.cfamily.bullseye.reportPath=coverage.xml
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
