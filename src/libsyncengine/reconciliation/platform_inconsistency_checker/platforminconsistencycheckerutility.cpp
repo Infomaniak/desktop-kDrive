@@ -201,7 +201,7 @@ SyncName PlatformInconsistencyCheckerUtility::charToHex(unsigned int c) {
 void PlatformInconsistencyCheckerUtility::setMaxPath() {
     _maxPathLength = CommonUtility::maxPathLength();
 #if defined(_WIN32)
-    _maxPathLengthFolder = CommonUtility::maxPathLengthFolder();
+    _maxPathLengthFolder = CommonUtility::maxPathLength();
 #endif
 }
 
