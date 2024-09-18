@@ -203,8 +203,7 @@ std::string toString(ExitCause e) {
         default:
             return "No conversion to string available";
     }
-
-} // namespace KDC
+}
 
 std::string toString(ConflictType e) {
     switch (e) {
