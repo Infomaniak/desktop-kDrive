@@ -47,6 +47,8 @@ inline std::string toString(SentryLevel level) {
             return "Error";
         case SentryLevel::Fatal:
             return "Fatal";
+        default:
+            return "No conversion to string available";
     }
 };
 
