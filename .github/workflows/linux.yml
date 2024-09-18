@@ -36,8 +36,8 @@ jobs:
 
       - name: Build kDrive desktop
         run : | 
-          cov01 -1 # coverage on
           export PATH="/opt/BullseyeCoverage/bin/:${PATH}"
+          cov01 -1 # coverage on
           ./infomaniak-build-tools/linux/build-ci-amd64.sh
 
       - name: Grant tests script execute permission
@@ -51,9 +51,9 @@ jobs:
 
       - name: Compute code coverage
         run : |
-          PATH="/opt/BullseyeCoverage/bin/:${PATH}"
           rm -f BullseyeCoverageExclusions
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
+          PATH="/opt/BullseyeCoverage/bin/:${PATH}"
           cov01 -0 # coverage off
           covselect --import BullseyeCoverageExclusions
           covxml -f src/test.cov -o coverage.xml
