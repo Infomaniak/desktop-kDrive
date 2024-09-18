@@ -29,8 +29,6 @@ testers=$(find . -type f -name "kDrive_test_*")
 errors=0
 failures=()
 
-cov01 -1 # coverage on
-
 for tester in ${testers[@]}; do
 
     echo -e "${YELLOW}---------- Running $(basename $tester) ----------${NC}"
