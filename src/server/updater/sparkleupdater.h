@@ -19,22 +19,22 @@
 #pragma once
 
 #include "updaterserver.h"
-#include "libcommon/utility/types.h"
-#include "config.h"
 #include "libcommon/utility/utility.h"
+#include "server/updater_v2/abstractupdater.h"
 
 namespace KDC {
 
-
 enum DownloadState { Unknown = 0, FindValidUpdate, DidNotFindUpdate, AbortWithError };
 
-class SparkleUpdater /*: public UpdaterServer*/ {
+class SparkleUpdater final : public AbstractUpdater {
     public:
         explicit SparkleUpdater();
-        ~SparkleUpdater();
+        ~SparkleUpdater() final;
+
+        void onUpdateFound(const std::string &downloadUrl) override;
 
         void setUpdateUrl(const std::string &url);
-        void setQuitCallback(const QuitCallback &quitCallback);
+        void setQuitCallback(const QuitCallback &quitCallback) final;
         bool startUpdater();
 
         // unused in this updater

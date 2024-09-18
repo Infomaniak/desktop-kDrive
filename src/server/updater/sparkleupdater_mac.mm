@@ -156,7 +156,7 @@ class SparkleUpdater::Private {
 };
 
 // Delete ~/Library//Preferences/864VDCS2QY.com.infomaniak.drive.desktopclient.plist to re-test
-SparkleUpdater::SparkleUpdater() /*: UpdaterServer()*/ {
+SparkleUpdater::SparkleUpdater() {
     d = new Private;
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
@@ -178,7 +178,7 @@ SparkleUpdater::SparkleUpdater() /*: UpdaterServer()*/ {
     [d->updater setSendsSystemProfile:NO];
     [d->updater retain];
 
-    setUpdateUrl("" /*TODO : add URL*/);
+    //setUpdateUrl("" /*TODO : add URL*/);
 
     // Sparkle 1.8 required
     NSString *userAgent = [NSString stringWithUTF8String:KDC::CommonUtility::userAgentString().c_str()];
@@ -190,6 +190,11 @@ SparkleUpdater::~SparkleUpdater() {
     [d->updaterDelegate release];
     [d->spuStandardUserDriver release];
     delete d;
+}
+
+void SparkleUpdater::onUpdateFound(const std::string &downloadUrl) {
+    setUpdateUrl(downloadUrl);
+    checkForUpdate();
 }
 
 void SparkleUpdater::setUpdateUrl(const std::string &url) {

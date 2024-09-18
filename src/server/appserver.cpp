@@ -55,6 +55,9 @@
 #include <windows.h>
 #endif
 
+#include "updater_v2/updatemanager.h"
+
+
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
@@ -282,8 +285,11 @@ AppServer::AppServer(int &argc, char **argv) :
 
 #ifdef Q_OS_MACOS
     // Init Updater
-    const QuitCallback quitCallback = std::bind_front(&AppServer::sendQuit, this);
-    UpdaterServer::instance()->setQuitCallback(quitCallback);
+    // const QuitCallback quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    // UpdaterServer::instance()->setQuitCallback(quitCallback);
+
+    const std::function<void()> quitCallback2 = std::bind_front(&AppServer::sendQuit, this);
+    UpdateManager::instance()->setQuitCallback(quitCallback2);
 #endif
 
     // Update checks

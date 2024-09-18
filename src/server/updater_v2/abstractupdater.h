@@ -27,7 +27,7 @@ class AbstractUpdater {
         AbstractUpdater() = default;
         virtual ~AbstractUpdater() = default;
 
-        virtual void onUpdateFound() = 0;
+        virtual void onUpdateFound(const std::string &downloadUrl) = 0;
         virtual void setQuitCallback(const std::function<void()> &quitCallback) { /* Redefined in child class if necessary */ }
 };
 

@@ -56,7 +56,6 @@ set(updater_SRCS
     updater/updaterserver.h updater/updaterserver.cpp
     updater_v2/updatemanager.h updater_v2/updatemanager.cpp
     updater_v2/abstractupdater.h updater_v2/abstractupdater.cpp
-    updater_v2/macosupdater.h updater_v2/macosupdater.cpp
 )
 
 IF( APPLE )

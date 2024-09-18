@@ -63,7 +63,7 @@ class UpdateManager {
         ExitCode checkUpdateAvailable(bool &available);
         ExitCode downloadUpdate() noexcept;
 
-        static AbstractUpdater *createUpdater();
+        static void createUpdater();
 
         static UpdateManager *_instance;
         static AbstractUpdater *_updater;

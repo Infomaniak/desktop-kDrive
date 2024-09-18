@@ -19,12 +19,12 @@
 
 #include "UpdateManager.h"
 
-#include "macosupdater.h"
 #include "db/parmsdb.h"
 #include "jobs/network/getappversionjob.h"
 #include "jobs/network/API_v2/downloadjob.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
+#include "server/updater/sparkleupdater.h"
 #include "utility/utility.h"
 
 namespace KDC {
@@ -74,7 +74,7 @@ void UpdateManager::run() noexcept {
             }
 
             if (updateAvailable) {
-                // updateFound();       // TODO
+                _updater->onUpdateFound(_versionInfo.downloadUrl);
             } else {
                 Utility::msleep(oneHour); // Sleep for 1h
             }
@@ -149,9 +149,9 @@ ExitCode UpdateManager::downloadUpdate() noexcept {
     return ExitCode::Ok;
 }
 
-AbstractUpdater *UpdateManager::createUpdater() {
+void UpdateManager::createUpdater() {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    _updater = new MacOsUpdater();
+    _updater = new SparkleUpdater();
 #elif defined(Q_OS_WIN32)
     // Also for MSI
     _instance = new NSISUpdater(url);
