@@ -156,7 +156,7 @@ class SparkleUpdater::Private {
 };
 
 // Delete ~/Library//Preferences/864VDCS2QY.com.infomaniak.drive.desktopclient.plist to re-test
-SparkleUpdater::SparkleUpdater(const QUrl &appCastUrl) : UpdaterServer() {
+SparkleUpdater::SparkleUpdater() /*: UpdaterServer()*/ {
     d = new Private;
 
     d->updaterDelegate = [[DelegateUpdaterObject alloc] init];
@@ -178,7 +178,7 @@ SparkleUpdater::SparkleUpdater(const QUrl &appCastUrl) : UpdaterServer() {
     [d->updater setSendsSystemProfile:NO];
     [d->updater retain];
 
-    setUpdateUrl(appCastUrl);
+    setUpdateUrl("" /*TODO : add URL*/);
 
     // Sparkle 1.8 required
     NSString *userAgent = [NSString stringWithUTF8String:KDC::CommonUtility::userAgentString().c_str()];
@@ -192,8 +192,8 @@ SparkleUpdater::~SparkleUpdater() {
     delete d;
 }
 
-void SparkleUpdater::setUpdateUrl(const QUrl &url) {
-    NSURL *nsurl = [NSURL URLWithString:[NSString stringWithUTF8String:url.toString().toUtf8().data()]];
+void SparkleUpdater::setUpdateUrl(const std::string &url) {
+    NSURL *nsurl = [NSURL URLWithString:[NSString url]];
     [d->updater setFeedURL:nsurl];
 }
 
@@ -234,17 +234,13 @@ int SparkleUpdater::state() const {
     return [d->updaterDelegate downloadState];
 }
 
-QString SparkleUpdater::version() const {
-    return [[d->updaterDelegate availableVersion] UTF8String];
-}
-
 bool SparkleUpdater::updateFound() const {
     DownloadState state = [d->updaterDelegate downloadState];
     return state == FindValidUpdate;
 }
 
-void SparkleUpdater::slotStartInstaller() {
-    checkForUpdate();
-}
+//void SparkleUpdater::slotStartInstaller() {
+//    checkForUpdate();
+//}
 
 }  // namespace KDC

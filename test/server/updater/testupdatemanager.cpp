@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testabstractupdater.h"
+#include "testupdatemanager.h"
 
 #include "db/parmsdb.h"
 #include "requests/parameterscache.h"
@@ -26,7 +26,7 @@
 
 #include <regex>
 
-#include "server/updater_v2/abstractupdater.h"
+#include "../../../src/server/updater_v2/UpdateManager.h"
 #include "test_utility/testhelpers.h"
 
 #include <Poco/JSON/Parser.h>
@@ -38,7 +38,7 @@ static const std::string bigVersionJsonUpdateStr =
 static const std::string smallVersionJsonUpdateStr =
         R"({"result":"success","data":{"application_id":27,"has_prod_next":false,"version":{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"1.1.1","next_version_rate":0,"published_versions":[{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]}]}}})";
 
-void TestAbstractUpdater::setUp() {
+void TestUpdateManager::setUp() {
     // Create parmsDb
     bool alreadyExists = false;
     const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
@@ -61,15 +61,15 @@ class TestGetAppVersionJob final : public GetAppVersionJob {
         bool _updateShoudBeAvailable{false};
 };
 
-void TestAbstractUpdater::testCheckUpdateAvailable() {
+void TestUpdateManager::testCheckUpdateAvailable() {
     const auto appUid = "1234567890";
 
     // Version is higher than current version
     {
         auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, true);
-        AbstractUpdater::instance(true)->setGetAppVersionJob(testJob);
+        UpdateManager::instance(true)->setGetAppVersionJob(testJob);
         bool updateAvailable = false;
-        AbstractUpdater::instance(true)->checkUpdateAvailable(updateAvailable);
+        UpdateManager::instance(true)->checkUpdateAvailable(updateAvailable);
         CPPUNIT_ASSERT(updateAvailable);
         delete testJob;
     }
@@ -77,15 +77,15 @@ void TestAbstractUpdater::testCheckUpdateAvailable() {
     // Version is lower than current version
     {
         auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, false);
-        AbstractUpdater::instance(true)->setGetAppVersionJob(testJob);
+        UpdateManager::instance(true)->setGetAppVersionJob(testJob);
         bool updateAvailable = false;
-        AbstractUpdater::instance(true)->checkUpdateAvailable(updateAvailable);
+        UpdateManager::instance(true)->checkUpdateAvailable(updateAvailable);
         CPPUNIT_ASSERT(!updateAvailable);
         delete testJob;
     }
 }
 
-void TestAbstractUpdater::testCurrentVersion() {
+void TestUpdateManager::testCurrentVersion() {
     const std::string test = CommonUtility::currentVersion();
 #ifdef NDEBUG
     CPPUNIT_ASSERT(std::regex_match(test, std::regex(R"(\d{1,2}[.]\d{1,2}[.]\d{1,2}[.]\d{8}$)")));

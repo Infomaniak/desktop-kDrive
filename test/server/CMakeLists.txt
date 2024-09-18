@@ -17,11 +17,11 @@ set(testserver_SRCS
     ${server_srcs_path}/updater/kdcupdater.h ${server_srcs_path}/updater/kdcupdater.cpp
     ${server_srcs_path}/updater/updateinfo.h ${server_srcs_path}/updater/updateinfo.cpp
     ${server_srcs_path}/updater/updaterserver.h ${server_srcs_path}/updater/updaterserver.cpp
-    ${server_srcs_path}/updater_v2/abstractupdater.h ${server_srcs_path}/updater_v2/abstractupdater.cpp
+    ${server_srcs_path}/updater_v2/updatemanager.h ${server_srcs_path}/updater_v2/updatemanager.cpp
     test.cpp
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdater.h updater/testupdater.cpp
-    updater/testabstractupdater.h updater/testabstractupdater.cpp
+        updater/TestUpdateManager.h updater/TestUpdateManager.cpp
 )
 
 if(APPLE)

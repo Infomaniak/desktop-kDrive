@@ -1,3 +1,4 @@
+
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -18,17 +19,24 @@
 
 #pragma once
 
-#include <functional>
+#include "testincludes.h"
+#include "server/updater_v2/updatemanager.h"
+#include "utility/types.h"
+using namespace CppUnit;
 
 namespace KDC {
-
-class AbstractUpdater {
+class TestUpdateManager final : public CppUnit::TestFixture {
     public:
-        AbstractUpdater() = default;
-        virtual ~AbstractUpdater() = default;
+        CPPUNIT_TEST_SUITE(TestUpdateManager);
+        CPPUNIT_TEST(testCheckUpdateAvailable);
+        CPPUNIT_TEST(testCurrentVersion);
+        CPPUNIT_TEST_SUITE_END();
 
-        virtual void onUpdateFound() = 0;
-        virtual void setQuitCallback(const std::function<void()> &quitCallback) { /* Redefined in child class if necessary */ }
+    public:
+        void setUp() override;
+
+    protected:
+        void testCheckUpdateAvailable();
+        void testCurrentVersion();
 };
-
 } // namespace KDC

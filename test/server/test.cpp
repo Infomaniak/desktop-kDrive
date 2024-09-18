@@ -23,14 +23,16 @@
 #include "vfs/mac/testlitesyncextconnector.h"
 #endif
 #include "logarchiver/testlogarchiver.h"
+#include "updater/testupdatemanager.h"
 #include "updater/testupdater.h"
 namespace KDC {
-#ifdef __APPLE__
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
-#endif
-CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
-CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdater);
-}  // namespace KDC
+// #ifdef __APPLE__
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
+// #endif
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
+// CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdater);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdateManager);
+} // namespace KDC
 
 int main(int, char **) {
     return runTestSuite("_kDriveTestServer.log");

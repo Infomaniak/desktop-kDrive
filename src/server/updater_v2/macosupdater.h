@@ -18,17 +18,20 @@
 
 #pragma once
 
-#include <functional>
+#include "abstractupdater.h"
+#include "../updater/sparkleupdater.h"
 
 namespace KDC {
 
-class AbstractUpdater {
+class MacOsUpdater final : public AbstractUpdater {
     public:
-        AbstractUpdater() = default;
-        virtual ~AbstractUpdater() = default;
+        void onUpdateFound() override;
+        void setQuitCallback(const std::function<void()> &quitCallback) override {
+            _sparkleUpdater.setQuitCallback(quitCallback);
+        }
 
-        virtual void onUpdateFound() = 0;
-        virtual void setQuitCallback(const std::function<void()> &quitCallback) { /* Redefined in child class if necessary */ }
+    private:
+        SparkleUpdater _sparkleUpdater;
 };
 
 } // namespace KDC

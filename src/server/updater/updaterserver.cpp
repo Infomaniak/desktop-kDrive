@@ -27,6 +27,7 @@
 #include "config.h"
 #include "libcommon/theme/theme.h"
 #include "libcommonserver/log/log.h"
+#include "utility/utility.h"
 
 #include <QUrl>
 #include <QUrlQuery>
@@ -70,7 +71,7 @@ QString UpdaterServer::version() const {
     QString version;
 
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    version = qobject_cast<SparkleUpdater *>(instance())->version();
+    version = QString::fromStdString(CommonUtility::currentVersion());
 #else
     version = qobject_cast<KDCUpdater *>(instance())->updateVersion();
 #endif
@@ -85,7 +86,7 @@ bool UpdaterServer::isKDCUpdater() {
 
 bool UpdaterServer::isSparkleUpdater() {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *sparkleUpdater = qobject_cast<SparkleUpdater *>(instance());
+    SparkleUpdater *sparkleUpdater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
     return (sparkleUpdater != nullptr);
 #else
     return false;
@@ -108,7 +109,7 @@ bool UpdaterServer::downloadCompleted() const {
 
 bool UpdaterServer::updateFound() const {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *sparkleUpdater = qobject_cast<SparkleUpdater *>(instance());
+    SparkleUpdater *sparkleUpdater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
     if (sparkleUpdater) {
         return sparkleUpdater->updateFound();
     }
@@ -119,9 +120,9 @@ bool UpdaterServer::updateFound() const {
 
 void UpdaterServer::startInstaller() const {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *updater = qobject_cast<SparkleUpdater *>(instance());
+    SparkleUpdater *updater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
     if (updater) {
-        updater->slotStartInstaller();
+        // updater->slotStartInstaller();
     }
 #elif defined(Q_OS_WIN32)
     KDCUpdater *updater = qobject_cast<KDCUpdater *>(instance());
@@ -172,7 +173,7 @@ QString UpdaterServer::getSystemInfo() {
     process.waitForFinished();
     QByteArray output = process.readAllStandardOutput();
     LOG_DEBUG(Log::instance()->getLogger(), "Sys Info size: " << output.length());
-    if (output.length() > 1024) output.clear();  // don't send too much.
+    if (output.length() > 1024) output.clear(); // don't send too much.
 
     return QString::fromLocal8Bit(output.toBase64());
 #else
@@ -190,7 +191,7 @@ UpdaterServer *UpdaterServer::create() {
     }
 
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    return new SparkleUpdater(url);
+    return nullptr; // new SparkleUpdater(/*url*/);
 #elif defined(Q_OS_WIN32)
     // Also for MSI
     return new NSISUpdater(url);
@@ -221,4 +222,4 @@ QString UpdaterServer::clientVersion() {
     return QString::fromLatin1(KDRIVE_STRINGIFY(KDRIVE_VERSION_FULL));
 }
 
-}  // namespace KDC
+} // namespace KDC

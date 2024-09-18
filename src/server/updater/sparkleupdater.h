@@ -21,66 +21,64 @@
 #include "updaterserver.h"
 #include "libcommon/utility/types.h"
 #include "config.h"
-
-#include <QObject>
+#include "libcommon/utility/utility.h"
 
 namespace KDC {
 
+
 enum DownloadState { Unknown = 0, FindValidUpdate, DidNotFindUpdate, AbortWithError };
 
-class SparkleUpdater : public UpdaterServer {
-        Q_OBJECT
+class SparkleUpdater /*: public UpdaterServer*/ {
     public:
-        explicit SparkleUpdater(const QUrl &appCastUrl);
-        ~SparkleUpdater() override;
+        explicit SparkleUpdater();
+        ~SparkleUpdater();
 
-        void setUpdateUrl(const QUrl &url);
-        void setQuitCallback(const QuitCallback &quitCallback) override;
+        void setUpdateUrl(const std::string &url);
+        void setQuitCallback(const QuitCallback &quitCallback);
         bool startUpdater();
 
         // unused in this updater
-        void checkForUpdate() Q_DECL_OVERRIDE;
-        void backgroundCheckForUpdate() Q_DECL_OVERRIDE;
-        bool handleStartup() Q_DECL_OVERRIDE { return false; }
-        UpdateState updateState() const override {
-            switch (state()) {
-                using enum KDC::UpdateState;
-                case FindValidUpdate:
-                    return Ready;
-                case DidNotFindUpdate:
-                    return None;
-                case AbortWithError:
-                case Unknown:
-                default:
-                    return Error;
-            }
-        }
+        void checkForUpdate();
+        void backgroundCheckForUpdate();
+        bool handleStartup() { return false; }
+        // UpdateState updateState() const override {
+        //     switch (state()) {
+        //         using enum KDC::UpdateState;
+        //         case FindValidUpdate:
+        //             return Ready;
+        //         case DidNotFindUpdate:
+        //             return None;
+        //         case AbortWithError:
+        //         case Unknown:
+        //         default:
+        //             return Error;
+        //     }
+        // }
         int state() const;
-        QString version() const override;
-        QString statusString() const
-            override  // defined in header file because "mm" file not read by "lupdate" command for translation file generation
-        {
-            switch (state()) {
-                case Unknown:
-                    return tr("Update status is unknown: Did not check for new updates.");
-                case FindValidUpdate:
-                    return tr("An update is available: %1").arg(version());
-                case DidNotFindUpdate:
-                    return tr("%1 is up to date!").arg(APPLICATION_NAME);
-                case AbortWithError:
-                    return tr("Check for update aborted.");
-                default:
-                    return QString();
-            }
-        }
-        bool updateFound() const override;
+        // QString statusString()
+        //         const // defined in header file because "mm" file not read by "lupdate" command for translation file generation
+        // {
+        //     switch (state()) {
+        //         case Unknown:
+        //             return tr("Update status is unknown: Did not check for new updates.");
+        //         case FindValidUpdate:
+        //             return tr("An update is available: %1").arg(CommonUtility::currentVersion().c_str());
+        //         case DidNotFindUpdate:
+        //             return tr("%1 is up to date!").arg(APPLICATION_NAME);
+        //         case AbortWithError:
+        //             return tr("Check for update aborted.");
+        //         default:
+        //             return QString();
+        //     }
+        // }
+        bool updateFound() const;
 
-    public slots:
-        void slotStartInstaller();
+        // public slots:
+        //     void slotStartInstaller();
 
     private:
         class Private;
         Private *d;
 };
 
-}  // namespace KDC
+} // namespace KDC
