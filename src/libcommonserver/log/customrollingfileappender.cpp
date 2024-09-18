@@ -126,9 +126,9 @@ static void loglog_opening_result(helpers::LogLog &loglog, log4cplus::tostream c
     }
 }
 
-} // namespace
+}  // namespace
 
-} // namespace log4cplus
+}  // namespace log4cplus
 
 /***********************************/
 /********** namespace KDC **********/
@@ -172,14 +172,11 @@ static void rolloverFiles(const log4cplus::tstring &filename, unsigned int maxBa
 }
 
 CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::tstring &filename, long maxFileSize, int maxBackupIndex,
-                                                     bool immediateFlush, bool createDirs) :
-    RollingFileAppender(filename, LONG_MAX /*Let us handle a custom rollover*/, maxBackupIndex, immediateFlush, createDirs),
-    _maxFileSize(maxFileSize), _lastExpireCheck() {
-    checkForExpiredFiles();
-}
+                                                     bool immediateFlush, bool createDirs)
+    : RollingFileAppender(filename, maxFileSize, maxBackupIndex, immediateFlush, createDirs), _lastExpireCheck() {}
 
-CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties) :
-    RollingFileAppender(properties), _lastExpireCheck() {}
+CustomRollingFileAppender::CustomRollingFileAppender(const log4cplus::helpers::Properties &properties)
+    : RollingFileAppender(properties), _lastExpireCheck() {}
 
 void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEvent &event) {
     // Seek to the end of log file so that tellp() below returns the
@@ -187,7 +184,7 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     if (useLockFile) out.seekp(0, std::ios_base::end);
 
     // Rotate log file if needed before appending to it.
-    if (out.tellp() > _maxFileSize) customRollover(true);
+    if (out.tellp() > maxFileSize) customRollover(true);
 
     try {
         RollingFileAppender::append(event);
@@ -199,7 +196,7 @@ void CustomRollingFileAppender::append(const log4cplus::spi::InternalLoggingEven
     }
 
     // Rotate log file if needed after appending to it.
-    if (out.tellp() > _maxFileSize) customRollover(true);
+    if (out.tellp() > maxFileSize) customRollover(true);
 
     // Check for expired files at startup and every hour
     if (_lastExpireCheck == std::chrono::time_point<std::chrono::system_clock>() ||
@@ -331,4 +328,4 @@ void CustomRollingFileAppender::checkForExpiredFiles() {
         }
     }
 }
-} // namespace KDC
+}  // namespace KDC
