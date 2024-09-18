@@ -70,7 +70,7 @@ jobs:
             --define sonar.organization=infomaniak \
             --define sonar.sources=src \
             --define sonar.cfamily.compile-commands="build-linux/build/compile_commands.json" \
-            --define sonar.cfamily.bullseye.reportPath=coverage.xml
+            --define sonar.cfamily.bullseye.reportPaths=coverage.xml
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
