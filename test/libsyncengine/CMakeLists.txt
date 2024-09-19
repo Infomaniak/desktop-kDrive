@@ -27,6 +27,7 @@ set(testsyncengine_SRCS
         ## File System Observer
         update_detection/file_system_observer/testremotefilesystemobserverworker.h update_detection/file_system_observer/testremotefilesystemobserverworker.cpp
         update_detection/file_system_observer/testlocalfilesystemobserverworker.h update_detection/file_system_observer/testlocalfilesystemobserverworker.cpp
+        update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp
         update_detection/file_system_observer/testsnapshot.h update_detection/file_system_observer/testsnapshot.cpp
         update_detection/file_system_observer/testcomputefsoperationworker.h update_detection/file_system_observer/testcomputefsoperationworker.cpp
         update_detection/file_system_observer/testfsoperation.h update_detection/file_system_observer/testfsoperation.cpp

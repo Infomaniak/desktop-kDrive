@@ -40,6 +40,7 @@
 #include "jobs/local/testlocaljobs.h"
 #include "jobs/testjobmanager.h"
 #include "requests/testexclusiontemplatecache.h"
+#include "update_detection/file_system_observer/testfolderwatchermac.h"
 
 namespace KDC {
 CPPUNIT_TEST_SUITE_REGISTRATION(TestExclusionTemplateCache);
@@ -52,6 +53,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshot);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperation);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestFsOperationSet);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLocalFileSystemObserverWorker);
+CPPUNIT_TEST_SUITE_REGISTRATION(TestFolderWatcher_mac);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestSnapshotItemHandler);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestRemoteFileSystemObserverWorker);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestComputeFSOperationWorker);

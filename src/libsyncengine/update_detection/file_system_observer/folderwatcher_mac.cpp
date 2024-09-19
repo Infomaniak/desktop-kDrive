@@ -33,7 +33,7 @@ FolderWatcher_mac::~FolderWatcher_mac() {}
 static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *clientCallBackInfo, size_t numEvents,
                      void *eventPathsVoid, const FSEventStreamEventFlags eventFlags[],
                      [[maybe_unused]] const FSEventStreamEventId eventIds[]) {
-    FolderWatcher_mac *fw = reinterpret_cast<FolderWatcher_mac *>(clientCallBackInfo);
+    auto *fw = reinterpret_cast<FolderWatcher_mac *>(clientCallBackInfo);
     if (!fw) {
         // Should never happen
         return;
@@ -48,28 +48,15 @@ static void callback([[maybe_unused]] ConstFSEventStreamRef streamRef, void *cli
             | kFSEventStreamEventFlagItemChangeOwner; // for rights change
 
     std::list<std::pair<std::filesystem::path, OperationType>> paths;
-    CFArrayRef eventPaths = (CFArrayRef) eventPathsVoid;
+    const auto eventPaths = static_cast<CFArrayRef>(eventPathsVoid);
     for (int i = 0; i < static_cast<int>(numEvents); ++i) {
-        OperationType opType = OperationType::None;
-        if (eventFlags[i] & kFSEventStreamEventFlagItemRemoved) {
-            opType = OperationType::Delete;
-        } else if (eventFlags[i] & kFSEventStreamEventFlagItemCreated) {
-            opType = OperationType::Create;
-        } else if (eventFlags[i] & kFSEventStreamEventFlagItemModified ||
-                   eventFlags[i] & kFSEventStreamEventFlagItemInodeMetaMod) {
-            opType = OperationType::Edit;
-        } else if (eventFlags[i] & kFSEventStreamEventFlagItemRenamed) {
-            opType = OperationType::Move;
-        } else if (eventFlags[i] & kFSEventStreamEventFlagItemChangeOwner) {
-            opType = OperationType::Rights;
-        }
-
+        auto opType = FolderWatcher_mac::getOpType(eventFlags[i]);
         if (!(eventFlags[i] & interestingFlags)) {
             // Ignore changes that does not appear in interestingFlags
             continue;
         }
 
-        CFStringRef pathRef = reinterpret_cast<CFStringRef>(CFArrayGetValueAtIndex(eventPaths, i));
+        const auto pathRef = reinterpret_cast<CFStringRef>(CFArrayGetValueAtIndex(eventPaths, i));
         const char *pathPtr = CFStringGetCStringPtr(pathRef, kCFStringEncodingUTF8);
         if (ParametersCache::isExtendedLogEnabled()) {
             LOGW_DEBUG(fw->logger(),
@@ -127,6 +114,21 @@ void FolderWatcher_mac::doNotifyParent(const std::list<std::pair<std::filesystem
     if (!_stop && _parent) {
         _parent->changesDetected(changes);
     }
+}
+
+OperationType FolderWatcher_mac::getOpType(const FSEventStreamEventFlags eventFlags) {
+    if (eventFlags & kFSEventStreamEventFlagItemRemoved) {
+        return OperationType::Delete;
+    } else if (eventFlags & kFSEventStreamEventFlagItemCreated) {
+        return OperationType::Create;
+    } else if (eventFlags & kFSEventStreamEventFlagItemModified || eventFlags & kFSEventStreamEventFlagItemInodeMetaMod) {
+        return OperationType::Edit;
+    } else if (eventFlags & kFSEventStreamEventFlagItemRenamed) {
+        return OperationType::Move;
+    } else if (eventFlags & kFSEventStreamEventFlagItemChangeOwner) {
+        return OperationType::Rights;
+    }
+    return OperationType::None;
 }
 
 void KDC::FolderWatcher_mac::stopWatching() {
