@@ -71,7 +71,7 @@ class SqliteQuery {
         log4cplus::Logger _logger;
         std::shared_ptr<sqlite3> _sqlite3Db;
         std::shared_ptr<sqlite3_stmt> _stmt;
-        int _errId;
+        int _errId{-1};
         std::string _error;
         std::string _sql;
 
