@@ -71,8 +71,8 @@
 #define LITE_SYNC_EXT_BUNDLE_ID "com.infomaniak.drive.desktopclient.LiteSyncExt"
 
 namespace KDC {
-const int CommonUtility::logsPurgeRate = 7;               // days
-const int CommonUtility::logMaxSize = 500 * 1024 * 1024;  // MB
+const int CommonUtility::logsPurgeRate = 7; // days
+const int CommonUtility::logMaxSize = 500 * 1024 * 1024; // MB
 
 SyncPath CommonUtility::_workingDirPath = "";
 
@@ -85,34 +85,7 @@ static const QString italianCode = "it";
 static std::random_device rd;
 static std::default_random_engine gen(rd());
 
-std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*/) {
-    static const char alphanum[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
-
-    static std::uniform_int_distribution<int> distrib(
-        0, sizeof(alphanum) - 2);  // -2 in order to avoid the null terminating character
-
-    std::string tmp;
-    tmp.reserve(length);
-    for (int i = 0; i < length; ++i) {
-        tmp += alphanum[distrib(gen)];
-    }
-
-    return tmp;
-}
-
-std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
-    static const char charArray[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz"
-        "-._~";
-
-    static std::uniform_int_distribution<int> distrib(
-        0, sizeof(charArray) - 2);  // -2 in order to avoid the null terminating character
-
+std::string generateRandomString(const char *charArray, std::uniform_int_distribution<int> &distrib, const int length /*= 10*/) {
     std::string tmp;
     tmp.reserve(length);
     for (int i = 0; i < length; ++i) {
@@ -122,8 +95,46 @@ std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
     return tmp;
 }
 
+std::string CommonUtility::generateRandomStringAlphaNum(const int length /*= 10*/) {
+    static constexpr char charArray[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+
+    static std::uniform_int_distribution<int> distrib(
+            0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
+
+    return generateRandomString(charArray, distrib, length);
+}
+
+std::string CommonUtility::generateRandomStringPKCE(const int length /*= 10*/) {
+    static constexpr char charArray[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz"
+            "-._~";
+
+    static std::uniform_int_distribution<int> distrib(
+            0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
+
+    return generateRandomString(charArray, distrib, length);
+}
+
+std::string CommonUtility::generateAppId(const int length /*= 10*/) {
+    // The back only accept characters from `A` to `F`
+    static constexpr char charArray[] =
+            "0123456789"
+            "ABCDEF"
+            "abcdef";
+
+    static std::uniform_int_distribution<int> distrib(
+            0, sizeof(charArray) - 2); // -2 in order to avoid the null terminating character
+
+    return generateRandomString(charArray, distrib, length);
+}
+
 void CommonUtility::crash() {
-    volatile int *a = (int *)(NULL);
+    volatile int *a = (int *) (NULL);
     *a = 1;
 }
 
@@ -180,10 +191,10 @@ QString CommonUtility::fileSystemName(const QString &dirPath) {
     return QString();
 }
 
-QString CommonUtility::getIconPath(IconType iconType) {
+QString CommonUtility::getIconPath(const IconType iconType) {
     switch (iconType) {
         case KDC::CommonUtility::MAIN_FOLDER_ICON:
-            return "../Resources/kdrive-mac.icns";  // TODO : To be changed to a specific incs file
+            return "../Resources/kdrive-mac.icns"; // TODO : To be changed to a specific incs file
             break;
         case KDC::CommonUtility::COMMON_DOCUMENT_ICON:
             // return path to common_document_folder.icns;   // Not implemented yet
@@ -220,12 +231,12 @@ qint64 CommonUtility::freeDiskSpace(const QString &path) {
 #if defined(Q_OS_MAC) || defined(Q_OS_FREEBSD) || defined(Q_OS_FREEBSD_KERNEL) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD)
     struct statvfs stat;
     if (statvfs(path.toLocal8Bit().data(), &stat) == 0) {
-        return (qint64)stat.f_bavail * stat.f_frsize;
+        return (qint64) stat.f_bavail * stat.f_frsize;
     }
 #elif defined(Q_OS_UNIX)
     struct statvfs64 stat;
     if (statvfs64(path.toLocal8Bit().data(), &stat) == 0) {
-        return (qint64)stat.f_bavail * stat.f_frsize;
+        return (qint64) stat.f_bavail * stat.f_frsize;
     }
 #elif defined(Q_OS_WIN)
     ULARGE_INTEGER freeBytes;
@@ -365,7 +376,7 @@ bool CommonUtility::compressFile(const QString &originalName, const QString &tar
         compressedSize += data.size();
         if (!safeProgressCallback(static_cast<int>((100 * compressedSize) / original.size()))) {
             gzclose(compressed);
-            return true;  // User cancelled
+            return true; // User cancelled
         }
     }
     gzclose(compressed);
@@ -392,7 +403,7 @@ QString applicationTrPath() {
 #elif defined(__APPLE__)
 
 #ifdef QT_NO_DEBUG
-    return QCoreApplication::applicationDirPath() + QLatin1String("/../Resources/Translations");  // path defaults to app dir.
+    return QCoreApplication::applicationDirPath() + QLatin1String("/../Resources/Translations"); // path defaults to app dir.
 #else
     return QString("%1/kDrive.app/Contents/Resources/Translations").arg(CMAKE_INSTALL_PREFIX);
 #endif
@@ -415,7 +426,7 @@ QString substLang(const QString &lang) {
     return lang;
 }
 
-void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enforcedLocale) {
+void CommonUtility::setupTranslations(QCoreApplication *app, const KDC::Language enforcedLocale) {
     QStringList uiLanguages = languageCodeList(enforcedLocale);
 
     static QTranslator *translator = nullptr;
@@ -436,7 +447,7 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
     qtTranslator = new QTranslator(app);
 
     foreach (QString lang, uiLanguages) {
-        lang.replace(QLatin1Char('-'), QLatin1Char('_'));  // work around QTBUG-25973
+        lang.replace(QLatin1Char('-'), QLatin1Char('_')); // work around QTBUG-25973
         lang = substLang(lang);
         const QString trPath = applicationTrPath();
         const QString trFile = QLatin1String("client_") + lang;
@@ -467,7 +478,7 @@ void CommonUtility::setupTranslations(QCoreApplication *app, KDC::Language enfor
     }
 }
 
-bool CommonUtility::colorThresholdCheck(int red, int green, int blue) {
+bool CommonUtility::colorThresholdCheck(const int red, const int green, const int blue) {
     return 1.0 - (0.299 * red + 0.587 * green + 0.114 * blue) / 255.0 > 0.5;
 }
 
@@ -480,13 +491,13 @@ SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &p
     }
 
     std::vector<SyncName> rootPathElts;
-    for (const auto &dir : rootPathNormal) {
+    for (const auto &dir: rootPathNormal) {
         rootPathElts.push_back(dir.native());
     }
 
     size_t index = 0;
     std::filesystem::path relativePath;
-    for (const auto &dir : pathNormal) {
+    for (const auto &dir: pathNormal) {
         if (index >= rootPathElts.size()) {
             relativePath /= dir;
         } else if (dir != rootPathElts[index]) {
@@ -499,7 +510,7 @@ SyncPath CommonUtility::relativePath(const SyncPath &rootPath, const SyncPath &p
     return relativePath;
 }
 
-QStringList CommonUtility::languageCodeList(KDC::Language enforcedLocale) {
+QStringList CommonUtility::languageCodeList(const KDC::Language enforcedLocale) {
     QStringList uiLanguages = QLocale::system().uiLanguages();
     uiLanguages.prepend(languageCode(enforcedLocale));
 
@@ -510,7 +521,7 @@ bool CommonUtility::languageCodeIsEnglish(const QString &languageCode) {
     return languageCode.compare(englishCode) == 0;
 }
 
-QString CommonUtility::languageCode(KDC::Language enforcedLocale) {
+QString CommonUtility::languageCode(const KDC::Language enforcedLocale) {
     switch (enforcedLocale) {
         case KDC::Language::Default: {
             return QLocale::system().uiLanguages().isEmpty() ? QString() : QLocale::system().uiLanguages().first().left(2);
@@ -578,7 +589,7 @@ SyncPath CommonUtility::getAppWorkingDir() {
     return _workingDirPath;
 }
 
-QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, NodeType type) {
+QString CommonUtility::getFileIconPathFromFileName(const QString &fileName, const NodeType type) {
     if (type == NodeType::Directory) {
         return QString(":/client/resources/icons/document types/folder.svg");
     } else if (type == NodeType::File) {
@@ -712,7 +723,7 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
     } while (pos != std::string::npos);
 }
 
-SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
+SyncPath CommonUtility::signalFilePath(const AppType appType, const SignalCategory signalCategory) {
     auto sigFilePath =
             std::filesystem::temp_directory_path() /
             (appType == AppType::Server ? (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName)
@@ -768,7 +779,7 @@ bool CommonUtility::dirNameIsValid(const SyncName &name) {
 
     std::filesystem::remove_all(tmpPath, ec);
 #else
-    (void)name;
+    (void) name;
 #endif
     return true;
 }
@@ -839,7 +850,7 @@ void CommonUtility::handleSignals(void (*sigHandler)(int)) {
 #endif
 }
 
-void CommonUtility::writeSignalFile(AppType appType, SignalType signalType) noexcept {
+void CommonUtility::writeSignalFile(const AppType appType, const SignalType signalType) noexcept {
     SignalCategory signalCategory;
     if (signalType == SignalType::Segv || signalType == SignalType::Fpe || signalType == SignalType::Ill
 #ifndef Q_OS_WIN
@@ -861,7 +872,7 @@ void CommonUtility::writeSignalFile(AppType appType, SignalType signalType) noex
     }
 }
 
-void CommonUtility::clearSignalFile(AppType appType, SignalCategory signalCategory, SignalType &signalType) noexcept {
+void CommonUtility::clearSignalFile(const AppType appType, const SignalCategory signalCategory, SignalType &signalType) noexcept {
     signalType = SignalType::None;
 
     SyncPath sigFilePath(signalFilePath(appType, signalCategory));
@@ -884,9 +895,9 @@ void CommonUtility::clearSignalFile(AppType appType, SignalCategory signalCatego
 bool CommonUtility::isLiteSyncExtEnabled() {
     QProcess *process = new QProcess();
     process->start(
-        "bash",
-        QStringList() << "-c"
-                      << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(LITE_SYNC_EXT_BUNDLE_ID));
+            "bash",
+            QStringList() << "-c"
+                          << QString("systemextensionsctl list | grep %1 | grep enabled | wc -l").arg(LITE_SYNC_EXT_BUNDLE_ID));
     process->waitForStarted();
     process->waitForFinished();
     QByteArray result = process->readAll();
@@ -906,15 +917,15 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
-                              .arg(serviceStr)
-                              .arg(LITE_SYNC_EXT_BUNDLE_ID));
+                                  .arg(serviceStr)
+                                  .arg(LITE_SYNC_EXT_BUNDLE_ID));
         } else {
             query.prepare(QString("SELECT auth_value FROM access"
                                   " WHERE service = \"%1\""
                                   " and client = \"%2\""
                                   " and client_type = 0")
-                              .arg(serviceStr)
-                              .arg(LITE_SYNC_EXT_BUNDLE_ID));
+                                  .arg(serviceStr)
+                                  .arg(LITE_SYNC_EXT_BUNDLE_ID));
         }
 
         query.exec();
@@ -944,4 +955,4 @@ bool CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(std::string &errorDescr) {
     return false;
 }
 #endif
-}  // namespace KDC
+} // namespace KDC

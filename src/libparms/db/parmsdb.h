@@ -137,7 +137,7 @@ class PARMS_EXPORT ParmsDb : public Db {
 
         bool insertDefaultParameters();
         bool insertDefaultAppState();
-        bool insertAppState(AppStateKey key, const std::string &value);
+        bool insertAppState(AppStateKey key, const std::string &value, bool noEmptyValue = false);
         bool updateExclusionTemplates();
 
         bool createAppState();

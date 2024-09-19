@@ -41,7 +41,7 @@ constexpr char APP_STATE_KEY_DEFAULT_LastServerSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastClientSelfRestartDate[] = "0";
 constexpr char APP_STATE_KEY_DEFAULT_LastLogUploadDate[] = "0";
 constexpr const char *APP_STATE_KEY_DEFAULT_LastLogUploadArchivePath = APP_STATE_DEFAULT_IS_EMPTY;
-constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0";  // KDC::LogUploadState::None
+constexpr char APP_STATE_KEY_DEFAULT_LogUploadState[] = "0"; // KDC::LogUploadState::None
 constexpr char APP_STATE_KEY_DEFAULT_LogUploadPercent[] = "0";
 constexpr const char *APP_STATE_KEY_DEFAULT_LogUploadToken = APP_STATE_DEFAULT_IS_EMPTY;
 
@@ -124,7 +124,7 @@ bool ParmsDb::insertDefaultAppState() {
         return false;
     }
 
-    if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateRandomStringAlphaNum(25))) {
+    if (!insertAppState(AppStateKey::AppUid, CommonUtility::generateAppId(25), true)) {
         LOG_WARN(_logger, "Error when inserting default value for LogUploadToken");
         return false;
     }
@@ -132,7 +132,7 @@ bool ParmsDb::insertDefaultAppState() {
     return true;
 }
 
-bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
+bool ParmsDb::insertAppState(AppStateKey key, const std::string &value, bool noEmptyValue /*= false*/) {
     const std::scoped_lock lock(_mutex);
     int errId = 0;
     std::string error;
@@ -152,6 +152,8 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
         LOG_WARN(_logger, "Error getting query result: " << SELECT_APP_STATE_REQUEST_ID);
         return false;
     }
+    std::string existingValue;
+    ASSERT(queryStringValue(SELECT_APP_STATE_REQUEST_ID, 0, existingValue))
     ASSERT(queryResetAndClearBindings(SELECT_APP_STATE_REQUEST_ID))
 
     if (!found) {
@@ -162,6 +164,15 @@ bool ParmsDb::insertAppState(AppStateKey key, const std::string &value) {
             LOG_WARN(_logger, "Error running query: " << INSERT_APP_STATE_REQUEST_ID);
             return false;
         }
+    } else if (noEmptyValue && existingValue.empty()) {
+        ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID))
+        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 1, static_cast<int>(key)))
+        ASSERT(queryBindValue(UPDATE_APP_STATE_REQUEST_ID, 2, valueStr))
+        if (!queryExec(UPDATE_APP_STATE_REQUEST_ID, errId, error)) {
+            LOG_WARN(_logger, "Error running query: " << UPDATE_APP_STATE_REQUEST_ID);
+            return false;
+        }
+        ASSERT(queryResetAndClearBindings(UPDATE_APP_STATE_REQUEST_ID))
     }
     return true;
 }
@@ -226,4 +237,4 @@ bool ParmsDb::updateAppState(AppStateKey key, const AppStateValue &value, bool &
     }
     return true;
 };
-}  // namespace KDC
+} // namespace KDC
