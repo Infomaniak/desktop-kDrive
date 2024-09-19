@@ -45,7 +45,7 @@ void TestTypes::testStreamConversion() {
     CPPUNIT_ASSERT_EQUAL(std::string("Edit(4)"), toStringWithCode(OperationType::Edit));
     CPPUNIT_ASSERT_EQUAL(std::string("Delete(8)"), toStringWithCode(OperationType::Delete));
     CPPUNIT_ASSERT_EQUAL(std::string("Rights(16)"), toStringWithCode(OperationType::Rights));
-    CPPUNIT_ASSERT(Utility::startsWith(toStringWithCode(fromInt<NodeType>(0x09)), noConversionStr));
+    CPPUNIT_ASSERT(Utility::startsWith(toStringWithCode(fromInt<OperationType>(0x09)), noConversionStr));
     CPPUNIT_ASSERT(Utility::startsWith(toStringWithCode(OperationType::Create | OperationType::Delete), noConversionStr));
 
     // Test stream operator for enum class without unicode
