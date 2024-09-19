@@ -22,6 +22,8 @@
 #include "libcommonserver/log/log.h"
 #include "testtypes.h"
 
+#include "utility/utility.h"
+
 namespace KDC {
 
 void KDC::TestTypes::testOtherSide() {
@@ -34,6 +36,17 @@ void TestTypes::testStreamConversion() {
     CPPUNIT_ASSERT_EQUAL(std::string("Unknown(0)"), toStringWithCode(NodeType::Unknown));
     CPPUNIT_ASSERT_EQUAL(std::string("File(1)"), toStringWithCode(NodeType::File));
     CPPUNIT_ASSERT_EQUAL(std::string("Directory(2)"), toStringWithCode(NodeType::Directory));
+    CPPUNIT_ASSERT_EQUAL(std::string("Directory(2)"), toStringWithCode(static_cast<NodeType>(2)));
+    CPPUNIT_ASSERT(Utility::startsWith(toStringWithCode(static_cast<NodeType>(3)), noConversionStr));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("None(0)"), toStringWithCode(OperationType::None));
+    CPPUNIT_ASSERT_EQUAL(std::string("Create(1)"), toStringWithCode(OperationType::Create));
+    CPPUNIT_ASSERT_EQUAL(std::string("Move(2)"), toStringWithCode(OperationType::Move));
+    CPPUNIT_ASSERT_EQUAL(std::string("Edit(4)"), toStringWithCode(OperationType::Edit));
+    CPPUNIT_ASSERT_EQUAL(std::string("Delete(8)"), toStringWithCode(OperationType::Delete));
+    CPPUNIT_ASSERT_EQUAL(std::string("Rights(16)"), toStringWithCode(OperationType::Rights));
+    CPPUNIT_ASSERT(Utility::startsWith(toStringWithCode(static_cast<NodeType>(0x09)), noConversionStr));
+    CPPUNIT_ASSERT(Utility::startsWith(toStringWithCode(OperationType::Create | OperationType::Delete), noConversionStr));
 
     // Test stream operator for enum class without unicode
     std::ostringstream os;
@@ -43,7 +56,7 @@ void TestTypes::testStreamConversion() {
     // Test stream operator for enum class with unicode
     std::wostringstream wos;
     wos << NodeType::Unknown;
-    CPPUNIT_ASSERT(L"Unknown(0)" == wos.str());  // Can't use CPPUNIT_ASSERT_EQUAL because of issue with wchar_t in CPPUNIT
+    CPPUNIT_ASSERT(L"Unknown(0)" == wos.str()); // Can't use CPPUNIT_ASSERT_EQUAL because of issue with wchar_t in CPPUNIT
 
     // Test Logging of enum class
     LOG_WARN(Log::instance()->getLogger(), "Test log of enumClass: " << NodeType::Unknown);
@@ -57,4 +70,4 @@ void TestTypes::testStreamConversion() {
     }
     CPPUNIT_ASSERT(previousLine.find("Test log of enumClass: Unknown(0)") != std::string::npos);
 }
-}  // namespace KDC
+} // namespace KDC
