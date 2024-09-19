@@ -21,11 +21,9 @@
 namespace KDC {
 
 DriveInfo::DriveInfo(int dbId, int accountDbId, const QString &name, const QColor &color) :
-    _dbId(dbId), _accountDbId(accountDbId), _name(name), _color(color), _maintenance(false), _locked(false),
-    _accessDenied(false) {}
+    _dbId(dbId), _accountDbId(accountDbId), _name(name), _color(color) {}
 
-DriveInfo::DriveInfo() :
-    _dbId(0), _accountDbId(0), _name(QString()), _color(QString()), _maintenance(false), _locked(false), _accessDenied(false) {}
+DriveInfo::DriveInfo() : _dbId(0), _accountDbId(0) {}
 
 QDataStream &operator>>(QDataStream &in, DriveInfo &info) {
     in >> info._dbId >> info._accountDbId >> info._name >> info._color >> info._notifications >> info._maintenance >>
