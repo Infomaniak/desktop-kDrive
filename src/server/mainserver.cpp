@@ -64,16 +64,13 @@ void signalHandler(int signum) {
 }
 
 int main(int argc, char **argv) {
-#if defined(__APPLE__) || defined(_WIN32)
-    // No sig handler on Linux as it interferes with Sentry
-    KDC::CommonUtility::handleSignals(signalHandler);
-#endif
+    // KDC::CommonUtility::handleSignals(signalHandler); // !!! The signal handler interferes with Sentry !!!
 
     std::cout << "kDrive server starting" << std::endl;
 
     // Working dir;
     KDC::CommonUtility::_workingDirPath = KDC::SyncPath(argv[0]).parent_path();
-    KDC::SentryHandler::init(KDC::SentryHandler::SentryProject::Server);
+    KDC::SentryHandler::init(KDC::AppType::Server);
     KDC::SentryHandler::instance()->setGlobalConfidentialityLevel(KDC::SentryConfidentialityLevel::Authenticated); 
 
     Q_INIT_RESOURCE(client);
