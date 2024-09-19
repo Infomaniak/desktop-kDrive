@@ -27,7 +27,6 @@ set(testsyncengine_SRCS
         ## File System Observer
         update_detection/file_system_observer/testremotefilesystemobserverworker.h update_detection/file_system_observer/testremotefilesystemobserverworker.cpp
         update_detection/file_system_observer/testlocalfilesystemobserverworker.h update_detection/file_system_observer/testlocalfilesystemobserverworker.cpp
-        update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp
         update_detection/file_system_observer/testsnapshot.h update_detection/file_system_observer/testsnapshot.cpp
         update_detection/file_system_observer/testcomputefsoperationworker.h update_detection/file_system_observer/testcomputefsoperationworker.cpp
         update_detection/file_system_observer/testfsoperation.h update_detection/file_system_observer/testfsoperation.cpp
@@ -53,6 +52,10 @@ set(testsyncengine_SRCS
         ../test_classes/syncpaltest.cpp
         ../test_classes/syncpaltest.h
 )
+
+if (APPLE)
+    list(APPEND testsyncengine_SRCS update_detection/file_system_observer/testfolderwatchermac.h update_detection/file_system_observer/testfolderwatchermac.cpp)
+endif ()
 
 if (USE_OUR_OWN_SQLITE3)
     list(APPEND testsyncengine_SRCS ${SQLITE3_SOURCE})
