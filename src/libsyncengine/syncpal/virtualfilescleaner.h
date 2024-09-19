@@ -32,7 +32,7 @@ class VirtualFilesCleaner {
                             bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
                             bool (*vfsClearFileAttributes)(int, const SyncPath &));
 
-        VirtualFilesCleaner(const SyncPath &path);
+        VirtualFilesCleaner(const SyncPath &path, int syncDbId);
 
         bool run();
         bool removeDehydratedPlaceholders(std::vector<SyncPath> &failedToRemovePlaceholders);
@@ -48,11 +48,11 @@ class VirtualFilesCleaner {
         log4cplus::Logger _logger;
 
         SyncPath _rootPath;
-        int _syncDbId;
+        int _syncDbId{-1};
         std::shared_ptr<SyncDb> _syncDb = nullptr;
         bool (*_vfsStatus)(int syncDbId, const SyncPath &itemPath, bool &isPlaceholder, bool &isHydrated, bool &isSyncing,
-                           int &progress);
-        bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &itemPath);
+                           int &progress){nullptr};
+        bool (*_vfsClearFileAttributes)(int syncDbId, const SyncPath &itemPath){nullptr};
 
         ExitCode _exitCode = ExitCode::Unknown;
         ExitCause _exitCause = ExitCause::Unknown;

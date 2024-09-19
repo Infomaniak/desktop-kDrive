@@ -80,7 +80,7 @@ class ErrorInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<ErrorInfo> &list);
 
     private:
-        int _dbId;
+        int _dbId{0};
         qint64 _time;
         ErrorLevel _level;
         QString _functionName;
@@ -96,7 +96,7 @@ class ErrorInfo {
         ConflictType _conflictType;
         InconsistencyType _inconsistencyType;
         CancelType _cancelType;
-        bool _autoResolved;
+        bool _autoResolved{false};
 };
 
 } // namespace KDC

@@ -88,11 +88,11 @@ class SyncFileItem {
         CancelType _cancelType;
         std::string _error;
         int64_t _size;
-        time_t _modTime;
-        time_t _creationTime;
-        bool _dehydrated;
-        bool _confirmed;
-        SyncTime _timestamp;
+        time_t _modTime{0};
+        time_t _creationTime{0};
+        bool _dehydrated{false};
+        bool _confirmed{false};
+        SyncTime _timestamp{std::time(0)};
 };
 
 } // namespace KDC

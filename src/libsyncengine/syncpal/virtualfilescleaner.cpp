@@ -37,7 +37,8 @@ VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId, std
     _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
     _vfsClearFileAttributes(vfsClearFileAttributes) {}
 
-VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path) : _logger(Log::instance()->getLogger()), _rootPath(path) {}
+VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId) :
+    _logger(Log::instance()->getLogger()), _rootPath(path), _syncDbId(syncDbId) {}
 
 bool VirtualFilesCleaner::run() {
     // Clear xattr on root path
