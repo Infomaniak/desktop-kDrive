@@ -152,6 +152,8 @@ if (NOT DEFINED APPLICATION_ICON_NAME)
     set(APPLICATION_ICON_NAME "${APPLICATION_SHORTNAME}")
 endif ()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion -Wsign-conversion -Weffc++ -Wimplicit-fallthrough -Wformat=2")
+
 if (WIN32)
     add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
