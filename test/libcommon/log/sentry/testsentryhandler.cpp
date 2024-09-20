@@ -149,7 +149,7 @@ void TestSentryHandler::testWriteEvent() {
     {
         auto eventFilePath = std::filesystem::temp_directory_path() / clientCrashEventFileName;
         std::error_code ec;
-        std::filesystem::remove(eventFilePath);
+        std::filesystem::remove(eventFilePath, ec);
 
         std::string eventInStr = "crash event line 1\ncrash event line 2\ncrash event line 3";
         SentryHandler::writeEvent(eventInStr, true);
@@ -162,7 +162,7 @@ void TestSentryHandler::testWriteEvent() {
 
         CPPUNIT_ASSERT_EQUAL(eventInStr, eventOutStr);
 
-        std::filesystem::remove(eventFilePath);
+        std::filesystem::remove(eventFilePath, ec);
     }
 }
 } // namespace KDC
