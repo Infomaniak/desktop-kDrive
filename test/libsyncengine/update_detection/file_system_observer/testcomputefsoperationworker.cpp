@@ -119,47 +119,47 @@ void TestComputeFSOperationWorker::setUp() {
     //// Insert dir in snapshot
     _syncPal->_localSnapshot->updateItem(SnapshotItem(
             nodeDirA.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirA.nameLocal(),
-            nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123));
+            nodeDirA.created().value(), nodeDirA.lastModifiedLocal().value(), nodeDirA.type(), 123, false, true, true));
     _syncPal->_localSnapshot->updateItem(SnapshotItem(
             nodeDirB.nodeIdLocal().value(), _syncPal->syncDb()->rootNode().nodeIdLocal().value(), nodeDirB.nameLocal(),
-            nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123));
+            nodeDirB.created().value(), nodeDirB.lastModifiedLocal().value(), nodeDirB.type(), 123, false, true, true));
 
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
             nodeDirA.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirA.nameRemote(),
-            nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123));
+            nodeDirA.created().value(), nodeDirA.lastModifiedRemote().value(), nodeDirA.type(), 123, false, true, true));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
             nodeDirB.nodeIdRemote().value(), _syncPal->syncDb()->rootNode().nodeIdRemote().value(), nodeDirB.nameRemote(),
-            nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123));
+            nodeDirB.created().value(), nodeDirB.lastModifiedRemote().value(), nodeDirB.type(), 123, false, true, true));
 
     //// Insert files in snapshot
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(nodeFileAA.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(),
-                                                      nodeFileAA.nameLocal(), nodeFileAA.created().value(),
-                                                      nodeFileAA.lastModifiedLocal().value(), nodeFileAA.type(), 123));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(nodeFileAB.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(),
-                                                      nodeFileAB.nameLocal(), nodeFileAB.created().value(),
-                                                      nodeFileAB.lastModifiedLocal().value(), nodeFileAB.type(), 123));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(nodeFileBA.nodeIdLocal().value(), nodeDirB.nodeIdLocal().value(),
-                                                      nodeFileBA.nameLocal(), nodeFileBA.created().value(),
-                                                      nodeFileBA.lastModifiedLocal().value(), nodeFileBA.type(), 123));
-    _syncPal->_localSnapshot->updateItem(SnapshotItem(nodeFileBB.nodeIdLocal().value(), nodeDirB.nodeIdLocal().value(),
-                                                      nodeFileBB.nameLocal(), nodeFileBB.created().value(),
-                                                      nodeFileBB.lastModifiedLocal().value(), nodeFileBB.type(), 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeFileAA.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(), nodeFileAA.nameLocal(),
+            nodeFileAA.created().value(), nodeFileAA.lastModifiedLocal().value(), nodeFileAA.type(), 123, false, true, true));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeFileAB.nodeIdLocal().value(), nodeDirA.nodeIdLocal().value(), nodeFileAB.nameLocal(),
+            nodeFileAB.created().value(), nodeFileAB.lastModifiedLocal().value(), nodeFileAB.type(), 123, false, true, true));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeFileBA.nodeIdLocal().value(), nodeDirB.nodeIdLocal().value(), nodeFileBA.nameLocal(),
+            nodeFileBA.created().value(), nodeFileBA.lastModifiedLocal().value(), nodeFileBA.type(), 123, false, true, true));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem(
+            nodeFileBB.nodeIdLocal().value(), nodeDirB.nodeIdLocal().value(), nodeFileBB.nameLocal(),
+            nodeFileBB.created().value(), nodeFileBB.lastModifiedLocal().value(), nodeFileBB.type(), 123, false, true, true));
 
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(nodeFileAA.nodeIdRemote().value(), nodeDirA.nodeIdRemote().value(),
-                                                       nodeFileAA.nameRemote(), nodeFileAA.created().value(),
-                                                       nodeFileAA.lastModifiedRemote().value(), nodeFileAA.type(), 123));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(nodeFileAB.nodeIdRemote().value(), nodeDirA.nodeIdRemote().value(),
-                                                       nodeFileAB.nameRemote(), nodeFileAB.created().value(),
-                                                       nodeFileAB.lastModifiedRemote().value(), nodeFileAB.type(), 123));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(nodeFileBA.nodeIdRemote().value(), nodeDirB.nodeIdRemote().value(),
-                                                       nodeFileBA.nameRemote(), nodeFileBA.created().value(),
-                                                       nodeFileBA.lastModifiedRemote().value(), nodeFileBA.type(), 123));
-    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(nodeFileBB.nodeIdRemote().value(), nodeDirB.nodeIdRemote().value(),
-                                                       nodeFileBB.nameRemote(), nodeFileBB.created().value(),
-                                                       nodeFileBB.lastModifiedRemote().value(), nodeFileBB.type(), 123));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+            nodeFileAA.nodeIdRemote().value(), nodeDirA.nodeIdRemote().value(), nodeFileAA.nameRemote(),
+            nodeFileAA.created().value(), nodeFileAA.lastModifiedRemote().value(), nodeFileAA.type(), 123, false, true, true));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+            nodeFileAB.nodeIdRemote().value(), nodeDirA.nodeIdRemote().value(), nodeFileAB.nameRemote(),
+            nodeFileAB.created().value(), nodeFileAB.lastModifiedRemote().value(), nodeFileAB.type(), 123, false, true, true));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+            nodeFileBA.nodeIdRemote().value(), nodeDirB.nodeIdRemote().value(), nodeFileBA.nameRemote(),
+            nodeFileBA.created().value(), nodeFileBA.lastModifiedRemote().value(), nodeFileBA.type(), 123, false, true, true));
+    _syncPal->_remoteSnapshot->updateItem(SnapshotItem(
+            nodeFileBB.nodeIdRemote().value(), nodeDirB.nodeIdRemote().value(), nodeFileBB.nameRemote(),
+            nodeFileBB.created().value(), nodeFileBB.lastModifiedRemote().value(), nodeFileBB.type(), 123, false, true, true));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rac", nodeDirA.nodeIdRemote().value(), Str("AC"),
                                                        testhelpers::defaultTime, testhelpers::defaultTime, NodeType::Directory,
-                                                       123));
+                                                       123, false, true, true));
 
     // Insert items to excluded templates in DB
     std::vector<ExclusionTemplate> templateVec = {ExclusionTemplate("*.lnk", true)};
@@ -210,9 +210,9 @@ void TestComputeFSOperationWorker::testDeletionOfNestedFolders() {
 
 void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings() {
     _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfc", "la", testhelpers::makeNfcSyncName(), testhelpers::defaultTime,
-                                                      testhelpers::defaultTime, NodeType::File, 123));
+                                                      testhelpers::defaultTime, NodeType::File, 123, false, true, true));
     _syncPal->_localSnapshot->updateItem(SnapshotItem("la_nfd", "la", testhelpers::makeNfdSyncName(), testhelpers::defaultTime,
-                                                      testhelpers::defaultTime, NodeType::File, 123));
+                                                      testhelpers::defaultTime, NodeType::File, 123, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
@@ -227,8 +227,8 @@ void TestComputeFSOperationWorker::testCreateDuplicateNamesWithDistinctEncodings
 void TestComputeFSOperationWorker::testMultipleOps() {
     // On local replica
     // Create operation
-    _syncPal->_localSnapshot->updateItem(
-            SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File, 123));
+    _syncPal->_localSnapshot->updateItem(SnapshotItem("lad", "la", Str("AD"), testhelpers::defaultTime, testhelpers::defaultTime,
+                                                      NodeType::File, 123, false, true, true));
     // Edit operation
     _syncPal->_localSnapshot->setLastModified("laa", testhelpers::defaultTime + 60);
     // Move operation
@@ -240,10 +240,10 @@ void TestComputeFSOperationWorker::testMultipleOps() {
 
     // Create operation on a too big directory
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("raf", "ra", Str("AF_too_big"), testhelpers::defaultTime,
-                                                       testhelpers::defaultTime, NodeType::Directory, 0));
+                                                       testhelpers::defaultTime, NodeType::Directory, 0, false, true, true));
     _syncPal->_remoteSnapshot->updateItem(SnapshotItem("rafa", "raf", Str("AFA"), testhelpers::defaultTime,
-                                                       testhelpers::defaultTime, NodeType::File,
-                                                       550 * 1024 * 1024)); // File size: 550MB
+                                                       testhelpers::defaultTime, NodeType::File, 550 * 1024 * 1024, false, true,
+                                                       true)); // File size: 550MB
     // Rename operation on a blacklisted directory
     _syncPal->_remoteSnapshot->setName("rac", Str("AC-renamed"));
 
@@ -291,7 +291,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFD() {
 
     _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
-                                                      testhelpers::defaultFileSize));
+                                                      testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
@@ -310,7 +310,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFC() {
 
     _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
-                                                      testhelpers::defaultFileSize));
+                                                      testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
@@ -329,7 +329,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFD_NFD() {
 
     _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
-                                                      testhelpers::defaultFileSize));
+                                                      testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
@@ -349,7 +349,7 @@ void TestComputeFSOperationWorker::testDifferentEncoding_NFC_NFC() {
 
     _syncPal->_localSnapshot->updateItem(SnapshotItem("ltest", *_syncPal->syncDb()->rootNode().nodeIdLocal(), Str("testé.txt"),
                                                       testhelpers::defaultTime, testhelpers::defaultTime, NodeType::File,
-                                                      testhelpers::defaultFileSize));
+                                                      testhelpers::defaultFileSize, false, true, true));
 
     _syncPal->copySnapshots();
     _syncPal->computeFSOperationsWorker()->execute();
