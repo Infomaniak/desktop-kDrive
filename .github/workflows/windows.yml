@@ -48,7 +48,7 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          set COVFILE="%cd%\src\test.cov"  
+          set COVFILE=%cd%\src\test.cov  
           call "C:\Program Files\BullseyeCoverage\bin\cov01.exe" -1
 
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
