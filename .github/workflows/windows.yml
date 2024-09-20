@@ -56,6 +56,7 @@ jobs:
 
       - name: Execute tests
         run: |
+          $env:COVFILE="$pwd\src\test.cov"
           & "C:\Program Files\BullseyeCoverage\bin\cov01.exe" "-1" # coverage on
           ./infomaniak-build-tools/run-tests.ps1
 
@@ -63,6 +64,7 @@ jobs:
         run : |
           rm -Force -ErrorAction SilentlyContinue BullseyeCoverageExclusions
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
+          $env:COVFILE="$pwd\src\test.cov"
           & "C:\Program Files\BullseyeCoverage\bin\cov01.exe" "-0" # coverage off
           & "C:\Program Files\BullseyeCoverage\bin\covselect.exe" "--import" "BullseyeCoverageExclusions"
           & "C:\Program Files\BullseyeCoverage\bin\covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
