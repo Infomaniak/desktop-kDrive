@@ -405,6 +405,7 @@ void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
 }
 
 void SentryHandler::writeEvent(const std::string &eventStr, bool crash) noexcept {
+    using namespace KDC::event_dump_files;
     auto eventFilePath =
             std::filesystem::temp_directory_path() / (SentryHandler::appType() == AppType::Server
                                                               ? (crash ? serverCrashEventFileName : serverSendEventFileName)

@@ -123,6 +123,8 @@ void TestSentryHandler::testMultipleSendEventForDifferentEvent() {
 }
 
 void TestSentryHandler::testWriteEvent() {
+    using namespace KDC::event_dump_files;
+
     // Test send event
     {
         auto eventFilePath = std::filesystem::temp_directory_path() / clientSendEventFileName;
