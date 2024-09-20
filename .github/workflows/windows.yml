@@ -79,12 +79,12 @@ jobs:
           SONAR_TOKEN: ${{ secrets.DESKTOP_KDRIVE_SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
         run: |
-          sonar-scanner --define sonar.projectKey=Infomaniak_desktop-kDrive \
-            --define sonar.organization=infomaniak \
-            --define sonar.sources=src \
-            --define sonar.exclusions=src/3rdparty/** \
-            --define sonar.cfamily.compile-commands="build-windows/build/compile_commands.json" \
-            --define sonar.cfamily.bullseye.reportPaths=coverage.xml
+          & "sonar-scanner --define sonar.projectKey=Infomaniak_desktop-kDrive" 
+            "--define sonar.organization=infomaniak" 
+            "--define sonar.sources=src" 
+            "--define sonar.exclusions=src/3rdparty/**" 
+            "--define sonar.cfamily.compile-commands=build-windows/build/compile_commands.json"
+            "--define sonar.cfamily.bullseye.reportPaths=coverage.xml"
 
       - name: Upload tests logs artifacts
         uses: actions/upload-artifact@v4
