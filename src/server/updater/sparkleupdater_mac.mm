@@ -17,6 +17,7 @@
  */
 
 #include <Sparkle/Sparkle.h>
+#include <Sparkle/SPUUpdaterDelegate.h>
 
 #include "common/utility.h"
 #include "libcommon/utility/utility.h"
@@ -31,6 +32,7 @@
 @protected
     KDC::DownloadState _state;
     NSString *_availableVersion;
+    NSString *_feedUrl;
     KDC::QuitCallback _quitCallback;
 }
 - (BOOL)updaterMayCheckForUpdates:(SPUUpdater *)updater;
@@ -47,6 +49,7 @@
     if (self) {
         _state = KDC::Unknown;
         _availableVersion = @"";
+        _feedUrl = @"";
         _quitCallback = nullptr;
     }
     return self;
@@ -56,6 +59,14 @@
     (void)updater;
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "may check: YES");
     return YES;
+}
+
+- (nullable NSString *)feedURLStringForUpdater:(SPUUpdater *)updater {
+    return _feedUrl;
+}
+
+- (void)setFeedUrl:(std::string)url {
+    _feedUrl = [NSString stringWithUTF8String:url.c_str()];
 }
 
 - (BOOL)updaterShouldRelaunchApplication:(SPUUpdater *)updater {
@@ -155,7 +166,6 @@ class SparkleUpdater::Private {
         DelegateUserDriverObject *delegateUserDriverObject;
 };
 
-// Delete ~/Library//Preferences/864VDCS2QY.com.infomaniak.drive.desktopclient.plist to re-test
 SparkleUpdater::SparkleUpdater() {
     d = new Private;
 
@@ -178,11 +188,12 @@ SparkleUpdater::SparkleUpdater() {
     [d->updater setSendsSystemProfile:NO];
     [d->updater retain];
 
-    //setUpdateUrl("" /*TODO : add URL*/);
-
     // Sparkle 1.8 required
     NSString *userAgent = [NSString stringWithUTF8String:KDC::CommonUtility::userAgentString().c_str()];
     [d->updater setUserAgentString:userAgent];
+
+    // Migrate away from using `-[SPUUpdater setFeedURL:]`
+    [d->updater clearFeedURLFromUserDefaults];
 }
 
 SparkleUpdater::~SparkleUpdater() {
@@ -198,8 +209,8 @@ void SparkleUpdater::onUpdateFound(const std::string &downloadUrl) {
 }
 
 void SparkleUpdater::setUpdateUrl(const std::string &url) {
-    NSURL *nsurl = [NSURL URLWithString:[NSString url]];
-    [d->updater setFeedURL:nsurl];
+    _feedUrl = url;
+    [d->updaterDelegate setFeedUrl:_feedUrl];
 }
 
 void SparkleUpdater::setQuitCallback(const QuitCallback &quitCallback) {
@@ -243,9 +254,5 @@ bool SparkleUpdater::updateFound() const {
     DownloadState state = [d->updaterDelegate downloadState];
     return state == FindValidUpdate;
 }
-
-//void SparkleUpdater::slotStartInstaller() {
-//    checkForUpdate();
-//}
 
 }  // namespace KDC

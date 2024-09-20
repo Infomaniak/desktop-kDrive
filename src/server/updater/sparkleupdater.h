@@ -29,7 +29,7 @@ enum DownloadState { Unknown = 0, FindValidUpdate, DidNotFindUpdate, AbortWithEr
 class SparkleUpdater final : public AbstractUpdater {
     public:
         explicit SparkleUpdater();
-        ~SparkleUpdater() final;
+        ~SparkleUpdater();
 
         void onUpdateFound(const std::string &downloadUrl) override;
 
@@ -79,6 +79,8 @@ class SparkleUpdater final : public AbstractUpdater {
     private:
         class Private;
         Private *d;
+
+        std::string _feedUrl;
 };
 
 } // namespace KDC
