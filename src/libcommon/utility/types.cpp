@@ -28,9 +28,9 @@ std::wstring stringToWideString(const std::string &str) {
     Poco::UnicodeConverter::convert(str, wstr);
     return wstr;
 }
-}  // namespace typesUtility
+} // namespace typesUtility
 
-std::string toString(ReplicaSide e) {
+std::string toString(const ReplicaSide e) {
     switch (e) {
         case ReplicaSide::Local:
             return "Local";
@@ -39,11 +39,11 @@ std::string toString(ReplicaSide e) {
         case ReplicaSide::Unknown:
             return "Unknown";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(NodeType e) {
+std::string toString(const NodeType e) {
     switch (e) {
         case NodeType::Unknown:
             return "Unknown";
@@ -51,10 +51,12 @@ std::string toString(NodeType e) {
             return "File";
         case NodeType::Directory:
             return "Directory";
+        default:
+            return noConversionStr;
     }
 }
 
-std::string toString(OperationType e) {
+std::string toString(const OperationType e) {
     switch (e) {
         case OperationType::None:
             return "None";
@@ -68,10 +70,12 @@ std::string toString(OperationType e) {
             return "Delete";
         case OperationType::Rights:
             return "Rights";
+        default:
+            return noConversionStr;
     }
 }
 
-std::string toString(ExitCode e) {
+std::string toString(const ExitCode e) {
     switch (e) {
         case ExitCode::Unknown:
             return "Unknown";
@@ -112,11 +116,11 @@ std::string toString(ExitCode e) {
         case ExitCode::LogUploadFailed:
             return "LogUploadFailed";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(ExitCause e) {
+std::string toString(const ExitCause e) {
     switch (e) {
         case ExitCause::Unknown:
             return "Unknown";
@@ -197,12 +201,11 @@ std::string toString(ExitCause e) {
         case ExitCause::OperationCanceled:
             return "OperationCanceled";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
+}
 
-}  // namespace KDC
-
-std::string toString(ConflictType e) {
+std::string toString(const ConflictType e) {
     switch (e) {
         case ConflictType::None:
             return "None";
@@ -227,11 +230,11 @@ std::string toString(ConflictType e) {
         case ConflictType::MoveMoveCycle:
             return "MoveMoveCycle";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(ConflictTypeResolution e) {
+std::string toString(const ConflictTypeResolution e) {
     switch (e) {
         case ConflictTypeResolution::None:
             return "None";
@@ -240,11 +243,11 @@ std::string toString(ConflictTypeResolution e) {
         case ConflictTypeResolution::FileMovedToRoot:
             return "FileMovedToRoot";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(InconsistencyType e) {
+std::string toString(const InconsistencyType e) {
     switch (e) {
         case InconsistencyType::None:
             return "None";
@@ -263,11 +266,11 @@ std::string toString(InconsistencyType e) {
         case InconsistencyType::DuplicateNames:
             return "DuplicateNames";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(CancelType e) {
+std::string toString(const CancelType e) {
     switch (e) {
         case CancelType::None:
             return "None";
@@ -292,11 +295,11 @@ std::string toString(CancelType e) {
         case CancelType::Hardlink:
             return "Hardlink";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(NodeStatus e) {
+std::string toString(const NodeStatus e) {
     switch (e) {
         case NodeStatus::Unknown:
             return "Unknown";
@@ -307,11 +310,11 @@ std::string toString(NodeStatus e) {
         case NodeStatus::Processed:
             return "Processed";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(SyncStatus e) {
+std::string toString(const SyncStatus e) {
     switch (e) {
         case SyncStatus::Undefined:
             return "Undefined";
@@ -332,11 +335,11 @@ std::string toString(SyncStatus e) {
         case SyncStatus::Error:
             return "Error";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(UploadSessionType e) {
+std::string toString(const UploadSessionType e) {
     switch (e) {
         case UploadSessionType::Unknown:
             return "Unknown";
@@ -345,11 +348,11 @@ std::string toString(UploadSessionType e) {
         case UploadSessionType::LogUpload:
             return "LogUpload";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(SyncNodeType e) {
+std::string toString(const SyncNodeType e) {
     switch (e) {
         case SyncNodeType::Undefined:
             return "Undefined";
@@ -364,11 +367,11 @@ std::string toString(SyncNodeType e) {
         case SyncNodeType::TmpLocalBlacklist:
             return "TmpLocalBlacklist";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(SyncDirection e) {
+std::string toString(const SyncDirection e) {
     switch (e) {
         case SyncDirection::Unknown:
             return "Unknown";
@@ -377,11 +380,11 @@ std::string toString(SyncDirection e) {
         case SyncDirection::Down:
             return "Down";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(SyncFileStatus e) {
+std::string toString(const SyncFileStatus e) {
     switch (e) {
         case SyncFileStatus::Unknown:
             return "Unknown";
@@ -398,11 +401,11 @@ std::string toString(SyncFileStatus e) {
         case SyncFileStatus::Syncing:
             return "Syncing";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(SyncFileInstruction e) {
+std::string toString(const SyncFileInstruction e) {
     switch (e) {
         case SyncFileInstruction::None:
             return "None";
@@ -421,11 +424,11 @@ std::string toString(SyncFileInstruction e) {
         case SyncFileInstruction::Ignore:
             return "Ignore";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(SyncStep e) {
+std::string toString(const SyncStep e) {
     switch (e) {
         case SyncStep::None:
             return "None";
@@ -450,22 +453,22 @@ std::string toString(SyncStep e) {
         case SyncStep::Done:
             return "Done";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(ActionType e) {
+std::string toString(const ActionType e) {
     switch (e) {
         case ActionType::Stop:
             return "Stop";
         case ActionType::Start:
             return "Start";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(ActionTarget e) {
+std::string toString(const ActionTarget e) {
     switch (e) {
         case ActionTarget::Drive:
             return "Drive";
@@ -474,11 +477,11 @@ std::string toString(ActionTarget e) {
         case ActionTarget::AllDrives:
             return "AllDrives";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(ErrorLevel e) {
+std::string toString(const ErrorLevel e) {
     switch (e) {
         case ErrorLevel::Unknown:
             return "Unknown";
@@ -489,11 +492,11 @@ std::string toString(ErrorLevel e) {
         case ErrorLevel::Node:
             return "Node";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(Language e) {
+std::string toString(const Language e) {
     switch (e) {
         case Language::Default:
             return "Default";
@@ -508,11 +511,11 @@ std::string toString(Language e) {
         case Language::Italian:
             return "Italian";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(LogLevel e) {
+std::string toString(const LogLevel e) {
     switch (e) {
         case LogLevel::Debug:
             return "Debug";
@@ -525,11 +528,11 @@ std::string toString(LogLevel e) {
         case LogLevel::Fatal:
             return "Fatal";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(NotificationsDisabled e) {
+std::string toString(const NotificationsDisabled e) {
     switch (e) {
         case NotificationsDisabled::Never:
             return "Never";
@@ -544,11 +547,11 @@ std::string toString(NotificationsDisabled e) {
         case NotificationsDisabled::Always:
             return "Always";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(VirtualFileMode e) {
+std::string toString(const VirtualFileMode e) {
     switch (e) {
         case VirtualFileMode::Off:
             return "Off";
@@ -559,11 +562,11 @@ std::string toString(VirtualFileMode e) {
         case VirtualFileMode::Suffix:
             return "Suffix";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(PinState e) {
+std::string toString(const PinState e) {
     switch (e) {
         case PinState::Inherited:
             return "Inherited";
@@ -574,11 +577,11 @@ std::string toString(PinState e) {
         case PinState::Unspecified:
             return "Unspecified";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(ProxyType e) {
+std::string toString(const ProxyType e) {
     switch (e) {
         case ProxyType::Undefined:
             return "Undefined";
@@ -591,11 +594,11 @@ std::string toString(ProxyType e) {
         case ProxyType::Socks5:
             return "Socks5";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(ExclusionTemplateComplexity e) {
+std::string toString(const ExclusionTemplateComplexity e) {
     switch (e) {
         case ExclusionTemplateComplexity::Simplest:
             return "Simplest";
@@ -604,11 +607,11 @@ std::string toString(ExclusionTemplateComplexity e) {
         case ExclusionTemplateComplexity::Complex:
             return "Complex";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(LinkType e) {
+std::string toString(const LinkType e) {
     switch (e) {
         case LinkType::None:
             return "None";
@@ -621,11 +624,11 @@ std::string toString(LinkType e) {
         case LinkType::Junction:
             return "Junction";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(IoError e) {
+std::string toString(const IoError e) {
     switch (e) {
         case IoError::Success:
             return "Success";
@@ -660,11 +663,11 @@ std::string toString(IoError e) {
         case IoError::Unknown:
             return "Unknown";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(AppStateKey e) {
+std::string toString(const AppStateKey e) {
     switch (e) {
         case AppStateKey::LastServerSelfRestartDate:
             return "LastServerSelfRestartDate";
@@ -683,11 +686,11 @@ std::string toString(AppStateKey e) {
         case AppStateKey::Unknown:
             return "Unknown";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(LogUploadState e) {
+std::string toString(const LogUploadState e) {
     switch (e) {
         case LogUploadState::None:
             return "None";
@@ -704,11 +707,11 @@ std::string toString(LogUploadState e) {
         case LogUploadState::Canceled:
             return "Canceled";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(UpdateState e) {
+std::string toString(const UpdateState e) {
     switch (e) {
         case UpdateState::Error:
             return "Error";
@@ -725,10 +728,10 @@ std::string toString(UpdateState e) {
         case UpdateState::Skipped:
             return "Skipped";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
-std::string toString(UpdateStateV2 e) {
+std::string toString(const UpdateStateV2 e) {
     switch (e) {
         case UpdateStateV2::UpToDate:
             return "UpToDate";
@@ -741,10 +744,10 @@ std::string toString(UpdateStateV2 e) {
         case UpdateStateV2::Error:
             return "Error";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
-std::string toString(DistributionChannel e) {
+std::string toString(const DistributionChannel e) {
     switch (e) {
         case DistributionChannel::Prod:
             return "Prod";
@@ -757,10 +760,10 @@ std::string toString(DistributionChannel e) {
         case DistributionChannel::Unknown:
             return "Unknown";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
-std::string toString(Platform e) {
+std::string toString(const Platform e) {
     switch (e) {
         case Platform::Windows:
             return "Windows";
@@ -773,22 +776,22 @@ std::string toString(Platform e) {
         case Platform::Unknown:
             return "Unknown";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(SentryConfidentialityLevel e) {
+std::string toString(const SentryConfidentialityLevel e) {
     switch (e) {
         case SentryConfidentialityLevel::Authenticated:
             return "Authenticated";
         case SentryConfidentialityLevel::Anonymous:
             return "Anonymous";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(AppType e) {
+std::string toString(const AppType e) {
     switch (e) {
         case AppType::None:
             return "None";
@@ -797,22 +800,22 @@ std::string toString(AppType e) {
         case AppType::Client:
             return "Client";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(SignalCategory e) {
+std::string toString(const SignalCategory e) {
     switch (e) {
         case SignalCategory::Kill:
             return "Kill";
         case SignalCategory::Crash:
             return "Crash";
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-std::string toString(SignalType e) {
+std::string toString(const SignalType e) {
     switch (e) {
         case SignalType::None:
             return "None";
@@ -833,8 +836,8 @@ std::string toString(SignalType e) {
             return "SIGBUS";
 #endif
         default:
-            return "No conversion to string available";
+            return noConversionStr;
     }
 }
 
-}  // namespace KDC
+} // namespace KDC
