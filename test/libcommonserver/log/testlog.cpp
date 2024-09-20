@@ -54,17 +54,25 @@ void TestLog::testLargeLogRolling(void) {
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     auto customRollingFileAppender = static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get());
 
-    const int maxSize = 1024 * 1024 * 1;  // 1MB
+    const int maxSize = 1024; // 1KB
     const int previousMaxSize = customRollingFileAppender->getMaxFileSize();
     customRollingFileAppender->setMaxFileSize(maxSize);
+
+    LOG_DEBUG(_logger, "Ensure the log file is created");
+    CPPUNIT_ASSERT_GREATER(1, countFilesInDirectory(_logDir));
 
     // Generate a log larger than the max log file size. (log header is 50bytes)
     const auto testLog = std::string(maxSize, 'a');
     LOG_DEBUG(_logger, testLog.c_str());
+    CPPUNIT_ASSERT_GREATER(2, countFilesInDirectory(_logDir));
 
+    SyncPath rolledFile = _logDir / (Log::instance()->getLogFilePath().filename().string() + ".1.gz");
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::exists(rolledFile, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Restore the previous max file size
     customRollingFileAppender->setMaxFileSize(previousMaxSize);
-    // Check that a new log file has been created (might be 3 files if the "old" log file is already archived)
-    CPPUNIT_ASSERT_GREATER(1, countFilesInDirectory(_logDir));
 }
 
 void TestLog::testExpiredLogFiles(void) {
