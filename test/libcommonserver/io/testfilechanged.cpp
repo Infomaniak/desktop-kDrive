@@ -73,7 +73,7 @@ void TestIo::testFileChanged() {
 
     // A non-existing file
     {
-        const SyncPath path = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         IoError ioError = IoError::Success;
         bool changed = true;
 
@@ -310,7 +310,7 @@ void TestIo::testCheckIfIsHiddenFile() {
 
     // A non-existing file is not hidden if its name doesn't start with a dot
     {
-        const SyncPath path = _localTestDirPath / "non-existing.jpg";  // This file does not exist.
+        const SyncPath path = _localTestDirPath / "non-existing.jpg"; // This file does not exist.
         bool isHidden = true;
         IoError ioError = IoError::Unknown;
 
@@ -342,7 +342,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         const std::string pathSegment(50, 'a');
         SyncPath path = _localTestDirPath;
         for (int i = 0; i < 1000; ++i) {
-            path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
+            path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
         }
 
         bool isHidden = true;
@@ -366,7 +366,7 @@ void TestIo::testCheckIfIsHiddenFile() {
         std::string pathSegment(50, '.');
         SyncPath path = _localTestDirPath;
         for (int i = 0; i < 1000; ++i) {
-            path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
+            path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
         }
 
         bool isHidden = true;
@@ -394,4 +394,4 @@ void TestIo::testCheckIfIsHiddenFile() {
     }
 #endif
 }
-}  // namespace KDC
+} // namespace KDC

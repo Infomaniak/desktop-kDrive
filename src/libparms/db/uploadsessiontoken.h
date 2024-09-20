@@ -39,4 +39,4 @@ class PARMS_EXPORT UploadSessionToken {
         std::string _token;
 };
 
-}  // namespace KDC
+} // namespace KDC

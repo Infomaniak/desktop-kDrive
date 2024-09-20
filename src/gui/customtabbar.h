@@ -45,4 +45,4 @@ class CustomTabBar : public QTabBar {
         QColor _tabSelectedTextColor;
 };
 
-}  // namespace KDC
+} // namespace KDC

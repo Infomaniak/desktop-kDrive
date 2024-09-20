@@ -35,8 +35,9 @@
 namespace KDC {
 
 AbstractUploadSession::AbstractUploadSession(const SyncPath &filepath, const SyncName &filename,
-                                             uint64_t nbParalleleThread /*= 1*/)
-    : _logger(Log::instance()->getLogger()), _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
+                                             uint64_t nbParalleleThread /*= 1*/) :
+    _logger(Log::instance()->getLogger()),
+    _filePath(filepath), _filename(filename), _nbParalleleThread(nbParalleleThread) {
     IoError ioError = IoError::Success;
     if (!IoHelper::getFileSize(_filePath, _filesize, ioError)) {
         std::wstring exceptionMessage = L"Error in IoHelper::getFileSize for " + Utility::formatIoError(_filePath, ioError);
@@ -190,7 +191,7 @@ bool AbstractUploadSession::initChunks() {
         _chunkSize = chunkMaxSize;
     }
 
-    _totalChunks = (uint64_t)std::ceil(_filesize / (double)_chunkSize);
+    _totalChunks = (uint64_t) std::ceil(_filesize / (double) _chunkSize);
     if (_totalChunks > maxTotalChunks) {
         LOGW_WARN(_logger,
                   L"Impossible to upload file " << Path2WStr(_filePath.filename()).c_str() << L" because it is too big!");
@@ -288,7 +289,7 @@ bool AbstractUploadSession::sendChunks() {
         }
 
         auto memblock = std::make_unique<char[]>(_chunkSize);
-        file.read(memblock.get(), (std::streamsize)_chunkSize);
+        file.read(memblock.get(), (std::streamsize) _chunkSize);
         if (file.bad() && !file.fail()) {
             // Read/writing error and not logical error
             LOGW_WARN(_logger, L"Failed to read chunk - path=" << Path2WStr(_filePath).c_str());
@@ -411,7 +412,7 @@ bool AbstractUploadSession::closeSession() {
         const ExitCode exitCode = finishJob->runSynchronously();
         if (exitCode != ExitCode::Ok || finishJob->hasHttpError()) {
             LOGW_WARN(_logger, L"Error in UploadSessionFinishJob::runSynchronously - exit code: "
-                                   << exitCode << L", file: " << Path2WStr(_filePath.filename()).c_str());
+                                       << exitCode << L", file: " << Path2WStr(_filePath.filename()).c_str());
             return false;
         }
 
@@ -446,7 +447,7 @@ bool AbstractUploadSession::cancelSession() {
     // Cancel all ongoing chunk jobs
     {
         const std::scoped_lock lock(_mutex);
-        for (auto &[jobId, job] : _ongoingChunkJobs) {
+        for (auto &[jobId, job]: _ongoingChunkJobs) {
             if (job.get() && job->sessionToken() == _sessionToken) {
                 LOG_INFO(_logger, "Aborting chunk job " << jobId);
                 job->abort();
@@ -484,7 +485,7 @@ void AbstractUploadSession::waitForJobsToComplete(bool all) {
         if (isExtendedLog()) {
             LOG_DEBUG(_logger, (all ? "Wait for all jobs to complete" : "Wait for some jobs to complete"));
         }
-        Utility::msleep(200);  // Sleep for 0.2s
+        Utility::msleep(200); // Sleep for 0.2s
     }
 
     if (isAborted()) {
@@ -498,4 +499,4 @@ void AbstractUploadSession::waitForJobsToComplete(bool all) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

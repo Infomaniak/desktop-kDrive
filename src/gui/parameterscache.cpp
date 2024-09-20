@@ -56,8 +56,8 @@ bool ParametersCache::saveParametersInfo(bool displayMessageBoxOnError) {
         if (displayMessageBoxOnError) {
             CustomMessageBox msgBox(QMessageBox::Warning,
                                     exitCode == ExitCode::SystemError
-                                        ? QObject::tr("Unable to save parameters, please retry later.")
-                                        : QObject::tr("Unable to save parameters!"),
+                                            ? QObject::tr("Unable to save parameters, please retry later.")
+                                            : QObject::tr("Unable to save parameters!"),
                                     QMessageBox::Ok);
             msgBox.exec();
         }
@@ -67,4 +67,4 @@ bool ParametersCache::saveParametersInfo(bool displayMessageBoxOnError) {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

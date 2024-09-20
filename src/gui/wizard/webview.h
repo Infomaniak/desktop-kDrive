@@ -62,4 +62,4 @@ class WebView : public QWidget {
         WebViewPageUrlSchemeHandler *_schemeHandler;
 };
 
-}  // namespace KDC
+} // namespace KDC

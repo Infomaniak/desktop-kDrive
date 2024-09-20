@@ -18,9 +18,9 @@
 
 #include "libcommonserver/io/filestat.h"
 #include "libcommonserver/io/iohelper.h"
-#include "libcommonserver/utility/utility.h"  // Path2WStr
+#include "libcommonserver/utility/utility.h" // Path2WStr
 
-#include "config.h"  // APPLICATION
+#include "config.h" // APPLICATION
 
 #include <filesystem>
 #include <system_error>
@@ -29,24 +29,24 @@
 #include <sys/stat.h>
 #endif
 
-#include <log4cplus/loggingmacros.h>  // LOGW_WARN
+#include <log4cplus/loggingmacros.h> // LOGW_WARN
 
 namespace KDC {
 
 // Default `std::filesytem` implementation. This can be changed in unit tests.
 std::function<bool(const SyncPath &path, std::error_code &ec)> IoHelper::_isDirectory =
-    static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory);
+        static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_directory);
 std::function<bool(const SyncPath &path, std::error_code &ec)> IoHelper::_isSymlink =
-    static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink);
+        static_cast<bool (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::is_symlink);
 std::function<SyncPath(const SyncPath &path, std::error_code &ec)> IoHelper::_readSymlink =
-    static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink);
+        static_cast<SyncPath (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::read_symlink);
 std::function<std::uintmax_t(const SyncPath &path, std::error_code &ec)> IoHelper::_fileSize =
-    static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size);
+        static_cast<std::uintmax_t (*)(const SyncPath &path, std::error_code &ec)>(&std::filesystem::file_size);
 std::function<SyncPath(std::error_code &ec)> IoHelper::_tempDirectoryPath =
-    static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
+        static_cast<SyncPath (*)(std::error_code &ec)>(&std::filesystem::temp_directory_path);
 #ifdef __APPLE__
 std::function<bool(const SyncPath &path, SyncPath &targetPath, IoError &ioError)> IoHelper::_readAlias =
-    [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
+        [](const SyncPath &path, SyncPath &targetPath, IoError &ioError) -> bool {
     std::string data;
     return IoHelper::readAlias(path, data, targetPath, ioError);
 };
@@ -66,7 +66,7 @@ IoError IoHelper::stdError2ioError(int error) noexcept {
         case static_cast<int>(std::errc::is_a_directory):
             return IoError::IsADirectory;
         case static_cast<int>(std::errc::no_such_file_or_directory):
-        case static_cast<int>(std::errc::not_a_directory):  // Occurs in particular when converting a bundle into a single file
+        case static_cast<int>(std::errc::not_a_directory): // Occurs in particular when converting a bundle into a single file
             return IoError::NoSuchFileOrDirectory;
         case static_cast<int>(std::errc::no_space_on_device):
             return IoError::DiskFull;
@@ -169,7 +169,7 @@ bool IoHelper::_setTargetType(ItemType &itemType) noexcept {
         if (!expected) {
             itemType.ioError = ioError;
             LOGW_WARN(logger(), L"Failed to check if the item is a directory: "
-                                    << Utility::formatStdError(itemType.targetPath, ec).c_str());
+                                        << Utility::formatStdError(itemType.targetPath, ec).c_str());
         }
         return expected;
     }
@@ -272,11 +272,11 @@ bool IoHelper::_checkIfIsHiddenFile(const SyncPath &path, bool &isHidden, IoErro
     }
 
     isHidden = filestat.isHidden;
-#endif  // #ifdef __APPLE__
+#endif // #ifdef __APPLE__
 
     return true;
 }
-#endif  // #if defined(__APPLE__) || defined(__unix__)
+#endif // #if defined(__APPLE__) || defined(__unix__)
 
 bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
     // Check whether the item indicated by `path` is a symbolic link.
@@ -285,7 +285,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
 
     itemType.ioError = stdError2ioError(ec);
     const bool fsSupportsSymlinks =
-        itemType.ioError != IoError::InvalidArgument;  // If true, we assume that the file system in use does support symlinks.
+            itemType.ioError != IoError::InvalidArgument; // If true, we assume that the file system in use does support symlinks.
 
     if (!isSymlink && itemType.ioError != IoError::Success && fsSupportsSymlinks) {
         if (isExpectedError(itemType.ioError)) {
@@ -342,7 +342,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
         IoError aliasReadError = IoError::Success;
         if (!_readAlias(path, itemType.targetPath, aliasReadError)) {
             LOGW_WARN(logger(), L"Failed to read an item first identified as an alias: "
-                                    << Utility::formatIoError(path, itemType.ioError).c_str());
+                                        << Utility::formatIoError(path, itemType.ioError).c_str());
             itemType.ioError = aliasReadError;
 
             return false;
@@ -382,7 +382,7 @@ bool IoHelper::getItemType(const SyncPath &path, ItemType &itemType) noexcept {
             std::string data;
             if (!IoHelper::readJunction(path, data, itemType.targetPath, itemType.ioError)) {
                 LOGW_WARN(logger(), L"Failed to read an item identified as a junction: "
-                                        << Utility::formatIoError(path, itemType.ioError).c_str());
+                                            << Utility::formatIoError(path, itemType.ioError).c_str());
                 return false;
             }
 
@@ -441,7 +441,7 @@ bool IoHelper::getFileSize(const SyncPath &path, uint64_t &size, IoError &ioErro
         }
 
         std::error_code ec;
-        size = _fileSize(path, ec);  // The std::filesystem implementation reports the correct size for a MacOSX alias.
+        size = _fileSize(path, ec); // The std::filesystem implementation reports the correct size for a MacOSX alias.
         ioError = stdError2ioError(ec);
 
         if (ioError != IoError::Success) {
@@ -488,7 +488,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
         if (entry.is_directory()) {
             if (maxDepth == 0) {
                 LOGW_WARN(logger(), L"Max depth reached in getDirectorySize, skipping deeper directories for "
-                                        << Utility::formatSyncPath(path).c_str());
+                                            << Utility::formatSyncPath(path).c_str());
                 ioError = IoError::MaxDepthExceeded;
                 return isExpectedError(ioError);
             }
@@ -544,7 +544,7 @@ bool IoHelper::getDirectorySize(const SyncPath &path, uint64_t &size, IoError &i
 
 bool IoHelper::tempDirectoryPath(SyncPath &directoryPath, IoError &ioError) noexcept {
     std::error_code ec;
-    directoryPath = _tempDirectoryPath(ec);  // The std::filesystem implementation returns an empty path on error.
+    directoryPath = _tempDirectoryPath(ec); // The std::filesystem implementation returns an empty path on error.
     ioError = stdError2ioError(ec);
 
     return ioError == IoError::Success;
@@ -592,7 +592,7 @@ bool IoHelper::checkIfPathExists(const SyncPath &path, bool &exists, IoError &io
     exists = false;
     ioError = IoError::Success;
     std::error_code ec;
-    (void)std::filesystem::symlink_status(path, ec);  // symlink_status does not follow symlinks.
+    (void) std::filesystem::symlink_status(path, ec); // symlink_status does not follow symlinks.
     ioError = stdError2ioError(ec);
     if (ioError == IoError::NoSuchFileOrDirectory) {
         ioError = IoError::Success;
@@ -781,12 +781,12 @@ bool IoHelper::createSymlink(const SyncPath &targetPath, const SyncPath &path, b
 
 // DirectoryIterator
 
-IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError)
-    : _recursive(recursive), _directoryPath(directoryPath) {
+IoHelper::DirectoryIterator::DirectoryIterator(const SyncPath &directoryPath, bool recursive, IoError &ioError) :
+    _recursive(recursive), _directoryPath(directoryPath) {
     std::error_code ec;
 
     _dirIterator = std::filesystem::begin(
-        std::filesystem::recursive_directory_iterator(directoryPath, DirectoryOptions::skip_permission_denied, ec));
+            std::filesystem::recursive_directory_iterator(directoryPath, DirectoryOptions::skip_permission_denied, ec));
     ioError = IoHelper::stdError2ioError(ec);
 }
 
@@ -840,7 +840,7 @@ bool IoHelper::DirectoryIterator::next(DirectoryEntry &nextEntry, bool &endOfDir
         // skip_permission_denied doesn't work on Windows
         try {
             bool dummy = _dirIterator->exists();
-            (void)dummy;
+            (void) dummy;
             nextEntry = *_dirIterator;
             return true;
         } catch (std::filesystem::filesystem_error &) {
@@ -891,4 +891,4 @@ bool IoHelper::_setRightsStd(const SyncPath &path, bool read, bool write, bool e
 
     return true;
 }
-}  // namespace KDC
+} // namespace KDC

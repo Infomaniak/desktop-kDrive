@@ -111,4 +111,4 @@ class TestUpdateTreeWorker : public CppUnit::TestFixture {
         DbNodeId _dbnodeIdDir41;
         DbNodeId _dbnodeIdDir411;
 };
-}  // namespace KDC
+} // namespace KDC

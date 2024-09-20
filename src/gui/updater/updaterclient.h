@@ -56,4 +56,4 @@ class UpdaterClient : public Updater {
         friend class AppClient;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -98,4 +98,4 @@ class CustomDialog : public QDialog {
         void onExit();
 };
 
-}  // namespace KDC
+} // namespace KDC

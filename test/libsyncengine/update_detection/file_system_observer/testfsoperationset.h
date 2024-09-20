@@ -59,4 +59,4 @@ class TestFsOperationSet : public CppUnit::TestFixture {
         std::vector<OperationType> _operationTypes;
 };
 
-}  // namespace KDC
+} // namespace KDC

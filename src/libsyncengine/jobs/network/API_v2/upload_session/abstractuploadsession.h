@@ -95,12 +95,12 @@ class AbstractUploadSession : public AbstractJob {
 
         uint64_t _chunkSize = 0;
         uint64_t _totalChunks = 0;
-        std::string _totalChunkHash;  // This is not a content checksum. It is the hash of all the chunk hash concatenated
+        std::string _totalChunkHash; // This is not a content checksum. It is the hash of all the chunk hash concatenated
 
         std::unordered_map<UniqueId, std::shared_ptr<UploadSessionChunkJob>> _ongoingChunkJobs;
-        uint64_t _threadCounter = 0;  // Number of running
+        uint64_t _threadCounter = 0; // Number of running
 
         std::recursive_mutex _mutex;
 };
 
-}  // namespace KDC
+} // namespace KDC

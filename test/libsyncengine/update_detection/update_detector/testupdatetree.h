@@ -51,4 +51,4 @@ class TestUpdateTree : public CppUnit::TestFixture {
         std::shared_ptr<FSOperationSet> _operationSet;
 };
 
-}  // namespace KDC
+} // namespace KDC

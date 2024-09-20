@@ -39,4 +39,4 @@ class JsonFullFileListWithCursorJob : public AbstractTokenNetworkJob {
         bool _zip = true;
 };
 
-}  // namespace KDC
+} // namespace KDC

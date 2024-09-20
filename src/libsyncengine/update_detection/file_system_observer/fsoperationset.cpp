@@ -94,7 +94,7 @@ bool FSOperationSet::removeOp(UniqueId id) {
     if (auto it = _ops.find(id); it != _ops.end()) {
         _opsByType[it->second->operationType()].erase(id);
         _opsByNodeId[it->second->nodeId()].erase(id);
-        if (_opsByNodeId[it->second->nodeId()].empty()) {  // Remove nodeId from map if no more ops for this node
+        if (_opsByNodeId[it->second->nodeId()].empty()) { // Remove nodeId from map if no more ops for this node
             _opsByNodeId.erase(it->second->nodeId());
         }
         _ops.erase(id);
@@ -115,7 +115,7 @@ bool FSOperationSet::findOp(const NodeId &nodeId, const OperationType opType, FS
     if (!_opsByNodeId.contains(nodeId)) {
         return false;
     }
-    for (auto it = _opsByNodeId.find(nodeId); auto id : it->second) {
+    for (auto it = _opsByNodeId.find(nodeId); auto id: it->second) {
         FSOpPtr opPtr = nullptr;
         if (getOp(id, opPtr) && opPtr->operationType() == opType) {
             res = opPtr;
@@ -141,4 +141,4 @@ FSOperationSet &FSOperationSet::operator=(FSOperationSet &other) {
     return *this;
 }
 
-}  // namespace KDC
+} // namespace KDC

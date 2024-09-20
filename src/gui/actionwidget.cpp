@@ -34,18 +34,10 @@ static const int shadowBlurRadius = 20;
 
 Q_LOGGING_CATEGORY(lcActionWidget, "gui.actionwidget", QtInfoMsg)
 
-ActionWidget::ActionWidget(const QString &path, const QString &text, QWidget *parent)
-    : ClickableWidget(parent),
-      _leftIconPath(path),
-      _text(text),
-      _backgroundColor(QColor()),
-      _leftIconColor(QColor()),
-      _leftIconSize(QSize()),
-      _actionIconColor(QColor()),
-      _actionIconSize(QSize()),
-      _leftIconLabel(nullptr),
-      _actionIconLabel(nullptr),
-      _leftTextLabel(nullptr) {
+ActionWidget::ActionWidget(const QString &path, const QString &text, QWidget *parent) :
+    ClickableWidget(parent), _leftIconPath(path), _text(text), _backgroundColor(QColor()), _leftIconColor(QColor()),
+    _leftIconSize(QSize()), _actionIconColor(QColor()), _actionIconSize(QSize()), _leftIconLabel(nullptr),
+    _actionIconLabel(nullptr), _leftTextLabel(nullptr) {
     setContentsMargins(0, 0, 0, 0);
 
     QHBoxLayout *hbox = new QHBoxLayout();
@@ -113,8 +105,8 @@ void ActionWidget::setLeftIcon() {
 void ActionWidget::setActionIcon() {
     if (_actionIconLabel && _actionIconSize != QSize() && _actionIconColor != QColor()) {
         _actionIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-right.svg", _actionIconColor)
-                .pixmap(_actionIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-right.svg", _actionIconColor)
+                        .pixmap(_actionIconSize));
     }
 }
 
@@ -134,4 +126,4 @@ void ActionWidget::onActionIconSizeChanged() {
     setActionIcon();
 }
 
-}  // namespace KDC
+} // namespace KDC

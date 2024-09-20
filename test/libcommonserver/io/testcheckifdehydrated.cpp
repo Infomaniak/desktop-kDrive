@@ -145,4 +145,4 @@ void TestIo::testCheckIfFileIsDehydrated() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

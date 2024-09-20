@@ -1012,7 +1012,8 @@ bool ExecutorWorker::generateEditJob(SyncOpPtr syncOp, std::shared_ptr<AbstractJ
                                                    << Utility::formatSyncPath(absoluteLocalFilePath).c_str());
                 _executorExitCode = ExitCode::DataError;
                 _executorExitCause = ExitCause::Unknown;
-                SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ExecutorWorker::generateEditJob", "Edit operation with empty corresponding node id");
+                SentryHandler::instance()->captureMessage(SentryLevel::Warning, "ExecutorWorker::generateEditJob",
+                                                          "Edit operation with empty corresponding node id");
 
                 return false;
             }
@@ -2450,8 +2451,8 @@ bool ExecutorWorker::propagateMoveToDbAndTree(SyncOpPtr syncOp) {
 
         if (!correspondingNode->setParentNode(parentNode)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in Node::setParentNode: node name="
-                                               << SyncName2WStr(parentNode->name()).c_str()
-                                               << L" parent node name=" << SyncName2WStr(correspondingNode->name()).c_str());
+                                               << SyncName2WStr(parentNode->name()).c_str() << L" parent node name="
+                                               << SyncName2WStr(correspondingNode->name()).c_str());
             return false;
         }
 

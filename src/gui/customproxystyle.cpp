@@ -22,7 +22,7 @@
 
 namespace KDC {
 
-static const int tooltipWakeUpDelay = 200;  // ms
+static const int tooltipWakeUpDelay = 200; // ms
 
 const char CustomProxyStyle::focusRectangleProperty[] = "focusRectangle";
 
@@ -44,4 +44,4 @@ void CustomProxyStyle::drawPrimitive(QStyle::PrimitiveElement element, const QSt
     QProxyStyle::drawPrimitive(element, option, painter, widget);
 }
 
-}  // namespace KDC
+} // namespace KDC

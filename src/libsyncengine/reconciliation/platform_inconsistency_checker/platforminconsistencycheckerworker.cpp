@@ -27,8 +27,8 @@
 namespace KDC {
 
 PlatformInconsistencyCheckerWorker::PlatformInconsistencyCheckerWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                                                       const std::string &shortName)
-    : OperationProcessor(syncPal, name, shortName) {}
+                                                                       const std::string &shortName) :
+    OperationProcessor(syncPal, name, shortName) {}
 
 void PlatformInconsistencyCheckerWorker::execute() {
     LOG_SYNCPAL_DEBUG(_logger, "Worker started: name=" << name().c_str());
@@ -39,7 +39,7 @@ void PlatformInconsistencyCheckerWorker::execute() {
     ExitCode exitCode = checkTree(_syncPal->updateTree(ReplicaSide::Remote)->rootNode(),
                                   _syncPal->updateTree(ReplicaSide::Remote)->rootNode()->name());
 
-    for (const auto &idItem : _idsToBeRemoved) {
+    for (const auto &idItem: _idsToBeRemoved) {
         if (!_syncPal->updateTree(ReplicaSide::Remote)->deleteNode(idItem.remoteId)) {
             LOGW_SYNCPAL_WARN(_logger, L"Error in UpdateTree::deleteNode: node id=" << Utility::s2ws(idItem.remoteId.c_str()));
         }
@@ -172,7 +172,7 @@ bool PlatformInconsistencyCheckerWorker::checkPathAndName(std::shared_ptr<Node> 
 
 void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std::shared_ptr<Node> &remoteParentNode) {
 #if defined(__APPLE__) || defined(_WIN32)
-    std::unordered_map<SyncName, std::shared_ptr<Node>> processedNodesByName;  // key: lowercase name
+    std::unordered_map<SyncName, std::shared_ptr<Node>> processedNodesByName; // key: lowercase name
     auto it = remoteParentNode->children().begin();
     for (; it != remoteParentNode->children().end(); it++) {
         if (stopAsked()) {
@@ -222,8 +222,8 @@ void PlatformInconsistencyCheckerWorker::checkNameClashAgainstSiblings(const std
         }
     }
 #else
-    (void)remoteParentNode;
+    (void) remoteParentNode;
 #endif
 }
 
-}  // namespace KDC
+} // namespace KDC

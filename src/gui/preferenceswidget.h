@@ -37,7 +37,7 @@ class CustomSwitch;
 // A data class holding the switch widget and the line edit field
 // which let users confirm the synchronization of a folder whose size
 // is above a user-defined threshold (amount).
-struct LargeFolderConfirmation : public QObject {  // Derived from QObject because retranslateUi calls tr()
+struct LargeFolderConfirmation : public QObject { // Derived from QObject because retranslateUi calls tr()
         Q_OBJECT
     public:
         explicit LargeFolderConfirmation(QBoxLayout *folderConfirmationBox);
@@ -138,4 +138,4 @@ class PreferencesWidget : public LargeWidgetWithCustomToolTip {
         void retranslateUi();
 };
 
-}  // namespace KDC
+} // namespace KDC

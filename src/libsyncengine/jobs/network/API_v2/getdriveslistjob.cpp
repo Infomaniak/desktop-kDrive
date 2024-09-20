@@ -36,4 +36,4 @@ std::string GetDrivesListJob::getSpecificUrl() {
     return str;
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -76,7 +76,7 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
     setStyle(new KDC::CustomProxyStyle);
 
     // Load fonts
-    for (const QString &fontFile : fontFiles) {
+    for (const QString &fontFile: fontFiles) {
         if (QFontDatabase::addApplicationFont(fontFile) < 0) {
             std::cout << "Error adding font file!" << std::endl;
         }
@@ -178,7 +178,7 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
 
 #ifdef Q_OS_WIN
     ExitCode exitCode =
-        GuiRequests::setShowInExplorerNavigationPane(ParametersCache::instance()->parametersInfo().showShortcuts());
+            GuiRequests::setShowInExplorerNavigationPane(ParametersCache::instance()->parametersInfo().showShortcuts());
     if (exitCode != ExitCode::Ok) {
         qCWarning(lcAppClient) << "Error in Requests::setShowInExplorerNavigationPane";
     }
@@ -192,7 +192,7 @@ AppClient::AppClient(int &argc, char **argv) : SharedTools::QtSingleApplication(
         _gui->onNewDriveWizard();
     } else {
         // Ask user to log in if needed
-        for (auto const &userInfoClient : _gui->userInfoMap()) {
+        for (auto const &userInfoClient: _gui->userInfoMap()) {
             if (!userInfoClient.second.connected()) {
                 askUserToLoginAgain(userInfoClient.second.dbId(), userInfoClient.second.email(), false);
             }
@@ -454,7 +454,7 @@ void AppClient::onSignalReceived(int id, SignalNum num, const QByteArray &params
         }
         case SignalNum::UTILITY_LOG_UPLOAD_STATUS_UPDATED: {
             LogUploadState status;
-            int progress;  // Progress in percentage
+            int progress; // Progress in percentage
             paramsStream >> status;
             paramsStream >> progress;
             emit logUploadStatusUpdated(status, progress);
@@ -579,7 +579,7 @@ void AppClient::setupLogging() {
 
         logger->setupTemporaryFolderLogDir();
         if (ParametersCache::instance()->parametersInfo().purgeOldLogs()) {
-            logger->setLogExpire(std::chrono::hours(CommonUtility::logsPurgeRate * 24));  // C++20 offers std::chrono::day.
+            logger->setLogExpire(std::chrono::hours(CommonUtility::logsPurgeRate * 24)); // C++20 offers std::chrono::day.
         } else {
             logger->setLogExpire(std::chrono::hours(0));
         }
@@ -730,4 +730,4 @@ void AppClient::onTryTrayAgain() {
     _gui->hideAndShowTray();
 }
 
-}  // namespace KDC
+} // namespace KDC

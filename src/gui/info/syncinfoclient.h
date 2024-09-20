@@ -65,4 +65,4 @@ class SyncInfoClient : public SyncInfo {
         bool _isBeingDeleted{false};
 };
 
-}  // namespace KDC
+} // namespace KDC

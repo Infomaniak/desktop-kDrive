@@ -58,4 +58,4 @@ class VirtualFilesCleaner {
         ExitCause _exitCause = ExitCause::Unknown;
 };
 
-}  // namespace KDC
+} // namespace KDC

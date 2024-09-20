@@ -83,12 +83,12 @@ class Utilities {
         static std::string utf16ToUtf8(const wchar_t *utf16, int len = -1);
         static std::wstring utf8ToUtf16(const char *utf8, int len = -1);
 
-        template <class T>
+        template<class T>
         static bool begins_with(const T &input, const T &match) {
             return input.size() >= match.size() && std::equal(match.begin(), match.end(), input.begin());
         }
 
-        template <class T>
+        template<class T>
         static bool ends_with(const T &input, const T &match) {
             return input.size() >= match.size() && std::equal(match.rbegin(), match.rend(), input.rbegin());
         }

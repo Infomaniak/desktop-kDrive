@@ -57,18 +57,10 @@ static const int hoverStartTimer = 250;
 
 Q_LOGGING_CATEGORY(lcSynchronizedItemWidget, "gui.synchronizeditemidget", QtInfoMsg)
 
-SynchronizedItemWidget::SynchronizedItemWidget(const SynchronizedItem &item, QWidget *parent)
-    : QWidget(parent),
-      _item(item),
-      _isWaitingTimer(false),
-      _isSelected(false),
-      _isMenuOpened(false),
-      _cannotSelect(false),
-      _fileIconSize(QSize()),
-      _directionIconSize(QSize()),
-      _backgroundColorSelection(QColor()),
-      _fileIconLabel(nullptr),
-      _fileDateLabel(nullptr) {
+SynchronizedItemWidget::SynchronizedItemWidget(const SynchronizedItem &item, QWidget *parent) :
+    QWidget(parent), _item(item), _isWaitingTimer(false), _isSelected(false), _isMenuOpened(false), _cannotSelect(false),
+    _fileIconSize(QSize()), _directionIconSize(QSize()), _backgroundColorSelection(QColor()), _fileIconLabel(nullptr),
+    _fileDateLabel(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
     _waitingTimer.setSingleShot(true);
@@ -271,13 +263,13 @@ void SynchronizedItemWidget::setDirectionIcon() {
                 break;
             case SyncDirection::Up:
                 _fileDirectionLabel->setPixmap(
-                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/upload.svg", _directionIconColor)
-                        .pixmap(_directionIconSize));
+                        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/upload.svg", _directionIconColor)
+                                .pixmap(_directionIconSize));
                 break;
             case SyncDirection::Down:
                 _fileDirectionLabel->setPixmap(
-                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/download.svg", _directionIconColor)
-                        .pixmap(_directionIconSize));
+                        KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/download.svg", _directionIconColor)
+                                .pixmap(_directionIconSize));
                 break;
         }
     }
@@ -398,4 +390,4 @@ void SynchronizedItemWidget::onWaitingTimerTimeout() {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

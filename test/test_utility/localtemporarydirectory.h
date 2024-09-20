@@ -36,4 +36,4 @@ class LocalTemporaryDirectory {
         NodeId _id;
 };
 
-}  // namespace KDC
+} // namespace KDC

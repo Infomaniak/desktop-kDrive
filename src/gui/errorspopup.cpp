@@ -48,13 +48,9 @@ static const std::string actionTypeProperty = "actionType";
 
 Q_LOGGING_CATEGORY(lcErrorsPopup, "gui.errorspopup", QtInfoMsg)
 
-ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErrorsCount, QPoint position, QWidget *parent)
-    : QDialog(parent),
-      _moved(false),
-      _position(position),
-      _backgroundColor(QColor()),
-      _warningIconSize(QSize()),
-      _warningIconColor(QColor()) {
+ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErrorsCount, QPoint position, QWidget *parent) :
+    QDialog(parent), _moved(false), _position(position), _backgroundColor(QColor()), _warningIconSize(QSize()),
+    _warningIconColor(QColor()) {
     setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::X11BypassWindowManagerHint);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_DeleteOnClose);
@@ -77,7 +73,7 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErr
     mainVBox->addWidget(titleLabel);
 
     // Drive errors
-    for (auto const &driveError : driveErrorList) {
+    for (auto const &driveError: driveErrorList) {
         ClickableWidget *driveWidget = new ClickableWidget(this);
         driveWidget->setProperty(actionTypeProperty.c_str(), driveError.driveDbId);
         mainVBox->addWidget(driveWidget);
@@ -107,8 +103,8 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErr
             warningIconLabel->setWordWrap(true);
             driveErrorHBox->addWidget(warningIconLabel);
             text = driveError.driveName + QString(tr(" (%1 error(s) and %2 information(s))")
-                                                      .arg(driveError.unresolvedErrorsCount)
-                                                      .arg(driveError.autoresolvedErrorsCount));
+                                                          .arg(driveError.unresolvedErrorsCount)
+                                                          .arg(driveError.autoresolvedErrorsCount));
         }
 
         driveNameLabel->setText(text);
@@ -147,7 +143,7 @@ ErrorsPopup::ErrorsPopup(const QList<DriveError> &driveErrorList, int genericErr
 
         QLabel *driveNameLabel = new QLabel(this);
         QString text =
-            QString(tr("Generic errors (%n warning(s) or error(s))", "Number of warnings or errors", genericErrorsCount));
+                QString(tr("Generic errors (%n warning(s) or error(s))", "Number of warnings or errors", genericErrorsCount));
         driveNameLabel->setText(text);
         driveNameLabel->setWordWrap(true);
         errorHBox->addWidget(driveNameLabel);
@@ -201,9 +197,9 @@ void ErrorsPopup::paintEvent(QPaintEvent *event) {
 void ErrorsPopup::setWarningIcon() {
     if (_warningIconSize != QSize() && _warningIconColor != QColor()) {
         QList<QLabel *> labelList = findChildren<QLabel *>("warningIconLabel");
-        for (QLabel *label : labelList) {
+        for (QLabel *label: labelList) {
             label->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", _warningIconColor)
-                                 .pixmap(_warningIconSize));
+                                     .pixmap(_warningIconSize));
         }
     }
 }
@@ -211,9 +207,9 @@ void ErrorsPopup::setWarningIcon() {
 void ErrorsPopup::setInfoIcon() {
     if (_infoIconSize != QSize() && _infoIconColor != QColor()) {
         QList<QLabel *> labelList = findChildren<QLabel *>("infoIconLabel");
-        for (QLabel *label : labelList) {
+        for (QLabel *label: labelList) {
             label->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/information.svg", _infoIconColor)
-                                 .pixmap(_infoIconSize));
+                                     .pixmap(_infoIconSize));
         }
     }
 }
@@ -221,10 +217,10 @@ void ErrorsPopup::setInfoIcon() {
 void ErrorsPopup::setArrowIcon() {
     if (_arrowIconSize != QSize() && _arrowIconColor != QColor()) {
         QList<QLabel *> labelList = findChildren<QLabel *>("arrowIconLabel");
-        for (QLabel *label : labelList) {
+        for (QLabel *label: labelList) {
             label->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/arrow-right.svg", _arrowIconColor)
-                    .pixmap(_arrowIconSize));
+                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/arrow-right.svg", _arrowIconColor)
+                            .pixmap(_arrowIconSize));
         }
     }
 }
@@ -236,4 +232,4 @@ void ErrorsPopup::onActionButtonClicked() {
     done(QDialog::Accepted);
 }
 
-}  // namespace KDC
+} // namespace KDC

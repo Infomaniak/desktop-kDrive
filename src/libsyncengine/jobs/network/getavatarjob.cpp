@@ -62,9 +62,9 @@ bool GetAvatarJob::handleError(std::istream &is, const Poco::URI &uri) {
 
 bool GetAvatarJob::handleResponse(std::istream &is) {
     _avatar = std::shared_ptr<std::vector<char>>(
-        new std::vector<char>(std::istreambuf_iterator<char>(is), (std::istreambuf_iterator<char>())));
+            new std::vector<char>(std::istreambuf_iterator<char>(is), (std::istreambuf_iterator<char>())));
 
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

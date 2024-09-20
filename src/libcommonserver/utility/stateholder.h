@@ -20,7 +20,7 @@
 
 namespace KDC {
 
-template <typename T>
+template<typename T>
 class StateHolder {
     public:
         explicit StateHolder(T *item, T newValue) : _item(item) {
@@ -41,4 +41,4 @@ class StateHolder {
         T _initValue;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -107,17 +107,17 @@ struct GuiRequests {
         static ExitCode getFolderSize(int userDbId, int driveId, const QString &nodeId);
 
         // C/S requests (others)
-        static ExitCode syncStart(int syncDbId);  // !!! Use COMM_AVERAGE_TIMEOUT !!!
-        static ExitCode syncStop(int syncDbId);   // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        static ExitCode syncStart(int syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
+        static ExitCode syncStop(int syncDbId); // !!! Use COMM_AVERAGE_TIMEOUT !!!
         static ExitCode activateLoadInfo(bool activate);
         static ExitCode askForStatus();
-        static ExitCode checkCommStatus();           // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteUser(int userDbId);    // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteDrive(int driveDbId);  // !!! Use COMM_LONG_TIMEOUT !!!
-        static ExitCode deleteSync(int syncDbId);    // Asynchronous because it can be time consuming
+        static ExitCode checkCommStatus(); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteUser(int userDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteDrive(int driveDbId); // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode deleteSync(int syncDbId); // Asynchronous because it can be time consuming
         static ExitCode propagateSyncListChange(int syncDbId, bool restartSync);
         static ExitCode bestAvailableVfsMode(VirtualFileMode &mode);
-        static ExitCode propagateExcludeListChange();  // !!! Use COMM_LONG_TIMEOUT !!!
+        static ExitCode propagateExcludeListChange(); // !!! Use COMM_LONG_TIMEOUT !!!
         static ExitCode hasSystemLaunchOnStartup(bool &enabled);
         static ExitCode hasLaunchOnStartup(bool &enabled);
         static ExitCode setLaunchOnStartup(bool enabled);
@@ -128,4 +128,4 @@ struct GuiRequests {
         static ExitCode cancelLogUploadToSupport();
         static ExitCode crash();
 };
-}  // namespace KDC
+} // namespace KDC

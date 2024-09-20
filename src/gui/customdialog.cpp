@@ -47,12 +47,8 @@ static const int resizeStripeWidth = 5;
 
 Q_LOGGING_CATEGORY(lcCustomDialog, "gui.customdialog", QtInfoMsg)
 
-CustomDialog::CustomDialog(bool popup, QWidget *parent)
-    : QDialog(parent),
-      _backgroundColor(QColor()),
-      _buttonIconColor(QColor()),
-      _backgroundForcedColor(QColor()),
-      _layout(nullptr) {
+CustomDialog::CustomDialog(bool popup, QWidget *parent) :
+    QDialog(parent), _backgroundColor(QColor()), _buttonIconColor(QColor()), _backgroundForcedColor(QColor()), _layout(nullptr) {
     setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -290,7 +286,7 @@ void CustomDialog::mouseReleaseEvent(QMouseEvent *event) {
 void CustomDialog::mouseHover(QHoverEvent *event) {
     if (!_isResizable) return;
 
-    if (_resizeMode) return;  // Do not change cursor in resize mode
+    if (_resizeMode) return; // Do not change cursor in resize mode
 
     switch (calculateCursorPosition(event->position().x(), event->position().y())) {
         case KDC::CustomDialog::Left:
@@ -371,4 +367,4 @@ void CustomDialog::onExit() {
     emit exit();
 }
 
-}  // namespace KDC
+} // namespace KDC

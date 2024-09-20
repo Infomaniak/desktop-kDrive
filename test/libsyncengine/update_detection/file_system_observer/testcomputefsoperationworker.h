@@ -79,4 +79,4 @@ class TestComputeFSOperationWorker : public CppUnit::TestFixture {
         LocalTemporaryDirectory _localTempDir{"TestSyncPal"};
 };
 
-}  // namespace KDC
+} // namespace KDC

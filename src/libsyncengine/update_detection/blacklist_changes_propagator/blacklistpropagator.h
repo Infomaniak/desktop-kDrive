@@ -41,4 +41,4 @@ class BlacklistPropagator : public AbstractPropagatorJob {
         Sync _sync;
 };
 
-}  // namespace KDC
+} // namespace KDC

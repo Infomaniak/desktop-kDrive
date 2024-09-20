@@ -51,4 +51,4 @@ class LiteSyncAppDialog : public CustomDialog {
         void onValidateButtonTriggered(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

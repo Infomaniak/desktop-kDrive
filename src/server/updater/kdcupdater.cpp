@@ -70,8 +70,8 @@ void UpdaterScheduler::slotTimerFired() {
 
 /* ----------------------------------------------------------------- */
 
-KDCUpdater::KDCUpdater(const QUrl &url)
-    : UpdaterServer(), _updateUrl(url), _accessManager(new QNetworkAccessManager(this)), _timeoutWatchdog(new QTimer(this)) {}
+KDCUpdater::KDCUpdater(const QUrl &url) :
+    UpdaterServer(), _updateUrl(url), _accessManager(new QNetworkAccessManager(this)), _timeoutWatchdog(new QTimer(this)) {}
 
 void KDCUpdater::setUpdateUrl(const QUrl &url) {
     _updateUrl = url;
@@ -85,7 +85,7 @@ bool KDCUpdater::performUpdate() {
         if (QMessageBox::information(0, tr("New %1 Update Ready").arg(name),
                                      tr("A new update for %1 is about to be installed. The updater may ask\n"
                                         "for additional privileges during the process.")
-                                         .arg(name),
+                                             .arg(name),
                                      QMessageBox::Ok)) {
             slotStartInstaller();
             return true;
@@ -126,12 +126,12 @@ QString KDCUpdater::statusString() const {
             return tr("An update is available: %1").arg(updateVersion);
         case DownloadFailed:
             return tr("Could not download update.<br>Please download it from <a style=\"%1\" href=\"%2\">here</a>.")
-                .arg(CommonUtility::linkStyle, _updateInfo.web());
+                    .arg(CommonUtility::linkStyle, _updateInfo.web());
         case DownloadTimedOut:
             return tr("Could not check for new updates.");
         case UpdateOnlyAvailableThroughSystem:
             return tr("An update is available: %1.<br>Please download it from <a style=\"%2\" href=\"%3\">here</a>.")
-                .arg(updateVersion, CommonUtility::linkStyle, APPLICATION_DOWNLOAD_URL);
+                    .arg(updateVersion, CommonUtility::linkStyle, APPLICATION_DOWNLOAD_URL);
         case CheckingServer:
             return tr("Checking update server...");
         case Unknown:
@@ -214,8 +214,8 @@ void KDCUpdater::slotStartInstaller() {
         SyncPath msiLogPath(CommonUtility::getAppSupportDir());
         QString msiLogFile = SyncName2QStr((msiLogPath / "msi.log").native());
         QString command = QString("&{msiexec /norestart /passive /i '%1' /L*V '%2'| Out-Null ; &'%3'}")
-                              .arg(preparePathForPowershell(updateFile), preparePathForPowershell(msiLogFile),
-                                   preparePathForPowershell(QCoreApplication::applicationFilePath()));
+                                  .arg(preparePathForPowershell(updateFile), preparePathForPowershell(msiLogFile),
+                                       preparePathForPowershell(QCoreApplication::applicationFilePath()));
 
         QProcess::startDetached("powershell.exe", QStringList{"-Command", command});
     } else {
@@ -239,7 +239,7 @@ void KDCUpdater::slotOpenUpdateUrl() {
 
 bool KDCUpdater::updateSucceeded() const {
     qint64 targetVersionInt =
-        Helper::stringVersionToInt(QString::fromStdString(ParametersCache::instance()->parameters().updateTargetVersion()));
+            Helper::stringVersionToInt(QString::fromStdString(ParametersCache::instance()->parameters().updateTargetVersion()));
     qint64 currentVersion = Helper::currentVersionToInt();
     return currentVersion >= targetVersionInt;
 }
@@ -373,7 +373,7 @@ void NSISUpdater::versionInfoArrived(const UpdateInfo &info) {
             if (QFile(_targetFile).exists()) {
                 ParametersCache::instance()->parameters().setUpdateTargetVersion(updateInfo().version().toStdString());
                 ParametersCache::instance()->parameters().setUpdateTargetVersionString(
-                    updateInfo().versionString().toStdString());
+                        updateInfo().versionString().toStdString());
                 ParametersCache::instance()->parameters().setUpdateFileAvailable(_targetFile.toStdString());
                 setDownloadState(DownloadComplete);
             } else {
@@ -412,8 +412,8 @@ void NSISUpdater::showNoUrlDialog(const UpdateInfo &info) {
     QLabel *lbl = new QLabel;
     QString txt = tr("<p>A new version of the %1 Client is available.</p>"
                      "<p><b>%2</b> is available for download. The installed version is %3.</p>")
-                      .arg(CommonUtility::escape(Theme::instance()->appNameGUI()), CommonUtility::escape(info.versionString()),
-                           CommonUtility::escape(clientVersion()));
+                          .arg(CommonUtility::escape(Theme::instance()->appNameGUI()),
+                               CommonUtility::escape(info.versionString()), CommonUtility::escape(clientVersion()));
 
     lbl->setText(txt);
     lbl->setTextFormat(Qt::RichText);
@@ -481,7 +481,7 @@ bool NSISUpdater::handleStartup() {
                 // auto update failed. Ask user what to do
                 LOG_INFO(Log::instance()->getLogger(),
                          "The requested update attempt has failed"
-                             << ParametersCache::instance()->parameters().updateTargetVersion().c_str());
+                                 << ParametersCache::instance()->parameters().updateTargetVersion().c_str());
                 return false;
             }
         } else {
@@ -531,4 +531,4 @@ void PassiveUpdateNotifier::versionInfoArrived(const UpdateInfo &info) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

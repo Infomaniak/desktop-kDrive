@@ -52,4 +52,4 @@ class ProxyConfig {
         std::string _token;
 };
 
-}  // namespace KDC
+} // namespace KDC

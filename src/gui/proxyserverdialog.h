@@ -89,4 +89,4 @@ class ProxyServerDialog : public CustomDialog {
         void onPwdTextEdited(const QString &text);
 };
 
-}  // namespace KDC
+} // namespace KDC

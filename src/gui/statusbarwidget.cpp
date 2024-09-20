@@ -37,14 +37,9 @@ static const int statusIconSize = 24;
 
 Q_LOGGING_CATEGORY(lcStatusBarWidget, "gui.statusbarwidget", QtInfoMsg)
 
-StatusBarWidget::StatusBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : HalfRoundRectWidget(parent),
-      _gui(gui),
-      _driveDbId(0),
-      _statusIconLabel(nullptr),
-      _statusLabel(nullptr),
-      _pauseButton(nullptr),
-      _resumeButton(nullptr) {
+StatusBarWidget::StatusBarWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    HalfRoundRectWidget(parent), _gui(gui), _driveDbId(0), _statusIconLabel(nullptr), _statusLabel(nullptr),
+    _pauseButton(nullptr), _resumeButton(nullptr) {
     setContentsMargins(hMargin, vMargin, hMargin, vMargin);
 
     _statusIconLabel = new QLabel(this);
@@ -103,7 +98,7 @@ void StatusBarWidget::setStatus(KDC::GuiUtility::StatusInfo &statusInfo) {
         _pauseButton->setVisible(false);
         _resumeButton->setVisible(false);
         if (_driveDbId) {
-            for (const auto &sync : _gui->syncInfoMap()) {
+            for (const auto &sync: _gui->syncInfoMap()) {
                 if (sync.second.driveDbId() != _driveDbId) {
                     continue;
                 }
@@ -177,23 +172,23 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
         return;
     }
 
-    QString resumeMenukDriveSyncStr = tr("Resume kDrive \"%1\" synchronization");  // add (s)
+    QString resumeMenukDriveSyncStr = tr("Resume kDrive \"%1\" synchronization"); // add (s)
     QString resumeMenuSyncStr = tr("Resume synchronization");
     QString resumeMenuAllSyncStr = tr("Resume all kDrives synchronization");
     QString resumeMenuActionIcon = ":/client/resources/icons/actions/start.svg";
 
-    QString pauseMenukDriveSyncStr = tr("Pause kDrive \"%1\" synchronization");  // add (s)
+    QString pauseMenukDriveSyncStr = tr("Pause kDrive \"%1\" synchronization"); // add (s)
     QString pauseMenuSyncStr = tr("Pause synchronization");
     QString pauseMenuAllSyncStr = tr("Pause all kDrives synchronization");
     QString pauseMenuActionIcon = ":/client/resources/icons/actions/pause.svg";
 
-    QString menukDriveSyncStr = resumeMenukDriveSyncStr;  // add (s)
+    QString menukDriveSyncStr = resumeMenukDriveSyncStr; // add (s)
     QString menuSyncStr = resumeMenuSyncStr;
     QString menuAllSyncStr = resumeMenuAllSyncStr;
     QString menuActionIcon = resumeMenuActionIcon;
 
     if (pauseClicked) {
-        menukDriveSyncStr = pauseMenukDriveSyncStr;  // add (s)
+        menukDriveSyncStr = pauseMenukDriveSyncStr; // add (s)
         menuSyncStr = pauseMenuSyncStr;
         menuAllSyncStr = pauseMenuAllSyncStr;
         menuActionIcon = pauseMenuActionIcon;
@@ -201,7 +196,7 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
 
     QWidgetAction *widgetAction = new QWidgetAction(this);
     MenuItemWidget *actionMenuItemWidget =
-        new MenuItemWidget(menukDriveSyncStr.arg(_driveDbId ? driveInfoIt->second.name() : QString()));
+            new MenuItemWidget(menukDriveSyncStr.arg(_driveDbId ? driveInfoIt->second.name() : QString()));
     actionMenuItemWidget->setLeftIcon(menuActionIcon);
     widgetAction->setDefaultWidget(actionMenuItemWidget);
 
@@ -215,7 +210,7 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
     if (_gui->syncInfoMap().size() > 1) {
         // filter to get all
         std::map<int, SyncInfoClient> syncOfCurrentDrive;
-        for (auto const &syncInfoMapElt : _gui->syncInfoMap()) {
+        for (auto const &syncInfoMapElt: _gui->syncInfoMap()) {
             if (syncInfoMapElt.second.driveDbId() == _driveDbId) {
                 syncOfCurrentDrive.insert(syncInfoMapElt);
             }
@@ -237,7 +232,7 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
             syncActionGroup->setExclusive(true);
 
             QWidgetAction *syncAction;
-            for (auto const &syncInfoMapElt : syncOfCurrentDrive) {
+            for (auto const &syncInfoMapElt: syncOfCurrentDrive) {
                 if (pauseClicked && (syncInfoMapElt.second.status() == SyncStatus::Stopped ||
                                      syncInfoMapElt.second.status() == SyncStatus::Paused)) {
                     continue;
@@ -279,8 +274,8 @@ void StatusBarWidget::createStatusActionMenu(MenuWidget *&menu, bool &resetButto
 
         menu->addSeparator();
         menu->addAction(allAction);
-        if (menu->exec(
-                QWidget::mapToGlobal(pauseClicked ? _pauseButton->geometry().center() : _resumeButton->geometry().center()))) {
+        if (menu->exec(QWidget::mapToGlobal(pauseClicked ? _pauseButton->geometry().center()
+                                                         : _resumeButton->geometry().center()))) {
             resetButtons = true;
         }
     }
@@ -325,4 +320,4 @@ void StatusBarWidget::retranslateUi() {
 }
 
 
-}  // namespace KDC
+} // namespace KDC

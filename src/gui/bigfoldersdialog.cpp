@@ -48,8 +48,8 @@ static const char undecidedFolderProperty[] = "undecidedFolder";
 Q_LOGGING_CATEGORY(lcBigFoldersDialog, "gui.bigfoldersdialog", QtInfoMsg)
 
 BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncInfoClient, QSet<QString>>> &syncsUndecidedMap,
-                                   const DriveInfo &driveInfo, QWidget *parent)
-    : CustomDialog(true, parent) {
+                                   const DriveInfo &driveInfo, QWidget *parent) :
+    CustomDialog(true, parent) {
     QVBoxLayout *mainLayout = this->mainLayout();
 
     // Text
@@ -61,7 +61,7 @@ BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncI
     QLabel *textLabel = new QLabel(this);
     textLabel->setObjectName("largeNormalTextLabel");
     textLabel->setText(
-        (tr("Some folders were not synchronized because they are too large.\nSelect the ones you want to synchronize:")));
+            (tr("Some folders were not synchronized because they are too large.\nSelect the ones you want to synchronize:")));
     textLabel->setWordWrap(true);
     textHBox->addWidget(textLabel);
 
@@ -85,10 +85,10 @@ BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncI
     undecidedListWidgetVBox->setSpacing(undecidedListBoxSpacing);
     undecidedListWidget->setLayout(undecidedListWidgetVBox);
 
-    for (const auto &syncUndecidedListIt : syncsUndecidedMap) {
+    for (const auto &syncUndecidedListIt: syncsUndecidedMap) {
         int syncDbId = syncUndecidedListIt.first;
 
-        for (const QString &nodeId : syncUndecidedListIt.second.second) {
+        for (const QString &nodeId: syncUndecidedListIt.second.second) {
             QString nodePath;
             ExitCode exitCode = GuiRequests::getNodePath(syncDbId, nodeId, nodePath);
             if (exitCode != ExitCode::Ok) {
@@ -135,8 +135,8 @@ BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncI
 
             QLabel *driveIconLabel = new QLabel(this);
             driveIconLabel->setPixmap(
-                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfo.color())
-                    .pixmap(QSize(driveIconSize, driveIconSize)));
+                    KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/drive.svg", driveInfo.color())
+                            .pixmap(QSize(driveIconSize, driveIconSize)));
             undecidedItemPathHBox->addWidget(driveIconLabel);
             undecidedItemPathHBox->addSpacing(undecidedItemPathDriveSpacing);
 
@@ -154,7 +154,7 @@ BigFoldersDialog::BigFoldersDialog(const std::unordered_map<int, std::pair<SyncI
             checkBox->setProperty(undecidedFolderProperty, nodeId);
             undecidedItemHBox->addWidget(checkBox);
             _mapCheckboxToFolder.insert(checkBox, syncDbId);
-            _mapWhiteListedSubFolders[syncDbId].insert(nodeId, false);  // Initialize all choices to false
+            _mapWhiteListedSubFolders[syncDbId].insert(nodeId, false); // Initialize all choices to false
             connect(checkBox, &CustomCheckBox::clicked, this, &BigFoldersDialog::slotCheckboxClicked);
         }
     }
@@ -198,11 +198,11 @@ void BigFoldersDialog::slotCheckboxClicked() {
 void BigFoldersDialog::setFolderIcon() {
     if (_folderIconSize != QSize() && _folderIconColor != QColor()) {
         QList<QLabel *> labelList = findChildren<QLabel *>("folderIconLabel");
-        for (QLabel *label : labelList) {
+        for (QLabel *label: labelList) {
             label->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/folder.svg", _folderIconColor)
-                                 .pixmap(_folderIconSize));
+                                     .pixmap(_folderIconSize));
         }
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

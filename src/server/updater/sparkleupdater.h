@@ -58,7 +58,7 @@ class SparkleUpdater : public UpdaterServer {
         int state() const;
         QString version() const override;
         QString statusString() const
-            override  // defined in header file because "mm" file not read by "lupdate" command for translation file generation
+                override // defined in header file because "mm" file not read by "lupdate" command for translation file generation
         {
             switch (state()) {
                 case Unknown:
@@ -83,4 +83,4 @@ class SparkleUpdater : public UpdaterServer {
         Private *d;
 };
 
-}  // namespace KDC
+} // namespace KDC

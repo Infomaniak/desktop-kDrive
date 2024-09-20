@@ -111,4 +111,4 @@ class ErrorsPopup : public QDialog {
         void onActionButtonClicked();
 };
 
-}  // namespace KDC
+} // namespace KDC

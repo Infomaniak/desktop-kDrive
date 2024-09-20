@@ -13,7 +13,8 @@ RETURN_CODE_SUCCESS=0
 RETURN_CODE_ERROR=1
 
 # Find all files in SCRIPT_DIRECTORY with one of these extensions
-FILE_LIST="$(find "$SCRIPT_DIRECTORY" | grep -E ".*\.(ino|cpp|cc|c|h|hpp|hh|mm)$")"
+EXCLUDE_DIR="src/3rdparty"
+FILE_LIST="$(find "$SCRIPT_DIRECTORY" | grep -E ".*\.(ino|cpp|cc|c|h|hpp|hh|mm)$" | grep -v "$EXCLUDE_DIR")"
 # echo "\"$FILE_LIST\"" # debugging
 # split into an array; see my ans: https://stackoverflow.com/a/71575442/4561887
 # mapfile -t FILE_LIST_ARRAY <<< "$FILE_LIST"

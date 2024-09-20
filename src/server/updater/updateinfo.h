@@ -41,4 +41,4 @@ class UpdateInfo {
         QString mDownloadUrl;
 };
 
-}  // namespace KDC
+} // namespace KDC

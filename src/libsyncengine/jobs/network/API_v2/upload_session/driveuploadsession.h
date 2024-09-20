@@ -61,4 +61,4 @@ class DriveUploadSession : public AbstractUploadSession {
         NodeId _nodeId;
         SyncTime _modtimeOut = 0;
 };
-}  // namespace KDC
+} // namespace KDC

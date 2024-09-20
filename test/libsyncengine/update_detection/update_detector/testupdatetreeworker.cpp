@@ -41,7 +41,7 @@ void TestUpdateTreeWorker::setUp() {
     _updateTree = std::shared_ptr<UpdateTree>(new UpdateTree(ReplicaSide::Local, SyncDb::driveRootNode()));
 
     _updateTreeWorker = std::shared_ptr<UpdateTreeWorker>(
-        new UpdateTreeWorker(_syncDb, _operationSet, _updateTree, "Test Tree Updater", "LTRU", ReplicaSide::Local));
+            new UpdateTreeWorker(_syncDb, _operationSet, _updateTree, "Test Tree Updater", "LTRU", ReplicaSide::Local));
 
     setUpDbTree();
     _updateTree->init();
@@ -174,54 +174,54 @@ void TestUpdateTreeWorker::setUpUpdateTree() {
     DbNodeId dbNodeIdDir;
     _syncDb->dbId(ReplicaSide::Local, NodeId("id1"), dbNodeIdDir, found);
     std::shared_ptr<Node> node1 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 1"), NodeType::Directory, OperationType::None,
-                                       "id1", createdAt, lastmodified, size, _updateTree->rootNode()));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 1"), NodeType::Directory,
+                                           OperationType::None, "id1", createdAt, lastmodified, size, _updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id2"), dbNodeIdDir, found);
     std::shared_ptr<Node> node2 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 2"), NodeType::Directory, OperationType::None,
-                                       "id2", createdAt, lastmodified, size, _updateTree->rootNode()));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 2"), NodeType::Directory,
+                                           OperationType::None, "id2", createdAt, lastmodified, size, _updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id3"), dbNodeIdDir, found);
     std::shared_ptr<Node> node3 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 3"), NodeType::Directory, OperationType::None,
-                                       "id3", createdAt, lastmodified, size, _updateTree->rootNode()));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 3"), NodeType::Directory,
+                                           OperationType::None, "id3", createdAt, lastmodified, size, _updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id4"), dbNodeIdDir, found);
     std::shared_ptr<Node> node4 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 4"), NodeType::Directory, OperationType::None,
-                                       "id4", createdAt, lastmodified, size, _updateTree->rootNode()));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 4"), NodeType::Directory,
+                                           OperationType::None, "id4", createdAt, lastmodified, size, _updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id11"), dbNodeIdDir, found);
     std::shared_ptr<Node> node11 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 1.1"), NodeType::Directory, OperationType::None,
-                                       "id11", createdAt, lastmodified, size, node1));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 1.1"), NodeType::Directory,
+                                           OperationType::None, "id11", createdAt, lastmodified, size, node1));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id111"), dbNodeIdDir, found);
     std::shared_ptr<Node> node111 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 1.1.1"), NodeType::Directory,
-                                       OperationType::None, "id111", createdAt, lastmodified, size, node11));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 1.1.1"), NodeType::Directory,
+                                           OperationType::None, "id111", createdAt, lastmodified, size, node11));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id1111"), dbNodeIdDir, found);
     std::shared_ptr<Node> node1111 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("File 1.1.1.1"), NodeType::File, OperationType::None,
-                                       "id1111", createdAt, lastmodified, size, node111));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("File 1.1.1.1"), NodeType::File,
+                                           OperationType::None, "id1111", createdAt, lastmodified, size, node111));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id31"), dbNodeIdDir, found);
     std::shared_ptr<Node> node31 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 3.1"), NodeType::Directory, OperationType::None,
-                                       "id31", createdAt, lastmodified, size, node3));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("Dir 3.1"), NodeType::Directory,
+                                           OperationType::None, "id31", createdAt, lastmodified, size, node3));
     std::shared_ptr<Node> node41 =
-        std::shared_ptr<Node>(new Node(_dbnodeIdDir41, _updateTree->side(), Str("Dir 4.1"), NodeType::Directory,
-                                       OperationType::None, "id41", createdAt, lastmodified, size, node4));
+            std::shared_ptr<Node>(new Node(_dbnodeIdDir41, _updateTree->side(), Str("Dir 4.1"), NodeType::Directory,
+                                           OperationType::None, "id41", createdAt, lastmodified, size, node4));
     std::shared_ptr<Node> node411 =
-        std::shared_ptr<Node>(new Node(_dbnodeIdDir411, _updateTree->side(), Str("Dir 4.1.1"), NodeType::Directory,
-                                       OperationType::None, "id411", createdAt, lastmodified, size, node41));
+            std::shared_ptr<Node>(new Node(_dbnodeIdDir411, _updateTree->side(), Str("Dir 4.1.1"), NodeType::Directory,
+                                           OperationType::None, "id411", createdAt, lastmodified, size, node41));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id4111"), dbNodeIdDir, found);
     std::shared_ptr<Node> node4111 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("File 4.1.1.1"), NodeType::File, OperationType::None,
-                                       "id4111", createdAt, lastmodified, size, node411));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("File 4.1.1.1"), NodeType::File,
+                                           OperationType::None, "id4111", createdAt, lastmodified, size, node411));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id6"), dbNodeIdDir, found);
     std::shared_ptr<Node> node6 =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("File 6"), NodeType::File, OperationType::None,
-                                       "id6", createdAt, lastmodified, size, _updateTree->rootNode()));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("File 6"), NodeType::File, OperationType::None,
+                                           "id6", createdAt, lastmodified, size, _updateTree->rootNode()));
     _syncDb->dbId(ReplicaSide::Local, NodeId("id6a"), dbNodeIdDir, found);
     std::shared_ptr<Node> node6a =
-        std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("File 6a"), NodeType::File, OperationType::None,
-                                       "id6a", createdAt, lastmodified, size, _updateTree->rootNode()));
+            std::shared_ptr<Node>(new Node(dbNodeIdDir, _updateTree->side(), Str("File 6a"), NodeType::File, OperationType::None,
+                                           "id6a", createdAt, lastmodified, size, _updateTree->rootNode()));
 
     _updateTree->init();
 
@@ -321,7 +321,7 @@ void TestUpdateTreeWorker::testUpdateTmpFileNode() {
 void TestUpdateTreeWorker::testHandleCreateOperationsWithSamePath() {
     setUpUpdateTree();
 
-    {  // Regular case: success
+    { // Regular case: success
         _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id51", NodeType::File, 1654798336,
                                                               1654798336, 12345, "Dir 5/File 5.1"));
         CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->handleCreateOperationsWithSamePath());
@@ -413,7 +413,7 @@ void TestUpdateTreeWorker::testStep3() {
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id3", NodeType::Directory, 1654788256,
                                                           1654788256, 12345, "Dir 1/Dir 1.2/Dir 3"));
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id2", NodeType::Directory, 1654788256,
-                                                          1654788256, 12345, "Dir 2"));  // existing node
+                                                          1654788256, 12345, "Dir 2")); // existing node
     // make move dir to test special case
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->step1MoveDirectory());
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->step3DeleteDirectory());
@@ -455,10 +455,10 @@ void TestUpdateTreeWorker::testStep5() {
                                                           1654725635, 12345, "Dir 1/Dir 1.2/Dir 1.2.1"));
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "idX", NodeType::Directory, 1654725632,
                                                           1654725632, 12345, "Dir 1/Dir x"));
-    _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Create, "id7", NodeType::Directory, 1654725632, 1654725632, 12345, "Dir 7"));
-    _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Create, "id5", NodeType::Directory, 1654725632, 1654725632, 12345, "Dir 5"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id7", NodeType::Directory, 1654725632,
+                                                          1654725632, 12345, "Dir 7"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id5", NodeType::Directory, 1654725632,
+                                                          1654725632, 12345, "Dir 5"));
     // test step5CreateDirectory
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->step5CreateDirectory());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 1.2.1")->id() == "id121");
@@ -561,8 +561,8 @@ void TestUpdateTreeWorker::testClearTreeStep3() {
                                                           1654788252, 12345, "Dir 1/Dir 1.1", "Dir 1/Dir 1.2"));
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id3", NodeType::Directory, 1654788256,
                                                           1654788256, 12345, "Dir 1/Dir 1.2/Dir 3"));
-    _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Delete, "id2", NodeType::Directory, 1654788256, 1654788256, 12345, "Dir 2"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Delete, "id2", NodeType::Directory, 1654788256,
+                                                          1654788256, 12345, "Dir 2"));
     // make move dir to test special case
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->step1MoveDirectory());
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->step3DeleteDirectory());
@@ -599,10 +599,10 @@ void TestUpdateTreeWorker::testClearTreeStep5() {
                                                           1654725635, 12345, "Dir 1/Dir 1.2/Dir 1.2.1"));
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "idX", NodeType::Directory, 1654725632,
                                                           1654725632, 12345, "Dir 1/Dir x"));
-    _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Create, "id7", NodeType::Directory, 1654725632, 1654725632, 12345, "Dir 7"));
-    _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Create, "id5", NodeType::Directory, 1654725632, 1654725632, 12345, "Dir 5"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id7", NodeType::Directory, 1654725632,
+                                                          1654725632, 12345, "Dir 7"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id5", NodeType::Directory, 1654725632,
+                                                          1654725632, 12345, "Dir 5"));
     // test step5CreateDirectory
     CPPUNIT_ASSERT_EQUAL(ExitCode::Ok, _updateTreeWorker->step5CreateDirectory());
     CPPUNIT_ASSERT(_updateTree->getNodeByPath("Dir 1/Dir 1.2/Dir 1.2.1")->id() == "id121");
@@ -668,8 +668,8 @@ void TestUpdateTreeWorker::testGetOriginPath() {
 
     // Test with move operation on the child
     node->insertChangeEvent(OperationType::Move);
-    CPPUNIT_ASSERT(node->setParentNode(_updateTree->getNodeById("id4")));  // Move node 4111 under parent 4
-    node->setName(Str("File 4.1.1.1 renamed"));                            // Rename node
+    CPPUNIT_ASSERT(node->setParentNode(_updateTree->getNodeById("id4"))); // Move node 4111 under parent 4
+    node->setName(Str("File 4.1.1.1 renamed")); // Rename node
     node->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     node->setMoveOriginParentDbId(_dbnodeIdDir411);
     CPPUNIT_ASSERT(_updateTreeWorker->getOriginPath(node, path) == ExitCode::Ok);
@@ -683,8 +683,8 @@ void TestUpdateTreeWorker::testGetOriginPath2() {
     // Test with move operation on some parents
     std::shared_ptr<Node> node = _updateTree->getNodeById("id411");
     node->insertChangeEvent(OperationType::Move);
-    CPPUNIT_ASSERT(node->setParentNode(_updateTree->getNodeById("id4")));  // Move node 411 under parent 4
-    node->setName(Str("Dir 4.1.1 renamed"));                               // Rename node
+    CPPUNIT_ASSERT(node->setParentNode(_updateTree->getNodeById("id4"))); // Move node 411 under parent 4
+    node->setName(Str("Dir 4.1.1 renamed")); // Rename node
     node->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1");
     node->setMoveOriginParentDbId(_dbnodeIdDir41);
 
@@ -705,13 +705,13 @@ void TestUpdateTreeWorker::testGetOriginPath3() {
     // Test with move operation on parent AND child (rename children THEN move parent)
     std::shared_ptr<Node> node4111 = _updateTree->getNodeById("id4111");
     node4111->insertChangeEvent(OperationType::Move);
-    node4111->setName(Str("File 4.1.1.1 renamed"));  // Rename node
+    node4111->setName(Str("File 4.1.1.1 renamed")); // Rename node
     node4111->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1/File 4.1.1.1");
     node4111->setMoveOriginParentDbId(_dbnodeIdDir411);
 
     std::shared_ptr<Node> node411 = _updateTree->getNodeById("id411");
     node411->insertChangeEvent(OperationType::Move);
-    CPPUNIT_ASSERT(node411->setParentNode(_updateTree->getNodeById("id4")));  // Move node 411 under parent 4
+    CPPUNIT_ASSERT(node411->setParentNode(_updateTree->getNodeById("id4"))); // Move node 411 under parent 4
     node411->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1");
     node411->setMoveOriginParentDbId(_dbnodeIdDir41);
 
@@ -727,13 +727,13 @@ void TestUpdateTreeWorker::testGetOriginPath4() {
     // Test with move operation on parent AND child (move parent THEN rename children)
     std::shared_ptr<Node> node411 = _updateTree->getNodeById("id411");
     node411->insertChangeEvent(OperationType::Move);
-    CPPUNIT_ASSERT(node411->setParentNode(_updateTree->getNodeById("id4")));  // Move node 411 under parent 4
+    CPPUNIT_ASSERT(node411->setParentNode(_updateTree->getNodeById("id4"))); // Move node 411 under parent 4
     node411->setMoveOrigin("Dir 4/Dir 4.1/Dir 4.1.1");
     node411->setMoveOriginParentDbId(_dbnodeIdDir41);
 
     std::shared_ptr<Node> node4111 = _updateTree->getNodeById("id4111");
     node4111->insertChangeEvent(OperationType::Move);
-    node4111->setName(Str("File 4.1.1.1 renamed"));  // Rename node
+    node4111->setName(Str("File 4.1.1.1 renamed")); // Rename node
     node4111->setMoveOrigin("Dir 4/Dir 4.1.1/File 4.1.1.1");
     node4111->setMoveOriginParentDbId(_dbnodeIdDir411);
 
@@ -752,11 +752,11 @@ void TestUpdateTreeWorker::testDeleteMove() {
      *  - Create 6
      */
     _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Delete, "id6a", NodeType::File, 1654798667, 1654798667, 12345));
+            std::make_shared<FSOperation>(OperationType::Delete, "id6a", NodeType::File, 1654798667, 1654798667, 12345));
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Move, "id6", NodeType::File, 1654725632, 1654725632,
                                                           12345, "File 6", "File 6a"));
-    _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Create, "id6b", NodeType::File, 1654725632, 1654725632, 12345, "File 6"));
+    _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id6b", NodeType::File, 1654725632, 1654725632,
+                                                          12345, "File 6"));
 
     _updateTreeWorker->execute();
 
@@ -780,13 +780,13 @@ void TestUpdateTreeWorker::testDeleteRecreateBranch() {
     setUpUpdateTree();
 
     _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Delete, "id1", NodeType::Directory, 1654798667, 1654798667, 12345));
+            std::make_shared<FSOperation>(OperationType::Delete, "id1", NodeType::Directory, 1654798667, 1654798667, 12345));
     _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Delete, "id11", NodeType::Directory, 1654798667, 1654798667, 12345));
+            std::make_shared<FSOperation>(OperationType::Delete, "id11", NodeType::Directory, 1654798667, 1654798667, 12345));
     _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Delete, "id111", NodeType::Directory, 1654798667, 1654798667, 12345));
+            std::make_shared<FSOperation>(OperationType::Delete, "id111", NodeType::Directory, 1654798667, 1654798667, 12345));
     _operationSet->insertOp(
-        std::make_shared<FSOperation>(OperationType::Delete, "id1111", NodeType::File, 1654798667, 1654798667, 12345));
+            std::make_shared<FSOperation>(OperationType::Delete, "id1111", NodeType::File, 1654798667, 1654798667, 12345));
 
     _operationSet->insertOp(std::make_shared<FSOperation>(OperationType::Create, "id1_new", NodeType::Directory, 1654798667,
                                                           1654798667, 12345, "Dir 1"));
@@ -828,4 +828,4 @@ void TestUpdateTreeWorker::testDeleteRecreateBranch() {
     CPPUNIT_ASSERT(node1111new->parentNode() == node111new);
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -23,14 +23,14 @@
 
 namespace KDC {
 
-UpdateTree::UpdateTree(ReplicaSide side, const DbNode &dbNode)
-    : _nodes(std::unordered_map<NodeId, std::shared_ptr<Node>>()),
-      _rootNode(std::shared_ptr<Node>(
-          new Node(dbNode.nodeId(), side, (side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote()),
-                   NodeType::Directory, {}, (side == ReplicaSide::Local ? dbNode.nodeIdLocal() : dbNode.nodeIdRemote()),
-                   (side == ReplicaSide::Local ? dbNode.created() : dbNode.created()),
-                   (side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()), 0, nullptr))),
-      _side(side) {}
+UpdateTree::UpdateTree(ReplicaSide side, const DbNode &dbNode) :
+    _nodes(std::unordered_map<NodeId, std::shared_ptr<Node>>()),
+    _rootNode(std::shared_ptr<Node>(
+            new Node(dbNode.nodeId(), side, (side == ReplicaSide::Local ? dbNode.nameLocal() : dbNode.nameRemote()),
+                     NodeType::Directory, {}, (side == ReplicaSide::Local ? dbNode.nodeIdLocal() : dbNode.nodeIdRemote()),
+                     (side == ReplicaSide::Local ? dbNode.created() : dbNode.created()),
+                     (side == ReplicaSide::Local ? dbNode.lastModifiedLocal() : dbNode.lastModifiedRemote()), 0, nullptr))),
+    _side(side) {}
 
 UpdateTree::~UpdateTree() {
     clear();
@@ -90,7 +90,7 @@ std::shared_ptr<Node> UpdateTree::getNodeByPath(const SyncPath &path) {
     std::shared_ptr<Node> tmpNode = _rootNode;
     for (std::vector<SyncName>::reverse_iterator nameIt = names.rbegin(); nameIt != names.rend(); ++nameIt) {
         std::shared_ptr<Node> tmpChildNode = nullptr;
-        for (const auto &childNode : tmpNode->children()) {
+        for (const auto &childNode: tmpNode->children()) {
             if (Utility::isEqualNormalized(*nameIt, childNode.second->name())) {
                 tmpChildNode = childNode.second;
                 break;
@@ -138,7 +138,7 @@ bool UpdateTree::isAncestor(const NodeId &nodeId, const NodeId &ancestorNodeId) 
 void UpdateTree::markAllNodesUnprocessed() {
     startUpdate();
 
-    for (auto &node : _nodes) {
+    for (auto &node: _nodes) {
         node.second->setStatus(NodeStatus::Unprocessed);
     }
 }
@@ -160,4 +160,4 @@ void UpdateTree::clear() {
     _nodes.clear();
 }
 
-}  // namespace KDC
+} // namespace KDC

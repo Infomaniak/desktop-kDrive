@@ -24,8 +24,9 @@
 namespace KDC {
 
 JsonFullFileListWithCursorJob::JsonFullFileListWithCursorJob(int driveDbId, const NodeId &dirId,
-                                                             std::list<NodeId> blacklist /*= {}*/, bool zip /*= true*/)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _dirId(dirId), _blacklist(blacklist), _zip(zip) {
+                                                             std::list<NodeId> blacklist /*= {}*/, bool zip /*= true*/) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
+    _dirId(dirId), _blacklist(blacklist), _zip(zip) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
 
     if (_zip) {
@@ -58,4 +59,4 @@ bool JsonFullFileListWithCursorJob::handleResponse(std::istream &is) {
     return AbstractTokenNetworkJob::handleJsonResponse(is);
 }
 
-}  // namespace KDC
+} // namespace KDC

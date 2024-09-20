@@ -26,24 +26,16 @@ namespace KDC {
 Node::Node(const std::optional<DbNodeId> &idb, const ReplicaSide &side, const SyncName &name, NodeType type,
            OperationType changeEvents, const std::optional<NodeId> &id, std::optional<SyncTime> createdAt,
            std::optional<SyncTime> lastmodified, int64_t size, std::shared_ptr<Node> parentNode,
-           std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId)
-    : _idb(idb),
-      _side(side),
-      _name(name),
-      _type(type),
-      _changeEvents(changeEvents),
-      _id(id),
-      _createdAt(createdAt),
-      _lastModified(lastmodified),
-      _size(size),
-      _moveOrigin(moveOrigin),
-      _moveOriginParentDbId(moveOriginParentDbId),
-      _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
+           std::optional<SyncPath> moveOrigin, std::optional<DbNodeId> moveOriginParentDbId) :
+    _idb(idb),
+    _side(side), _name(name), _type(type), _changeEvents(changeEvents), _id(id), _createdAt(createdAt),
+    _lastModified(lastmodified), _size(size), _moveOrigin(moveOrigin), _moveOriginParentDbId(moveOriginParentDbId),
+    _conflictsAlreadyConsidered(std::vector<ConflictType>()) {
     setParentNode(parentNode);
 }
 
-Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode)
-    : _side(side), _name(name), _type(type), _isTmp(true) {
+Node::Node(const ReplicaSide &side, const SyncName &name, NodeType type, std::shared_ptr<Node> parentNode) :
+    _side(side), _name(name), _type(type), _isTmp(true) {
     _id = "tmp_" + CommonUtility::generateRandomStringAlphaNum();
     setParentNode(parentNode);
 }
@@ -67,7 +59,7 @@ bool Node::setParentNode(const std::shared_ptr<Node> &parentNode) {
 }
 
 std::shared_ptr<Node> Node::getChildExcept(SyncName name, OperationType except) {
-    for (auto &child : this->children()) {
+    for (auto &child: this->children()) {
         // return only non excluded type
         if (child.second->name() == name && !child.second->hasChangeEvent(except)) {
             return child.second;
@@ -84,7 +76,7 @@ std::shared_ptr<Node> Node::findChildren(const SyncName &name, const NodeId &nod
         }
     }
 
-    for (auto &node : _childrenById) {
+    for (auto &node: _childrenById) {
         if (node.second->name() == name) {
             return node.second;
         }
@@ -183,15 +175,15 @@ SyncPath Node::getPath() const {
 }
 
 bool Node::isParentValid(std::shared_ptr<const Node> parentNode) const {
-    if (!parentNode) return true;  // `parentNode` is the root node, hence a valid parent. Stop climbing up the tree.
+    if (!parentNode) return true; // `parentNode` is the root node, hence a valid parent. Stop climbing up the tree.
 
     while (parentNode) {
         if (parentNode->id() == _id)
-            return false;  // This node is a parent of `parentNode`, hence `parentNode` is not a valid parent.
+            return false; // This node is a parent of `parentNode`, hence `parentNode` is not a valid parent.
         parentNode = parentNode->parentNode();
     }
 
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

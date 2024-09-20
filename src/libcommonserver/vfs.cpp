@@ -20,7 +20,7 @@
 #include "plugin.h"
 #include "version.h"
 #include "utility/types.h"
-#include "libcommonserver/utility/utility.h"  // Path2WStr
+#include "libcommonserver/utility/utility.h" // Path2WStr
 #include "libcommonserver/io/iohelper.h"
 
 #include <QOperatingSystemVersion>
@@ -28,12 +28,12 @@
 #include <QDir>
 #include <QFileInfo>
 
-#define MIN_WINDOWS10_MICROVERSION_FOR_CFAPI 16299  // Windows 10 version 1709
+#define MIN_WINDOWS10_MICROVERSION_FOR_CFAPI 16299 // Windows 10 version 1709
 
 using namespace KDC;
 
-Vfs::Vfs(VfsSetupParams &vfsSetupParams, QObject *parent)
-    : QObject(parent), _vfsSetupParams(vfsSetupParams), _extendedLog(false), _started(false) {}
+Vfs::Vfs(VfsSetupParams &vfsSetupParams, QObject *parent) :
+    QObject(parent), _vfsSetupParams(vfsSetupParams), _extendedLog(false), _started(false) {}
 
 Vfs::~Vfs() {}
 

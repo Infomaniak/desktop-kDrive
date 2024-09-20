@@ -42,4 +42,4 @@ class MoveJob : public AbstractTokenNetworkJob {
         SyncName _name;
 };
 
-}  // namespace KDC
+} // namespace KDC

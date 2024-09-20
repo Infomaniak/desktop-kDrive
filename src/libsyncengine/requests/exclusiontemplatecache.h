@@ -72,4 +72,4 @@ class SYNCENGINE_EXPORT ExclusionTemplateCache {
         void escapeRegexSpecialChar(std::string &in);
 };
 
-}  // namespace KDC
+} // namespace KDC

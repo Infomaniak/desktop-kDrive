@@ -30,7 +30,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TestLiteSyncExtConnector);
 #endif
 CPPUNIT_TEST_SUITE_REGISTRATION(TestLogArchiver);
 CPPUNIT_TEST_SUITE_REGISTRATION(TestUpdater);
-}  // namespace KDC
+} // namespace KDC
 
 int main(int, char **) {
     return runTestSuite("_kDriveTestServer.log");

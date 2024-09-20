@@ -102,4 +102,4 @@ class PARMS_EXPORT Error {
         SyncPath _destinationPath;
 };
 
-}  // namespace KDC
+} // namespace KDC

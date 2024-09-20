@@ -89,12 +89,12 @@ void TestLog::testExpiredLogFiles(void) {
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())->setExpire(5);
     Utility::msleep(2000);
-    LOG_DEBUG(_logger, "Ensure the two log files do not expire at the same time.");  // No log file should be deleted
+    LOG_DEBUG(_logger, "Ensure the two log files do not expire at the same time."); // No log file should be deleted
     CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
-    Utility::msleep(4000);  // Wait for the fake log file to expire
+    Utility::msleep(4000); // Wait for the fake log file to expire
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())
-        ->setExpire(5);                                  // Force the check of expired files at the next log
-    LOG_DEBUG(_logger, "Log to trigger the appender.");  // Generate a log to trigger the appender
+            ->setExpire(5); // Force the check of expired files at the next log
+    LOG_DEBUG(_logger, "Log to trigger the appender."); // Generate a log to trigger the appender
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
 }
 
@@ -131,4 +131,4 @@ void TestLog::clearLogDirectory(void) const {
     CPPUNIT_ASSERT(endOfDirectory);
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
 }
-}  // namespace KDC
+} // namespace KDC

@@ -115,4 +115,4 @@ class Worker : public QObject {
         QHash<int, QPair<SignalNum, QByteArray>> _signalMap;
 };
 
-}  // namespace KDC
+} // namespace KDC

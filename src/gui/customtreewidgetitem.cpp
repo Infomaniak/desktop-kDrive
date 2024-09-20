@@ -36,4 +36,4 @@ bool CustomTreeWidgetItem::operator<(const QTreeWidgetItem &other) const {
     return QTreeWidgetItem::operator<(other);
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -53,4 +53,4 @@ class TestPlatformInconsistencyCheckerWorker : public CppUnit::TestFixture {
         LocalTemporaryDirectory _tempDir{"testNameClashAfterRename"};
 };
 
-}  // namespace KDC
+} // namespace KDC

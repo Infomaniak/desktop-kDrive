@@ -181,11 +181,11 @@ void TestExecutorWorker::testFixModificationDate() {
 
     // Generate sync operation
     std::shared_ptr<Node> node = std::make_shared<Node>(
-        dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid", testhelpers::defaultTime,
-        testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
+            dbNodeId, ReplicaSide::Local, filename, NodeType::File, OperationType::None, "lid", testhelpers::defaultTime,
+            testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Local)->rootNode());
     std::shared_ptr<Node> correspondingNode = std::make_shared<Node>(
-        dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
-        testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
+            dbNodeId, ReplicaSide::Remote, filename, NodeType::File, OperationType::None, "rid", testhelpers::defaultTime,
+            testhelpers::defaultTime, testhelpers::defaultFileSize, _syncPal->updateTree(ReplicaSide::Remote)->rootNode());
     SyncOpPtr op = std::make_shared<SyncOperation>();
     op->setAffectedNode(node);
     op->setCorrespondingNode(correspondingNode);
@@ -227,4 +227,4 @@ void TestExecutorWorker::testTargetUpdateTree() {
     syncOp->setTargetSide(ReplicaSide::Unknown);
     CPPUNIT_ASSERT_EQUAL(std::shared_ptr<UpdateTree>(nullptr), _syncPal->_executorWorker->targetUpdateTree(syncOp));
 }
-}  // namespace KDC
+} // namespace KDC
