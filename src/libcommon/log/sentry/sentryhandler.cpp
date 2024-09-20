@@ -151,7 +151,7 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
 
     std::cerr << "Sentry detected a crash in the app " << SentryHandler::appType() << std::endl;
 
-    // signum is unknown, crashes will be considered as kills
+    // As `signum` is unknown, a crash is considered as a kill.
     const int signum{0};
     KDC::CommonUtility::writeSignalFile(SentryHandler::appType(), KDC::fromInt<KDC::SignalType>(signum));
 
@@ -204,10 +204,14 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
 
     _appType = appType;
 
+    // For debugging: if the following environment variable is set, the crash event will be printed into a debug file
     bool isSet = false;
     if (CommonUtility::envVarValue("KDRIVE_DEBUG_SENTRY_CRASH_CB", isSet); isSet) {
         _debugCrashCallback = true;
     }
+
+    // For debbuging: if the following environment variable is set, the send events will be printed into a debug file
+    // If this variable is set, the previous one is inoperative
     isSet = false;
     if (CommonUtility::envVarValue("KDRIVE_DEBUG_SENTRY_BEFORE_SEND_CB", isSet); isSet) {
         _debugBeforeSendCallback = true;
@@ -234,6 +238,7 @@ void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
     sentry_options_set_max_breadcrumbs(options, breadCrumbsSize);
 
     // !!! Not Supported in Crashpad on macOS & Limitations in Crashpad on Windows for Fast-fail Crashes !!!
+    // See https://docs.sentry.io/platforms/native/configuration/filtering/
     if (_debugBeforeSendCallback) {
         sentry_options_set_before_send(options, beforeSendCallback, nullptr);
     } else {
