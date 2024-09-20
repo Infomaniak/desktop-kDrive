@@ -48,13 +48,8 @@ jobs:
       - name: Build kDrive desktop
         run: |
           call "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvars64.bat"
-          
-          # Configure and activate BullseyeCoverage
-          rm -Force -ErrorAction SilentlyContinue "BullseyeCoverageEnv.txt"
-          echo "COVFILE=src/test.cov" >  "BullseyeCoverageEnv.txt"
-          call "C:\Program Files\BullseyeCoverage\bin\cov01.exe" -1 # coverage on
+          call "C:\Program Files\BullseyeCoverage\bin\cov01.exe" -1
 
-          # Build
           powershell ./infomaniak-build-tools/windows/build-drive.ps1 -ci
         shell: cmd
 
@@ -69,7 +64,7 @@ jobs:
           echo "exclude folder 3rdparty/\nexclude folder ../" >> BullseyeCoverageExclusions
           & "C:\Program Files\BullseyeCoverage\bin\cov01.exe" "-0" # coverage off
           & "C:\Program Files\BullseyeCoverage\bin\covselect.exe" "--import" "BullseyeCoverageExclusions"
-          & "C:\Program Files\BullseyeCoverage\bin\covxml.exe" "-f" "src/test.cov" "-o" "coverage.xml"
+          & "C:\Program Files\BullseyeCoverage\bin\covxml.exe" "-f" "$env:USERPROFILE\test.cov" "-o" "coverage.xml"
       - name: Install sonar-scanner
         uses: sonarsource/sonarqube-github-c-cpp@v1
         env:
