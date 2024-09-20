@@ -131,7 +131,7 @@ inline ReplicaSide otherSide(ReplicaSide side) {
 
 enum class NodeType {
     Unknown,
-    File,  // File or symlink
+    File, // File or symlink
     Directory,
 };
 std::string toString(NodeType e);
@@ -142,21 +142,21 @@ std::string toString(OperationType e);
 enum class ExitCode {
     Unknown,
     Ok,
-    NeedRestart,  // A propagation job cannot be executed because the situation that led to its creation is no longer
-                  // verified
+    NeedRestart, // A propagation job cannot be executed because the situation that led to its creation is no longer
+                 // verified
     NetworkError,
     InvalidToken,
-    DataError,    // Corruption of data
-    DbError,      // Error in a DB function
-    BackError,    // Error in an API call
-    SystemError,  // IO error etc.
-    FatalError,   // SyncPal fatal error
-    LogicError,   // Consequence of faulty logic within the program such as violating logical preconditions or class
-                  // invariants and may be preventable
+    DataError, // Corruption of data
+    DbError, // Error in a DB function
+    BackError, // Error in an API call
+    SystemError, // IO error etc.
+    FatalError, // SyncPal fatal error
+    LogicError, // Consequence of faulty logic within the program such as violating logical preconditions or class
+                // invariants and may be preventable
     TokenRefreshed,
     NoWritePermission,
     RateLimited,
-    InvalidSync,  // The sync configuration is not valid
+    InvalidSync, // The sync configuration is not valid
     InvalidOperation,
     OperationCanceled,
     UpdateRequired,
@@ -167,7 +167,7 @@ std::string toString(ExitCode e);
 
 enum class ExitCause {
     Unknown,
-    WorkerExited,  // The SyncPal worker exits because a sub worker has exited
+    WorkerExited, // The SyncPal worker exits because a sub worker has exited
     DbAccessError,
     DbEntryNotFound,
     InvalidSnapshot,
@@ -199,7 +199,7 @@ enum class ExitCause {
     InvalidName,
     LiteSyncNotAllowed,
     NetworkTimeout,
-    SocketsDefuncted,  // macOS: sockets defuncted by kernel
+    SocketsDefuncted, // macOS: sockets defuncted by kernel
     NoSearchPermission,
     NotFound,
     QuotaExceeded,
@@ -224,8 +224,8 @@ enum class ConflictType {
 };
 std::string toString(ConflictType e);
 
-static const std::unordered_set<ConflictType> conflictsWithLocalRename = {  // All conflicts that rename the local file
-    ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
+static const std::unordered_set<ConflictType> conflictsWithLocalRename = { // All conflicts that rename the local file
+        ConflictType::CreateCreate, ConflictType::EditEdit, ConflictType::MoveCreate, ConflictType::MoveMoveDest};
 
 inline bool isConflictsWithLocalRename(ConflictType type) {
     return conflictsWithLocalRename.contains(type);
@@ -237,12 +237,12 @@ std::string toString(ConflictTypeResolution e);
 enum class InconsistencyType {
     None = 0x00,
     Case = 0x01,
-    ForbiddenChar = 0x02,  // Char unsupported by OS
+    ForbiddenChar = 0x02, // Char unsupported by OS
     ReservedName = 0x04,
     NameLength = 0x08,
     PathLength = 0x10,
-    NotYetSupportedChar = 0x20,  // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
-    DuplicateNames = 0x40  // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
+    NotYetSupportedChar = 0x20, // Char not yet supported, ie recent Unicode char (ex: U+1FA77 on pre macOS 13.4)
+    DuplicateNames = 0x40 // Two items have the same standardized paths with possibly different encodings (Windows 10 and 11).
 };
 std::string toString(InconsistencyType e);
 
@@ -282,12 +282,12 @@ std::string toString(UploadSessionType e);
 
 enum class SyncNodeType {
     Undefined = 0,
-    BlackList,           // Nodes that are excluded from sync
-    WhiteList,           // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
-                         // nodes in none of those lists are implicitly whitelisted
-    UndecidedList,       // Considered as blacklisted until user action
-    TmpRemoteBlacklist,  // Blacklisted temporarily
-    TmpLocalBlacklist    // Blacklisted temporarily
+    BlackList, // Nodes that are excluded from sync
+    WhiteList, // Explicitly whitelisted nodes (e.g. folder size above limit but user want to sync anyway). Note: all
+               // nodes in none of those lists are implicitly whitelisted
+    UndecidedList, // Considered as blacklisted until user action
+    TmpRemoteBlacklist, // Blacklisted temporarily
+    TmpLocalBlacklist // Blacklisted temporarily
 };
 std::string toString(SyncNodeType e);
 
@@ -303,14 +303,14 @@ std::string toString(SyncFileInstruction e);
 enum class SyncStep {
     None = 0,
     Idle,
-    UpdateDetection1,  // Compute operations
-    UpdateDetection2,  // Update Trees
-    Reconciliation1,   // Platform Inconstistency Checker
-    Reconciliation2,   // Conflict Finder
-    Reconciliation3,   // Conflict Resolver
-    Reconciliation4,   // Operation Generator
-    Propagation1,      // Sorter
-    Propagation2,      // Executor
+    UpdateDetection1, // Compute operations
+    UpdateDetection2, // Update Trees
+    Reconciliation1, // Platform Inconstistency Checker
+    Reconciliation2, // Conflict Finder
+    Reconciliation3, // Conflict Resolver
+    Reconciliation4, // Operation Generator
+    Propagation1, // Sorter
+    Propagation2, // Executor
     Done
 };
 std::string toString(SyncStep e);
@@ -344,7 +344,7 @@ enum class ProxyType {
     None,
     System,
     HTTP,
-    Socks5  // Don't use, not implemented in Poco library
+    Socks5 // Don't use, not implemented in Poco library
 };
 std::string toString(ProxyType e);
 
@@ -375,9 +375,9 @@ enum class IoError {
 std::string toString(IoError e);
 
 struct ItemType {
-        NodeType nodeType{NodeType::Unknown};  // The type of a link is `NodeType::File`.
+        NodeType nodeType{NodeType::Unknown}; // The type of a link is `NodeType::File`.
         LinkType linkType{LinkType::None};
-        NodeType targetType{NodeType::Unknown};  // The type of the target item when `linkType` is not `LinkType::None`.
+        NodeType targetType{NodeType::Unknown}; // The type of the target item when `linkType` is not `LinkType::None`.
         SyncPath targetPath;
         // The value of the data member `ioError` is `IoError::NoSuchFileOrDirectory` if
         // - the file or directory indicated by `path` doesn't exist
@@ -390,13 +390,13 @@ enum class AppStateKey {
     // Adding a new key here requires to add it in insertDefaultAppState in parmsdbappstate.cpp
     LastServerSelfRestartDate,
     LastClientSelfRestartDate,
-    LastSuccessfulLogUploadDate,  // Format: "month,day,year,hour,minute,second"
+    LastSuccessfulLogUploadDate, // Format: "month,day,year,hour,minute,second"
     LastLogUploadArchivePath,
     LogUploadState,
     LogUploadPercent,
     LogUploadToken,
     AppUid,
-    Unknown  //!\ keep in last position (For tests) /!\\ Only for initialization purpose
+    Unknown //!\ keep in last position (For tests) /!\\ Only for initialization purpose
 };
 std::string toString(AppStateKey e);
 
@@ -408,7 +408,7 @@ std::string toString(LogUploadState e);
 enum class UpdateState { Error, None, Checking, Downloading, Ready, ManualOnly, Skipped };
 std::string toString(UpdateState e);
 
-enum class UpdateStateV2 { UpToDate, Available, Downloading, Ready, Error };
+enum class UpdateStateV2 { UpToDate, Checking, Available, Downloading, Ready, Error };
 std::string toString(UpdateStateV2 e);
 
 enum class DistributionChannel { Prod, Next, Beta, Internal, Unknown };
@@ -418,11 +418,11 @@ enum class Platform { MacOS, Windows, LinuxAMD, LinuxARM, Unknown };
 std::string toString(Platform e);
 
 struct VersionInfo {
-        std::string tag;                 // Version number. Example: 3.6.4
-        std::string changeLog;           // List of changes in this version
-        std::uint64_t buildVersion = 0;  // Example: 20240816
-        std::string buildMinOsVersion;   // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
-        std::string downloadUrl;         // URL to download the version
+        std::string tag; // Version number. Example: 3.6.4
+        std::string changeLog; // List of changes in this version
+        std::uint64_t buildVersion = 0; // Example: 20240816
+        std::string buildMinOsVersion; // Optionnal. Minimum supported version of the OS. Examples: 10.15, 11, server 2005, ...
+        std::string downloadUrl; // URL to download the version
 
         [[nodiscard]] bool isValid() const {
             return !tag.empty() && !changeLog.empty() && buildVersion != 0 && !downloadUrl.empty();
@@ -436,11 +436,11 @@ struct VersionInfo {
 };
 
 enum class SentryConfidentialityLevel {
-    Anonymous,      // The sentry will not be able to identify the user (no ip, no email, no username, ...)
-    Authenticated,  // The sentry will contain information about the last user connected to the application. (email,
-                    // username, user id, ...)
-    Specific,       // The sentry will contain information about the user passed as a parameter of the call to captureMessage.
-    None            // Not initialized
+    Anonymous, // The sentry will not be able to identify the user (no ip, no email, no username, ...)
+    Authenticated, // The sentry will contain information about the last user connected to the application. (email,
+                   // username, user id, ...)
+    Specific, // The sentry will contain information about the user passed as a parameter of the call to captureMessage.
+    None // Not initialized
 };
 std::string toString(SentryConfidentialityLevel e);
 
@@ -452,84 +452,82 @@ using AppStateValue = std::variant<std::string, int, int64_t, LogUploadState>;
  */
 
 // Concepts
-template <class C>  // Any enum class
+template<class C> // Any enum class
 concept EnumClass = std::is_enum_v<C>;
 
-template <class C>  // Any enum class that can be converted to (and from) int
+template<class C> // Any enum class that can be converted to (and from) int
 concept IntableEnum = EnumClass<C> && std::is_convertible_v<std::underlying_type_t<C>, int>;
 
-template <class C>  // Any enum class we want to allow bitwise operations (OperationType & InconsistencyType)
+template<class C> // Any enum class we want to allow bitwise operations (OperationType & InconsistencyType)
 concept AllowBitWiseOpEnum = IntableEnum<C> && (std::is_same_v<C, OperationType> || std::is_same_v<C, InconsistencyType>);
 
-template <class C>  // Any enum class that  can be printed (with enumClassToString)
-concept PrintableEnum = EnumClass<C> && requires(C e) {
-    toString(e);
-};
+template<class C> // Any enum class that  can be printed (with enumClassToString)
+concept PrintableEnum = EnumClass<C> && requires(C e) { toString(e); };
 
 // Converters
-template <IntableEnum C>
+template<IntableEnum C>
 inline int toInt(C e) {
     return static_cast<int>(e);
 }
 
-template <IntableEnum C>
+template<IntableEnum C>
 inline C fromInt(int e) {
     return static_cast<C>(e);
 }
 
 // Operators
-template <AllowBitWiseOpEnum C>
+template<AllowBitWiseOpEnum C>
 inline C operator|=(C &a, const C b) {
     return a = fromInt<C>(toInt(a) | toInt(b));
 }
 
-template <AllowBitWiseOpEnum C>
+template<AllowBitWiseOpEnum C>
 inline C operator&=(C &a, const C b) {
     return a = fromInt<C>(toInt(a) & toInt(b));
 }
 
-template <AllowBitWiseOpEnum C>
+template<AllowBitWiseOpEnum C>
 inline C operator^=(C &a, const C b) {
     return a = fromInt<C>(toInt(a) ^ toInt(b));
 }
 
-template <AllowBitWiseOpEnum C>
+template<AllowBitWiseOpEnum C>
 inline C operator|(const C a, const C b) {
     return fromInt<C>(toInt(a) | toInt(b));
 }
 
-template <AllowBitWiseOpEnum C>
+template<AllowBitWiseOpEnum C>
 inline C operator&(const C a, const C b) {
     return fromInt<C>(toInt(a) & toInt(b));
 }
 
-template <AllowBitWiseOpEnum C>
+template<AllowBitWiseOpEnum C>
 inline C operator^(const C a, const C b) {
     return fromInt<C>(toInt(a) ^ toInt(b));
 }
 
-template <AllowBitWiseOpEnum C>
+template<AllowBitWiseOpEnum C>
 inline bool bitWiseEnumToBool(const C a) {
     return toInt(a) != 0;
 }
 
 namespace typesUtility {
-std::wstring stringToWideString(const std::string &str);  // Convert string to wstring (We can't use the s2ws of Utility because
-                                                          // it's in libCommonServer and it includes types.h)
-}  // namespace typesUtility
+std::wstring stringToWideString(const std::string &str); // Convert string to wstring (We can't use the s2ws of Utility because
+                                                         // it's in libCommonServer and it includes types.h)
+} // namespace typesUtility
 
 // Stream Operator (toString)
-template <PrintableEnum C>
+template<PrintableEnum C>
 std::string toStringWithCode(C e) {
-    return toString(e) + "(" + std::to_string(toInt(e)) + ")";  // Example: "Ok(1)"
+    return toString(e) + "(" + std::to_string(toInt(e)) + ")"; // Example: "Ok(1)"
 }
 
-template <PrintableEnum C>
+template<PrintableEnum C>
 inline std::wostream &operator<<(std::wostream &wos, C e) {
     return wos << typesUtility::stringToWideString(toStringWithCode(e));
 }
 
-template <PrintableEnum C>
+template<PrintableEnum C>
 inline std::ostream &operator<<(std::ostream &os, C e) {
     return os << toStringWithCode(e);
 }
@@ -539,8 +537,8 @@ inline CustomLogWStream &operator<<(CustomLogWStream &os, C e) {
     return os << typesUtility::stringToWideString(toStringWithCode(e));
 }
 
-template <PrintableEnum C>
+template<PrintableEnum C>
 inline QDebug &operator<<(QDebug &os, C e) {
     return os << toStringWithCode(e).c_str();
 }
-}  // namespace KDC
+} // namespace KDC

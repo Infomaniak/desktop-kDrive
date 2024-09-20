@@ -33,8 +33,8 @@ class UpdaterClient : public Updater {
         static UpdaterClient *instance();
 
         QString version() const override;
-        bool isKDCUpdater() override;
-        bool isSparkleUpdater() override;
+        // bool isKDCUpdater() override;
+        // bool isSparkleUpdater() override;
         QString statusString() const override;
         bool downloadCompleted() const override;
         bool updateFound() const override;
@@ -56,4 +56,4 @@ class UpdaterClient : public Updater {
         friend class AppClient;
 };
 
-}  // namespace KDC
+} // namespace KDC

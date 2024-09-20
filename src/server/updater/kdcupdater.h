@@ -31,41 +31,6 @@ class QNetworkReply;
 
 namespace KDC {
 
-/**
- * @brief Schedule update checks every couple of hours if the client runs.
- * @ingroup gui
- *
- * This class schedules regular update checks. It also checks the config
- * if update checks are wanted at all.
- *
- * To reflect that all platforms have their own update scheme, a little
- * complex class design was set up:
- *
- * For Windows and Linux, the updaters are inherited from KDCUpdater, while
- * the MacOSX SparkleUpdater directly uses the class Updater. On windows,
- * NSISUpdater starts the update if a new version of the client is available.
- * On MacOSX, the sparkle framework handles the installation of the new
- * version. On Linux, the update capabilities of the underlying linux distro
- * are relied on, and thus the PassiveUpdateNotifier just shows a notification
- * if there is a new version once at every start of the application.
- */
-
-class UpdaterScheduler : public QObject {
-        Q_OBJECT
-    public:
-        UpdaterScheduler(QObject *parent);
-
-    signals:
-        void updaterAnnouncement(const QString &title, const QString &msg);
-        void requestRestart();
-
-    private slots:
-        void slotTimerFired();
-
-    private:
-        QTimer _updateCheckTimer; /** Timer for the regular update check. */
-};
-
 class KDCUpdater : public UpdaterServer {
         Q_OBJECT
     public:
@@ -172,4 +137,4 @@ class PassiveUpdateNotifier : public KDCUpdater {
     private:
         void versionInfoArrived(const UpdateInfo &info) Q_DECL_OVERRIDE;
 };
-}  // namespace KDC
+} // namespace KDC

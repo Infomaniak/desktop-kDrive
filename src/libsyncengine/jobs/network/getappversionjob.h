@@ -27,7 +27,7 @@ class GetAppVersionJob : public AbstractNetworkJob {
     public:
         GetAppVersionJob(Platform platform, const std::string &appID);
 
-        inline const VersionInfo &getVersionInfo(DistributionChannel channel) { return _versionInfo[channel]; }
+        const VersionInfo &getVersionInfo(const DistributionChannel channel) { return _versionInfo[channel]; }
 
         std::string getUrl() override { return INFOMANIAK_API_URL + getSpecificUrl(); }
 
@@ -48,4 +48,4 @@ class GetAppVersionJob : public AbstractNetworkJob {
 
         std::unordered_map<DistributionChannel, VersionInfo> _versionInfo;
 };
-}  // namespace KDC
+} // namespace KDC

@@ -113,8 +113,8 @@ enum class RequestNum {
     UTILITY_CANCEL_LOG_TO_SUPPORT,
     UTILITY_GET_LOG_ESTIMATED_SIZE,
     UPDATER_VERSION,
-    UPDATER_ISKDCUPDATER,
-    UPDATER_ISSPARKLEUPDATER,
+    // UPDATER_ISKDCUPDATER,
+    // UPDATER_ISSPARKLEUPDATER,
     UPDATER_STATUSSTRING,
     UPDATER_STATUS,
     UPDATER_DOWNLOADCOMPLETED,
@@ -267,10 +267,10 @@ inline std::string toString(RequestNum e) {
             return "UTILITY_GET_LOG_ESTIMATED_SIZE";
         case RequestNum::UPDATER_VERSION:
             return "UPDATER_VERSION";
-        case RequestNum::UPDATER_ISKDCUPDATER:
-            return "UPDATER_ISKDCUPDATER";
-        case RequestNum::UPDATER_ISSPARKLEUPDATER:
-            return "UPDATER_ISSPARKLEUPDATER";
+        // case RequestNum::UPDATER_ISKDCUPDATER:
+        //     return "UPDATER_ISKDCUPDATER";
+        // case RequestNum::UPDATER_ISSPARKLEUPDATER:
+        //     return "UPDATER_ISSPARKLEUPDATER";
         case RequestNum::UPDATER_STATUSSTRING:
             return "UPDATER_STATUSSTRING";
         case RequestNum::UPDATER_STATUS:

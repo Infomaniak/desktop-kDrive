@@ -1,3 +1,4 @@
+
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -17,25 +18,32 @@
  */
 
 #pragma once
-
-#include "utility/types.h"
-
-
-#include <functional>
+#include <QObject>
+#include <QTimer>
 
 namespace KDC {
 
-class AbstractNetworkJob;
+/**
+ * @brief Schedule update checks every couple of hours if the client runs.
+ * @ingroup server
+ *
+ * This class schedules regular update checks.
+ */
 
-class AbstractUpdater {
+class UpdaterScheduler final : public QObject {
+        Q_OBJECT
     public:
-        AbstractUpdater() = default;
-        virtual ~AbstractUpdater() = default;
+        explicit UpdaterScheduler(QObject *parent);
 
-        ExitCode checkUpdateAvailable(bool &available);
+    signals:
+        void updaterAnnouncement(const QString &title, const QString &msg);
+        void requestRestart();
 
-        virtual void onUpdateFound(const std::string &downloadUrl) = 0;
-        virtual void setQuitCallback(const std::function<void()> &quitCallback) { /* Redefined in child class if necessary */ }
+    private slots:
+        void slotTimerFired();
+
+    private:
+        QTimer _updateCheckTimer; /** Timer for the regular update check. */
 };
 
 } // namespace KDC

@@ -21,7 +21,7 @@ set(testserver_SRCS
     test.cpp
     logarchiver/testlogarchiver.h logarchiver/testlogarchiver.cpp
     updater/testupdater.h updater/testupdater.cpp
-        updater/TestUpdateManager.h updater/TestUpdateManager.cpp
+    updater/testupdatemanager.h updater/testupdatemanager.cpp
 )
 
 if(APPLE)
@@ -35,7 +35,7 @@ if(APPLE)
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
-        list(APPEND testserver_SRCS ${server_srcs_path}/updater/sparkleupdater.h ${server_srcs_path}/updater/sparkleupdater_mac.mm)
+        list(APPEND testserver_SRCS ${server_srcs_path}/updater_v2/sparkleupdater.h ${server_srcs_path}/updater_v2/sparkleupdater_mac.mm)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle

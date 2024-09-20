@@ -20,16 +20,15 @@
 #include "testupdatemanager.h"
 
 #include "db/parmsdb.h"
+#include "jobs/jobmanager.h"
 #include "requests/parameterscache.h"
 #include "jobs/network/getappversionjob.h"
 #include "keychainmanager/keychainmanager.h"
-
-#include <regex>
-
-#include "../../../src/server/updater_v2/UpdateManager.h"
+#include "server/updater_v2/updatemanager.h"
 #include "test_utility/testhelpers.h"
 
 #include <Poco/JSON/Parser.h>
+#include <regex>
 
 namespace KDC {
 
@@ -61,27 +60,40 @@ class TestGetAppVersionJob final : public GetAppVersionJob {
         bool _updateShoudBeAvailable{false};
 };
 
-void TestUpdateManager::testCheckUpdateAvailable() {
-    const auto appUid = "1234567890";
 
+class UpdateManagerTest final : public UpdateManager {
+    public:
+        void setUpdateShoudBeAvailable(const bool val) { _updateShoudBeAvailable = val; }
+
+    private:
+        ExitCode getAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
+            static const std::string appUid = "1234567890";
+            job = std::make_shared<TestGetAppVersionJob>(CommonUtility::platform(), appUid, _updateShoudBeAvailable);
+            return ExitCode::Ok;
+        }
+
+        bool _updateShoudBeAvailable{false};
+};
+
+void TestUpdateManager::testCheckUpdateAvailable() {
     // Version is higher than current version
     {
-        auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, true);
-        UpdateManager::instance(true)->setGetAppVersionJob(testJob);
-        bool updateAvailable = false;
-        UpdateManager::instance(true)->checkUpdateAvailable(updateAvailable);
-        CPPUNIT_ASSERT(updateAvailable);
-        delete testJob;
+        UpdateManagerTest testObj;
+        UniqueId jobId = 0;
+        testObj.setUpdateShoudBeAvailable(true);
+        testObj.checkUpdateAvailable(&jobId);
+        while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT_EQUAL(UpdateStateV2::Available, testObj.state());
     }
 
     // Version is lower than current version
     {
-        auto *testJob = new TestGetAppVersionJob(CommonUtility::platform(), appUid, false);
-        UpdateManager::instance(true)->setGetAppVersionJob(testJob);
-        bool updateAvailable = false;
-        UpdateManager::instance(true)->checkUpdateAvailable(updateAvailable);
-        CPPUNIT_ASSERT(!updateAvailable);
-        delete testJob;
+        UpdateManagerTest testObj;
+        UniqueId jobId = 0;
+        testObj.setUpdateShoudBeAvailable(false);
+        testObj.checkUpdateAvailable(&jobId);
+        while (!JobManager::instance()->isJobFinished(jobId)) Utility::msleep(10);
+        CPPUNIT_ASSERT_EQUAL(UpdateStateV2::UpToDate, testObj.state());
     }
 }
 

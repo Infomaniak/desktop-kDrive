@@ -49,31 +49,31 @@ QString UpdaterClient::version() const {
     return version;
 }
 
-bool UpdaterClient::isKDCUpdater() {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_ISKDCUPDATER, QByteArray(), results)) {
-        throw std::runtime_error(EXECUTE_ERROR_MSG);
-    }
-
-    bool ret;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> ret;
-
-    return ret;
-}
-
-bool UpdaterClient::isSparkleUpdater() {
-    QByteArray results;
-    if (!CommClient::instance()->execute(RequestNum::UPDATER_ISSPARKLEUPDATER, QByteArray(), results)) {
-        throw std::runtime_error(EXECUTE_ERROR_MSG);
-    }
-
-    bool ret;
-    QDataStream resultStream(&results, QIODevice::ReadOnly);
-    resultStream >> ret;
-
-    return ret;
-}
+// bool UpdaterClient::isKDCUpdater() {
+//     QByteArray results;
+//     if (!CommClient::instance()->execute(RequestNum::UPDATER_ISKDCUPDATER, QByteArray(), results)) {
+//         throw std::runtime_error(EXECUTE_ERROR_MSG);
+//     }
+//
+//     bool ret;
+//     QDataStream resultStream(&results, QIODevice::ReadOnly);
+//     resultStream >> ret;
+//
+//     return ret;
+// }
+//
+// bool UpdaterClient::isSparkleUpdater() {
+//     QByteArray results;
+//     if (!CommClient::instance()->execute(RequestNum::UPDATER_ISSPARKLEUPDATER, QByteArray(), results)) {
+//         throw std::runtime_error(EXECUTE_ERROR_MSG);
+//     }
+//
+//     bool ret;
+//     QDataStream resultStream(&results, QIODevice::ReadOnly);
+//     resultStream >> ret;
+//
+//     return ret;
+// }
 
 QString UpdaterClient::statusString() const {
     QByteArray results;
@@ -174,4 +174,4 @@ UpdaterClient::UpdaterClient(QObject *) {
     _instance = this;
 }
 
-}  // namespace KDC
+} // namespace KDC

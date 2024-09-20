@@ -19,4 +19,9 @@
 
 #include "abstractupdater.h"
 
+#include "db/parmsdb.h"
+#include "jobs/network/getappversionjob.h"
+#include "libcommon/utility/utility.h"
+#include "log/log.h"
+
 namespace KDC {} // namespace KDC

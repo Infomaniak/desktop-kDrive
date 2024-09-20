@@ -56,6 +56,7 @@ set(updater_SRCS
     updater/updaterserver.h updater/updaterserver.cpp
     updater_v2/updatemanager.h updater_v2/updatemanager.cpp
     updater_v2/abstractupdater.h updater_v2/abstractupdater.cpp
+    updater_v2/updaterscheduler.h updater_v2/updaterscheduler.cpp
 )
 
 IF( APPLE )
@@ -68,7 +69,7 @@ IF( APPLE )
     if(SPARKLE_FOUND)
         # Define this, we need to check in updater.cpp
         add_definitions(-DHAVE_SPARKLE)
-        list(APPEND updater_SRCS updater/sparkleupdater_mac.mm updater/sparkleupdater.h)
+        list(APPEND updater_SRCS updater_v2/sparkleupdater_mac.mm updater_v2/sparkleupdater.h)
         list(APPEND updater_DEPS ${SPARKLE_LIBRARY})
 
         # Sparkle.framework is installed from here because macdeployqt's CopyFramework breaks on this bundle

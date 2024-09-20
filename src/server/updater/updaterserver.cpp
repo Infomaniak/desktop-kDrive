@@ -19,7 +19,7 @@
 
 #include "updaterserver.h"
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-#include "sparkleupdater.h"
+#include "../updater_v2/sparkleupdater.h"
 #endif
 #include "kdcupdater.h"
 #include "common/utility.h"
@@ -79,19 +79,19 @@ QString UpdaterServer::version() const {
     return version;
 }
 
-bool UpdaterServer::isKDCUpdater() {
-    KDCUpdater *kdcupdater = qobject_cast<KDCUpdater *>(instance());
-    return (kdcupdater != nullptr);
-}
-
-bool UpdaterServer::isSparkleUpdater() {
-#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *sparkleUpdater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
-    return (sparkleUpdater != nullptr);
-#else
-    return false;
-#endif
-}
+// bool UpdaterServer::isKDCUpdater() {
+//     KDCUpdater *kdcupdater = qobject_cast<KDCUpdater *>(instance());
+//     return (kdcupdater != nullptr);
+// }
+//
+// bool UpdaterServer::isSparkleUpdater() {
+// #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
+//     SparkleUpdater *sparkleUpdater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
+//     return (sparkleUpdater != nullptr);
+// #else
+//     return false;
+// #endif
+// }
 
 QString UpdaterServer::statusString() const {
     return instance()->statusString();

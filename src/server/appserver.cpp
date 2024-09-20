@@ -288,8 +288,9 @@ AppServer::AppServer(int &argc, char **argv) :
     // const QuitCallback quitCallback = std::bind_front(&AppServer::sendQuit, this);
     // UpdaterServer::instance()->setQuitCallback(quitCallback);
 
-    const std::function<void()> quitCallback2 = std::bind_front(&AppServer::sendQuit, this);
-    UpdateManager::instance()->setQuitCallback(quitCallback2);
+    const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
+    UpdateManager::instance()->setQuitCallback(quitCallback);
+    UpdateManager::instance()->run();
 #endif
 
     // Update checks
@@ -1965,18 +1966,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             resultStream << version;
             break;
         }
-        case RequestNum::UPDATER_ISKDCUPDATER: {
-            bool ret = UpdaterServer::instance()->isKDCUpdater();
-
-            resultStream << ret;
-            break;
-        }
-        case RequestNum::UPDATER_ISSPARKLEUPDATER: {
-            bool ret = UpdaterServer::instance()->isSparkleUpdater();
-
-            resultStream << ret;
-            break;
-        }
+        // case RequestNum::UPDATER_ISKDCUPDATER: {
+        //     bool ret = UpdaterServer::instance()->isKDCUpdater();
+        //
+        //     resultStream << ret;
+        //     break;
+        // }
+        // case RequestNum::UPDATER_ISSPARKLEUPDATER: {
+        //     bool ret = UpdaterServer::instance()->isSparkleUpdater();
+        //
+        //     resultStream << ret;
+        //     break;
+        // }
         case RequestNum::UPDATER_STATUSSTRING: {
             QString status = UpdaterServer::instance()->statusString();
 

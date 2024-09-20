@@ -18,9 +18,9 @@
 
 #pragma once
 
-#include "updaterserver.h"
-#include "libcommon/utility/utility.h"
-#include "server/updater_v2/abstractupdater.h"
+#include "../updater/updaterserver.h"
+#include "../../libcommon/utility/utility.h"
+#include "abstractupdater.h"
 
 namespace KDC {
 
@@ -40,7 +40,6 @@ class SparkleUpdater final : public AbstractUpdater {
         // unused in this updater
         void checkForUpdate();
         void backgroundCheckForUpdate();
-        bool handleStartup() { return false; }
         // UpdateState updateState() const override {
         //     switch (state()) {
         //         using enum KDC::UpdateState;

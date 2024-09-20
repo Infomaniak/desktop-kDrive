@@ -22,7 +22,7 @@
 #include <QApplication>
 #include "server/updater/kdcupdater.h"
 #ifdef __APPLE__
-#include "server/updater/sparkleupdater.h"
+#include "../../../src/server/updater_v2/sparkleupdater.h"
 #endif
 
 using namespace CppUnit;
@@ -50,4 +50,4 @@ class TestUpdater : public CppUnit::TestFixture {
 #endif
 };
 
-}  // namespace KDC
+} // namespace KDC

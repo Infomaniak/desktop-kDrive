@@ -41,7 +41,7 @@ class AbstractNetworkJob : public AbstractJob {
         AbstractNetworkJob();
         ~AbstractNetworkJob() override;
 
-        bool hasHttpError() const;
+        [[nodiscard]] bool hasHttpError(std::string *errorCode = nullptr) const;
         bool hasErrorApi(std::string *errorCode = nullptr, std::string *errorDescr = nullptr) const;
         [[nodiscard]] inline Poco::Net::HTTPResponse::HTTPStatus getStatusCode() const { return _resHttp.getStatus(); }
         void abort() override;
@@ -82,7 +82,7 @@ class AbstractNetworkJob : public AbstractJob {
         std::string _data;
         Poco::Net::HTTPResponse _resHttp;
         int _customTimeout = 0;
-        int _trials = 2;  // By default, try again once if exception is thrown
+        int _trials = 2; // By default, try again once if exception is thrown
         std::string _errorCode;
         std::string _errorDescr;
 
@@ -94,11 +94,11 @@ class AbstractNetworkJob : public AbstractJob {
                 inline bool isTimeoutDetected() { return count() >= TIMEOUT_THRESHOLD; }
 
             private:
-                static const unsigned int DURATION_THRESHOLD = 15;  // Start value of the duration detection threshold (sec)
-                static const unsigned int PRECISION = 2;  // Precision of the duration (sec) => duration interval = [_maxDuration
-                                                          // - PRECISION, _maxDuration + PRECISION]
-                static const unsigned int PERIOD = 600;   // Sliding period of observation (sec)
-                static const unsigned int TIMEOUT_THRESHOLD = 10;  // Network timeout detection threshold (nbr of events)
+                static const unsigned int DURATION_THRESHOLD = 15; // Start value of the duration detection threshold (sec)
+                static const unsigned int PRECISION = 2; // Precision of the duration (sec) => duration interval = [_maxDuration
+                                                         // - PRECISION, _maxDuration + PRECISION]
+                static const unsigned int PERIOD = 600; // Sliding period of observation (sec)
+                static const unsigned int TIMEOUT_THRESHOLD = 10; // Network timeout detection threshold (nbr of events)
 
                 unsigned int _maxDuration = DURATION_THRESHOLD;
                 std::queue<SyncTime> _eventsQueue;
@@ -142,4 +142,4 @@ class AbstractNetworkJob : public AbstractJob {
         bool _downloadImpossible{false};
 };
 
-}  // namespace KDC
+} // namespace KDC

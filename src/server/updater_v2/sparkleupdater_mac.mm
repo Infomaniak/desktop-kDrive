@@ -107,7 +107,7 @@
 // Sent when a valid update is found by the update driver.
 - (void)updater:(SPUUpdater *)updater didFindValidUpdate:(SUAppcastItem *)update {
     (void)updater;
-    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version: " << update.versionString);
+    LOG_DEBUG(KDC::Log::instance()->getLogger(), "Version: " << [update.versionString UTF8String]);
     _state = KDC::FindValidUpdate;
     _availableVersion = [update.versionString copy];
 }

@@ -32,8 +32,8 @@ class Updater : public QObject {
         explicit Updater(QObject *parent = NULL);
 
         virtual QString version() const = 0;
-        virtual bool isKDCUpdater() = 0;
-        virtual bool isSparkleUpdater() = 0;
+        // virtual bool isKDCUpdater() = 0;
+        // virtual bool isSparkleUpdater() = 0;
         virtual QString statusString() const = 0;
         virtual bool downloadCompleted() const = 0;
         virtual bool updateFound() const = 0;
@@ -41,4 +41,4 @@ class Updater : public QObject {
         virtual UpdateState updateState() const = 0;
 };
 
-}  // namespace KDC
+} // namespace KDC

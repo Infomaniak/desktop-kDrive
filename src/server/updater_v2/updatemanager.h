@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -23,14 +22,11 @@
 #include "jobs/network/getappversionjob.h"
 #include "utility/types.h"
 
-
-#include <log4cplus/logger.h>
 #include <thread>
 
 namespace KDC {
+
 class AbstractUpdater;
-}
-namespace KDC {
 
 class TestUpdateManager;
 
@@ -43,7 +39,7 @@ class TestUpdateManager;
 
 class UpdateManager {
     public:
-        static UpdateManager *instance(bool test = false);
+        static UpdateManager *instance();
 
         [[nodiscard]] UpdateStateV2 state() const { return _state; }
         [[nodiscard]] std::string statusString() const;
@@ -51,31 +47,42 @@ class UpdateManager {
 
         void setQuitCallback(const std::function<void()> &quitCallback) const { _updater->setQuitCallback(quitCallback); }
 
-        // For testing purpose // TODO : is there a better way to inject test object?
-        void setGetAppVersionJob(GetAppVersionJob *getAppVersionJob) { _getAppVersionJob = getAppVersionJob; }
+        /**
+         * @brief Asynchronously check for new version informations.
+         * @param
+         * @return ExitCode::Ok if the job has been succesfully created.
+         */
+        ExitCode checkUpdateAvailable(UniqueId *id = nullptr);
+
+    protected:
+        UpdateManager();
 
     private:
-        UpdateManager();
-        virtual ~UpdateManager();
-
-        void run() noexcept;
-
-        ExitCode checkUpdateAvailable(bool &available);
         ExitCode downloadUpdate() noexcept;
+
+        /**
+         * @brief Create a shared pointer to the `GetAppVersionJob`. Override this methid in test class to test different
+         * scenarios.
+         * @param job The `GetAppVersionJob` we want to use in `checkUpdateAvailable()`.
+         * @return ExitCode::Ok if the job has been succesfully created.
+         */
+        virtual ExitCode getAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job);
+
+        /**
+         * @brief Callback used to extract the version info.
+         * @param jobId ID of
+         */
+        void versionInfoReceived(UniqueId jobId);
 
         static void createUpdater();
 
         static UpdateManager *_instance;
         static AbstractUpdater *_updater;
-        static std::unique_ptr<std::thread> _thread;
-
-        log4cplus::Logger _logger;
+        // static std::unique_ptr<std::thread> _thread;
 
         UpdateStateV2 _state{UpdateStateV2::UpToDate}; // Current state of the update process.
         VersionInfo _versionInfo; // A struct keeping all the informations about the currently available version.
         // SyncPath _targetFile; // Path to the downloaded installer file. TODO : to be moved in child class
-
-        GetAppVersionJob *_getAppVersionJob{nullptr};
 
 
         friend TestUpdateManager;

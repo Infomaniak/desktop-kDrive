@@ -1,4 +1,3 @@
-
 /*
  * Infomaniak kDrive - Desktop
  * Copyright (C) 2023-2024 Infomaniak Network SA
@@ -17,14 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "UpdateManager.h"
+#include "updatemanager.h"
+
+#include <memory>
 
 #include "db/parmsdb.h"
 #include "jobs/network/getappversionjob.h"
 #include "jobs/network/API_v2/downloadjob.h"
 #include "libcommon/utility/utility.h"
 #include "log/log.h"
-#include "server/updater/sparkleupdater.h"
+#include "sparkleupdater.h"
+#include "jobs/jobmanager.h"
 #include "utility/utility.h"
 
 namespace KDC {
@@ -33,16 +35,15 @@ constexpr size_t oneHour = 3600000;
 
 UpdateManager *UpdateManager::_instance = nullptr;
 AbstractUpdater *UpdateManager::_updater = nullptr;
-std::unique_ptr<std::thread> UpdateManager::_thread;
 
-UpdateManager *UpdateManager::instance(const bool test /*= false*/) {
+UpdateManager *UpdateManager::instance() {
     if (!_instance) _instance = new UpdateManager();
-    if (!_thread && !test) _thread = std::make_unique<std::thread>(&UpdateManager::run, _instance);
     return _instance;
 }
 
 std::string UpdateManager::statusString() const {
     // TODO : To be implemented
+    return "";
 }
 
 bool UpdateManager::isUpdateDownloaded() {
@@ -54,83 +55,16 @@ UpdateManager::UpdateManager() {
     createUpdater();
 }
 
-UpdateManager::~UpdateManager() {
-    if (_getAppVersionJob) {
-        delete _getAppVersionJob;
-        _getAppVersionJob = nullptr;
+ExitCode UpdateManager::checkUpdateAvailable(UniqueId *id /*= nullptr*/) {
+    _state = UpdateStateV2::Checking;
+    std::shared_ptr<AbstractNetworkJob> job;
+    if (const auto exitCode = getAppVersionJob(job); exitCode != ExitCode::Ok) {
+        return exitCode;
     }
-    _thread->detach();
-    delete _instance;
-}
+    if (id) *id = job->jobId();
 
-void UpdateManager::run() noexcept {
-    switch (_state) {
-        case UpdateStateV2::UpToDate:
-        case UpdateStateV2::Error: {
-            bool updateAvailable = false;
-            if (const ExitCode exitCode = checkUpdateAvailable(updateAvailable); exitCode != ExitCode::Ok) {
-                // TODO : how do we give feedback to main loop about update errors?
-                _state = UpdateStateV2::Error;
-            }
-
-            if (updateAvailable) {
-                _updater->onUpdateFound(_versionInfo.downloadUrl);
-            } else {
-                Utility::msleep(oneHour); // Sleep for 1h
-            }
-            break;
-        }
-        // case UpdateStateV2::Available: {
-        //     if (isUpdateDownloaded()) {
-        //         _state = UpdateStateV2::Ready;
-        //         break;
-        //     }
-        //     if (const ExitCode exitCode = downloadUpdate(); exitCode != ExitCode::Ok) {
-        //         // TODO : how do we give feedback to main loop about update errors?
-        //         _state = UpdateStateV2::Error;
-        //         break;
-        //     }
-        //     break;
-        // }
-        // case UpdateStateV2::Downloading:
-        // case UpdateStateV2::Ready:
-        default:
-            break;
-    }
-}
-
-ExitCode UpdateManager::checkUpdateAvailable(bool &available) {
-    AppStateValue appStateValue = "";
-    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
-        LOG_ERROR(_logger, "Error in ParmsDb::selectAppState");
-        return ExitCode::DbError;
-    }
-
-    const auto &appUid = std::get<std::string>(appStateValue);
-    if (!_getAppVersionJob) {
-        _getAppVersionJob = new GetAppVersionJob(CommonUtility::platform(), appUid);
-    }
-    _getAppVersionJob->runSynchronously();
-
-    std::string errorCode;
-    std::string errorDescr;
-    if (_getAppVersionJob->hasErrorApi(&errorCode, &errorDescr)) {
-        std::stringstream ss;
-        ss << errorCode.c_str() << " - " << errorDescr;
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
-        LOG_ERROR(_logger, ss.str().c_str());
-        return ExitCode::UpdateFailed;
-    }
-    // TODO : Support all update types
-    _versionInfo = _getAppVersionJob->getVersionInfo(DistributionChannel::Internal);
-    if (!_versionInfo.isValid()) {
-        std::string error = "Invalid version info!";
-        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
-        LOG_ERROR(_logger, error.c_str());
-        return ExitCode::UpdateFailed;
-    }
-
-    available = CommonUtility::isVersionLower(CommonUtility::currentVersion(), _versionInfo.fullVersion());
+    const std::function<void(UniqueId)> callback = std::bind_front(&UpdateManager::versionInfoReceived, this);
+    JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
     return ExitCode::Ok;
 }
 
@@ -149,6 +83,19 @@ ExitCode UpdateManager::downloadUpdate() noexcept {
     return ExitCode::Ok;
 }
 
+ExitCode UpdateManager::getAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) {
+    AppStateValue appStateValue = "";
+    if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
+        LOG_ERROR(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
+        _state = UpdateStateV2::Error;
+        return ExitCode::DbError;
+    }
+
+    const auto &appUid = std::get<std::string>(appStateValue);
+    job = std::make_shared<GetAppVersionJob>(CommonUtility::platform(), appUid);
+    return ExitCode::Ok;
+}
+
 void UpdateManager::createUpdater() {
 #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
     _updater = new SparkleUpdater();
@@ -159,6 +106,36 @@ void UpdateManager::createUpdater() {
     // the best we can do is notify about updates
     _instance = new PassiveUpdateNotifier(url);
 #endif
+}
+
+void UpdateManager::versionInfoReceived(UniqueId jobId) {
+    auto job = JobManager::instance()->getJob(jobId);
+    const auto getAppVersionJobPtr = std::dynamic_pointer_cast<GetAppVersionJob>(job);
+    assert(getAppVersionJobPtr);
+
+    std::string errorCode;
+    std::string errorDescr;
+    if (getAppVersionJobPtr->hasErrorApi(&errorCode, &errorDescr)) {
+        std::stringstream ss;
+        ss << errorCode.c_str() << " - " << errorDescr;
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
+        LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
+        _state = UpdateStateV2::Error;
+        return;
+    }
+
+    // TODO : Support all update types
+    _versionInfo = getAppVersionJobPtr->getVersionInfo(DistributionChannel::Internal);
+    if (!_versionInfo.isValid()) {
+        std::string error = "Invalid version info!";
+        SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
+        LOG_ERROR(Log::instance()->getLogger(), error.c_str());
+        _state = UpdateStateV2::Error;
+        return;
+    }
+
+    bool available = CommonUtility::isVersionLower(CommonUtility::currentVersion(), _versionInfo.fullVersion());
+    _state = available ? UpdateStateV2::Available : UpdateStateV2::UpToDate;
 }
 
 } // namespace KDC
