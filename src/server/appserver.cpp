@@ -56,6 +56,7 @@
 #endif
 
 #include "updater_v2/updatemanager.h"
+#include "updater_v2/updaterscheduler.h"
 
 
 #include <QDesktopServices>
@@ -156,7 +157,6 @@ AppServer::AppServer(int &argc, char **argv) :
     if (parmsDbPath.empty()) {
         LOG_WARN(_logger, "Error in Db::makeDbName");
         throw std::runtime_error("Unable to create parameters database.");
-        return;
     }
 
     bool newDbExists = false;
@@ -164,7 +164,6 @@ AppServer::AppServer(int &argc, char **argv) :
     if (!IoHelper::checkIfPathExists(parmsDbPath, newDbExists, ioError)) {
         LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(parmsDbPath, ioError).c_str());
         throw std::runtime_error("Unable to check if parmsdb exists.");
-        return;
     }
 
     std::filesystem::path pre334ConfigFilePath =
@@ -174,7 +173,6 @@ AppServer::AppServer(int &argc, char **argv) :
         LOGW_WARN(_logger,
                   L"Error in IoHelper::checkIfPathExists: " << Utility::formatIoError(pre334ConfigFilePath, ioError).c_str());
         throw std::runtime_error("Unable to check if pre 3.3.4 config exists.");
-        return;
     }
 
     LOGW_INFO(_logger, L"New DB exists : " << Path2WStr(parmsDbPath).c_str() << L" => " << newDbExists);
@@ -184,7 +182,6 @@ AppServer::AppServer(int &argc, char **argv) :
         ParmsDb::instance(parmsDbPath, _theme->version().toStdString());
     } catch (const std::exception &) {
         throw std::runtime_error("Unable to open parameters database.");
-        return;
     }
 
     // Clear old server errors
@@ -220,7 +217,6 @@ AppServer::AppServer(int &argc, char **argv) :
         LOG_WARN(_logger, "Error in ParametersCache::instance");
         addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         throw std::runtime_error("Unable to initialize parameters cache.");
-        return;
     }
 
     // Setup translations
@@ -241,7 +237,6 @@ AppServer::AppServer(int &argc, char **argv) :
         LOG_WARN(_logger, "Error in ExclusionTemplateCache::instance");
         addError(Error(errId(), ExitCode::DbError, ExitCause::Unknown));
         throw std::runtime_error("Unable to initialize exclusion template cache.");
-        return;
     }
 
 #ifdef Q_OS_WIN
@@ -290,11 +285,11 @@ AppServer::AppServer(int &argc, char **argv) :
 
     const std::function<void()> quitCallback = std::bind_front(&AppServer::sendQuit, this);
     UpdateManager::instance()->setQuitCallback(quitCallback);
-    UpdateManager::instance()->run();
+    // UpdateManager::instance()->checkUpdateAvailable();
 #endif
 
     // Update checks
-    UpdaterScheduler *updaterScheduler = new UpdaterScheduler(this);
+    auto updaterScheduler = new UpdaterScheduler(this);
     connect(updaterScheduler, &UpdaterScheduler::requestRestart, this, &AppServer::onScheduleAppRestart);
 
 #ifdef Q_OS_WIN

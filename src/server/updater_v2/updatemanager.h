@@ -30,6 +30,8 @@ class AbstractUpdater;
 
 class TestUpdateManager;
 
+// TODO : is this singleton class really necessary???
+
 /**
  * @brief Checks for new updates and manage installation.
  *
@@ -49,13 +51,28 @@ class UpdateManager {
 
         /**
          * @brief Asynchronously check for new version informations.
-         * @param
+         * @param id Optional. ID of the created asynchronous job. Useful in tests.
          * @return ExitCode::Ok if the job has been succesfully created.
          */
         ExitCode checkUpdateAvailable(UniqueId *id = nullptr);
 
+        /**
+         * @brief A new version is available on the server.
+         * On macOS : start Sparkle
+         * On Windows : download the installer package
+         * On Linux : notify the user
+         */
+        void onUpdateFound() const;
+
+        void startInstaller() const { /* Redefined in child class if necessary */ }
+
+        void setStateChangeCallback(const std::function<void(UpdateStateV2)> &stateChangeCallback) {
+            _stateChangeCallback = stateChangeCallback;
+        }
+
     protected:
         UpdateManager();
+        virtual ~UpdateManager() = default;
 
     private:
         ExitCode downloadUpdate() noexcept;
@@ -66,7 +83,7 @@ class UpdateManager {
          * @param job The `GetAppVersionJob` we want to use in `checkUpdateAvailable()`.
          * @return ExitCode::Ok if the job has been succesfully created.
          */
-        virtual ExitCode getAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job);
+        virtual ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job);
 
         /**
          * @brief Callback used to extract the version info.
@@ -76,14 +93,16 @@ class UpdateManager {
 
         static void createUpdater();
 
+        void setState(UpdateStateV2 newState);
+
         static UpdateManager *_instance;
         static AbstractUpdater *_updater;
-        // static std::unique_ptr<std::thread> _thread;
 
         UpdateStateV2 _state{UpdateStateV2::UpToDate}; // Current state of the update process.
         VersionInfo _versionInfo; // A struct keeping all the informations about the currently available version.
         // SyncPath _targetFile; // Path to the downloaded installer file. TODO : to be moved in child class
 
+        std::function<void(UpdateStateV2)> _stateChangeCallback = nullptr;
 
         friend TestUpdateManager;
 };

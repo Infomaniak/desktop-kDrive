@@ -237,6 +237,7 @@ void SparkleUpdater::checkForUpdate() {
     }
 }
 
+/*
 void SparkleUpdater::backgroundCheckForUpdate() {
     LOG_DEBUG(KDC::Log::instance()->getLogger(), "launching background check");
 
@@ -245,14 +246,10 @@ void SparkleUpdater::backgroundCheckForUpdate() {
     }
     [d->spuStandardUserDriver showUpdateInFocus];
 }
+*/
 
 int SparkleUpdater::state() const {
     return [d->updaterDelegate downloadState];
-}
-
-bool SparkleUpdater::updateFound() const {
-    DownloadState state = [d->updaterDelegate downloadState];
-    return state == FindValidUpdate;
 }
 
 }  // namespace KDC

@@ -108,12 +108,12 @@ bool UpdaterServer::downloadCompleted() const {
 }
 
 bool UpdaterServer::updateFound() const {
-#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    SparkleUpdater *sparkleUpdater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
-    if (sparkleUpdater) {
-        return sparkleUpdater->updateFound();
-    }
-#endif
+    // #if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
+    //     SparkleUpdater *sparkleUpdater = nullptr; // qobject_cast<SparkleUpdater *>(instance());
+    //     if (sparkleUpdater) {
+    //         return sparkleUpdater->updateFound();
+    //     }
+    // #endif
 
     return false;
 }

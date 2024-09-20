@@ -58,7 +58,7 @@ UpdateManager::UpdateManager() {
 ExitCode UpdateManager::checkUpdateAvailable(UniqueId *id /*= nullptr*/) {
     _state = UpdateStateV2::Checking;
     std::shared_ptr<AbstractNetworkJob> job;
-    if (const auto exitCode = getAppVersionJob(job); exitCode != ExitCode::Ok) {
+    if (const auto exitCode = generateGetAppVersionJob(job); exitCode != ExitCode::Ok) {
         return exitCode;
     }
     if (id) *id = job->jobId();
@@ -66,6 +66,10 @@ ExitCode UpdateManager::checkUpdateAvailable(UniqueId *id /*= nullptr*/) {
     const std::function<void(UniqueId)> callback = std::bind_front(&UpdateManager::versionInfoReceived, this);
     JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
     return ExitCode::Ok;
+}
+
+void UpdateManager::onUpdateFound() const {
+    _updater->onUpdateFound(_versionInfo.downloadUrl);
 }
 
 ExitCode UpdateManager::downloadUpdate() noexcept {
@@ -83,29 +87,17 @@ ExitCode UpdateManager::downloadUpdate() noexcept {
     return ExitCode::Ok;
 }
 
-ExitCode UpdateManager::getAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) {
+ExitCode UpdateManager::generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) {
     AppStateValue appStateValue = "";
     if (bool found = false; !ParmsDb::instance()->selectAppState(AppStateKey::AppUid, appStateValue, found) || !found) {
         LOG_ERROR(Log::instance()->getLogger(), "Error in ParmsDb::selectAppState");
-        _state = UpdateStateV2::Error;
+        setState(UpdateStateV2::Error);
         return ExitCode::DbError;
     }
 
     const auto &appUid = std::get<std::string>(appStateValue);
     job = std::make_shared<GetAppVersionJob>(CommonUtility::platform(), appUid);
     return ExitCode::Ok;
-}
-
-void UpdateManager::createUpdater() {
-#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
-    _updater = new SparkleUpdater();
-#elif defined(Q_OS_WIN32)
-    // Also for MSI
-    _instance = new NSISUpdater(url);
-#else
-    // the best we can do is notify about updates
-    _instance = new PassiveUpdateNotifier(url);
-#endif
 }
 
 void UpdateManager::versionInfoReceived(UniqueId jobId) {
@@ -120,7 +112,7 @@ void UpdateManager::versionInfoReceived(UniqueId jobId) {
         ss << errorCode.c_str() << " - " << errorDescr;
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", ss.str());
         LOG_ERROR(Log::instance()->getLogger(), ss.str().c_str());
-        _state = UpdateStateV2::Error;
+        setState(UpdateStateV2::Error);
         return;
     }
 
@@ -130,12 +122,30 @@ void UpdateManager::versionInfoReceived(UniqueId jobId) {
         std::string error = "Invalid version info!";
         SentryHandler::instance()->captureMessage(SentryLevel::Warning, "AbstractUpdater::checkUpdateAvailable", error);
         LOG_ERROR(Log::instance()->getLogger(), error.c_str());
-        _state = UpdateStateV2::Error;
+        setState(UpdateStateV2::Error);
         return;
     }
 
     bool available = CommonUtility::isVersionLower(CommonUtility::currentVersion(), _versionInfo.fullVersion());
     _state = available ? UpdateStateV2::Available : UpdateStateV2::UpToDate;
+}
+
+void UpdateManager::createUpdater() {
+#if defined(Q_OS_MAC) && defined(HAVE_SPARKLE)
+    _updater = new SparkleUpdater();
+#elif defined(Q_OS_WIN32)
+    // Also for MSI
+    _instance = new NSISUpdater(url);
+#else
+    // the best we can do is notify about updates
+    _instance = new PassiveUpdateNotifier(url);
+#endif
+}
+
+void UpdateManager::setState(const UpdateStateV2 newState) {
+    _state = newState;
+    LOG_DEBUG(Log::instance()->getLogger(), "Update state changed to: " << newState);
+    if (_stateChangeCallback) _stateChangeCallback(_state);
 }
 
 } // namespace KDC

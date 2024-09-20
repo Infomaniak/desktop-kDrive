@@ -66,7 +66,7 @@ class UpdateManagerTest final : public UpdateManager {
         void setUpdateShoudBeAvailable(const bool val) { _updateShoudBeAvailable = val; }
 
     private:
-        ExitCode getAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
+        ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
             static const std::string appUid = "1234567890";
             job = std::make_shared<TestGetAppVersionJob>(CommonUtility::platform(), appUid, _updateShoudBeAvailable);
             return ExitCode::Ok;

@@ -19,6 +19,8 @@
 
 #include "updaterscheduler.h"
 
+#include "updatemanager.h"
+
 namespace KDC {
 
 UpdaterScheduler::UpdaterScheduler(QObject *parent) : QObject(parent) {
@@ -33,15 +35,36 @@ UpdaterScheduler::UpdaterScheduler(QObject *parent) : QObject(parent) {
     // at startup, do a check in any case.
     QTimer::singleShot(3000, this, &UpdaterScheduler::slotTimerFired);
 
-    auto checkInterval = std::chrono::hours(1);
+    static constexpr auto checkInterval = std::chrono::hours(1);
     _updateCheckTimer.start(std::chrono::milliseconds(checkInterval).count());
+
+    const std::function<void(UpdateStateV2)> callback = std::bind_front(&UpdaterScheduler::onAppStateChange, this);
+    UpdateManager::instance()->setStateChangeCallback(callback);
 }
 
-void UpdaterScheduler::slotTimerFired() {
-    // UpdaterServer *updater = UpdaterServer::instance();
-    // if (updater) {
-    //     updater->backgroundCheckForUpdate();
-    // }
+void UpdaterScheduler::slotTimerFired() const {
+    UpdateManager::instance()->checkUpdateAvailable();
+}
+
+void UpdaterScheduler::onAppStateChange(const UpdateStateV2 newState) const {
+    switch (newState) {
+        case UpdateStateV2::UpToDate:
+        case UpdateStateV2::Checking:
+        case UpdateStateV2::Downloading:
+            // Nothing to do
+            break;
+        case UpdateStateV2::Available:
+            // A new version has been found
+            UpdateManager::instance()->onUpdateFound();
+            break;
+        case UpdateStateV2::Ready:
+            // The new version is ready to be installed
+            UpdateManager::instance()->startInstaller();
+            break;
+        case UpdateStateV2::Error:
+            // An error occured
+            break;
+    }
 }
 
 } // namespace KDC

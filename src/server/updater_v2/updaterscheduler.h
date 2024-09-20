@@ -18,6 +18,9 @@
  */
 
 #pragma once
+
+#include "utility/types.h"
+
 #include <QObject>
 #include <QTimer>
 
@@ -28,6 +31,8 @@ namespace KDC {
  * @ingroup server
  *
  * This class schedules regular update checks.
+ *
+ * This class is still based on Qt. It will be replaced later if Qt is removed from the project.
  */
 
 class UpdaterScheduler final : public QObject {
@@ -40,9 +45,11 @@ class UpdaterScheduler final : public QObject {
         void requestRestart();
 
     private slots:
-        void slotTimerFired();
+        void slotTimerFired() const;
 
     private:
+        void onAppStateChange(UpdateStateV2 newState) const;
+
         QTimer _updateCheckTimer; /** Timer for the regular update check. */
 };
 

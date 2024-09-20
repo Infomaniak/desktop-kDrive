@@ -24,56 +24,22 @@
 
 namespace KDC {
 
-enum DownloadState { Unknown = 0, FindValidUpdate, DidNotFindUpdate, AbortWithError };
+enum DownloadState { Unknown = 0, FindValidUpdate, DidNotFindUpdate, AbortWithError }; // TODO : useful??
 
 class SparkleUpdater final : public AbstractUpdater {
     public:
         explicit SparkleUpdater();
-        ~SparkleUpdater();
+        ~SparkleUpdater() override;
 
         void onUpdateFound(const std::string &downloadUrl) override;
 
         void setUpdateUrl(const std::string &url);
-        void setQuitCallback(const QuitCallback &quitCallback) final;
+        void setQuitCallback(const QuitCallback &quitCallback) override;
         bool startUpdater();
 
-        // unused in this updater
         void checkForUpdate();
-        void backgroundCheckForUpdate();
-        // UpdateState updateState() const override {
-        //     switch (state()) {
-        //         using enum KDC::UpdateState;
-        //         case FindValidUpdate:
-        //             return Ready;
-        //         case DidNotFindUpdate:
-        //             return None;
-        //         case AbortWithError:
-        //         case Unknown:
-        //         default:
-        //             return Error;
-        //     }
-        // }
-        int state() const;
-        // QString statusString()
-        //         const // defined in header file because "mm" file not read by "lupdate" command for translation file generation
-        // {
-        //     switch (state()) {
-        //         case Unknown:
-        //             return tr("Update status is unknown: Did not check for new updates.");
-        //         case FindValidUpdate:
-        //             return tr("An update is available: %1").arg(CommonUtility::currentVersion().c_str());
-        //         case DidNotFindUpdate:
-        //             return tr("%1 is up to date!").arg(APPLICATION_NAME);
-        //         case AbortWithError:
-        //             return tr("Check for update aborted.");
-        //         default:
-        //             return QString();
-        //     }
-        // }
-        bool updateFound() const;
 
-        // public slots:
-        //     void slotStartInstaller();
+        int state() const;
 
     private:
         class Private;
