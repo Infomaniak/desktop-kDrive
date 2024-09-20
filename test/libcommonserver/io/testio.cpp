@@ -71,7 +71,7 @@ SyncPath makeVeryLonPath(const SyncPath &rootPath) {
     const std::string pathSegment(50, 'a');
     SyncPath path = rootPath;
     for (int i = 0; i < 1000; ++i) {
-        path /= pathSegment;  // Eventually exceeds the max allowed path length on every file system of interest.
+        path /= pathSegment; // Eventually exceeds the max allowed path length on every file system of interest.
     }
 
     return path;
@@ -149,4 +149,4 @@ void TestIo::testLogDirectoryPath() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

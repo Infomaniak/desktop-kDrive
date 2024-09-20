@@ -107,4 +107,4 @@ class TestUtility : public CppUnit::TestFixture {
         std::unique_ptr<Utility> _testObj;
 };
 
-}  // namespace KDC
+} // namespace KDC

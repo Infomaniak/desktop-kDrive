@@ -32,13 +32,10 @@ namespace KDC {
 
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path, int syncDbId, std::shared_ptr<SyncDb> syncDb,
                                          bool (*vfsStatus)(int, const SyncPath &, bool &, bool &, bool &, int &),
-                                         bool (*vfsClearFileAttributes)(int, const SyncPath &))
-    : _logger(Log::instance()->getLogger()),
-      _rootPath(path),
-      _syncDbId(syncDbId),
-      _syncDb(syncDb),
-      _vfsStatus(vfsStatus),
-      _vfsClearFileAttributes(vfsClearFileAttributes) {}
+                                         bool (*vfsClearFileAttributes)(int, const SyncPath &)) :
+    _logger(Log::instance()->getLogger()),
+    _rootPath(path), _syncDbId(syncDbId), _syncDb(syncDb), _vfsStatus(vfsStatus),
+    _vfsClearFileAttributes(vfsClearFileAttributes) {}
 
 VirtualFilesCleaner::VirtualFilesCleaner(const SyncPath &path) : _logger(Log::instance()->getLogger()), _rootPath(path) {}
 
@@ -64,7 +61,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             }
 
             SyncName entryPathStr = dirIt->path().native();
-            entryPathStr.erase(0, rootPathStr.length() + 1);  // +1 because of the first “/”
+            entryPathStr.erase(0, rootPathStr.length() + 1); // +1 because of the first “/”
 
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_DEBUG(_logger, L"VirtualFilesCleaner: processing item " << SyncName2WStr(entryPathStr).c_str());
@@ -75,8 +72,8 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
             bool isWarning = false;
             bool isExcluded = false;
             IoError ioError = IoError::Success;
-            const bool success =
-                ExclusionTemplateCache::instance()->checkIfIsExcluded(_rootPath, relativePath, isWarning, isExcluded, ioError);
+            const bool success = ExclusionTemplateCache::instance()->checkIfIsExcluded(_rootPath, relativePath, isWarning,
+                                                                                       isExcluded, ioError);
             if (!success || ioError != IoError::Success) {
                 LOGW_WARN(_logger,
                           L"Error in ExclusionTemplateCache::isExcluded: " << Utility::formatIoError(entryPath, ioError).c_str());
@@ -107,7 +104,7 @@ bool VirtualFilesCleaner::removePlaceholdersRecursivly(const SyncPath &parentPat
                                                                       << L" is a hydrated placeholder, keep it");
                 }
             } else {
-                if (!dirIt->is_directory()) {  // Keep folders
+                if (!dirIt->is_directory()) { // Keep folders
                     // Remove file from file system
                     if (ParametersCache::isExtendedLogEnabled()) {
                         LOGW_DEBUG(_logger, L"VirtualFilesCleaner: removing item " << SyncName2WStr(entryPathStr).c_str()
@@ -183,7 +180,7 @@ bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_direct
     // skip_permission_denied doesn't work on Windows
     try {
         bool dummy = dirIt->exists();
-        (void)(dummy);
+        (void) (dummy);
     } catch (std::filesystem::filesystem_error &) {
         return false;
     }
@@ -200,8 +197,8 @@ bool VirtualFilesCleaner::folderCanBeProcessed(std::filesystem::recursive_direct
 
 bool VirtualFilesCleaner::recursiveDirectoryIterator(const SyncPath &path, std::filesystem::recursive_directory_iterator &dirIt) {
     std::error_code ec;
-    dirIt =
-        std::filesystem::recursive_directory_iterator(_rootPath, std::filesystem::directory_options::skip_permission_denied, ec);
+    dirIt = std::filesystem::recursive_directory_iterator(_rootPath, std::filesystem::directory_options::skip_permission_denied,
+                                                          ec);
     if (ec) {
         LOGW_WARN(_logger, L"Error in std::filesystem::recursive_directory_iterator: " << Utility::formatStdError(ec).c_str());
         return false;
@@ -230,7 +227,7 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
                 const bool success = IoHelper::checkIfFileIsDehydrated(dirIt->path(), isDehydrated, ioError);
                 if (!success || ioError == IoError::NoSuchFileOrDirectory || ioError == IoError::AccessDenied) {
                     LOGW_WARN(_logger, L"Error in IoHelper::checkIfFileIsDehydrated: "
-                                           << Utility::formatIoError(dirIt->path(), ioError).c_str());
+                                               << Utility::formatIoError(dirIt->path(), ioError).c_str());
                     continue;
                 }
 
@@ -272,4 +269,4 @@ bool VirtualFilesCleaner::removeDehydratedPlaceholders(std::vector<SyncPath> &fa
     return ret;
 }
 
-}  // namespace KDC
+} // namespace KDC

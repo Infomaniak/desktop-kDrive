@@ -64,4 +64,4 @@ class ApiToken {
         std::string _scope;
 };
 
-}  // namespace KDC
+} // namespace KDC

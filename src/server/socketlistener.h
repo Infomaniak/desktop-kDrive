@@ -58,4 +58,4 @@ class SocketListener {
         std::thread::id _threadId;
 };
 
-}  // namespace KDC
+} // namespace KDC

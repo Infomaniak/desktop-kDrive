@@ -30,10 +30,9 @@ std::mutex ContentChecksumWorker::_checksumMutex;
 std::unordered_map<UniqueId, std::shared_ptr<ComputeChecksumJob>> ContentChecksumWorker::_runningJobs;
 
 ContentChecksumWorker::ContentChecksumWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                             const std::string &shortName, std::shared_ptr<Snapshot> localSnapshot)
-    : ISyncWorker(syncPal, name, shortName),
-      _localSnapshot(localSnapshot),
-      _threadPool(1, 5)  // Min 1 thread, max 5
+                                             const std::string &shortName, std::shared_ptr<Snapshot> localSnapshot) :
+    ISyncWorker(syncPal, name, shortName),
+    _localSnapshot(localSnapshot), _threadPool(1, 5) // Min 1 thread, max 5
 {}
 
 ContentChecksumWorker::~ContentChecksumWorker() {
@@ -89,7 +88,7 @@ void ContentChecksumWorker::execute() {
             if (_threadPool.available()) {
                 const std::lock_guard<std::mutex> lock(_checksumMutex);
                 std::shared_ptr<ComputeChecksumJob> job =
-                    std::make_shared<ComputeChecksumJob>(_toCompute.front().first, _toCompute.front().second, _localSnapshot);
+                        std::make_shared<ComputeChecksumJob>(_toCompute.front().first, _toCompute.front().second, _localSnapshot);
                 _runningJobs.insert({job->jobId(), job});
                 job->setMainCallback(callback);
                 _threadPool.start(*job);
@@ -107,4 +106,4 @@ void ContentChecksumWorker::execute() {
     LOG_DEBUG(_logger, "Worker stopped: name=" << name().c_str());
 }
 
-}  // namespace KDC
+} // namespace KDC

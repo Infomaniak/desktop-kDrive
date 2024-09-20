@@ -25,27 +25,14 @@
 
 namespace KDC {
 
-User::User()
-    : _logger(Log::instance()->getLogger()),
-      _dbId(0),
-      _userId(0),
-      _keychainKey(std::string()),
-      _name(std::string()),
-      _email(std::string()),
-      _avatarUrl(std::string()),
-      _avatar(nullptr),
-      _toMigrate(false) {}
+User::User() :
+    _logger(Log::instance()->getLogger()), _dbId(0), _userId(0), _keychainKey(std::string()), _name(std::string()),
+    _email(std::string()), _avatarUrl(std::string()), _avatar(nullptr), _toMigrate(false) {}
 
 User::User(int dbId, int userId, const std::string &keychainKey, const std::string &name, const std::string &email,
-           const std::string &avatarUrl, std::shared_ptr<std::vector<char>> avatar, bool toMigrate)
-    : _logger(Log::instance()->getLogger()),
-      _dbId(dbId),
-      _userId(userId),
-      _keychainKey(keychainKey),
-      _name(name),
-      _email(email),
-      _avatarUrl(avatarUrl),
-      _avatar(avatar),
-      _toMigrate(toMigrate) {}
+           const std::string &avatarUrl, std::shared_ptr<std::vector<char>> avatar, bool toMigrate) :
+    _logger(Log::instance()->getLogger()),
+    _dbId(dbId), _userId(userId), _keychainKey(keychainKey), _name(name), _email(email), _avatarUrl(avatarUrl), _avatar(avatar),
+    _toMigrate(toMigrate) {}
 
-}  // namespace KDC
+} // namespace KDC

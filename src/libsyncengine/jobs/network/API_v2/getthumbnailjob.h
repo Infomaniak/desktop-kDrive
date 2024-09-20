@@ -35,4 +35,4 @@ class GetThumbnailJob : public AbstractTokenNetworkJob {
         unsigned _width;
 };
 
-}  // namespace KDC
+} // namespace KDC

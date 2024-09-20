@@ -22,7 +22,7 @@
 
 #include <winrt\base.h>
 
-template <typename T>
+template<typename T>
 class ClassFactory : public winrt::implements<ClassFactory<T>, IClassFactory> {
     public:
         // IClassFactory

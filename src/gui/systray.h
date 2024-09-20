@@ -31,4 +31,4 @@ class Systray : public QSystemTrayIcon {
         void setToolTip(const QString &tip);
 };
 
-}  // namespace KDC
+} // namespace KDC

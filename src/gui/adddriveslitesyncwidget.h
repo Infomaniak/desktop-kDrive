@@ -66,4 +66,4 @@ class AddDriveLiteSyncWidget : public QWidget {
         void onYesButtonTriggered(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

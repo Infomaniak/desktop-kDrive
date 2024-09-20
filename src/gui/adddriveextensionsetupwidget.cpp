@@ -44,4 +44,4 @@ void AddDriveExtensionSetupWidget::onContinueButtonTriggered() {
     emit terminated();
 }
 
-}  // namespace KDC
+} // namespace KDC

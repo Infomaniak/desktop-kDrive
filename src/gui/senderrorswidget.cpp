@@ -29,15 +29,9 @@ static const int boxHMargin = 20;
 static const int boxVMargin = 5;
 static const int boxSpacing = 10;
 
-SendErrorsWidget::SendErrorsWidget(QWidget *parent)
-    : ClickableWidget(parent),
-      _backgroundColor(QColor()),
-      _helpIconColor(QColor()),
-      _helpIconSize(QSize()),
-      _actionIconColor(QColor()),
-      _actionIconSize(QSize()),
-      _helpIconLabel(nullptr),
-      _actionIconLabel(nullptr) {
+SendErrorsWidget::SendErrorsWidget(QWidget *parent) :
+    ClickableWidget(parent), _backgroundColor(QColor()), _helpIconColor(QColor()), _helpIconSize(QSize()),
+    _actionIconColor(QColor()), _actionIconSize(QSize()), _helpIconLabel(nullptr), _actionIconLabel(nullptr) {
     setContentsMargins(0, 0, 0, 0);
 
     QHBoxLayout *hbox = new QHBoxLayout();
@@ -79,16 +73,16 @@ void SendErrorsWidget::paintEvent(QPaintEvent *event) {
 
 void SendErrorsWidget::setHelpIcon() {
     if (_helpIconLabel && _helpIconSize != QSize() && _helpIconColor != QColor()) {
-        _helpIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/help.svg", _helpIconColor).pixmap(_helpIconSize));
+        _helpIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/help.svg", _helpIconColor)
+                                          .pixmap(_helpIconSize));
     }
 }
 
 void SendErrorsWidget::setActionIcon() {
     if (_actionIconLabel && _actionIconSize != QSize() && _actionIconColor != QColor()) {
         _actionIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-right.svg", _actionIconColor)
-                .pixmap(_actionIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/chevron-right.svg", _actionIconColor)
+                        .pixmap(_actionIconSize));
     }
 }
 
@@ -112,4 +106,4 @@ void SendErrorsWidget::onClick() {
     emit displayHelp();
 }
 
-}  // namespace KDC
+} // namespace KDC

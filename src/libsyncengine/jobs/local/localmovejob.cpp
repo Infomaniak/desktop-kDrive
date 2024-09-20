@@ -91,4 +91,4 @@ void LocalMoveJob::runJob() {
     _exitCode = ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC

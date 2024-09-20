@@ -26,4 +26,4 @@ UploadSessionToken::UploadSessionToken(const std::string &token) : _dbId(0), _to
 
 UploadSessionToken::UploadSessionToken(int64_t dbId, const std::string &token) : _dbId(dbId), _token(token) {}
 
-}  // namespace KDC
+} // namespace KDC

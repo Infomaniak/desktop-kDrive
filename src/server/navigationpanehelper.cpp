@@ -57,7 +57,7 @@ void NavigationPaneHelper::setShowInExplorerNavigationPane(bool show) {
     scheduleUpdateCloudStorageRegistry();
 
     // Set pin state
-    for (KDC::Sync &sync : syncList) {
+    for (KDC::Sync &sync: syncList) {
         OldUtility::setFolderPinState(QUuid(QString::fromStdString(sync.navigationPaneClsid())), show);
     }
 }
@@ -72,15 +72,15 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
     // that matches ours when we saved.
     QVector<QUuid> entriesToRemove;
     OldUtility::registryWalkSubKeys(
-        HKEY_CURRENT_USER, QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Desktop\\NameSpace"),
-        [&entriesToRemove](HKEY key, const QString &subKey) {
-            QVariant appName = OldUtility::registryGetKeyValue(key, subKey, QStringLiteral("ApplicationName"));
-            if (appName.toString() == QLatin1String(APPLICATION_NAME)) {
-                QUuid clsid{subKey};
-                Q_ASSERT(!clsid.isNull());
-                entriesToRemove.append(clsid);
-            }
-        });
+            HKEY_CURRENT_USER, QStringLiteral("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Desktop\\NameSpace"),
+            [&entriesToRemove](HKEY key, const QString &subKey) {
+                QVariant appName = OldUtility::registryGetKeyValue(key, subKey, QStringLiteral("ApplicationName"));
+                if (appName.toString() == QLatin1String(APPLICATION_NAME)) {
+                    QUuid clsid{subKey};
+                    Q_ASSERT(!clsid.isNull());
+                    entriesToRemove.append(clsid);
+                }
+            });
 
     // Then remove anything
     foreach (auto &clsid, entriesToRemove) {
@@ -94,7 +94,7 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
         return;
     }
 
-    for (KDC::Sync &sync : syncList) {
+    for (KDC::Sync &sync: syncList) {
         if (sync.virtualFileMode() != KDC::VirtualFileMode::Win) {
             if (sync.navigationPaneClsid().empty()) {
                 sync.setNavigationPaneClsid(QUuid::createUuid().toString().toStdString());
@@ -106,4 +106,4 @@ void NavigationPaneHelper::updateCloudStorageRegistry() {
 }
 #endif
 
-}  // namespace KDC
+} // namespace KDC

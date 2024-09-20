@@ -45,19 +45,10 @@ static const int progressBarMax = 5;
 
 Q_LOGGING_CATEGORY(lcAddDriveServerFoldersWidget, "gui.adddriveserverfolderswidget", QtInfoMsg)
 
-AddDriveServerFoldersWidget::AddDriveServerFoldersWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : QWidget(parent),
-      _gui(gui),
-      _logoTextIconLabel(nullptr),
-      _infoIconLabel(nullptr),
-      _availableSpaceTextLabel(nullptr),
-      _folderTreeItemWidget(nullptr),
-      _backButton(nullptr),
-      _continueButton(nullptr),
-      _infoIconColor(QColor()),
-      _infoIconSize(QSize()),
-      _logoColor(QColor()),
-      _needToSave(false) {
+AddDriveServerFoldersWidget::AddDriveServerFoldersWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    QWidget(parent), _gui(gui), _logoTextIconLabel(nullptr), _infoIconLabel(nullptr), _availableSpaceTextLabel(nullptr),
+    _folderTreeItemWidget(nullptr), _backButton(nullptr), _continueButton(nullptr), _infoIconColor(QColor()),
+    _infoIconSize(QSize()), _logoColor(QColor()), _needToSave(false) {
     initUI();
     updateUI();
 }
@@ -103,7 +94,7 @@ void AddDriveServerFoldersWidget::initUI() {
 
     QLabel *logoIconLabel = new QLabel(this);
     logoIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
-                                 .pixmap(QSize(logoIconSize, logoIconSize)));
+                                     .pixmap(QSize(logoIconSize, logoIconSize)));
     logoHBox->addWidget(logoIconLabel);
     logoHBox->addSpacing(hLogoSpacing);
 
@@ -182,21 +173,21 @@ void AddDriveServerFoldersWidget::updateUI() {
     // Available space
     qint64 freeBytes = KDC::CommonUtility::freeDiskSpace(dirSeparator);
     _availableSpaceTextLabel->setText(
-        tr("Space available on your computer : %1").arg(CommonGuiUtility::octetsToString(freeBytes)));
+            tr("Space available on your computer : %1").arg(CommonGuiUtility::octetsToString(freeBytes)));
 }
 
 void AddDriveServerFoldersWidget::setInfoIcon() {
     if (_infoIconLabel && _infoIconSize != QSize() && _infoIconColor != QColor()) {
         _infoIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/information.svg", _infoIconColor)
-                .pixmap(_infoIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/information.svg", _infoIconColor)
+                        .pixmap(_infoIconSize));
     }
 }
 
 void AddDriveServerFoldersWidget::setLogoColor(const QColor &color) {
     _logoColor = color;
-    _logoTextIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor).pixmap(logoTextIconSize));
+    _logoTextIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor)
+                                          .pixmap(logoTextIconSize));
 }
 
 void AddDriveServerFoldersWidget::onSubfoldersLoaded(bool error, bool /*empty*/) {
@@ -233,4 +224,4 @@ void AddDriveServerFoldersWidget::onContinueButtonTriggered(bool checked) {
     emit terminated();
 }
 
-}  // namespace KDC
+} // namespace KDC

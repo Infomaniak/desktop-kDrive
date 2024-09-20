@@ -20,14 +20,14 @@
 
 namespace KDC {
 
-ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def, bool deleted)
-    : _templ(templ), _warning(warning), _def(def), _deleted(deleted) {}
+ExclusionTemplateInfo::ExclusionTemplateInfo(const QString &templ, bool warning, bool def, bool deleted) :
+    _templ(templ), _warning(warning), _def(def), _deleted(deleted) {}
 
 ExclusionTemplateInfo::ExclusionTemplateInfo() : _templ(QString()), _warning(false), _def(false), _deleted(false) {}
 
 QDataStream &operator>>(QDataStream &in, ExclusionTemplateInfo &exclusionTemplateInfo) {
     in >> exclusionTemplateInfo._templ >> exclusionTemplateInfo._warning >> exclusionTemplateInfo._def >>
-        exclusionTemplateInfo._deleted;
+            exclusionTemplateInfo._deleted;
     return in;
 }
 
@@ -58,4 +58,4 @@ QDataStream &operator>>(QDataStream &in, QList<ExclusionTemplateInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

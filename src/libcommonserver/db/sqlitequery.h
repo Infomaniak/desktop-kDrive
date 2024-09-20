@@ -80,4 +80,4 @@ class SqliteQuery {
         bool isPragma() const;
 };
 
-}  // namespace KDC
+} // namespace KDC

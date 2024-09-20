@@ -22,25 +22,22 @@
 namespace KDC {
 
 UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const SyncName &filename, uint64_t size,
-                                             const NodeId &remoteParentDirId, uint64_t totalChunks)
-    : AbstractUploadSessionJob(uploadType, driveDbId),
-      _filename(filename),
-      _totalSize(size),
-      _remoteParentDirId(remoteParentDirId),
-      _totalChunks(totalChunks),
-      _uploadType(uploadType) {
+                                             const NodeId &remoteParentDirId, uint64_t totalChunks) :
+    AbstractUploadSessionJob(uploadType, driveDbId),
+    _filename(filename), _totalSize(size), _remoteParentDirId(remoteParentDirId), _totalChunks(totalChunks),
+    _uploadType(uploadType) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
 }
 
 UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, int driveDbId, const NodeId &fileId, uint64_t size,
-                                             uint64_t totalChunks)
-    : UploadSessionStartJob(uploadType, driveDbId, SyncName(), size, "", totalChunks) {
+                                             uint64_t totalChunks) :
+    UploadSessionStartJob(uploadType, driveDbId, SyncName(), size, "", totalChunks) {
     _fileId = fileId;
 }
 
 UploadSessionStartJob::UploadSessionStartJob(UploadSessionType uploadType, const SyncName &filename, uint64_t size,
-                                             uint64_t totalChunks)
-    : UploadSessionStartJob(uploadType, 0, filename, size, "", totalChunks) {}
+                                             uint64_t totalChunks) :
+    UploadSessionStartJob(uploadType, 0, filename, size, "", totalChunks) {}
 
 std::string UploadSessionStartJob::getSpecificUrl() {
     std::string str = AbstractTokenNetworkJob::getSpecificUrl();
@@ -80,4 +77,4 @@ void UploadSessionStartJob::setData(bool &canceled) {
     canceled = false;
 }
 
-}  // namespace KDC
+} // namespace KDC

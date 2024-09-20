@@ -27,4 +27,4 @@ class CustomSwitch : public CustomCheckBox {
         explicit CustomSwitch(QWidget *parent = nullptr);
 };
 
-}  // namespace KDC
+} // namespace KDC

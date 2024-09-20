@@ -26,4 +26,4 @@ class RoundPushButton : public QPushButton {
         RoundPushButton();
 };
 
-#endif  // ROUNDPUSHBUTTON_H
+#endif // ROUNDPUSHBUTTON_H

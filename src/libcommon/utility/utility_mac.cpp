@@ -37,7 +37,7 @@ std::string getAppSupportDir();
 std::string getAppDir();
 bool setFolderCustomIcon(const QString &folderPath, const QString &icon);
 
-}  // namespace KDC
+} // namespace KDC
 
 namespace KDC {
 
@@ -60,4 +60,4 @@ static bool setFolderCustomIcon_private(const QString &folderPath, const QString
     return KDC::setFolderCustomIcon(folderPath, iconPath);
 }
 
-}  // namespace KDC
+} // namespace KDC

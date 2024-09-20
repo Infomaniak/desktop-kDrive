@@ -33,4 +33,4 @@ class GetTokenFromAppPasswordJob : public AbstractLoginJob {
         std::string _password;
 };
 
-}  // namespace KDC
+} // namespace KDC

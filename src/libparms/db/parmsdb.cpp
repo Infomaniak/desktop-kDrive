@@ -153,7 +153,8 @@
     "ORDER BY dbId;"
 
 #define SELECT_LAST_CONNECTED_USER_REQUEST_ID "select_last_connected_user"
-#define SELECT_LAST_CONNECTED_USER_REQUEST "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
+#define SELECT_LAST_CONNECTED_USER_REQUEST \
+    "SELECT dbId, userId, keychainKey, name, email, avatarUrl, avatar, toMigrate FROM user ORDER BY dbId DESC LIMIT 1;"
 //
 // account
 //

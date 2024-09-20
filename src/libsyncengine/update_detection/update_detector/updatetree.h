@@ -73,4 +73,4 @@ class UpdateTree : public SharedObject {
         friend class TestUpdateTreeWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

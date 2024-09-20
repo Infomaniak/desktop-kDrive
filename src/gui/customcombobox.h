@@ -30,4 +30,4 @@ class CustomComboBox : public QComboBox {
         void wheelEvent(QWheelEvent * /*e*/) override {}
 };
 
-}  // namespace KDC
+} // namespace KDC

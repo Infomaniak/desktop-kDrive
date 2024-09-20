@@ -34,9 +34,9 @@ class ProgressBarWidget : public QWidget {
         void reset();
 
     private:
-        qint64 _totalSize;  // Ko
+        qint64 _totalSize; // Ko
         QProgressBar *_progressBar;
         QLabel *_progressLabel;
 };
 
-}  // namespace KDC
+} // namespace KDC

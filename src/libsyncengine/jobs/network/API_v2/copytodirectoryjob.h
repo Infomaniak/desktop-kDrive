@@ -45,4 +45,4 @@ class CopyToDirectoryJob : public AbstractTokenNetworkJob {
         SyncTime _modtime = 0;
 };
 
-}  // namespace KDC
+} // namespace KDC

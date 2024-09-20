@@ -48,4 +48,4 @@ class UploadSessionStartJob : public AbstractUploadSessionJob {
         UploadSessionType _uploadType = UploadSessionType::Unknown;
 };
 
-}  // namespace KDC
+} // namespace KDC

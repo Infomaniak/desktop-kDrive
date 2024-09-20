@@ -32,10 +32,10 @@ namespace KDC {
 
 #define EVENT_SIZE (sizeof(struct inotify_event))
 #define BUF_LEN (1024 * (EVENT_SIZE + 16))
-#define SLEEP_TIME 100  // 100ms
+#define SLEEP_TIME 100 // 100ms
 
-FolderWatcher_linux::FolderWatcher_linux(LocalFileSystemObserverWorker *parent, const SyncPath &path)
-    : FolderWatcher(parent, path) {}
+FolderWatcher_linux::FolderWatcher_linux(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
+    FolderWatcher(parent, path) {}
 
 FolderWatcher_linux::~FolderWatcher_linux() {}
 
@@ -56,7 +56,7 @@ void FolderWatcher_linux::startWatching() {
     while (!_stop) {
         unsigned int avail;
         ioctl(_fileDescriptor, FIONREAD,
-              &avail);  // Since read() is blocking until something has changed, we use ioctl to check if there is changes
+              &avail); // Since read() is blocking until something has changed, we use ioctl to check if there is changes
         if (avail > 0) {
             char buffer[BUF_LEN];
             ssize_t len = read(_fileDescriptor, buffer, BUF_LEN);
@@ -70,7 +70,7 @@ void FolderWatcher_linux::startWatching() {
                 if (_stop) {
                     break;
                 }
-                struct inotify_event *event = (inotify_event *)(buffer + offset);
+                struct inotify_event *event = (inotify_event *) (buffer + offset);
 
                 OperationType opType = OperationType::None;
                 bool skip = false;
@@ -101,7 +101,7 @@ void FolderWatcher_linux::startWatching() {
                         const bool isDirSuccess = IoHelper::checkIfIsDirectory(path, isDirectory, ioError);
                         if (!isDirSuccess) {
                             LOGW_WARN(_logger, L"Error in IoHelper::checkIfIsDirectory: "
-                                                   << Utility::formatIoError(path, ioError).c_str());
+                                                       << Utility::formatIoError(path, ioError).c_str());
                             continue;
                         }
 
@@ -143,13 +143,13 @@ bool FolderWatcher_linux::findSubFolders(const SyncPath &dir, std::list<SyncPath
         try {
             std::error_code ec;
             const auto dirIt = std::filesystem::recursive_directory_iterator(
-                dir, std::filesystem::directory_options::skip_permission_denied, ec);
+                    dir, std::filesystem::directory_options::skip_permission_denied, ec);
             if (ec) {
                 LOG4CPLUS_WARN(_logger, L"Error in findSubFolders: " << Utility::formatStdError(ec).c_str());
                 return false;
             }
 
-            for (const auto &dirEntry : dirIt) {
+            for (const auto &dirEntry: dirIt) {
                 if (dirEntry.is_directory()) fullList.push_back(dirEntry.path());
             }
 
@@ -178,7 +178,7 @@ bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
 
     int wd = inotify_add_watch(_fileDescriptor, path.string().c_str(),
                                IN_CLOSE_WRITE | IN_ATTRIB | IN_MOVE | IN_CREATE | IN_DELETE | IN_MODIFY | IN_DELETE_SELF |
-                                   IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
+                                       IN_MOVE_SELF | IN_UNMOUNT | IN_ONLYDIR | IN_DONT_FOLLOW);
 
     if (wd > -1) {
         _watchToPath.insert({wd, path});
@@ -188,7 +188,7 @@ bool FolderWatcher_linux::inotifyRegisterPath(const SyncPath &path) {
         // unreliable.
         if (_isReliable && (errno == ENOMEM || errno == ENOSPC)) {
             _isReliable = false;
-            LOG4CPLUS_ERROR(_logger, "Out of memory or limit number of inotify watches reached!");  // TODO : notify the user?
+            LOG4CPLUS_ERROR(_logger, "Out of memory or limit number of inotify watches reached!"); // TODO : notify the user?
             return false;
         }
     }
@@ -213,7 +213,7 @@ bool FolderWatcher_linux::addFolderRecursive(const SyncPath &path) {
         return false;
     }
 
-    for (const auto &subDirPath : allSubFolders) {
+    for (const auto &subDirPath: allSubFolders) {
         std::error_code ec;
         if (std::filesystem::exists(subDirPath, ec) && _pathToWatch.find(subDirPath) == _pathToWatch.end()) {
             subdirs++;
@@ -281,4 +281,4 @@ void KDC::FolderWatcher_linux::stopWatching() {
     close(_fileDescriptor);
 }
 
-}  // namespace KDC
+} // namespace KDC

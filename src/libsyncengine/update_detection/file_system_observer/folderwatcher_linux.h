@@ -51,4 +51,4 @@ class FolderWatcher_linux : public FolderWatcher {
         std::map<std::string, int> _pathToWatch;
 };
 
-}  // namespace KDC
+} // namespace KDC

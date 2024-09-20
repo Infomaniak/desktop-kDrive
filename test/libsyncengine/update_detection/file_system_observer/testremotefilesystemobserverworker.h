@@ -49,4 +49,4 @@ class TestRemoteFileSystemObserverWorker : public CppUnit::TestFixture {
         NodeId _testFileId;
 };
 
-}  // namespace KDC
+} // namespace KDC

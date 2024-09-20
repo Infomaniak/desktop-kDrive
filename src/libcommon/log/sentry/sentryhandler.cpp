@@ -43,37 +43,36 @@ bool SentryHandler::_debugBeforeSendCallback = false;
 #define TAG_MASK 0x3
 
 typedef struct {
-    union {
-        void *_ptr;
-        double _double;
-    } payload;
-    long refcount;
-    uint8_t type;
+        union {
+                void *_ptr;
+                double _double;
+        } payload;
+        long refcount;
+        uint8_t type;
 } thing_t;
 
 typedef struct {
-    char *k;
-    sentry_value_t v;
+        char *k;
+        sentry_value_t v;
 } obj_pair_t;
 
 typedef struct {
-    obj_pair_t *pairs;
-    size_t len;
-    size_t allocated;
+        obj_pair_t *pairs;
+        size_t len;
+        size_t allocated;
 } obj_t;
 
 typedef struct {
-    sentry_value_t *items;
-    size_t len;
-    size_t allocated;
+        sentry_value_t *items;
+        size_t len;
+        size_t allocated;
 } list_t;
 
-static thing_t *valueAsThing(sentry_value_t value)
-{
+static thing_t *valueAsThing(sentry_value_t value) {
     if (value._bits & TAG_MASK) {
         return nullptr;
     }
-    return (thing_t *)(size_t)value._bits;
+    return (thing_t *) (size_t) value._bits;
 }
 
 static void readObject(const sentry_value_t event, std::stringstream &ss, int level = 0);
@@ -114,7 +113,7 @@ static void readList(const sentry_value_t event, std::stringstream &ss, int leve
         return;
     }
 
-    const list_t *l = (list_t *)valueAsThing(event)->payload._ptr;
+    const list_t *l = (list_t *) valueAsThing(event)->payload._ptr;
     const std::string indent(level, ' ');
     for (size_t i = 0; i < l->len; i++) {
         ss << indent.c_str() << "val=";
@@ -132,7 +131,7 @@ static void readObject(const sentry_value_t event, std::stringstream &ss, int le
         return;
     }
 
-    const obj_t *obj = (obj_t *)thing->payload._ptr;
+    const obj_t *obj = (obj_t *) thing->payload._ptr;
     const std::string indent(level, ' ');
     for (size_t i = 0; i < obj->len; i++) {
         char *key = obj->pairs[i].k;
@@ -146,8 +145,8 @@ static void readObject(const sentry_value_t event, std::stringstream &ss, int le
  */
 
 static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
-    (void)uctx;
-    (void)closure;
+    (void) uctx;
+    (void) closure;
 
     std::cerr << "Sentry detected a crash in the app " << SentryHandler::appType() << std::endl;
 
@@ -165,8 +164,8 @@ static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_
 }
 
 sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closure) {
-    (void)hint;
-    (void)closure;
+    (void) hint;
+    (void) closure;
 
     std::cout << "Sentry will send an event for the app " << SentryHandler::appType() << std::endl;
 
@@ -329,7 +328,7 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount = std::min(storedEvent.captureCount + 1, UINT_MAX-1);
+    storedEvent.captureCount = std::min(storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
@@ -432,6 +431,7 @@ SentryHandler::~SentryHandler() {
 }
 
 SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
-                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) 
-    : title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
+                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
+    title(title),
+    message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 } // namespace KDC

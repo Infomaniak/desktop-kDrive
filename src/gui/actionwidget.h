@@ -98,4 +98,4 @@ class ActionWidget : public ClickableWidget {
         void onActionIconSizeChanged();
 };
 
-}  // namespace KDC
+} // namespace KDC

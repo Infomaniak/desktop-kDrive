@@ -52,7 +52,7 @@ class UserInfo {
         friend QDataStream &operator<<(QDataStream &out, const QList<UserInfo> &list);
 
     private:
-        int _dbId =- 1;
+        int _dbId = -1;
         int _userId = -1;
         QString _name;
         QString _email;
@@ -61,4 +61,4 @@ class UserInfo {
         bool _credentialsAsked = false;
 };
 
-}  // namespace KDC
+} // namespace KDC

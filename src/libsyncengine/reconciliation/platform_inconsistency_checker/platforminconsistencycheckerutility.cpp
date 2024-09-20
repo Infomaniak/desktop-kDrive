@@ -46,8 +46,8 @@ namespace KDC {
 
 #ifdef WIN32
 static const std::unordered_set<std::string> reservedWinNames = {
-    "CON",  "PRN",  "AUX",  "NUL",  "CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5",
-    "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
+        "CON",  "PRN",  "AUX",  "NUL",  "CON",  "PRN",  "AUX",  "NUL",  "COM1", "COM2", "COM3", "COM4", "COM5",
+        "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"};
 #endif
 
 std::shared_ptr<PlatformInconsistencyCheckerUtility> PlatformInconsistencyCheckerUtility::_instance = nullptr;
@@ -94,7 +94,7 @@ ExitCode PlatformInconsistencyCheckerUtility::renameLocalFile(const SyncPath &ab
 }
 
 bool PlatformInconsistencyCheckerUtility::checkNameForbiddenChars(const SyncPath &name) {
-    for (auto c : forbiddenFilenameChars) {
+    for (auto c: forbiddenFilenameChars) {
         if (name.native().find(c) != std::string::npos) {
             return true;
         }
@@ -107,7 +107,7 @@ bool PlatformInconsistencyCheckerUtility::checkNameForbiddenChars(const SyncPath
     }
 
     // Check for forbidden ascii codes
-    for (wchar_t c : name.native()) {
+    for (wchar_t c: name.native()) {
         int asciiCode(c);
         if (asciiCode <= 31) {
             return true;
@@ -123,7 +123,7 @@ bool PlatformInconsistencyCheckerUtility::fixNameWithBackslash(const SyncName &n
     size_t pos = name.find('\\');
     while (pos != std::string::npos) {
         if (newName.empty()) {
-            newName = name;  // Copy filename to newName only if necessary
+            newName = name; // Copy filename to newName only if necessary
         }
 
         newName.replace(pos, 1, charToHex(newName[pos]));
@@ -164,7 +164,7 @@ bool PlatformInconsistencyCheckerUtility::checkReservedNames(const SyncName &nam
         return true;
     }
 
-    for (const auto &reserved : reservedWinNames) {
+    for (const auto &reserved: reservedWinNames) {
         if (Utility::startsWithInsensitive(name, Str2SyncName(reserved)) && name.size() == reserved.size()) {
             return true;
         }
@@ -182,7 +182,7 @@ bool PlatformInconsistencyCheckerUtility::checkPathLength(size_t pathSize, NodeT
         maxLength = _maxPathLengthFolder;
     }
 #else
-    (void)type;
+    (void) type;
 #endif
 
     return pathSize > maxLength;
@@ -231,4 +231,4 @@ SyncName PlatformInconsistencyCheckerUtility::generateSuffix(SuffixType suffixTy
     return suffix + ss.str() + Str("_") + Str2SyncName(CommonUtility::generateRandomStringAlphaNum(10));
 }
 
-}  // namespace KDC
+} // namespace KDC

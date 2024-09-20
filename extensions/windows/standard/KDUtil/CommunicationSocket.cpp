@@ -44,7 +44,7 @@ std::wstring getUserName() {
     }
 }
 
-}  // namespace
+} // namespace
 
 std::wstring CommunicationSocket::DefaultPipePath() {
     auto pipename = std::wstring(L"\\\\.\\pipe\\");

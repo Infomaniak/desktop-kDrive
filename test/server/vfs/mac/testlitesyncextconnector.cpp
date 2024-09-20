@@ -42,4 +42,4 @@ void TestLiteSyncExtConnector::testGetVfsStatus() {
     //                                                      progress, logger));
 }
 
-}  // namespace KDC
+} // namespace KDC

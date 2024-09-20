@@ -20,8 +20,8 @@
 
 namespace KDC {
 
-NodeInfo::NodeInfo(QString nodeId, QString name, qint64 size, QString parentNodeId, SyncTime modtime, QString path /*= ""*/)
-    : _nodeId(nodeId), _name(name), _size(size), _parentNodeId(parentNodeId), _modtime(modtime), _path(path) {}
+NodeInfo::NodeInfo(QString nodeId, QString name, qint64 size, QString parentNodeId, SyncTime modtime, QString path /*= ""*/) :
+    _nodeId(nodeId), _name(name), _size(size), _parentNodeId(parentNodeId), _modtime(modtime), _path(path) {}
 
 NodeInfo::NodeInfo() : _nodeId(QString()), _name(QString()), _size(0), _parentNodeId(QString()), _modtime(0) {}
 
@@ -56,4 +56,4 @@ QDataStream &operator>>(QDataStream &in, QList<NodeInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

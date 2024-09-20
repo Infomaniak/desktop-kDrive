@@ -122,4 +122,4 @@ class SynchronizedItemWidget : public QWidget {
         void onWaitingTimerTimeout();
 };
 
-}  // namespace KDC
+} // namespace KDC

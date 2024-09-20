@@ -48,4 +48,4 @@ static void setupFavLink_private(const QString &folder) {
     CFRelease(urlRef);
 }
 
-}  // namespace KDC
+} // namespace KDC

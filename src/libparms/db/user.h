@@ -64,4 +64,4 @@ class PARMS_EXPORT User {
         bool _toMigrate;
 };
 
-}  // namespace KDC
+} // namespace KDC

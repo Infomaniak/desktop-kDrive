@@ -151,4 +151,4 @@ void TestVfsMac::testStatus() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

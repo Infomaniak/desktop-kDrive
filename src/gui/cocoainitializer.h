@@ -31,4 +31,4 @@ class CocoaInitializer {
         class Private;
 };
 
-}  // namespace Mac
+} // namespace Mac

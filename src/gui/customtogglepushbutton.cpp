@@ -21,8 +21,8 @@
 
 namespace KDC {
 
-CustomTogglePushButton::CustomTogglePushButton(QWidget *parent)
-    : QPushButton(parent), _iconPath(QString()), _iconColor(QColor()), _iconColorChecked(QColor()) {
+CustomTogglePushButton::CustomTogglePushButton(QWidget *parent) :
+    QPushButton(parent), _iconPath(QString()), _iconColor(QColor()), _iconColorChecked(QColor()) {
     setFlat(true);
     setCheckable(true);
 
@@ -60,4 +60,4 @@ void CustomTogglePushButton::onToggle(bool checked) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

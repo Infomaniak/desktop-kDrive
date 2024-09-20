@@ -63,4 +63,4 @@ class LocalFileSystemObserverWorker : public FileSystemObserverWorker {
         friend class TestLocalFileSystemObserverWorker;
 };
 
-}  // namespace KDC
+} // namespace KDC

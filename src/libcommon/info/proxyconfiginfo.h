@@ -56,4 +56,4 @@ class ProxyConfigInfo {
         QString _pwd;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -34,4 +34,4 @@ class GetTokenJob : public AbstractLoginJob {
         std::string _codeVerifier;
 };
 
-}  // namespace KDC
+} // namespace KDC

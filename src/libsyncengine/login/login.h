@@ -73,4 +73,4 @@ class Login {
                                      std::string &errorDescr);
 };
 
-}  // namespace KDC
+} // namespace KDC

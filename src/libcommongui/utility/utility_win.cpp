@@ -43,9 +43,9 @@ static void setupFavLink_private(const QString &folder) {
 
         // Set the folder as system and Desktop.ini as hidden+system for explorer to pick it.
         // https://msdn.microsoft.com/en-us/library/windows/desktop/cc144102
-        DWORD folderAttrs = GetFileAttributesW((wchar_t *)folder.utf16());
-        SetFileAttributesW((wchar_t *)folder.utf16(), folderAttrs | FILE_ATTRIBUTE_SYSTEM);
-        SetFileAttributesW((wchar_t *)desktopIni.fileName().utf16(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
+        DWORD folderAttrs = GetFileAttributesW((wchar_t *) folder.utf16());
+        SetFileAttributesW((wchar_t *) folder.utf16(), folderAttrs | FILE_ATTRIBUTE_SYSTEM);
+        SetFileAttributesW((wchar_t *) desktopIni.fileName().utf16(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
     }
 
     // Windows Explorer: Place under "Favorites" (Links)
@@ -63,4 +63,4 @@ static void setupFavLink_private(const QString &folder) {
     QFile::link(folder, linkName);
 }
 
-}  // namespace KDC
+} // namespace KDC

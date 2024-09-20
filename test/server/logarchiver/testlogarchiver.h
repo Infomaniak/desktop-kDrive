@@ -51,4 +51,4 @@ class TestLogArchiver : public CppUnit::TestFixture {
         bool parmsDbFileExist();
 };
 
-}  // namespace KDC
+} // namespace KDC

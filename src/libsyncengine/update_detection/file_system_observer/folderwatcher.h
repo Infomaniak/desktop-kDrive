@@ -58,4 +58,4 @@ class FolderWatcher {
         std::unique_ptr<std::thread> _thread = nullptr;
 };
 
-}  // namespace KDC
+} // namespace KDC

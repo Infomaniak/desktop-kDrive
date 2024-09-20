@@ -50,4 +50,4 @@ class TestUpdater : public CppUnit::TestFixture {
 #endif
 };
 
-}  // namespace KDC
+} // namespace KDC
