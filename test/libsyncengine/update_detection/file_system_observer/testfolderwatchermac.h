@@ -18,28 +18,16 @@
 
 #pragma once
 
-#include "folderwatcher.h"
-
-#include <CoreServices/CoreServices.h>
+#include "testincludes.h"
 
 namespace KDC {
 
-class LocalFileSystemObserverWorker;
+class TestFolderWatcher_mac final : public CppUnit::TestFixture {
+        CPPUNIT_TEST_SUITE(TestFolderWatcher_mac);
+        CPPUNIT_TEST(testGetOpType);
+        CPPUNIT_TEST_SUITE_END();
 
-class FolderWatcher_mac : public FolderWatcher {
-    public:
-        FolderWatcher_mac(LocalFileSystemObserverWorker *parent, const SyncPath &path);
-        ~FolderWatcher_mac();
-
-        void startWatching() override;
-        void stopWatching() override;
-
-        void doNotifyParent(const std::list<std::pair<SyncPath, OperationType>> &changes);
-
-        static OperationType getOpType(FSEventStreamEventFlags eventFlags);
-
-    private:
-        FSEventStreamRef _stream;
+        void testGetOpType();
 };
 
 } // namespace KDC

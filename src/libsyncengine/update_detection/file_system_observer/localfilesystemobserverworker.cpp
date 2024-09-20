@@ -31,12 +31,12 @@
 
 namespace KDC {
 
-static const int defaultDiscoveryInterval = 60000;  // 60sec
-static const int waitForUpdateDelay = 1000;         // 1sec
+static const int defaultDiscoveryInterval = 60000; // 60sec
+static const int waitForUpdateDelay = 1000; // 1sec
 
 LocalFileSystemObserverWorker::LocalFileSystemObserverWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name,
-                                                             const std::string &shortName)
-    : FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
+                                                             const std::string &shortName) :
+    FileSystemObserverWorker(syncPal, name, shortName, ReplicaSide::Local), _rootFolder(syncPal->localPath()) {}
 
 LocalFileSystemObserverWorker::~LocalFileSystemObserverWorker() {
     LOG_SYNCPAL_DEBUG(_logger, "~LocalFileSystemObserverWorker");
@@ -72,7 +72,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
         return;
     }
 
-    for (const auto &changedItem : changes) {
+    for (const auto &changedItem: changes) {
         if (stopAsked()) {
             _pendingFileEvents.clear();
             break;
@@ -97,8 +97,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     !existsWithSameId) {
                     if (_snapshot->removeItem(prevNodeId)) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
-                                                        << Utility::formatSyncPath(absolutePath).c_str() << L" ("
-                                                        << Utility::s2ws(prevNodeId).c_str() << L")");
+                                                            << Utility::formatSyncPath(absolutePath).c_str() << L" ("
+                                                            << Utility::s2ws(prevNodeId).c_str() << L")");
                     }
                     continue;
                 }
@@ -148,7 +148,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                                                                                        isWarning, toExclude, ioError);
             if (!success) {
                 LOGW_SYNCPAL_WARN(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
-                                               << Utility::formatIoError(absolutePath, ioError).c_str());
+                                                   << Utility::formatIoError(absolutePath, ioError).c_str());
                 invalidateSnapshot();
                 return;
             }
@@ -165,14 +165,14 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                     // Remove it from snapshot
                     _snapshot->removeItem(itemId);
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from sync because it's hidden: "
-                                                    << Utility::formatSyncPath(absolutePath).c_str());
+                                                        << Utility::formatSyncPath(absolutePath).c_str());
                 } else {
-                    LOGW_SYNCPAL_DEBUG(
-                        _logger, L"Item not processed because it's excluded: " << Utility::formatSyncPath(absolutePath).c_str());
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Item not processed because it's excluded: "
+                                                        << Utility::formatSyncPath(absolutePath).c_str());
                 }
 
                 if (!_syncPal->vfsExclude(
-                        absolutePath)) {  // TODO : This class should never set any attribute or change anything on a file
+                            absolutePath)) { // TODO : This class should never set any attribute or change anything on a file
                     LOGW_SYNCPAL_WARN(_logger, L"Error in vfsExclude: " << Utility::formatSyncPath(absolutePath).c_str());
                 }
 
@@ -236,8 +236,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             const bool success = IoHelper::checkIfFileChanged(absolutePath, _snapshot->size(nodeId),
                                                               _snapshot->lastModified(nodeId), changed, ioError);
             if (!success) {
-                LOGW_SYNCPAL_WARN(
-                    _logger, L"Error in IoHelper::checkIfFileChanged: " << Utility::formatIoError(absolutePath, ioError).c_str());
+                LOGW_SYNCPAL_WARN(_logger, L"Error in IoHelper::checkIfFileChanged: "
+                                                   << Utility::formatIoError(absolutePath, ioError).c_str());
             }
             if (ioError == IoError::AccessDenied) {
                 LOGW_SYNCPAL_DEBUG(_logger,
@@ -272,7 +272,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                         // TODO : FileSystemObserver should not change file status, it should only monitor file system
                         if (!_syncPal->vfsFileStatusChanged(absolutePath, SyncFileStatus::Syncing)) {
                             LOGW_SYNCPAL_WARN(_logger, L"Error in SyncPal::vfsFileStatusChanged: "
-                                                           << Utility::formatSyncPath(absolutePath).c_str());
+                                                               << Utility::formatSyncPath(absolutePath).c_str());
                             invalidateSnapshot();
                             return;
                         }
@@ -282,8 +282,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 #else
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Ignoring spurious edit notification on file: "
-                                                    << Utility::formatSyncPath(absolutePath).c_str() << L" ("
-                                                    << Utility::s2ws(nodeId).c_str() << L")");
+                                                        << Utility::formatSyncPath(absolutePath).c_str() << L" ("
+                                                        << Utility::s2ws(nodeId).c_str() << L")");
                 }
 #endif
 
@@ -291,8 +291,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
             }
         } else if (opTypeFromOS == OperationType::Rights) {
             if (!writePermission) {
-                LOGW_SYNCPAL_DEBUG(
-                    _logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str() << L" doesn't have write permissions!");
+                LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str()
+                                                      << L" doesn't have write permissions!");
                 sendAccessDeniedError(absolutePath);
             }
         }
@@ -304,8 +304,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 NodeId itemId = _snapshot->itemId(relativePath);
                 if (_snapshot->removeItem(itemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
-                                                    << Utility::formatSyncPath(absolutePath).c_str() << L" ("
-                                                    << Utility::s2ws(itemId).c_str() << L")");
+                                                        << Utility::formatSyncPath(absolutePath).c_str() << L" ("
+                                                        << Utility::s2ws(itemId).c_str() << L")");
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to remove item: " << Utility::formatSyncPath(absolutePath).c_str()
                                                                           << L" (" << Utility::s2ws(itemId).c_str() << L")");
@@ -322,8 +322,8 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
                 // below anyway
                 if (_snapshot->removeItem(previousItemId)) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item removed from local snapshot: "
-                                                    << Utility::formatSyncPath(absolutePath).c_str() << L" ("
-                                                    << Utility::s2ws(previousItemId).c_str() << L")");
+                                                        << Utility::formatSyncPath(absolutePath).c_str() << L" ("
+                                                        << Utility::s2ws(previousItemId).c_str() << L")");
                 } else {
                     LOGW_SYNCPAL_WARN(_logger, L"Failed to delete item: " << Utility::formatSyncPath(absolutePath).c_str()
                                                                           << L" (" << Utility::s2ws(previousItemId).c_str()
@@ -335,7 +335,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
             // This can be either Create, Move or Edit operation
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
-                              nodeType, fileStat.size, isLink);
+                              nodeType, fileStat.size, isLink, true, true);
 
             if (!_snapshot->updateItem(item)) {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
@@ -397,7 +397,7 @@ void LocalFileSystemObserverWorker::changesDetected(const std::list<std::pair<st
 
         // Update snapshot
         if (_snapshot->updateItem(SnapshotItem(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime,
-                                               fileStat.modtime, nodeType, fileStat.size, isLink))) {
+                                               fileStat.modtime, nodeType, fileStat.size, isLink, true, true))) {
             if (ParametersCache::isExtendedLogEnabled()) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str() << L" ("
                                                       << Utility::s2ws(nodeId).c_str() << L") updated in local snapshot at "
@@ -489,8 +489,8 @@ ExitCode LocalFileSystemObserverWorker::generateInitialSnapshot() {
     std::chrono::duration<double> elapsed_seconds = std::chrono::steady_clock::now() - start;
     if (res == ExitCode::Ok && !stopAsked()) {
         _snapshot->setValid(true);
-        LOG_SYNCPAL_INFO(
-            _logger, "Local snapshot generated in: " << elapsed_seconds.count() << "s for " << _snapshot->nbItems() << " items");
+        LOG_SYNCPAL_INFO(_logger, "Local snapshot generated in: " << elapsed_seconds.count() << "s for " << _snapshot->nbItems()
+                                                                  << " items");
     } else if (stopAsked()) {
         LOG_SYNCPAL_INFO(_logger, "Local snapshot generation stopped after: " << elapsed_seconds.count() << "s");
     } else {
@@ -652,8 +652,8 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     }
 
     if (itemType.ioError == IoError::AccessDenied) {
-        LOGW_SYNCPAL_WARN(
-            _logger, L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str() << L" misses read permission");
+        LOGW_SYNCPAL_WARN(_logger, L"Sync localpath: " << Utility::formatSyncPath(absoluteParentDirPath).c_str()
+                                                       << L" misses read permission");
         setExitCause(ExitCause::SyncDirReadError);
         return ExitCode::SystemError;
     }
@@ -666,7 +666,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     try {
         std::error_code ec;
         auto dirIt = std::filesystem::recursive_directory_iterator(
-            absoluteParentDirPath, std::filesystem::directory_options::skip_permission_denied, ec);
+                absoluteParentDirPath, std::filesystem::directory_options::skip_permission_denied, ec);
         if (ec) {
             LOGW_SYNCPAL_DEBUG(_logger, L"Error in exploreDir: " << Utility::formatStdError(ec).c_str());
             setExitCause(ExitCause::FileAccessError);
@@ -691,10 +691,10 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             // skip_permission_denied doesn't work on Windows if "Full control = Deny"
             try {
                 bool dummy = dirIt->exists();
-                (void)(dummy);
+                (void) (dummy);
             } catch (std::filesystem::filesystem_error &) {
-                LOGW_SYNCPAL_INFO(
-                    _logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str() << L" rejected because access is denied");
+                LOGW_SYNCPAL_INFO(_logger, L"Item: " << Utility::formatSyncPath(absolutePath).c_str()
+                                                     << L" rejected because access is denied");
                 toExclude = true;
                 denyFullControl = true;
             }
@@ -707,12 +707,12 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 IoError ioError = IoError::Success;
                 if (!Utility::checkIfDirEntryIsManaged(dirIt, isManaged, isLink, ioError)) {
                     LOGW_SYNCPAL_WARN(_logger, L"Error in Utility::checkIfDirEntryIsManaged: "
-                                                   << Utility::formatSyncPath(absolutePath).c_str());
+                                                       << Utility::formatSyncPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 } else if (ioError == IoError::NoSuchFileOrDirectory) {
-                    LOGW_SYNCPAL_DEBUG(
-                        _logger, L"Directory entry does not exist anymore: " << Utility::formatSyncPath(absolutePath).c_str());
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore: "
+                                                        << Utility::formatSyncPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 } else if (ioError == IoError::AccessDenied) {
@@ -738,7 +738,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                                                            isWarning, isExcluded, ioError);
                 if (!success) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Error in ExclusionTemplateCache::isExcluded: "
-                                                    << Utility::formatIoError(absolutePath, ioError).c_str());
+                                                        << Utility::formatIoError(absolutePath, ioError).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 }
@@ -754,15 +754,15 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             if (!toExclude) {
                 IoError ioError = IoError::Success;
                 if (!IoHelper::getFileStat(absolutePath, &fileStat, ioError)) {
-                    LOGW_SYNCPAL_DEBUG(
-                        _logger, L"Error in IoHelper::getFileStat: " << Utility::formatIoError(absolutePath, ioError).c_str());
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Error in IoHelper::getFileStat: "
+                                                        << Utility::formatIoError(absolutePath, ioError).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 }
 
                 if (ioError == IoError::NoSuchFileOrDirectory) {
-                    LOGW_SYNCPAL_DEBUG(
-                        _logger, L"Directory entry does not exist anymore: " << Utility::formatSyncPath(absolutePath).c_str());
+                    LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore: "
+                                                        << Utility::formatSyncPath(absolutePath).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 } else if (ioError == IoError::AccessDenied) {
@@ -770,7 +770,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                                                          << L" rejected because access is denied");
                     sendAccessDeniedError(absolutePath);
                     toExclude = true;
-                } else {  // Check access permissions
+                } else { // Check access permissions
                     nodeId = std::to_string(fileStat.inode);
                     readPermission = false;
                     writePermission = false;
@@ -784,7 +784,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
                     if (ioError == IoError::NoSuchFileOrDirectory) {
                         LOGW_SYNCPAL_DEBUG(_logger, L"Directory entry does not exist anymore: "
-                                                        << Utility::formatSyncPath(absolutePath).c_str());
+                                                            << Utility::formatSyncPath(absolutePath).c_str());
                         dirIt.disable_recursion_pending();
                         continue;
                     }
@@ -801,7 +801,7 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
             if (toExclude) {
                 if (!denyFullControl) {
                     if (!_syncPal->vfsExclude(
-                            absolutePath)) {  // TODO : This class should never set any attribute or change anything on a file
+                                absolutePath)) { // TODO : This class should never set any attribute or change anything on a file
                         LOGW_SYNCPAL_WARN(_logger, L"Error in vfsExclude : " << Utility::formatSyncPath(absolutePath).c_str());
                     }
                 }
@@ -819,19 +819,19 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
                 IoError ioError = IoError::Success;
                 if (!IoHelper::getFileStat(absolutePath.parent_path(), &parentFileStat, ioError)) {
                     LOGW_WARN(_logger, L"Error in IoHelper::getFileStat: "
-                                           << Utility::formatIoError(absolutePath.parent_path(), ioError).c_str());
+                                               << Utility::formatIoError(absolutePath.parent_path(), ioError).c_str());
                     setExitCause(ExitCause::FileAccessError);
                     return ExitCode::SystemError;
                 }
 
                 if (ioError == IoError::NoSuchFileOrDirectory) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Directory doesn't exist anymore: "
-                                                    << Utility::formatSyncPath(absolutePath.parent_path()).c_str());
+                                                        << Utility::formatSyncPath(absolutePath.parent_path()).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 } else if (ioError == IoError::AccessDenied) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Directory misses search permission: "
-                                                    << Utility::formatSyncPath(absolutePath.parent_path()).c_str());
+                                                        << Utility::formatSyncPath(absolutePath.parent_path()).c_str());
                     dirIt.disable_recursion_pending();
                     continue;
                 }
@@ -841,21 +841,22 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
 
             if (!IoHelper::getItemType(absolutePath, itemType)) {
                 LOGW_SYNCPAL_DEBUG(_logger, L"Error in IoHelper::getItemType: "
-                                                << Utility::formatIoError(absolutePath, itemType.ioError).c_str());
+                                                    << Utility::formatIoError(absolutePath, itemType.ioError).c_str());
                 dirIt.disable_recursion_pending();
                 continue;
             }
 
             SnapshotItem item(nodeId, parentNodeId, absolutePath.filename().native(), fileStat.creationTime, fileStat.modtime,
-                              itemType.nodeType, fileStat.size, isLink);
+                              itemType.nodeType, fileStat.size, isLink, true, true);
             if (_snapshot->updateItem(item)) {
                 if (ParametersCache::isExtendedLogEnabled()) {
                     LOGW_SYNCPAL_DEBUG(_logger, L"Item inserted in local snapshot: "
-                                                    << Utility::formatSyncPath(absolutePath.filename()).c_str() << L" inode:"
-                                                    << Utility::s2ws(nodeId.c_str()) << L" parent inode:" << Utility::s2ws(parentNodeId).c_str()
-                                                    << L" createdAt:" << fileStat.creationTime << L" modtime:" << fileStat.modtime
-                                                    << L" isDir:" << (itemType.nodeType == NodeType::Directory) << L" size:"
-                                                    << fileStat.size);
+                                                        << Utility::formatSyncPath(absolutePath.filename()).c_str() << L" inode:"
+                                                        << Utility::s2ws(nodeId.c_str()) << L" parent inode:"
+                                                        << Utility::s2ws(parentNodeId).c_str() << L" createdAt:"
+                                                        << fileStat.creationTime << L" modtime:" << fileStat.modtime << L" isDir:"
+                                                        << (itemType.nodeType == NodeType::Directory) << L" size:"
+                                                        << fileStat.size);
                 }
             } else {
                 LOGW_SYNCPAL_WARN(_logger, L"Failed to insert item: " << Utility::formatSyncPath(absolutePath.filename()).c_str()
@@ -875,4 +876,4 @@ ExitCode LocalFileSystemObserverWorker::exploreDir(const SyncPath &absoluteParen
     return ExitCode::Ok;
 }
 
-}  // namespace KDC
+} // namespace KDC
