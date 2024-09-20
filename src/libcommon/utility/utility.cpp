@@ -713,6 +713,7 @@ void CommonUtility::extractIntFromStrVersion(const std::string &version, std::ve
 }
 
 SyncPath CommonUtility::signalFilePath(AppType appType, SignalCategory signalCategory) {
+    using namespace KDC::event_dump_files;
     auto sigFilePath =
             std::filesystem::temp_directory_path() /
             (appType == AppType::Server ? (signalCategory == SignalCategory::Crash ? serverCrashFileName : serverKillFileName)
