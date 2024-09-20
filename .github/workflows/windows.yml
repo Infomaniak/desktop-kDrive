@@ -70,7 +70,7 @@ jobs:
           & "C:\Program Files\BullseyeCoverage\bin\covxml.exe" "-f" "$env:COVFILE" "-o" "coverage.xml"
 
       - name: Install sonar-scanner
-        uses: sonarsource/sonarqube-github-c-cpp@v2
+        uses: SonarSource/sonarcloud-github-c-cpp@v3
         env:
           SONAR_HOST_URL: https://sonarcloud.io
 
