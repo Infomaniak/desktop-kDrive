@@ -128,12 +128,13 @@ void TestSentryHandler::testWriteEvent() {
     // Test send event
     {
         auto eventFilePath = std::filesystem::temp_directory_path() / clientSendEventFileName;
-        std::filesystem::remove(eventFilePath);
+        std::error_code ec;
+        std::filesystem::remove(eventFilePath, ec);
 
         std::string eventInStr("send event line 1\nsend event line 2\nsend event line 3");
         SentryHandler::writeEvent(eventInStr, false);
 
-        CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath));
+        CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath, ec));
 
         std::ifstream is(eventFilePath);
         std::string eventOutStr((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
@@ -141,18 +142,19 @@ void TestSentryHandler::testWriteEvent() {
 
         CPPUNIT_ASSERT_EQUAL(eventInStr, eventOutStr);
 
-        std::filesystem::remove(eventFilePath);
+        std::filesystem::remove(eventFilePath, ec);
     }
 
     // Test crash event
     {
         auto eventFilePath = std::filesystem::temp_directory_path() / clientCrashEventFileName;
+        std::error_code ec;
         std::filesystem::remove(eventFilePath);
 
         std::string eventInStr = "crash event line 1\ncrash event line 2\ncrash event line 3";
         SentryHandler::writeEvent(eventInStr, true);
 
-        CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath));
+        CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath, ec));
 
         std::ifstream is(eventFilePath);
         std::string eventOutStr((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
