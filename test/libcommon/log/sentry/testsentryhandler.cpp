@@ -121,4 +121,44 @@ void TestSentryHandler::testMultipleSendEventForDifferentEvent() {
     mockSentryHandler.captureMessage(SentryLevel::Info, "Test", "Test message5"); // Should be sent
     CPPUNIT_ASSERT_EQUAL(12, mockSentryHandler.sentryUploadedEventCount());
 }
+
+void TestSentryHandler::testWriteEvent() {
+    // Test send event
+    {
+        auto eventFilePath = std::filesystem::temp_directory_path() / clientSendEventFileName;
+        std::filesystem::remove(eventFilePath);
+
+        std::string eventInStr("send event line 1\nsend event line 2\nsend event line 3");
+        SentryHandler::writeEvent(eventInStr, false);
+
+        CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath));
+
+        std::ifstream is(eventFilePath);
+        std::string eventOutStr((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+        eventOutStr.pop_back(); // Remove last LF
+
+        CPPUNIT_ASSERT_EQUAL(eventInStr, eventOutStr);
+
+        std::filesystem::remove(eventFilePath);
+    }
+
+    // Test crash event
+    {
+        auto eventFilePath = std::filesystem::temp_directory_path() / clientCrashEventFileName;
+        std::filesystem::remove(eventFilePath);
+
+        std::string eventInStr = "crash event line 1\ncrash event line 2\ncrash event line 3";
+        SentryHandler::writeEvent(eventInStr, true);
+
+        CPPUNIT_ASSERT(std::filesystem::exists(eventFilePath));
+
+        std::ifstream is(eventFilePath);
+        std::string eventOutStr((std::istreambuf_iterator<char>(is)), (std::istreambuf_iterator<char>()));
+        eventOutStr.pop_back(); // Remove last LF
+
+        CPPUNIT_ASSERT_EQUAL(eventInStr, eventOutStr);
+
+        std::filesystem::remove(eventFilePath);
+    }
+}
 } // namespace KDC
