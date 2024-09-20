@@ -42,7 +42,7 @@ using namespace CppUnit;
 
 namespace KDC {
 
-const uint64_t nbFileInTestDir = 5;  // Test directory contains 5 files
+const uint64_t nbFileInTestDir = 5; // Test directory contains 5 files
 
 void TestLocalFileSystemObserverWorker::setUp() {
     _logger = Log::instance()->getLogger();
@@ -69,7 +69,7 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     // Create parmsDb
     bool alreadyExists = false;
-    SyncPath parmsDbPath = Db::makeDbName(alreadyExists, true);
+    const SyncPath parmsDbPath = Db::makeDbName(alreadyExists, true);
 
     ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
     ParametersCache::instance()->parameters().setExtendedLog(true);
@@ -77,8 +77,8 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
     bool constraintError = false;
     ParmsDb::instance()->insertExclusionTemplate(
-        ExclusionTemplate(".DS_Store", true),
-        constraintError);  // TODO : to be removed once we have a default list of file excluded implemented
+            ExclusionTemplate(".DS_Store", true),
+            constraintError); // TODO : to be removed once we have a default list of file excluded implemented
     const SyncPath syncDbPath = Db::makeDbName(1, 1, 1, 1, alreadyExists, true);
 
     // Create SyncPal
@@ -88,15 +88,15 @@ void TestLocalFileSystemObserverWorker::setUp() {
 
 #if defined(_WIN32)
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-        new LocalFileSystemObserverWorker_win(_syncPal, "Local File System Observer", "LFSO"));
+            new LocalFileSystemObserverWorker_win(_syncPal, "Local File System Observer", "LFSO"));
 #else
     _syncPal->_localFSObserverWorker = std::shared_ptr<FileSystemObserverWorker>(
-        new LocalFileSystemObserverWorker_unix(_syncPal, "Local File System Observer", "LFSO"));
+            new LocalFileSystemObserverWorker_unix(_syncPal, "Local File System Observer", "LFSO"));
 #endif
 
     _syncPal->_localFSObserverWorker->start();
 
-    Utility::msleep(1000);  // Wait 1sec
+    Utility::msleep(1000); // Wait 1sec
 }
 
 void TestLocalFileSystemObserverWorker::tearDown() {
@@ -113,15 +113,15 @@ void TestLocalFileSystemObserverWorker::tearDown() {
     }
 }
 
-void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
+void TestLocalFileSystemObserverWorker::testLFSOWithInitialSnapshot() {
     std::unordered_set<NodeId> ids;
     _syncPal->snapshot(ReplicaSide::Local)->ids(ids);
 
     uint64_t fileCounter = 0;
-    for (const auto &id : ids) {
+    for (const auto &id: ids) {
         const auto name = _syncPal->snapshot(ReplicaSide::Local)->name(id);
         if (name == Str(".DS_Store") || name == Str(".ds_store")) {
-            continue;  // Ignore ".DS_Store"
+            continue; // Ignore ".DS_Store"
         }
 
         const NodeId parentId = _syncPal->snapshot(ReplicaSide::Local)->parentId(id);
@@ -134,7 +134,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithInitialSnapshot() {
     CPPUNIT_ASSERT_EQUAL(nbFileInTestDir, fileCounter);
 }
 
-void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
+void TestLocalFileSystemObserverWorker::testLFSOWithFiles() {
     NodeId itemId;
     const SyncName filename = Str("test_file.txt");
     SyncPath testAbsolutePath = _rootFolderPath / filename;
@@ -143,7 +143,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         LOGW_DEBUG(_logger, L"***** test create file *****");
         testhelpers::generateOrEditTestFile(testAbsolutePath);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         FileStat fileStat;
         bool exists = false;
@@ -161,7 +161,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         const SyncTime prevModTime = _syncPal->snapshot(ReplicaSide::Local)->lastModified(itemId);
         testhelpers::generateOrEditTestFile(testAbsolutePath);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->lastModified(itemId) > prevModTime);
     }
@@ -175,7 +175,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         IoError ioError = IoError::Unknown;
         IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         const NodeId parentId = _syncPal->snapshot(ReplicaSide::Local)->parentId(itemId);
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(parentId) == _subDirPath.filename());
@@ -191,7 +191,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         IoError ioError = IoError::Unknown;
         IoHelper::renameItem(source, destinationPath, ioError);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(itemId) == Str("test_file_renamed.txt"));
         testAbsolutePath = destinationPath;
@@ -203,7 +203,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
         IoError ioError = IoError::Unknown;
         IoHelper::deleteItem(testAbsolutePath, ioError);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
     }
@@ -211,7 +211,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithFiles() {
     LOGW_DEBUG(_logger, L"Tests for files successful!");
 }
 
-void TestLocalFileSystemObserverWorker::testFolderWatcherWithDuplicateFileNames() {
+void TestLocalFileSystemObserverWorker::testLFSOWithDuplicateFileNames() {
     // Create two files with the same name, up to encoding (NFC vs NFC).
     // On Windows and Linux systems, we expect to find two distinct items in the local snapshot.
     // On MacOSX, a single item is expected as the system creates a single file (overwrite).
@@ -223,7 +223,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDuplicateFileNames(
         LOGW_DEBUG(_logger, L"***** test create file with NFD-encoded name *****");
         generateOrEditTestFile(_rootFolderPath / makeNfdSyncName());
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         FileStat fileStat;
         bool exists = false;
@@ -238,9 +238,9 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDuplicateFileNames(
         SyncPath testSyncPath;
 #ifdef __APPLE__
         const bool foundNfcItem =
-            _syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath) && testSyncPath == makeNfcSyncName();
+                _syncPal->snapshot(ReplicaSide::Local)->path(nfcNamedItemId, testSyncPath) && testSyncPath == makeNfcSyncName();
         const bool foundNfdItem =
-            _syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath) && testSyncPath == makeNfdSyncName();
+                _syncPal->snapshot(ReplicaSide::Local)->path(nfdNamedItemId, testSyncPath) && testSyncPath == makeNfdSyncName();
 
         CPPUNIT_ASSERT(foundNfcItem || foundNfdItem);
 #else
@@ -253,7 +253,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDuplicateFileNames(
 }
 
 
-void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
+void TestLocalFileSystemObserverWorker::testLFSOWithDirs() {
     NodeId itemId;
     SyncName dirname = Str("test_dir");
     SyncPath testAbsolutePath = _rootFolderPath / dirname;
@@ -262,7 +262,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         LOGW_DEBUG(_logger, L"***** test create dir *****");
         testhelpers::generateOrEditTestFile(testAbsolutePath);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         FileStat fileStat;
         bool exists = false;
@@ -282,7 +282,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         IoError ioError = IoError::Unknown;
         IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         SyncPath path;
         _syncPal->snapshot(ReplicaSide::Local)->path(itemId, path);
@@ -298,7 +298,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         IoError ioError = IoError::Unknown;
         IoHelper::renameItem(sourcePath, destinationPath, ioError);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(itemId) == destinationPath.filename());
         testAbsolutePath = destinationPath;
@@ -316,7 +316,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
         SyncPath destinationPath = _rootFolderPath / dirName;
         IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         FileStat fileStat;
         bool exists = false;
@@ -333,7 +333,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithDirs() {
 }
 
 
-void TestLocalFileSystemObserverWorker::testFolderWatcherDeleteDir() {
+void TestLocalFileSystemObserverWorker::testLFSODeleteDir() {
     NodeId itemId;
     {
         /// Delete dir and all its content
@@ -341,7 +341,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherDeleteDir() {
         IoError ioError = IoError::Unknown;
         IoHelper::deleteItem(_subDirPath, ioError);
 
-        Utility::msleep(1000);  // Wait 1sec
+        Utility::msleep(1000); // Wait 1sec
 
         CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(itemId));
         CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(_testFileId));
@@ -350,7 +350,7 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherDeleteDir() {
     LOGW_DEBUG(_logger, L"***** Tests for copy and deletion of directories succesfully finished! *****");
 }
 
-void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases1() {
+void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases1() {
     // Test 4.3.3.2, p.62 - a) delete(“x”) + create(“x”) + edit(“x”,<newcontent>) + move(“x”,“y”)
     LOGW_DEBUG(_logger, L"***** delete(x) + create(x) + edit(x,<newcontent>) + move(x,y) *****");
 
@@ -374,13 +374,13 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases1() {
     SyncPath destinationPath = _rootFolderPath / testFilename;
     IoHelper::moveItem(sourcePath, destinationPath, ioError);
 
-    Utility::msleep(1000);  // Wait 1sec
+    Utility::msleep(1000); // Wait 1sec
 
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(newItemId));
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(newItemId) == testFilename);
 }
 
-void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases2() {
+void TestLocalFileSystemObserverWorker::testLFSOWithSpecialCases2() {
     // Test 4.3.3.2, p.62 - b) move(“x”,“y”) + create(“x”) + edit(“x”,<newcontent>) + delete(“x”)
     LOGW_DEBUG(_logger, L"***** move(x,y) + create(x) + edit(x,<newcontent>) + delete(x) *****");
 
@@ -404,11 +404,11 @@ void TestLocalFileSystemObserverWorker::testFolderWatcherWithSpecialCases2() {
     //// delete
     IoHelper::deleteItem(sourcePath, ioError);
 
-    Utility::msleep(1000);  // Wait 1sec
+    Utility::msleep(1000); // Wait 1sec
 
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->exists(initItemId));
     CPPUNIT_ASSERT(!_syncPal->snapshot(ReplicaSide::Local)->exists(newItemId));
     CPPUNIT_ASSERT(_syncPal->snapshot(ReplicaSide::Local)->name(initItemId) == testFilename);
 }
 
-}  // namespace KDC
+} // namespace KDC

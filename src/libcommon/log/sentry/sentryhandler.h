@@ -47,6 +47,8 @@ inline std::string toString(SentryLevel level) {
             return "Error";
         case SentryLevel::Fatal:
             return "Fatal";
+        default:
+            return "No conversion to string available";
     }
 };
 
@@ -141,7 +143,7 @@ class SentryHandler {
         std::unordered_map<std::string, SentryEvent, StringHash, std::equal_to<>> _events;
         SentryConfidentialityLevel _globalConfidentialityLevel = SentryConfidentialityLevel::Anonymous; // Default value
         SentryConfidentialityLevel _lastConfidentialityLevel = SentryConfidentialityLevel::None;
-        int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
+        unsigned int _sentryMaxCaptureCountBeforeRateLimit = 10; // Number of capture before rate limiting an event
         int _sentryMinUploadIntervaOnRateLimit = 60; // Min. interval between two uploads of a rate limited event (seconds)
         bool _isSentryActivated = false;
 };

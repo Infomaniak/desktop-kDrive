@@ -82,7 +82,7 @@ class TestJobManager : public CppUnit::TestFixture {
         std::recursive_mutex _mutex;
 
         void callback(uint64_t jobId);
-        int ongoingJobsCount();
+        size_t ongoingJobsCount();
         void testWithCallbackBigFiles(const SyncPath &dirPath, int size, int count);
         void cancelAllOngoingJobs();
 };
