@@ -177,12 +177,18 @@ sudo apt install -y libcurl4-openssl-dev
 cd ~/Projects
 git clone https://github.com/getsentry/sentry-native.git
 cd sentry-native
-git checkout tags/0.6.7
+git checkout tags/0.7.9
 git submodule init
 git submodule update --recursive
-cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.7.2/gcc_arm64
+cd external/crashpad
+git submodule init
+git submodule update --recursive
+cd ../..
+cmake -B build -DSENTRY_INTEGRATION_QT=YES -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_PREFIX_PATH=~/Qt/6.2.3/gcc_64
 cmake --build build --parallel
 sudo cmake --install build
+
+
 ```
 
 ## xxHash
