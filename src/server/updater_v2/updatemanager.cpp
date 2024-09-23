@@ -63,6 +63,8 @@ ExitCode UpdateManager::checkUpdateAvailable(UniqueId *id /*= nullptr*/) {
     }
     if (id) *id = job->jobId();
 
+    LOG_INFO(Log::instance()->getLogger(), "Looking for new app version...");
+
     const std::function<void(UniqueId)> callback = std::bind_front(&UpdateManager::versionInfoReceived, this);
     JobManager::instance()->queueAsyncJob(job, Poco::Thread::PRIO_NORMAL, callback);
     return ExitCode::Ok;
@@ -70,6 +72,11 @@ ExitCode UpdateManager::checkUpdateAvailable(UniqueId *id /*= nullptr*/) {
 
 void UpdateManager::onUpdateFound() const {
     _updater->onUpdateFound(_versionInfo.downloadUrl);
+}
+
+void UpdateManager::setStateChangeCallback(const std::function<void(UpdateStateV2)> &stateChangeCallback) {
+    LOG_INFO(Log::instance()->getLogger(), "Set state change callback");
+    _stateChangeCallback = stateChangeCallback;
 }
 
 ExitCode UpdateManager::downloadUpdate() noexcept {
@@ -101,6 +108,8 @@ ExitCode UpdateManager::generateGetAppVersionJob(std::shared_ptr<AbstractNetwork
 }
 
 void UpdateManager::versionInfoReceived(UniqueId jobId) {
+    LOG_INFO(Log::instance()->getLogger(), "App version info received");
+
     auto job = JobManager::instance()->getJob(jobId);
     const auto getAppVersionJobPtr = std::dynamic_pointer_cast<GetAppVersionJob>(job);
     assert(getAppVersionJobPtr);
@@ -127,7 +136,12 @@ void UpdateManager::versionInfoReceived(UniqueId jobId) {
     }
 
     bool available = CommonUtility::isVersionLower(CommonUtility::currentVersion(), _versionInfo.fullVersion());
-    _state = available ? UpdateStateV2::Available : UpdateStateV2::UpToDate;
+    setState(available ? UpdateStateV2::Available : UpdateStateV2::UpToDate);
+
+    if (available)
+        LOG_INFO(Log::instance()->getLogger(), "New app version available");
+    else
+        LOG_INFO(Log::instance()->getLogger(), "App version is up to date");
 }
 
 void UpdateManager::createUpdater() {
@@ -143,9 +157,11 @@ void UpdateManager::createUpdater() {
 }
 
 void UpdateManager::setState(const UpdateStateV2 newState) {
-    _state = newState;
-    LOG_DEBUG(Log::instance()->getLogger(), "Update state changed to: " << newState);
-    if (_stateChangeCallback) _stateChangeCallback(_state);
+    if (_state != newState) {
+        LOG_DEBUG(Log::instance()->getLogger(), "Update state changed to: " << newState);
+        _state = newState;
+        if (_stateChangeCallback) _stateChangeCallback(_state);
+    }
 }
 
 } // namespace KDC

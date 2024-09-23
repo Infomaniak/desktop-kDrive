@@ -1974,30 +1974,30 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
         //     break;
         // }
         case RequestNum::UPDATER_STATUSSTRING: {
-            QString status = UpdaterServer::instance()->statusString();
+            QString status = "To be implemented"; // UpdaterServer::instance()->statusString();
 
             resultStream << status;
             break;
         }
         case RequestNum::UPDATER_STATUS: {
-            UpdateState status = UpdaterServer::instance()->updateState();
+            UpdateState status = UpdateState::None; // UpdaterServer::instance()->updateState();
             resultStream << status;
             break;
         }
         case RequestNum::UPDATER_DOWNLOADCOMPLETED: {
-            bool ret = UpdaterServer::instance()->downloadCompleted();
+            bool ret = false; // UpdaterServer::instance()->downloadCompleted();
 
             resultStream << ret;
             break;
         }
         case RequestNum::UPDATER_UPDATEFOUND: {
-            bool ret = UpdaterServer::instance()->updateFound();
+            bool ret = false; // UpdaterServer::instance()->updateFound();
 
             resultStream << ret;
             break;
         }
         case RequestNum::UPDATER_STARTINSTALLER: {
-            UpdaterServer::instance()->startInstaller();
+            // UpdaterServer::instance()->startInstaller();
             break;
         }
         case RequestNum::UPDATER_UPDATE_DIALOG_RESULT: {
@@ -2005,18 +2005,18 @@ void AppServer::onRequestReceived(int id, RequestNum num, const QByteArray &para
             QDataStream paramsStream(params);
             paramsStream >> skip;
 
-            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            if (skip) {
-                updater->wipeUpdateData();
-                updater->slotSetSeenVersion();
-            } else {
-                updater->slotStartInstaller();
-            }
+            // NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
+            // if (skip) {
+            //     updater->wipeUpdateData();
+            //     updater->slotSetSeenVersion();
+            // } else {
+            //     updater->slotStartInstaller();
+            // }
             break;
         }
         case RequestNum::RECONSIDER_SKIPPED_UPDATE: {
-            NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
-            updater->slotUnsetSeenVersion();
+            // NSISUpdater *updater = qobject_cast<NSISUpdater *>(UpdaterServer::instance());
+            // updater->slotUnsetSeenVersion();
             break;
         }
         case RequestNum::UTILITY_CRASH: {

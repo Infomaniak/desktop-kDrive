@@ -37,17 +37,9 @@ static const std::string bigVersionJsonUpdateStr =
 static const std::string smallVersionJsonUpdateStr =
         R"({"result":"success","data":{"application_id":27,"has_prod_next":false,"version":{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},"application":{"id":27,"name":"com.infomaniak.drive","platform":"mac-os","store":"kStore","api_id":"com.infomaniak.drive","min_version":"1.1.1","next_version_rate":0,"published_versions":[{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:37","version_changelog":"test","type":"production","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:06:12","version_changelog":"test","type":"beta","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:05:44","version_changelog":"test","type":"internal","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]},{"tag":"1.1.1","tag_updated_at":"2020-06-04 15:03:29","version_changelog":"test","type":"production-next","build_version":"20200604","build_min_os_version":"20200604","download_link":"test","data":["[]"]}]}}})";
 
-void TestUpdateManager::setUp() {
-    // Create parmsDb
-    bool alreadyExists = false;
-    const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
-    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
-    ParametersCache::instance()->parameters().setExtendedLog(true);
-}
-
-class TestGetAppVersionJob final : public GetAppVersionJob {
+class GetAppVersionJobTest final : public GetAppVersionJob {
     public:
-        TestGetAppVersionJob(const Platform platform, const std::string &appID, const bool updateShouldBeAvailable) :
+        GetAppVersionJobTest(const Platform platform, const std::string &appID, const bool updateShouldBeAvailable) :
             GetAppVersionJob(platform, appID), _updateShoudBeAvailable(updateShouldBeAvailable) {}
 
         void runJob() noexcept override {
@@ -68,12 +60,20 @@ class UpdateManagerTest final : public UpdateManager {
     private:
         ExitCode generateGetAppVersionJob(std::shared_ptr<AbstractNetworkJob> &job) override {
             static const std::string appUid = "1234567890";
-            job = std::make_shared<TestGetAppVersionJob>(CommonUtility::platform(), appUid, _updateShoudBeAvailable);
+            job = std::make_shared<GetAppVersionJobTest>(CommonUtility::platform(), appUid, _updateShoudBeAvailable);
             return ExitCode::Ok;
         }
 
         bool _updateShoudBeAvailable{false};
 };
+
+void TestUpdateManager::setUp() {
+    // Create parmsDb
+    bool alreadyExists = false;
+    const std::filesystem::path parmsDbPath = Db::makeDbName(alreadyExists, true);
+    ParmsDb::instance(parmsDbPath, "3.4.0", true, true);
+    ParametersCache::instance()->parameters().setExtendedLog(true);
+}
 
 void TestUpdateManager::testCheckUpdateAvailable() {
     // Version is higher than current version

@@ -20,6 +20,7 @@
 #include "updaterscheduler.h"
 
 #include "updatemanager.h"
+#include "log/log.h"
 
 namespace KDC {
 
@@ -32,21 +33,24 @@ UpdaterScheduler::UpdaterScheduler(QObject *parent) : QObject(parent) {
     //     connect(updater, &KDCUpdater::requestRestart, this, &UpdaterScheduler::requestRestart);
     // }
 
-    // at startup, do a check in any case.
+    // At startup, do a check in any case.
     QTimer::singleShot(3000, this, &UpdaterScheduler::slotTimerFired);
 
     static constexpr auto checkInterval = std::chrono::hours(1);
     _updateCheckTimer.start(std::chrono::milliseconds(checkInterval).count());
 
-    const std::function<void(UpdateStateV2)> callback = std::bind_front(&UpdaterScheduler::onAppStateChange, this);
+    const std::function<void(UpdateStateV2)> callback = std::bind_front(&UpdaterScheduler::onUpdateStateChange, this);
     UpdateManager::instance()->setStateChangeCallback(callback);
+
+    connect(this, &UpdaterScheduler::updateStateChanged, this, &UpdaterScheduler::slotUpdateStateChanged, Qt::QueuedConnection);
 }
 
 void UpdaterScheduler::slotTimerFired() const {
     UpdateManager::instance()->checkUpdateAvailable();
 }
 
-void UpdaterScheduler::onAppStateChange(const UpdateStateV2 newState) const {
+void UpdaterScheduler::slotUpdateStateChanged(const UpdateStateV2 newState) const {
+    LOG_DEBUG(Log::instance()->getLogger(), "New update state: " << newState);
     switch (newState) {
         case UpdateStateV2::UpToDate:
         case UpdateStateV2::Checking:
@@ -65,6 +69,10 @@ void UpdaterScheduler::onAppStateChange(const UpdateStateV2 newState) const {
             // An error occured
             break;
     }
+}
+
+void UpdaterScheduler::onUpdateStateChange(const UpdateStateV2 newState) {
+    emit updateStateChanged(newState);
 }
 
 } // namespace KDC

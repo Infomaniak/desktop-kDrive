@@ -43,14 +43,17 @@ class UpdaterScheduler final : public QObject {
     signals:
         void updaterAnnouncement(const QString &title, const QString &msg);
         void requestRestart();
+        void updateStateChanged(KDC::UpdateStateV2 mewState);
 
     private slots:
         void slotTimerFired() const;
+        void slotUpdateStateChanged(KDC::UpdateStateV2 newState) const;
 
     private:
-        void onAppStateChange(UpdateStateV2 newState) const;
+        void onUpdateStateChange(UpdateStateV2 newState);
 
         QTimer _updateCheckTimer; /** Timer for the regular update check. */
+        UpdateStateV2 _newState{UpdateStateV2::UpToDate};
 };
 
 } // namespace KDC

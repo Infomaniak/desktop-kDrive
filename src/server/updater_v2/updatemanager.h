@@ -66,9 +66,7 @@ class UpdateManager {
 
         void startInstaller() const { /* Redefined in child class if necessary */ }
 
-        void setStateChangeCallback(const std::function<void(UpdateStateV2)> &stateChangeCallback) {
-            _stateChangeCallback = stateChangeCallback;
-        }
+        void setStateChangeCallback(const std::function<void(UpdateStateV2)> &stateChangeCallback);
 
     protected:
         UpdateManager();
