@@ -31,8 +31,8 @@ HRESULT SetHKCRRegistryKeyAndValue(PCWSTR pszSubKey, PCWSTR pszValueName, PCWSTR
 
     // Creates the specified registry key. If the key already exists, the
     // function opens it.
-    hr = HRESULT_FROM_WIN32(
-        RegCreateKeyEx(HKEY_CLASSES_ROOT, pszSubKey, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr, &hKey, nullptr));
+    hr = HRESULT_FROM_WIN32(RegCreateKeyEx(HKEY_CLASSES_ROOT, pszSubKey, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_WRITE, nullptr,
+                                           &hKey, nullptr));
 
     if (SUCCEEDED(hr)) {
         DWORD cbData;
@@ -64,8 +64,8 @@ HRESULT GetHKCRRegistryKeyAndValue(PCWSTR pszSubKey, PCWSTR pszValueName, PWSTR 
 
     if (SUCCEEDED(hr)) {
         // Get the data for the specified value name.
-        hr =
-            HRESULT_FROM_WIN32(RegQueryValueEx(hKey, pszValueName, nullptr, nullptr, reinterpret_cast<LPBYTE>(pszData), &cbData));
+        hr = HRESULT_FROM_WIN32(
+                RegQueryValueEx(hKey, pszValueName, nullptr, nullptr, reinterpret_cast<LPBYTE>(pszData), &cbData));
 
         RegCloseKey(hKey);
     }
@@ -73,7 +73,7 @@ HRESULT GetHKCRRegistryKeyAndValue(PCWSTR pszSubKey, PCWSTR pszValueName, PWSTR 
     return hr;
 }
 
-}  // namespace
+} // namespace
 
 HRESULT KDContextMenuRegHandler::RegisterInprocServer(PCWSTR pszModule, const CLSID& clsid, PCWSTR pszFriendlyName,
                                                       PCWSTR pszThreadModel) {

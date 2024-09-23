@@ -17,7 +17,7 @@
  */
 
 #pragma once
-#include <shlobj.h>  // For IShellExtInit and IContextMenu
+#include <shlobj.h> // For IShellExtInit and IContextMenu
 #include <string>
 #include "KDClientInterface.h"
 

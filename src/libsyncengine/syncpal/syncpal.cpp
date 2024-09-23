@@ -1015,16 +1015,19 @@ ExitCode SyncPal::fileRemoteIdFromLocalPath(const SyncPath &path, NodeId &nodeId
 }
 
 bool SyncPal::existOnServer(const SyncPath &path) const {
-    NodeId nodeId = _remoteSnapshot->itemId(path);
+    // Path is normalized on server side
+    const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
+    const NodeId nodeId = _remoteSnapshot->itemId(normalizedPath);
     return !nodeId.empty();
 }
 
 bool SyncPal::canShareItem(const SyncPath &path) const {
-    NodeId nodeId = _remoteSnapshot->itemId(path);
+    // Path is normalized on server side
+    const SyncPath normalizedPath = Utility::normalizedSyncPath(path);
+    const NodeId nodeId = _remoteSnapshot->itemId(path);
     if (!nodeId.empty()) {
         return _remoteSnapshot->canShare(nodeId);
     }
-
     return false;
 }
 
@@ -1293,7 +1296,7 @@ ExitCode SyncPal::cleanOldUploadSessionTokens() {
 
             if (job->hasHttpError()) {
                 LOG_SYNCPAL_WARN(_logger, "Upload Session Token: " << uploadSessionToken.token().c_str()
-                                                                     << " has already been canceled or has expired.");
+                                                                   << " has already been canceled or has expired.");
             }
         } catch (std::exception const &e) {
             LOG_WARN(_logger, "Error in UploadSessionCancelJob: " << e.what());

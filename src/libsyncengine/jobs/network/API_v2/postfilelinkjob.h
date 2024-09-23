@@ -34,4 +34,4 @@ class PostFileLinkJob : public AbstractTokenNetworkJob {
         NodeId _nodeId;
 };
 
-}  // namespace KDC
+} // namespace KDC

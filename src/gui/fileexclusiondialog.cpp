@@ -47,9 +47,9 @@ static const int filesTableBoxVMargin = 20;
 
 static const int rowHeight = 38;
 
-static QVector<int> tableColumnWidth = QVector<int>() << 255  // tableColumn::Pattern
-                                                      << 190  // tableColumn::Deletable
-                                                      << 35;  // tableColumn::Action
+static QVector<int> tableColumnWidth = QVector<int>() << 255 // tableColumn::Pattern
+                                                      << 190 // tableColumn::Deletable
+                                                      << 35; // tableColumn::Action
 
 static const int viewIconPathRole = Qt::UserRole;
 static const int readOnlyRole = Qt::UserRole + 1;
@@ -58,17 +58,10 @@ static const char patternProperty[] = "pattern";
 
 Q_LOGGING_CATEGORY(lcFileExclusionDialog, "gui.fileexclusiondialog", QtInfoMsg)
 
-FileExclusionDialog::FileExclusionDialog(QWidget *parent)
-    : CustomDialog(true, parent),
-      _hiddenFilesCheckBox(nullptr),
-      _filesTableModel(nullptr),
-      _filesTableView(nullptr),
-      _saveButton(nullptr),
-      _actionIconColor(QColor()),
-      _actionIconSize(QSize()),
-      _needToSave(false),
-      _defaultTemplateList(QList<ExclusionTemplateInfo>()),
-      _userTemplateList(QList<ExclusionTemplateInfo>()) {
+FileExclusionDialog::FileExclusionDialog(QWidget *parent) :
+    CustomDialog(true, parent), _hiddenFilesCheckBox(nullptr), _filesTableModel(nullptr), _filesTableView(nullptr),
+    _saveButton(nullptr), _actionIconColor(QColor()), _actionIconSize(QSize()), _needToSave(false),
+    _defaultTemplateList(QList<ExclusionTemplateInfo>()), _userTemplateList(QList<ExclusionTemplateInfo>()) {
     initUI();
     updateUI();
 }
@@ -296,14 +289,14 @@ void FileExclusionDialog::loadPatternTable(QString scrollToPattern) {
     _filesTableModel->clear();
 
     // Default patterns
-    for (const auto &templ : _defaultTemplateList) {
+    for (const auto &templ: _defaultTemplateList) {
         if (!templ.deleted()) {
             addTemplate(templ, true, row, scrollToPattern, scrollToRow);
         }
     }
 
     // User patterns
-    for (const auto &templ : _userTemplateList) {
+    for (const auto &templ: _userTemplateList) {
         addTemplate(templ, false, row, scrollToPattern, scrollToRow);
     }
 
@@ -354,7 +347,7 @@ void FileExclusionDialog::onAddFileButtonTriggered(bool checked) {
     FileExclusionNameDialog dialog(this);
     if (dialog.exec() == QDialog::Accepted) {
         QString templ = dialog.templ();
-        for (const auto &templInfo : _userTemplateList) {
+        for (const auto &templInfo: _userTemplateList) {
             if (templInfo.templ() == templ) {
                 CustomMessageBox msgBox(QMessageBox::Information, tr("Exclusion template already exists!"), QMessageBox::Ok,
                                         this);
@@ -486,4 +479,4 @@ void FileExclusionDialog::onSaveButtonTriggered(bool checked) {
     accept();
 }
 
-}  // namespace KDC
+} // namespace KDC

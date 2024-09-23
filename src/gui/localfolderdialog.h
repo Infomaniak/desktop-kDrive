@@ -105,4 +105,4 @@ class LocalFolderDialog : public CustomDialog {
         void onLinkActivated(const QString &link);
 };
 
-}  // namespace KDC
+} // namespace KDC

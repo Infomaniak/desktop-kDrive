@@ -43,8 +43,8 @@ static const int offsetY = 10;
 
 Q_LOGGING_CATEGORY(lcCustomToolTip, "gui.customtooltip", QtInfoMsg)
 
-CustomToolTip::CustomToolTip(const QString &text, const QPoint &position, int toolTipDuration, QWidget *parent)
-    : QDialog(parent), _cursorPosition(position) {
+CustomToolTip::CustomToolTip(const QString &text, const QPoint &position, int toolTipDuration, QWidget *parent) :
+    QDialog(parent), _cursorPosition(position) {
     setWindowFlags(Qt::ToolTip | Qt::FramelessWindowHint | Qt::NoDropShadowWindowHint | Qt::X11BypassWindowManagerHint);
     setAttribute(Qt::WA_TranslucentBackground);
 
@@ -99,7 +99,8 @@ void CustomToolTip::paintEvent(QPaintEvent *event) {
     painterPath.arcTo(QRect(intRect.topLeft(), QSize(cornerDiameter, cornerDiameter)), 90, 90);
     painterPath.arcTo(QRect(intRect.bottomLeft() - QPoint(0, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 180, 90);
     painterPath.arcTo(
-        QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 270, 90);
+            QRect(intRect.bottomRight() - QPoint(cornerDiameter, cornerDiameter), QSize(cornerDiameter, cornerDiameter)), 270,
+            90);
     painterPath.arcTo(QRect(intRect.topRight() - QPoint(cornerDiameter, 0), QSize(cornerDiameter, cornerDiameter)), 0, 90);
     painterPath.closeSubpath();
 
@@ -112,4 +113,4 @@ void CustomToolTip::paintEvent(QPaintEvent *event) {
     painter.drawPath(painterPath);
 }
 
-}  // namespace KDC
+} // namespace KDC

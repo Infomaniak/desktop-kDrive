@@ -47,4 +47,4 @@ void Progress::setCompleted(int64_t completed) {
     _prevCompleted = std::min(_prevCompleted, _completed);
 }
 
-}  // namespace KDC
+} // namespace KDC

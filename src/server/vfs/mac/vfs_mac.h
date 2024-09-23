@@ -126,4 +126,4 @@ class MacVfsPluginFactory : public QObject, public DefaultPluginFactory<VfsMac> 
         Q_INTERFACES(KDC::PluginFactory)
 };
 
-}  // namespace KDC
+} // namespace KDC

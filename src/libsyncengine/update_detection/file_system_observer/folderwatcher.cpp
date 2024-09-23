@@ -23,8 +23,8 @@
 
 namespace KDC {
 
-FolderWatcher::FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPath &path)
-    : _logger(Log::instance()->getLogger()), _parent(parent), _folder(path) {}
+FolderWatcher::FolderWatcher(LocalFileSystemObserverWorker *parent, const SyncPath &path) :
+    _logger(Log::instance()->getLogger()), _parent(parent), _folder(path) {}
 
 FolderWatcher::~FolderWatcher() {
     if (_thread) {
@@ -60,8 +60,8 @@ void FolderWatcher::stop() {
 }
 
 void *FolderWatcher::executeFunc(void *thisWorker) {
-    ((FolderWatcher *)thisWorker)->startWatching();
+    ((FolderWatcher *) thisWorker)->startWatching();
     return nullptr;
 }
 
-}  // namespace KDC
+} // namespace KDC

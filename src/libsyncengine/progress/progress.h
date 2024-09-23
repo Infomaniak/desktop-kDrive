@@ -45,4 +45,4 @@ class Progress {
         int64_t _total;
 };
 
-}  // namespace KDC
+} // namespace KDC

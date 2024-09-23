@@ -33,21 +33,18 @@ class LocalFileSystemObserverWorker;
 
 class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE(TestLocalFileSystemObserverWorker);
-        CPPUNIT_TEST(testFolderWatcherWithInitialSnapshot);
-        CPPUNIT_TEST(testFolderWatcherWithFiles);
-        CPPUNIT_TEST(testFolderWatcherWithDuplicateFileNames);
-        CPPUNIT_TEST(testFolderWatcherDeleteDir);
-        CPPUNIT_TEST(testFolderWatcherWithDirs);
-        CPPUNIT_TEST(testFolderWatcherWithSpecialCases1);
-        CPPUNIT_TEST(testFolderWatcherWithSpecialCases2);
+        CPPUNIT_TEST(testLFSOWithInitialSnapshot);
+        CPPUNIT_TEST(testLFSOWithFiles);
+        CPPUNIT_TEST(testLFSOWithDuplicateFileNames);
+        CPPUNIT_TEST(testLFSODeleteDir);
+        CPPUNIT_TEST(testLFSOWithDirs);
+        CPPUNIT_TEST(testLFSOWithSpecialCases1);
+        CPPUNIT_TEST(testLFSOWithSpecialCases2);
         CPPUNIT_TEST_SUITE_END();
 
     public:
         void setUp() override;
         void tearDown() override;
-
-    protected:
-        void testFolderWatcher(void);
 
     private:
         log4cplus::Logger _logger;
@@ -58,13 +55,13 @@ class TestLocalFileSystemObserverWorker : public CppUnit::TestFixture {
         SyncPath _subDirPath;
         NodeId _testFileId;
 
-        void testFolderWatcherWithInitialSnapshot();
-        void testFolderWatcherWithFiles();
-        void testFolderWatcherWithDuplicateFileNames();
-        void testFolderWatcherWithDirs();
-        void testFolderWatcherDeleteDir();
-        void testFolderWatcherWithSpecialCases1();
-        void testFolderWatcherWithSpecialCases2();
+        void testLFSOWithInitialSnapshot();
+        void testLFSOWithFiles();
+        void testLFSOWithDuplicateFileNames();
+        void testLFSOWithDirs();
+        void testLFSODeleteDir();
+        void testLFSOWithSpecialCases1();
+        void testLFSOWithSpecialCases2();
 };
 
-}  // namespace KDC
+} // namespace KDC

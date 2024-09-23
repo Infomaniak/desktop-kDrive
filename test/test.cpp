@@ -28,8 +28,8 @@ int runTestSuite(const std::string &logFileName) {
     srand(static_cast<unsigned int>(time(NULL)));
 
 
-    //Disable sentry
-    KDC::SentryHandler::init(KDC::SentryHandler::SentryProject::Deactivated);
+    // Disable sentry
+    KDC::SentryHandler::init(KDC::AppType::None);
     // Setup log4cplus
     log4cplus::Initializer initializer;
     std::time_t now = std::time(nullptr);

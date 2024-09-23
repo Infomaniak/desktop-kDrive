@@ -34,4 +34,4 @@ class LongPollJob : public AbstractTokenNetworkJob {
         std::string _cursor;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -35,32 +35,24 @@
 
 namespace KDC {
 
-#define BUF_SIZE 4096 * 1000  // 4MB
-#define NOTIFICATION_DELAY 1  // 1 sec
+#define BUF_SIZE 4096 * 1000 // 4MB
+#define NOTIFICATION_DELAY 1 // 1 sec
 #define TRIALS 5
-#define READ_PAUSE_SLEEP_PERIOD 100  // 0.1 s
+#define READ_PAUSE_SLEEP_PERIOD 100 // 0.1 s
 #define READ_RETRIES 10
 
 DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize,
-                         SyncTime creationTime, SyncTime modtime, bool isCreate)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
-      _remoteFileId(remoteFileId),
-      _localpath(localpath),
-      _expectedSize(expectedSize),
-      _creationTime(creationTime),
-      _modtimeIn(modtime),
-      _isCreate(isCreate) {
+                         SyncTime creationTime, SyncTime modtime, bool isCreate) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
+    _expectedSize(expectedSize), _creationTime(creationTime), _modtimeIn(modtime), _isCreate(isCreate) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
 }
 
-DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false),
-      _remoteFileId(remoteFileId),
-      _localpath(localpath),
-      _expectedSize(expectedSize),
-      _ignoreDateTime(true) {
+DownloadJob::DownloadJob(int driveDbId, const NodeId &remoteFileId, const SyncPath &localpath, int64_t expectedSize) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0, false), _remoteFileId(remoteFileId), _localpath(localpath),
+    _expectedSize(expectedSize), _ignoreDateTime(true) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = 60;
     _trials = TRIALS;
@@ -391,7 +383,8 @@ bool DownloadJob::handleResponse(std::istream &is) {
                                    std::make_optional<KDC::SyncTime>(_modtimeIn), isLink, exists)) {
             LOGW_WARN(_logger, L"Error in Utility::setFileDates: " << Utility::formatSyncPath(_localpath).c_str());
             // Do nothing (remote file will be updated during the next sync)
-            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "DownloadJob::handleResponse", "Unable to set file dates");
+            SentryHandler::instance()->captureMessage(SentryLevel::Warning, "DownloadJob::handleResponse",
+                                                      "Unable to set file dates");
         } else if (!exists) {
             LOGW_INFO(_logger, L"Item does not exist anymore. Restarting sync: " << Utility::formatSyncPath(_localpath).c_str());
             _exitCode = ExitCode::DataError;
@@ -529,7 +522,7 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
 #ifdef _WIN32
         const bool crossDeviceLink = ec.value() == ERROR_NOT_SAME_DEVICE;
 #else
-    const bool crossDeviceLink = ec.value() == (int)std::errc::cross_device_link;
+    const bool crossDeviceLink = ec.value() == (int) std::errc::cross_device_link;
 #endif
         if (crossDeviceLink) {
             // The sync might be on a different file system than tmp folder.
@@ -561,7 +554,7 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
             IoError ioError = IoError::Success;
             if (!IoHelper::checkIfPathExists(_localpath.parent_path(), exists, ioError)) {
                 LOGW_WARN(_logger, L"Error in IoHelper::checkIfPathExists: "
-                                       << Utility::formatIoError(_localpath.parent_path(), ioError).c_str());
+                                           << Utility::formatIoError(_localpath.parent_path(), ioError).c_str());
                 _exitCode = ExitCode::SystemError;
                 _exitCause = ExitCause::FileAccessError;
                 return false;
@@ -583,4 +576,4 @@ bool DownloadJob::moveTmpFile(const SyncPath &path, bool &restartSync) {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

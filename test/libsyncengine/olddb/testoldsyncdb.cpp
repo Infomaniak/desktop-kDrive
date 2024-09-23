@@ -45,4 +45,4 @@ void TestOldSyncDb::testSelectiveSync() {
     CPPUNIT_ASSERT(selectiveSyncList.size() > 0);
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -54,4 +54,4 @@ class ErrorsMenuBarWidget : public HalfRoundRectWidget {
         void retranslateUi();
 };
 
-}  // namespace KDC
+} // namespace KDC

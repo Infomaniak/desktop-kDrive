@@ -62,4 +62,4 @@ class OperationSorterWorker : public OperationProcessor {
 
         friend class TestOperationSorterWorker;
 };
-}  // namespace KDC
+} // namespace KDC

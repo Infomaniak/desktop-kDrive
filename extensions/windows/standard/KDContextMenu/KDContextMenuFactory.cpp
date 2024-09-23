@@ -41,8 +41,8 @@ KDContextMenuFactory::~KDContextMenuFactory() {
 
 IFACEMETHODIMP KDContextMenuFactory::QueryInterface(REFIID riid, void **ppv) {
     static const QITAB qit[] = {
-        QITABENT(KDContextMenuFactory, IClassFactory),
-        {0},
+            QITABENT(KDContextMenuFactory, IClassFactory),
+            {0},
     };
     return QISearch(this, qit, riid, ppv);
 }

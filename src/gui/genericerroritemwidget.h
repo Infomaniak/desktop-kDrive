@@ -55,4 +55,4 @@ class GenericErrorItemWidget : public AbstractFileItemWidget {
         const QString _errorMsg;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -32,8 +32,8 @@ namespace KDC {
 static const QString dateFormat = "d MMM yyyy - HH:mm";
 
 GenericErrorItemWidget::GenericErrorItemWidget(std::shared_ptr<ClientGui> gui, const QString &errorMsg,
-                                               const ErrorInfo &errorInfo, QWidget *parent)
-    : AbstractFileItemWidget(parent), _gui(gui), _errorInfo(errorInfo), _errorMsg(errorMsg) {
+                                               const ErrorInfo &errorInfo, QWidget *parent) :
+    AbstractFileItemWidget(parent), _gui(gui), _errorInfo(errorInfo), _errorMsg(errorMsg) {
     init();
 }
 
@@ -108,4 +108,4 @@ bool GenericErrorItemWidget::openInWebview() const {
            (_errorInfo.exitCode() == ExitCode::BackError && _errorInfo.exitCause() == ExitCause::NotFound);
 }
 
-}  // namespace KDC
+} // namespace KDC

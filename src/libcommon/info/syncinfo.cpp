@@ -21,19 +21,13 @@
 namespace KDC {
 
 SyncInfo::SyncInfo(int dbId, int driveDbId, const QString &localPath, const QString &targetPath, const QString &targetNodeId,
-                   bool supportVfs, VirtualFileMode virtualFileMode, const QString &navigationPaneClsid)
-    : _dbId(dbId),
-      _driveDbId(driveDbId),
-      _localPath(localPath),
-      _targetPath(targetPath),
-      _targetNodeId(targetNodeId),
-      _supportVfs(supportVfs),
-      _virtualFileMode(virtualFileMode),
-      _navigationPaneClsid(navigationPaneClsid) {}
+                   bool supportVfs, VirtualFileMode virtualFileMode, const QString &navigationPaneClsid) :
+    _dbId(dbId), _driveDbId(driveDbId), _localPath(localPath), _targetPath(targetPath), _targetNodeId(targetNodeId),
+    _supportVfs(supportVfs), _virtualFileMode(virtualFileMode), _navigationPaneClsid(navigationPaneClsid) {}
 
 QDataStream &operator>>(QDataStream &in, SyncInfo &info) {
     in >> info._dbId >> info._driveDbId >> info._localPath >> info._targetPath >> info._targetNodeId >> info._supportVfs >>
-        info._virtualFileMode >> info._navigationPaneClsid;
+            info._virtualFileMode >> info._navigationPaneClsid;
     return in;
 }
 
@@ -64,4 +58,4 @@ QDataStream &operator>>(QDataStream &in, QList<SyncInfo> &list) {
     return in;
 }
 
-}  // namespace KDC
+} // namespace KDC

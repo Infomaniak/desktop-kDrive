@@ -35,7 +35,7 @@ bool Placeholders::create(const PCWSTR fileId, const PCWSTR relativePath, const 
 
     CF_PLACEHOLDER_CREATE_INFO cloudEntry;
     cloudEntry.FileIdentity = fileId;
-    cloudEntry.FileIdentityLength = (USHORT)(wcslen(fileId) + 1) * sizeof(WCHAR);
+    cloudEntry.FileIdentityLength = (USHORT) (wcslen(fileId) + 1) * sizeof(WCHAR);
     cloudEntry.RelativeFileName = fileName.c_str();
     cloudEntry.Flags = CF_PLACEHOLDER_CREATE_FLAG_MARK_IN_SYNC;
     cloudEntry.FsMetadata.BasicInfo.FileAttributes = findData->dwFileAttributes;
@@ -47,7 +47,7 @@ bool Placeholders::create(const PCWSTR fileId, const PCWSTR relativePath, const 
     if ((findData->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
         cloudEntry.FsMetadata.FileSize.QuadPart = 0;
     } else {
-        cloudEntry.FsMetadata.FileSize.QuadPart = ((ULONGLONG)findData->nFileSizeHigh << 32) + findData->nFileSizeLow;
+        cloudEntry.FsMetadata.FileSize.QuadPart = ((ULONGLONG) findData->nFileSizeHigh << 32) + findData->nFileSizeLow;
     }
 
     try {
@@ -87,7 +87,7 @@ bool Placeholders::convert(const PCWSTR fileId, const PCWSTR filePath) {
 
     try {
         TRACE_DEBUG(L"Converting to placeholder : path = %ls", filePath);
-        winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), fileId, (USHORT)(wcslen(fileId) + 1) * sizeof(WCHAR),
+        winrt::check_hresult(CfConvertToPlaceholder(fileHandle.get(), fileId, (USHORT) (wcslen(fileId) + 1) * sizeof(WCHAR),
                                                     CF_CONVERT_FLAG_MARK_IN_SYNC, nullptr, nullptr));
     } catch (winrt::hresult_error const &ex) {
         TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
@@ -162,7 +162,7 @@ bool Placeholders::update(const PCWSTR filePath, const WIN32_FIND_DATA *findData
         TRACE_DEBUG(L"Get placeholder info : path = %ls", filePath);
         DWORD retLength = 0;
         winrt::check_hresult(
-            CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
+                CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
     } catch (winrt::hresult_error const &ex) {
         if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
             TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());
@@ -177,7 +177,7 @@ bool Placeholders::update(const PCWSTR filePath, const WIN32_FIND_DATA *findData
         fsMetadata.BasicInfo.LastWriteTime = Utilities::fileTimeToLargeInteger(findData->ftLastWriteTime);
         fsMetadata.BasicInfo.LastAccessTime = Utilities::fileTimeToLargeInteger(findData->ftLastAccessTime);
         fsMetadata.BasicInfo.ChangeTime = Utilities::fileTimeToLargeInteger(findData->ftLastWriteTime);
-        fsMetadata.FileSize.QuadPart = ((ULONGLONG)findData->nFileSizeHigh << 32) + findData->nFileSizeLow;
+        fsMetadata.FileSize.QuadPart = ((ULONGLONG) findData->nFileSizeHigh << 32) + findData->nFileSizeLow;
 
         TRACE_DEBUG(L"Update placeholder : path = %ls", filePath);
         winrt::check_hresult(CfUpdatePlaceholder(fileHandle.get(), &fsMetadata, info.FileIdentity, info.FileIdentityLength,
@@ -314,7 +314,7 @@ bool Placeholders::getInfo(const PCWSTR path, CF_PLACEHOLDER_STANDARD_INFO &info
         TRACE_DEBUG(L"Get placeholder info : path = %ls", path);
         DWORD retLength = 0;
         winrt::check_hresult(
-            CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
+                CfGetPlaceholderInfo(fileHandle.get(), CF_PLACEHOLDER_INFO_STANDARD, &info, sizeof(info), &retLength));
     } catch (winrt::hresult_error const &ex) {
         if (ex.code() != HRESULT_FROM_WIN32(ERROR_MORE_DATA)) {
             TRACE_ERROR(L"WinRT error caught : %08x - %s", static_cast<HRESULT>(winrt::to_hresult()), ex.message().c_str());

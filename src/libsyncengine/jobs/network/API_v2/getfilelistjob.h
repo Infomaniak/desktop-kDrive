@@ -35,4 +35,4 @@ class GetFileListJob : public GetRootFileListJob {
         std::string _fileId;
 };
 
-}  // namespace KDC
+} // namespace KDC

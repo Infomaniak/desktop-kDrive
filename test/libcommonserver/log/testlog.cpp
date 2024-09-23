@@ -54,17 +54,25 @@ void TestLog::testLargeLogRolling(void) {
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     auto customRollingFileAppender = static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get());
 
-    const int maxSize = 1024 * 1024 * 1;  // 1MB
+    const int maxSize = 1024; // 1KB
     const int previousMaxSize = customRollingFileAppender->getMaxFileSize();
     customRollingFileAppender->setMaxFileSize(maxSize);
+
+    LOG_DEBUG(_logger, "Ensure the log file is created");
+    CPPUNIT_ASSERT_GREATER(1, countFilesInDirectory(_logDir));
 
     // Generate a log larger than the max log file size. (log header is 50bytes)
     const auto testLog = std::string(maxSize, 'a');
     LOG_DEBUG(_logger, testLog.c_str());
+    CPPUNIT_ASSERT_GREATER(2, countFilesInDirectory(_logDir));
 
+    SyncPath rolledFile = _logDir / (Log::instance()->getLogFilePath().filename().string() + ".1.gz");
+    std::error_code ec;
+    CPPUNIT_ASSERT(std::filesystem::exists(rolledFile, ec));
+    CPPUNIT_ASSERT(!ec);
+
+    // Restore the previous max file size
     customRollingFileAppender->setMaxFileSize(previousMaxSize);
-    // Check that a new log file has been created (might be 3 files if the "old" log file is already archived)
-    CPPUNIT_ASSERT_GREATER(1, countFilesInDirectory(_logDir));
 }
 
 void TestLog::testExpiredLogFiles(void) {
@@ -81,12 +89,12 @@ void TestLog::testExpiredLogFiles(void) {
     log4cplus::SharedAppenderPtr rfAppenderPtr = _logger.getAppender(Log::rfName);
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())->setExpire(5);
     Utility::msleep(2000);
-    LOG_DEBUG(_logger, "Ensure the two log files do not expire at the same time.");  // No log file should be deleted
+    LOG_DEBUG(_logger, "Ensure the two log files do not expire at the same time."); // No log file should be deleted
     CPPUNIT_ASSERT_EQUAL(2, countFilesInDirectory(_logDir));
-    Utility::msleep(4000);  // Wait for the fake log file to expire
+    Utility::msleep(4000); // Wait for the fake log file to expire
     static_cast<CustomRollingFileAppender*>(rfAppenderPtr.get())
-        ->setExpire(5);                                  // Force the check of expired files at the next log
-    LOG_DEBUG(_logger, "Log to trigger the appender.");  // Generate a log to trigger the appender
+            ->setExpire(5); // Force the check of expired files at the next log
+    LOG_DEBUG(_logger, "Log to trigger the appender."); // Generate a log to trigger the appender
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
 }
 
@@ -123,4 +131,4 @@ void TestLog::clearLogDirectory(void) const {
     CPPUNIT_ASSERT(endOfDirectory);
     CPPUNIT_ASSERT_EQUAL(1, countFilesInDirectory(_logDir));
 }
-}  // namespace KDC
+} // namespace KDC

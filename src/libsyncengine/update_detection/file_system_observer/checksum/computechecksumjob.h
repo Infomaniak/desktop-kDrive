@@ -40,4 +40,4 @@ class ComputeChecksumJob : public AbstractJob {
         std::shared_ptr<Snapshot> _localSnapshot;
 };
 
-}  // namespace KDC
+} // namespace KDC

@@ -23,12 +23,9 @@ namespace KDC {
 
 DriveUploadSession::DriveUploadSession(int driveDbId, std::shared_ptr<SyncDb> syncDb, const SyncPath &filepath,
                                        const SyncName &filename, const NodeId &remoteParentDirId, SyncTime modtime,
-                                       bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/)
-    : AbstractUploadSession(filepath, filename, nbParalleleThread),
-      _driveDbId(driveDbId),
-      _syncDb(syncDb),
-      _modtimeIn(modtime),
-      _remoteParentDirId(remoteParentDirId) {
+                                       bool liteSyncActivated, uint64_t nbParalleleThread /*= 1*/) :
+    AbstractUploadSession(filepath, filename, nbParalleleThread), _driveDbId(driveDbId), _syncDb(syncDb), _modtimeIn(modtime),
+    _remoteParentDirId(remoteParentDirId) {
     _uploadSessionType = UploadSessionType::Standard;
 }
 
@@ -99,4 +96,4 @@ bool DriveUploadSession::handleCancelJobResult(const std::shared_ptr<UploadSessi
 
     return true;
 }
-}  // namespace KDC
+} // namespace KDC

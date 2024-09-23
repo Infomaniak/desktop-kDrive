@@ -26,17 +26,9 @@ SnapshotItem::SnapshotItem(const NodeId &id) : _id(id) {}
 
 SnapshotItem::SnapshotItem(const NodeId &id, const NodeId &parentId, const SyncName &name, SyncTime createdAt,
                            SyncTime lastModified, NodeType type, int64_t size, bool isLink /*= false*/, bool canWrite /*= true*/,
-                           bool canShare /*= true*/)
-    : _id(id),
-      _parentId(parentId),
-      _name(name),
-      _createdAt(createdAt),
-      _lastModified(lastModified),
-      _type(type),
-      _size(size),
-      _isLink(isLink),
-      _canWrite(canWrite),
-      _canShare(canShare) {}
+                           bool canShare /*= true*/) :
+    _id(id), _parentId(parentId), _name(name), _createdAt(createdAt), _lastModified(lastModified), _type(type), _size(size),
+    _isLink(isLink), _canWrite(canWrite), _canShare(canShare) {}
 
 SnapshotItem::SnapshotItem(const SnapshotItem &other) {
     *this = other;
@@ -72,4 +64,4 @@ void SnapshotItem::removeChildren(const NodeId &id) {
     _childrenIds.erase(id);
 }
 
-}  // namespace KDC
+} // namespace KDC

@@ -33,4 +33,4 @@ class TestTypes : public CppUnit::TestFixture {
         void testOtherSide();
         void testStreamConversion();
 };
-}  // namespace KDC
+} // namespace KDC

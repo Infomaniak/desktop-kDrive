@@ -29,4 +29,4 @@ bool ClickableWidget::event(QEvent *event) {
     return QWidget::event(event);
 }
 
-}  // namespace KDC
+} // namespace KDC

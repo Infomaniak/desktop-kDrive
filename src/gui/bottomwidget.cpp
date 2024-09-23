@@ -49,4 +49,4 @@ void BottomWidget::paintEvent(QPaintEvent *event) {
     painter.drawPath(painterPath);
 }
 
-}  // namespace KDC
+} // namespace KDC

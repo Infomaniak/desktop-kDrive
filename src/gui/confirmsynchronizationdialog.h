@@ -70,4 +70,4 @@ class ConfirmSynchronizationDialog : public CustomDialog {
         void onFolderSizeCompleted(QString nodeId, qint64 size);
 };
 
-}  // namespace KDC
+} // namespace KDC

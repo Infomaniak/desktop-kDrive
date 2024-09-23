@@ -31,4 +31,4 @@ class AbstractPropagatorJob : public AbstractJob {
         bool _restartSyncPal = false;
 };
 
-}  // namespace KDC
+} // namespace KDC

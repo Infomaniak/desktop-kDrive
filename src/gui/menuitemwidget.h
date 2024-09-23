@@ -108,4 +108,4 @@ class MenuItemWidget : public QWidget {
         void onSubmenuIconSizeChanged();
 };
 
-}  // namespace KDC
+} // namespace KDC

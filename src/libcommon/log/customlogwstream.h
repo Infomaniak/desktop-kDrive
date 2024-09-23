@@ -27,7 +27,10 @@ class CustomLogWStream : private std::wstringstream {
 
         std::wstring str() const { return std::basic_stringstream<wchar_t>::str(); }
         CustomLogWStream &operator<<(const wchar_t *str) {
-            std::wstringstream::operator<<(str);
+            // We need to cast to std::wstringstream as the operator<<(std::wstringstream, const wchar_t *str) is defined outside
+            // of the class std::wstringstream and therefore it is not applicable to the current object because of the private
+            // inheritance
+            static_cast<std::wstringstream &>(*this) << str;
             return *this;
         }
         CustomLogWStream &operator<<(int i) {

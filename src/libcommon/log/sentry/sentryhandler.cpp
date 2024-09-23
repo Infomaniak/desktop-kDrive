@@ -20,10 +20,163 @@
 #include "config.h"
 #include "version.h"
 #include "utility/utility.h"
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 #include <asserts.h>
 
 namespace KDC {
+
 std::shared_ptr<SentryHandler> SentryHandler::_instance = nullptr;
+
+KDC::AppType SentryHandler::_appType = KDC::AppType::None;
+bool SentryHandler::_debugCrashCallback = false;
+bool SentryHandler::_debugBeforeSendCallback = false;
+
+/*
+ *  sentry_value_t reader implementation - begin
+ *  Used for debbuging
+ */
+
+#define TAG_MASK 0x3
+
+typedef struct {
+        union {
+                void *_ptr;
+                double _double;
+        } payload;
+        long refcount;
+        uint8_t type;
+} thing_t;
+
+typedef struct {
+        char *k;
+        sentry_value_t v;
+} obj_pair_t;
+
+typedef struct {
+        obj_pair_t *pairs;
+        size_t len;
+        size_t allocated;
+} obj_t;
+
+typedef struct {
+        sentry_value_t *items;
+        size_t len;
+        size_t allocated;
+} list_t;
+
+static thing_t *valueAsThing(sentry_value_t value) {
+    if (value._bits & TAG_MASK) {
+        return nullptr;
+    }
+    return (thing_t *) (size_t) value._bits;
+}
+
+static void readObject(const sentry_value_t event, std::stringstream &ss, int level = 0);
+static void readList(const sentry_value_t event, std::stringstream &ss, int level = 0);
+
+static void printValue(std::stringstream &ss, const sentry_value_t value, int level) {
+    switch (sentry_value_get_type(value)) {
+        case SENTRY_VALUE_TYPE_NULL:
+            ss << "NULL" << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_BOOL:
+            ss << (sentry_value_is_true(value) ? "true" : "false") << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_INT32:
+            ss << sentry_value_as_int32(value) << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_DOUBLE:
+            ss << sentry_value_as_double(value) << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_STRING:
+            ss << sentry_value_as_string(value) << std::endl;
+            break;
+        case SENTRY_VALUE_TYPE_LIST: {
+            ss << "LIST" << std::endl;
+            readList(value, ss, level + 1);
+            break;
+        }
+        case SENTRY_VALUE_TYPE_OBJECT: {
+            ss << "OBJECT" << std::endl;
+            readObject(value, ss, level + 1);
+            break;
+        }
+    }
+}
+
+static void readList(const sentry_value_t event, std::stringstream &ss, int level) {
+    if (sentry_value_get_type(event) != SENTRY_VALUE_TYPE_LIST) {
+        return;
+    }
+
+    const list_t *l = (list_t *) valueAsThing(event)->payload._ptr;
+    const std::string indent(level, ' ');
+    for (size_t i = 0; i < l->len; i++) {
+        ss << indent.c_str() << "val=";
+        printValue(ss, l->items[i], level);
+    }
+}
+
+static void readObject(const sentry_value_t event, std::stringstream &ss, int level) {
+    if (sentry_value_get_type(event) != SENTRY_VALUE_TYPE_OBJECT) {
+        return;
+    }
+
+    const thing_t *thing = valueAsThing(event);
+    if (!thing) {
+        return;
+    }
+
+    const obj_t *obj = (obj_t *) thing->payload._ptr;
+    const std::string indent(level, ' ');
+    for (size_t i = 0; i < obj->len; i++) {
+        char *key = obj->pairs[i].k;
+        ss << indent.c_str() << "key=" << key << " val=";
+        printValue(ss, obj->pairs[i].v, level);
+    }
+}
+
+/*
+ *  sentry_value_t reader implementation - end
+ */
+
+static sentry_value_t crashCallback(const sentry_ucontext_t *uctx, sentry_value_t event, void *closure) {
+    (void) uctx;
+    (void) closure;
+
+    std::cerr << "Sentry detected a crash in the app " << SentryHandler::appType() << std::endl;
+
+    // As `signum` is unknown, a crash is considered as a kill.
+    const int signum{0};
+    KDC::CommonUtility::writeSignalFile(SentryHandler::appType(), KDC::fromInt<KDC::SignalType>(signum));
+
+    if (SentryHandler::debugCrashCallback()) {
+        std::stringstream ss;
+        readObject(event, ss);
+        SentryHandler::writeEvent(ss.str(), true);
+    }
+
+    return event;
+}
+
+sentry_value_t beforeSendCallback(sentry_value_t event, void *hint, void *closure) {
+    (void) hint;
+    (void) closure;
+
+    std::cout << "Sentry will send an event for the app " << SentryHandler::appType() << std::endl;
+
+    if (SentryHandler::debugBeforeSendCallback()) {
+        std::stringstream ss;
+        readObject(event, ss);
+        SentryHandler::writeEvent(ss.str(), false);
+    }
+
+    return event;
+}
 
 std::shared_ptr<SentryHandler> SentryHandler::instance() {
     if (!_instance) {
@@ -35,7 +188,7 @@ std::shared_ptr<SentryHandler> SentryHandler::instance() {
     return _instance;
 }
 
-void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
+void SentryHandler::init(KDC::AppType appType, int breadCrumbsSize) {
     if (_instance) {
         assert(false && "SentryHandler already initialized");
         return;
@@ -43,20 +196,35 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
 
     _instance = std::shared_ptr<SentryHandler>(new SentryHandler());
 
-    if (project == SentryProject::Deactivated) {
+    if (appType == KDC::AppType::None) {
         _instance->_isSentryActivated = false;
         return;
     }
 
+    _appType = appType;
+
+    // For debugging: if the following environment variable is set, the crash event will be printed into a debug file
+    bool isSet = false;
+    if (CommonUtility::envVarValue("KDRIVE_DEBUG_SENTRY_CRASH_CB", isSet); isSet) {
+        _debugCrashCallback = true;
+    }
+
+    // For debbuging: if the following environment variable is set, the send events will be printed into a debug file
+    // If this variable is set, the previous one is inoperative
+    isSet = false;
+    if (CommonUtility::envVarValue("KDRIVE_DEBUG_SENTRY_BEFORE_SEND_CB", isSet); isSet) {
+        _debugBeforeSendCallback = true;
+    }
+
     // Sentry init
     sentry_options_t *options = sentry_options_new();
-    sentry_options_set_dsn(options, ((project == SentryProject::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
+    sentry_options_set_dsn(options, ((appType == KDC::AppType::Server) ? SENTRY_SERVER_DSN : SENTRY_CLIENT_DSN));
 #if defined(Q_OS_WIN) || defined(Q_OS_MAC)
     const SyncPath appWorkingPath = CommonUtility::getAppWorkingDir() / SENTRY_CRASHPAD_HANDLER_NAME;
 #endif
 
     SyncPath appSupportPath = CommonUtility::getAppSupportDir();
-    appSupportPath /= (project == SentryProject::Server) ? SENTRY_SERVER_DB_PATH : SENTRY_CLIENT_DB_PATH;
+    appSupportPath /= (_appType == AppType::Server) ? SENTRY_SERVER_DB_PATH : SENTRY_CLIENT_DB_PATH;
 #if defined(Q_OS_WIN)
     sentry_options_set_handler_pathw(options, appWorkingPath.c_str());
     sentry_options_set_database_pathw(options, appSupportPath.c_str());
@@ -68,8 +236,16 @@ void SentryHandler::init(SentryProject project, int breadCrumbsSize) {
     sentry_options_set_debug(options, false);
     sentry_options_set_max_breadcrumbs(options, breadCrumbsSize);
 
+    // !!! Not Supported in Crashpad on macOS & Limitations in Crashpad on Windows for Fast-fail Crashes !!!
+    // See https://docs.sentry.io/platforms/native/configuration/filtering/
+    if (_debugBeforeSendCallback) {
+        sentry_options_set_before_send(options, beforeSendCallback, nullptr);
+    } else {
+        sentry_options_set_on_crash(options, crashCallback, nullptr);
+    }
+
     // Set the environment
-    bool isSet = false;
+    isSet = false;
     if (std::string environment = CommonUtility::envVarValue("KDRIVE_SENTRY_ENVIRONMENT", isSet); !isSet) {
         // TODO: When the intern/beta update channel will be available, we will have to create a new environment for each.
 #ifdef NDEBUG
@@ -152,7 +328,7 @@ void SentryHandler::handleEventsRateLimit(SentryEvent &event, bool &toUpload) {
     }
 
     auto &storedEvent = it->second;
-    storedEvent.captureCount++;
+    storedEvent.captureCount = std::min(storedEvent.captureCount + 1, UINT_MAX - 1);
     event.captureCount = storedEvent.captureCount;
 
     if (lastEventCaptureIsOutdated(storedEvent)) { // Reset the capture count if the last capture was more than 10 minutes ago
@@ -227,18 +403,34 @@ void SentryHandler::updateEffectiveSentryUser(const SentryUser &user) {
     sentry_set_user(userValue);
 }
 
+void SentryHandler::writeEvent(const std::string &eventStr, bool crash) noexcept {
+    using namespace KDC::event_dump_files;
+    auto eventFilePath =
+            std::filesystem::temp_directory_path() / (SentryHandler::appType() == AppType::Server
+                                                              ? (crash ? serverCrashEventFileName : serverSendEventFileName)
+                                                              : (crash ? clientCrashEventFileName : clientSendEventFileName));
+
+    std::ofstream eventFile(eventFilePath, std::ios::app);
+    if (eventFile) {
+        eventFile << eventStr << std::endl;
+        eventFile.close();
+    }
+}
+
 SentryHandler::~SentryHandler() {
     if (this == _instance.get()) {
         _instance.reset();
+#if !defined(Q_OS_LINUX)
         try {
             sentry_close();
         } catch (...) {
             // Do nothing
         }
+#endif
     }
 }
 
 SentryHandler::SentryEvent::SentryEvent(const std::string &title, const std::string &message, SentryLevel level,
-                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) 
-    : title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
+                                        SentryConfidentialityLevel confidentialityLevel, const SentryUser &user) :
+    title(title), message(message), level(level), confidentialityLevel(confidentialityLevel), userId(user.userId()) {}
 } // namespace KDC

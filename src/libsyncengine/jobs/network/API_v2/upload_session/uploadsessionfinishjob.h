@@ -52,4 +52,4 @@ class UploadSessionFinishJob : public AbstractUploadSessionJob {
         SyncTime _modtimeOut = 0;
 };
 
-}  // namespace KDC
+} // namespace KDC

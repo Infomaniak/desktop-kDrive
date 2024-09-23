@@ -24,19 +24,12 @@
 
 namespace KDC {
 
-static int defaultToolTipDuration = 3000;  // ms
+static int defaultToolTipDuration = 3000; // ms
 
-CustomToolButton::CustomToolButton(QWidget *parent)
-    : QToolButton(parent),
-      _withMenu(false),
-      _baseIconSize(QSize()),
-      _iconPath(QString()),
-      _iconColor(QColor()),
-      _iconColorHover(QColor()),
-      _toolTipText(QString()),
-      _toolTipDuration(defaultToolTipDuration),
-      _hover(false),
-      _customToolTip(nullptr) {
+CustomToolButton::CustomToolButton(QWidget *parent) :
+    QToolButton(parent), _withMenu(false), _baseIconSize(QSize()), _iconPath(QString()), _iconColor(QColor()),
+    _iconColorHover(QColor()), _toolTipText(QString()), _toolTipDuration(defaultToolTipDuration), _hover(false),
+    _customToolTip(nullptr) {
     connect(this, &CustomToolButton::baseIconSizeChanged, this, &CustomToolButton::onBaseIconSizeChanged);
     connect(this, &CustomToolButton::iconColorChanged, this, &CustomToolButton::onIconColorChanged);
     connect(this, &CustomToolButton::clicked, this, &CustomToolButton::onClicked);
@@ -120,4 +113,4 @@ void CustomToolButton::setHover(bool hover) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

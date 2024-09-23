@@ -23,8 +23,8 @@
 namespace KDC {
 
 ISyncWorker::ISyncWorker(std::shared_ptr<SyncPal> syncPal, const std::string &name, const std::string &shortName,
-                         bool testing /*= false*/)
-    : _logger(Log::instance()->getLogger()), _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName) {}
+                         bool testing /*= false*/) :
+    _logger(Log::instance()->getLogger()), _syncPal(syncPal), _testing(testing), _name(name), _shortName(shortName) {}
 
 ISyncWorker::~ISyncWorker() {
     if (_isRunning) {
@@ -154,8 +154,8 @@ void ISyncWorker::setDone(ExitCode exitCode) {
 }
 
 void *ISyncWorker::executeFunc(void *thisWorker) {
-    ((ISyncWorker *)thisWorker)->execute();
+    ((ISyncWorker *) thisWorker)->execute();
     return nullptr;
 }
 
-}  // namespace KDC
+} // namespace KDC

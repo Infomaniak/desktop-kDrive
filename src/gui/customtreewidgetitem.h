@@ -35,4 +35,4 @@ class CustomTreeWidgetItem : public QTreeWidgetItem {
         bool operator<(const QTreeWidgetItem &other) const;
 };
 
-}  // namespace KDC
+} // namespace KDC

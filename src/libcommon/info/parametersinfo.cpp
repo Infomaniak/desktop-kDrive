@@ -23,49 +23,26 @@ namespace KDC {
 ParametersInfo::ParametersInfo(Language language, bool monoIcons, bool autoStart, bool moveToTrash,
                                NotificationsDisabled notificationsDisabled, bool useLog, LogLevel logLevel, bool extendedLog,
                                bool purgeOldLogs, bool syncHiddenFiles, bool useBigFolderSizeLimit, qint64 bigFolderSizeLimit,
-                               bool darkTheme, bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu)
-    : _language(language),
-      _monoIcons(monoIcons),
-      _autoStart(autoStart),
-      _moveToTrash(moveToTrash),
-      _notificationsDisabled(notificationsDisabled),
-      _useLog(useLog),
-      _logLevel(logLevel),
-      _extendedLog(extendedLog),
-      _purgeOldLogs(purgeOldLogs),
-      _syncHiddenFiles(syncHiddenFiles),
-      _useBigFolderSizeLimit(useBigFolderSizeLimit),
-      _bigFolderSizeLimit(bigFolderSizeLimit),
-      _darkTheme(darkTheme),
-      _showShortcuts(showShortcuts),
-      _dialogGeometry(dialogGeometry),
-      _maxAllowedCpu(maxAllowedCpu) {}
+                               bool darkTheme, bool showShortcuts, QMap<QString, QByteArray> dialogGeometry, int maxAllowedCpu) :
+    _language(language), _monoIcons(monoIcons), _autoStart(autoStart), _moveToTrash(moveToTrash),
+    _notificationsDisabled(notificationsDisabled), _useLog(useLog), _logLevel(logLevel), _extendedLog(extendedLog),
+    _purgeOldLogs(purgeOldLogs), _syncHiddenFiles(syncHiddenFiles), _useBigFolderSizeLimit(useBigFolderSizeLimit),
+    _bigFolderSizeLimit(bigFolderSizeLimit), _darkTheme(darkTheme), _showShortcuts(showShortcuts),
+    _dialogGeometry(dialogGeometry), _maxAllowedCpu(maxAllowedCpu) {}
 
-ParametersInfo::ParametersInfo()
-    : _language(Language::Default),
-      _monoIcons(false),
-      _autoStart(true),
-      _moveToTrash(true),
-      _notificationsDisabled(NotificationsDisabled::Never),
-      _useLog(true),
-      _logLevel(LogLevel::Debug),
-      _extendedLog(false),
-      _purgeOldLogs(true),
-      _syncHiddenFiles(false),
-      _useBigFolderSizeLimit(true),
-      _bigFolderSizeLimit(500),
-      _darkTheme(false),
-      _showShortcuts(true),
-      _dialogGeometry(QMap<QString, QByteArray>()),
-      _maxAllowedCpu(50) {}
+ParametersInfo::ParametersInfo() :
+    _language(Language::Default), _monoIcons(false), _autoStart(true), _moveToTrash(true),
+    _notificationsDisabled(NotificationsDisabled::Never), _useLog(true), _logLevel(LogLevel::Debug), _extendedLog(false),
+    _purgeOldLogs(true), _syncHiddenFiles(false), _useBigFolderSizeLimit(true), _bigFolderSizeLimit(500), _darkTheme(false),
+    _showShortcuts(true), _dialogGeometry(QMap<QString, QByteArray>()), _maxAllowedCpu(50) {}
 
 QDataStream &operator>>(QDataStream &in, ParametersInfo &parametersInfo) {
     in >> parametersInfo._language >> parametersInfo._monoIcons >> parametersInfo._autoStart >> parametersInfo._moveToTrash >>
-        parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
-        parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._syncHiddenFiles >>
-        parametersInfo._useBigFolderSizeLimit >> parametersInfo._bigFolderSizeLimit >> parametersInfo._darkTheme >>
-        parametersInfo._showShortcuts >> parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >>
-        parametersInfo._proxyConfigInfo;
+            parametersInfo._notificationsDisabled >> parametersInfo._useLog >> parametersInfo._logLevel >>
+            parametersInfo._extendedLog >> parametersInfo._purgeOldLogs >> parametersInfo._syncHiddenFiles >>
+            parametersInfo._useBigFolderSizeLimit >> parametersInfo._bigFolderSizeLimit >> parametersInfo._darkTheme >>
+            parametersInfo._showShortcuts >> parametersInfo._dialogGeometry >> parametersInfo._maxAllowedCpu >>
+            parametersInfo._proxyConfigInfo;
     return in;
 }
 
@@ -79,4 +56,4 @@ QDataStream &operator<<(QDataStream &out, const ParametersInfo &parametersInfo) 
     return out;
 }
 
-}  // namespace KDC
+} // namespace KDC

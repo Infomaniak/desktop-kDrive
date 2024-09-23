@@ -35,16 +35,10 @@ static const int folderTreeBoxVMargin = 20;
 Q_LOGGING_CATEGORY(lcServerFoldersDialog, "gui.serverfoldersdialog", QtInfoMsg)
 
 ServerFoldersDialog::ServerFoldersDialog(std::shared_ptr<ClientGui> gui, int driveDbId, const QString &serverFolderName,
-                                         const QString &serverFolderNodeId, QWidget *parent)
-    : CustomDialog(true, parent),
-      _gui(gui),
-      _driveDbId(driveDbId),
-      _serverFolderName(serverFolderName),
-      _serverFolderNodeId(serverFolderNodeId),
-      _folderTreeItemWidget(nullptr),
-      _backButton(nullptr),
-      _continueButton(nullptr),
-      _needToSave(false) {
+                                         const QString &serverFolderNodeId, QWidget *parent) :
+    CustomDialog(true, parent), _gui(gui), _driveDbId(driveDbId), _serverFolderName(serverFolderName),
+    _serverFolderNodeId(serverFolderNodeId), _folderTreeItemWidget(nullptr), _backButton(nullptr), _continueButton(nullptr),
+    _needToSave(false) {
     initUI();
     updateUI();
 }
@@ -77,7 +71,7 @@ void ServerFoldersDialog::initUI() {
     titleLabel->setObjectName("titleLabel");
     titleLabel->setContentsMargins(boxHMargin, 0, boxHMargin, 0);
     titleLabel->setText(
-        tr("The <b>%1</b> folder contains subfolders,<br> select the ones you want to synchronize").arg(_serverFolderName));
+            tr("The <b>%1</b> folder contains subfolders,<br> select the ones you want to synchronize").arg(_serverFolderName));
     mainLayout->addWidget(titleLabel);
     mainLayout->addSpacing(titleBoxVMargin);
 
@@ -152,4 +146,4 @@ void ServerFoldersDialog::onNeedToSave() {
     _needToSave = true;
 }
 
-}  // namespace KDC
+} // namespace KDC

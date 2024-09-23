@@ -54,8 +54,8 @@ static const int progressBarMax = 5;
 
 Q_LOGGING_CATEGORY(lcAddDriveLocalFolderWidget, "gui.adddrivelocalfolderwidget", QtInfoMsg)
 
-AddDriveLocalFolderWidget::AddDriveLocalFolderWidget(std::shared_ptr<ClientGui> gui, QWidget *parent)
-    : QWidget(parent), _gui(gui) {
+AddDriveLocalFolderWidget::AddDriveLocalFolderWidget(std::shared_ptr<ClientGui> gui, QWidget *parent) :
+    QWidget(parent), _gui(gui) {
     initUI();
     updateUI();
 }
@@ -92,7 +92,7 @@ void AddDriveLocalFolderWidget::initUI() {
 
     QLabel *logoIconLabel = new QLabel(this);
     logoIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-without-text.svg")
-                                 .pixmap(QSize(logoIconSize, logoIconSize)));
+                                     .pixmap(QSize(logoIconSize, logoIconSize)));
     logoHBox->addWidget(logoIconLabel);
     logoHBox->addSpacing(hLogoSpacing);
 
@@ -208,8 +208,8 @@ void AddDriveLocalFolderWidget::initUI() {
     descriptionLabel->setObjectName("largeNormalTextLabel");
     descriptionLabel->setWordWrap(true);
     descriptionLabel->setText(
-        tr("You will find all your files in this folder when the configuration is complete."
-           " You can drop new files there to sync them to your kDrive."));
+            tr("You will find all your files in this folder when the configuration is complete."
+               " You can drop new files there to sync them to your kDrive."));
     mainLayout->addWidget(descriptionLabel);
     mainLayout->addStretch();
 
@@ -234,10 +234,10 @@ void AddDriveLocalFolderWidget::initUI() {
     // Check LiteSync ext authorizations
     std::string liteSyncExtErrorDescr;
     bool liteSyncExtOk =
-        CommonUtility::isLiteSyncExtEnabled() && CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
+            CommonUtility::isLiteSyncExtEnabled() && CommonUtility::isLiteSyncExtFullDiskAccessAuthOk(liteSyncExtErrorDescr);
     if (!liteSyncExtErrorDescr.empty()) {
         qCWarning(lcAddDriveLocalFolderWidget)
-            << "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: " << liteSyncExtErrorDescr.c_str();
+                << "Error in CommonUtility::isLiteSyncExtFullDiskAccessAuthOk: " << liteSyncExtErrorDescr.c_str();
     }
     skipExtSetup = liteSyncExtOk;
 #endif
@@ -283,7 +283,7 @@ void AddDriveLocalFolderWidget::updateUI() {
                 _warningLabel->setText(tr(R"(This folder is not compatible with Lite Sync.<br>"
 "Please select another folder or if you continue Lite Sync will be disabled.<br>"
 "<a style="%1" href="%2">Learn more</a>)")
-                                           .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
+                                               .arg(CommonUtility::linkStyle, KDC::GuiUtility::learnMoreLink));
                 _warningWidget->setVisible(true);
             } else {
                 _warningWidget->setVisible(false);
@@ -309,31 +309,31 @@ void AddDriveLocalFolderWidget::selectFolder(const QString &startDirPath) {
 void AddDriveLocalFolderWidget::setFolderIcon() {
     if (_folderIconColor != QColor() && _folderIconSize != QSize()) {
         _folderIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/folder.svg", _folderIconColor)
-                .pixmap(_folderIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/folder.svg", _folderIconColor)
+                        .pixmap(_folderIconSize));
     }
 }
 
 void AddDriveLocalFolderWidget::setInfoIcon() {
     if (_infoIconColor != QColor() && _infoIconSize != QSize()) {
         _infoIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/information.svg", _infoIconColor)
-                .pixmap(_infoIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/information.svg", _infoIconColor)
+                        .pixmap(_infoIconSize));
     }
 }
 
 void AddDriveLocalFolderWidget::setWarningIcon() {
     if (_warningIconColor != QColor() && _warningIconSize != QSize()) {
         _warningIconLabel->setPixmap(
-            KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", _warningIconColor)
-                .pixmap(_warningIconSize));
+                KDC::GuiUtility::getIconWithColor(":/client/resources/icons/actions/warning.svg", _warningIconColor)
+                        .pixmap(_warningIconSize));
     }
 }
 
 void AddDriveLocalFolderWidget::setLogoColor(const QColor &color) {
     _logoColor = color;
-    _logoTextIconLabel->setPixmap(
-        KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor).pixmap(logoTextIconSize));
+    _logoTextIconLabel->setPixmap(KDC::GuiUtility::getIconWithColor(":/client/resources/logos/kdrive-text-only.svg", _logoColor)
+                                          .pixmap(logoTextIconSize));
 }
 
 void AddDriveLocalFolderWidget::onDisplayMessage(const QString &text) {
@@ -401,4 +401,4 @@ void AddDriveLocalFolderWidget::showDisabledOverlay(bool showOverlay) {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

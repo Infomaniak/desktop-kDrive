@@ -25,11 +25,10 @@
 
 namespace KDC {
 
-DeleteJob::DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId, const SyncPath &absoluteLocalFilepath)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-      _remoteItemId(remoteItemId),
-      _localItemId(localItemId),
-      _absoluteLocalFilepath(absoluteLocalFilepath) {
+DeleteJob::DeleteJob(int driveDbId, const NodeId &remoteItemId, const NodeId &localItemId,
+                     const SyncPath &absoluteLocalFilepath) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _remoteItemId(remoteItemId), _localItemId(localItemId),
+    _absoluteLocalFilepath(absoluteLocalFilepath) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_DELETE;
 }
 
@@ -40,8 +39,9 @@ bool DeleteJob::canRun() {
 
     if (_remoteItemId.empty() || _localItemId.empty() || _absoluteLocalFilepath.empty()) {
         LOGW_WARN(_logger, L"Error in DeleteJob::canRun: missing required input, remote ID:"
-                               << Utility::s2ws(_remoteItemId).c_str() << L", local ID: " << Utility::s2ws(_localItemId).c_str()
-                               << L", " << Utility::formatSyncPath(_absoluteLocalFilepath));
+                                   << Utility::s2ws(_remoteItemId).c_str() << L", local ID: "
+                                   << Utility::s2ws(_localItemId).c_str() << L", "
+                                   << Utility::formatSyncPath(_absoluteLocalFilepath));
         _exitCode = ExitCode::DataError;
         _exitCause = ExitCause::Unknown;
         return false;
@@ -90,7 +90,7 @@ bool DeleteJob::canRun() {
 
         LOGW_DEBUG(_logger, L"Item: " << Utility::formatSyncPath(_absoluteLocalFilepath).c_str()
                                       << L" still exist on local replica. Aborting current sync and restart.");
-        _exitCode = ExitCode::DataError;  // Data error so the snapshots will be re-created
+        _exitCode = ExitCode::DataError; // Data error so the snapshots will be re-created
         _exitCause = ExitCause::UnexpectedFileSystemEvent;
         return false;
     } else if (!otherNodeId.empty() && _localItemId != otherNodeId) {
@@ -113,4 +113,4 @@ std::string DeleteJob::getSpecificUrl() {
     return str;
 }
 
-}  // namespace KDC
+} // namespace KDC

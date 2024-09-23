@@ -52,4 +52,4 @@ class ExclusionTemplate {
         void evaluateComplexity();
 };
 
-}  // namespace KDC
+} // namespace KDC

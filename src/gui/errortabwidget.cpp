@@ -29,15 +29,9 @@
 
 namespace KDC {
 
-ErrorTabWidget::ErrorTabWidget(int driveDbId, bool generic, QWidget *parent)
-    : QTabWidget(parent),
-      _tabBar(nullptr),
-      _paramsDialog((ParametersDialog *)parent),
-      _autoResolvedErrorsListWidget(nullptr),
-      _unresolvedErrorsListWidget(nullptr),
-      _lastErrorTimestamp(0),
-      _driveDbId(driveDbId),
-      _generic(generic) {
+ErrorTabWidget::ErrorTabWidget(int driveDbId, bool generic, QWidget *parent) :
+    QTabWidget(parent), _tabBar(nullptr), _paramsDialog((ParametersDialog *) parent), _autoResolvedErrorsListWidget(nullptr),
+    _unresolvedErrorsListWidget(nullptr), _lastErrorTimestamp(0), _driveDbId(driveDbId), _generic(generic) {
     setObjectName("tabWidgetErrorWidget");
     _tabBar = new CustomTabBar(this);
     _tabBar->setObjectName("tabBarErrorWidget");
@@ -232,4 +226,4 @@ void ErrorTabWidget::onResolveUnsupportedCharactersErrors() {
     _paramsDialog->resolveUnsupportedCharErrors(_driveDbId);
 }
 
-}  // namespace KDC
+} // namespace KDC

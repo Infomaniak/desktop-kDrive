@@ -115,7 +115,7 @@ void TestIo::testCheckIfIsDirectory() {
     // A dangling symbolic link
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_file.txt";  // This file does not exist.
+        const SyncPath targetPath = temporaryDirectory.path() / "non_existing_file.txt"; // This file does not exist.
         const SyncPath path = temporaryDirectory.path() / "dangling_symbolic_link";
         std::filesystem::create_symlink(targetPath, path);
 
@@ -124,7 +124,7 @@ void TestIo::testCheckIfIsDirectory() {
 
         CPPUNIT_ASSERT(_testObj->checkIfIsDirectory(path, isDirectory, ioError));
         CPPUNIT_ASSERT(!isDirectory);
-        CPPUNIT_ASSERT(ioError == IoError::Success);  // Although the target path is invalid.
+        CPPUNIT_ASSERT(ioError == IoError::Success); // Although the target path is invalid.
     }
 
     // A regular directory missing all permissions: no error expected
@@ -150,8 +150,8 @@ void TestIo::testCheckIfIsDirectory() {
     // - IoError::FileNameTooLong error for MacOSX and Linux (unexpected error).
     {
         const std::string veryLongfileName(1000,
-                                           'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
+                                           'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
 
         IoError ioError = IoError::Success;
         bool isDirectory = true;
@@ -230,7 +230,7 @@ void TestIo::testCheckIfIsDirectory() {
     // A dangling MacOSX Finder alias on a non-existing directory.
     {
         const LocalTemporaryDirectory temporaryDirectory;
-        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted";  // This directory will be deleted.
+        const SyncPath targetPath = temporaryDirectory.path() / "directory_to_be_deleted"; // This directory will be deleted.
         std::filesystem::create_directory(targetPath);
 
         const SyncPath path = temporaryDirectory.path() / "dangling_directory_alias";
@@ -314,8 +314,8 @@ void TestIo::testCreateDirectory() {
     // Fails to create a directory with a very long name
     {
         const std::string veryLongDirName(1000,
-                                          'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongDirName;  // This directory doesn't exist.
+                                          'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongDirName; // This directory doesn't exist.
 
         IoError ioError = IoError::Success;
 #ifdef _WIN32
@@ -328,4 +328,4 @@ void TestIo::testCreateDirectory() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

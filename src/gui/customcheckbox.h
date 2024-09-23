@@ -45,4 +45,4 @@ class CustomCheckBox : public QCheckBox {
         void onClicked(bool checked = false);
 };
 
-}  // namespace KDC
+} // namespace KDC

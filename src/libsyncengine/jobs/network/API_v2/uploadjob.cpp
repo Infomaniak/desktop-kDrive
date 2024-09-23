@@ -29,20 +29,17 @@
 namespace KDC {
 
 UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const SyncName &filename, const NodeId &remoteParentDirId,
-                     SyncTime modtime)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-      _filePath(filepath),
-      _filename(filename),
-      _remoteParentDirId(remoteParentDirId),
-      _modtimeIn(modtime) {
+                     SyncTime modtime) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _filePath(filepath), _filename(filename),
+    _remoteParentDirId(remoteParentDirId), _modtimeIn(modtime) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_POST;
     _customTimeout = 60;
     _trials = TRIALS;
     setProgress(0);
 }
 
-UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const NodeId &fileId, SyncTime modtime)
-    : UploadJob(driveDbId, filepath, SyncName(), "", modtime) {
+UploadJob::UploadJob(int driveDbId, const SyncPath &filepath, const NodeId &fileId, SyncTime modtime) :
+    UploadJob(driveDbId, filepath, SyncName(), "", modtime) {
     _fileId = fileId;
 }
 
@@ -239,8 +236,8 @@ bool UploadJob::readLink() {
         _linkTarget = std::filesystem::read_symlink(_filePath, ec);
         if (ec.value() != 0) {
 #ifdef _WIN32
-            bool exists =
-                (ec.value() != ERROR_FILE_NOT_FOUND && ec.value() != ERROR_PATH_NOT_FOUND && ec.value() != ERROR_INVALID_DRIVE);
+            bool exists = (ec.value() != ERROR_FILE_NOT_FOUND && ec.value() != ERROR_PATH_NOT_FOUND &&
+                           ec.value() != ERROR_INVALID_DRIVE);
 #else
             bool exists = (ec.value() != static_cast<int>(std::errc::no_such_file_or_directory));
 #endif
@@ -319,7 +316,7 @@ bool UploadJob::readLink() {
             return false;
         }
 
-        assert(ioError == IoError::Success);  // For every other error type, false should have been returned.
+        assert(ioError == IoError::Success); // For every other error type, false should have been returned.
 #endif
     } else {
         LOG_WARN(_logger, "Link type not managed - type=" << _linkType);
@@ -329,4 +326,4 @@ bool UploadJob::readLink() {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

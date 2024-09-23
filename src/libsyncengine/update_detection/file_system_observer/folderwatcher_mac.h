@@ -36,8 +36,10 @@ class FolderWatcher_mac : public FolderWatcher {
 
         void doNotifyParent(const std::list<std::pair<SyncPath, OperationType>> &changes);
 
+        static OperationType getOpType(FSEventStreamEventFlags eventFlags);
+
     private:
         FSEventStreamRef _stream;
 };
 
-}  // namespace KDC
+} // namespace KDC

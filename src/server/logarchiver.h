@@ -76,4 +76,4 @@ class LogArchiver {
         [[nodiscard]] static bool getFileSize(const SyncPath &path, uint64_t &size);
 };
 
-}  // namespace KDC
+} // namespace KDC

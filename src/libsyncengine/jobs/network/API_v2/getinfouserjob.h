@@ -32,4 +32,4 @@ class GetInfoUserJob : public AbstractTokenNetworkJob {
         virtual void setData(bool &canceled) override { canceled = false; }
 };
 
-}  // namespace KDC
+} // namespace KDC

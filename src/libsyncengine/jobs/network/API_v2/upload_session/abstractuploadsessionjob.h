@@ -37,4 +37,4 @@ class AbstractUploadSessionJob : public AbstractTokenNetworkJob {
         SyncPath _filePath;
 };
 
-}  // namespace KDC
+} // namespace KDC

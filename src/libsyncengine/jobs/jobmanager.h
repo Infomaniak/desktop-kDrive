@@ -70,7 +70,7 @@ class JobManager {
         inline size_t countManagedJobs() { return _managedJobs.size(); }
         inline size_t maxNbThreads() { return _maxNbThread; }
 
-        void setPoolCapacity(int count);  // For testing purpose
+        void setPoolCapacity(int count); // For testing purpose
         void decreasePoolCapacity();
 
     private:
@@ -98,16 +98,16 @@ class JobManager {
         log4cplus::Logger _logger;
         std::unique_ptr<std::thread> _thread;
 
-        static std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs;  // queued + running + pending jobs
+        static std::unordered_map<UniqueId, std::shared_ptr<AbstractJob>> _managedJobs; // queued + running + pending jobs
         static std::priority_queue<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>,
                                    std::vector<std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>, JobPriorityCmp>
-            _queuedJobs;                                   // jobs waiting for an available thread
-        static std::unordered_set<UniqueId> _runningJobs;  // jobs currently running in a dedicated thread
+                _queuedJobs; // jobs waiting for an available thread
+        static std::unordered_set<UniqueId> _runningJobs; // jobs currently running in a dedicated thread
         static std::unordered_map<UniqueId, std::pair<std::shared_ptr<AbstractJob>, Poco::Thread::Priority>>
-            _pendingJobs;  // jobs waiting for their parent job to be completed
+                _pendingJobs; // jobs waiting for their parent job to be completed
         static std::recursive_mutex _mutex;
 
         friend class TestJobManager;
 };
 
-}  // namespace KDC
+} // namespace KDC

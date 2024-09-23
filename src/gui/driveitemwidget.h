@@ -41,4 +41,4 @@ class DriveItemWidget : public QListWidgetItem {
         DriveAvailableInfo _driveInfo;
 };
 
-}  // namespace KDC
+} // namespace KDC

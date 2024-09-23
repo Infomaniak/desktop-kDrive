@@ -72,11 +72,11 @@ void TestIo::testCreateSymlink() {
         IoError ioError = IoError::Unknown;
         CPPUNIT_ASSERT(IoHelper::createSymlink(targetPath, path, false, ioError));
         CPPUNIT_ASSERT(ioError == IoError::Success);
-        CPPUNIT_ASSERT(std::filesystem::is_symlink(path));  // Dangling link created.
+        CPPUNIT_ASSERT(std::filesystem::is_symlink(path)); // Dangling link created.
 
         ItemType itemType;
         CPPUNIT_ASSERT(IoHelper::getItemType(path, itemType));
-        CPPUNIT_ASSERT(itemType.ioError == IoError::Success);  // Although the target path is invalid.
+        CPPUNIT_ASSERT(itemType.ioError == IoError::Success); // Although the target path is invalid.
         CPPUNIT_ASSERT(itemType.nodeType == NodeType::File);
         CPPUNIT_ASSERT(itemType.linkType == LinkType::Symlink);
 #ifdef _WIN32
@@ -141,8 +141,8 @@ void TestIo::testCreateSymlink() {
 
     // Fails to create a symlink whose name is very long
     {
-        const std::string veryLongfileName(1000, 'a');  // Exceeds the max allowed name length on every file system of interest.
-        const SyncPath path = _localTestDirPath / veryLongfileName;  // This file doesn't exist.
+        const std::string veryLongfileName(1000, 'a'); // Exceeds the max allowed name length on every file system of interest.
+        const SyncPath path = _localTestDirPath / veryLongfileName; // This file doesn't exist.
         const SyncPath targetPath = _localTestDirPath / "test_pictures/picture-1.jpg";
 
         IoError ioError;
@@ -176,4 +176,4 @@ void TestIo::testCreateSymlink() {
     }
 }
 
-}  // namespace KDC
+} // namespace KDC

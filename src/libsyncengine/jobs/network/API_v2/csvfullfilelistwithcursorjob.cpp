@@ -138,12 +138,12 @@ bool SnapshotItemHandler::updateSnapshotItem(const std::string &str, CsvIndex in
 }
 
 void SnapshotItemHandler::readSnapshotItemFields(SnapshotItem &item, const std::string &line, bool &error, ParsingState &state) {
-    for (char c : line) {
+    for (char c: line) {
         if (state.readingDoubleQuotedValue && state.prevCharDoubleQuotes) {
             if (c != ',' && c != '"') {
                 // After a closing double quote, we must have a comma or another double quote. Otherwise, ignore the line.
-                state.index = CsvIndexId;                // Make sure that `state` is not equal to `CsvIndexEnd`.
-                state.readingDoubleQuotedValue = false;  // Exit the `readingDoubleQuotedValue` mode.
+                state.index = CsvIndexId; // Make sure that `state` is not equal to `CsvIndexEnd`.
+                state.readingDoubleQuotedValue = false; // Exit the `readingDoubleQuotedValue` mode.
                 LOG_WARN(_logger, "Item '" << line.c_str()
                                            << "' ignored because a closing double quote character must be followed by a comma or "
                                               "another double quote");
@@ -255,12 +255,9 @@ bool SnapshotItemHandler::getItem(SnapshotItem &item, std::stringstream &ss, boo
 }
 
 CsvFullFileListWithCursorJob::CsvFullFileListWithCursorJob(int driveDbId, const NodeId &dirId,
-                                                           std::unordered_set<NodeId> blacklist /*= {}*/, bool zip /*= true*/)
-    : AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0),
-      _dirId(dirId),
-      _blacklist(blacklist),
-      _zip(zip),
-      _snapshotItemHandler(_logger) {
+                                                           std::unordered_set<NodeId> blacklist /*= {}*/, bool zip /*= true*/) :
+    AbstractTokenNetworkJob(ApiType::Drive, 0, 0, driveDbId, 0), _dirId(dirId), _blacklist(blacklist), _zip(zip),
+    _snapshotItemHandler(_logger) {
     _httpMethod = Poco::Net::HTTPRequest::HTTP_GET;
     _customTimeout = API_TIMEOUT + 15;
 
@@ -322,8 +319,8 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     _ss.read(&lastChar, 1);
     _ss.seekg(0, std::ios_base::beg);
     if (lastChar != 0x0A) {
-        LOGW_WARN(_logger, L"Reply " << jobId() << L" received with bad content - length=" << length
-                                     << L" value=" << Utility::s2ws(_ss.str()).c_str());
+        LOGW_WARN(_logger, L"Reply " << jobId() << L" received with bad content - length=" << length << L" value="
+                                     << Utility::s2ws(_ss.str()).c_str());
         return false;
     }
 
@@ -335,4 +332,4 @@ bool CsvFullFileListWithCursorJob::handleResponse(std::istream &is) {
     return true;
 }
 
-}  // namespace KDC
+} // namespace KDC

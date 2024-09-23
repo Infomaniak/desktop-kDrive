@@ -29,4 +29,4 @@ std::string GetInfoUserJob::getSpecificUrl() {
     return str;
 }
 
-}  // namespace KDC
+} // namespace KDC

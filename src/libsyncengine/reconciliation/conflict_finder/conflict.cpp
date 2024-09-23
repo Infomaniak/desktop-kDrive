@@ -21,8 +21,8 @@
 
 namespace KDC {
 
-Conflict::Conflict(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, ConflictType type)
-    : _node(localNode), _correspondingNode(remoteNode), _type(type) {}
+Conflict::Conflict(std::shared_ptr<Node> localNode, std::shared_ptr<Node> remoteNode, ConflictType type) :
+    _node(localNode), _correspondingNode(remoteNode), _type(type) {}
 
 Conflict::~Conflict() {
     _node.reset();
@@ -53,8 +53,8 @@ std::shared_ptr<Node> Conflict::remoteNode() const {
     return localNode() == _node ? _correspondingNode : _node;
 }
 
-ConflictCmp::ConflictCmp(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree)
-    : _localUpdateTree(localUpdateTree), _remoteUpdateTree(remoteUpdateTree) {}
+ConflictCmp::ConflictCmp(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree) :
+    _localUpdateTree(localUpdateTree), _remoteUpdateTree(remoteUpdateTree) {}
 
 ConflictCmp::~ConflictCmp() {
     _localUpdateTree.reset();
@@ -138,8 +138,8 @@ SyncPath ConflictCmp::pathOfEvent(const Conflict &conflict, OperationType optype
     return path;
 }
 
-ConflictQueue::ConflictQueue(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree)
-    : _conflictCmp(localUpdateTree, remoteUpdateTree) {
+ConflictQueue::ConflictQueue(std::shared_ptr<UpdateTree> localUpdateTree, std::shared_ptr<UpdateTree> remoteUpdateTree) :
+    _conflictCmp(localUpdateTree, remoteUpdateTree) {
     initQueue();
 }
 
@@ -163,7 +163,7 @@ void ConflictQueue::clear() {
 
 void ConflictQueue::initQueue() {
     _queue = std::unique_ptr<std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>>(
-        new std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>(_conflictCmp));
+            new std::priority_queue<Conflict, std::vector<Conflict>, ConflictCmp>(_conflictCmp));
 }
 
-}  // namespace KDC
+} // namespace KDC
